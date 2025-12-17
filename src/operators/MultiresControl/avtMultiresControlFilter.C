@@ -71,6 +71,9 @@ bool avtMultiresControlFilter::Equivalent(const AttributeGroup *a)
 //   Modifications:
 //     Eric Brugger, Wed Jul 30 19:50:54 PDT 2014
 //     Modified the class to work with avtDataRepresentation.
+// 
+//     Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//     Send the high order options through as well.
 //
 // ****************************************************************************
 

@@ -29,6 +29,8 @@
 // Creation:   omitted
 //
 // Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Initialize high order options controls.
 //
 // ****************************************************************************
 
@@ -94,6 +96,9 @@ QvisMultiresControlWindow::~QvisMultiresControlWindow()
 //   Brad Whitlock, Wed Sep  2 17:54:16 PDT 2020
 //   Use valueChanged to set the label text. Use sliderReleased to update the
 //   multires value. This makes autoupdate work better.
+// 
+//   Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//   Added new controls for the high order options.
 //
 // ****************************************************************************
 
@@ -179,6 +184,9 @@ QvisMultiresControlWindow::CreateWindowContents()
 //
 //   Tom Fogal, Mon Aug 30 12:30:28 MDT 2010
 //   Include resolution # in label.
+// 
+//   Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//   Added new controls for the high order options.
 //
 // ****************************************************************************
 
@@ -243,6 +251,8 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
 // Creation:   omitted
 //
 // Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added new controls for the high order options.
 //
 // ****************************************************************************
 

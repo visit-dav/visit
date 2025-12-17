@@ -65,6 +65,10 @@ class     avtIOInformation;
 //
 //    Burlen Loring, Fri Oct  2 17:01:02 PDT 2015
 //    Clean up a couple of warnings
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added overrides for GetVar and GetVectorVar for handling centering
+//    changes.
 //
 // ****************************************************************************
 

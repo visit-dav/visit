@@ -29,6 +29,9 @@
 //      Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
 //      Removed inaccurate comment.
 //
+//      Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//      Removed LOR options.
+//
 // ****************************************************************************
 
 DBOptionsAttributes *

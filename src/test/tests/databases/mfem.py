@@ -23,6 +23,9 @@
 #
 #    Cyrus Harrison, Mon Oct 20 11:17:19 PDT 2025
 #    Added quadrature function examples
+# 
+#    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+#    Reworked and added tests for MFEM LOR.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("MFEM")

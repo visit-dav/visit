@@ -53,6 +53,14 @@ class DBOptionsAttributes;
 //    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
 //    Added DBOptionsAttributes forward declaration and as an argument to
 //    avtMFEMFileFormat.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added m_mesh_refinement_method, m_field_projection_method, and 
+//    m_refinement_basis_type.
+//    Removed m_new_refine.
+//    Added overrides for GetVar and GetVectorVar for changing centering.
+//    Added HasCenteringChange method to indicate that this plugin can
+//    change centering.
 // ****************************************************************************
 
 class avtMFEMFileFormat : public avtSTMDFileFormat

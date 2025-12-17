@@ -200,6 +200,9 @@ class    QueryOverTimeAttributes;
 //
 //    Alister Maguire, Mon Oct 12 14:04:09 PDT 2020
 //    Changed GetQOTMesh to GetQOTPointMesh, and added GetQOTCoordMesh.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added overrides for GetVar and GetVectorVar to handle centering changes.
 //
 // ****************************************************************************
 

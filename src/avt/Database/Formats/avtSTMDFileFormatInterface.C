@@ -146,6 +146,9 @@ avtSTMDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //
 //    Brad Whitlock, Tue May 4 13:47:45 PST 2004
 //    Reenabled exception.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 
@@ -205,6 +208,9 @@ avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //
 //    Brad Whitlock, Tue May 4 13:47:45 PST 2004
 //    Reenabled exception.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 

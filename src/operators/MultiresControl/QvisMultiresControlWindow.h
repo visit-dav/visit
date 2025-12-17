@@ -28,6 +28,9 @@ class QComboBox;
 //
 //   Tom Fogal,  Mon Aug 30 12:31:44 MDT 2010
 //   Removed some dead/unused variables
+// 
+//   Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//   Added new controls for the high order options.
 //
 // ****************************************************************************
 

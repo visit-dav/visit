@@ -74,6 +74,9 @@
 #
 #    Cyrus Harrison, Mon Oct 20 16:43:00 PDT 2025
 #    Added mfem quadrature function example tests.
+# 
+#    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+#    Reworked and added tests for MFEM LOR.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")

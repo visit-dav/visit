@@ -1134,6 +1134,9 @@ avtZipWrapperFileFormatInterface::CreateCacheNameIncludingSelections(std::string
 //
 //    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
 //    Add return value.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 
@@ -1170,6 +1173,9 @@ avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname)
 //
 //    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
 //    Add return value.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 

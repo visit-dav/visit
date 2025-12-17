@@ -125,6 +125,9 @@ avtMTMDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //  Modifications:
 //    Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
 //    MTMD files can now be grouped into longer sequences.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 
@@ -163,6 +166,9 @@ avtMTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //  Modifications:
 //    Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
 //    MTMD files can now be grouped into longer sequences.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 

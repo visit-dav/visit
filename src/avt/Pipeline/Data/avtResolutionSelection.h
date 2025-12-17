@@ -57,6 +57,10 @@
 //
 //    Brad Whitlock, Fri Jun 16 14:45:15 PDT 2023
 //    Add overrides for InvalidatesZones, InvalidatesNodes.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added mMeshRefinementMethod, mFieldProjectionMethod,
+//    mRefinementBasisType, and getters and setters for them.
 //
 // ****************************************************************************
 

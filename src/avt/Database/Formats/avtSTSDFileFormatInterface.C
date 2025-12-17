@@ -173,6 +173,9 @@ avtSTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //
 //    Hank Childs, Mon Jan 26 09:13:53 PST 2009
 //    Add support for readers that do their own domain decomposition.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 
@@ -230,6 +233,9 @@ avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //
 //    Hank Childs, Mon Jan 26 09:13:53 PST 2009
 //    Add support for readers that do their own domain decomposition.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 

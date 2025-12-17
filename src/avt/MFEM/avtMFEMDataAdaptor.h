@@ -47,6 +47,15 @@ class vtkDataArray;
 //
 //    Cyrus Harrison Mon Sep 29 13:31:18 PDT 2025
 //    Added quadtrature function helpers.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added LOR enums meshRefinementMethod, fieldProjectionMethod, and
+//    refinementBasisType.
+//    Renamed LegacyRefineMeshToVTK to DiscontinuousRefineMeshToVTK.
+//    Renamed LegacyRefineGridFunctionToVTK to
+//    DiscontinuousRefineGridFunctionToVTK.
+//    Added LOR enum arguments to the refinement methods.
+//    Added printing methods for the enums for debugging.
 //
 // ****************************************************************************
 

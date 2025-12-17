@@ -97,6 +97,9 @@ class DatabasePluginManager;
 //
 //    Hank Childs, Tue Dec 20 15:55:05 PST 2011
 //    Add method CreateCacheNameIncludingSelections.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added overrides for GetVar and GetVectorVar to handle centering changes.
 //
 // ****************************************************************************
 

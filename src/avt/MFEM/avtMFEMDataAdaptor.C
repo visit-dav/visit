@@ -132,6 +132,9 @@ VTKCellTypeSize(int cell_type)
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to MFEM data adaptor.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Renamed LegacyRefineMeshToVTK to DiscontinuousRefineMeshToVTK.
 //
 // ****************************************************************************
 
@@ -352,10 +355,11 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
 //
 //  Arguments:
-//    mesh:        MFEM mesh to be refined
-//    domain:      domain id
-//    lod:         number of refinement steps
-//    ref_method:  chosen MFEM LOR method
+//    mesh:            MFEM mesh to be refined
+//    domain:          domain id
+//    lod:             number of refinement steps
+//    mesh_ref_method: chosen MFEM mesh refinement method
+//    ref_basis_type:  chosen MFEM refinement basis method
 //
 //  Programmer: Justin Privitera
 //  Creation:   Wed Apr 13 13:53:06 PDT 2022
@@ -379,6 +383,10 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 // 
 //    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
 //    Simplified test for periodic meshes and added comments.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Rewrote this method to handle new LOR options, new basis types, and
+//    conversions to low order.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -726,6 +734,10 @@ avtMFEMDataAdaptor::BoundaryMeshToVTK(mfem::Mesh *mesh)
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   Fri Sep 26 09:16:26 PDT 2025
+// 
+//  Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Use refinement basis type.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -798,6 +810,10 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to MFEM data adaptor.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Renamed LegacyRefineGridFunctionToVTK to
+//    DiscontinuousRefineGridFunctionToVTK.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -891,6 +907,9 @@ avtMFEMDataAdaptor::DiscontinuousRefineGridFunctionToVTK(mfem::Mesh *mesh,
 //  Modifications:
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to MFEM data adaptor.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Properly handle ncomps.
 // 
 // ****************************************************************************
 
@@ -1026,10 +1045,15 @@ ConvertGridFunctionToScalar(mfem::GridFunction *org_gf,
 //   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
 //
 //  Arguments:
-//   mesh:         MFEM mesh for the field
-//   gf:           MFEM Grid Function for the field
-//   lod:          number of refinement steps
-//   ref_method:   chosen MFEM LOR method
+//   mesh:              MFEM mesh for the field
+//   gf:                MFEM Grid Function for the field
+//   lod:               number of refinement steps
+//   mesh_ref_method:   chosen MFEM mesh refinement method
+//   field_proj_method: chosen MFEM grid function projetion method
+//   ref_basis_type:    chosen MFEM refinement basis method
+//   cent_change:       records if a centering change has taken place due to the
+//                      refinement options
+//   var_is_nodal:      a guess if the resulting variable will be nodal or not
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri May  6 15:23:56 PDT 2022
@@ -1054,6 +1078,10 @@ ConvertGridFunctionToScalar(mfem::GridFunction *org_gf,
 // 
 //    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
 //    Simplified test for periodic meshes and added comments.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Rewrote this method to handle new LOR options, new basis types, and
+//    conversions to low order.
 //
 // ****************************************************************************
 vtkDataArray *
