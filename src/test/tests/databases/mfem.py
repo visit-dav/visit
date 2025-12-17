@@ -372,14 +372,72 @@ def test_mfem_lor_controls_on_grid_function(tag_name, f, vector=False, varname="
     DeleteAllPlots()
     CloseDatabase(f)
 
+def test_mfem_lor_controls_on_special_grid_function(tag_name, dbfile):
+    base = os.path.splitext(os.path.basename(dbfile))[0]
+    DeleteAllPlots()
+    OpenDatabase(dbfile)
+    AddPlot("Vector","gf")
+    VectorAtts = VectorAttributes()
+    VectorAtts.origOnly = 0
+    VectorAtts.useStride = 1
+    VectorAtts.stride = 1
+    SetPlotOptions(VectorAtts)
+    AddPlot("Mesh","main")
+    MeshAtts = MeshAttributes()
+    MeshAtts.showGenerated = 1
+    SetPlotOptions(MeshAtts)
+    SetActivePlots(0)
+    ResetView()
+    AddOperator("MultiresControl", 1)
+    DrawPlots()
+    View2DAtts = View2DAttributes()
+    View2DAtts.windowCoords = (6, 8, -1.0, 0.5)
+    View2DAtts.viewportCoords = (0.2, 0.95, 0.15, 0.95)
+    SetView2D(View2DAtts)
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Zonal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+
+    Test(tag_name + "_" + base + "_zonal_continuous")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    
+    Test(tag_name + "_" + base + "_nodal_continuous")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    
+    Test(tag_name + "_" + base + "_nodal_discontinuous")
+
+    DeleteAllPlots()
+    CloseDatabase(dbfile)
+
+
 TestSection("LOR Mesh Controls")
 # these are hand-picked meshes that clearly demonstrate the refinement differences
 for dbfile in mfem_selected_meshes:
     test_mfem_lor_controls_on_mesh("LOR_mesh", dbfile)
+
 # ex01 results all have scalar grid functions
 TestSection("LOR Scalar Field Controls")
 for dbfile in ex01_results:
     test_mfem_lor_controls_on_grid_function("LOR_gf", dbfile)
+
+TestSection("LOR Vector Field Controls Close Up")
+for dbfile in glob.glob(data_path("mfem_test_data/ex02-beam-quad.mfem_root")):
+    test_mfem_lor_controls_on_special_grid_function("LOR_vector_gf_closeup", dbfile)
 
 TestSection("LOR Vector Field Controls")
 # ex02 results all have scalar FE vector grid functions
