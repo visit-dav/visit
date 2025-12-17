@@ -425,7 +425,7 @@ def test_mfem_lor_field(tag_name, name, number, pseudocolor_fields, vector_field
     OpenDatabase(dbfile)
     
     for field in pseudocolor_fields:
-        AddPlot("Pseudocolor", "mesh_main/" + field, 1, 1)
+        AddPlot("Pseudocolor", "mesh_main/" + field)
         set_test_view(tag_name)
         AddOperator("MultiresControl", 1)
         SetActivePlots(0)
@@ -531,7 +531,12 @@ def test_mfem_lor_field(tag_name, name, number, pseudocolor_fields, vector_field
         ResetView()
 
     for field in vector_fields:
-        AddPlot("Vector", "mesh_main/" + field, 1, 1)  
+        AddPlot("Vector", "mesh_main/" + field)
+        VectorAtts = VectorAttributes()
+        VectorAtts.origOnly = 0
+        VectorAtts.useStride = 1
+        VectorAtts.stride = 1
+        SetPlotOptions(VectorAtts)
         AddOperator("MultiresControl", 1)
         SetActivePlots(0)
         set_test_view(tag_name)

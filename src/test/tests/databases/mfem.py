@@ -261,6 +261,11 @@ def test_mfem_lor_controls_on_grid_function(tag_name, f, vector=False, varname="
     OpenDatabase(f)
     if vector is True:
         AddPlot("Vector",varname)
+        VectorAtts = VectorAttributes()
+        VectorAtts.origOnly = 0
+        VectorAtts.useStride = 1
+        VectorAtts.stride = 1
+        SetPlotOptions(VectorAtts)
         AddPlot("Pseudocolor",varname + "_magnitude")
     else:
         AddPlot("Pseudocolor",varname)
