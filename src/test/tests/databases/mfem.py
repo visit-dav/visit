@@ -49,8 +49,6 @@ mfem_selected_meshes = glob.glob(data_path("mfem_test_data/amr-hex.mfem_root")) 
                        glob.glob(data_path("mfem_test_data/square-disc-surf.mfem_root")) +\
                        glob.glob(data_path("mfem_test_data/star.mfem_root"))
 
-print(mfem_selected_meshes)
-
 def set_test_view():
     v = View3DAttributes()
     v.viewNormal = (-0.510614, 0.302695, 0.804767)
@@ -257,15 +255,15 @@ def test_mfem_lor_controls_on_mesh(tag_name, dbfile):
     ResetView()
     CloseDatabase(dbfile)
 
-def test_mfem_lor_controls_on_grid_function(tag_name, f, vector=False):
+def test_mfem_lor_controls_on_grid_function(tag_name, f, vector=False, varname="gf"):
     base = os.path.splitext(os.path.basename(f))[0]
     DeleteAllPlots()
     OpenDatabase(f)
     if vector is True:
-        AddPlot("Vector","gf")
-        AddPlot("Pseudocolor","gf_magnitude")
+        AddPlot("Vector",varname)
+        AddPlot("Pseudocolor",varname + "_magnitude")
     else:
-        AddPlot("Pseudocolor","gf")
+        AddPlot("Pseudocolor",varname)
     AddOperator("MultiresControl", 1)
     SetActivePlots(0)
     ResetView()
@@ -379,9 +377,11 @@ for dbfile in ex01_results:
     test_mfem_lor_controls_on_grid_function("LOR_gf", dbfile)
 
 TestSection("LOR Vector Field Controls")
+# ex02 results all have scalar FE vector grid functions
 for dbfile in ex02_results:
     test_mfem_lor_controls_on_grid_function("LOR_vector_gf", dbfile, vector=True)
+# hdiv hcurl examples all have vector FE vector grid functions
 for dbfile in mfem_hdiv_hcurl_files:
-    test_mfem_lor_controls_on_grid_function("LOR_vector_gf", dbfile, vector=True)
+    test_mfem_lor_controls_on_grid_function("LOR_vector_gf", dbfile, vector=True, varname="solution")
 
 Exit()
