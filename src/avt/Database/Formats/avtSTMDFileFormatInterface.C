@@ -228,7 +228,7 @@ avtSTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var, avtCe
     }
     else
     {
-        return GetVectorVar(ts, dom, var);
+        return timesteps[ts]->GetVectorVar(dom, var);
     }
 }
 
