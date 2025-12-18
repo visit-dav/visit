@@ -21,7 +21,7 @@
 #include <DebugStream.h>
 
 static void
-InterpVector(vtkGenericCell *cell, int numPts, vtkDataArray *vectors, double *weights, double *vel);
+InterpVector(vtkGenericCell *cell, vtkIdType numPts, vtkDataArray *vectors, double *weights, double *vel);
 
 
 vtkStandardNewMacro(vtkVisItInterpolatedVelocityField)
@@ -177,7 +177,7 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
         vtkGenericCell *GenCell = vtkGenericCell::New();
         ds->GetCell(cell, GenCell);
         
-        int numPts = GenCell->GetNumberOfPoints();
+        vtkIdType numPts = GenCell->GetNumberOfPoints();
 
         double closestPoint[3], dist2;
         int subId;
@@ -209,13 +209,13 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
 
 
 static void
-InterpVector(vtkGenericCell *cell, int numPts, vtkDataArray *vectors, double *weights, double *vel)
+InterpVector(vtkGenericCell *cell, vtkIdType numPts, vtkDataArray *vectors, double *weights, double *vel)
 {
     vel[0] = vel[1] = vel[2] = 0;
     double vec[3];
-    for (int j=0; j < numPts; j++)
+    for (vtkIdType j=0; j < numPts; j++)
     {
-        int id = cell->PointIds->GetId(j);
+        vtkIdType id = cell->PointIds->GetId(j);
         vectors->GetTuple(id, vec);
         for (int i=0; i < 3; i++)
             vel[i] += vec[i] * weights[j];

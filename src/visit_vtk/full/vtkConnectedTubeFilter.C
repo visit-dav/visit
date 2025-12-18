@@ -71,7 +71,7 @@ vtkConnectedTubeFilter::PointSequence::~PointSequence()
 //  Used vtkIdType where needed
 // ****************************************************************************
 void
-vtkConnectedTubeFilter::PointSequence::Init(int maxlen)
+vtkConnectedTubeFilter::PointSequence::Init(vtkIdType maxlen)
 {
     if (index)
         delete[] index;
@@ -185,7 +185,7 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
 
     // Initalize all points to be disconnected from each other
 
-    for (int i=0; i<len; i++)
+    for (vtkIdType i=0; i<len; i++)
     {
         numneighbors[i] = 0;
     }
@@ -407,16 +407,14 @@ vtkConnectedTubeFilter::~vtkConnectedTubeFilter()
 // ****************************************************************************
 bool vtkConnectedTubeFilter::BuildConnectivityArrays(vtkPolyData *input)
 {
-    vtkPoints    *inPts   = nullptr;
-    vtkCellArray *inLines = nullptr;
-    int numPts;
-    int numCells;
+    vtkPoints    *inPts   = input->GetPoints();
+    vtkCellArray *inLines = input->GetLines();
+    vtkIdType numPts      = inPts->GetNumberOfPoints();
+    vtkIdType numCells    = inLines->GetNumberOfCells();
     vtkDebugMacro(<<"Building tube connectivity arrays");
 
-    if (!(inPts=input->GetPoints())               ||
-        (numPts = inPts->GetNumberOfPoints()) < 1 ||
-        !(inLines = input->GetLines())            ||
-        (numCells = inLines->GetNumberOfCells()) < 1)
+    if ((inPts   == nullptr) || (numPts < 1) ||
+        (inLines == nullptr) || (numCells < 1)) 
     {
         vtkDebugMacro(<< ": No input data!\n");
         return false;
@@ -498,12 +496,12 @@ int vtkConnectedTubeFilter::RequestData(
     }
 
     // Get all the appropriate input arrays
-    vtkPoints    *inPts   = nullptr;
-    vtkCellArray *inLines = nullptr;
+    vtkPoints    *inPts   = input->GetPoints();
+    vtkCellArray *inLines = input->GetLines();
     vtkCellData  *inCD    = input->GetCellData();
     vtkPointData *inPD    = input->GetPointData();
-    int numPts;
-    int numCells;
+    vtkIdType numPts      = inPts->GetNumberOfPoints();
+    vtkIdType numCells    = inLines->GetNumberOfCells();
     vtkDebugMacro(<<"Creating tube");
 
     // We assume BuildConnectivityArrays was already called
@@ -514,18 +512,16 @@ int vtkConnectedTubeFilter::RequestData(
         return 1;
     }
 
-    if (!(inPts=input->GetPoints())               ||
-        (numPts = inPts->GetNumberOfPoints()) < 1 ||
-        !(inLines = input->GetLines())            ||
-        (numCells = inLines->GetNumberOfCells()) < 1)
+    if ((inPts    == nullptr) || (numPts < 1) ||
+        (inLines  == nullptr) || (numCells < 1))
     {
         vtkDebugMacro(<< ": No input data!\n");
         return 1;
     }
 
     // Set up the output arrays
-    int maxNewCells  = numCells * (NumberOfSides + 2);
-    int maxNewPoints = numCells * NumberOfSides * 2;
+    vtkIdType maxNewCells  = numCells * (NumberOfSides + 2);
+    vtkIdType maxNewPoints = numCells * NumberOfSides * 2;
     vtkPoints     *newPts     = vtkPoints::New(inPts->GetDataType());
     newPts->Allocate(maxNewPoints);
     vtkCellArray  *newCells   = vtkCellArray::New();
@@ -654,9 +650,9 @@ int vtkConnectedTubeFilter::RequestData(
                 double normal[3] = { v1[0]*cq + v2[0]*sq,
                                     v1[1]*cq + v2[1]*sq,
                                     v1[2]*cq + v2[2]*sq};
-                double x = pt[0] + Radius * normal[0];
-                double y = pt[1] + Radius * normal[1];
-                double z = pt[2] + Radius * normal[2];
+                double x = pt[0] + double(Radius) * normal[0];
+                double y = pt[1] + double(Radius) * normal[1];
+                double z = pt[2] + double(Radius) * normal[2];
                 vtkIdType id = newPts->InsertNextPoint(x,y,z);
                 if (CreateNormals)
                     newNormals->InsertNextTuple(normal);

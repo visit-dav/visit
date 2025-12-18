@@ -170,9 +170,9 @@ vtkOnionPeelFilter::Initialize(vtkDataSet *input)
 {
     int numIds = 0;
     if (this->SeedIdIsForCell)
-       numIds = input->GetNumberOfCells();
+       numIds = int(input->GetNumberOfCells());
     else 
-       numIds = input->GetNumberOfPoints();
+       numIds = int(input->GetNumberOfPoints());
 
     this->maxLayersReached = 0;
     this->maxLayerNum = VTK_INT_MAX;
@@ -287,7 +287,6 @@ vtkOnionPeelFilter::Initialize(vtkDataSet *input)
         }
         else 
         {
-            int i;
             vtkIdList *nodes = vtkIdList::New();
             this->FindNodesCorrespondingToOriginal(input, this->SeedId, nodes);
             if (nodes->GetNumberOfIds() == 0)
@@ -299,7 +298,7 @@ vtkOnionPeelFilter::Initialize(vtkDataSet *input)
                 return false; //unsuccessful initialization
             }
             vtkIdList *neighbors = vtkIdList::New();
-            for (i = 0; i < nodes->GetNumberOfIds(); i++)
+            for (vtkIdType i = 0; i < nodes->GetNumberOfIds(); i++)
             {
                 input->GetPointCells(nodes->GetId(i), neighbors);        
                 for (int nId = 0; nId < neighbors->GetNumberOfIds(); nId++)
@@ -319,10 +318,10 @@ vtkOnionPeelFilter::Initialize(vtkDataSet *input)
                 int nc = origCells->GetNumberOfComponents();
                 int comp = nc -1;
                 vtkIdList *origIds = vtkIdList::New();
-                for (i = 0; i < this->layerCellIds->GetNumberOfIds(); i++)
+                for (vtkIdType i = 0; i < this->layerCellIds->GetNumberOfIds(); i++)
                 {
-                        int cellId = this->layerCellIds->GetId(i);
-                        int index = cellId *nc + comp;;
+                        int cellId = int(this->layerCellIds->GetId(i));
+                        int index = cellId *nc + comp;
                         origIds->InsertNextId(oc[index]);
                 }
                 FindCellsCorrespondingToOriginal(input, origIds, this->layerCellIds, maxId);
@@ -379,8 +378,8 @@ void
 vtkOnionPeelFilter::Grow(vtkDataSet *input)
 {
     vtkIdList  *currentLayerList  = vtkIdList::New();
-    int         totalCurrentCells = this->layerCellIds->GetNumberOfIds();
-    int         totalLayersGrown  = this->cellOffsets->GetNumberOfIds() - 1;
+    int         totalCurrentCells = int(this->layerCellIds->GetNumberOfIds());
+    int         totalLayersGrown  = int(this->cellOffsets->GetNumberOfIds()) - 1;
     int         start = 0, i = 0, j = 0;
 
     vtkDebugMacro(<<"Grow::");
@@ -394,7 +393,7 @@ vtkOnionPeelFilter::Grow(vtkDataSet *input)
                             <<"been set to the maxLayerNum possible.");
 
             this->RequestedLayer  = this->maxLayerNum 
-                                  = this->cellOffsets->GetNumberOfIds()-1;
+                                  = int(this->cellOffsets->GetNumberOfIds())-1;
             break;
         }
 
@@ -403,7 +402,7 @@ vtkOnionPeelFilter::Grow(vtkDataSet *input)
         if (totalLayersGrown == 0) 
             start  = 0;
         else
-            start = this->cellOffsets->GetId(totalLayersGrown);
+            start = int(this->cellOffsets->GetId(totalLayersGrown));
 
         currentLayerList->SetNumberOfIds(this->layerCellIds->GetNumberOfIds() 
                                         - start);
@@ -443,7 +442,7 @@ vtkOnionPeelFilter::Grow(vtkDataSet *input)
                     start = totalCurrentCells;
                     for (i = start; i < this->layerCellIds->GetNumberOfIds(); i++)
                     {
-                        int cellId = this->layerCellIds->GetId(i);
+                        int cellId = int(this->layerCellIds->GetId(i));
                         int index = cellId *nc + comp;;
                         origIds->InsertNextId(oc[index]);
                     }
@@ -455,7 +454,7 @@ vtkOnionPeelFilter::Grow(vtkDataSet *input)
             }
             // set the offset for this new layer of cells
             this->cellOffsets->InsertNextId(totalCurrentCells);
-            totalCurrentCells = this->layerCellIds->GetNumberOfIds();
+            totalCurrentCells = int(this->layerCellIds->GetNumberOfIds());
         }
         else 
         {
@@ -604,7 +603,7 @@ vtkOnionPeelFilter::GenerateOutputGrid(vtkDataSet *input,
     vtkPointData        *outPD      = output->GetPointData();
     vtkCellData         *outCD      = output->GetCellData();
     vtkIdList           *cellPts    = vtkIdList::New();
-    int i, cellId, newCellId, totalCells;
+    vtkIdType totalCells;
 
     if (this->RequestedLayer < this->cellOffsets->GetNumberOfIds() -1)
     {
@@ -625,11 +624,11 @@ vtkOnionPeelFilter::GenerateOutputGrid(vtkDataSet *input,
     outCD->CopyAllocate(inCD);
 
     // grab only the cell data that corresponds to cells in our layers
-    for (i = 0; i < totalCells; i++) 
+    for (vtkIdType i = 0; i < totalCells; i++) 
     {
-        cellId = layerCellIds->GetId(i);
+        vtkIdType cellId = layerCellIds->GetId(i);
         input->GetCellPoints(cellId, cellPts);
-        newCellId = output->InsertNextCell(input->GetCellType(cellId), cellPts);
+        vtkIdType newCellId = output->InsertNextCell(input->GetCellType(cellId), cellPts);
         outCD->CopyData(inCD, cellId, newCellId);
     }
 
@@ -784,27 +783,22 @@ vtkOnionPeelFilter::FindCellNeighborsByFaceAdjacency(vtkDataSet *input,
     vtkIdList  *facePts   = NULL;
     vtkIdList  *edgePts   = NULL;
     vtkCell    *cell      = NULL;
-    int         faceId;
-    int         edgeId;
-    int         nId;
-    int         i;
-    int         cellId;
 
   
-    for (i = 0; i < prevLayerIds->GetNumberOfIds(); i++) 
+    for (vtkIdType i = 0; i < prevLayerIds->GetNumberOfIds(); i++) 
     {
-        cellId = prevLayerIds->GetId(i);
+        vtkIdType cellId = prevLayerIds->GetId(i);
         cell = input->GetCell(cellId);
 
         if (cell->GetCellDimension() > 2) 
         {
-            for (faceId = 0; faceId < cell->GetNumberOfFaces(); faceId++) 
+            for (int faceId = 0; faceId < cell->GetNumberOfFaces(); faceId++) 
             {
                 facePts = (cell->GetFace(faceId))->GetPointIds();
 
                 input->GetCellNeighbors(cellId, facePts, neighbors);
 
-                for (nId = 0; nId < neighbors->GetNumberOfIds(); nId++) 
+                for (vtkIdType nId = 0; nId < neighbors->GetNumberOfIds(); nId++) 
                 {
                     neighborCellIds->InsertUniqueId(neighbors->GetId(nId));
                 }
@@ -812,13 +806,13 @@ vtkOnionPeelFilter::FindCellNeighborsByFaceAdjacency(vtkDataSet *input,
         } 
         else 
         {
-            for (edgeId = 0; edgeId < cell->GetNumberOfEdges(); edgeId++) 
+            for (int edgeId = 0; edgeId < cell->GetNumberOfEdges(); edgeId++) 
             {
                 edgePts = (cell->GetEdge(edgeId))->GetPointIds();
 
                 input->GetCellNeighbors(cellId, edgePts, neighbors);
 
-                for (nId = 0; nId < neighbors->GetNumberOfIds(); nId++) 
+                for (vtkIdType nId = 0; nId < neighbors->GetNumberOfIds(); nId++) 
                 {
                     neighborCellIds->InsertUniqueId(neighbors->GetId(nId));
                 }
@@ -935,7 +929,7 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkDataSet *input,
     {
         unsigned int *oc = origCells->GetPointer(0);
         int nc = origCells->GetNumberOfComponents();
-        int n = origCells->GetNumberOfTuples() *nc;
+        int n = int(origCells->GetNumberOfTuples()) *nc;
         int comp = nc -1;
         maxId = -1;
         for (int i = comp; i < n; i+=nc )
@@ -986,7 +980,7 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkDataSet *input,
     {
         unsigned int *oc = origCells->GetPointer(0);
         int nc = origCells->GetNumberOfComponents();
-        int n = origCells->GetNumberOfTuples()*nc;
+        int n = int(origCells->GetNumberOfTuples())*nc;
         int comp = nc -1;
         maxId = -1;
         for (int i = comp; i < n; i+=nc)
@@ -1033,7 +1027,7 @@ vtkOnionPeelFilter::FindNodesCorrespondingToOriginal(vtkDataSet *input,
     {
         int *on = origNodes->GetPointer(0);
         int nc = origNodes->GetNumberOfComponents();
-        int n = origNodes->GetNumberOfTuples() *nc;
+        int n = int(origNodes->GetNumberOfTuples()) *nc;
         int comp = nc -1;
         for (int i = comp; i < n; i+=nc )
         {

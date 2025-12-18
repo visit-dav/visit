@@ -17,14 +17,12 @@
 #define OPENEXR_DLL
 #endif
 
-#pragma warning(push, 0)
 #include <ImfRgba.h>
 #include <ImfRgbaFile.h>
 #include <ImfOutputFile.h>
 #include <ImfInputFile.h>
 #include <ImfChannelList.h>
 #include <ImfFrameBuffer.h>
-#pragma warning(pop)
 
 #define DO_REFERENCE_COUNT
 
@@ -58,7 +56,7 @@ public:
     ~MakeHalf() {}
     half operator()(SrcPrecision value) const
     {
-        return half(value);
+        return half(float(value));
     }
 };
 
@@ -147,7 +145,7 @@ FlipFloatImage(const float *base, int width, int height)
     for(int j = 0; j < height; ++j)
     {
         const float *src = base + (height-1-j)*width; // flip
-        memcpy(dest, src, width * sizeof(float));
+        memcpy(dest, src, size_t(width) * sizeof(float));
         dest += width;
     }
     return image;
@@ -249,7 +247,7 @@ WriteOpenEXR(const char *filename, half *channels[4], const float *z,
             Imf::Slice(Imf::HALF,              // type
                        reinterpret_cast<char *>((channels[i])),   // base
                        sizeof(half) * 1,       // xStride
-                       sizeof(half) * width)); // yStride
+                       sizeof(half) * size_t(width))); // yStride
     }
     if(z != NULL)
     {
@@ -257,7 +255,7 @@ WriteOpenEXR(const char *filename, half *channels[4], const float *z,
             Imf::Slice(Imf::FLOAT,             // type
                        reinterpret_cast<char *>(const_cast<float*>(z)), // base
                        sizeof(float) * 1,      // xStride
-                       sizeof(float) * width));// yStride
+                       sizeof(float) * size_t(width)));// yStride
     }
     if(lum != NULL)
     {
@@ -265,7 +263,7 @@ WriteOpenEXR(const char *filename, half *channels[4], const float *z,
             Imf::Slice(Imf::HALF,              // type
                        reinterpret_cast<char *>(const_cast<half*>(lum)), // base
                        sizeof(half) * 1,       // xStride
-                       sizeof(half) * width)); // yStride
+                       sizeof(half) * size_t(width))); // yStride
     }
     if(value != NULL)
     {
@@ -273,7 +271,7 @@ WriteOpenEXR(const char *filename, half *channels[4], const float *z,
             Imf::Slice(Imf::FLOAT,             // type
                        reinterpret_cast<char *>(const_cast<float *>(value)), // base
                        sizeof(float) * 1,      // xStride
-                       sizeof(float) * width));// yStride
+                       sizeof(float) * size_t(width)));// yStride
     }
 
     file.setFrameBuffer(frameBuffer);

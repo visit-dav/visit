@@ -126,8 +126,8 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
     void                    NextCell();
     const vtkIdType        *GetCell();
     vtkCSGFixedLengthBitField GetTag();
-    int                     GetCellSize() const;
-    int                     GetCellVTKType() const;
+    vtkIdType               GetCellSize() const;
+    vtkIdType               GetCellVTKType() const;
     void                    SetId(int);
     void                    SetTagBit(int);
     void                    InvalidateCell();
@@ -147,11 +147,11 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
     std::vector<vtkCSGFixedLengthBitField>  *curTags;
 
     int                     ishape;
-    int                     shapeCnt[8];
+    vtkIdType               shapeCnt[8];
     ShapeList              *curShapes;
-    int                     curShapeCnt;
-    int                     curShapeSize;
-    int                     curShapeVTKType;
+    vtkIdType               curShapeCnt;
+    vtkIdType               curShapeSize;
+    unsigned char           curShapeVTKType;
     int                     curShape;
 };
 

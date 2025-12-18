@@ -40,9 +40,9 @@ public:
         REP_ID = 1,
     };
 
+    static vtkMergeTree *New();
     vtkTypeMacro(vtkMergeTree,vtkMutableDirectedGraph)
 
-    static vtkMergeTree *New();
 
     vtkGetMacro(Threshold,double);
     vtkSetMacro(Threshold,double);
@@ -58,19 +58,16 @@ public:
 
 
     // Construct a new node
-    virtual vtkTypeUInt32 AddNode(vtkIdType id);
+    virtual vtkIdType AddNode(vtkIdType id);
 
     // Return the mesh id corresponding to the given node index
-    vtkIdType GetId(vtkTypeUInt32 index)
-                {return GetVertexData()->GetArray(vtkMergeTree::MESH_ID)->GetTuple1(index);}
+    vtkIdType GetId(vtkIdType index);
 
     // Return the node id of the representative for the given node index
-    vtkTypeUInt32 GetRep(vtkTypeUInt32 index) 
-                {return GetVertexData()->GetArray(vtkMergeTree::REP_ID)->GetTuple1(index);}
+    vtkIdType GetRep(vtkIdType index);
 
     // Set the representative for the given node
-    void SetRep(vtkTypeUInt32 index, vtkTypeUInt32 rep)
-            {return GetVertexData()->GetArray(vtkMergeTree::REP_ID)->SetTuple1(index,rep);}
+    void SetRep(vtkIdType index, vtkIdType rep);
 
 protected:
 
@@ -112,14 +109,14 @@ public:
     static vtkSegmentedMergeTree *New();
 
     // Construct a new node
-    virtual vtkTypeUInt32 AddNode(vtkIdType id) override;
+    virtual vtkIdType AddNode(vtkIdType id) override;
 
     // Add a vertex to a branch
-    void AddVertexToBranch(vtkTypeUInt32 branch, vtkIdType id);
+    void AddVertexToBranch(size_t branch, vtkIdType id);
 
-    vtkIdType GetNumberOfBranches() const {return Branches.size();}
+    size_t GetNumberOfBranches() const {return Branches.size();}
 
-    const std::vector<vtkIdType>& GetBranch(vtkTypeUInt32 branch) const {return Branches[branch];}
+    const std::vector<vtkIdType>& GetBranch(size_t branch) const {return Branches[branch];}
 
 protected:
 
@@ -127,8 +124,8 @@ protected:
     // A collection of mesh indices for each branch
     std::vector<std::vector<vtkIdType> > Branches;
 
-             // Default constructor
-             vtkSegmentedMergeTree();
+    // Default constructor
+    vtkSegmentedMergeTree();
 
     // Destructor
     virtual ~vtkSegmentedMergeTree();

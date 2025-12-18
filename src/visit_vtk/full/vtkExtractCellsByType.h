@@ -79,11 +79,11 @@ public:
    * extracted. Methods for clearing the set of cells, adding all cells, and
    * determining if a cell is in the set are also provided.
    */
-  void AddCellType(unsigned int type);
+  void AddCellType(int type);
   void AddAllCellTypes();
-  void RemoveCellType(unsigned int type);
+  void RemoveCellType(int type);
   void RemoveAllCellTypes();
-  bool ExtractCellType(unsigned int type);
+  bool ExtractCellType(int type);
   //@}
 
 protected:

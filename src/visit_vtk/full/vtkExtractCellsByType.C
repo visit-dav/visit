@@ -40,7 +40,7 @@ vtkStandardNewMacro(vtkExtractCellsByType)
 // Special token marks any cell type
 #define VTK_ANY_CELL_TYPE 1000000
 
-struct vtkCellTypeSet : public std::set<unsigned int>
+struct vtkCellTypeSet : public std::set<int>
 {
 };
 
@@ -57,7 +57,7 @@ vtkExtractCellsByType::~vtkExtractCellsByType()
 }
 
 //----------------------------------------------------------------------------
-void vtkExtractCellsByType::AddCellType(unsigned int cellType)
+void vtkExtractCellsByType::AddCellType(int cellType)
 {
   auto prevSize = this->CellTypes->size();
   this->CellTypes->insert(cellType);
@@ -68,7 +68,7 @@ void vtkExtractCellsByType::AddCellType(unsigned int cellType)
 }
 
 //----------------------------------------------------------------------------
-void vtkExtractCellsByType::RemoveCellType(unsigned int cellType)
+void vtkExtractCellsByType::RemoveCellType(int cellType)
 {
   auto prevSize = this->CellTypes->size();
   this->CellTypes->erase(cellType);
@@ -110,7 +110,7 @@ void vtkExtractCellsByType::AddAllCellTypes()
 void vtkExtractCellsByType::AddAllCellTypes()
 {
   auto prevSize = this->CellTypes->size();
-  for(unsigned int i = 0; i < VTK_NUMBER_OF_CELL_TYPES; ++i)
+  for(int i = 0; i < VTK_NUMBER_OF_CELL_TYPES; ++i)
   {
       // not all 'i' in this loop are valid cell types, but
       // it shouldn't matter for this filter.
@@ -125,7 +125,7 @@ void vtkExtractCellsByType::AddAllCellTypes()
 
 //----------------------------------------------------------------------------
 #if USE_VTK_VERSION_OF_EXTRACTCELLTYPE
-bool vtkExtractCellsByType::ExtractCellType(unsigned int cellType)
+bool vtkExtractCellsByType::ExtractCellType(int cellType)
 {
   if ( this->CellTypes->find(cellType) != this->CellTypes->end() ||
        this->CellTypes->find(VTK_ANY_CELL_TYPE) != this->CellTypes->end() )
@@ -138,7 +138,7 @@ bool vtkExtractCellsByType::ExtractCellType(unsigned int cellType)
   }
 }
 #else
-bool vtkExtractCellsByType::ExtractCellType(unsigned int cellType)
+bool vtkExtractCellsByType::ExtractCellType(int cellType)
 {
   if ( this->CellTypes->find(cellType) != this->CellTypes->end())
   {

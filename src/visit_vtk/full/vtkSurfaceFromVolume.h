@@ -59,7 +59,7 @@ class TriangleList
  
     vtkIdType      GetTotalNumberOfTriangles(void) const;
     vtkIdType      GetNumberOfLists(void) const;
-    int            GetList(int, const vtkIdType *&) const;
+    vtkIdType      GetList(vtkIdType, const vtkIdType *&) const;
  
   protected:
     vtkIdType    **list;
@@ -71,8 +71,8 @@ class TriangleList
 
                       vtkSurfaceFromVolume(int ptSizeGuess)
                            : vtkDataSetFromVolume(ptSizeGuess), tris()
-                           { ; };
-    virtual          ~vtkSurfaceFromVolume() { ; };
+                           { ; }
+    virtual          ~vtkSurfaceFromVolume() { ; }
 
     void              ConstructPolyData(vtkPointData *, vtkCellData *,
                                         vtkPolyData *, vtkPoints *);
@@ -81,7 +81,7 @@ class TriangleList
                                         vtkDataArray *, vtkDataArray *, vtkDataArray *);
 
     void              AddTriangle(vtkIdType zone, vtkIdType v0, vtkIdType v1, vtkIdType v2)
-                            { tris.AddTriangle(zone, v0, v1, v2); };
+                            { tris.AddTriangle(zone, v0, v1, v2); }
 
   protected:
     TriangleList      tris;

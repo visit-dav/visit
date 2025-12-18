@@ -247,7 +247,7 @@ public:
 
     ~vtkDirectAccessor()                                      { }
 
-    int GetNumberOfTuples() const                             { return arr->GetNumberOfTuples(); }
+    vtkIdType GetNumberOfTuples() const                       { return arr->GetNumberOfTuples(); }
     int GetNumberOfComponents() const                         { return N; }
 
     void SetTuple1(T val)                                     { *ptr = val;                            }
@@ -307,7 +307,7 @@ public:
     }
     ~vtkGeneralAccessor()                    { }
     
-    int GetNumberOfTuples() const            { return arr->GetNumberOfTuples(); }
+    vtkIdType GetNumberOfTuples() const      { return arr->GetNumberOfTuples(); }
     int GetNumberOfComponents() const        { return arr->GetNumberOfComponents(); }
 
     void SetTuple1(double val)               { arr->SetTuple1(index, val);   }

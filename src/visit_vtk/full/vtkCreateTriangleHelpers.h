@@ -28,7 +28,7 @@ vtkStructuredCreateTriangles(vtkSurfaceFromVolume &sfv,
     const vtkIdType *CellList, vtkIdType CellListSize, vtkIdType nCells,
     const int pt_dims[3], const DistanceFunction &func)
 {
-    vtkIdType i, j, cell_dims[3];
+    vtkIdType cell_dims[3];
     cell_dims[0] = pt_dims[0]-1;
     cell_dims[1] = pt_dims[1]-1;
     cell_dims[2] = pt_dims[2]-1;
@@ -39,8 +39,8 @@ vtkStructuredCreateTriangles(vtkSurfaceFromVolume &sfv,
     int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
     int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
     int Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
-    int nToProcess = (CellList != NULL ? CellListSize : nCells);
-    for (i = 0 ; i < nToProcess ; i++)
+    vtkIdType nToProcess = (CellList != NULL ? CellListSize : nCells);
+    for (vtkIdType i = 0 ; i < nToProcess ; i++)
     {
         vtkIdType cellId = (CellList != NULL ? CellList[i] : i);
         vtkIdType cellI = cellId % cell_dims[0];
@@ -48,7 +48,7 @@ vtkStructuredCreateTriangles(vtkSurfaceFromVolume &sfv,
         vtkIdType cellK = (cellId/strideZ);
         int lookup_case = 0;
         T dist[8];
-        for (j = 7 ; j >= 0 ; j--)
+        for (vtkIdType j = 7 ; j >= 0 ; j--)
         {
             dist[j] = func(cellI, cellJ, cellK, X_val[j], Y_val[j], Z_val[j]);
             if (dist[j] >= 0)
@@ -61,7 +61,7 @@ vtkStructuredCreateTriangles(vtkSurfaceFromVolume &sfv,
         while (*triangulation_case != -1)
         {
             int tri[3];
-            for (j = 0 ; j < 3 ; j++)
+            for (vtkIdType j = 0 ; j < 3 ; j++)
             {
                 vtkIdType pt1 = hexVerticesFromEdges[triangulation_case[j]][0];
                 vtkIdType pt2 = hexVerticesFromEdges[triangulation_case[j]][1];

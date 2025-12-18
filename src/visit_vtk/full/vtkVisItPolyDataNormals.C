@@ -180,17 +180,15 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     // Allocate and copy the output points; there will be no extras.
     //
     vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
-    int nPoints = input->GetNumberOfPoints();
+    vtkIdType nPoints = input->GetNumberOfPoints();
     outPts->SetNumberOfPoints(nPoints);
     outPD->CopyAllocate(inPD,nPoints);
-    int ptIdx = 0;
-    for (int i = 0 ; i < nPoints ; i++)
+    for (vtkIdType i = 0 ; i < nPoints ; i++)
     {
         double pt[3];
         inPts->GetPoint(i, pt);
-        outPts->SetPoint(ptIdx, pt);
-        outPD->CopyData(inPD, i, ptIdx);
-        ptIdx++;
+        outPts->SetPoint(i, pt);
+        outPD->CopyData(inPD, i, i);
     }
     output->SetPoints(outPts);
     outPts->Delete();
@@ -229,10 +227,10 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
         vtkIdType nPts;
         const vtkIdType *cell = nullptr;
         iter->GetCurrentCell(nPts, cell);
-        vtkPolygon::ComputeNormal(inPts, nPts, cell, normal);
-        for (int j = 0 ; j < nPts ; j++)
+        vtkPolygon::ComputeNormal(inPts, int(nPts), cell, normal);
+        for (vtkIdType j = 0 ; j < nPts ; j++)
         {
-            int p = cell[j];
+            vtkIdType p = cell[j];
             dnormals[p*3+0] += normal[0];
             dnormals[p*3+1] += normal[1];
             dnormals[p*3+2] += normal[2];
@@ -242,7 +240,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     // Renormalize the normals; they've only been accumulated so far,
     // and store in the vtkFloatArray.
     float *newNormalPtr = newNormals->GetPointer(0);
-    for (int i = 0 ; i < nPoints ; i++)
+    for (vtkIdType i = 0 ; i < nPoints ; i++)
     {
         double nx = dnormals[i*3+0];
         double ny = dnormals[i*3+1];
@@ -464,14 +462,14 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
     // over, including any decomposed strips. Point data has not
     // yet been transfered.
     //
-    int nPoints       = input->GetNumberOfPoints();
+    int nPoints       = int(input->GetNumberOfPoints());
     int newPointIndex = nPoints;
 
     // Pass through things which will be unchanged
     output->GetFieldData()->ShallowCopy(input->GetFieldData());
 
     // Precalculate the cosine of the feature angle
-    float cosAngle = cos(FeatureAngle * 3.1415926536 / 180.);
+    float cosAngle = cosf(FeatureAngle * 3.1415926536f / 180.f);
 
     // This is the data structure we will rely on to hold
     // out intermediate normals calculations and to allocate
@@ -527,9 +525,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
                 normal[1] += (az * bx - ax * bz);
                 normal[2] += (ax * by - ay * bx);
             }
-            normal[0] /= nPts;
-            normal[1] /= nPts;
-            normal[2] /= nPts;
+            normal[0] /= double(nPts);
+            normal[1] /= double(nPts);
+            normal[2] /= double(nPts);
         }
 
         // Calculate the length, and throw out degenerate cases
@@ -570,8 +568,8 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
             {
                 // This is essentially initialization for the "normal" case
                 // without any splitting.  (The pun was unavoidable. Sorry.)
-                ne->oldId = p;
-                ne->newId = p;
+                ne->oldId = int(p);
+                ne->newId = int(p);
                 ne->n[0] = normal[0];
                 ne->n[1] = normal[1];
                 ne->n[2] = normal[2];
@@ -612,7 +610,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
                 ne = ne->next;
 
                 pts[j]   = newPointIndex;
-                ne->oldId = p;
+                ne->oldId = int(p);
                 ne->newId = newPointIndex;
                 ne->n[0]  = normal[0];
                 ne->n[1]  = normal[1];
@@ -651,17 +649,17 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
         {
             outPts->SetPoint(i, inPts->GetPoint(i));
             outPD->CopyData(inPD, i, i);
-            newNormalPtr[3*i+0] = 0;
-            newNormalPtr[3*i+1] = 0;
-            newNormalPtr[3*i+2] = 1;
+            newNormalPtr[3*i+0] = 0.f;
+            newNormalPtr[3*i+1] = 0.f;
+            newNormalPtr[3*i+2] = 1.f;
         }
         else
         {
             outPts->SetPoint(i, inPts->GetPoint(ne->oldId));
             outPD->CopyData(inPD, ne->oldId, i);
-            newNormalPtr[3*i+0] = ne->nn[0];
-            newNormalPtr[3*i+1] = ne->nn[1];
-            newNormalPtr[3*i+2] = ne->nn[2];
+            newNormalPtr[3*i+0] = float(ne->nn[0]);
+            newNormalPtr[3*i+1] = float(ne->nn[1]);
+            newNormalPtr[3*i+2] = float(ne->nn[2]);
         }
     }
 
@@ -678,9 +676,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
             NormalEntry *ne = &list[j];
             outPts->SetPoint(outIndex, inPts->GetPoint(ne->oldId));
             outPD->CopyData(inPD, ne->oldId, outIndex);
-            newNormalPtr[3*outIndex+0] = ne->nn[0];
-            newNormalPtr[3*outIndex+1] = ne->nn[1];
-            newNormalPtr[3*outIndex+2] = ne->nn[2];
+            newNormalPtr[3*outIndex+0] = float(ne->nn[0]);
+            newNormalPtr[3*outIndex+1] = float(ne->nn[1]);
+            newNormalPtr[3*outIndex+2] = float(ne->nn[2]);
             outIndex++;
         }
     }
@@ -737,7 +735,7 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     // If our input contained triangle strips, we likely
     // have a new cell count.
     //
-    int numOutCells = output->GetNumberOfCells();
+    vtkIdType numOutCells = output->GetNumberOfCells();
     vtkCellArray *outPolys = output->GetPolys();
 
     //
@@ -745,7 +743,7 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     // polys, and triangle strips (which have now been replaced with
     // triangles).
     //
-    int numPrimitivesWithoutNormals = 0;
+    vtkIdType numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals    += input->GetVerts()->GetNumberOfCells();
     numPrimitivesWithoutNormals    += input->GetLines()->GetNumberOfCells();
 
@@ -818,9 +816,9 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
                 normal[1] += (az * bx - ax * bz);
                 normal[2] += (ax * by - ay * bx);
             }
-            normal[0] /= nPts;
-            normal[1] /= nPts;
-            normal[2] /= nPts;
+            normal[0] /= double(nPts);
+            normal[1] /= double(nPts);
+            normal[2] /= double(nPts);
         }
 
         // Calculate the length, and throw out degenerate cases.
@@ -877,10 +875,10 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
     // Gather the data arrays we'll need for later.
     //
     vtkCellArray *inPolys  = input->GetPolys();
-    int nPolys             = inPolys->GetNumberOfCells();
+    vtkIdType nPolys       = inPolys->GetNumberOfCells();
 
     vtkCellArray *inStrips = input->GetStrips();
-    int nStrips            = inStrips->GetNumberOfCells();
+    vtkIdType nStrips      = inStrips->GetNumberOfCells();
 
     vtkCellData *outCD     = output->GetCellData();
     vtkCellData *inCD      = input->GetCellData();
@@ -890,10 +888,10 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
     // The cell arrays have a specific structure: vertices and lines come
     // first, then polygons, then triangle strips.
     //
-    int numPrimitivesWithoutNormals = 0;
+    vtkIdType numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals    += input->GetVerts()->GetNumberOfCells();
     numPrimitivesWithoutNormals    += input->GetLines()->GetNumberOfCells();
-    int nNonStripCells              = nPolys + numPrimitivesWithoutNormals;
+    vtkIdType nNonStripCells        = nPolys + numPrimitivesWithoutNormals;
 
     //
     // If we have triangle strips, we need to decompose them into
@@ -945,7 +943,7 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
              inCellIdx++)
         {
             stripIter->GetCurrentCell(nTriPts, triPts);
-            vtkTriangleStrip::DecomposeStrip(nTriPts, triPts, outPolys);
+            vtkTriangleStrip::DecomposeStrip(int(nTriPts), triPts, outPolys);
 
             for (vtkIdType i = 0; i < nTriPts - 2; ++i)
             {

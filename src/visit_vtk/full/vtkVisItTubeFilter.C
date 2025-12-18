@@ -136,7 +136,7 @@ int vtkVisItTubeFilter::RequestData(
     newNormals->SetNumberOfComponents(3);
     newNormals->Allocate(3*numNewPts);
     newStrips = vtkCellArray::New();
-    newStrips->Allocate(newStrips->EstimateSize(1,numNewPts));
+    newStrips->AllocateEstimate(1,numNewPts);
     vtkCellArray *singlePolyline = vtkCellArray::New();
 
     // Point data: copy scalars, vectors, tcoords. Normals may be computed here.
@@ -221,7 +221,7 @@ int vtkVisItTubeFilter::RequestData(
     {
         inCellId = iter->GetCurrentCellId();
         iter->GetCurrentCell(npts, pts);
-        this->UpdateProgress(static_cast<double>(inCellId)/numLines);
+        this->UpdateProgress(double(inCellId)/double(numLines));
         abort = this->GetAbortExecute();
 
         if (npts < 2)
@@ -543,10 +543,10 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
             ptId++;
         }
         //the end cap
-        int endOffset = offset + (npts-1)*this->NumberOfSides;
+        vtkIdType endOffset = offset + (npts-1)*vtkIdType(this->NumberOfSides);
         if ( ! this->SidesShareVertices )
         {
-            endOffset = offset + 2*(npts-1)*this->NumberOfSides;
+            endOffset = offset + 2*(npts-1)*vtkIdType(this->NumberOfSides);
         }
         for (k=0; k < numCapSides; k+=capIncr)
         {
@@ -573,8 +573,8 @@ void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts,
                                         vtkCellArray *newStrips)
 {
     vtkIdType i, outCellId;
-    int k;
-    int i1, i2, i3;
+    vtkIdType k;
+    vtkIdType i1, i2, i3;
 
     if (this->SidesShareVertices)
     {
@@ -583,7 +583,7 @@ void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts,
         {
             i1 = k % this->NumberOfSides;
             i2 = (k+1) % this->NumberOfSides;
-            outCellId = newStrips->InsertNextCell(npts*2);
+            outCellId = newStrips->InsertNextCell(int(npts)*2);
             outCD->CopyData(cd,inCellId,outCellId);
             for (i=0; i < npts; i++)
             {

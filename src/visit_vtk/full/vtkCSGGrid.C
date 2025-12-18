@@ -390,14 +390,31 @@ vtkCSGGrid::vtkCSGGrid()
   this->Universe->SetBounds(-FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX);
   funcMap[Universe] = -1;
 
-  gridBoundaries = 0;
-  leftIds = 0;
-  rightIds = 0;
-  regTypeFlags = 0;
-  gridZones = 0;
+  multipassProcessedGrid = nullptr;
+  multipassTags          = nullptr;
 
-  multipassProcessedGrid = NULL;
-  multipassTags = NULL;
+  numBoundaries  = 0;
+  gridBoundaries = nullptr;
+
+  numRegions   = 0;
+  leftIds      = nullptr;
+  rightIds     = nullptr;
+  regTypeFlags = nullptr;
+
+  numZones  = 0;
+  gridZones = nullptr;
+  zoneMap   = nullptr;
+
+  numRegions2   = 0;
+  leftIds2      = nullptr;
+  rightIds2     = nullptr;
+  regTypeFlags2 = nullptr;
+  zoneMap2      = nullptr;
+  regionBounds2 = nullptr;
+
+  tmpPoint[0] = 0.;
+  tmpPoint[1] = 0.;
+  tmpPoint[2] = 0.;
 }
 
 //----------------------------------------------------------------------------
@@ -430,19 +447,19 @@ vtkCSGGrid::Initialize()
   if ( this->Boundaries ) 
     {
     this->Boundaries->UnRegister(this);
-    this->Boundaries = NULL;
+    this->Boundaries = nullptr;
     }
 
   if ( this->Regions ) 
     {
     this->Regions->UnRegister(this);
-    this->Regions = NULL;
+    this->Regions = nullptr;
     }
 
   if ( this->CellRegionIds ) 
     {
     this->CellRegionIds->UnRegister(this);
-    this->CellRegionIds = NULL;
+    this->CellRegionIds = nullptr;
     }
 }
 
@@ -500,7 +517,7 @@ vtkCell *
 vtkCSGGrid::GetCell(vtkIdType cellId)
 {
 //#warning GetCell NOT IMPLEMENTED
-  return NULL;
+  return nullptr;
 }
 
 //----------------------------------------------------------------------------
@@ -529,6 +546,7 @@ vtkCSGGrid::GetMaxCellSize()
 double *
 vtkCSGGrid::GetPoint(vtkIdType ptId)
 {
+#ifdef GET_BOUNDARY_DEFINED
   int dummy, n;
   double *p = 0;
   this->GetBoundary(ptId, &dummy, &n, &p);
@@ -543,6 +561,9 @@ vtkCSGGrid::GetPoint(vtkIdType ptId)
       tmpFloats[i] = p[i];
   delete [] p;
   return tmpFloats;
+#else
+  return tmpPoint;
+#endif
 }
 
 //----------------------------------------------------------------------------
@@ -581,7 +602,7 @@ vtkCSGGrid::FindCell(double x[3], vtkCell *vtkNotUsed(cell),
                                        double *weights)
 {
   return
-    this->FindCell( x, (vtkCell *)NULL, 0, 0.0, subId, pcoords, weights );
+    this->FindCell( x, nullptr, 0, 0.0, subId, pcoords, weights );
 }
 
 //----------------------------------------------------------------------------
@@ -606,7 +627,7 @@ vtkCSGGrid::FindAndGetCell(double x[3],
                                             double pcoords[3], double *weights)
 {
 //#warning FindAndGetCell NOT IMPLEMENTED
-  return NULL;
+  return nullptr;
 }
 
 //----------------------------------------------------------------------------
@@ -662,7 +683,7 @@ static unsigned long GetActualMemorySizeOfImplicitFunc(vtkImplicitFunction *func
             {
                 size += planes->GetPoints()->GetActualMemorySize();
                 size += planes->GetNormals()->GetActualMemorySize();
-                size += planes->GetNumberOfPlanes() * sizeof(vtkPlane);
+                size += size_t(planes->GetNumberOfPlanes()) * sizeof(vtkPlane);
             }
             break;
         }
@@ -738,7 +759,7 @@ vtkCSGGrid::DeepCopy(vtkDataObject *srcObject)
 {
   vtkCSGGrid *grid = vtkCSGGrid::SafeDownCast(srcObject);
 
-  if ( grid != NULL )
+  if ( grid != nullptr )
     {
       int i;
       this->numBoundaries = grid->numBoundaries;
@@ -1596,7 +1617,7 @@ vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
 
 //----------------------------------------------------------------------------
 vtkImplicitFunction *
-vtkCSGGrid::GetBoundaryFunc(vtkIdType id) const
+vtkCSGGrid::GetBoundaryFunc(int id) const
 {
     if (id >= 0 && id < Boundaries->GetNumberOfItems())
         return vtkImplicitFunction::SafeDownCast(Boundaries->GetItemAsObject(id));
@@ -1606,7 +1627,7 @@ vtkCSGGrid::GetBoundaryFunc(vtkIdType id) const
 
 //----------------------------------------------------------------------------
 vtkImplicitFunction *
-vtkCSGGrid::GetRegionFunc(vtkIdType id) const
+vtkCSGGrid::GetRegionFunc(int id) const
 {
     if (id >= 0 && id < Regions->GetNumberOfItems())
         return vtkImplicitFunction::SafeDownCast(Regions->GetItemAsObject(id));
@@ -1624,7 +1645,7 @@ vtkCSGGrid::GetBoundary(vtkIdType id, int *type, int *numcoeffs,
 
 //----------------------------------------------------------------------------
 vtkIdType
-vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
+vtkCSGGrid::AddRegion(int bndId, RegionOp op)
 {
     vtkImplicitFunction *newRegion = 0;
     vtkImplicitFunction *bnd = GetBoundaryFunc(bndId);
@@ -1772,7 +1793,7 @@ vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
 //
 //----------------------------------------------------------------------------
 vtkIdType
-vtkCSGGrid::AddRegion(vtkIdType regIdLeft, vtkIdType regIdRight,
+vtkCSGGrid::AddRegion(int regIdLeft, int regIdRight,
                                 RegionOp op)
 {
     vtkImplicitBoolean *boolReg = vtkImplicitBoolean::New();
@@ -1805,7 +1826,7 @@ vtkCSGGrid::AddRegion(vtkIdType regIdLeft, vtkIdType regIdRight,
 //
 //----------------------------------------------------------------------------
 vtkIdType
-vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
+vtkCSGGrid::AddRegion(int regId, const double *coeffs)
 {
     vtkImplicitFunction *newRegion = 0;
     vtkImplicitFunction *oldReg = GetRegionFunc(regId);
@@ -2105,14 +2126,14 @@ vtkCSGGrid::DiscretizeSpace(
         coords[1]->SetNumberOfTuples(nY);
         coords[2]->SetNumberOfTuples(nZ);
         for (int j = 0 ; j < nX ; j++)
-            coords[0]->SetComponent(j, 0, minX + (maxX-minX)*static_cast<float>(j)/static_cast<float>(nX-1));
+            coords[0]->SetComponent(j, 0, minX + (maxX-minX)*(j)/(nX-1));
         for (int j = 0 ; j < nY ; j++)
-            coords[1]->SetComponent(j, 0, minY + (maxY-minY)*static_cast<float>(j)/static_cast<float>(nY-1));
+            coords[1]->SetComponent(j, 0, minY + (maxY-minY)*(j)/(nY-1));
         if (nZ > 1)
         {
             // 3D case
             for (int j = 0 ; j < nZ ; j++)
-                coords[2]->SetComponent(j, 0, minZ + (maxZ-minZ)*static_cast<float>(j)/static_cast<float>(nZ-1));
+                coords[2]->SetComponent(j, 0, minZ + (maxZ-minZ)*(j)/(nZ-1));
         }
         else
         {
@@ -2449,13 +2470,13 @@ vtkCSGGrid::CreateRectilinearGrid(const double bnds[6],
     coords[2]->SetNumberOfTuples(subRegion[5]-subRegion[4]+1);
     for (int i = subRegion[0] ; i < subRegion[1]+1 ; i++)
         coords[0]->SetComponent(i-subRegion[0], 0, bnds[0] +
-            (bnds[1]-bnds[0])*static_cast<float>(i)/ static_cast<float>(dims[0]));
+            (bnds[1]-bnds[0])*(i)/ (dims[0]));
     for (int i = subRegion[2] ; i < subRegion[3]+1 ; i++)
         coords[1]->SetComponent(i-subRegion[2], 0, bnds[2] +
-            (bnds[3]-bnds[2])*static_cast<float>(i)/ static_cast<float>(dims[1]));
+            (bnds[3]-bnds[2])*(i)/ (dims[1]));
     for (int i = subRegion[4] ; i < subRegion[5]+1 ; i++)
         coords[2]->SetComponent(i-subRegion[4], 0, bnds[4] +
-            (bnds[5]-bnds[4])*static_cast<float>(i)/ static_cast<float>(dims[2]));
+            (bnds[5]-bnds[4])*(i)/ (dims[2]));
     int dims2[3] = {subRegion[1]-subRegion[0]+1,
                     subRegion[3]-subRegion[2]+1,
                     subRegion[5]-subRegion[4]+1};
@@ -2751,7 +2772,7 @@ vtkCSGGrid::ExtractRegionBounds(int specificZone, int &nRegionBounds,
         regionBounds2[i*11] *= bounds[i];
     }
 
-    qsort(regionBounds2, nRegionBounds, sizeof(double[11]),
+    qsort(regionBounds2, size_t(nRegionBounds), sizeof(double[11]),
           CompareRegionBounds);
 
     debug5 << "Sorted bounds: nBounds=" << nRegionBounds << endl;
@@ -2898,7 +2919,7 @@ vtkCSGGrid::ExtractRegionBounds(int specificZone, int &nRegionBounds,
 //   referenced the same boundary multiple times.
 //
 //   Eric Brugger, Fri Nov 21 14:55:51 PST 2014
-//   I added a test to return NULL if the the number of boundaries in a
+//   I added a test to return nullptr if the the number of boundaries in a
 //   single region exceeded the internal limit.
 //
 //   Eric Brugger, Mon Nov 24 15:48:38 PST 2014
@@ -2930,7 +2951,7 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
         // Do all the grid boundaries at once. If we have the already
         // processed the boundaries just skip this step.
         //
-        if (multipassProcessedGrid == NULL)
+        if (multipassProcessedGrid == nullptr)
         {
             vtkRectilinearGrid *rgrid =
                 CreateRectilinearGrid(bnds, dims, subRegion);
@@ -2954,22 +2975,22 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
         // Do the grid boundaries for just the specified region. If we have
         // a grid it is from another region so we need to free it.
         //
-        if (multipassProcessedGrid != NULL)
+        if (multipassProcessedGrid != nullptr)
         {
             multipassProcessedGrid->Delete();
-            multipassProcessedGrid = NULL;
+            multipassProcessedGrid = nullptr;
         }
-        if (multipassTags != NULL)
+        if (multipassTags != nullptr)
         {
             delete multipassTags;
-            multipassTags = NULL;
+            multipassTags = nullptr;
         }
 
         //
         // Determine the boundaries used by this region.
         //
         int nRegionBounds = 0;
-        double *regionBounds = NULL;
+        double *regionBounds = nullptr;
         if (ExtractRegionBounds(specificZone, nRegionBounds, regionBounds)
             == false)
         {
@@ -2977,7 +2998,7 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
             delete [] leftIds2;
             delete [] rightIds2;
             delete [] regTypeFlags2;
-            return NULL;
+            return nullptr;
         }
 
         //
@@ -2993,13 +3014,13 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
     }
 
     vtkUnstructuredGrid *rv = multipassProcessedGrid;
-    if (rv == NULL)
+    if (rv == nullptr)
     {
         delete [] zoneMap;
         if (leftIds != leftIds2) delete [] leftIds2;
         if (rightIds != rightIds2) delete [] rightIds2;
         if (regTypeFlags != regTypeFlags2) delete [] regTypeFlags2;
-        return NULL;
+        return nullptr;
     }
 
     // Evaluate the cell tags against this region
@@ -3011,7 +3032,7 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
         zone = gridZones[specificZone];
     for (int i=0; i<rv->GetNumberOfCells(); i++)
     {
-        bool InOut = EvaluateRegionBits(zone, multipassTags->operator[](i));
+        bool InOut = EvaluateRegionBits(zone, multipassTags->operator[](size_t(i)));
         in->SetTuple1(i, InOut ? 1 : 0);
     }
     rv->GetCellData()->SetScalars(in);
@@ -3058,19 +3079,19 @@ vtkCSGGrid::AddCutZones(vtkUnstructuredGrid *cutBox,
             double *pt = cellPoints->GetPoint(j);
             double x = pt[0], y = pt[1], z = pt[2];
 
-            int Ix = static_cast<int>(x / epsTol * 10000.0 + 0.5);
-            float fx = Ix * epsTol / 10000.0;
-            int Iy = static_cast<int>(y / epsTol * 10000.0 + 0.5);
-            float fy = Iy * epsTol / 10000.0;
-            int Iz = static_cast<int>(z / epsTol * 10000.0 + 0.5);
-            float fz = Iz * epsTol / 10000.0;
+            int Ix = int(x / epsTol * 10000.0 + 0.5);
+            int Iy = int(y / epsTol * 10000.0 + 0.5);
+            int Iz = int(z / epsTol * 10000.0 + 0.5);
+            float fx = float(Ix) * float(epsTol) / 10000.0f;
+            float fy = float(Iy) * float(epsTol) / 10000.0f;
+            float fz = float(Iz) * float(epsTol) / 10000.0f;
 
             coord_t coord(fx,fy,fz);
             int mapId = nodemap[coord];
             if (mapId == 0)
             {
                 points->InsertNextPoint(fx,fy,fz);
-                nodemap[coord] = points->GetNumberOfPoints()-1;
+                nodemap[coord] = int(points->GetNumberOfPoints())-1;
                 pointIds[j] = points->GetNumberOfPoints()-1;
             }
             else
@@ -3114,19 +3135,19 @@ vtkCSGGrid::MakeMeshZone(const Box *theBox,
         else
             z = theBox->z1; 
 
-        int Ix = static_cast<int>(x / epsTol * 10000.0 + 0.5);
-        float fx = Ix * epsTol / 10000.0;
-        int Iy = static_cast<int>(y / epsTol * 10000.0 + 0.5);
-        float fy = Iy * epsTol / 10000.0;
-        int Iz = static_cast<int>(z / epsTol * 10000.0 + 0.5);
-        float fz = Iz * epsTol / 10000.0;
+        int Ix = int(x / epsTol * 10000.0 + 0.5);
+        int Iy = int(y / epsTol * 10000.0 + 0.5);
+        int Iz = int(z / epsTol * 10000.0 + 0.5);
+        float fx = float(Ix) * float(epsTol) / 10000.0f;
+        float fy = float(Iy) * float(epsTol) / 10000.0f;
+        float fz = float(Iz) * float(epsTol) / 10000.0f;
 
         coord_t coord(fx,fy,fz);
         int mapId = nodemap[coord];
         if (mapId == 0)
         {
             points->InsertNextPoint(fx,fy,fz);
-            nodemap[coord] = points->GetNumberOfPoints()-1;
+            nodemap[coord] = int(points->GetNumberOfPoints())-1;
             pointIds[i] = points->GetNumberOfPoints()-1;
         }
         else
@@ -3241,8 +3262,8 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
         // to approximate method if we expect to use too much memory here
         //
         float finalPieceCountEstimate =
-            static_cast<float>(boundaryToStateMap.size()) / bndNum * (piecesCurrent->size());
-        if (finalPieceCountEstimate > 50000.0)
+            float(boundaryToStateMap.size()) / float(bndNum) * float(piecesCurrent->size());
+        if (finalPieceCountEstimate > 50000.0f)
         {
             // free up all the memory we've used so far
             for (size_t i = 0; i < piecesCurrent->size(); i++)
@@ -3411,7 +3432,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox2(const Box *theBox,
             boxCutter->Update();
 
             vtkUnstructuredGrid *cutBox = boxCutter->GetOutput();
-            cutBox->Register(NULL);
+            cutBox->Register(nullptr);
 
             quadric->Delete();
             boxCutter->Delete();

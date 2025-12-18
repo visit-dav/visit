@@ -765,7 +765,7 @@ ConstructDataSetHelper(vtkPointData *inPD, vtkCellData *inCD, vtkUnstructuredGri
     for (int i = 0 ; i < nshapes ; i++)
     {
         vtkIdType nlists = shapes[i]->GetNumberOfLists();
-        int npts_per_shape = shapes[i]->GetShapeSize();
+        vtkIdType npts_per_shape = shapes[i]->GetShapeSize();
         for (vtkIdType j = 0 ; j < nlists ; j++)
         {
             const vtkIdType *list;
@@ -775,7 +775,7 @@ ConstructDataSetHelper(vtkPointData *inPD, vtkCellData *inCD, vtkUnstructuredGri
                 list++; // skip the cell id entry
                 for (vtkIdType l = 0 ; l < npts_per_shape ; l++)
                 {
-                    int pt = *list;
+                    vtkIdType pt = *list;
                     list++;
                     if (pt >= 0 && pt < numPrevPts)
                         if (ptLookup[pt] == -1)
@@ -870,7 +870,7 @@ ConstructDataSetHelper(vtkPointData *inPD, vtkCellData *inCD, vtkUnstructuredGri
             double pts[8][3];
             double weights[8];
             double pt[3] = {0., 0., 0.};
-            double weight_factor = 1. / ce.nPts;
+            double weight_factor = 1. / double(ce.nPts);
             for (int k = 0 ; k < ce.nPts ; k++)
             {
                 weights[k] = 1.0 * weight_factor;
@@ -954,11 +954,11 @@ ConstructDataSetHelper(vtkPointData *inPD, vtkCellData *inCD, vtkUnstructuredGri
     {
         const vtkIdType *list;
         nlists = shapes[i]->GetNumberOfLists();
-        int shapesize = shapes[i]->GetShapeSize();
-        int vtk_type = shapes[i]->GetVTKType();
+        vtkIdType shapesize = shapes[i]->GetShapeSize();
+        unsigned char vtk_type = shapes[i]->GetVTKType();
         for (vtkIdType j = 0 ; j < nlists ; j++)
         {
-            int listSize = shapes[i]->GetList(j, list);
+            vtkIdType listSize = shapes[i]->GetList(j, list);
             for (vtkIdType k = 0 ; k < listSize ; k++)
             {
                 outCD->CopyData(inCD, list[0], cellId);

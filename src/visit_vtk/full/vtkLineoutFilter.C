@@ -149,7 +149,7 @@ vtkLineoutFilter::RequestData(
 
   vtkPoints *inPts = probeOut->GetPoints();
 
-  vtkIdType i, index, numPoints = validPoints->GetNumberOfTuples();
+  vtkIdType index, numPoints = validPoints->GetNumberOfTuples();
 
   vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
   outPolys->SetPoints(outPts);
@@ -185,7 +185,7 @@ vtkLineoutFilter::RequestData(
   //
   double currentPoint[3];
   vtkIdTypeArray *nonGhostValidPoints =  vtkIdTypeArray::New();
-  for (i = 0; i < numPoints; i++)
+  for (vtkIdType i = 0; i < numPoints; i++)
     {
     index = validPoints->GetValue(i);
     bool ghost = (ghosts && ghosts[index] > updateLevel);
@@ -203,8 +203,8 @@ vtkLineoutFilter::RequestData(
   //
   //  Create vertex cells.
   //
-  verts->InsertNextCell(numPoints);
-  for (i = 0; i < numPoints; i++)
+  verts->InsertNextCell(int(numPoints));
+  for (vtkIdType i = 0; i < numPoints; i++)
     {
     verts->InsertCellPoint(i);
     }
@@ -217,7 +217,7 @@ vtkLineoutFilter::RequestData(
   vtkPointData *inPD = this->Probe->GetOutput()->GetPointData();
   vtkPointData *outPD = outPolys->GetPointData();
   outPD->CopyAllocate(inPD, numPoints);
-  for (i = 0; i < numPoints; i++)
+  for (vtkIdType i = 0; i < numPoints; i++)
     {
     outPD->CopyData(inPD, nonGhostValidPoints->GetValue(i), i);
     }

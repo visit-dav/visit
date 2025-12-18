@@ -15,7 +15,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkDataObject.h>
 #include <vtkIdTypeArray.h>
-#include <vtkTypeUInt32Array.h>
+#include <vtkIdTypeArray.h>
 
 // ****************************************************************************
 // ****************************************************************************
@@ -42,7 +42,7 @@ vtkMergeTree::vtkMergeTree() : vtkMutableDirectedGraph()
     GetVertexData()->AddArray(vtkIdTypeArray::New());
 
     // Create an array for representatives
-    GetVertexData()->AddArray(vtkTypeUInt32Array::New());
+    GetVertexData()->AddArray(vtkIdTypeArray::New());
 }
 
 // ****************************************************************************
@@ -100,7 +100,7 @@ vtkMergeTree::Initialize()
     GetVertexData()->AddArray(vtkIdTypeArray::New());
 
     // Create an array for representatives
-    GetVertexData()->AddArray(vtkTypeUInt32Array::New());
+    GetVertexData()->AddArray(vtkIdTypeArray::New());
 }
 
 
@@ -111,16 +111,35 @@ vtkMergeTree::Initialize()
 //  Creation:   August 8, 2016
 //
 // ****************************************************************************
-vtkTypeUInt32
+vtkIdType
 vtkMergeTree::AddNode(vtkIdType id)
 {
-    vtkTypeUInt32 index = AddVertex();
+    vtkIdType index = AddVertex();
 
-    GetVertexData()->GetArray(vtkMergeTree::MESH_ID)->InsertTuple1(index,id);
-    GetVertexData()->GetArray(vtkMergeTree::REP_ID)->InsertTuple1(index,index);
+    static_cast<vtkIdTypeArray*>(GetVertexData()->GetArray(vtkMergeTree::MESH_ID))->InsertValue(index,id);
+    static_cast<vtkIdTypeArray*>(GetVertexData()->GetArray(vtkMergeTree::REP_ID))->InsertValue(index,index);
 
     return index;
 }
+
+vtkIdType
+vtkMergeTree::GetId(vtkIdType index)
+{
+    return static_cast<vtkIdTypeArray *>(GetVertexData()->GetArray(vtkMergeTree::MESH_ID))->GetValue(index);
+}
+
+vtkIdType
+vtkMergeTree::GetRep(vtkIdType index)
+{
+    return static_cast<vtkIdTypeArray *>(GetVertexData()->GetArray(vtkMergeTree::REP_ID))->GetValue(index);
+}
+
+void
+vtkMergeTree::SetRep(vtkIdType index, vtkIdType rep)
+{
+    static_cast<vtkIdTypeArray *>(GetVertexData()->GetArray(vtkMergeTree::REP_ID))->SetValue(index, rep);
+}
+
 
 // ****************************************************************************
 // ****************************************************************************
@@ -194,10 +213,10 @@ vtkSegmentedMergeTree::~vtkSegmentedMergeTree()
 //   Fixed use of wrong type in push_back (#2882)
 //
 // ****************************************************************************
-vtkTypeUInt32
+vtkIdType
 vtkSegmentedMergeTree::AddNode(vtkIdType id)
 {
-    vtkTypeUInt32 index = vtkMergeTree::AddNode(id);
+    vtkIdType index = vtkMergeTree::AddNode(id);
 
     Branches.push_back(std::vector<vtkIdType>());
 
@@ -214,7 +233,7 @@ vtkSegmentedMergeTree::AddNode(vtkIdType id)
 //
 // ****************************************************************************
 void
-vtkSegmentedMergeTree::AddVertexToBranch(vtkTypeUInt32 branch, vtkIdType id)
+vtkSegmentedMergeTree::AddVertexToBranch(size_t branch, vtkIdType id)
 {
     Branches[branch].push_back(id);
 }

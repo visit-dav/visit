@@ -146,8 +146,6 @@ vtkDataSetRemoveGhostCells::RequestData(
 void
 vtkDataSetRemoveGhostCells::GenericExecute()
 {
-    int  i;
-
     vtkDataSet *ds = input;
     vtkDataArray *arr = ds->GetCellData()->GetArray("avtGhostZones");
     if (arr == NULL)
@@ -156,8 +154,8 @@ vtkDataSetRemoveGhostCells::GenericExecute()
         return;
     }
     int nOut = 0;
-    int nCells = ds->GetNumberOfCells();
-    for (i = 0 ; i < nCells ; i++)
+    vtkIdType nCells = ds->GetNumberOfCells();
+    for (vtkIdType i = 0 ; i < nCells ; i++)
         if (arr->GetTuple1(i) == 0)
             nOut++;
 
@@ -180,7 +178,7 @@ vtkDataSetRemoveGhostCells::GenericExecute()
     vtkCellData *outCD = ugrid->GetCellData();
     outCD->CopyAllocate(inCD, nOut);
     vtkIdList *ptList = vtkIdList::New();
-    for (i = 0 ; i < nCells ; i++)
+    for (vtkIdType i = 0 ; i < nCells ; i++)
     {
         if (arr->GetTuple1(i) != 0)
             continue;
@@ -232,8 +230,6 @@ vtkDataSetRemoveGhostCells::GenericExecute()
 void
 vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 {
-  vtkIdType i;
-
   vtkDebugMacro(<< "Executing remove ghost cells filter for unstructured grid");
  
   vtkUnstructuredGrid *inGrid  = static_cast<vtkUnstructuredGrid*>(input);
@@ -260,7 +256,7 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
   vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::SafeDownCast(arr);
 
   vtkIdType ncells = inGrid->GetNumberOfCells();
-  int totalSize = inGrid->GetCells()->GetSize();
+  vtkIdType totalSize = inGrid->GetCells()->GetSize();
 
   // Over-allocate for now.
   vtkIdType *buff = new vtkIdType[totalSize];
@@ -277,9 +273,9 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
   vtkCellData *inCD = inGrid->GetCellData();
   vtkCellData *outCD = outGrid->GetCellData();
   outCD->CopyAllocate(inCD, ncells);
-  int currentIndex = 0;
+  vtkIdType currentIndex = 0;
   vtkIdType cellId = 0;
-  for (i = 0 ; i < ncells ; i++)
+  for (vtkIdType i = 0 ; i < ncells ; i++)
   {
       unsigned char effectiveVal =ghosts->GetValue(i) & GhostZoneTypesToRemove;
       if (avtGhostData::IsGhostZone(effectiveVal))
@@ -288,7 +284,7 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
       vtkIdType npts;
       const vtkIdType *pts;
       inGrid->GetCellPoints(i, npts, pts);
-      *ct++ = inGrid->GetCellType(i);
+      *ct++ = static_cast<unsigned char>(inGrid->GetCellType(i));
       *cl++ = currentIndex;
       *b++ = npts;
       currentIndex += npts+1;
@@ -302,7 +298,7 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
   vtkIdTypeArray *nlist = vtkIdTypeArray::New();
   nlist->SetNumberOfValues(currentIndex);
   vtkIdType *nl = nlist->GetPointer(0);
-  for (i = 0 ; i < currentIndex ; i++) 
+  for (vtkIdType i = 0 ; i < currentIndex ; i++) 
       nl[i] = buff[i];
   delete [] buff;
 
@@ -407,13 +403,13 @@ vtkDataSetRemoveGhostCells::PolyDataExecute()
   if (usingGhostNodes)
     node_ptr = ghost_nodes->GetPointer(0);
 
-  int nCells = inGrid->GetNumberOfCells();
+  vtkIdType nCells = inGrid->GetNumberOfCells();
   outGrid->Allocate(nCells);
   inGrid->BuildCells();
   vtkIdType npts;
   const vtkIdType *pts;
   int cell = 0;
-  for (int i = 0 ; i < nCells ; i++)
+  for (vtkIdType i = 0 ; i < nCells ; i++)
     {
     if (usingGhostZones)
       {
@@ -442,7 +438,7 @@ vtkDataSetRemoveGhostCells::PolyDataExecute()
         continue;
       }
 
-    outGrid->InsertNextCell(inGrid->GetCellType(i), npts, pts);
+    outGrid->InsertNextCell(inGrid->GetCellType(i), int(npts), pts);
     outCD->CopyData(inCD, i, cell++);
     }
   if (GhostZoneTypesToRemove == 255)

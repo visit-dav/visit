@@ -23,21 +23,21 @@ class VISIT_VTK_API vtkVisItInterpolatedVelocityField  : public vtkObject
     void          SetLocator(vtkVisItCellLocator *loc);
     bool          Evaluate(double *pt, double *vel, double t = 0.);
  
-    void          SetDoPathlines(bool b) { doPathlines = b; };
-    void          SetCurrentTime(double t) { curTime = t; };
-    void          SetNextTime(double t) { nextTime = t; };
-    void          SetNextTimeName(const std::string &s) { nextTimeName = s; };
+    void          SetDoPathlines(bool b) { doPathlines = b; }
+    void          SetCurrentTime(double t) { curTime = t; }
+    void          SetNextTime(double t) { nextTime = t; }
+    void          SetNextTimeName(const std::string &s) { nextTimeName = s; }
 
-    vtkDataSet   *GetDataSet(void) { return ds; };
-    double       *GetLastWeights(void) { return weights; };
-    int           GetLastCell(void) { return lastCell; };
-    double       *GetLastPCoords(void) { return pcoords; };
+    vtkDataSet   *GetDataSet(void) { return ds; }
+    double       *GetLastWeights(void) { return weights; }
+    vtkIdType     GetLastCell(void) { return lastCell; }
+    double       *GetLastPCoords(void) { return pcoords; }
 
   private:
     vtkDataSet  *ds;
     vtkVisItCellLocator *locator;
     double       weights[1024];
-    int          lastCell;
+    vtkIdType    lastCell;
     double       pcoords[3];
     bool         doPathlines;
     std::string  nextTimeName;

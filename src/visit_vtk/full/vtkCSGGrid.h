@@ -138,7 +138,7 @@ public:
   // Standard vtkDataSet API methods. See vtkDataSet for more information.
   vtkIdType GetNumberOfCells() override;
   vtkIdType GetNumberOfPoints() override;
-  vtkIdType GetNumberOfBoundaries() const;
+  int GetNumberOfBoundaries() const;
   double *GetPoint(vtkIdType ptId) override;
   double *GetBoundary(vtkIdType bndId) const;
   void GetPoint(vtkIdType id, double x[3]) override;
@@ -146,7 +146,6 @@ public:
   vtkCell *GetCell(vtkIdType cellId) override;
   void GetCell(vtkIdType cellId, vtkGenericCell *cell) override;
   void GetCellBounds(vtkIdType cellId, double bounds[6]) override;
-  int FindPoint(double x, double y, double z) { return this->vtkDataSet::FindPoint(x, y, z);};
   vtkIdType FindPoint(double x[3]) override;
   vtkIdType FindCell(double x[3], vtkCell *cell, vtkIdType cellId, double tol2,
                      int& subId, double pcoords[3], double *weights) override;
@@ -258,13 +257,13 @@ public:
   void GetBoundary(vtkIdType id, int *type, int *numcoeffs, double **coeffs) const;
 
   // Construct and add a region from a boundary
-  vtkIdType AddRegion(vtkIdType bndId, RegionOp op);
+  vtkIdType AddRegion(int bndId, RegionOp op);
 
   // Construct and add a region as a binary op of other regions
-  vtkIdType AddRegion(vtkIdType regIdLeft, vtkIdType regIdRight, RegionOp op);
+  vtkIdType AddRegion(int regIdLeft, int regIdRight, RegionOp op);
 
   // Construct and add a region as transform of another region 
-  vtkIdType AddRegion(vtkIdType regId, const double *xform);
+  vtkIdType AddRegion(int regId, const double *xform);
 
   // Get a region description
   void GetRegion(vtkIdType id, vtkIdType *id1, vtkIdType *id2,
@@ -679,16 +678,19 @@ void AddBoundariesForZone(vtkImplicitFunction *func,
                            std::vector<RegionOp> *senses);
 int EvalBoxStateOfRegion(const Box *const curBox, int regId,
 std::map<int,int>& boundaryToStateMap, double tol);
-
-double tmpFloats[32];                       // temporary storage to help satisfy interface
-                                     //    requirements of vtkDataSet
+#ifdef GET_BOUNDARY_DEFINED
+double tmpFloats[32];  // temporary storage to help satisfy interface
+                       // requirements of vtkDataSet::GetPoint
+#else
+double tmpPoint[3];
+#endif
 
 vtkPlanes *Universe;                       // The "universe" set (a maximally sized box)
 
 std::map<vtkImplicitFunction *, vtkIdType> funcMap;
 
-vtkImplicitFunction *GetBoundaryFunc(vtkIdType id) const;
-vtkImplicitFunction *GetRegionFunc(vtkIdType id) const;
+vtkImplicitFunction *GetBoundaryFunc(int id) const;
+vtkImplicitFunction *GetRegionFunc(int id) const;
 
 vtkCSGGrid(const vtkCSGGrid&);             // Not implemented.
 void operator=(const vtkCSGGrid&);         // Not implemented.
@@ -697,12 +699,12 @@ void operator=(const vtkCSGGrid&);         // Not implemented.
 
 inline vtkIdType vtkCSGGrid::GetNumberOfPoints()
 {
-return GetNumberOfBoundaries();
+return vtkIdType(GetNumberOfBoundaries());
 }
 
-inline vtkIdType vtkCSGGrid::GetNumberOfBoundaries() const
+inline int vtkCSGGrid::GetNumberOfBoundaries() const
 {
-return static_cast<vtkIdType>(this->Boundaries->GetNumberOfItems());
+return this->Boundaries->GetNumberOfItems();
 }
 
 inline vtkIdType vtkCSGGrid::GetNumberOfCells() 

@@ -177,9 +177,9 @@ vtkPolyDataOnionPeelFilter::Initialize()
 
     int numIds;
     if (this->SeedIdIsForCell)
-       numIds = input->GetNumberOfCells();
+       numIds = int(input->GetNumberOfCells());
     else 
-       numIds = input->GetNumberOfPoints();
+       numIds = int(input->GetNumberOfPoints());
 
     if (useLogicalIndex)
     {
@@ -290,7 +290,6 @@ vtkPolyDataOnionPeelFilter::Initialize()
         }
         else 
         {
-            int i;
             vtkIdList *nodes = vtkIdList::New();
             this->FindNodesCorrespondingToOriginal(this->SeedId, nodes);
             if (nodes->GetNumberOfIds() == 0)
@@ -302,7 +301,7 @@ vtkPolyDataOnionPeelFilter::Initialize()
                 return false; //unsuccessful initialization
             }
             vtkIdList *neighbors = vtkIdList::New();
-            for (i = 0; i < nodes->GetNumberOfIds(); i++)
+            for (vtkIdType i = 0; i < nodes->GetNumberOfIds(); i++)
             {
                 input->GetPointCells(nodes->GetId(i), neighbors);        
                 for (int nId = 0; nId < neighbors->GetNumberOfIds(); nId++)
@@ -321,9 +320,9 @@ vtkPolyDataOnionPeelFilter::Initialize()
                 int nc = origCells->GetNumberOfComponents();
                 int comp = nc -1;
                 vtkIdList *origIds = vtkIdList::New();
-                for (i = 0; i < this->layerCellIds->GetNumberOfIds(); i++)
+                for (vtkIdType i = 0; i < this->layerCellIds->GetNumberOfIds(); i++)
                 {
-                        int cellId = this->layerCellIds->GetId(i);
+                        int cellId = int(this->layerCellIds->GetId(i));
                         int index = cellId *nc + comp;;
                         origIds->InsertNextId(oc[index]);
                 }
@@ -384,9 +383,9 @@ void
 vtkPolyDataOnionPeelFilter::Grow()
 {
     vtkIdList  *currentLayerList  = vtkIdList::New();
-    int         totalCurrentCells = this->layerCellIds->GetNumberOfIds();
-    int         totalLayersGrown  = this->cellOffsets->GetNumberOfIds() - 1;
-    int         start = 0, i = 0, j = 0;
+    vtkIdType         totalCurrentCells = this->layerCellIds->GetNumberOfIds();
+    vtkIdType         totalLayersGrown  = this->cellOffsets->GetNumberOfIds() - 1;
+    vtkIdType         start = 0, i = 0, j = 0;
 
     vtkDebugMacro(<<"Grow::");
     while (this->cellOffsets->GetNumberOfIds() <= this->RequestedLayer ) 
@@ -825,26 +824,21 @@ vtkPolyDataOnionPeelFilter::FindCellNeighborsByFaceAdjacency(
     vtkIdList  *facePts   = NULL;
     vtkIdList  *edgePts   = NULL;
     vtkCell    *cell      = NULL;
-    int         faceId;
-    int         edgeId;
-    int         nId;
-    int         i;
-    int         cellId;
   
-    for (i = 0; i < prevLayerIds->GetNumberOfIds(); i++) 
+    for (vtkIdType i = 0; i < prevLayerIds->GetNumberOfIds(); i++) 
     {
-        cellId = prevLayerIds->GetId(i);
+        vtkIdType cellId = prevLayerIds->GetId(i);
         cell = input->GetCell(cellId);
 
         if (cell->GetCellDimension() > 2) 
         {
-            for (faceId = 0; faceId < cell->GetNumberOfFaces(); faceId++) 
+            for (int faceId = 0; faceId < cell->GetNumberOfFaces(); faceId++) 
             {
                 facePts = (cell->GetFace(faceId))->GetPointIds();
 
                 input->GetCellNeighbors(cellId, facePts, neighbors);
 
-                for (nId = 0; nId < neighbors->GetNumberOfIds(); nId++) 
+                for (vtkIdType nId = 0; nId < neighbors->GetNumberOfIds(); nId++) 
                 {
                     neighborCellIds->InsertUniqueId(neighbors->GetId(nId));
                 }
@@ -852,13 +846,13 @@ vtkPolyDataOnionPeelFilter::FindCellNeighborsByFaceAdjacency(
         } 
         else 
         {
-            for (edgeId = 0; edgeId < cell->GetNumberOfEdges(); edgeId++) 
+            for (int edgeId = 0; edgeId < cell->GetNumberOfEdges(); edgeId++) 
             {
                 edgePts = (cell->GetEdge(edgeId))->GetPointIds();
 
                 input->GetCellNeighbors(cellId, edgePts, neighbors);
 
-                for (nId = 0; nId < neighbors->GetNumberOfIds(); nId++) 
+                for (vtkIdType nId = 0; nId < neighbors->GetNumberOfIds(); nId++) 
                 {
                     neighborCellIds->InsertUniqueId(neighbors->GetId(nId));
                 }
@@ -972,7 +966,7 @@ vtkPolyDataOnionPeelFilter::FindCellsCorrespondingToOriginal(
     {
         unsigned int *oc = origCells->GetPointer(0);
         int nc = origCells->GetNumberOfComponents();
-        int n = origCells->GetNumberOfTuples() *nc;
+        int n = int(origCells->GetNumberOfTuples()) *nc;
         int comp = nc -1;
         for (int i = comp; i < n; i+=nc )
         {
@@ -1020,7 +1014,7 @@ vtkPolyDataOnionPeelFilter::FindCellsCorrespondingToOriginal(
     {
         unsigned int *oc = origCells->GetPointer(0);
         int nc = origCells->GetNumberOfComponents();
-        int n = origCells->GetNumberOfTuples()*nc;
+        int n = int(origCells->GetNumberOfTuples())*nc;
         int comp = nc -1;
         for (int i = comp; i < n; i+=nc)
         {
@@ -1068,7 +1062,7 @@ vtkPolyDataOnionPeelFilter::FindNodesCorrespondingToOriginal(
     {
         int *on = origNodes->GetPointer(0);
         int nc = origNodes->GetNumberOfComponents();
-        int n = origNodes->GetNumberOfTuples() *nc;
+        int n = int(origNodes->GetNumberOfTuples()) *nc;
         int comp = nc -1;
         for (int i = comp; i < n; i+=nc )
         {

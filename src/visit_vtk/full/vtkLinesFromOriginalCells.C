@@ -140,7 +140,6 @@ int vtkLinesFromOriginalCells::RequestData(
 
   vtkCellArray *newLines, *newVerts;
   vtkIdType newId;
-  int edgeNum, numEdgePts, numCellEdges;
   int abort = 0;
   vtkIdType pts[2];
   vtkEdgeTable *edgeTable;
@@ -191,16 +190,16 @@ int vtkLinesFromOriginalCells::RequestData(
   {
     if ( ! (cellNum % tenth) ) //manage progress reports / early abort
     {
-      this->UpdateProgress (static_cast<double>(cellNum) / numCells);
+      this->UpdateProgress (double(cellNum) / double(numCells));
       abort = this->GetAbortExecute();
     }
 
     input->GetCell(cellNum,cell);
-    numCellEdges = cell->GetNumberOfEdges();
-    for (edgeNum=0; edgeNum < numCellEdges; edgeNum++ )
+    int numCellEdges = cell->GetNumberOfEdges();
+    for (int edgeNum=0; edgeNum < numCellEdges; edgeNum++ )
     {
       edge = cell->GetEdge(edgeNum);
-      numEdgePts = edge->GetNumberOfPoints();
+      vtkIdType numEdgePts = edge->GetNumberOfPoints();
       pts[0] = edge->PointIds->GetId(0);
       for ( vtkIdType i=1; i < numEdgePts; i++, pts[0]=pts[1] )
       {
@@ -262,9 +261,9 @@ int vtkLinesFromOriginalCells::RequestData(
     }
     else if(cell->GetCellType() == VTK_POLY_LINE)
     {
-      vtkIdType numCellPts = cell->GetNumberOfPoints();
+      int numCellPts = int(cell->GetNumberOfPoints());
       pts[0] = cell->GetPointId(0);
-      for (vtkIdType i = 1; i < numCellPts; ++i, pts[0] = pts[1])
+      for (int i = 1; i < numCellPts; ++i, pts[0] = pts[1])
       {
         pts[1] = cell->GetPointId(i);
         if ( edgeTable->IsEdge(pts[0], pts[1]) == -1 )
@@ -282,7 +281,7 @@ int vtkLinesFromOriginalCells::RequestData(
     }
     else if(cell->GetCellType() == VTK_POLY_VERTEX)
     {
-      for (vtkIdType i = 0; i < cell->GetNumberOfPoints(); ++i) 
+      for (int i = 0; i < int(cell->GetNumberOfPoints()); ++i) 
       {
         pts[0] = cell->GetPointId(i);
         newVerts->InsertNextCell(1, pts);

@@ -24,7 +24,7 @@ static int CoordSorter(const void *, const void *);
 typedef struct 
 {
     float    coord;
-    int      cell_id;
+    vtkIdType cell_id;
 } coord_cell_id_pair;
 
 vtkStandardNewMacro(vtkAxisDepthSort)
@@ -152,7 +152,7 @@ vtkAxisDepthSort::RequestData(
         return 1;
     }
 
-    int ncells = input->GetNumberOfCells();
+    vtkIdType ncells = input->GetNumberOfCells();
 
     coord_cell_id_pair *pairs = new coord_cell_id_pair[ncells];
 
@@ -165,8 +165,6 @@ vtkAxisDepthSort::RequestData(
     int           doCellData = (inCD->GetNumberOfArrays() > 0 ? true : false);
     vtkPointData *outPD      = NULL;
     vtkCellData  *outCD      = NULL;
-    vtkIdType     npts       = 0;
-    const vtkIdType *cellPts = nullptr;
     input->BuildCells();
  
     //
@@ -174,23 +172,23 @@ vtkAxisDepthSort::RequestData(
     //
     float *loc = new float[ncells*3];
     double bnds[6];
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         input->GetCellBounds(i, bnds);
-        loc[3*i]   = (bnds[0]+bnds[1])/2.;
-        loc[3*i+1] = (bnds[2]+bnds[3])/2.;
-        loc[3*i+2] = (bnds[4]+bnds[5])/2.;
+        loc[3*i]   = float(bnds[0]+bnds[1])/2.f;
+        loc[3*i+1] = float(bnds[2]+bnds[3])/2.f;
+        loc[3*i+2] = float(bnds[4]+bnds[5])/2.f;
     }
 
     //
     // Create an array to sort in X and use qsort to sort it.
     //
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         pairs[i].coord   = loc[3*i];
         pairs[i].cell_id = i;
     }
-    qsort(pairs, ncells, sizeof(coord_cell_id_pair), CoordSorter);
+    qsort(pairs, size_t(ncells), sizeof(coord_cell_id_pair), CoordSorter);
 
     //
     // Now create the PlusX/MinusX output.
@@ -203,11 +201,14 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (int i = 0 ; i < ncells ; i++)
+
+    vtkIdList *cellPts = vtkIdList::New();
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
-        int cell = pairs[i].cell_id;
-        input->GetCellPoints(cell, npts, cellPts);
-        minusX->InsertNextCell(input->GetCellType(cell), npts, cellPts);
+        vtkIdType cell = pairs[i].cell_id;
+        cellPts->Reset();
+        input->GetCellPoints(cell, cellPts);
+        minusX->InsertNextCell(input->GetCellType(cell), cellPts);
         if (doCellData)
             outCD->CopyData(inCD, i, cell);
     }
@@ -220,11 +221,12 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (int i = ncells-1 ; i >= 0 ; i--)
+    for (vtkIdType i = ncells-1 ; i >= 0 ; i--)
     {
-        int cell = pairs[i].cell_id;
-        input->GetCellPoints(cell, npts, cellPts);
-        plusX->InsertNextCell(input->GetCellType(cell), npts, cellPts);
+        vtkIdType cell = pairs[i].cell_id;
+        cellPts->Reset();
+        input->GetCellPoints(cell, cellPts);
+        plusX->InsertNextCell(input->GetCellType(cell), cellPts);
         if (doCellData)
             outCD->CopyData(inCD, i, cell);
     }
@@ -232,12 +234,12 @@ vtkAxisDepthSort::RequestData(
     //
     // Create an array to sort in Y and use qsort to sort it.
     //
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         pairs[i].coord   = loc[3*i+1];
         pairs[i].cell_id = i;
     }
-    qsort(pairs, ncells, sizeof(coord_cell_id_pair), CoordSorter);
+    qsort(pairs, size_t(ncells), sizeof(coord_cell_id_pair), CoordSorter);
 
     //
     // Now create the PlusY/MinusY output.
@@ -250,11 +252,12 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
-        int cell = pairs[i].cell_id;
-        input->GetCellPoints(cell, npts, cellPts);
-        minusY->InsertNextCell(input->GetCellType(cell), npts, cellPts);
+        vtkIdType cell = pairs[i].cell_id;
+        cellPts->Reset();
+        input->GetCellPoints(cell, cellPts);
+        minusY->InsertNextCell(input->GetCellType(cell), cellPts);
         if (doCellData)
             outCD->CopyData(inCD, i, cell);
     }
@@ -267,11 +270,12 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (int i = ncells-1 ; i >= 0 ; i--)
+    for (vtkIdType i = ncells-1 ; i >= 0 ; i--)
     {
-        int cell = pairs[i].cell_id;
-        input->GetCellPoints(cell, npts, cellPts);
-        plusY->InsertNextCell(input->GetCellType(cell), npts, cellPts);
+        vtkIdType cell = pairs[i].cell_id;
+        cellPts->Reset();
+        input->GetCellPoints(cell, cellPts);
+        plusY->InsertNextCell(input->GetCellType(cell), cellPts);
         if (doCellData)
             outCD->CopyData(inCD, i, cell);
     }
@@ -279,12 +283,12 @@ vtkAxisDepthSort::RequestData(
     //
     // Create an array to sort in Z and use qsort to sort it.
     //
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         pairs[i].coord   = loc[3*i+2];
         pairs[i].cell_id = i;
     }
-    qsort(pairs, ncells, sizeof(coord_cell_id_pair), CoordSorter);
+    qsort(pairs, size_t(ncells), sizeof(coord_cell_id_pair), CoordSorter);
 
     //
     // Now create the PlusZ/MinusZ output.
@@ -297,11 +301,12 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
-        int cell = pairs[i].cell_id;
-        input->GetCellPoints(cell, npts, cellPts);
-        minusZ->InsertNextCell(input->GetCellType(cell), npts, cellPts);
+        vtkIdType cell = pairs[i].cell_id;
+        cellPts->Reset();
+        input->GetCellPoints(cell, cellPts);
+        minusZ->InsertNextCell(input->GetCellType(cell), cellPts);
         if (doCellData)
             outCD->CopyData(inCD, i, cell);
     }
@@ -314,11 +319,12 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (int i = ncells-1 ; i >= 0 ; i--)
+    for (vtkIdType i = ncells-1 ; i >= 0 ; i--)
     {
-        int cell = pairs[i].cell_id;
-        input->GetCellPoints(cell, npts, cellPts);
-        plusZ->InsertNextCell(input->GetCellType(cell), npts, cellPts);
+        vtkIdType cell = pairs[i].cell_id;
+        cellPts->Reset();
+        input->GetCellPoints(cell, cellPts);
+        plusZ->InsertNextCell(input->GetCellType(cell), cellPts);
         if (doCellData)
             outCD->CopyData(inCD, i, cell);
     }

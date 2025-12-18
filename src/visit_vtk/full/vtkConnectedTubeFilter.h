@@ -40,26 +40,26 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
 
     // Description:
     // Set the minimum tube radius (minimum because the tube radius may vary).
-    vtkSetClampMacro(Radius,float,0.0,VTK_FLOAT_MAX);
-    vtkGetMacro(Radius,float);
+    vtkSetClampMacro(Radius,float,0.0f,VTK_FLOAT_MAX)
+    vtkGetMacro(Radius,float)
 
     // Description:
     // Set the number of sides for the tube. At a minimum, number of sides is 3.
-    vtkSetClampMacro(NumberOfSides,int,3,VTK_INT_MAX);
-    vtkGetMacro(NumberOfSides,int);
+    vtkSetClampMacro(NumberOfSides,int,3,VTK_INT_MAX)
+    vtkGetMacro(NumberOfSides,int)
 
     // Description:
     // Set a boolean to control whether to create normals.
     // DefaultNormalOn is set.
-    vtkSetMacro(CreateNormals,bool);
-    vtkGetMacro(CreateNormals,bool);
-    vtkBooleanMacro(CreateNormals,bool);
+    vtkSetMacro(CreateNormals,bool)
+    vtkGetMacro(CreateNormals,bool)
+    vtkBooleanMacro(CreateNormals,bool)
 
     // Description:
     // Turn on/off whether to cap the ends with polygons.
-    vtkSetMacro(Capping,bool);
-    vtkGetMacro(Capping,bool);
-    vtkBooleanMacro(Capping,bool);
+    vtkSetMacro(Capping,bool)
+    vtkGetMacro(Capping,bool)
+    vtkBooleanMacro(Capping,bool)
 
   protected:
     // ************************************************************************
@@ -73,13 +73,13 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
     // ************************************************************************
     struct PointSequence
     {
-        int length;
+        vtkIdType length;
         vtkIdType *index;
         vtkIdType *cellindex;
       public:
         PointSequence();
         ~PointSequence();
-        void Init(int maxlen);
+        void Init(vtkIdType maxlen);
         void Add(vtkIdType i, vtkIdType ci);
     };
 
@@ -100,7 +100,7 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
     {
       private:
         // connectivity data
-        int          len;
+        vtkIdType         len;
         vtkIdType         *numneighbors;
         vtkIdType         *connectivity[2];
         vtkIdType         *cellindex;

@@ -45,8 +45,8 @@ vtkSurfaceFromVolume::TriangleList::~TriangleList()
 }
  
  
-int
-vtkSurfaceFromVolume::TriangleList::GetList(int listId, const vtkIdType *&outlist)
+vtkIdType
+vtkSurfaceFromVolume::TriangleList::GetList(vtkIdType listId, const vtkIdType *&outlist)
     const
 {
     if (listId < 0 || listId > currentList)

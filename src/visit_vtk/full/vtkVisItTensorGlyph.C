@@ -129,8 +129,7 @@ vtkVisItTensorGlyph::RequestData(
   vtkDataArray *inTensors=nullptr;
   double tensor[9];
   vtkDataArray *inScalars=nullptr;
-  vtkIdType numPts, numSourcePts, numSourceCells, inPtId, i;
-  int j;
+  vtkIdType numPts, numSourcePts, numSourceCells; 
   vtkPoints *sourcePts=nullptr;
   vtkDataArray *sourceNormals=nullptr;
   vtkCellArray *sourceCells=nullptr, *cells=nullptr;
@@ -141,8 +140,6 @@ vtkVisItTensorGlyph::RequestData(
   vtkTransform *trans=nullptr;
   vtkCell *cell=nullptr;
   vtkIdList *cellPts=nullptr;
-  int npts;
-  vtkIdType *pts=nullptr;
   vtkIdType ptIncr, cellId;
   vtkIdType subIncr;
   int numDirs, dir, eigen_dir, symmetric_dir;
@@ -169,7 +166,6 @@ vtkVisItTensorGlyph::RequestData(
 
   numDirs = (this->ThreeGlyphs?3:1)*(this->Symmetric?2:1);
 
-  pts = new vtkIdType[source->GetMaxCellSize()];
   trans = vtkTransform::New();
   matrix = vtkMatrix4x4::New();
 
@@ -290,7 +286,7 @@ vtkVisItTensorGlyph::RequestData(
   //
   // First copy all topology (transformation independent)
   //
-  for (inPtId=0; inPtId < numPts; inPtId++)
+  for (vtkIdType inPtId=0; inPtId < numPts; inPtId++)
     {
     double *inNode = nullptr;
     double *inCell = nullptr;
@@ -299,34 +295,37 @@ vtkVisItTensorGlyph::RequestData(
     if (inOrigCells)
       inCell = inOrigCells->GetTuple(inPtId);
     ptIncr = numDirs * inPtId * numSourcePts;
+    vtkIdList *ptIds= vtkIdList::New();
     for (cellId=0; cellId < numSourceCells; cellId++)
       {
       cell = this->GetSource()->GetCell(cellId);
       cellPts = cell->GetPointIds();
-      npts = cellPts->GetNumberOfIds();
+      vtkIdType npts = cellPts->GetNumberOfIds();
+      ptIds->SetNumberOfIds(npts);
       for (dir=0; dir < numDirs; dir++)
         {
         // This variable may be removed, but that
         // will not improve readability
         subIncr = ptIncr + dir*numSourcePts;
-        for (i=0; i < npts; i++)
+        for (vtkIdType i=0; i < npts; i++)
           {
-          pts[i] = cellPts->GetId(i) + subIncr;
+          ptIds->SetId(i, cellPts->GetId(i) + subIncr);
           }
-        output->InsertNextCell(cell->GetCellType(),npts,pts);
+        output->InsertNextCell(cell->GetCellType(),ptIds);
         if (outOrigNodes)
           outOrigNodes->InsertNextTuple(inNode);
         if (outOrigCells)
           outOrigCells->InsertNextTuple(inCell);
         }
       }
+      ptIds->Delete();
     }
   //
   // Traverse all Input points, transforming glyph at Source points
   //
   trans->PreMultiply();
 
-  for (inPtId=0; inPtId < numPts; inPtId++)
+  for (vtkIdType inPtId=0; inPtId < numPts; inPtId++)
     {
     ptIncr = numDirs * inPtId * numSourcePts;
 
@@ -337,9 +336,9 @@ vtkVisItTensorGlyph::RequestData(
     // compute orientation vectors and scale factors from tensor
     if ( this->ExtractEigenvalues ) // extract appropriate eigenfunctions
       {
-      for (j=0; j<3; j++)
+      for (int j=0; j<3; j++)
         {
-        for (i=0; i<3; i++)
+        for (int i=0; i<3; i++)
           {
           m[i][j] = tensor[i+3*j];
           }
@@ -353,7 +352,7 @@ vtkVisItTensorGlyph::RequestData(
       }
     else //use tensor columns as eigenvectors
       {
-      for (i=0; i<3; i++)
+      for (int i=0; i<3; i++)
         {
         xv[i] = tensor[i];
         yv[i] = tensor[i+3];
@@ -371,7 +370,9 @@ vtkVisItTensorGlyph::RequestData(
 
     if ( this->ClampScaling )
       {
-      for (maxScale=0.0, i=0; i<3; i++)
+
+      maxScale = 0.0;
+      for (int i=0; i<3; i++)
         {
         if ( maxScale < fabs(w[i]) )
           {
@@ -381,7 +382,7 @@ vtkVisItTensorGlyph::RequestData(
       if ( maxScale > this->MaxScaleFactor )
         {
         maxScale = this->MaxScaleFactor / maxScale;
-        for (i=0; i<3; i++)
+        for (int i=0; i<3; i++)
           {
           w[i] *= maxScale; //preserve overall shape of glyph
           }
@@ -391,7 +392,8 @@ vtkVisItTensorGlyph::RequestData(
     // normalization is postponed
 
     // make sure scale is okay (non-zero) and scale data
-    for (maxScale=0.0, i=0; i<3; i++)
+    maxScale=0.0;
+    for (int i=0; i<3; i++)
       {
       if ( w[i] > maxScale )
         {
@@ -402,7 +404,7 @@ vtkVisItTensorGlyph::RequestData(
       {
       maxScale = 1.0;
       }
-    for (i=0; i<3; i++)
+    for (int i=0; i<3; i++)
       {
       if ( w[i] == 0.0 )
         {
@@ -494,7 +496,7 @@ vtkVisItTensorGlyph::RequestData(
            (this->ColorMode == COLOR_BY_SCALARS) )
         {
         s = inScalars->GetComponent(inPtId, 0);
-        for (i=0; i < numSourcePts; i++)
+        for (vtkIdType i=0; i < numSourcePts; i++)
           {
           newScalars->InsertTuple(ptIncr+i, &s);
           }
@@ -509,14 +511,14 @@ vtkVisItTensorGlyph::RequestData(
           {
           s /= this->ScaleFactor;
           }
-        for (i=0; i < numSourcePts; i++)
+        for (vtkIdType i=0; i < numSourcePts; i++)
           {
           newScalars->InsertTuple(ptIncr+i, &s);
           }
         }
       else
         {
-        for (i=0; i < numSourcePts; i++)
+        for (vtkIdType i=0; i < numSourcePts; i++)
           {
           outPD->CopyData(pd,i,ptIncr+i);
           }
@@ -528,7 +530,6 @@ vtkVisItTensorGlyph::RequestData(
   //
   // Update output and release memory
   //
-  delete [] pts;
 
   output->SetPoints(newPts);
   newPts->Delete();
