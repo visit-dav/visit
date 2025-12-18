@@ -17,12 +17,18 @@ mode_dirs = ["dane_trunk_serial", "dane_trunk_parallel", "dane_trunk_scalable_pa
 ##############################################################################
 def calc_base_dirs():
     #
+    # Check that the mode directory exists. If it doesn't, create it.
+    #
+    mode_dir = os.path.join(out_dir, "baselines", mode_dirs[imode])
+    if (not os.path.exists(mode_dir)):
+        os.mkdir(mode_dir)
+
+    #
     # Get the list of baseline directories
     #
-    global out_dir
     global base_dirs
     base_dirs = []
-    for dir in os.listdir(os.path.join(out_dir, "baselines", mode_dirs[imode])):
+    for dir in os.listdir(mode_dir):
         base_dirs.append(dir)
 
     base_dirs.sort(reverse = True)
