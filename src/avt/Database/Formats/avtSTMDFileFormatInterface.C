@@ -166,7 +166,7 @@ avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var, avtCenterin
     }
     else
     {
-        return GetVar(ts, dom, var);
+        return timesteps[ts]->GetVar(dom, var);
     }
 }
 
