@@ -23,21 +23,34 @@
 #
 #    Cyrus Harrison, Mon Oct 20 11:17:19 PDT 2025
 #    Added quadrature function examples
+# 
+#    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+#    Reworked and added tests for MFEM LOR.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("MFEM")
 
-readOptions = GetDefaultFileOpenOptions("MFEM")
-readOptions["MFEM LOR Setting"] = "Legacy LOR"
-SetDefaultFileOpenOptions("MFEM", readOptions)
-
 mfem_roots  = glob.glob(data_path("mfem_test_data/*.mfem_root"))
 mfem_roots.extend(glob.glob(data_path("mfem_wedge_and_pyramid_examples/wedge_*.mfem_root")))
-input_meshs  = [ f for f in mfem_roots if f.count("ex0") == 0]
+input_meshes = [ f for f in mfem_roots if f.count("ex0") == 0]
 ex01_results = [ f for f in mfem_roots if f.count("ex01") == 1]
 ex02_results = [ f for f in mfem_roots if f.count("ex02") == 1]
 mfem_mesh_files = glob.glob(data_path("mfem_test_data/*.mesh"))
 mfem_quad_func_files = glob.glob(data_path("mfem_quad_func_test_data/*.mfem_root"))
+mfem_hdiv_hcurl_files = glob.glob(data_path("mfem_hdiv_hcurl_examples/*.mfem_root"))
+
+# A selection of interesting meshes that effectively demonstrate 
+# discontinuous versus continuous LOR settings
+mfem_selected_meshes = glob.glob(data_path("mfem_test_data/amr-hex.mfem_root")) +\
+                       glob.glob(data_path("mfem_test_data/ball-nurbs.mfem_root")) +\
+                       glob.glob(data_path("mfem_test_data/fichera.mfem_root")) +\
+                       glob.glob(data_path("mfem_test_data/klein-bottle.mfem_root")) +\
+                       glob.glob(data_path("mfem_test_data/klein-donut.mfem_root")) +\
+                       glob.glob(data_path("mfem_test_data/periodic-cube.mfem_root")) +\
+                       glob.glob(data_path("mfem_test_data/periodic-hexagon.mfem_root")) +\
+                       glob.glob(data_path("mfem_test_data/pipe-nurbs.mfem_root")) +\
+                       glob.glob(data_path("mfem_test_data/square-disc-surf.mfem_root")) +\
+                       glob.glob(data_path("mfem_test_data/star.mfem_root"))
 
 def set_test_view():
     v = View3DAttributes()
@@ -60,7 +73,7 @@ def set_test_view():
     v.windowValid = 1
     SetView3D(v)
 TestSection("Input Mesh Files")
-for f in input_meshs:
+for f in input_meshes:
     base = os.path.splitext(os.path.basename(f))[0]
     DeleteAllPlots()
     OpenDatabase(f)
@@ -76,41 +89,13 @@ for f in input_meshs:
     if f.count("amr") > 0:
         levels = [0,5]
     for mres in levels:
-        mc_atts  = MultiresControlAttributes()
+        mc_atts = MultiresControlAttributes()
         mc_atts.resolution = mres
+        mc_atts.meshRefMethod = mc_atts.Discontinuous_LOR
         SetOperatorOptions(mc_atts)
         ResetView()
         DrawPlots()
         Test("input_mesh_%s_mres_%04d" % (base,mres))
-    DeleteAllPlots()
-    CloseDatabase(f)
-
-TestSection("ex01 results")
-for f in ex01_results:
-    base = os.path.splitext(os.path.basename(f))[0]
-    DeleteAllPlots()
-    OpenDatabase(f)
-    AddPlot("Pseudocolor","gf")
-    #AddPlot("Mesh","main")
-    ResetView()
-    DrawPlots()
-    Test("ex01_%s" % (base))
-    DeleteAllPlots()
-    CloseDatabase(f)
-
-TestSection("ex02 results")
-for f in ex02_results:
-    base = os.path.splitext(os.path.basename(f))[0]
-    DeleteAllPlots()
-    OpenDatabase(f)
-    AddPlot("Pseudocolor","main_element_attribute")
-    #AddPlot("Mesh","main")
-    ResetView()
-    DrawPlots()
-    Test("ex02_element_attribute_%s" % (base))
-    ChangeActivePlotsVar("gf_magnitude");
-    DrawPlots()
-    Test("ex02_gf_mag_%s" % (base))
     DeleteAllPlots()
     CloseDatabase(f)
 
@@ -132,7 +117,7 @@ DeleteAllPlots()
 CloseDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
 
 TestSection("Input Mesh Boundary Topology")
-for f in input_meshs:
+for f in input_meshes:
     base = os.path.splitext(os.path.basename(f))[0]
     DeleteAllPlots()
     OpenDatabase(f)
@@ -158,118 +143,6 @@ for f in mfem_mesh_files:
     Test("direct_open_mesh_file_%s" % (base))
     DeleteAllPlots()
     CloseDatabase(f)
-
-# reset default
-readOptions = GetDefaultFileOpenOptions("MFEM")
-readOptions["MFEM LOR Setting"] = "MFEM LOR"
-SetDefaultFileOpenOptions("MFEM", readOptions)
-
-def test_mfem_lor_mesh(tag_name, dbfile):
-    ResetView()
-    base = os.path.splitext(os.path.basename(dbfile))[0]
-
-    # get default options
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-    OpenDatabase(dbfile)
-
-    # we want to test a picture of a wireframe
-    # new LOR should only have the outer edge
-    AddPlot("Subset", "main")
-    SubsetAtts = SubsetAttributes()
-    SubsetAtts.wireframe = 1
-    SetPlotOptions(SubsetAtts)
-    set_test_view()
-    DrawPlots()
-    Test(tag_name + "_" + base + "_lor")
-    DeleteAllPlots()
-    ResetView()
-    CloseDatabase(dbfile)
-
-    ##############################
-
-    # examine legacy
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "Legacy LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-    OpenDatabase(dbfile)
-
-    # old LOR leaves a busy wireframe
-    AddPlot("Subset", "main")
-    SubsetAtts = SubsetAttributes()
-    SubsetAtts.wireframe = 1
-    SetPlotOptions(SubsetAtts)
-    set_test_view()
-    DrawPlots()
-    Test(tag_name + "_" + base + "_legacy_lor")
-    DeleteAllPlots()
-    ResetView()
-    CloseDatabase(dbfile)
-
-    # restore default
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-
-TestSection("Legacy and New LOR")
-for dbfile in input_meshs:
-    test_mfem_lor_mesh("LOR", dbfile)
-
-def test_mfem_lor_field(tag_name, dbfile):
-    ResetView()
-    base = os.path.splitext(os.path.basename(dbfile))[0]
-
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-    OpenDatabase(dbfile)
-
-    AddPlot("Pseudocolor","gf")
-    AddOperator("MultiresControl", 1)
-    SetActivePlots(0)
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    set_test_view()
-    DrawPlots()
-    Test(tag_name + "_" + base + "_pseudocolor_gf_lor")
-    DeleteAllPlots()
-    ResetView()
-
-    CloseDatabase(dbfile)
-
-    ##############################
-
-    # examine legacy
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "Legacy LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-    OpenDatabase(dbfile)
-
-    AddPlot("Pseudocolor","gf")
-    AddOperator("MultiresControl", 1)
-    SetActivePlots(0)
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    set_test_view()
-    DrawPlots()
-    Test(tag_name + "_" + base + "_pseudocolor_gf_legacy_lor")
-    DeleteAllPlots()
-    ResetView()
-
-    # restore default
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-
-
-
-TestSection("Legacy and New LOR Fields")
-for dbfile in ex01_results:
-    test_mfem_lor_field("LOR_Fields", dbfile)
-
 
 def test_mfem_quad_func(tag_name, dbfile, var_name):
     ResetView()
@@ -304,7 +177,17 @@ def test_mfem_quad_func(tag_name, dbfile, var_name):
     mesh_atts.meshColorSource = mesh_atts.MeshCustom
     SetPlotOptions(mesh_atts)
     DrawPlots()
-    Test(tag_name + "_" + base + "_qf_plot")
+    AddOperator("MultiresControl", 1)
+    SetActivePlots(0)
+    DrawPlots()
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_qf_plot_gausslobatto_basis")
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_qf_plot_closeduniform_basis")
     DeleteAllPlots()
     ResetView()
     CloseDatabase(dbfile)
@@ -312,5 +195,259 @@ def test_mfem_quad_func(tag_name, dbfile, var_name):
 TestSection("Quadrature Functions")
 for dbfile in mfem_quad_func_files:
     test_mfem_quad_func("quadrature_data", dbfile, "quad_field")
+
+def test_mfem_lor_controls_on_mesh(tag_name, dbfile):
+    ResetView()
+    base = os.path.splitext(os.path.basename(dbfile))[0]
+
+    OpenDatabase(dbfile)
+
+    # we want to test a picture of a wireframe
+    # new LOR should only have the outer edge
+    AddPlot("Subset", "main")
+    SubsetAtts = SubsetAttributes()
+    SubsetAtts.wireframe = 1
+    SetPlotOptions(SubsetAtts)
+    AddOperator("MultiresControl", 1)
+    SetActivePlots(0)
+    set_test_view()
+    DrawPlots()
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Default_LOR
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_default_lor_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Default_LOR
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_default_lor_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_closeduniform_basis")
+
+    DeleteAllPlots()
+    ResetView()
+    CloseDatabase(dbfile)
+
+def test_mfem_lor_controls_on_grid_function(tag_name, f, vector=False, varname="gf"):
+    base = os.path.splitext(os.path.basename(f))[0]
+    DeleteAllPlots()
+    OpenDatabase(f)
+    if vector is True:
+        AddPlot("Vector",varname)
+        VectorAtts = VectorAttributes()
+        VectorAtts.origOnly = 0
+        VectorAtts.useStride = 1
+        VectorAtts.stride = 1
+        SetPlotOptions(VectorAtts)
+        AddPlot("Pseudocolor",varname + "_magnitude")
+    else:
+        AddPlot("Pseudocolor",varname)
+    AddOperator("MultiresControl", 1)
+    SetActivePlots(0)
+    ResetView()
+    DrawPlots()
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Default_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_default_lor_default_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Default_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_default_lor_default_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_default_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_default_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Zonal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_zonal_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Zonal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_zonal_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_nodal_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_nodal_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_default_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_default_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_nodal_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_nodal_proj_closeduniform_basis")
+
+    DeleteAllPlots()
+    CloseDatabase(f)
+
+def test_mfem_lor_controls_on_special_grid_function(tag_name, dbfile):
+    base = os.path.splitext(os.path.basename(dbfile))[0]
+    DeleteAllPlots()
+    OpenDatabase(dbfile)
+    AddPlot("Vector","gf")
+    VectorAtts = VectorAttributes()
+    VectorAtts.origOnly = 0
+    VectorAtts.useStride = 1
+    VectorAtts.stride = 1
+    SetPlotOptions(VectorAtts)
+    AddPlot("Mesh","main")
+    MeshAtts = MeshAttributes()
+    MeshAtts.showGenerated = 1
+    SetPlotOptions(MeshAtts)
+    SetActivePlots(0)
+    ResetView()
+    AddOperator("MultiresControl", 1)
+    DrawPlots()
+    View2DAtts = View2DAttributes()
+    View2DAtts.windowCoords = (6, 8, -1.0, 0.5)
+    View2DAtts.viewportCoords = (0.2, 0.95, 0.15, 0.95)
+    SetView2D(View2DAtts)
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Zonal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+
+    Test(tag_name + "_" + base + "_zonal_continuous")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    
+    Test(tag_name + "_" + base + "_nodal_continuous")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    
+    Test(tag_name + "_" + base + "_nodal_discontinuous")
+
+    DeleteAllPlots()
+    CloseDatabase(dbfile)
+
+
+TestSection("LOR Mesh Controls")
+# these are hand-picked meshes that clearly demonstrate the refinement differences
+for dbfile in mfem_selected_meshes:
+    test_mfem_lor_controls_on_mesh("LOR_mesh", dbfile)
+
+# ex01 results all have scalar grid functions
+TestSection("LOR Scalar Field Controls")
+for dbfile in ex01_results:
+    test_mfem_lor_controls_on_grid_function("LOR_gf", dbfile)
+
+TestSection("LOR Vector Field Controls Close Up")
+for dbfile in glob.glob(data_path("mfem_test_data/ex02-beam-quad.mfem_root")):
+    test_mfem_lor_controls_on_special_grid_function("LOR_vector_gf_closeup", dbfile)
+
+TestSection("LOR Vector Field Controls")
+# ex02 results all have scalar FE vector grid functions
+for dbfile in ex02_results:
+    test_mfem_lor_controls_on_grid_function("LOR_vector_gf", dbfile, vector=True)
+# hdiv hcurl examples all have vector FE vector grid functions
+for dbfile in mfem_hdiv_hcurl_files:
+    test_mfem_lor_controls_on_grid_function("LOR_vector_gf", dbfile, vector=True, varname="solution")
 
 Exit()

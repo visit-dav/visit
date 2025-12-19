@@ -32,6 +32,7 @@ operators that you rarely use.
     Lineout_operator
     LineSampler_operator
     Merge_operator
+    MultiresControl_operator
     OnionPeel_operator
     Project_operator
     Reflect_operator

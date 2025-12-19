@@ -9,6 +9,9 @@
 #ifndef AVT_MFEM_FILE_FORMAT_H
 #define AVT_MFEM_FILE_FORMAT_H
 
+// NOTE: This is from avtmfem lib
+#include "avtMFEMDataAdaptor.h"
+
 #include <avtSTMDFileFormat.h>
 #include <avtDataSelection.h>
 
@@ -50,6 +53,14 @@ class DBOptionsAttributes;
 //    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
 //    Added DBOptionsAttributes forward declaration and as an argument to
 //    avtMFEMFileFormat.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added m_mesh_refinement_method, m_field_projection_method, and 
+//    m_refinement_basis_type.
+//    Removed m_new_refine.
+//    Added overrides for GetVar and GetVectorVar for changing centering.
+//    Added HasCenteringChange method to indicate that this plugin can
+//    change centering.
 // ****************************************************************************
 
 class avtMFEMFileFormat : public avtSTMDFileFormat
@@ -72,7 +83,11 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
 
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
+    virtual vtkDataArray  *GetVar(int, const char *, avtCentering &);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+    virtual vtkDataArray  *GetVectorVar(int, const char *, avtCentering &);
+    
+    bool                   HasCenteringChange() override { return true; };
 
     virtual int            GetCycle();
     virtual double         GetTime();
@@ -83,6 +98,7 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     bool                   HasInvariantMetaData(void) const { return false; };
     bool                   HasInvariantSIL(void) const      { return false; };
+
   
   private:
     int                              selectedLOD;
@@ -92,7 +108,8 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
                                                                                                   
     vtkDataArray                    *GetRefinedVar(const std::string &mesh_name,
                                                    int chunk,
-                                                   int lod);
+                                                   int lod,
+                                                   avtCentering &cent_change);
                                                    
     JSONRoot                        *root;  
 
@@ -103,7 +120,9 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
                                                           std::istringstream &imeshstr);
     std::map<std::string, std::pair<size_t,size_t> > catFileMap;
 
-    bool                            m_new_refine;
+    avtMFEMDataAdaptor::meshRefinementMethod  m_mesh_refinement_method;
+    avtMFEMDataAdaptor::fieldProjectionMethod m_field_projection_method;
+    avtMFEMDataAdaptor::refinementBasisType   m_refinement_basis_type;
 };
 
 #endif

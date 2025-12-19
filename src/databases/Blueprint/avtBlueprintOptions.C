@@ -29,18 +29,15 @@
 //      Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
 //      Removed inaccurate comment.
 //
+//      Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//      Removed LOR options.
+//
 // ****************************************************************************
 
 DBOptionsAttributes *
 GetBlueprintReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
-    std::vector<std::string> mfem_lor_setting;
-    mfem_lor_setting.push_back("Legacy LOR");
-    mfem_lor_setting.push_back("MFEM LOR");
-    rv->SetEnum("MFEM LOR Setting", 1);
-    rv->SetEnumStrings("MFEM LOR Setting", mfem_lor_setting);
-
     return rv;
 /* EXAMPLE OF OPTIONS
     rv->SetBool("Binary format", true);

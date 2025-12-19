@@ -65,6 +65,10 @@ class     avtIOInformation;
 //
 //    Burlen Loring, Fri Oct  2 17:01:02 PDT 2015
 //    Clean up a couple of warnings
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added overrides for GetVar and GetVectorVar for handling centering
+//    changes.
 //
 // ****************************************************************************
 
@@ -92,7 +96,13 @@ class DATABASE_API avtSTMDFileFormat : public avtFileFormat
 
     virtual vtkDataSet    *GetMesh(int, const char *) = 0;
     virtual vtkDataArray  *GetVar(int, const char *) = 0;
+    virtual vtkDataArray  *GetVar(int ts, const char *var, avtCentering &cent_change) 
+                               { cent_change = AVT_UNKNOWN_CENT; return GetVar(ts, var); };
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+    virtual vtkDataArray  *GetVectorVar(int ts, const char *var, avtCentering &cent_change)
+                               { cent_change = AVT_UNKNOWN_CENT; return GetVectorVar(ts, var); };
+
+    virtual bool           HasCenteringChange() { return false; };
 
   protected:
     char                 **filenames;

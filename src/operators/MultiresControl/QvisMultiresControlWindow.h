@@ -11,6 +11,7 @@
 class MultiresControlAttributes;
 class QLabel;
 class QSlider;
+class QComboBox;
 
 // ****************************************************************************
 // Class: QvisMultiresControlWindow
@@ -27,6 +28,9 @@ class QSlider;
 //
 //   Tom Fogal,  Mon Aug 30 12:31:44 MDT 2010
 //   Removed some dead/unused variables
+// 
+//   Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//   Added new controls for the high order options.
 //
 // ****************************************************************************
 
@@ -48,9 +52,18 @@ class QvisMultiresControlWindow : public QvisOperatorWindow
   private slots:
     void updateResolutionLevelLabel(int val);
     void resolutionLevelChanged();
+    void meshRefinementMethodChanged(int val);
+    void fieldProjectionMethodChanged(int val);
+    void refinementBasisTypeChanged(int val);
   private:
-    QSlider* resolution;
-    QLabel *resolutionLevelLabel;
+    QSlider   *resolution;
+    QLabel    *resolutionLevelLabel;
+    QLabel    *meshRefinementMethodLabel;
+    QComboBox *meshRefinementMethod;
+    QLabel    *fieldProjectionMethodLabel;
+    QComboBox *fieldProjectionMethod;
+    QLabel    *refinementBasisTypeLabel;
+    QComboBox *refinementBasisType;
 
     MultiresControlAttributes *atts;
 };

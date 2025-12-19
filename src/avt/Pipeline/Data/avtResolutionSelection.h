@@ -57,6 +57,10 @@
 //
 //    Brad Whitlock, Fri Jun 16 14:45:15 PDT 2023
 //    Add overrides for InvalidatesZones, InvalidatesNodes.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added mMeshRefinementMethod, mFieldProjectionMethod,
+//    mRefinementBasisType, and getters and setters for them.
 //
 // ****************************************************************************
 
@@ -74,10 +78,22 @@ public:
 
     // added functionality
     virtual void         setResolution(int r) { mResolution = r; }
+    virtual void         setMeshRefinementMethod(const int newMeshRefinementMethod) 
+                            { mMeshRefinementMethod = newMeshRefinementMethod; }
+    virtual void         setFieldProjectionMethod(const int newFieldProjectionMethod) 
+                            { mFieldProjectionMethod = newFieldProjectionMethod; }
+    virtual void         setRefinementBasisType(const int newRefinementBasisType) 
+                            { mRefinementBasisType = newRefinementBasisType; }
     virtual int          resolution() const { return mResolution; }
+    virtual int          meshRefinementMethod() const { return mMeshRefinementMethod; }
+    virtual int          fieldProjectionMethod() const { return mFieldProjectionMethod; }
+    virtual int          refinementBasisType() const { return mRefinementBasisType; }
 
 private:
-    int mResolution;
+    int         mResolution;
+    int         mMeshRefinementMethod;
+    int         mFieldProjectionMethod;
+    int         mRefinementBasisType;
 };
 
 #endif // _AVT_RESOLUTION_SELECTION_H_
