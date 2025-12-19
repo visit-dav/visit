@@ -408,6 +408,9 @@ rm -f runit_${testHost}
 cat <<EOF > runit_${testHost}
 #!/bin/sh
 
+# avoid default texlive in PATH
+ml unload texlive
+
 # So the script uses the correct git.
 export PATH=/usr/tce/bin:$PATH
 
