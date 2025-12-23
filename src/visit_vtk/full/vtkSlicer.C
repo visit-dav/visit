@@ -36,19 +36,22 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
-#include <vtkSurfaceFromVolume.h>
 #include <vtkTriangulationTables.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <vtkCreateTriangleHelpers.h>
-#include <vtkVisItCutter.h>
+#include "vtkSurfaceFromVolume.h"
+#include "vtkCreateTriangleHelpers.h"
+
+#include "vtkVisItCutter.h"
 
 
-vtkStandardNewMacro(vtkSlicer);
+vtkStandardNewMacro(vtkSlicer)
 
 vtkSlicer::vtkSlicer()
 {
-  this->CellList = NULL;
+  this->input = nullptr;
+  this->output = nullptr;
+  this->CellList = nullptr;
   this->CellListSize = 0;
   Origin[0] = Origin[1] = Origin[2] = 0.;
   Normal[0] = Normal[1] = Normal[2] = 0.;
@@ -91,8 +94,20 @@ vtkSlicer::RequestData(
     //
     input  = vtkDataSet::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    if(input == nullptr)
+    {
+        vtkErrorMacro("No input");
+        return 1;
+    }
+
     output = vtkPolyData::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    if(output == nullptr)
+    {
+        vtkErrorMacro("No output");
+        return 1;
+    }
 
     int do_type = input->GetDataObjectType();
     if (do_type == VTK_RECTILINEAR_GRID)
@@ -148,9 +163,9 @@ class SliceFunction
 public:
     SliceFunction(const int *pt_dims, vtkPoints *pts, const double O[3], const double N[3])
     {
-        pts_ptr = (const T *)pts->GetVoidPointer(0);
-        ptstrideY = (vtkIdType)pt_dims[0];
-        ptstrideZ = (vtkIdType)(pt_dims[0] * pt_dims[1]);
+        pts_ptr =   static_cast<const T *>(pts->GetVoidPointer(0));
+        ptstrideY = static_cast<vtkIdType>(pt_dims[0]);
+        ptstrideZ = static_cast<vtkIdType>(pt_dims[0] * pt_dims[1]);
         Origin[0] = O[0]; Origin[1] = O[1]; Origin[2] = O[2];
         Normal[0] = N[0]; Normal[1] = N[1]; Normal[2] = N[2];
         D = Origin[0]*Normal[0] + Origin[1]*Normal[1] + Origin[2]*Normal[2];
@@ -199,8 +214,8 @@ public:
     GeneralSliceFunction(const int *pt_dims, vtkPoints *p, const double O[3], const double N[3])
     {
         pts = p;
-        ptstrideY = (vtkIdType)pt_dims[0];
-        ptstrideZ = (vtkIdType)(pt_dims[0] * pt_dims[1]);
+        ptstrideY = static_cast<vtkIdType>(pt_dims[0]);
+        ptstrideZ = static_cast<vtkIdType>(pt_dims[0] * pt_dims[1]);
         Origin[0] = O[0]; Origin[1] = O[1]; Origin[2] = O[2];
         Normal[0] = N[0]; Normal[1] = N[1]; Normal[2] = N[2];
         D = Origin[0]*Normal[0] + Origin[1]*Normal[1] + Origin[2]*Normal[2];
@@ -253,7 +268,7 @@ private:
 void
 vtkSlicer::StructuredGridExecute(void)
 {
-    vtkStructuredGrid *sg = (vtkStructuredGrid *)input;
+    vtkStructuredGrid *sg = static_cast<vtkStructuredGrid*>(input);
     int pt_dims[3];
     sg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -267,9 +282,9 @@ vtkSlicer::StructuredGridExecute(void)
     vtkCellData       *inCD   = sg->GetCellData();
     vtkPointData      *inPD   = sg->GetPointData();
 
-    vtkIdType ptSizeGuess = (this->CellList == NULL
-                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
+    size_t ptSizeGuess = (this->CellList == nullptr
+                         ? static_cast<size_t>(pow(static_cast<float>(nCells), 0.6667f)) * 5 + 100
+                         : static_cast<size_t>(CellListSize)*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
@@ -329,15 +344,15 @@ public:
     RectSliceFunction(vtkDataArray *Xc, vtkDataArray *Yc,
         vtkDataArray *Zc, const double O[3], const double N[3])
     {
-        X = NULL;
-        if(Xc != NULL)
-            X = (const T *)Xc->GetVoidPointer(0);
-        Y = NULL;
-        if(Yc != NULL)
-            Y = (const T *)Yc->GetVoidPointer(0);
-        Z = NULL;
-        if(Zc != NULL)
-            Z = (const T *)Zc->GetVoidPointer(0);
+        X = nullptr;
+        if(Xc != nullptr)
+            X = static_cast<const T *>(Xc->GetVoidPointer(0));
+        Y = nullptr;
+        if(Yc != nullptr)
+            Y = static_cast<const T *>(Yc->GetVoidPointer(0));
+        Z = nullptr;
+        if(Zc != nullptr)
+            Z = static_cast<const T *>(Zc->GetVoidPointer(0));
 
         Origin[0] = O[0]; Origin[1] = O[1]; Origin[2] = O[2];
         Normal[0] = N[0]; Normal[1] = N[1]; Normal[2] = N[2];
@@ -436,7 +451,7 @@ private:
 void
 vtkSlicer::RectilinearGridExecute(void)
 {
-    vtkRectilinearGrid *rg = (vtkRectilinearGrid *)input;
+    vtkRectilinearGrid *rg = static_cast<vtkRectilinearGrid*>(input);
     int pt_dims[3];
     rg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -449,9 +464,9 @@ vtkSlicer::RectilinearGridExecute(void)
     vtkCellData  *inCD   = rg->GetCellData();
     vtkPointData *inPD   = rg->GetPointData();
 
-    vtkIdType ptSizeGuess = (this->CellList == NULL
-                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
+    size_t ptSizeGuess = (this->CellList == nullptr
+                         ? static_cast<size_t>(pow(static_cast<float>(nCells), 0.6667f)) * 5 + 100
+                         : static_cast<size_t>(CellListSize)*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
@@ -534,16 +549,16 @@ vtkSlicer::UnstructuredGridExecute(void)
     // non-zoo elements.  If all the elements are from the zoo, then just
     // slice them with no appending.
 
-    vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *)input;
+    vtkUnstructuredGrid *ug = static_cast<vtkUnstructuredGrid*>(input);
 
     vtkIdType          nCells = ug->GetNumberOfCells();
     vtkPoints         *inPts  = ug->GetPoints();
     vtkCellData       *inCD   = ug->GetCellData();
     vtkPointData      *inPD   = ug->GetPointData();
 
-    vtkIdType ptSizeGuess = (this->CellList == NULL
-                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
+    size_t ptSizeGuess = (this->CellList == nullptr
+                         ? static_cast<size_t>(pow(static_cast<float>(nCells), 0.6667f)) * 5 + 100
+                         : static_cast<size_t>(CellListSize)*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
@@ -561,47 +576,48 @@ vtkSlicer::UnstructuredGridExecute(void)
             accessMethod = 2;
     }
 
-    vtkIdType nToProcess = (CellList != NULL ? CellListSize : nCells);
+    vtkIdType nToProcess = (CellList != nullptr ? CellListSize : nCells);
     vtkIdType numIcantSlice = 0;
     vtkIdType numVertices = 0;
+    vtkIdList *facePtIds = vtkIdList::New();
     for (vtkIdType i = 0 ; i < nToProcess ; i++)
     {
-        vtkIdType  cellId = (CellList != NULL ? CellList[i] : i);
+        vtkIdType  cellId = (CellList != nullptr ? CellList[i] : i);
         int        cellType = ug->GetCellType(cellId);
         vtkIdType  npts;
         const vtkIdType *pts;
         ug->GetCellPoints(cellId, npts, pts);
-        const int *triangulation_table = NULL;
-        const int *vertices_from_edges = NULL;
+        const int *triangulation_table = nullptr;
+        const int *vertices_from_edges = nullptr;
         int tt_step = 0;
         bool canSlice = false;
         bool isVertex = false;
         switch (cellType)
         {
           case VTK_TETRA:
-            triangulation_table = (const int *) tetTriangulationTable;
-            vertices_from_edges = (const int *) tetVerticesFromEdges;
+            triangulation_table = const_cast<const int *>(*tetTriangulationTable);
+            vertices_from_edges = const_cast<const int *>(*tetVerticesFromEdges);
             tt_step = 7;
             canSlice = true;
             break;
 
           case VTK_PYRAMID:
-            triangulation_table = (const int *) pyramidTriangulationTable;
-            vertices_from_edges = (const int *) pyramidVerticesFromEdges;
+            triangulation_table = const_cast<const int *>(*pyramidTriangulationTable);
+            vertices_from_edges = const_cast<const int *>(*pyramidVerticesFromEdges);
             tt_step = 13;
             canSlice = true;
             break;
 
           case VTK_WEDGE:
-            triangulation_table = (const int *) wedgeTriangulationTable;
-            vertices_from_edges = (const int *) wedgeVerticesFromEdges;
+            triangulation_table = const_cast<const int *>(*wedgeTriangulationTable);
+            vertices_from_edges = const_cast<const int *>(*wedgeVerticesFromEdges);
             tt_step = 13;
             canSlice = true;
             break;
 
           case VTK_HEXAHEDRON:
-            triangulation_table = (const int *) hexTriangulationTable;
-            vertices_from_edges = (const int *) hexVerticesFromEdges;
+            triangulation_table = const_cast<const int *>(*hexTriangulationTable);
+            vertices_from_edges = const_cast<const int *>(*hexVerticesFromEdges);
             tt_step = 16;
             canSlice = true;
             break;
@@ -682,19 +698,20 @@ vtkSlicer::UnstructuredGridExecute(void)
 
             if(cellType == VTK_POLYHEDRON)
             {
-                vtkIdType nFaces;
-                const vtkIdType *facePtIds;
-                ug->GetFaceStream(cellId, nFaces, facePtIds);
-                stuff_I_cant_slice->InsertNextCell(cellType, npts, pts,
-                    nFaces, facePtIds);
+                facePtIds->Reset();
+                ug->GetFaceStream(cellId, facePtIds);
+                stuff_I_cant_slice->InsertNextCell(cellType, facePtIds);
             }
             else
+            {
                 stuff_I_cant_slice->InsertNextCell(cellType, npts, pts);
+            }
             stuff_I_cant_slice->GetCellData()->
                             CopyData(ug->GetCellData(), cellId, numIcantSlice);
             numIcantSlice++;
         }
     }
+    facePtIds->Delete();
 
     if ((numIcantSlice > 0) || (numVertices > 0))
     {

@@ -6,7 +6,7 @@
 #define __vtkSlicer_h
 #include <visit_vtk_exports.h>
 
-#include "vtkPolyDataAlgorithm.h"
+#include <vtkPolyDataAlgorithm.h>
 
 // ***************************************************************************
 //  Class: vtkSlicer
@@ -20,7 +20,7 @@
 class VISIT_VTK_API vtkSlicer : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkSlicer,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkSlicer,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

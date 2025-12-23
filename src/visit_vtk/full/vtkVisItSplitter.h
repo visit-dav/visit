@@ -42,7 +42,7 @@ class VISIT_VTK_API vtkVisItSplitter :
     public vtkUnstructuredGridAlgorithm
 {
   public:
-    vtkTypeMacro(vtkVisItSplitter,vtkUnstructuredGridAlgorithm);
+    vtkTypeMacro(vtkVisItSplitter,vtkUnstructuredGridAlgorithm)
     void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkVisItSplitter *New();
@@ -57,7 +57,7 @@ class VISIT_VTK_API vtkVisItSplitter :
     virtual void SetNewTagBit(int);
 
     void SetCellList(const vtkIdType *, vtkIdType);
-    virtual void SetUpClipFunction(int) { ; };
+    virtual void SetUpClipFunction(int) { ; }
 
     struct FilterState
     {

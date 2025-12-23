@@ -6,7 +6,7 @@
 //             vtkBinaryPartitionVolumeFromVolume.C                          //
 // ************************************************************************* //
 
-#include <vtkBinaryPartitionVolumeFromVolume.h>
+#include "vtkBinaryPartitionVolumeFromVolume.h"
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -32,7 +32,7 @@ using std::vector;
 // ****************************************************************************
 
 vtkBinaryPartitionVolumeFromVolume::vtkBinaryPartitionVolumeFromVolume(
-    vtkIdType nPts, vtkIdType ptSizeGuess) : vtkVolumeFromVolume(nPts, ptSizeGuess)
+    vtkIdType nPts, size_t ptSizeGuess) : vtkVolumeFromVolume(nPts, ptSizeGuess)
 {
     shapeTags[0] = &tetTags;
     shapeTags[1] = &pyramidTags;
@@ -43,14 +43,14 @@ vtkBinaryPartitionVolumeFromVolume::vtkBinaryPartitionVolumeFromVolume(
     shapeTags[6] = &lineTags;
     shapeTags[7] = &vertexTags;
 
-    tetTags.reserve(ptSizeGuess / 20);
-    pyramidTags.reserve(ptSizeGuess / 20);
-    wedgeTags.reserve(ptSizeGuess / 20);
-    hexTags.reserve(ptSizeGuess / 20);
-    quadTags.reserve(ptSizeGuess / 20);
-    triTags.reserve(ptSizeGuess / 20);
-    lineTags.reserve(ptSizeGuess / 20);
-    vertexTags.reserve(ptSizeGuess / 20);
+    tetTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
+    pyramidTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
+    wedgeTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
+    hexTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
+    quadTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
+    triTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
+    lineTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
+    vertexTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
 }
 
 
@@ -109,7 +109,7 @@ vtkBinaryPartitionVolumeFromVolume::ComputeTags(
     int newTagBit)
 {
     size_t ncells = 0;
-    for (int i = 0 ; i < nshapes ; i++)
+    for (size_t  i = 0 ; i < nshapes ; i++)
         ncells += shapeTags[i]->size();
 
     if (newTags)
@@ -119,27 +119,27 @@ vtkBinaryPartitionVolumeFromVolume::ComputeTags(
     }
 
     int cellId = 0;
-    for (int i = 0 ; i < nshapes ; i++)
+    for (size_t i = 0 ; i < nshapes ; i++)
     {
         const vtkIdType *shapeList;
         const vector<vtkIdType> *tagList = shapeTags[i];
-        vtkIdType nlists = shapes[i]->GetNumberOfLists();
-        int shapesize = shapes[i]->GetShapeSize();
-        int indexInShape = 0;
-        for (int j = 0 ; j < nlists ; j++)
+        size_t nlists = shapes[i]->GetNumberOfLists();
+        size_t shapesize = shapes[i]->GetShapeSize();
+        size_t indexInShape = 0;
+        for (size_t j = 0 ; j < nlists ; j++)
         {
-            int listSize = shapes[i]->GetList(j, shapeList);
-            for (int k = 0 ; k < listSize ; k++)
+            size_t listSize = shapes[i]->GetList(j, shapeList);
+            for (size_t k = 0 ; k < listSize ; k++)
             {
                 // Update the partition bit
                 bool half = !(tagList->operator[](indexInShape));
                 vtkCSGFixedLengthBitField bf;
                 if (oldTags)
-                    bf = oldTags->operator[](shapeList[0]);
+                    bf = oldTags->operator[](static_cast<size_t>(shapeList[0]));
                 if (newTags && half)
                     bf.SetBit(newTagBit);
                 if (newTags)
-                    newTags->operator[](cellId) = bf;
+                    newTags->operator[](static_cast<size_t>(cellId)) = bf;
 
                 shapeList += shapesize+1;
                 cellId++;

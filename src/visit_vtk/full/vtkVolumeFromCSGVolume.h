@@ -58,9 +58,9 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
 
 
   public:
-                      vtkVolumeFromCSGVolume(int nPts,
-                                             int ptSizeGuess);
-    virtual          ~vtkVolumeFromCSGVolume() { ; };
+                      vtkVolumeFromCSGVolume(vtkIdType  nPts,
+                                             size_t ptSizeGuess);
+    virtual          ~vtkVolumeFromCSGVolume() { ; }
 
     void              ConstructDataSet(vtkCellData *,
                           vtkUnstructuredGrid *, float *, int,
@@ -122,12 +122,12 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
 
 
     void                    InitTraversal();
-    vtkIdType               GetNumberOfCells() const;
+    size_t                  GetNumberOfCells() const;
     void                    NextCell();
     const vtkIdType        *GetCell();
     vtkCSGFixedLengthBitField GetTag();
-    int                     GetCellSize() const;
-    int                     GetCellVTKType() const;
+    size_t                  GetCellSize() const;
+    unsigned char           GetCellVTKType() const;
     void                    SetId(int);
     void                    SetTagBit(int);
     void                    InvalidateCell();
@@ -146,13 +146,16 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
     std::vector<vtkCSGFixedLengthBitField>  *shapeTags[8];
     std::vector<vtkCSGFixedLengthBitField>  *curTags;
 
-    int                     ishape;
-    int                     shapeCnt[8];
-    ShapeList              *curShapes;
-    int                     curShapeCnt;
-    int                     curShapeSize;
-    int                     curShapeVTKType;
-    int                     curShape;
+    size_t               ishape;
+    size_t               shapeCnt[8];
+    ShapeList           *curShapes;
+    size_t               curShapeCnt;
+    size_t               curShapeSize;
+    unsigned char        curShapeVTKType;
+    size_t               curShape;
+
+    vtkVolumeFromCSGVolume(const vtkVolumeFromCSGVolume&) = delete;
+    void operator=(const vtkVolumeFromCSGVolume&) = delete;
 };
 
 #endif

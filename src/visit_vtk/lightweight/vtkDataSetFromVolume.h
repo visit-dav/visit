@@ -63,18 +63,21 @@ class VISIT_VTK_LIGHT_API PointList
  
     void           Clear();
 
-    vtkIdType      AddPoint(vtkIdType, vtkIdType, float);
+    size_t         AddPoint(vtkIdType, vtkIdType, float);
  
-    vtkIdType      GetTotalNumberOfPoints(void) const;
-    vtkIdType      GetNumberOfLists(void) const;
-    int            GetList(vtkIdType, const PointEntry *&) const;
+    size_t         GetTotalNumberOfPoints(void) const;
+    size_t         GetNumberOfLists(void) const;
+    size_t         GetList(size_t, const PointEntry *&) const;
  
   protected:
     PointEntry   **list;
-    vtkIdType      currentList;
-    vtkIdType      currentPoint;
-    vtkIdType      listSize;
-    vtkIdType      pointsPerList;
+    size_t         currentList;
+    size_t         currentPoint;
+    size_t         listSize;
+    size_t         pointsPerList;
+
+    PointList(const PointList&) = delete;
+    void operator=(const PointList&) = delete;
 };
 
 protected:
@@ -142,7 +145,7 @@ class VISIT_VTK_LIGHT_API EdgeHashEntryMemoryManager
 class VISIT_VTK_LIGHT_API EdgeHashTable
 {
   public:
-                      EdgeHashTable(int, PointList &);
+                      EdgeHashTable(size_t, PointList &);
     virtual          ~EdgeHashTable();
  
     void              Clear();
@@ -151,18 +154,21 @@ class VISIT_VTK_LIGHT_API EdgeHashTable
     PointList        &GetPointList(void);
  
   protected:
-    int                             nHashes;
+    size_t                          nHashes;
     EdgeHashEntry                 **hashes;
     EdgeHashEntryMemoryManager      emm;
     PointList                      &pointlist;
  
     vtkIdType         GetKey(vtkIdType, vtkIdType);
+
+    EdgeHashTable(const EdgeHashTable&)  = delete;
+    void operator=(const EdgeHashTable&) = delete;
 };
 
 
   public:
-                      vtkDataSetFromVolume(vtkIdType ptSizeGuess);
-                      vtkDataSetFromVolume(vtkIdType nPts, vtkIdType ptSizeGuess);
+                      vtkDataSetFromVolume(size_t ptSizeGuess);
+                      vtkDataSetFromVolume(vtkIdType nPts, size_t ptSizeGuess);
     virtual          ~vtkDataSetFromVolume() { ; }
 
     vtkIdType         AddPoint(vtkIdType p1, vtkIdType p2, float percent)
@@ -172,6 +178,9 @@ class VISIT_VTK_LIGHT_API EdgeHashTable
     PointList         pt_list;
     EdgeHashTable     edges;
     vtkIdType         numPrevPts;
+
+    vtkDataSetFromVolume(const vtkDataSetFromVolume&) = delete;
+    void operator=(const vtkDataSetFromVolume&) = delete;
 };
 
 
