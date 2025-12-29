@@ -166,9 +166,9 @@ vtkMultiSplitter::RequestData(
         {
             for (int i = 0; i < dims[0]; i++)
             {
-                 pts.push_back(X->GetTuple1(i));
-                 pts.push_back(Y->GetTuple1(j));
-                 pts.push_back(Z->GetTuple1(k));
+                 pts.push_back(static_cast<float>(X->GetTuple1(i)));
+                 pts.push_back(static_cast<float>(Y->GetTuple1(j)));
+                 pts.push_back(static_cast<float>(Z->GetTuple1(k)));
             }
         }
     }
@@ -219,7 +219,7 @@ vtkMultiSplitter::RequestData(
         {
             float *pt = &pts[3*i];
             clipArray[i] = 
-               -clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+               -static_cast<float>(clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]));
         }
 
         vfv.InitTraversal();
