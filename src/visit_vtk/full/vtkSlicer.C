@@ -177,13 +177,17 @@ public:
         vtkIdType ptId = (cellI + iOffset) + (cellJ + jOffset) * ptstrideY +
                          (cellK + kOffset) * ptstrideZ;
         const T *pt = pts_ptr + 3 * ptId;
-        return pt[0]*Normal[0] + pt[1]*Normal[1] + pt[2]*Normal[2] - D;
+        return static_cast<T>(static_cast<double>(pt[0])*Normal[0] +
+                              static_cast<double>(pt[1])*Normal[1] +
+                              static_cast<double>(pt[2])*Normal[2] - D);
     }
 
     inline T operator()(vtkIdType ptId) const
     {
         const T *pt = pts_ptr + 3 * ptId;
-        return pt[0]*Normal[0] + pt[1]*Normal[1] + pt[2]*Normal[2] - D;
+        return static_cast<T>(static_cast<double>(pt[0])*Normal[0] + 
+                              static_cast<double>(pt[1])*Normal[1] +
+                              static_cast<double>(pt[2])*Normal[2] - D);
     }
 private:
     vtkIdType ptstrideY, ptstrideZ;
@@ -366,7 +370,9 @@ public:
         pt[0] = X[cellI + iOffset];
         pt[1] = Y[cellJ + jOffset];
         pt[2] = Z[cellK + kOffset];
-        return pt[0]*Normal[0] + pt[1]*Normal[1] + pt[2]*Normal[2] - D;
+        return static_cast<T>(static_cast<double>(pt[0])*Normal[0] +
+                              static_cast<double>(pt[1])*Normal[1] +
+                              static_cast<double>(pt[2])*Normal[2] - D);
     }
 private:
     const T *X;

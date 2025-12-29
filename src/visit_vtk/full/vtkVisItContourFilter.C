@@ -408,7 +408,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
             accessMethod = 2;
     }
 
-    int nToProcess = (CellList != nullptr ? CellListSize : nCells);
+    vtkIdType nToProcess = (CellList != nullptr ? CellListSize : nCells);
     int numIcantContour = 0;
     vtkIdList *facePtIds = vtkIdList::New();
     for (vtkIdType i = 0 ; i < nToProcess ; i++)

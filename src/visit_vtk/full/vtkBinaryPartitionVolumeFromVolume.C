@@ -43,14 +43,14 @@ vtkBinaryPartitionVolumeFromVolume::vtkBinaryPartitionVolumeFromVolume(
     shapeTags[6] = &lineTags;
     shapeTags[7] = &vertexTags;
 
-    tetTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    pyramidTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    wedgeTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    hexTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    quadTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    triTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    lineTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    vertexTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
+    tetTags.reserve(ptSizeGuess / 20);
+    pyramidTags.reserve(ptSizeGuess / 20);
+    wedgeTags.reserve(ptSizeGuess / 20);
+    hexTags.reserve(ptSizeGuess / 20);
+    quadTags.reserve(ptSizeGuess / 20);
+    triTags.reserve(ptSizeGuess / 20);
+    lineTags.reserve(ptSizeGuess / 20);
+    vertexTags.reserve(ptSizeGuess / 20);
 }
 
 

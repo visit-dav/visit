@@ -43,14 +43,25 @@ vtkVolumeFromCSGVolume::vtkVolumeFromCSGVolume(vtkIdType nPts, size_t ptSizeGues
     shapeTags[6] = &lineTags;
     shapeTags[7] = &vertexTags;
 
-    tetTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    pyramidTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    wedgeTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    hexTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    quadTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    triTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    lineTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
-    vertexTags.reserve(static_cast<size_t>(ptSizeGuess / 20));
+    tetTags.reserve(ptSizeGuess / 20);
+    pyramidTags.reserve(ptSizeGuess / 20);
+    wedgeTags.reserve(ptSizeGuess / 20);
+    hexTags.reserve(ptSizeGuess / 20);
+    quadTags.reserve(ptSizeGuess / 20);
+    triTags.reserve(ptSizeGuess / 20);
+    lineTags.reserve(ptSizeGuess / 20);
+    vertexTags.reserve(ptSizeGuess / 20);
+
+    curTags = nullptr;
+
+    ishape = 0;
+    for (size_t i = 0; i < 8; ++i)
+        shapeCnt[i] = 0;
+    curShapes = nullptr;
+    curShapeCnt = 0;
+    curShapeSize = 0;
+    curShapeVTKType = VTK_EMPTY_CELL;
+    curShape = 0;
 }
 
 // ****************************************************************************
@@ -109,7 +120,7 @@ vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
                 if (list[0] != -1)
                 {
                     ncells++;
-                    conn_size += shapesize+1;
+                    conn_size += static_cast<vtkIdType>(shapesize+1);
                 }
                 list += shapesize+1;
             }
@@ -160,7 +171,7 @@ vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
                 *ct++ = vtk_type;
                 for (size_t l = 0 ; l < shapesize ; l++)
                     *nl++ = ids[l];
-                current_index += shapesize+1;
+                current_index += static_cast<vtkIdType>(shapesize+1);
                 cellId++;
             }
         }
