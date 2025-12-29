@@ -886,7 +886,7 @@ vtkVisItClipper_Algorithm(ScalarAccess scalar,
                                                         &percent);
                         }
                                 
-                        shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
+                        shape[p] = useVFV->AddPoint(ptId1, ptId2, static_cast<float>(percent));
                     }
                     else if (pt >= N0 && pt <= N3)
                     {
@@ -1014,82 +1014,6 @@ vtkVisItClipper_Algorithm(ScalarAccess scalar,
     visitTimer->StopTimer(t2, "VFV Constructing data set");
 }
 
-// ****************************************************************************
-//  Method: vtkVisItClipper_RectExecute
-//
-//  Purpose: 
-//    Execute the clipping algorithm to different data via a bridge thet lets
-//    us deal with different mesh types and coordinate precisions. This function
-//    sets up structured meshes specially.
-//
-//  Arguments:
-//
-//  Returns:    
-//
-//  Note:       Same
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Mon Mar 26 13:52:27 PDT 2012
-//
-//  Modifications:
-//    Kathleen Biagas, Tue Aug 14 11:28:31 MST 2012 
-//    Added clipper argument, for access to the ModifyClip method.
-//    Only evaluate clip function if precomputeClipScalars is true.
-//
-// ****************************************************************************
-
-void
-vtkVisItClipper_RectExecute(
-    vtkVisItClipper::FilterState &state,
-    vtkDataSet *input, vtkUnstructuredGrid *output,
-    vtkUnstructuredGrid *stuff_I_cant_clip,
-    vtkVisItClipper *clipper) 
-{
-    if(state.clipFunction != nullptr)
-    {
-        double *scalar = new double[static_cast<size_t>(input->GetNumberOfPoints())];
-        vtkRectilinearGrid *rg = static_cast<vtkRectilinearGrid*>(input);
-        int pt_dims[3] = {0,0,0};
-        rg->GetDimensions(pt_dims);
-        vtkAccessor<double> scalarAccess(scalar);
-        vtkIdType id = 0;
-        if (state.precomputeClipScalars)
-        {
-            for (vtkIdType k=0; k<pt_dims[2]; k++)
-            {
-                for (vtkIdType j=0; j<pt_dims[1]; j++)
-                {
-                    for (vtkIdType i=0; i<pt_dims[0]; i++, id++)
-                    {
-                        double pt[3];
-                        static_cast<vtkRectilinearGrid*>(input)->GetPoint(i,j,k,pt);
-                        scalar[id] = -state.clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
-                    }
-                }
-            }
-        }
-
-        vtkVisItClipper_Algorithm(scalarAccess, state, input, output, 
-            stuff_I_cant_clip, clipper);
-        delete [] scalar;
-    }
-    else if(state.scalarArrayAsVTK != nullptr)
-    {
-        int dt = state.scalarArrayAsVTK->GetDataType();
-        if(dt == VTK_FLOAT)
-            vtkVisItClipper_Algorithm(
-                vtkAccessor<float>(state.scalarArrayAsVTK),
-                state, input, output, stuff_I_cant_clip, clipper);
-        else if(dt == VTK_DOUBLE)
-            vtkVisItClipper_Algorithm(
-                vtkAccessor<double>(state.scalarArrayAsVTK),
-                state, input, output, stuff_I_cant_clip, clipper);
-        else
-            vtkVisItClipper_Algorithm(
-                vtkGeneralAccessor(state.scalarArrayAsVTK),
-                state, input, output, stuff_I_cant_clip, clipper);
-    }
-}
 
 // ****************************************************************************
 //  Method: vtkVisItClipper_Execute
