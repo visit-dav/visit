@@ -43,6 +43,9 @@
 #   building plugins against install, since we don't use the cmake targets,
 #   only lists of libraries.
 #
+#   Kathleen Biagas, Mon Dec 29, 2025 
+#   Remove vtkVisItSplitter, it is no longer used.
+# 
 #****************************************************************************/
 
 IF(OPENEXR_FOUND)
@@ -93,7 +96,6 @@ vtkVisItStructuredGridNormals.C
 vtkVisItProbeFilter.C
 vtkVisItSTLWriter.C
 vtkVisItScalarTree.C
-vtkVisItSplitter.C
 vtkVisItTubeFilter.C
 vtkVisItTensorGlyph.C
 vtkVolumeFromCSGVolume.C

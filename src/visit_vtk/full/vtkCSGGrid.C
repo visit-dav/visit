@@ -38,7 +38,6 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <vtkVisItClipper.h>
-#include <vtkVisItSplitter.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
