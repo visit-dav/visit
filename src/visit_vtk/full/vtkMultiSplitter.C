@@ -236,7 +236,7 @@ vtkMultiSplitter::RequestData(
             size_t nCellPts = vfv.GetCellSize();
             int out_case = outCases[nCellPts];
             int cellType = vfv.GetCellVTKType();
-            int cellId = cellPts[0];
+            vtkIdType cellId = cellPts[0];
             cellPts++;
 
             // fill the dist functions and calculate lookup case
@@ -414,15 +414,15 @@ vtkMultiSplitter::RequestData(
                                 pt1 = tmp;
                             }
                             float dir = dist[pt2] - dist[pt1];
-                            float amt = 0. - dist[pt1];
-                            float percent = 1. - (amt / dir);
+                            float amt = 0.f - dist[pt1];
+                            float percent = 1.f - (amt / dir);
 
                             // We may have physically (though not logically)
                             // degenerate cells if percent==0 or percent==1.
                             // We could pretty easily and mostly safely clamp
                             // percent to the range [1e-4, 1. - 1e-4] here.
-                            int ptId1 = cellPts[pt1];
-                            int ptId2 = cellPts[pt2];
+                            vtkIdType ptId1 = cellPts[pt1];
+                            vtkIdType ptId2 = cellPts[pt2];
 
                             shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
                         }

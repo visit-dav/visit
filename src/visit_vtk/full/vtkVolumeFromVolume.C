@@ -792,7 +792,7 @@ ConstructDataSetHelper(vtkPointData *inPD,
     // Set up the output points and its point data.
     //
     vtkPoints *outPts = vtkPoints::New(dataType);
-    size_t centroidStart = numUsed + pt_list.GetTotalNumberOfPoints();
+    size_t centroidStart = static_cast<size_t>(numUsed) + pt_list.GetTotalNumberOfPoints();
     vtkIdType nOutPts = static_cast<vtkIdType>(centroidStart + centroid_list.GetTotalNumberOfPoints());
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inPD, nOutPts);
@@ -821,7 +821,7 @@ ConstructDataSetHelper(vtkPointData *inPD,
         if (newOrigNodes)
             newOrigNodes->SetTuple(ptLookup[i], origNodes->GetTuple(i));
     }
-    vtkIdType ptIdx = numUsed;
+    vtkIdType ptIdx = static_cast<vtkIdType>(numUsed);
 
     //
     // Now construct all the points that are along edges and new and add 
@@ -934,8 +934,8 @@ ConstructDataSetHelper(vtkPointData *inPD,
     for (size_t i = 0 ; i < nshapes ; i++)
     {
         size_t ns = shapes[i]->GetTotalNumberOfShapes();
-        ncells += ns;
-        conn_size += (shapes[i]->GetShapeSize()+1)*ns;
+        ncells += static_cast<vtkIdType>(ns);
+        conn_size += static_cast<vtkIdType>((shapes[i]->GetShapeSize()+1)*ns);
     }
 
     outCD->CopyAllocate(inCD, ncells);
@@ -981,7 +981,7 @@ ConstructDataSetHelper(vtkPointData *inPD,
                 *ct++ = vtk_type;
                 for (size_t l = 0 ; l < shapesize ; l++)
                     *nl++ = ids[l];
-                current_index += shapesize+1;
+                current_index += static_cast<vtkIdType>(shapesize)+1;
                 //output->InsertNextCell(vtk_type, shapesize, ids);
                 cellId++;
             }
