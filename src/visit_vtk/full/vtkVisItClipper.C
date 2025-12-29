@@ -615,7 +615,7 @@ vtkVisItClipper_Algorithm(ScalarAccess scalar,
         {
             if (state.precomputeClipScalars)
             {
-                dist[j] = state.scalarCutoff - scalar.GetTuple1(cellPts->GetId(j));
+                dist[j] = state.scalarCutoff - static_cast<double>(scalar.GetTuple1(cellPts->GetId(j)));
             }
             else
             {
@@ -771,8 +771,8 @@ vtkVisItClipper_Algorithm(ScalarAccess scalar,
             break;
         }
 
-        int            interpIDsIn[4];
-        int            interpIDsOut[4];
+        int            interpIDsIn[4]  = {-1,-1,-1,-1};
+        int            interpIDsOut[4] = {-1,-1,-1,-1};
         for (int j = 0 ; j < numOutput ; j++)
         {
             unsigned char shapeType = *splitCase++;

@@ -6,8 +6,8 @@
 #define VTK_MULTI_SPLITTER_H
 #include <visit_vtk_exports.h>
 
-#include "vtkCSGFixedLengthBitField.h"
-#include "vtkUnstructuredGridAlgorithm.h"
+#include <vtkCSGFixedLengthBitField.h>
+#include <vtkUnstructuredGridAlgorithm.h>
 
 #include <vector>
 
@@ -38,7 +38,7 @@ class VISIT_VTK_API vtkMultiSplitter :
   public vtkUnstructuredGridAlgorithm
 {
   public:
-    vtkTypeMacro(vtkMultiSplitter,vtkUnstructuredGridAlgorithm);
+    vtkTypeMacro(vtkMultiSplitter,vtkUnstructuredGridAlgorithm)
     void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkMultiSplitter *New();
@@ -60,8 +60,8 @@ class VISIT_VTK_API vtkMultiSplitter :
     int    nBounds;
     std::vector<vtkCSGFixedLengthBitField> *newTags;
 
-    vtkMultiSplitter(const vtkMultiSplitter&);  // Not implemented.
-    void operator=(const vtkMultiSplitter&);    // Not implemented.
+    vtkMultiSplitter(const vtkMultiSplitter&) = delete;
+    void operator=(const vtkMultiSplitter&) = delete;
 };
 
 #endif
