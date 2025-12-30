@@ -647,7 +647,7 @@ if test "$post" = "true" ; then
     git push
     
     # Set group read/write permissions so others can update the dashboard.
-    chgrp -R g+rwX .
+    chmod -R g+rwX .
 
     # Move the new results to old_results.
     echo "Moving the new results to old_results at \`date\`."
