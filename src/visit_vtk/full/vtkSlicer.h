@@ -62,8 +62,8 @@ protected:
   double Origin[3];
 
 private:
-  vtkSlicer(const vtkSlicer&);  // Not implemented.
-  void operator=(const vtkSlicer&);  // Not implemented.
+  vtkSlicer(const vtkSlicer&) = delete;
+  void operator=(const vtkSlicer&) = delete;
 };
 
 #endif

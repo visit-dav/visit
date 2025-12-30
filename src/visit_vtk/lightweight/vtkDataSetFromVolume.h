@@ -9,6 +9,7 @@
 #ifndef VTK_DATASET_FROM_VOLUME_H
 #define VTK_DATASET_FROM_VOLUME_H
 #include <visit_vtk_light_exports.h>
+#include <cstddef>
 #include <vtkType.h>
 #include <vector>
 

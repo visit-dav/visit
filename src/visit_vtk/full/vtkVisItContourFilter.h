@@ -69,8 +69,8 @@ protected:
   vtkDataArray *GetPointScalars(vtkDataSet*);
   
 private:
-  vtkVisItContourFilter(const vtkVisItContourFilter&);  // Not implemented.
-  void operator=(const vtkVisItContourFilter&);  // Not implemented.
+  vtkVisItContourFilter(const vtkVisItContourFilter&) = delete;  // Not implemented.
+  void operator=(const vtkVisItContourFilter&) = delete;
 };
 
 
