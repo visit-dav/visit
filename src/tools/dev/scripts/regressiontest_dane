@@ -197,6 +197,10 @@
 #   indicating the test run finished appears rather than a fixed amount
 #   of time. Removed the debug option.
 #
+#   Eric Brugger, Tue Dec 30 09:36:22 PST 2025
+#   Add code to allow group read/write access to the dashboard repository
+#   after updating it.
+#
 
 
 # Determine the users name and e-mail address.
@@ -407,6 +411,9 @@ chmod 750 checkout_${testHost}
 rm -f runit_${testHost}
 cat <<EOF > runit_${testHost}
 #!/bin/sh
+
+# avoid default texlive in PATH
+ml unload texlive
 
 # So the script uses the correct git.
 export PATH=/usr/tce/bin:$PATH
@@ -639,6 +646,9 @@ if test "$post" = "true" ; then
     git commit -m "Add new results to the dashboard."
     git push
     
+    # Set group read/write permissions so others can update the dashboard.
+    chmod -R g+rwX .
+
     # Move the new results to old_results.
     echo "Moving the new results to old_results at \`date\`."
     cd $buildDir/test
