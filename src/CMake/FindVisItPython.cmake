@@ -503,10 +503,10 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
             #  So Non-WIN32 needs extra 'include' appended to DESTINATION
 
             set(pyIncDest ${VISIT_INSTALLED_VERSION_INCLUDE}/python)
-            #if(NOT WIN32)
-            #    string(APPEND pyIncDest "/include")
-            #endif()
-            install(DIRECTORY ${Python3_INCLUDE_DIRS}/
+            if(NOT WIN32)
+                string(APPEND pyIncDest "/include")
+            endif()
+            install(DIRECTORY ${PYTHON_INCLUDE_PATH}
                 DESTINATION ${pyIncDest}
                 FILE_PERMISSIONS ${filePerms}
                 DIRECTORY_PERMISSIONS ${dirPerms})

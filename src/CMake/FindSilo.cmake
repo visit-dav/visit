@@ -87,7 +87,27 @@ if(SILO_FOUND)
     set(PDB_LIB silo CACHE STRING "PDB library" FORCE)
     mark_as_advanced(PDB_LIB)
 
-   # for plugin vs install:
-   cmake_path(GET silo_loc FILENAME SILO_IMPORT_LIB)
+    if (WIN32)
+        if(EXISTS ${SILO_DIR}/bin/silex.exe)
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                            ${SILO_DIR}/bin/silex.exe
+                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+            install(FILES ${SILO_DIR}/bin/silex.exe
+                    DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                WORLD_READ WORLD_EXECUTE)
+        endif()
+        if(EXISTS ${SILO_DIR}/bin/browser.exe)
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                            ${SILO_DIR}/bin/browser.exe
+                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+            install(FILES ${SILO_DIR}/bin/browser.exe
+                    DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                WORLD_READ WORLD_EXECUTE)
+        endif()
+    endif()
 endif()
 
