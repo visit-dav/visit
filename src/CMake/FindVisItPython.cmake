@@ -506,7 +506,7 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
             if(NOT WIN32)
                 string(APPEND pyIncDest "/include")
             endif()
-            install(DIRECTORY ${PYTHON_INCLUDE_PATH}
+            install(DIRECTORY ${PYTHON_INCLUDE_PATH}/
                 DESTINATION ${pyIncDest}
                 FILE_PERMISSIONS ${filePerms}
                 DIRECTORY_PERMISSIONS ${dirPerms})
