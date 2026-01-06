@@ -495,19 +495,8 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
         if(VISIT_HEADERS_SKIP_INSTALL)
             message(STATUS "Skipping python headers installation")
         else()
-            # KSB
-            #  WIN32  PYTHON_INCLUDE_PATH is
-            #    'path-to-python/include'
-            #  Non-WIN32 PYTHON_INCLUDE_PATH is:
-            #    'path-to-python/include/python<vermaj>.<vermin>m'
-            #  So Non-WIN32 needs extra 'include' appended to DESTINATION
-
-            set(pyIncDest ${VISIT_INSTALLED_VERSION_INCLUDE}/python)
-            if(NOT WIN32)
-                string(APPEND pyIncDest "/include")
-            endif()
             install(DIRECTORY ${PYTHON_INCLUDE_PATH}/
-                DESTINATION ${pyIncDest}
+                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python
                 FILE_PERMISSIONS ${filePerms}
                 DIRECTORY_PERMISSIONS ${dirPerms})
         endif()
