@@ -99,7 +99,7 @@ The use of the asterisk in the set command above  isn't technically necessary, b
 For instance, to get only the ``data`` directory where the test data lives, if ``git sparse-checkout set 'data'`` is used, then both the ``data`` and the ``src`` directories will be downloaded because there is a ``data`` subdirectory in ``src/tools/data``.
 
 You can use the same commands if you prefer ``ssh`` over ``https`` for cloning.
-Branching and development in sparse checkouts works the same as will the full repository.
+Branching and development in sparse checkouts works the same as with the full repository.
 
 If later you want to run regressions, you can create a new full clone or a separte sparse clone of just the ``data`` or ``test`` directory, or both.
 If the test data directory is not located peer to ``src``, you can tell VisIt_'s CMake build system where to find it by setting ``VISIT_DATA_DIR``  to the location of ``data`` before you configure with CMake.
