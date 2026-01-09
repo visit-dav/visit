@@ -58,18 +58,18 @@ public:
 
 protected:
   vtkRectilinearGridFacelistFilter();
-  ~vtkRectilinearGridFacelistFilter() {};
+  ~vtkRectilinearGridFacelistFilter() {}
 
-  virtual int RequestData(vtkInformation *,
-                          vtkInformationVector **,
-                          vtkInformationVector *) override;
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
   int  ForceFaceConsolidation;
 
 private:
-  vtkRectilinearGridFacelistFilter(const vtkRectilinearGridFacelistFilter&);
-  void operator=(const vtkRectilinearGridFacelistFilter&);
+  vtkRectilinearGridFacelistFilter(const vtkRectilinearGridFacelistFilter&) = delete;
+  void operator=(const vtkRectilinearGridFacelistFilter&) = delete;
 
   void ConsolidateFacesWithoutGhostZones(vtkRectilinearGrid *, vtkPolyData *);
   vtkPolyData *ConsolidateFacesWithGhostZones(vtkPolyData *, vtkIdTypeArray *,

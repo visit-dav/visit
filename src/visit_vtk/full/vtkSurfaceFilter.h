@@ -58,12 +58,12 @@ public:
  
 protected:
   vtkSurfaceFilter();
-  ~vtkSurfaceFilter() ;
+  ~vtkSurfaceFilter();
 
-  virtual int RequestData(vtkInformation *,
-                          vtkInformationVector **,
-                          vtkInformationVector *) override;
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
   void ExecuteRectilinearGrid(vtkRectilinearGrid *, vtkUnstructuredGrid *);
   void ExecutePointSet(vtkPointSet *, vtkUnstructuredGrid *);
@@ -73,8 +73,8 @@ protected:
   vtkDataArray *inScalars;
 
 private:
-  vtkSurfaceFilter(const vtkSurfaceFilter&);
-  void operator=(const vtkSurfaceFilter&);
+  vtkSurfaceFilter(const vtkSurfaceFilter&) = delete;
+  void operator=(const vtkSurfaceFilter&) = delete;
 };
 
 #endif

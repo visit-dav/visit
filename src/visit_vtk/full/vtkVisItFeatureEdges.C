@@ -171,7 +171,7 @@ int vtkVisItFeatureEdges::RequestData(
     for ( inStrips->GoToFirstCell(); !inStrips->IsDoneWithTraversal(); inStrips->GoToNextCell())
       {
       inStrips->GetCurrentCell(npts,pts);
-      vtkTriangleStrip::DecomposeStrip(npts, pts, newPolys);
+      vtkTriangleStrip::DecomposeStrip(static_cast<int>(npts), pts, newPolys);
       }
     Mesh->SetPolys(newPolys);
     newPolys->Delete();
@@ -221,7 +221,7 @@ int vtkVisItFeatureEdges::RequestData(
       {
       vtkIdType cellId = iter->GetCurrentCellId();
       iter->GetCurrentCell(npts,pts);
-      vtkPolygon::ComputeNormal(inPts,npts,pts,n);
+      vtkPolygon::ComputeNormal(inPts,static_cast<int>(npts),pts,n);
       polyNormals->InsertTuple(cellId,n);
       }
 
@@ -242,7 +242,8 @@ int vtkVisItFeatureEdges::RequestData(
     iter->GetCurrentCell(npts,pts);
     if ( ! (cellId % progressInterval) ) //manage progress / early abort
       {
-      this->UpdateProgress (static_cast<double>(cellId) / numCells);
+      this->UpdateProgress (static_cast<double>(cellId) /
+                            static_cast<double>(numCells));
       abort = this->GetAbortExecute();
       }
 

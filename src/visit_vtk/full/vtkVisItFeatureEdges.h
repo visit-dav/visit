@@ -116,12 +116,12 @@ protected:
   vtkVisItFeatureEdges();
   ~vtkVisItFeatureEdges();
 
-  virtual int RequestData(vtkInformation *,
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
+  int RequestUpdateExtent(vtkInformation *,
                           vtkInformationVector **,
                           vtkInformationVector *) override;
-  virtual int RequestUpdateExtent(vtkInformation *,
-                                  vtkInformationVector **,
-                                  vtkInformationVector *) override;
   
   double FeatureAngle;
   bool BoundaryEdges;
@@ -132,8 +132,8 @@ protected:
   vtkPointLocator *Locator;
 
 private:
-  vtkVisItFeatureEdges(const vtkVisItFeatureEdges&);  // Not implemented.
-  void operator=(const vtkVisItFeatureEdges&);  // Not implemented.
+  vtkVisItFeatureEdges(const vtkVisItFeatureEdges&) = delete;
+  void operator=(const vtkVisItFeatureEdges&)  = delete;
 };
 
 #endif

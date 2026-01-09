@@ -102,7 +102,7 @@ int vtkVisItProbeFilter::RequestData(
 
   pd = source->GetPointData();
   cd = source->GetCellData();
-  int size = input->GetNumberOfPoints();
+  vtkIdType size = input->GetNumberOfPoints();
   
   // lets use a stack allocated array if possible for performance reasons
   int mcs = source->GetMaxCellSize();
@@ -142,7 +142,7 @@ int vtkVisItProbeFilter::RequestData(
     {
     if ( !(ptId % progressInterval) )
       {
-      this->UpdateProgress(static_cast<double>(ptId)/numPts);
+      this->UpdateProgress(static_cast<double>(ptId)/static_cast<double>(numPts));
       abort = GetAbortExecute();
       }
 

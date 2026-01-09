@@ -385,7 +385,7 @@ vtkPolyDataOnionPeelFilter::Grow()
     vtkIdList  *currentLayerList  = vtkIdList::New();
     vtkIdType         totalCurrentCells = this->layerCellIds->GetNumberOfIds();
     vtkIdType         totalLayersGrown  = this->cellOffsets->GetNumberOfIds() - 1;
-    vtkIdType         start = 0, i = 0, j = 0;
+    vtkIdType         start = 0;
 
     vtkDebugMacro(<<"Grow::");
     while (this->cellOffsets->GetNumberOfIds() <= this->RequestedLayer ) 
@@ -398,7 +398,7 @@ vtkPolyDataOnionPeelFilter::Grow()
                             <<"been set to the maxLayerNum possible.");
 
             this->RequestedLayer  = this->maxLayerNum 
-                                  = this->cellOffsets->GetNumberOfIds()-1;
+                                  = static_cast<int>(this->cellOffsets->GetNumberOfIds())-1;
             break;
         }
 
@@ -412,7 +412,7 @@ vtkPolyDataOnionPeelFilter::Grow()
         currentLayerList->SetNumberOfIds(this->layerCellIds->GetNumberOfIds() 
                                         - start);
 
-        for (i = start,j = 0; i < this->layerCellIds->GetNumberOfIds(); i++, j++) 
+        for (vtkIdType i = start,j = 0; i < this->layerCellIds->GetNumberOfIds(); i++, j++) 
         {
             currentLayerList->InsertId(j, this->layerCellIds->GetId(i));
         }
@@ -443,9 +443,9 @@ vtkPolyDataOnionPeelFilter::Grow()
                     int comp = nc -1;
                     vtkIdList *origIds = vtkIdList::New();
                     start = totalCurrentCells;
-                    for (i = start; i < this->layerCellIds->GetNumberOfIds(); i++)
+                    for (vtkIdType i = start; i < this->layerCellIds->GetNumberOfIds(); i++)
                     {
-                        int cellId = this->layerCellIds->GetId(i);
+                        int cellId = static_cast<int>(this->layerCellIds->GetId(i));
                         int index = cellId *nc + comp;;
                         origIds->InsertNextId(oc[index]);
                     }
@@ -642,7 +642,7 @@ vtkPolyDataOnionPeelFilter::GenerateOutputGrid()
     vtkPointData        *outPD      = output->GetPointData();
     vtkCellData         *outCD      = output->GetCellData();
     vtkIdList           *cellPts    = vtkIdList::New();
-    int i, cellId, newCellId, totalCells;
+    vtkIdType totalCells;
 
     if (this->RequestedLayer < this->cellOffsets->GetNumberOfIds() -1)
     {
@@ -663,11 +663,11 @@ vtkPolyDataOnionPeelFilter::GenerateOutputGrid()
     outCD->CopyAllocate(inCD);
 
     // grab only the cell data that corresponds to cells in our layers
-    for (i = 0; i < totalCells; i++) 
+    for (vtkIdType i = 0; i < totalCells; i++) 
     {
-        cellId = layerCellIds->GetId(i);
+        vtkIdType cellId = layerCellIds->GetId(i);
         input->GetCellPoints(cellId, cellPts);
-        newCellId = output->InsertNextCell(input->GetCellType(cellId), cellPts);
+        vtkIdType newCellId = output->InsertNextCell(input->GetCellType(cellId), cellPts);
         outCD->CopyData(inCD, cellId, newCellId);
     }
 
@@ -774,6 +774,7 @@ vtkPolyDataOnionPeelFilter::FindCellNeighborsByNodeAdjacency(
     }
 
     neighbors->Delete();
+
     ids->Delete();
 }
 

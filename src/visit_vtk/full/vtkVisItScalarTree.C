@@ -156,7 +156,9 @@ vtkVisItScalarTree::BuildTree()
     if (this->tree)
         delete[] this->tree;
     
-    vtkIdType numLeafs = static_cast<vtkIdType>(ceil(static_cast<double>(nCells) / BranchingFactor));
+    vtkIdType numLeafs = static_cast<vtkIdType>(
+        ceil(static_cast<double>(nCells) / 
+             static_cast<double>(BranchingFactor)));
     vtkIdType count = 1;
     for (this->levels = 0; count < numLeafs ; ++this->levels)
     {
@@ -175,7 +177,7 @@ vtkVisItScalarTree::BuildTree()
     
     // Size of a full tree is a geometric series: (b^(n+1)-1) / (b-1)
     this->treeSize = static_cast<vtkIdType>((pow(static_cast<double>(BranchingFactor), static_cast<double>(levels + 1)) - 1)
-                        / (BranchingFactor - 1));
+                        / static_cast<double>(BranchingFactor - 1));
 
     this->tree = new ScalarRange[this->treeSize];
 
@@ -297,14 +299,14 @@ vtkVisItScalarTree::BuildTree()
         //
         vtkIdType offset;
         offset = static_cast<vtkIdType>((pow(static_cast<double>(this->BranchingFactor), static_cast<double>(lev)) - 1) /
-                 (this->BranchingFactor - 1));
+                 static_cast<double>(this->BranchingFactor - 1));
 
         vtkIdType len = static_cast<vtkIdType>(pow(static_cast<double>(this->BranchingFactor), static_cast<double>(lev)));
 
 
         vtkIdType cRow;
         cRow = static_cast<vtkIdType>((pow(static_cast<double>(this->BranchingFactor), static_cast<double>(lev + 1)) - 1)
-                         / (this->BranchingFactor - 1));
+                         / static_cast<double>(this->BranchingFactor - 1));
         
         for (vtkIdType i = 0; i < len; ++i)
         {

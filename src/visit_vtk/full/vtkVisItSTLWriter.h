@@ -23,15 +23,15 @@ public:
 
 protected:
   vtkVisItSTLWriter();
-  ~vtkVisItSTLWriter() {};
+  ~vtkVisItSTLWriter() {}
 
   void WriteData() override;
 
   void WriteBinarySTL(vtkPoints *pts, vtkCellArray *polys);
   void WriteAsciiSTL(vtkPoints *pts, vtkCellArray *polys);
 private:
-  vtkVisItSTLWriter(const vtkVisItSTLWriter&);  // Not implemented.
-  void operator=(const vtkVisItSTLWriter&);  // Not implemented.
+  vtkVisItSTLWriter(const vtkVisItSTLWriter&) = delete;
+  void operator=(const vtkVisItSTLWriter&) = delete;
 };
 
 #endif

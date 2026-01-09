@@ -285,13 +285,13 @@ protected:
   vtkVisItGlyph3D();
   ~vtkVisItGlyph3D();
 
-  virtual int RequestData(vtkInformation *,
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
+  int RequestUpdateExtent(vtkInformation *,
                           vtkInformationVector **,
                           vtkInformationVector *) override;
-  virtual int RequestUpdateExtent(vtkInformation *,
-                                  vtkInformationVector **,
-                                  vtkInformationVector *) override;
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
   vtkPolyData* GetSource(int idx, vtkInformationVector *sourceInfo);
 
@@ -332,8 +332,8 @@ protected:
   double FullFrameScaling[3];
 
 private:
-  vtkVisItGlyph3D(const vtkVisItGlyph3D&);  // Not implemented.
-  void operator=(const vtkVisItGlyph3D&);  // Not implemented.
+  vtkVisItGlyph3D(const vtkVisItGlyph3D&) = delete;
+  void operator=(const vtkVisItGlyph3D&) = delete;
 };
 
 // Description:

@@ -195,13 +195,13 @@ vtkRectilinearLinesNoDataFilter::RequestData(
     // Get the information about X, Y, and Z from the rectilinear grid.
     //
     vtkDataArray *xc = input->GetXCoordinates();
-    int nX = xc->GetNumberOfTuples();
+    int nX = static_cast<int>(xc->GetNumberOfTuples());
     int tX = xc->GetDataType();
     vtkDataArray *yc = input->GetYCoordinates();
-    int nY = yc->GetNumberOfTuples();
+    int nY = static_cast<int>(yc->GetNumberOfTuples());
     int tY = yc->GetDataType();
     vtkDataArray *zc = input->GetZCoordinates();
-    int nZ = zc->GetNumberOfTuples();
+    int nZ = static_cast<int>(zc->GetNumberOfTuples());
     int tZ = zc->GetDataType();
 
     bool same = (tX == tY && tY == tZ);

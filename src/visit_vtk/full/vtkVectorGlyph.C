@@ -46,10 +46,10 @@ vtkVectorGlyph::vtkVectorGlyph()
   CapEnds = false;
   Arrow = true;
   LineStem = true;
-  StemWidth = 0.08;
+  StemWidth = 0.08f;
   MakeHead = true;
-  HeadSize = 0.25;
-  OriginOffset = 0.;
+  HeadSize = 0.25f;
+  OriginOffset = 0.f;
   ConeHead = true;
 }
 
@@ -111,6 +111,7 @@ vtkVectorGlyph::RequestData(
     output->SetPolys(polys);
     polys->Delete();
 
+    float fmpi = static_cast<float>(M_PI);
     if (Arrow)
     {
         //
@@ -118,8 +119,8 @@ vtkVectorGlyph::RequestData(
         // The head will start at (0.5, 0., 0.) and
         // the tail will end at (-0.5,0.,0.)
         // 
-        float realHeadSize = MakeHead ? this->HeadSize : 0;
-        float endOfHead = 0.5 - realHeadSize;
+        float realHeadSize = MakeHead ? this->HeadSize : 0.f;
+        float endOfHead = 0.5f - realHeadSize;
         float proportion = realHeadSize;
         float cylThickness = this->StemWidth;
         
@@ -134,21 +135,20 @@ vtkVectorGlyph::RequestData(
         pts->SetNumberOfPoints(nPts);
         
         // Add the points along the central axis
-        pts->SetPoint(0, OriginOffset + 0.5, 0., 0.);
-        pts->SetPoint(1, OriginOffset - 0.5, 0., 0.);
-        pts->SetPoint(2, OriginOffset + endOfHead, 0., 0.);
+        pts->SetPoint(0, OriginOffset + 0.5f, 0.f, 0.f);
+        pts->SetPoint(1, OriginOffset - 0.5f, 0.f, 0.f);
+        pts->SetPoint(2, OriginOffset + endOfHead, 0.f, 0.f);
         
         // Add the points around the base of the cone
         for (int i=0; i<nSteps; i++)
         {
-            float theta = 2*M_PI * float(i)/float(nSteps);
+            float theta = 2*fmpi * static_cast<float>(i)/
+                                   static_cast<float>(nSteps);
             float x = OriginOffset + endOfHead;
-            float y = proportion * 0.5 * cos(theta);
-            float z;
+            float y = proportion * 0.5f * cos(theta);
+            float z = 0.;
             if (ConeHead)
-                z = proportion * 0.5 * sin(theta); 
-            else
-                z = 0;
+                z = proportion * 0.5f * sin(theta); 
             pts->SetPoint(3 + i, x, y, z);
         }
         
@@ -161,7 +161,7 @@ vtkVectorGlyph::RequestData(
         }
         else
         {
-            float startx = OriginOffset - 0.5;
+            float startx = OriginOffset - 0.5f;
             float endx;
             // If we're in 3D and not capping the cone's base, then extend the
             // cylinder all the way to where it intersects the cone's facets.
@@ -169,7 +169,7 @@ vtkVectorGlyph::RequestData(
             if (ConeHead && !CapEnds)
             {
                 float len = (realHeadSize<cylThickness)?realHeadSize:cylThickness;
-                endx = OriginOffset + .5 - len;
+                endx = OriginOffset + .5f - len;
             }
             else
             {
@@ -178,9 +178,10 @@ vtkVectorGlyph::RequestData(
             
             for (int i=0; i<nSteps; i++)
             {
-                float theta = 2*M_PI * float(i)/float(nSteps);
-                float y = cylThickness * 0.5 * cos(theta);
-                float z = cylThickness * 0.5 * sin(theta); 
+                float theta = 2*fmpi * static_cast<float>(i)/
+                                       static_cast<float>(nSteps);
+                float y = cylThickness * 0.5f * cos(theta);
+                float z = cylThickness * 0.5f * sin(theta); 
                 pts->SetPoint(3 + 1*nSteps + i, startx, y, z);
                 pts->SetPoint(3 + 2*nSteps + i, endx,   y, z);
             }

@@ -95,7 +95,7 @@ void vtkVisItSTLWriter::WriteAsciiSTL(vtkPoints *pts, vtkCellArray *polys)
     pts->GetPoint(indx[1], v2);
     pts->GetPoint(indx[2], v3);
 
-    vtkTriangle::ComputeNormal(pts, npts, indx, n);
+    vtkTriangle::ComputeNormal(pts, static_cast<int>(npts), indx, n);
 
     fprintf (fp, " facet normal %.6g %.6g %.6g\n  outer loop\n",
             n[0], n[1], n[2]);
@@ -151,7 +151,7 @@ void vtkVisItSTLWriter::WriteBinarySTL(vtkPoints *pts, vtkCellArray *polys)
     pts->GetPoint(indx[1], v2);
     pts->GetPoint(indx[2], v3);
 
-    vtkTriangle::ComputeNormal(pts, npts, indx, dn);
+    vtkTriangle::ComputeNormal(pts, static_cast<int>(npts), indx, dn);
     float n[3] = {static_cast<float>(dn[0]),
                   static_cast<float>(dn[1]),
                   static_cast<float>(dn[2])};

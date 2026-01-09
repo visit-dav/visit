@@ -197,7 +197,7 @@ vtkVisItGlyph3D::RequestData(
   int requestedGhostLevel;
   unsigned char* inGhostLevels=0;
   vtkDataArray *inNormals = nullptr, *sourceNormals = nullptr;
-  vtkIdType numPts, numSourcePts, numSourceCells, i;
+  vtkIdType numPts, numSourcePts, numSourceCells;
   int index;
   vtkPoints *sourcePts = nullptr;
   vtkPoints *newPts = nullptr;
@@ -210,9 +210,8 @@ vtkVisItGlyph3D::RequestData(
   vtkMatrix4x4 *def_mat = vtkMatrix4x4::New();
   vtkCell *cell = nullptr;
   vtkIdList *cellPts = nullptr;
-  int npts;
   vtkIdList *pts = nullptr;
-  vtkIdType ptIncr, cellId;
+  vtkIdType ptIncr;
   int haveVectors, haveNormals;
   double scalex,scaley,scalez, den;
   vtkPolyData *outPD = vtkPolyData::New();
@@ -400,7 +399,7 @@ vtkVisItGlyph3D::RequestData(
     pd = nullptr;
     numSourcePts = numSourceCells = 0;
     haveNormals = 1;
-    for (numSourcePts=numSourceCells=i=0; i < numberOfSources; i++)
+    for (int i = 0; i < numberOfSources; i++)
     {
       if ( this->GetSource(i) != nullptr )
       {
@@ -521,19 +520,19 @@ vtkVisItGlyph3D::RequestData(
     }
   }
 
-  int connSize = 0;
-  int numVerts = 0;
-  int numCells = input->GetNumberOfCells();
+  vtkIdType connSize = 0;
+  vtkIdType numCells = input->GetNumberOfCells();
   vtkIdList *ptIds = vtkIdList::New();
-  for (i = 0 ; i < numCells ; i++)
+  for (vtkIdType i = 0 ; i < numCells ; i++)
   {
     vtkIdType c = input->GetCellType(i);
     if (c == VTK_VERTEX)
-      numVerts++;
+    {
+        ; // nothing to do
+    }
     else if (c == VTK_POLY_VERTEX)
     {
       input->GetCellPoints(i, ptIds);
-      numVerts += ptIds->GetNumberOfIds();
     }
     else
     {
@@ -544,11 +543,13 @@ vtkVisItGlyph3D::RequestData(
   // Setting up for calls to PolyData::InsertNextCell()
   if (this->IndexMode != VTK_INDEXING_OFF )
   {
-    outPD->Allocate(3*numPts*numSourceCells,numPts*numSourceCells);
+    outPD->Allocate(3*numPts*numSourceCells,static_cast<int>(numPts*numSourceCells));
   }
   else
   {
-    outPD->Allocate(this->GetSource(0),3*numPts*numSourceCells,numPts*numSourceCells);
+    outPD->Allocate(this->GetSource(0),
+                    3*numPts*numSourceCells,
+                    static_cast<int>(numPts*numSourceCells));
   }
 
   // Traverse all Input points, transforming Source points and copying
@@ -557,18 +558,19 @@ vtkVisItGlyph3D::RequestData(
   ptIncr=0;
   for (int cellIdx = 0 ; cellIdx < numCells ; cellIdx++)
   {
-    vtkIdType c = input->GetCellType(cellIdx);
+    int c = input->GetCellType(cellIdx);
     if (c != VTK_VERTEX && c != VTK_POLY_VERTEX)
        continue;
     input->GetCellPoints(cellIdx, ptIds);
     // only 1 iteration for VTK_VERTEX, multiple for VTK_POLY_VERTEX
-    for (int j = 0 ; j < ptIds->GetNumberOfIds() ; j++)
+    for (vtkIdType j = 0 ; j < ptIds->GetNumberOfIds() ; j++)
     {
       vtkIdType inPtId = ptIds->GetId(j);
       scalex = scaley = scalez = 1.0;
       if ( (cellIdx % 10000) == 0 )
       {
-        this->UpdateProgress(static_cast<double>(inPtId)/numPts);
+        this->UpdateProgress(static_cast<double>(inPtId) /
+                             static_cast<double>(numPts));
         if (this->GetAbortExecute())
         {
           break;
@@ -762,12 +764,12 @@ vtkVisItGlyph3D::RequestData(
       }
 
       // Copy all topology (transformation independent)
-      for (cellId=0; cellId < numSourceCells; cellId++)
+      for (vtkIdType cellId=0; cellId < numSourceCells; cellId++)
       {
         cell = this->GetSource(index)->GetCell(cellId);
         cellPts = cell->GetPointIds();
-        npts = cellPts->GetNumberOfIds();
-        for (pts->Reset(), i=0; i < npts; i++)
+        pts->Reset();
+        for (vtkIdType i=0; i < cellPts->GetNumberOfIds(); i++)
         {
           pts->InsertId(i,cellPts->GetId(i) + ptIncr);
         }
@@ -803,7 +805,7 @@ vtkVisItGlyph3D::RequestData(
         }
 
         // Copy Input vector
-        for (i=0; i < numSourcePts; i++)
+        for (vtkIdType i=0; i < numSourcePts; i++)
         {
           newVectors->InsertTuple(i+ptIncr, v);
         }
@@ -838,14 +840,14 @@ vtkVisItGlyph3D::RequestData(
         // Copy scalar value
         if (this->ColorMode == VTK_COLOR_BY_SCALE)
         {
-          for (i=0; i < numSourcePts; i++)
+          for (vtkIdType i=0; i < numSourcePts; i++)
           {
             newScalars->InsertTuple(i+ptIncr, &scalex); // = scaley = scalez
           }
         }
         else if (this->ColorMode == VTK_COLOR_BY_SCALAR && inScalars_forColoring)
         {
-          for (i=0; i < numSourcePts; i++)
+          for (vtkIdType i=0; i < numSourcePts; i++)
           {
             if(inScalars_forColoring_pd)
               outputPD->CopyTuple(inScalars_forColoring, newScalars, inPtId, ptIncr+i);
@@ -855,7 +857,7 @@ vtkVisItGlyph3D::RequestData(
         }
         else if (this->ColorMode == VTK_COLOR_BY_SCALAR && inScalars)
         {
-          for (i=0; i < numSourcePts; i++)
+          for (vtkIdType i=0; i < numSourcePts; i++)
           {
             if(inScalars_pd)
               outputPD->CopyTuple(inScalars, newScalars, inPtId, ptIncr+i);
@@ -872,14 +874,14 @@ vtkVisItGlyph3D::RequestData(
         else
           inVectors_forColoring->GetTuple(cellIdx, v);
         vMag = vtkMath::Norm(v);
-        for (i=0; i < numSourcePts; i++)
+        for (vtkIdType i=0; i < numSourcePts; i++)
         {
           newScalars->InsertTuple(i+ptIncr, &vMag);
         }
       }
       else if (haveVectors && this->ColorMode == VTK_COLOR_BY_VECTOR)
       {
-        for (i=0; i < numSourcePts; i++)
+        for (vtkIdType i=0; i < numSourcePts; i++)
         {
           newScalars->InsertTuple(i+ptIncr, &vMag);
         }
@@ -939,7 +941,7 @@ vtkVisItGlyph3D::RequestData(
       // Copy point data from source (if possible)
       if ( pd )
       {
-        for (i=0; i < numSourcePts; i++)
+        for (vtkIdType i=0; i < numSourcePts; i++)
         {
           outputPD->CopyData(pd,i,ptIncr+i);
         }
@@ -948,7 +950,7 @@ vtkVisItGlyph3D::RequestData(
       // If point ids are to be generated, do it here
       if ( this->GeneratePointIds )
       {
-        for (i=0; i < numSourcePts; i++)
+        for (vtkIdType i=0; i < numSourcePts; i++)
         {
           pointIds->InsertNextValue(inPtId);
         }
@@ -1010,9 +1012,9 @@ vtkVisItGlyph3D::RequestData(
     outPD2->GetPointData()->ShallowCopy(in_pointset->GetPointData());
     // ignore cell data ... it won't match up with glyphed verts anyway.
     outPD2->Allocate(connSize);
-    for (i = 0 ; i < numCells ; i++)
+    for (vtkIdType i = 0 ; i < numCells ; i++)
     {
-      vtkIdType c = input->GetCellType(i);
+      int c = input->GetCellType(i);
       if (c == VTK_VERTEX || c == VTK_POLY_VERTEX)
         continue;
       input->GetCellPoints(i, ptIds);

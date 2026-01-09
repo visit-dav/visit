@@ -600,7 +600,7 @@ void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts,
         {
             i1 = 2*(k % this->NumberOfSides) + 1;
             i2 = 2*((k+1) % this->NumberOfSides);
-            outCellId = newStrips->InsertNextCell(npts*2);
+            outCellId = newStrips->InsertNextCell(static_cast<int>(npts*2));
             outCD->CopyData(cd,inCellId,outCellId);
             for (i=0; i < npts; i++)
             {

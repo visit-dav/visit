@@ -76,19 +76,19 @@ public:
 
 protected:
   vtkVisItExtractGrid();
-  ~vtkVisItExtractGrid() {};
+  ~vtkVisItExtractGrid() {}
 
-  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
-  virtual int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
-  virtual int RequestUpdateExtent(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  int RequestUpdateExtent(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
   
   int VOI[6];
   int SampleRate[3];
   bool IncludeBoundary;
   
 private:
-  vtkVisItExtractGrid(const vtkVisItExtractGrid&);  // Not implemented.
-  void operator=(const vtkVisItExtractGrid&);  // Not implemented.
+  vtkVisItExtractGrid(const vtkVisItExtractGrid&) = delete;
+  void operator=(const vtkVisItExtractGrid&) = delete;
 };
 
 #endif

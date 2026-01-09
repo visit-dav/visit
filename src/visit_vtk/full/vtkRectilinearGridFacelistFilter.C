@@ -340,13 +340,13 @@ vtkRectilinearGridFacelistFilter::RequestData(
   // Get the information about X, Y, and Z from the rectilinear grid.
   //
   vtkDataArray *xc = input->GetXCoordinates();
-  int nX = xc->GetNumberOfTuples();
+  int nX = static_cast<int>(xc->GetNumberOfTuples());
   int tX = xc->GetDataType();
   vtkDataArray *yc = input->GetYCoordinates();
-  int nY = yc->GetNumberOfTuples();
+  int nY = static_cast<int>(yc->GetNumberOfTuples());
   int tY = yc->GetDataType();
   vtkDataArray *zc = input->GetZCoordinates();
-  int nZ = zc->GetNumberOfTuples();
+  int nZ = static_cast<int>(zc->GetNumberOfTuples());
   int tZ = zc->GetDataType();
 
   bool same = (tX == tY && tY == tZ);
@@ -728,7 +728,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
   // We will be modifying the cells.  So set up some of the data structures.
   //
   outCellData->CopyAllocate(inCellData);
-  int cellGuess = pd->GetNumberOfCells();
+  vtkIdType cellGuess = pd->GetNumberOfCells();
   vtkCellArray *polys = vtkCellArray::New();
   polys->Allocate(cellGuess*(4+1));
 
@@ -743,14 +743,14 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
   {
     int nEntries = rowSize[i]*columnSize[i];
     int startFace = sideStart[i];
-    vector<bool> faceUsed(nEntries, false);
+    vector<bool> faceUsed(static_cast<size_t>(nEntries), false);
     for (int k = 0 ; k < columnSize[i] ; ++k)
     {
       for (int j = 0 ; j < rowSize[i] ; ++j)
       {
         int face = k*rowSize[i] + j;
-        if (faceUsed[face])
-           continue;
+        if (faceUsed[static_cast<size_t>(face)])
+           ;
         unsigned char gz_standard = gza[startFace+face];
 
         //
@@ -762,7 +762,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
         for (l = j+1 ; l < rowSize[i] ; ++l)
         {
            int face2 = k*rowSize[i] + l;
-           if (faceUsed[face2])
+           if (faceUsed[static_cast<size_t>(face2)])
              break;
            unsigned char gz_current = gza[startFace+face2];
            if (gz_current != gz_standard)
@@ -781,7 +781,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
           for (l = j ; l <= lastRowMatch ; ++l)
           {
             int face2 = m*rowSize[i] + l;
-            if (faceUsed[face2])
+            if (faceUsed[static_cast<size_t>(face2)])
             {
               all_matches = false;
               break;
@@ -804,7 +804,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
           for (m = k ; m <= lastColumnMatch ; ++m)
           {
             int face2 = m*rowSize[i] + l;
-            faceUsed[face2] = true;
+            faceUsed[static_cast<size_t>(face2)] = true;
           }
 
         //
@@ -852,10 +852,10 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
       cpd->GetPointData()->RemoveArray("avtGhostNodes");
       vtkUnsignedCharArray *new_gz = vtkUnsignedCharArray::New();
       new_gz->SetName("avtGhostZones");
-      new_gz->SetNumberOfTuples(ghost_zones.size());
+      new_gz->SetNumberOfTuples(static_cast<vtkIdType>(ghost_zones.size()));
       for (size_t i = 0 ; i < ghost_zones.size() ; ++i)
       {
-          new_gz->SetValue(i, ghost_zones[i]);
+          new_gz->SetValue(static_cast<vtkIdType>(i), ghost_zones[i]);
       }
       cpd->GetCellData()->AddArray(new_gz);
       new_gz->Delete();
@@ -902,11 +902,11 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(
   int numOutCells;
   int numOutPoints;
   const vtkIdType (*quads)[4];
-  int ptIds[8];
+  vtkIdType ptIds[8];
 
-  int nX = input->GetXCoordinates()->GetNumberOfTuples();
-  int nY = input->GetYCoordinates()->GetNumberOfTuples();
-  int nZ = input->GetZCoordinates()->GetNumberOfTuples();
+  vtkIdType nX = input->GetXCoordinates()->GetNumberOfTuples();
+  vtkIdType nY = input->GetYCoordinates()->GetNumberOfTuples();
+  vtkIdType nZ = input->GetZCoordinates()->GetNumberOfTuples();
   if (nX == 1)
   {
       ptIds[0] = 0;

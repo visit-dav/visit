@@ -94,7 +94,7 @@ public:
   // Description:
   // Set the current LogicalIndex value.
   void SetLogicalIndex(const int, const int, const int k = 0);
-  int *GetLogicalIndex(void) { return logicalIndex; };
+  int *GetLogicalIndex(void) { return logicalIndex; }
 
   // Description:
   // Set the current layer value.
@@ -113,9 +113,9 @@ public:
   vtkSetClampMacro(AdjacencyType, int, VTK_NODE_ADJACENCY, VTK_FACE_ADJACENCY);
   vtkGetMacro(AdjacencyType, int);
   void SetAdjacencyTypeToFace()
-       { this->SetAdjacencyType(VTK_FACE_ADJACENCY); };
+       { this->SetAdjacencyType(VTK_FACE_ADJACENCY); }
   void SetAdjacencyTypeToNode()
-       { this->SetAdjacencyType(VTK_NODE_ADJACENCY); };
+       { this->SetAdjacencyType(VTK_NODE_ADJACENCY); }
   const char *GetAdjacencyTypeAsString();
 
   bool Initialize();
@@ -128,10 +128,10 @@ protected:
   vtkPolyDataOnionPeelFilter();
   ~vtkPolyDataOnionPeelFilter();
 
-  virtual int RequestData(vtkInformation *,
-                          vtkInformationVector **,
-                          vtkInformationVector *) override;
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
   void Grow();
   void GenerateOutputGrid();
@@ -164,8 +164,8 @@ protected:
   void                *bsc_args;
   
 private:
-  vtkPolyDataOnionPeelFilter(const vtkPolyDataOnionPeelFilter&);
-  void operator=(const vtkPolyDataOnionPeelFilter&);
+  vtkPolyDataOnionPeelFilter(const vtkPolyDataOnionPeelFilter&) = delete;
+  void operator=(const vtkPolyDataOnionPeelFilter&) = delete;
 };
 
 inline const char *vtkPolyDataOnionPeelFilter::GetAdjacencyTypeAsString(void)

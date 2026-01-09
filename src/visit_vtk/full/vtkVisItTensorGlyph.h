@@ -171,9 +171,9 @@ public:
   vtkSetClampMacro(ColorMode, int, COLOR_BY_SCALARS, COLOR_BY_EIGENVALUES);
   vtkGetMacro(ColorMode, int);
   void SetColorModeToScalars()
-    {this->SetColorMode(COLOR_BY_SCALARS);};
+    {this->SetColorMode(COLOR_BY_SCALARS);}
   void SetColorModeToEigenvalues()
-    {this->SetColorMode(COLOR_BY_EIGENVALUES);};
+    {this->SetColorMode(COLOR_BY_EIGENVALUES);}
 
   // Description:
   // Turn on/off scalar clamping. If scalar clamping is on, the ivar
@@ -195,10 +195,10 @@ protected:
   vtkVisItTensorGlyph();
   ~vtkVisItTensorGlyph();
 
-  virtual int RequestUpdateExtent(vtkInformation *,  vtkInformationVector **, vtkInformationVector *) override;
-  virtual int RequestData(vtkInformation *, vtkInformationVector **, 
-                          vtkInformationVector *) override;
-  virtual int FillInputPortInformation(int port, vtkInformation *) override;
+  int RequestUpdateExtent(vtkInformation *,  vtkInformationVector **, vtkInformationVector *) override;
+  int RequestData(vtkInformation *, vtkInformationVector **, 
+                  vtkInformationVector *) override;
+  int FillInputPortInformation(int port, vtkInformation *) override;
 
   bool Scaling; // Determine whether scaling of geometry is performed
   double ScaleFactor; // Scale factor to use to scale geometry
@@ -211,8 +211,8 @@ protected:
   bool Symmetric; // Boolean controls drawing a "mirror" of each glyph
   double Length; // Distance, in x, from the origin to the end of the glyph
 private:
-  vtkVisItTensorGlyph(const vtkVisItTensorGlyph&);  // Not implemented.
-  void operator=(const vtkVisItTensorGlyph&);  // Not implemented.
+  vtkVisItTensorGlyph(const vtkVisItTensorGlyph&) = delete;
+  void operator=(const vtkVisItTensorGlyph&) = delete;
 };
 
 #endif

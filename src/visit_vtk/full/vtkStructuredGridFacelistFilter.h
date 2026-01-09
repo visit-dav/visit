@@ -29,16 +29,16 @@ public:
 
 protected:
   vtkStructuredGridFacelistFilter() {};
-  ~vtkStructuredGridFacelistFilter() {};
+  ~vtkStructuredGridFacelistFilter() {}
 
-  virtual int RequestData(vtkInformation *,
-                          vtkInformationVector **,
-                          vtkInformationVector *) override;
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
-  vtkStructuredGridFacelistFilter(const vtkStructuredGridFacelistFilter&); // not implemented
-  void operator=(const vtkStructuredGridFacelistFilter&); // not implemented
+  vtkStructuredGridFacelistFilter(const vtkStructuredGridFacelistFilter&) = delete;
+  void operator=(const vtkStructuredGridFacelistFilter&) = delete;
 };
 
 #endif

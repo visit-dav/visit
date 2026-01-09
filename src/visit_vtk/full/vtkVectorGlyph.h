@@ -55,17 +55,17 @@ public:
   vtkGetMacro(LineStem,bool);
   vtkBooleanMacro(LineStem,bool);
 
-  vtkSetClampMacro(StemWidth,float,0.0,0.5);
+  vtkSetClampMacro(StemWidth,float,0.0f,0.5f)
   vtkGetMacro(StemWidth,float);
 
   vtkSetMacro(MakeHead,bool);
   vtkGetMacro(MakeHead,bool);
   vtkBooleanMacro(MakeHead,bool);
 
-  vtkSetClampMacro(HeadSize,float,0.0,1.0);
+  vtkSetClampMacro(HeadSize,float,0.0f,1.0f)
   vtkGetMacro(HeadSize,float);
 
-  vtkSetClampMacro(OriginOffset,float,-.5,+.5);
+  vtkSetClampMacro(OriginOffset,float,-.5f,+.5f)
   vtkGetMacro(OriginOffset,float);
 
   vtkSetMacro(ConeHead,bool);
@@ -74,12 +74,12 @@ public:
 
 protected:
   vtkVectorGlyph();
-  ~vtkVectorGlyph() {};
+  ~vtkVectorGlyph() {}
 
-  virtual int RequestData(vtkInformation *,
+  int RequestData(vtkInformation *,
                   vtkInformationVector **,
                   vtkInformationVector *) override;
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
   bool HighQuality;
   bool CapEnds;
@@ -92,8 +92,8 @@ protected:
   bool ConeHead;
 
 private:
-  vtkVectorGlyph(const vtkVectorGlyph&);
-  void operator=(const vtkVectorGlyph&);
+  vtkVectorGlyph(const vtkVectorGlyph&) = delete;
+  void operator=(const vtkVectorGlyph&) = delete;
 };
 
 #endif

@@ -47,12 +47,12 @@ public:
 
 protected:
   vtkReduceFilter();
-  ~vtkReduceFilter() {};
+  ~vtkReduceFilter() {}
 
-  virtual int RequestData(vtkInformation *,
-                          vtkInformationVector **,
-                          vtkInformationVector *) override;
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
   enum ReduceType
   {
@@ -67,8 +67,8 @@ protected:
   bool origOnly;
 
 private:
-  vtkReduceFilter(const vtkReduceFilter&);
-  void operator=(const vtkReduceFilter&);
+  vtkReduceFilter(const vtkReduceFilter&) = delete;
+  void operator=(const vtkReduceFilter&) = delete;
 };
 
 #endif

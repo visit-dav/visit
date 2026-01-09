@@ -118,8 +118,8 @@ vtkReduceFilter::RequestData(
       inPObjects = inPd->GetTensors();
   }
   
-  int npts = input->GetNumberOfPoints();
-  int ncells = input->GetNumberOfCells();
+  vtkIdType npts = input->GetNumberOfPoints();
+  vtkIdType ncells = input->GetNumberOfCells();
 
   if (inPObjects == nullptr && inCObjects == nullptr)
   {
@@ -137,19 +137,19 @@ vtkReduceFilter::RequestData(
     return 1;
   }
 
-  float actingStride = stride;
+  float actingStride = static_cast<float>(stride);
   if (actingStride <= 0)
   {
     int totalObjects = 0;
     if (inPObjects != nullptr)
     {
-        totalObjects += npts;
+        totalObjects += static_cast<int>(npts);
     }
     if (inCObjects != nullptr)
     {
-        totalObjects += ncells;
+        totalObjects += static_cast<int>(ncells);
     }
-    actingStride = ceil(static_cast<float>(totalObjects) /
+    actingStride = ceilf(static_cast<float>(totalObjects) /
                         static_cast<float>(numEls));
   }
 
@@ -172,7 +172,7 @@ vtkReduceFilter::RequestData(
 
   outObjects->SetNumberOfComponents(nComponents);
 
-  float nextToTake = 0.;
+  float nextToTake = 0.f;
   int count = 0;
   if (inPObjects != nullptr)
   {
@@ -217,13 +217,13 @@ vtkReduceFilter::RequestData(
       if (foundcell && (origcell<0 || foundcell[origcell]))
         continue;
 
-      if (index >= nextToTake)
+      if (index >= static_cast<int>(nextToTake))
       {
         nextToTake += actingStride;
 
         inPObjects->GetTuple(i, v);
 
-        int c;
+        int c=0;
         for( c=0; c<nComponents; ++c )
         {
           if (v[c] != 0.)
@@ -295,7 +295,7 @@ vtkReduceFilter::RequestData(
       if (foundcell && (origcell<0 || foundcell[origcell]))
         continue;
 
-      if (index >= nextToTake)
+      if (index >= static_cast<int>(nextToTake))
       {
         nextToTake += actingStride;
 
@@ -323,7 +323,7 @@ vtkReduceFilter::RequestData(
   delete [] fv;
   delete []  v;
 
-  int nOutPts = outpts->GetNumberOfPoints();
+  vtkIdType nOutPts = outpts->GetNumberOfPoints();
   output->SetPoints(outpts);
   outpts->Delete();
 

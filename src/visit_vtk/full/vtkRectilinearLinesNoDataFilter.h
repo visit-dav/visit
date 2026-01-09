@@ -41,16 +41,16 @@ public:
 
 protected:
   vtkRectilinearLinesNoDataFilter();
-  ~vtkRectilinearLinesNoDataFilter() {};
+  ~vtkRectilinearLinesNoDataFilter() {}
 
-  virtual int RequestData(vtkInformation *,
-                          vtkInformationVector **,
-                          vtkInformationVector *) override;
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
-  vtkRectilinearLinesNoDataFilter(const vtkRectilinearLinesNoDataFilter&);
-  void operator=(const vtkRectilinearLinesNoDataFilter&);
+  vtkRectilinearLinesNoDataFilter(const vtkRectilinearLinesNoDataFilter&) = delete;
+  void operator=(const vtkRectilinearLinesNoDataFilter&) = delete;
 };
 
 #endif
