@@ -14,6 +14,13 @@ Creating the release
 
 We will describe creating a release by way of example using the steps used to create the 3.3.3 release.
 
+Before tagging a release
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before you tag a release, make sure VisIt's Read the Docs build process is passing on the relevant RC branch.
+When a new release tag is added to our GitHub repo, Read the Docs will automatically build and serve docs for the release.
+
+
 Tagging the release
 ~~~~~~~~~~~~~~~~~~~
 Commit a change that references the tagged release, which in our case is 3.3.3. ::

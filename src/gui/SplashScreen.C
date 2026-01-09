@@ -275,6 +275,9 @@
 //    Eric Brugger, Fri Oct  3 09:46:05 PDT 2025
 //    Changed the splash screen to use 6 images instead of 4.
 //
+//    Cyrus Harrison, Fri Jan  9 11:26:21 PST 2026
+//    Changed the date on the splash screen to January 2026.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -399,9 +402,9 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 4;
+    int currentMonth = 1;
     lLayout->addWidget(new QLabel(versionText, this));
-    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2024", this));
+    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2026", this));
 
     copyrightButton = 0;
     contributorButton = 0;
