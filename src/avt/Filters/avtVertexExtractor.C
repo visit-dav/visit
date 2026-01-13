@@ -9,10 +9,13 @@
 #include <avtVertexExtractor.h>
 
 #include <vtkAppendPolyData.h>
-#include <vtkExtractCellsByType.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
+
+// Visit vtk classes
+#include <vtkVertexExtractor.h>
 #include <vtkVertexFilter.h>
+#include <vtkVisItExtractCellsByType.h>
 
 #include <string>
 #include <vector>
@@ -194,10 +197,10 @@ avtVertexExtractor::ExecuteDataTree(avtDataRepresentation *inDR)
         surfaceData = inDS;
         if (removeVertsFromInput)
         {
-            vtkNew<vtkExtractCellsByType> remover;
+            vtkNew<vtkVisItExtractCellsByType> remover;
             remover->SetInputData(inDS);
             // want all cell types
-            remover->AddAllCellTypes();
+            remover->AddAllCellTypes2();
             // except Verts
             remover->RemoveCellType(VTK_VERTEX);
             remover->RemoveCellType(VTK_POLY_VERTEX);
@@ -300,6 +303,10 @@ avtVertexExtractor::PostExecute(void)
 //    if it is allVerts or not.  We need to process if VTK_POLYVERTEX is
 //    present.
 //
+//    Kathleen Biagas, Mon Jan 12, 2026 
+//    Use vtkVertexExtractor instead of vtkExtractCellsByType when
+//    convertAllPoints is false.
+//
 // ****************************************************************************
 
 void
@@ -381,9 +388,7 @@ avtVertexExtractor::ProcessPoints(
     else
     {
         // want to extract only vertex cells
-        vtkNew<vtkExtractCellsByType> extractVerts;
-        extractVerts->AddCellType(VTK_VERTEX);
-        extractVerts->AddCellType(VTK_POLY_VERTEX);
+        vtkNew<vtkVertexExtractor> extractVerts;
         extractVerts->SetInputData(inDS);
         extractVerts->Update();
         vertsData = extractVerts->GetOutput();
