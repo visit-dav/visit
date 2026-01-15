@@ -58,8 +58,9 @@
 //
 // Movie format information.
 //
+#define MP4_FORMAT   "MP4 movie"
 #define MPEG_FORMAT  "MPEG movie"
-#define JPEG_FORMAT  "JPEG images"
+#define PNG_FORMAT   "PNG  images"
 
 struct movie_format_info
 {
@@ -70,23 +71,21 @@ struct movie_format_info
 // Maybe someday we can populate these based on a config file or the results
 // from VisIt's visit_utils.encoding.encoders() Python function.
 movie_format_info movieFormatInfo[] = {
+    {PNG_FORMAT,        "png"},
     {"BMP  images",     "bmp"},
-    {JPEG_FORMAT,       "jpeg"},
-    {"PNG  images",     "png"},
+    {"JPEG images",     "jpeg"},
     {"PPM  images",     "ppm"},
     {"RGB  images",     "rgb"},
     {"TIFF images",     "tiff"},
+    {MP4_FORMAT,        "mp4"},
     {MPEG_FORMAT,       "mpeg"},
     {"AVI movie",       "avi"},
     {"DIVX movie",      "divx"},
-    {"MPEG 4 movie",    "mp4"},
+    {"GIF movie",       "gif"},
     {"QuickTime movie", "mov"},
     {"SWF movie",       "swf"},
     {"WMV movie",       "wmv"},
 };
-
-// Prefer MPEG since we provide an encoder for that format.
-#define PREFERRED_FORMAT MPEG_FORMAT
 
 #define N_MOVIE_FORMATS  (sizeof(movieFormatInfo) / sizeof(movie_format_info))
 
@@ -247,6 +246,9 @@ EnsureDirectoryExists(std::string &name, bool nameIsFile)
 //   Initialize availableFormats with universally available image formats
 //   and 'mpeg' movie format.  If 'ffmpeg' available, add more formats.
 //
+//   Cyrus Harrison, Fri Dec 19 11:46:39 PST 2025
+//   Added `gif` movie format, change order of formats.
+//
 // ****************************************************************************
 
 QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent) :
@@ -270,12 +272,13 @@ QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent
 #endif
     if(haveffmpeg)
     {
+        availableFormats.push_back("mp4");
+        availableFormats.push_back("wmv");
+        availableFormats.push_back("gif");
+        availableFormats.push_back("mov");
         availableFormats.push_back("avi");
         availableFormats.push_back("divx");
-        availableFormats.push_back("mp4");
-        availableFormats.push_back("mov");
         availableFormats.push_back("swf");
-        availableFormats.push_back("wmv");
     }
 
 
@@ -2199,6 +2202,9 @@ QvisSaveMovieWizard::validateCurrentPage()
 //   Cameron Christensen, Friday, September 28, 2012
 //   Added Screen Capture
 //
+//   Cyrus Harrison, Fri Dec 19 12:05:54 PST 2025
+//   Change default format preference (MP4, MPEG, PNG)
+//
 // ****************************************************************************
 
 void
@@ -2257,7 +2263,7 @@ QvisSaveMovieWizard::initializePage(int pageId)
         page9_UpdateOutputs();
         if(movieAtts->GetFileFormats().size() > 0)
         {
-            // Try for the first format but default to JPEG otherwise.
+            // Try for the first format but default to PNG otherwise.
             const stringVector &formats = movieAtts->GetFileFormats();
             const intVector &w = movieAtts->GetWidths();
             const intVector &h = movieAtts->GetHeights();
@@ -2267,15 +2273,20 @@ QvisSaveMovieWizard::initializePage(int pageId)
             const doubleVector &scales = movieAtts->GetScales();
 
             if(!page9_UpdateFormat(FormatToMenuName(formats[0].c_str())))
-                page9_UpdateFormat(JPEG_FORMAT);
+                page9_UpdateFormat(PNG_FORMAT);
 
             page9_UpdateResolution(useCurrent[0]>0, scales[0], w[0], h[0], s[0], sc);
         }
         else
         {
-            // Try for MPEG but default to JPEG otherwise.
-            if(!page9_UpdateFormat(PREFERRED_FORMAT))
-                page9_UpdateFormat(JPEG_FORMAT);
+            // Try for MP4,then MPEG but default to PNG otherwise.
+            if(!page9_UpdateFormat(MP4_FORMAT))
+            {
+                if(!page9_UpdateFormat(MPEG_FORMAT))
+                {
+                    page9_UpdateFormat(PNG_FORMAT);
+                }
+            }
 
             page9_UpdateResolution(true, 1., (int)(default_movie_size[0]),
                                    (int)(default_movie_size[1]), 0, false);
