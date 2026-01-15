@@ -7,7 +7,8 @@
 
 #include <visit-config.h>
 
-#include <vtkCellType.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkObjectFactory.h>
 
 vtkStandardNewMacro(vtkVisItExtractCellsByType);
@@ -23,18 +24,60 @@ vtkVisItExtractCellsByType::~vtkVisItExtractCellsByType()
 {
 }
 
-// vtkExtractCellsByType::AddAllCellTypes when used in conjunction with
-// vtkExtractCellsByType::RemoveCellType (for instance, to extract all
-// cell types except lines), actually prevents any cells from being extracted.
-// This is due to use of VTK_ANY_CELL_TYPE in the AddAllCellTypes method.
+//----------------------------------------------------------------------------
+//  Calls AddCellType for all supported cell types of the input dataset
+//  except for VTK_LINE and VTK_POLY_LINE.
 //
-// Not all 'i' in the for loop below will be valid cell types, but that
-// should not interfere with the the execution of the parent class, except
-// perhaps slow down the check for wether or not a given cell should be extracted.
-
-void vtkVisItExtractCellsByType::AddAllCellTypes2()
+void
+vtkVisItExtractCellsByType::AddAllButLines(vtkDataSet *inDS)
 {
-  for (unsigned int i = 0; i < VTK_NUMBER_OF_CELL_TYPES; ++i)
-      this->AddCellType(i);
+    // want to extract everything except VTK_LINE, VTK_POLY_LINE
+    if(inDS->GetDataObjectType() == VTK_POLY_DATA)
+    {
+        this->AddCellType(VTK_VERTEX);
+        this->AddCellType(VTK_POLY_VERTEX);
+        this->AddCellType(VTK_TRIANGLE);
+        this->AddCellType(VTK_TRIANGLE_STRIP);
+        this->AddCellType(VTK_QUAD);
+        this->AddCellType(VTK_POLYGON);
+    }
+    else if(inDS->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkUnsignedCharArray *distinctCellTypes = static_cast<vtkUnstructuredGrid*>(inDS)->GetDistinctCellTypesArray();
+        for(vtkIdType i = 0; i < distinctCellTypes->GetNumberOfTuples(); ++i)
+        {
+            unsigned char dct = distinctCellTypes->GetValue(i);
+            if(dct != VTK_LINE && dct != VTK_POLY_LINE)
+                this->AddCellType(dct);
+        }
+    }
 }
 
+
+//  Calls AddCellType for all supported cell types of the input dataset
+//  except for VTK_VERTEX and VTK_POLY_VERTEX.
+//
+void
+vtkVisItExtractCellsByType::AddAllButVerts(vtkDataSet *inDS)
+{
+    // want to extract everything except VTK_VERTEX, VTK_POLY_VERTEX
+    if(inDS->GetDataObjectType() == VTK_POLY_DATA)
+    {
+        this->AddCellType(VTK_LINE);
+        this->AddCellType(VTK_POLY_LINE);
+        this->AddCellType(VTK_TRIANGLE);
+        this->AddCellType(VTK_TRIANGLE_STRIP);
+        this->AddCellType(VTK_QUAD);
+        this->AddCellType(VTK_POLYGON);
+    }
+    else if(inDS->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkUnsignedCharArray *distinctCellTypes = static_cast<vtkUnstructuredGrid*>(inDS)->GetDistinctCellTypesArray();
+        for(vtkIdType i = 0; i < distinctCellTypes->GetNumberOfTuples(); ++i)
+        {
+            unsigned char dct = distinctCellTypes->GetValue(i);
+            if(dct != VTK_VERTEX && dct != VTK_POLY_VERTEX)
+                this->AddCellType(dct);
+        }
+    }
+}

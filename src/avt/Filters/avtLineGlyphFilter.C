@@ -205,11 +205,8 @@ avtLineGlyphFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         {
             vtkNew<vtkVisItExtractCellsByType> remover;
             remover->SetInputData(inDS);
-            // want all cell types
-            remover->AddAllCellTypes2();
-            // except Lines
-            remover->RemoveCellType(VTK_LINE);
-            remover->RemoveCellType(VTK_POLY_LINE);
+            // want to extract everything except VTK_LINE, VTK_POLY_LINE
+            remover->AddAllButLines(inDS);
             remover->Update();
             surfaceData = remover->GetOutput();
             // double-check that remover produced cells.

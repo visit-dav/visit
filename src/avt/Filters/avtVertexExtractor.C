@@ -199,11 +199,8 @@ avtVertexExtractor::ExecuteDataTree(avtDataRepresentation *inDR)
         {
             vtkNew<vtkVisItExtractCellsByType> remover;
             remover->SetInputData(inDS);
-            // want all cell types
-            remover->AddAllCellTypes2();
-            // except Verts
-            remover->RemoveCellType(VTK_VERTEX);
-            remover->RemoveCellType(VTK_POLY_VERTEX);
+            // want to extract everything except VTK_VERTEX, VTK_POLY_VERTEX
+            remover->AddAllButVerts(inDS);
             remover->Update();
             surfaceData = remover->GetOutput();
             // ugrid data may report 'not all verts' but may truly be all verts
