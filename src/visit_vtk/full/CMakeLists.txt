@@ -59,6 +59,9 @@
 #   Kathleen Biagas, Thu June 11, 2026
 #   Remove vtkVisItSplitter, no longer used.
 #
+#   Kathleen Biagas, Mon Jun 15, 2026
+#   Remove vtkVisItCellDataToPointData.
+#
 #****************************************************************************/
 
 
@@ -89,7 +92,6 @@ set(visit_vtk_SOURCES
     vtkVectorGlyph.C
     vtkVertexExtractor.C
     vtkVertexFilter.C
-    vtkVisItCellDataToPointData.C
     vtkVisItClipper.C
     vtkVisItContourFilter.C
     vtkVisItCutter.C
@@ -141,7 +143,6 @@ set(visit_vtk_HEADERS
     vtkVectorGlyph.h
     vtkVertexExtractor.h
     vtkVertexFilter.h
-    vtkVisItCellDataToPointData.h
     vtkVisItClipper.h
     vtkVisItContourFilter.h
     vtkVisItCutter.h

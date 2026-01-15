@@ -21,7 +21,7 @@
 #endif
 
 #include <vtkCellData.h>
-#include <vtkVisItCellDataToPointData.h>
+#include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
 #include <vtkExecutive.h>
 #include <vtkFloatArray.h>
@@ -773,7 +773,7 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
         vtkDataSet *new_in_ds = (vtkDataSet *) in_ds->NewInstance();
         new_in_ds->CopyStructure(in_ds);
         new_in_ds->GetCellData()->AddArray(cellVar);
-        vtkVisItCellDataToPointData *cd2pd = vtkVisItCellDataToPointData::New();
+        vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInputData(new_in_ds);
         cd2pd->GetExecutive()->SetOutputData(0, toBeContoured);
         cd2pd->Update();
