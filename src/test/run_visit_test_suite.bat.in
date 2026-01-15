@@ -11,3 +11,7 @@ SET PYTHONHOME=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/;@CMAKE_B
    --cmake "@CMAKE_COMMAND@" ^
    -o testing_output ^
    -e @CMAKE_RUNTIME_OUTPUT_DIRECTORY@/@CMAKE_BUILD_TYPE@/visit.exe %*
+
+rem clean up environment
+SET PYTHONPATH=
+SET PYTHONHOME=
