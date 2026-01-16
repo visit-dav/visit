@@ -12,17 +12,17 @@
 // ****************************************************************************
 
 
-#ifndef __vtkOBJWriter_
-#define __vtkOBJWriter_
+#ifndef __vtkVisItOBJWriter_
+#define __vtkVisItOBJWriter_
 
 #include <visit_vtk_exports.h>
 #include <vtkPolyDataWriter.h>
 
-class VISIT_VTK_API vtkOBJWriter : public vtkPolyDataWriter
+class VISIT_VTK_API vtkVisItOBJWriter : public vtkPolyDataWriter
 {
 public:
-  static vtkOBJWriter *New();
-  vtkTypeMacro(vtkOBJWriter,vtkPolyDataWriter);
+  static vtkVisItOBJWriter *New();
+  vtkTypeMacro(vtkVisItOBJWriter,vtkPolyDataWriter);
 
   // Description:
   // Give a label indicating what is in the file.
@@ -35,13 +35,13 @@ public:
   void SetTexFilename(std::string);
 
 protected:
-  vtkOBJWriter();
-  ~vtkOBJWriter();
+  vtkVisItOBJWriter();
+  ~vtkVisItOBJWriter();
 
   void WriteData() override;
 private:
-  vtkOBJWriter(const vtkOBJWriter&);  // Not implemented.
-  void operator=(const vtkOBJWriter&);  // Not implemented.
+  vtkVisItOBJWriter(const vtkVisItOBJWriter&);  // Not implemented.
+  void operator=(const vtkVisItOBJWriter&);  // Not implemented.
 
   char *Label;
   bool writeMTL;
