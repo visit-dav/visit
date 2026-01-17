@@ -1858,7 +1858,9 @@ function mangle_libraries
 # a tiny CMake project to call find_package() on HDF5 and then
 # tease from it the relevant CMake variable. If that variable is
 # already defined, because this function has been called before,
-# it just returns the value it computed previously.
+# it just returns the value it computed previously. It is harmless
+# to call this function even if either MPI or HDF5 are not in
+# play.
 #
 function probe_hdf5_mpi_dependence
 {
