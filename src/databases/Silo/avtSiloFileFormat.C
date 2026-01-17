@@ -157,6 +157,13 @@ static int FindFirstNonEmptyBlock(char const *mbobj_name, int nblocks,
 
 static int db_get_index(DBnamescheme const *ns, int natnum);
 
+//
+// When using Silo's read mask to reduce I/O during metadata operations, an
+// issue is that anything that causes an exception out of a block where a
+// read mask has been set can perhaps leave the read mask in a bad state.
+// So, we add logic here to capture any such exceptions and essentially
+// disable the read mask until a new block decides to set it again.
+//
 class SiloException : public DatabaseException
 {
   public: SiloException(const char *)
@@ -1168,9 +1175,6 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // block to get additional metadata about the object as well as matching
     // multiblock objects to their associated multiblock mesh.
     //
-    // Note: A secondary issue is that anything that causes an exception out
-    // of ReadDir
-    //
 #if SILO_VERSION_GE(4,11,0)
     DBSetDataReadMask2(
          DBMBNamesAndTypes // to get names/types from all multi-block objects
@@ -1702,9 +1706,10 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
             }
 
             char *fileinfo_str = 0;
+            int lfileinfo = 0;
             if (DBInqVarExists(dbfile, "_fileinfo"))
             {
-                int lfileinfo = DBGetVarLength(dbfile, "_fileinfo");
+                lfileinfo = DBGetVarLength(dbfile, "_fileinfo");
                 if (lfileinfo > 0)
                 {
                     fileinfo_str = new char[lfileinfo+1];
@@ -1723,9 +1728,13 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
             }
 #endif
 
-            // Enough chars for main comment plus driver heading and string
-            // and hdf5 and silo heading and version strings.
-            char dbcmt[256+256];
+            // 
+            // We are adding some of our own stuff to the database comment
+            // string here to indicate version of the hdf5 and silo library
+            // used to produce the file and version of the hdf5 and silo
+            // library being used in the current plugin reading it.
+            //
+            char dbcmt[lfileinfo+256];
             snprintf(dbcmt, sizeof(dbcmt), "%.256s%sDriver: %s\nFile: %s%s%s\nPlugin:%s%s%ssilo-%s",
                 fileinfo_str?fileinfo_str:"",
                 fileinfo_str?"\n":"",
@@ -1733,7 +1742,6 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                 hdf5info_str?hdf5info_str:"",
                 siloinfo_str?", silo-":"",
                 siloinfo_str?siloinfo_str:"",
-
                 hdf5libinfo_str?" hdf5-":"",
                 hdf5libinfo_str?hdf5libinfo_str:"",
                 hdf5libinfo_str?", ":"",
