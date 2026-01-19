@@ -426,17 +426,15 @@ function build_cgns
     # Disable fortran
     FORTRANARGS="--with-fortran=no"
 
-    probe_hdf5_mpi_dependence
-
     set -x
     if [[ "$OPSYS" == "Darwin" ]] ; then
         env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-            CFLAGS="$CFLAGS $C_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" \
+            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
             LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
             ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     else
         env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-            CFLAGS="$CFLAGS $C_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" \
+            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
             ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     fi
     set +x

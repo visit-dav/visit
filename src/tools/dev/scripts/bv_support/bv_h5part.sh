@@ -450,6 +450,12 @@ diff -rcN H5Part-1.6.6/src/H5Part-orig.c  H5Part-1.6.6/src/H5Part.c
   
   /********************** private functions to handle attributes ***************/
 
+diff -p -U0 H5Part-1.6.6test/testframe.c.orig H5Part-1.6.6/test/testframe.c
+--- H5Part-1.6.6/test/testframe.c.orig	2026-01-17 10:48:38.200027000 -0800
++++ H5Part-1.6.6/test/testframe.c	2026-01-17 10:48:23.949333000 -0800
+@@ -670 +670 @@ test_open_objects(H5PartFile *file, int
+-			H5Oget_info(list[i], &info);
++			H5Oget_info(list[i], &info, H5P_DEFAULT);
 EOF
 
 }
@@ -549,14 +555,12 @@ function build_h5part
          EXTRAARGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
-    probe_hdf5_mpi_dependence
-
     info "Invoking command to configure H5Part"
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
     set -x
     sh -c "./configure ${WITHHDF5ARG} ${OPTIONAL} CXX=\"$CXX_COMPILER\" \
-       CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG\" \
+       CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
        $FORTRANARGS $EXTRAARGS \
        --prefix=\"$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH\""
     set +x

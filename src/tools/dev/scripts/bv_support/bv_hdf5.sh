@@ -134,9 +134,70 @@ function bv_hdf5_ensure
     fi
 }
 
-# *************************************************************************** #
-#                          Function 8.1, build_hdf5                           #
-# *************************************************************************** #
+function apply_hdf5_post_install_patch_for_serpar
+{
+    patch -p0 << \EOF
+*** include/H5pubconf.h.orig	2025-12-10 19:46:56.567124000 -0800
+--- include/H5pubconf.h	2025-12-15 21:15:56.247170000 -0800
+***************
+*** 238,244 ****
+--- 238,246 ----
+  /* #undef H5_HAVE_OPENSSL_SHA_H */
+  
+  /* Define if we have parallel support */
++ #ifdef HDF5_CONSUMER_USES_MPI
+  #define H5_HAVE_PARALLEL 1
++ #endif
+  
+  /* Define if MPI Fortran supports mpi_f08 module */
+  /* #undef H5_HAVE_MPI_F08 */
+EOF
+    if [[ $? != 0 ]] ; then
+        error "post HDF5 install patch to H5pubconf.h failed."
+        return 1
+    fi
+
+    patch -p0 << \EOF
+*** cmake/hdf5-config.cmake.orig	2026-01-16 10:35:45
+--- cmake/hdf5-config.cmake	2026-01-16 13:30:12
+@@ -109 +109 @@ set (${HDF5_PACKAGE_NAME}_TOOLSET              "")
+-if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL AND HDF5_CONSUMER_USES_MPI)
++if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL)
+EOF
+    if [[ $? != 0 ]] ; then
+        error "post HDF5 install patch to hdf5-config.cmake failed."
+        return 1
+    fi
+
+    patch -p0 << \EOF
+*** cmake/hdf5-targets.cmake.orig	2026-01-16 10:35:45
+--- cmake/hdf5-targets.cmake	2026-01-16 13:33:10
+*************** add_library(hdf5-shared SHARED IMPORTED)
+*** 56,66 ****
+--- 56,73 ----
+  # Create imported target hdf5-shared
+  add_library(hdf5-shared SHARED IMPORTED)
+  
++ if(HDF5_CONSUMER_USES_MPI)
+  set_target_properties(hdf5-shared PROPERTIES
+    INTERFACE_COMPILE_DEFINITIONS "H5_BUILT_AS_DYNAMIC_LIB"
+    INTERFACE_INCLUDE_DIRECTORIES "\$<\$<BOOL:OFF>:>;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
+    INTERFACE_LINK_LIBRARIES "MPI::MPI_C"
+  )
++ else()
++ set_target_properties(hdf5-shared PROPERTIES
++   INTERFACE_COMPILE_DEFINITIONS "H5_BUILT_AS_DYNAMIC_LIB"
++   INTERFACE_INCLUDE_DIRECTORIES "\$<\$<BOOL:OFF>:>;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
++ )
++ endif()
+EOF
+    if [[ $? != 0 ]] ; then
+        error "post HDF5 install patch to hdf5-targets.cmake failed."
+        return 1
+    fi
+
+    return 0
+}
 
 function build_hdf5
 {
@@ -266,6 +327,17 @@ function build_hdf5
     if [[ $? != 0 ]] ; then
         warn "HDF5 install failed.  Giving up"
         return 1
+    fi
+
+    #
+    # Patch installed HDF5 so that one install handles
+    # both serial and parallel use cases. We need to do this
+    # only if we're doing a parallel build.
+    #
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        pushd ${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH} >/dev/null 2>&1
+        apply_hdf5_post_install_patch_for_serpar
+        popd >/dev/null 2>&1
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
