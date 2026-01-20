@@ -24,7 +24,7 @@
 #include <vtkInformation.h>
 #include <vtkFloatArray.h>
 #include <vtkGeometryFilter.h>
-#include <vtkVIsItOBJWriter.h>
+#include <vtkVisItOBJWriter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPLYWriter.h>
