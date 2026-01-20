@@ -43,6 +43,12 @@
 #   building plugins against install, since we don't use the cmake targets,
 #   only lists of libraries.
 #
+#   Kathleen Biagas, Tue Jan 13, 2026
+#   Renamed vtkExtractCellsByType to vtkVisItExtractCellsByType since the
+#   original name exists in VTK, and the class has been modified to subclass
+#   the original version.
+#   Added vtkVertexExtractor.
+#
 #   Kathleen Biagas, Thu Jan 15, 2026 
 #   Remove vtkSTLWriter. Rename vtkOBJWriter to vtkVisItOBJWriter. 
 #
@@ -60,7 +66,6 @@ vtkCSGCell.C
 vtkCSGGrid.C
 vtkConnectedTubeFilter.C
 vtkDataSetRemoveGhostCells.C
-vtkExtractCellsByType.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
 vtkMergeTree.C
@@ -78,12 +83,14 @@ vtkSurfaceFromVolume.C
 vtkUniqueFeatureEdges.C
 vtkUnstructuredGridRelevantPointsFilter.C
 vtkVectorGlyph.C
+vtkVertexExtractor.C
 vtkVertexFilter.C
 vtkVisItCellDataToPointData.C
 vtkVisItClipper.C
 vtkVisItContourFilter.C
 vtkVisItCutter.C
 vtkVisItDataSetWriter.C
+vtkVisItExtractCellsByType.C
 vtkVisItExtractGrid.C
 vtkVisItExtractRectilinearGrid.C
 vtkVisItFeatureEdges.C

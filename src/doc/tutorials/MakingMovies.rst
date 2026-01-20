@@ -310,8 +310,8 @@ in them, so it is best to keep the name of the input images simple, with
 only a single digit sequence.
 
 The second argument is the name of the output file. The extension
-determines the file format to create. The available options are: "mpg",
-"wmv", "avi", "mov", "swf", "mp4" and "divx". "wmv" is usually the
+determines the file format to create. The available options are: "mpg4",
+"mpg", "wmv", "gif", "avi", "mov", "swf", and "divx". "mp4" is usually the
 best choice and plays on most platforms (Linux, macOS and Windows).
 "mpg" is lower quality, but should play on any platform.
 
