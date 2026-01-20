@@ -12,7 +12,7 @@
 #include <vtkCellData.h>
 #include <vtkCellArrayIterator.h>
 #include <vtkConeSource.h>
-#include <vtkExtractCellsByType.h>
+#include <vtkVisItExtractCellsByType.h>
 #include <vtkGeometryFilter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -203,13 +203,10 @@ avtLineGlyphFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         surfaceData = inDS;
         if (removeLinesFromInput)
         {
-            vtkNew<vtkExtractCellsByType> remover;
+            vtkNew<vtkVisItExtractCellsByType> remover;
             remover->SetInputData(inDS);
-            // want all cell types
-            remover->AddAllCellTypes();
-            // except Lines
-            remover->RemoveCellType(VTK_LINE);
-            remover->RemoveCellType(VTK_POLY_LINE);
+            // want to extract everything except VTK_LINE, VTK_POLY_LINE
+            remover->AddAllButLines(inDS);
             remover->Update();
             surfaceData = remover->GetOutput();
             // double-check that remover produced cells.
@@ -397,7 +394,7 @@ avtLineGlyphFilter::ProcessLines(const vtkDataSet *inputDS,
     if ((glyphingLines || glyphingEnds) &&
         inPolys->GetNumberOfLines() < inPolys->GetNumberOfCells())
     {
-        vtkNew<vtkExtractCellsByType> extractLines;
+        vtkNew<vtkVisItExtractCellsByType> extractLines;
         extractLines->AddCellType(VTK_LINE);
         extractLines->AddCellType(VTK_POLY_LINE);
         extractLines->SetInputData(inPolys);
