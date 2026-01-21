@@ -35,9 +35,19 @@ def flux_batch(cmd,rmin,nnodes=1,mach=None,part=None,bank=None,rdir=None,obase=N
     if not bank is None:
         xcmd += " -B %s" % bank
     xcmd += " %s" % cmd
-    ret,out = sexe(xcmd,ret_output=True,echo=True)
+    #
+    # Strip env vars that may undermine using flux.
+    #
+    # flux is a python animal, and may fail if not run
+    # within its own python environment.
+    shell_env = os.environ.copy()
+    for k in ["PYTHONHOME","PYTHONPATH"]:
+        if k in shell_env:
+            del shell_env[k]
+    ret,out = sexe(xcmd,ret_output=True,echo=True, env=shell_env)
     if ret == 0:
         jid = out.strip()
         return jid, ofile
     else:
         raise FluxBatchError(out)
+
