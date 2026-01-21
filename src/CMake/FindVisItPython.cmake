@@ -100,6 +100,11 @@
 #   Kathleen Biagas, Thu Dec 4, 2025
 #   Use CMake's find_package to find Python.
 #
+#   Cyrus Harrison, Wed Jan 21 11:40:15 PST 2026
+#   Change python install logic, use explicit include list for modules in
+#.  site-packages to limit modules installed.
+#
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -403,17 +408,36 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                       GROUP_READ GROUP_WRITE GROUP_EXECUTE
                       WORLD_READ WORLD_EXECUTE)
         # Install the python modules
-        # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
-        # Exclude visit module files.
         if(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
             install(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}
-                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
-                FILE_PERMISSIONS ${filePerms}
-                DIRECTORY_PERMISSIONS ${dirPerms}
-                PATTERN "lib-tk" EXCLUDE
-                PATTERN "visit.*" EXCLUDE
-                PATTERN "visitmodule.*" EXCLUDE
-                PATTERN "visit_writer.*" EXCLUDE)
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
+                    FILE_PERMISSIONS ${filePerms}
+                    DIRECTORY_PERMISSIONS ${dirPerms}
+                    PATTERN "site-packages" EXCLUDE
+            )
+            # Use a separate install for general site packages, with an include list for
+            # modules thats users of visit will want.
+            # This filters out several packages related to building and creating our docs
+            # that are not needed by users -- some of which may be flagged by security
+            # scans over time, causing visit to get blocked.
+            install(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}/site-packages
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib/site-packages/
+                    FILE_PERMISSIONS ${filePerms}
+                    DIRECTORY_PERMISSIONS ${dirPerms}
+                    # basic build tools we allow
+                    PATTERN "*distutils*" INCLUDE
+                    PATTERN "pip*"        INCLUDE
+                    PATTERN "setuptools*" INCLUDE
+                    PATTERN "wheel*"      INCLUDE
+                    # modules users may want
+                    PATTERN "pillow*"     INCLUDE
+                    PATTERN "PIL*"        INCLUDE
+                    PATTERN "numpy*"      INCLUDE
+                    PATTERN "Cython*"     INCLUDE
+                    PATTERN "cython*"     INCLUDE
+                    PATTERN "mpi4py*"     INCLUDE
+            )
+
         endif()
 
         # Install the Python headers
