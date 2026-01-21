@@ -425,17 +425,17 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                     FILE_PERMISSIONS ${filePerms}
                     DIRECTORY_PERMISSIONS ${dirPerms}
                     # basic build tools we allow
-                    PATTERN "*distutils*" INCLUDE
-                    PATTERN "pip*"        INCLUDE
-                    PATTERN "setuptools*" INCLUDE
-                    PATTERN "wheel*"      INCLUDE
+                    PATTERN "*distutils*"
+                    PATTERN "pip*"
+                    PATTERN "setuptools*"
+                    PATTERN "wheel*"
                     # modules users may want
-                    PATTERN "pillow*"     INCLUDE
-                    PATTERN "PIL*"        INCLUDE
-                    PATTERN "numpy*"      INCLUDE
-                    PATTERN "Cython*"     INCLUDE
-                    PATTERN "cython*"     INCLUDE
-                    PATTERN "mpi4py*"     INCLUDE
+                    PATTERN "pillow*"
+                    PATTERN "PIL*"
+                    PATTERN "numpy*"
+                    PATTERN "Cython*"
+                    PATTERN "cython*"
+                    PATTERN "mpi4py*"
             )
 
         endif()
