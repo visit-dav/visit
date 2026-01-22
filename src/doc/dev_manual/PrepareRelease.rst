@@ -19,7 +19,8 @@ updating a few files. These consist of ::
     INSTALL_NOTES
     gui/Splashscreen.C
 
-A ticket should be created and assigned so that the release can be tested for any obsolete code that should be removed.
+
+Update "VERSION" and "INSTALL_NOTES" to reflect the new version number. Update "gui/Splashscreen.C" to reflect the release month and year. A ticket should be created and assigned so that the release can be tested for any obsolete code that should be removed.
 Testing for obsolete code involves configuring with the CMake var **VISIT_REMOVE_OBSOLETE_CODE** turned on, then compiling and looking for compile errors of the form:  *This code is obsolete in this version. Please remove it.*
 
 Preparing for a Minor Release
@@ -204,7 +205,7 @@ GUI Checks
 CLI Checks
 ~~~~~~~~~~
 1. Start VisIt with CLI and check that `import numpy` works.
-2. Test `import visitmodule`.
+2. Test `import visit`.
 
 Additional macOS Checks
 ~~~~~~~~~~~~~~~~~~~~~~~
