@@ -102,8 +102,7 @@
 #
 #   Cyrus Harrison, Wed Jan 21 11:40:15 PST 2026
 #   Change python install logic, use explicit include list for modules in
-#.  site-packages to limit modules installed.
-#
+#   site-packages to limit modules installed.
 #
 #****************************************************************************/
 
