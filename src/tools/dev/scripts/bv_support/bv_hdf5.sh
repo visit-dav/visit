@@ -161,36 +161,48 @@ EOF
 *** cmake/hdf5-config.cmake.orig	2026-01-16 10:35:45
 --- cmake/hdf5-config.cmake	2026-01-16 13:30:12
 @@ -109 +109 @@ set (${HDF5_PACKAGE_NAME}_TOOLSET              "")
--if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL AND HDF5_CONSUMER_USES_MPI)
-+if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL)
+-if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL)
++if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL AND HDF5_CONSUMER_USES_MPI)
 EOF
     if [[ $? != 0 ]] ; then
         error "post HDF5 install patch to hdf5-config.cmake failed."
         return 1
     fi
 
-    patch -p0 << \EOF
-*** cmake/hdf5-targets.cmake.orig	2026-01-16 10:35:45
---- cmake/hdf5-targets.cmake	2026-01-16 13:33:10
-*************** add_library(hdf5-shared SHARED IMPORTED)
-*** 56,66 ****
---- 56,73 ----
-  # Create imported target hdf5-shared
-  add_library(hdf5-shared SHARED IMPORTED)
-  
-+ if(HDF5_CONSUMER_USES_MPI)
-  set_target_properties(hdf5-shared PROPERTIES
-    INTERFACE_COMPILE_DEFINITIONS "H5_BUILT_AS_DYNAMIC_LIB"
-    INTERFACE_INCLUDE_DIRECTORIES "\$<\$<BOOL:OFF>:>;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
-    INTERFACE_LINK_LIBRARIES "MPI::MPI_C"
-  )
-+ else()
-+ set_target_properties(hdf5-shared PROPERTIES
-+   INTERFACE_COMPILE_DEFINITIONS "H5_BUILT_AS_DYNAMIC_LIB"
-+   INTERFACE_INCLUDE_DIRECTORIES "\$<\$<BOOL:OFF>:>;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
-+ )
-+ endif()
-EOF
+
+
+
+
+f="cmake/hdf5-targets.cmake"
+tmp="$(mktemp)" || exit 1
+
+sed '
+/set_target_properties(hdf5-shared[[:space:]]\+PROPERTIES/ , /^[[:space:]]*)[[:space:]]*$/ {
+  /^[[:space:]]*INTERFACE_LINK_LIBRARIES[[:space:]]/d
+  /^[[:space:]]*)[[:space:]]*$/ {
+    # only append if the marker is not already somewhere later in the file
+    # (simple guard: if HDF5_CONSUMER_USES_MPI already exists, do nothing)
+  }
+}
+' "$f" > "$tmp"
+
+if ! grep -q 'HDF5_CONSUMER_USES_MPI' "$f"; then
+  # re-run with append enabled
+  sed '
+  /set_target_properties(hdf5-shared[[:space:]]\+PROPERTIES/ , /^[[:space:]]*)[[:space:]]*$/ {
+    /^[[:space:]]*INTERFACE_LINK_LIBRARIES[[:space:]]/d
+    /^[[:space:]]*)[[:space:]]*$/ a\
+if(HDF5_CONSUMER_USES_MPI)\
+set_target_properties(hdf5-shared PROPERTIES\
+  INTERFACE_LINK_LIBRARIES "MPI::MPI_C"\
+)\
+endif()
+  }
+  ' "$f" > "$tmp" && mv "$tmp" "$f"
+else
+  mv "$tmp" "$f"   # just the deletion pass result
+fi
+
     if [[ $? != 0 ]] ; then
         error "post HDF5 install patch to hdf5-targets.cmake failed."
         return 1
