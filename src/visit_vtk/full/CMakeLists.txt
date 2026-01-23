@@ -49,6 +49,9 @@
 #   the original version.
 #   Added vtkVertexExtractor.
 #
+#   Kathleen Biagas, Thu Jan 15, 2026 
+#   Remove vtkSTLWriter. Rename vtkOBJWriter to vtkVisItOBJWriter. 
+#
 #****************************************************************************/
 
 IF(OPENEXR_FOUND)
@@ -67,7 +70,6 @@ vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
 vtkMergeTree.C
 vtkMultiSplitter.C
-vtkOBJWriter.C
 vtkOnionPeelFilter.C
 vtkPolyDataOnionPeelFilter.C
 vtkRGBWriter.C
@@ -94,11 +96,11 @@ vtkVisItExtractRectilinearGrid.C
 vtkVisItFeatureEdges.C
 vtkVisItGlyph3D.C
 vtkVisItInterpolatedVelocityField.C
+vtkVisItOBJWriter.C
 vtkVisItPolyDataNormals.C
 vtkVisItPolyDataNormals2D.C
 vtkVisItStructuredGridNormals.C
 vtkVisItProbeFilter.C
-vtkVisItSTLWriter.C
 vtkVisItScalarTree.C
 vtkVisItSplitter.C
 vtkVisItTubeFilter.C
