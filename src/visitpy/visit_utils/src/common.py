@@ -109,20 +109,23 @@ def lsearch(l,pattern):
             rvals.append(v)
     return rvals
 
-def sexe(cmd,ret_output=False,echo = False):
+def sexe(cmd, ret_output=False, echo = False, env=None):
     """ Helper for executing shell commands. """
+    if env is None:
+        env = os.environ.copy()
     if echo:
         print("[exe: %s]" % cmd)
     if ret_output:
         p = subprocess.Popen(cmd,
                              shell=True,
                              universal_newlines=True,
+                             env=env,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
-        res =p.communicate()[0]
+        res = p.communicate()[0]
         return p.returncode,res
     else:
-        return subprocess.call(cmd,shell=True)
+        return subprocess.call(cmd,shell=True,env=env)
 
 def define_module(module_name,module_script,parent_dict=None):
     """ Dynamically defines a python module. """
