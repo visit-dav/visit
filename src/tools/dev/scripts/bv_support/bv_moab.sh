@@ -104,9 +104,11 @@ function build_moab
         cf_mpi_arg="--with-mpi"
         cf_c_compiler="$PAR_COMPILER"
         cf_cxx_compiler="$PAR_COMPILER_CXX"
+        hdf5_consumer_uses_mpi_flag="-DHDF5_CONSUMER_USES_MPI"
     else
         cf_c_compiler="$C_COMPILER"
         cf_cxx_compiler="$CXX_COMPILER"
+        hdf5_consumer_uses_mpi_flag=""
     fi
 
     cf_prefix_arg="--prefix=$VISITDIR/moab/$MOAB_VERSION/$VISITARCH"
@@ -132,13 +134,11 @@ function build_moab
         cf_hdf5_ldflags_arg="--with-hdf5-ldflags=\"$cf_hdf5_ldflags_arg\""
     fi
 
-    probe_hdf5_mpi_dependence
-
     info "Configuring moab . . ."
     set -x
     sh -c "./configure \
-        CXX=\"$cf_cxx_compiler\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG\" \
-        CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG\" \
+        CXX=\"$cf_cxx_compiler\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $hdf5_consumer_uses_mpi_flag\" \
+        CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS $hdf5_consumer_uses_mpi_flag\" \
         ${cf_prefix_arg} ${cf_mpi_arg} ${cf_common_args} ${cf_static_args} \
         ${cf_hdf5_arg} ${cf_hdf5_ldflags_arg} \
         ${cf_szip_arg} ${cf_zlib_arg}"

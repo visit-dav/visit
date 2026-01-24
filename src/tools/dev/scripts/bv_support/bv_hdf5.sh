@@ -134,9 +134,82 @@ function bv_hdf5_ensure
     fi
 }
 
-# *************************************************************************** #
-#                          Function 8.1, build_hdf5                           #
-# *************************************************************************** #
+function apply_hdf5_post_install_patch_for_serpar
+{
+    patch -p0 << \EOF
+*** include/H5pubconf.h.orig	2025-12-10 19:46:56.567124000 -0800
+--- include/H5pubconf.h	2025-12-15 21:15:56.247170000 -0800
+***************
+*** 238,244 ****
+--- 238,246 ----
+  /* #undef H5_HAVE_OPENSSL_SHA_H */
+  
+  /* Define if we have parallel support */
++ #ifdef HDF5_CONSUMER_USES_MPI
+  #define H5_HAVE_PARALLEL 1
++ #endif
+  
+  /* Define if MPI Fortran supports mpi_f08 module */
+  /* #undef H5_HAVE_MPI_F08 */
+EOF
+    if [[ $? != 0 ]] ; then
+        error "post HDF5 install patch to H5pubconf.h failed."
+        return 1
+    fi
+
+    patch -p0 << \EOF
+*** cmake/hdf5-config.cmake.orig	2026-01-16 10:35:45
+--- cmake/hdf5-config.cmake	2026-01-16 13:30:12
+@@ -109 +109 @@ set (${HDF5_PACKAGE_NAME}_TOOLSET              "")
+-if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL)
++if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL AND HDF5_CONSUMER_USES_MPI)
+EOF
+    if [[ $? != 0 ]] ; then
+        error "post HDF5 install patch to hdf5-config.cmake failed."
+        return 1
+    fi
+
+
+
+
+
+f="cmake/hdf5-targets.cmake"
+tmp="$(mktemp)" || exit 1
+
+sed '
+/set_target_properties(hdf5-shared[[:space:]]\+PROPERTIES/ , /^[[:space:]]*)[[:space:]]*$/ {
+  /^[[:space:]]*INTERFACE_LINK_LIBRARIES[[:space:]]/d
+  /^[[:space:]]*)[[:space:]]*$/ {
+    # only append if the marker is not already somewhere later in the file
+    # (simple guard: if HDF5_CONSUMER_USES_MPI already exists, do nothing)
+  }
+}
+' "$f" > "$tmp"
+
+if ! grep -q 'HDF5_CONSUMER_USES_MPI' "$f"; then
+  # re-run with append enabled
+  sed '
+  /set_target_properties(hdf5-shared[[:space:]]\+PROPERTIES/ , /^[[:space:]]*)[[:space:]]*$/ {
+    /^[[:space:]]*INTERFACE_LINK_LIBRARIES[[:space:]]/d
+    /^[[:space:]]*)[[:space:]]*$/ a\
+if(HDF5_CONSUMER_USES_MPI)\
+set_target_properties(hdf5-shared PROPERTIES\
+  INTERFACE_LINK_LIBRARIES "MPI::MPI_C"\
+)\
+endif()
+  }
+  ' "$f" > "$tmp" && mv "$tmp" "$f"
+else
+  mv "$tmp" "$f"   # just the deletion pass result
+fi
+
+    if [[ $? != 0 ]] ; then
+        error "post HDF5 install patch to hdf5-targets.cmake failed."
+        return 1
+    fi
+
+    return 0
+}
 
 function build_hdf5
 {
@@ -258,6 +331,17 @@ function build_hdf5
     if [[ $? != 0 ]] ; then
         warn "HDF5 install failed.  Giving up"
         return 1
+    fi
+
+    #
+    # Patch installed HDF5 so that one install handles
+    # both serial and parallel use cases. We need to do this
+    # only if we're doing a parallel build.
+    #
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        pushd ${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH} >/dev/null 2>&1
+        apply_hdf5_post_install_patch_for_serpar
+        popd >/dev/null 2>&1
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then

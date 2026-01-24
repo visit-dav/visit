@@ -183,12 +183,10 @@ function build_mfem
     mkdir build
     cd build || error "Can't cd to MFEM build dir."
 
-    probe_hdf5_mpi_dependence
-
     vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
-    vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} ${VISIT_HDF5_MPI_INCLUDE_FLAG} $CFLAGS\""
+    vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} $CFLAGS\""
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} ${VISIT_HDF5_MPI_INCLUDE_FLAG} $CXXFLAGS\""
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS\""
     vopts="${vopts} -DMFEM_ENABLE_MINIAPPS:BOOL=OFF"
     # MFEM 4.6 is hard coded to use C++11
     #  In the future, we want to change this to C++14

@@ -388,9 +388,6 @@ function build_xdmf
     fi
     xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK_SHORT_VERSION}.${SO_EXT}
 
-    # Probe HDF5 installation for MPI header file path, if any
-    probe_hdf5_mpi_dependence
-
     # The -Wno-dev arg to CMake here makes pawing through any
     # failed output a lot easier.
     set -x
@@ -398,9 +395,9 @@ function build_xdmf
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
                  -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
-                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS} ${VISIT_HDF5_MPI_INCLUDE_FLAG}" \
+                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
                  -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS} ${VISIT_HDF5_MPI_INCLUDE_FLAG}" \
+                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
                  -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
                  -DBUILD_TESTING:BOOL=OFF \
                  -DXDMF_BUILD_MPI:BOOL=OFF \

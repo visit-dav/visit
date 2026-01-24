@@ -129,7 +129,7 @@ EOF
         return 1
     fi
 
-    return 0;
+    return 0
 }
 
 function apply_netcdf_411_darwin_patch
@@ -448,10 +448,10 @@ diff -c libsrc4/netcdf.h libsrc4.patched/netcdf.h
 + #include <stdint.h>
   /* These defs added by netCDF configure because parallel HDF5 is not present. */
   #ifndef MPI_INCLUDED
-! #define MPI_Comm_spoof int
-! #define MPI_Info_spoof int
-! #define MPI_COMM_WORLD_SPOOF 0
-! #define MPI_INFO_NULL_SPOOF 0
+! #define MPI_Comm int
+! #define MPI_Info int
+! #define MPI_COMM_WORLD 0
+! #define MPI_INFO_NULL 0
   #endif
   
 ! typedef int64_t nc_type;
@@ -475,11 +475,11 @@ diff -c libsrc4/netcdf.h libsrc4.patched/netcdf.h
   nc_open(const char *path, int mode, int *ncidp);
   
   EXTERNL int
-! nc_create_par(const char *path, int cmode, MPI_Comm_spoof comm, MPI_Info_spoof info,
+! nc_create_par(const char *path, int cmode, MPI_Comm comm, MPI_Info info,
   	      int *ncidp);
   
   EXTERNL int
-! nc_open_par(const char *path, int mode, MPI_Comm_spoof comm, MPI_Info_spoof info,
+! nc_open_par(const char *path, int mode, MPI_Comm comm, MPI_Info info,
   	    int *ncidp);
   
   /* Use these with nc_var_par_access(). */
@@ -509,8 +509,8 @@ diff -r -c libsrc4/tst_h_par.c libsrc4.patched/tst_h_par.c
   #endif /* USE_MPE */
   
      MPI_Init(&argc, &argv);
-!    MPI_Comm_rank(MPI_COMM_WORLD_SPOOF, &my_rank);
-!    MPI_Comm_size(MPI_COMM_WORLD_SPOOF, &p);
+!    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+!    MPI_Comm_size(MPI_COMM_WORLD, &p);
   
   #ifdef USE_MPE
      MPE_Init_log();
@@ -527,7 +527,7 @@ diff -r -c libsrc4/tst_h_par.c libsrc4.patched/tst_h_par.c
   
         /* Create file. */
         if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0) ERR;
-!       if (H5Pset_fapl_mpio(fapl_id, MPI_COMM_WORLD_SPOOF, MPI_INFO_NULL_SPOOF) < 0) ERR;
+!       if (H5Pset_fapl_mpio(fapl_id, MPI_COMM_WORLD, MPI_INFO_NULL) < 0) ERR;
         if ((fileid = H5Fcreate(FILE_NAME, H5F_ACC_TRUNC, H5P_DEFAULT, 
         fapl_id)) < 0) ERR;
   
@@ -544,7 +544,7 @@ diff -r -c libsrc4/tst_h_par.c libsrc4.patched/tst_h_par.c
   #endif /* USE_MPE */
         }
         write_us = (MPI_Wtime() - ftime) * MILLION;
-!       MPI_Reduce(&write_us, &max_write_us, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD_SPOOF);
+!       MPI_Reduce(&write_us, &max_write_us, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
         if (!my_rank)
         {
   	 write_rate = (float)(DIM2_LEN * sizeof(int))/(float)max_write_us;      
@@ -561,7 +561,7 @@ diff -r -c libsrc4/tst_h_par.c libsrc4.patched/tst_h_par.c
   
         /* Open the file. */
         if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0) ERR;
-!       if (H5Pset_fapl_mpio(fapl_id, MPI_COMM_WORLD_SPOOF, MPI_INFO_NULL_SPOOF) < 0) ERR;
+!       if (H5Pset_fapl_mpio(fapl_id, MPI_COMM_WORLD, MPI_INFO_NULL) < 0) ERR;
   
   
         if (H5Pset_libver_bounds(fapl_id, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST) < 0) ERR;
@@ -578,7 +578,7 @@ diff -r -c libsrc4/tst_h_par.c libsrc4.patched/tst_h_par.c
   /* 	    } */
         }
         read_us = (MPI_Wtime() - ftime) * MILLION;
-!       MPI_Reduce(&read_us, &max_read_us, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD_SPOOF);
+!       MPI_Reduce(&read_us, &max_read_us, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
         if (!my_rank)
         {
   	 read_rate = (float)(DIM2_LEN * sizeof(int))/(float)max_read_us;      
@@ -748,15 +748,6 @@ function build_netcdf
     ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
 
     #
-    # Ensure that if #include hdf5.h turns around and does #include mpi.h,
-    # netcdf's compilation will find mpi.h...even though we're not ever
-    # going to use any netcdf parallel features. Calling this is harmless
-    # even if HDF5 is not in play. The effect of the call is to either
-    # populate or leave blank VISIT_HDF5_MPI_INCLUDE_FLAG.
-    #
-    probe_hdf5_mpi_dependence
-
-    #
     # To prevent possible enablement of netcdf parallel features if HDF5
     # itself is compiled for parallel, we apriori set two controlling
     # autotools cache variables to "no".
@@ -764,7 +755,7 @@ function build_netcdf
     C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
     env ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-                CFLAGS="$CFLAGS $C_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" \
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 FC="" FCFLAGS="" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS \
                 ac_cv_lib_hdf5_H5Pget_fapl_mpiposix=no \
                 ac_cv_lib_hdf5_H5Pget_fapl_mpio=no \
