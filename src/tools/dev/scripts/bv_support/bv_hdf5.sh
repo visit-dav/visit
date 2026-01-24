@@ -177,12 +177,12 @@ function build_hdf5
         cmk_opts="${cmk_opts} \
            -DBUILD_STATIC_LIBS:BOOL=ON \
            -DBUILD_SHARED_LIBS:BOOL=OFF \
-           -DONLY_SHARED_LIBS:BOOL=OFF"
+           -DHDF5_ONLY_SHARED_LIBS:BOOL=OFF"
     else
         cmk_opts="${cmk_opts} \
            -DBUILD_STATIC_LIBS:BOOL=OFF \
            -DBUILD_SHARED_LIBS:BOOL=ON \
-           -DONLY_SHARED_LIBS:BOOL=ON"
+           -DHDF5_ONLY_SHARED_LIBS:BOOL=ON"
     fi
 
     if [[ "$DO_MOAB" == "yes" || "$DO_MFEM" == "yes" || "$DO_NETCDF" == "yes" ]]; then
@@ -208,20 +208,12 @@ function build_hdf5
     fi
 
     if [[ "$PAR_COMPILER" != "" ]] ; then
+        PAR_COMPILER_REAL="$(cd "$(dirname "$PAR_COMPILER")" && pwd -P)/$(basename "$PAR_COMPILER")"
+        PAR_BIN_DIR="$(dirname "$PAR_COMPILER_REAL")"
+        MY_MPI_HOME="$(dirname "$PAR_BIN_DIR")"
         cmk_opts="${cmk_opts} \
             -DHDF5_ENABLE_PARALLEL:BOOL=ON \
-            -DMPI_C_COMPILER:PATH=\"${PAR_COMPILER}\" \
-            -DMPI_CXX_COMPILER:PATH=\"${PAR_COMPILER_CXX}\""
-    fi
-
-    if [[ "$PAR_INCLUDE" != "" ]] ; then
-        cmk_opts="${cmk_opts} \
-            -DMPI_C_COMPILER_INCLUDE_DIRS:STRING=\"${PAR_INCLUDE_PATH}\" \
-            -DMPI_C_HEADER_DIR:PATH=\"${PAR_INCLUDE_PATH}\""
-    fi
-
-    if [[ "$PAR_LIBS" != "" ]] ; then
-        cmk_opts="${cmk_opts} -DMPI_C_LINK_FLAGS:STRING=\"${PAR_LINKER_FLAGS}\""
+            -DMPI_HOME:STRING=${MY_MPI_HOME}"
     fi
 
     # Make a build directory for an out-of-source build.. Change the
