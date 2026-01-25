@@ -10,6 +10,9 @@ on:
       - 'src/doc/python_scripting/functions.rst'
       - 'src/visitpy/common/MethodDoc.C'
 
+permissions:
+  contents: read
+
 jobs:
   check-sync:
     runs-on: ubuntu-latest

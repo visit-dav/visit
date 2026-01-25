@@ -6,6 +6,9 @@ on:
       - 'src/tools/dev/scripts/bv_support/*'
       - 'src/tools/dev/scripts/build_visit'
 
+permissions:
+  contents: read
+
 jobs:
   test-build_visit_tpls:
     runs-on: ubuntu-latest
