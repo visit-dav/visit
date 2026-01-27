@@ -72,6 +72,8 @@ echo "Source build completed at `date`"
 # Copy stripack lib for ffp plugin tests
 if test "$testHost" = "dane" ; then
     cp /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss4/stripack/libstripack.so ./lib/.
+elif test "$testHost" = "rzwhippet" ; then
+    cp /usr/WS1/visit/visit/thirdparty_shared/stripack/libstripack.so ./lib/.
 fi
 
 

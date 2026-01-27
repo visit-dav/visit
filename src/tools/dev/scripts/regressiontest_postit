@@ -140,23 +140,6 @@ if test "$post" = "true" ; then
     # log current quota usage
     python3 $scriptDir/visit-check-lc-workspace-quota.py >> /usr/workspace/visit/QUOTA_HISTORY.txt
 
-    # If its the first day of the month, purge test results from 3 months ago.
-    if test "$(date +%d)" = "01" ; then
-        echo "Purging results from 3 months ago at `date`."
-        cd $testDir/old_results
-        month=`date +%m`
-        deleteMonth=$(((month -1 + 12 - 3) % 12 + 1))
-        year=`date +%Y`
-        deleteYear=$((year - 1 + (month + 12 - 4) / 12))
-        d1=$( printf '%04d' $deleteYear )
-        d2=$( printf '%02d' $deleteMonth )
-        dirs="${d1}_${d2}*"
-        echo "$dirs"
-
-        # leaving commented out till it can be vetted
-        # Remove the local copies
-        # rm -f $dirs
-    fi
 fi
 
 

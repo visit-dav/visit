@@ -396,14 +396,15 @@ def main():
     dirs.sort()
 
     global imode
-    for imode in range(3):
-        mode_dir = os.path.join(dir, mode_dirs[imode])
-        if os.path.isdir(mode_dir):
-            print("    Doing mode %d" % imode)
-            copy_new_baselines(dir)
-            copy_results(dir)
-        else:
-            print("    Skipping mode %d" % imode)
+    for dir in dirs:
+        for imode in range(3):
+            mode_dir = os.path.join(dir, mode_dirs[imode])
+            if os.path.isdir(mode_dir):
+                print("    Doing mode %d" % imode)
+                copy_new_baselines(dir)
+                copy_results(dir)
+            else:
+                print("    Skipping mode %d" % imode)
 
 if __name__ == "__main__":
     main()
