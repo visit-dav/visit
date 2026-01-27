@@ -3515,10 +3515,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                             matset_name,
                             n_matset);
 
-        Node n_silo_matset;
-        conduit::blueprint::mesh::matset::to_silo(n_matset,
-                                                  n_silo_matset);
-
         Node n_silo_specset;
         conduit::blueprint::mesh::specset::to_silo(n_specset,
                                                    n_matset,
