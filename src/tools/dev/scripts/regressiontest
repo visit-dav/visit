@@ -370,3 +370,4 @@ $scriptDir/regressiontest_buildrun $subTag $serial $testHost $cmakeCmd $configFi
 #
 
 $scriptDir/regressiontest_postit $subTag $testHost $serial $post > $postLogFile 2>&1
+
