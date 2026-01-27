@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:/usr/bin:/bin
+
+dateTag=$1
+branch=$2
+version=$3
+
+cd /usr/WS1/visit/test_trunk
+
+echo "Checkout of trunk started at `date`"
+
+# Clone the repository if necessary.
+if test ! -e /usr/WS1/visit/test_trunk/visit; then
+    echo "git clone started at `date`"
+    git clone  --recursive ssh://git@github.com/visit-dav/visit.git
+
+    # Enter the repo and perform commands only needed on a fresh clone
+    cd visit
+    git submodule init
+fi
+
+# Enter the repository.
+cd /usr/WS1/visit/test_trunk/visit
+
+# Update the repository.
+hostname
+git --version
+echo "rm -f .git/index.lock"
+rm -f .git/index.lock
+git checkout develop
+
+# ensure submodule is up to date
+echo "git submodule update"
+git submodule update
+
+echo "git pull"
+git pull
+
+echo "git lfs pull"
+git lfs pull
+
+echo "Repository updated at `date`"
+
+cd /usr/WS1/visit/test_trunk
+
+if test "$branch" = "trunk" ; then
+    if test "$version" = "latest" ; then
+        echo "Using the trunk"
+        # Do nothing.
+    else
+        echo "Using a version on the trunk"
+        # Set to a specific revision
+    fi
+else
+    if test "$version" = "latest" ; then
+        echo "Using a branch"
+        # Set to a specific branch.
+    else
+        echo "Using a specific version on a branch"
+        # Set to a specific revision on a specific branch.
+    fi
+fi
+
+echo "Checkout of trunk completed at `date`"
+

@@ -1,0 +1,132 @@
+#!/bin/sh
+
+dateTag=$1
+serial=$2
+testHost=$3
+cmakeCmd=$4
+configFile=$5
+
+visitDir="/usr/WS1/visit/test_trunk"
+repoDir="$visitDir/visit"
+logDirBase="$visitDir/nightly_logs"
+logDir=$logDirBase/$dateTag
+
+# avoid default texlive in PATH
+ml unload texlive
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:/usr/bin:/bin
+
+echo "Make configure started at `date`"
+
+cd $visitDir
+
+buildDir=build_$testHost
+# remove old build
+rm -rf $buildDir
+mkdir $buildDir
+cd $buildDir
+export PATH=$PATH:/usr/bin/X11
+
+# In case the gcc version we want isn't the default, make sure to set CC and CXX,
+# otherwise pluginVsInstall tests won't use the right compiler
+
+export CC=/usr/tce/packages/gcc/gcc-10.3.1/bin/gcc
+export CXX=/usr/tce/packages/gcc/gcc-10.3.1/bin/g++
+
+configSite=$repoDir/src/config-site/$configFile
+
+if test "$serial" = "true" ; then
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" $configSite
+fi
+
+$cmakeCmd \
+    -DVISIT_CONFIG_SITE=$configSite \
+    -DCMAKE_BUILD_TYPE:STRING=Release \
+    -DVISIT_BUILD_ALL_PLUGINS:BOOL=ON \
+    -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
+    -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON \
+    -DVISIT_CREATE_XMLTOOLS_GEN_TARGETS:BOOL=OFF \
+    -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
+    -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+    -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+    -S $repoDir/src >>./cmake_configure_log 2>&1
+
+# add the cmake output to output for script that runs this one
+cat ./cmake_configure_log
+
+make -k -j 56 1>./make.out 2>./make.err
+
+make -k manuals >> ./manuals_log 2>&1 
+make -k -j 56 package >> ./package_log 2>&1
+if test 0 -ne 0; then
+    echo "Source build FAILED at `date`"
+    exit 1
+fi
+
+# add the cmake output to output for script that runs this one
+cat ./make.out
+cat ./make.err
+echo "Source build completed at `date`"
+
+# Copy stripack lib for ffp plugin tests
+if test "$testHost" = "dane" ; then
+    cp /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss4/stripack/libstripack.so ./lib/.
+fi
+
+
+# Build the test data
+cd testdata
+make -j 8 data
+cd ../
+
+echo "Data build completed at `date`"
+
+echo "Starting install at `date`"
+
+# Install the package
+version=`cat $repoDir/src/VERSION`
+
+$repoDir/scripts/visit-install -c llnl_open $version linux-x86_64 ./_install >> ./install_log 2>&1
+
+#echo "Install completed at `date`"
+
+# Run the test suite
+echo "Test run started at `date`"
+
+if test "$serial" = "true" ; then
+    modes="$testHost,trunk,serial"
+else
+    modes="$testHost,trunk,serial $testHost,trunk,parallel $testHost,trunk,scalable,parallel,icet"
+fi
+
+testDir=$visitDir/$buildDir/test
+
+# Build the code
+export PATH=$PATH:/usr/bin/X11
+
+# for pluginVsInstall
+export CC=/usr/tce/packages/gcc/gcc-10.3.1/bin/gcc
+export CXX=/usr/tce/packages/gcc/gcc-10.3.1/bin/g++
+
+# Run the tests, consolidating the results in one directory
+echo "testDir: $testDir"
+cd $testDir
+mkdir $dateTag output
+for m in $modes; do
+    theMode=`echo $m | tr ',' '_'`
+    resDir=output/$theMode
+    mkdir $resDir
+    echo "runtest with mode = $m at `date`"
+
+    # Run the test
+    ./run_visit_test_suite.sh  --parallel-launch "srun" -o $resDir -m "$m" -n 1 --cmake $cmakeCmd
+
+    # Move the results to the consolidation directory
+    mv $resDir/html $dateTag/$theMode
+    echo "Test $m completed at `date`"
+done
+
+touch /usr/WS1/visit/test_trunk/nightly_cron/run_finished
+
+
