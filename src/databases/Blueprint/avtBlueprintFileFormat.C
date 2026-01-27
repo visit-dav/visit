@@ -3485,6 +3485,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 //  Creation:   09/27/24
 //
 //  Modifications:
+//     Justin Privitera, Tue Jan 27 15:51:14 PST 2026
+//     Removed unnecessary material set conversion.
 //
 // ****************************************************************************
 avtSpecies *
