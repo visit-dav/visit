@@ -2465,6 +2465,9 @@ def TestBatchSimulation(sim):
 #    Cyrus Harrison, Mon Dec  1 14:33:51 PST 2025
 #    Replaced poodle with dane.
 #
+#    Kathleen Biagas, Tue Jan 27, 2026
+#    Add rzwhippet.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1, batch=False):
@@ -2504,7 +2507,8 @@ class Simulation(object):
 
             # For now...
             import socket
-            if "dane" in socket.gethostname():
+            if "dane" in socket.gethostname() or \
+               "rzwhippet" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
                     msubscript = os.path.join(os.path.abspath(os.curdir), string.replace(self.sim2, "sim2", "msub"))
