@@ -286,14 +286,19 @@ VisitLineTool::Disable()
 //    I added the ability to display the parallel axes either horizontally
 //    or vertically.
 //
+//    Kathleen Biagas, Wed Jan 28, 2026 
+//    Disabled for Curve window mode.
+//
 // ****************************************************************************
 
 bool
 VisitLineTool::IsAvailable() const
 {
     return proxy.GetMode() != WINMODE_AXISARRAY &&
+           proxy.GetMode() != WINMODE_CURVE &&
            proxy.GetMode() != WINMODE_PARALLELAXES &&
-           proxy.GetMode() != WINMODE_VERTPARALLELAXES && proxy.HasPlots();
+           proxy.GetMode() != WINMODE_VERTPARALLELAXES &&
+           proxy.HasPlots();
 }
 
 // ****************************************************************************
