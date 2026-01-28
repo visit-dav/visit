@@ -919,8 +919,8 @@ ViewerWindow::SetToolEnabled(int toolId, bool enabled)
             bool updateTool = GetPlotList()->InitializeTool(visWindow->GetToolInterface(toolId));
             updateTool |= ViewerQueryManager::Instance()->
                InitializeTool(this, visWindow->GetToolInterface(toolId));
-          
-            if(updateTool) 
+
+            if(updateTool)
             {
                 // Update tool with 'redraw' set totrue
                 visWindow->UpdateTool(toolId, true);
@@ -4549,9 +4549,9 @@ ViewerWindow::RecenterView3d(const double *limits)
     // Determine the zoom factor.
     //
     double oldWidth = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                                  (boundingBox3d[1] - boundingBox3d[0]))
+                                  (boundingBox3d[1] - boundingBox3d[0])) +
                                  ((boundingBox3d[3] - boundingBox3d[2]) *
-                                  (boundingBox3d[3] - boundingBox3d[2]))
+                                  (boundingBox3d[3] - boundingBox3d[2])) +
                                  ((boundingBox3d[5] - boundingBox3d[4]) *
                                   (boundingBox3d[5] - boundingBox3d[4])));
 
@@ -4595,8 +4595,8 @@ ViewerWindow::RecenterView3d(const double *limits)
     //
     // Calculate the new parallel scale.
     //
-    double newWidth = 0.5 * sqrt(sizeOrig[0]*sizeOrig[0]
-                                 sizeOrig[1]*sizeOrig[1]
+    double newWidth = 0.5 * sqrt(sizeOrig[0]*sizeOrig[0] +
+                                 sizeOrig[1]*sizeOrig[1] +
                                  sizeOrig[2]*sizeOrig[2]);
 
     if( newWidth == 0.0 )
@@ -5109,9 +5109,9 @@ ViewerWindow::ResetView3d()
     // scale with perspective projections.
     //
     double width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                               (boundingBox3d[1] - boundingBox3d[0]))
+                               (boundingBox3d[1] - boundingBox3d[0])) +
                               ((boundingBox3d[3] - boundingBox3d[2]) *
-                               (boundingBox3d[3] - boundingBox3d[2]))
+                               (boundingBox3d[3] - boundingBox3d[2])) +
                               ((boundingBox3d[5] - boundingBox3d[4]) *
                                (boundingBox3d[5] - boundingBox3d[4])));
 
@@ -5320,9 +5320,9 @@ ViewerWindow::AdjustView3d(const double *limits)
     // Determine the zoom factor.
     //
     double width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                               (boundingBox3d[1] - boundingBox3d[0]))
+                               (boundingBox3d[1] - boundingBox3d[0])) +
                               ((boundingBox3d[3] - boundingBox3d[2]) *
-                               (boundingBox3d[3] - boundingBox3d[2]))
+                               (boundingBox3d[3] - boundingBox3d[2])) +
                               ((boundingBox3d[5] - boundingBox3d[4]) *
                                (boundingBox3d[5] - boundingBox3d[4])));
 
@@ -5355,9 +5355,9 @@ ViewerWindow::AdjustView3d(const double *limits)
     // Calculate the new focal point.
     //
     width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                        (boundingBox3d[1] - boundingBox3d[0]))
+                        (boundingBox3d[1] - boundingBox3d[0])) +
                        ((boundingBox3d[3] - boundingBox3d[2]) *
-                        (boundingBox3d[3] - boundingBox3d[2]))
+                        (boundingBox3d[3] - boundingBox3d[2])) +
                        ((boundingBox3d[5] - boundingBox3d[4]) *
                         (boundingBox3d[5] - boundingBox3d[4])));
 
@@ -5366,9 +5366,9 @@ ViewerWindow::AdjustView3d(const double *limits)
 
     double distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
 
-    view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.
+    view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2. +
                       panFactor[0] * width;
-    view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.
+    view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2. +
                       panFactor[1] * width;
 
     if (navigationMode == InteractorAttributes::Flythrough)
@@ -5377,7 +5377,7 @@ ViewerWindow::AdjustView3d(const double *limits)
     }
     else
     {
-        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.
+        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2. +
                           panFactor[2] * width;
     }
 
@@ -5471,9 +5471,9 @@ ViewerWindow::SetInitialView3d()
     // Calculate the new parallel scale.
     //
     double width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                               (boundingBox3d[1] - boundingBox3d[0]))
+                               (boundingBox3d[1] - boundingBox3d[0])) +
                               ((boundingBox3d[3] - boundingBox3d[2]) *
-                               (boundingBox3d[3] - boundingBox3d[2]))
+                               (boundingBox3d[3] - boundingBox3d[2])) +
                               ((boundingBox3d[5] - boundingBox3d[4]) *
                                (boundingBox3d[5] - boundingBox3d[4])));
 
@@ -6381,24 +6381,24 @@ RotateAroundY(const avtView3D &curView, double angle,
     //
     // Calculate the new view normal and view up.
     //
-    viewNormal[0] = curView.normal[0] * rotationMatrix[0]
-                    curView.normal[1] * rotationMatrix[3]
+    viewNormal[0] = curView.normal[0] * rotationMatrix[0] +
+                    curView.normal[1] * rotationMatrix[3] +
                     curView.normal[2] * rotationMatrix[6];
-    viewNormal[1] = curView.normal[0] * rotationMatrix[1]
-                    curView.normal[1] * rotationMatrix[4]
+    viewNormal[1] = curView.normal[0] * rotationMatrix[1] +
+                    curView.normal[1] * rotationMatrix[4] +
                     curView.normal[2] * rotationMatrix[7];
-    viewNormal[2] = curView.normal[0] * rotationMatrix[2]
-                    curView.normal[1] * rotationMatrix[5]
+    viewNormal[2] = curView.normal[0] * rotationMatrix[2] +
+                    curView.normal[1] * rotationMatrix[5] +
                     curView.normal[2] * rotationMatrix[8];
 
-    viewUp[0] = curView.viewUp[0] * rotationMatrix[0]
-                curView.viewUp[1] * rotationMatrix[3]
+    viewUp[0] = curView.viewUp[0] * rotationMatrix[0] +
+                curView.viewUp[1] * rotationMatrix[3] +
                 curView.viewUp[2] * rotationMatrix[6];
-    viewUp[1] = curView.viewUp[0] * rotationMatrix[1]
-                curView.viewUp[1] * rotationMatrix[4]
+    viewUp[1] = curView.viewUp[0] * rotationMatrix[1] +
+                curView.viewUp[1] * rotationMatrix[4] +
                 curView.viewUp[2] * rotationMatrix[7];
-    viewUp[2] = curView.viewUp[0] * rotationMatrix[2]
-                curView.viewUp[1] * rotationMatrix[5]
+    viewUp[2] = curView.viewUp[0] * rotationMatrix[2] +
+                curView.viewUp[1] * rotationMatrix[5] +
                 curView.viewUp[2] * rotationMatrix[8];
 
     newView = curView;
@@ -9084,7 +9084,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 #ifdef HAVE_ANARI
         AnariAttributes anariAtts(visWindow->GetAnariAttributes());
         anariAtts.CreateNode(windowNode, true, true);
-#endif   
+#endif
         //
         // View
         //
