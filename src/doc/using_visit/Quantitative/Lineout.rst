@@ -326,7 +326,7 @@ Interactive mode
 """"""""""""""""
 
 When the **Interactive** check box is checked, changes to the Lineout operator can be made by using the **Line tool** available from the originating plot's visualization window Toolbar or Popup menu.
- *Interactive mode does not apply to lineouts created via the Curve plot's variable menu,and the **Line tool** is disabled in such instances.*
+*Interactive mode does not apply to lineouts created via the Curve plot's variable menu,and the Line tool is disabled in such instances.*
 
 To utilize the line tool to modify a Lineout curve, make the visualization window with the originating plot the active window.
 Choose the Line tool.
