@@ -197,6 +197,13 @@ QvisIntegralCurveWindow::CreateWindowContents()
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
+    // Source tab
+    // ----------------------------------------------------------------------
+    QWidget *sourceTab = new QWidget(central);
+    propertyTabs->addTab(sourceTab, tr("Source"));
+    CreateSourceTab(sourceTab);
+
+    // ----------------------------------------------------------------------
     // Integration tab
     // ----------------------------------------------------------------------
     QWidget *integrationTab = new QWidget(central);
@@ -219,7 +226,7 @@ QvisIntegralCurveWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
-// Method: QvisIntegralCurveWindow::CreateIntegrationTab
+// Method: QvisIntegralCurveWindow::CreateSourceTab
 //
 // Purpose:
 //   Populates the integration tab.
@@ -238,10 +245,14 @@ QvisIntegralCurveWindow::CreateWindowContents()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Kathleen Biagas, Wed Jan 28, 2026
+//   Moved from CreateIntegrationTab to help with window size issues
+//   when running on a laptop display.
+//
 // ****************************************************************************
 
 void
-QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
+QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageIntegration)
 {
     QGridLayout *mainLayout = new QGridLayout(pageIntegration);
     mainLayout->setContentsMargins(5,5,5,5);
@@ -573,11 +584,40 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     velocitySourceLabel->setBuddy(velocitySource);
     fieldLayout->addWidget(velocitySourceLabel, 1, 2);
     fieldLayout->addWidget(velocitySource, 1, 3);
+}
 
-    // Create the node centering
-    // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
-    // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    // fieldLayout->addWidget(forceNodal, 2, 0);
+// ****************************************************************************
+// Method: QvisIntegralCurveWindow::CreateIntegrationTab
+//
+// Purpose:
+//   Populates the integration tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
+//   Kathleen Biagas, Fri Nov  8 09:16:34 PST 2019
+//   Some widgets moved from Integration tab to reduce window height.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
+//   Kathleen Biagas, Wed Jan 28, 2026
+//   Moved from Source and Field groups to new 'Source' tab, to help with
+//   window size issues when running on a laptop display.
+//
+// ****************************************************************************
+
+void
+QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
+    mainLayout->setContentsMargins(5,5,5,5);
+    mainLayout->setSpacing(10);
 
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);

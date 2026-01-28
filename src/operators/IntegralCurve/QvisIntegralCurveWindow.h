@@ -119,6 +119,10 @@ class SelectionList;
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
+//   Kathleen Biagas, Wed Jan 28, 2026
+//   Add CreateSourceTab in order to reorganize the window and reduce
+//   size issues when running on a laptop display.
+//
 // ****************************************************************************
 
 class QvisIntegralCurveWindow : public QvisOperatorWindow
@@ -135,6 +139,7 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     virtual void CreateWindowContents();
 
   protected:
+    void CreateSourceTab(QWidget *);
     void CreateIntegrationTab(QWidget *);
     void CreateAppearanceTab(QWidget *);
     void CreateAdvancedTab(QWidget *);
