@@ -6,16 +6,13 @@
 //                                Lineout2D.C                                //
 // ************************************************************************* //
 
-#include <vtkActor2D.h>
-#include <vtkCellArray.h>
-#include <vtkPoints.h>
-#include <vtkPolyData.h>
-#include <vtkPolyDataMapper2D.h>
-#include <vtkProperty2D.h>
+#include <vtkActor.h>
 #include <vtkLineSource.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
- 
+
 #include <VisWindow.h>
 #include <VisWindowInteractorProxy.h>
 #include <Lineout2D.h>
@@ -26,10 +23,10 @@
 //  Method: Lineout2D constructor
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
-//  
+//
 //  Modifications:
 //    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004
 //    Initialize doAlign.
@@ -37,52 +34,40 @@
 //    Brad Whitlock, Fri Oct 14 16:25:57 PDT 2011
 //    Create mapper via proxy.
 //
+//    Kathleen Biagas, Thu Jan 29, 2026
+//    Replace 2D versions of mapper/actor with normal. Use vtkLineSource to
+//    generate the polydata.
+//
 // ****************************************************************************
 
 Lineout2D::Lineout2D(VisWindowInteractorProxy &vw) : VisitInteractor(vw)
 {
     rubberBandMode = false;
     doAlign = false;
-    //
-    // Create the poly data that will map the rubber band onto the screen.
-    //
- 
-    rubberBand       = vtkPolyData::New();
-    vtkPoints *pts = vtkPoints::New();
-    pts->SetNumberOfPoints(2);
-    rubberBand->SetPoints(pts);
-    pts->Delete();
- 
-    vtkCellArray *lines  = vtkCellArray::New();
-    vtkIdType  ids[2] = { 0, 1 };
-    lines->InsertNextCell(2, ids);
-    rubberBand->SetLines(lines);
-    lines->Delete();
- 
-    rubberBandMapper = proxy.CreateRubberbandMapper();
-    rubberBandMapper->SetInputData(rubberBand);
- 
-    rubberBandActor  = vtkActor2D::New();
-    rubberBandActor->SetMapper(rubberBandMapper);
-    rubberBandActor->GetProperty()->SetColor(0., 0., 0.);
+    lineSource = vtkLineSource::New();
+    lineMapper = vtkPolyDataMapper::New();
+    lineMapper->SetInputConnection(lineSource->GetOutputPort());
+    lineActor = vtkActor::New();
+    lineActor->GetProperty()->SetLineWidth(1.);
+    lineActor->SetMapper(lineMapper);
 }
 
- 
+
 // ****************************************************************************
 //  Method: Lineout2D destructor
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
 // ****************************************************************************
- 
+
 Lineout2D::~Lineout2D()
 {
-    rubberBand->Delete();
-    rubberBandMapper->Delete();
-    rubberBandActor->Delete();
+    lineActor->Delete();
+    lineMapper->Delete();
+    lineSource->Delete();
 }
 
 
@@ -94,13 +79,13 @@ Lineout2D::~Lineout2D()
 //      a rubber band mode.
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
-//    Removed arguments to match vtk's new interactor api. 
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Removed arguments to match vtk's new interactor api.
 //    Call GetEventPosition to determine x and y.
 //
 //    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004
@@ -115,7 +100,7 @@ Lineout2D::StartLeftButtonAction()
     //  We need to set the state variable in vtkInteractorStyle,
     //  but currently there is no 'UserDefined' or such.  Using
     //  timer as it seems the most innocuous.
-    // 
+    //
     int x, y;
     Interactor->GetEventPosition(x, y);
     doAlign = Interactor->GetShiftKey();
@@ -123,7 +108,7 @@ Lineout2D::StartLeftButtonAction()
     StartRubberBand(x, y);
 }
 
- 
+
 // ****************************************************************************
 //  Method: Lineout2D::SetCanvasViewport
 //
@@ -132,23 +117,23 @@ Lineout2D::StartLeftButtonAction()
 //      outside the canvas can be forced inside the canvas.
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
 // ****************************************************************************
- 
+
 void
 Lineout2D::SetCanvasViewport(void)
 {
     vtkRenderer *ren = proxy.GetCanvas();
- 
+
     canvasDeviceMinX = 0.;
     canvasDeviceMinY = 0.;
     ren->NormalizedViewportToViewport(canvasDeviceMinX, canvasDeviceMinY);
     ren->ViewportToNormalizedDisplay(canvasDeviceMinX, canvasDeviceMinY);
     ren->NormalizedDisplayToDisplay(canvasDeviceMinX, canvasDeviceMinY);
- 
+
     canvasDeviceMaxX = 1.;
     canvasDeviceMaxY = 1.;
     ren->NormalizedViewportToViewport(canvasDeviceMaxX, canvasDeviceMaxY);
@@ -170,7 +155,7 @@ Lineout2D::SetCanvasViewport(void)
 //              the button was pressed.
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
@@ -178,33 +163,28 @@ Lineout2D::SetCanvasViewport(void)
 //   Brad Whitlock, Fri Oct 14 16:25:13 PDT 2011
 //   Set the actor's color.
 //
+//   Kathleen Biagas, Thu Jan 29, 2026
+//   Replace 2D versions of mapper/actor with normal. Compute world
+//   coordinate to set vtkLineSource end points. Add actor to Canvas.
+//
 // ****************************************************************************
- 
+
 void
 Lineout2D::StartRubberBand(int x, int y)
 {
     rubberBandMode = true;
- 
+
     // Set the actor's color.
     double fg[3];
     proxy.GetForegroundColor(fg);
-    rubberBandActor->GetProperty()->SetColor(fg[0], fg[1], fg[2]);
+    lineActor->GetProperty()->SetColor(fg[0], fg[1], fg[2]);
 
-    //
-    // Add the rubber band actors to the background.  We do this since the
-    // background is in the same display coordinates that the rubber band will
-    // be.  From an appearance standpoint it should be in the canvas, which
-    // the routine ForceCoordsToViewport ensures.
-    //
-    vtkRenderer *ren = proxy.GetBackground();
-    ren->AddActor2D(rubberBandActor);
- 
     //
     // The anchor of the rubber band will be where the button press was.
     //
     anchorX = x;
     anchorY = y;
- 
+
     //
     // Determine what to clamp the rubber band to.
     //
@@ -214,15 +194,27 @@ Lineout2D::StartRubberBand(int x, int y)
     // If the user has clicked outside the viewport, force the back inside.
     //
     ForceCoordsToViewport(anchorX, anchorY);
- 
+
     //
     // Must update bookkeeping so that OnMouseMove works correctly.
     //
     lastX   = anchorX;
     lastY   = anchorY;
+
+    double pt1[4];
+    double pt2[4];
+
+    this->ComputeDisplayToWorld(anchorX, anchorY, 0.0, pt1);
+    this->ComputeDisplayToWorld(lastX, lastY, 0.0, pt2);
+
+    lineSource->SetPoint1(pt1[0], pt1[1], 0.000001);
+    lineSource->SetPoint2(pt2[0], pt2[1], 0.000001);
+    lineSource->SetResolution(1);
+    lineSource->Update();
+    proxy.GetCanvas()->AddActor(lineActor);
 }
 
- 
+
 // ****************************************************************************
 //  Method: Lineout2D::OnMouseMove
 //
@@ -236,18 +228,18 @@ Lineout2D::StartRubberBand(int x, int y)
 //      y             The y-coordinate on the mouse pointer in display coords.
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
 //  Modificationsy
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
-//    Removed arguments to match vtk's new interactor api. 
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Removed arguments to match vtk's new interactor api.
 //    Call GetEventPosition to determine x and y.
 //
-//    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004 
-//    AlignToAxis if shift key is being pressed (doAlign). 
-//    
+//    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004
+//    AlignToAxis if shift key is being pressed (doAlign).
+//
 // ****************************************************************************
 
 void
@@ -276,7 +268,7 @@ Lineout2D::OnMouseMove()
     }
 }
 
- 
+
 // ****************************************************************************
 //  Method: Lineout2D::EndRubberBand
 //
@@ -285,24 +277,17 @@ Lineout2D::OnMouseMove()
 //      whenever the mouse moves.
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
 // ****************************************************************************
- 
+
 void
 Lineout2D::EndRubberBand()
 {
     rubberBandMode = false;
- 
-    //
-    // Remove the rubber band actors from the renderer.
-    // We should use the background as the renderer because our rubber band
-    // is in display coordinates.
-    //
-    vtkRenderer *ren = proxy.GetBackground();
-    ren->RemoveActor2D(rubberBandActor);
+    proxy.GetCanvas()->RemoveActor(lineActor);
 }
 
 
@@ -321,12 +306,12 @@ Lineout2D::EndRubberBand()
 //           already been set.
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
 // ****************************************************************************
- 
+
 void
 Lineout2D::ForceCoordsToViewport(int &x, int &y)
 {
@@ -349,6 +334,7 @@ Lineout2D::ForceCoordsToViewport(int &x, int &y)
 }
 
 
+
 // ****************************************************************************
 //  Method: Lineout2D::UpdateRubberBand
 //
@@ -369,12 +355,18 @@ Lineout2D::ForceCoordsToViewport(int &x, int &y)
 //      nY      The y-coordinate of the new corner in display coordinates.
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Jan 29, 2026
+//    Remove 2d actor/mapper. Use lineSource instead.
+//    Compute world coordinate from lastX/Y to set second end point for
+//    vtkLineSource.  Request a render.
+//
 // ****************************************************************************
- 
+
 void
 Lineout2D::UpdateRubberBand(int aX, int aY, int lX, int lY,int nX,int nY)
 {
@@ -385,45 +377,17 @@ Lineout2D::UpdateRubberBand(int aX, int aY, int lX, int lY,int nX,int nY)
         //
         return;
     }
-    //
-    // Add the new line and erase the old one.
-    //
-    DrawRubberBandLine(aX, aY, nX, nY);
-    DrawRubberBandLine(aX, aY, lX, lY);
-}
 
- 
-// ****************************************************************************
-//  Method: Lineout2D::DrawRubberBandLine
-//
-//  Purpose:
-//      Draws a rubber band line.
-//
-//  Arguments:
-//      x1      The x-coordinate of the first endpoint in display coordinates.
-//      y1      The y-coordinate of the first endpoint in display coordinates.
-//      x2      The x-coordinate of the second endpoint in display coordinates.
-//      y2      The y-coordinate of the second endpoint in display coordinates.
-//
-//  Note:   Modified from Zoom2D.
-// 
-//  Programmer: Kathleen Bonnell
-//  Creation:   April 16, 2002
-//
-// ****************************************************************************
- 
-void
-Lineout2D::DrawRubberBandLine(int x1, int y1, int x2, int y2)
-{
     //
-    // The rubber band is drawn to the background since it is also in display
-    // coordinates.
+    // Update the line source
     //
-    vtkViewport *ren = proxy.GetBackground();
-    vtkPoints *pts = rubberBand->GetPoints();
-    pts->SetPoint(0, (double) x1, (double) y1, 0.);
-    pts->SetPoint(1, (double) x2, (double) y2, 0.);
-    rubberBandMapper->RenderOverlay(ren, rubberBandActor);
+    double pt2[4];
+    pt2[3] = 0;
+    this->ComputeDisplayToWorld(lX, lY, 0.0, pt2);
+
+    lineSource->SetPoint2(pt2[0], pt2[1], 0.000001);
+    lineSource->Update();
+    proxy.Render();
 }
 
 
@@ -435,15 +399,15 @@ Lineout2D::DrawRubberBandLine(int x1, int y1, int x2, int y2)
 //      a rubber band zoom mode.
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
-//    Removed arguments to match vtk's new interactor api. 
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Removed arguments to match vtk's new interactor api.
 //
-//    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004 
+//    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004
 //    Reset doAlign.
 //
 // ****************************************************************************
@@ -466,13 +430,13 @@ Lineout2D::EndLeftButtonAction()
 //      the rubber band.
 //
 //  Note:   Modified from Zoom2D.
-// 
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
-//    Removed arguments to match vtk's new interactor api. 
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Removed arguments to match vtk's new interactor api.
 //
 // ****************************************************************************
 
@@ -491,8 +455,8 @@ Lineout2D::AbortLeftButtonAction()
 //      Creates a line between the display coordinates specified by
 //      start and end X and Y.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    April 16, 2002 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    April 16, 2002
 //
 // ****************************************************************************
 
@@ -514,13 +478,13 @@ Lineout2D::Lineout(void)
 //  Method: ZoomInteractor::OnTimer
 //
 //  Purpose:
-//      Throw out timer events if we are in rubber Band mode. 
+//      Throw out timer events if we are in rubber Band mode.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   February 18, 2003
 //
 //  Modifications:
-//    
+//
 // ****************************************************************************
 
 void
@@ -530,21 +494,21 @@ Lineout2D::OnTimer()
     {
         vtkInteractorStyle::OnTimer();
     }
-}    
+}
 
 
 // ****************************************************************************
 //  Method: ZoomInteractor::AlignToAxis
 //
 //  Purpose:
-//     Modify either the x or y value to ensure the line between 
-//     (anchorX, anchorY) and (x, y) is axis-aligned. 
+//     Modify either the x or y value to ensure the line between
+//     (anchorX, anchorY) and (x, y) is axis-aligned.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   February 5, 2004
 //
 //  Modifications:
-//    
+//
 // ****************************************************************************
 
 void
@@ -554,10 +518,27 @@ Lineout2D::AlignToAxis(int &x, int &y)
 
     if (slope < -1. || slope > 1.)
     {
-        x = anchorX; 
+        x = anchorX;
     }
-    else 
+    else
     {
-        y = anchorY; 
+        y = anchorY;
+    }
+}
+
+void
+Lineout2D::ComputeDisplayToWorld(double x, double y, double z,
+    double *worldPt)
+{
+    vtkRenderer *ren = proxy.GetCanvas();
+    ren->SetDisplayPoint(x, y, z);
+    ren->DisplayToWorld();
+    ren->GetWorldPoint(worldPt);
+    if(worldPt[3])
+    {
+        worldPt[0] /= worldPt[3];
+        worldPt[1] /= worldPt[3];
+        worldPt[2] /= worldPt[3];
+        worldPt[3] = 1.0;
     }
 }
