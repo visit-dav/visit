@@ -681,7 +681,7 @@ ReadMaterialType( bool add_missing_parts )
 
 
 void PVLD_Reader::
-ReadSolidBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt )
+ReadSolidBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt, vector<int>& elmto2 )
 {
     try
     {
@@ -697,7 +697,7 @@ ReadSolidBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt )
 
         hid_t fid = OpenFile();
         ReadNodeIndexCoord( fid );
-        ReadSolidBlockMesh( fid, nb, vmap, vcrd, elmt );
+        ReadSolidBlockMesh( fid, nb, vmap, vcrd, elmt, elmto2 );
         CloseFile( fid );
     }
     catch( std::exception& e )
@@ -743,7 +743,8 @@ ReadSolidBlockData( const char* varname, int blkInd, vector<int>& dims,
             {
                 vector<float> vcrd;
                 vector<int>   elmt;
-                ReadSolidBlockMesh( fid, blkInd, vmap, vcrd, elmt );
+                vector<int>   elmto2;
+                ReadSolidBlockMesh( fid, blkInd, vmap, vcrd, elmt, elmto2 );
             }
             if( node_dstype_[ind] == integer_type )
                 ReadNodeData( fid, ind, vmap, dims, idata );
@@ -2198,7 +2199,7 @@ ReadNodeData( hid_t fid, int varInd, const vector<int>& map,
 
 
 void PVLD_Reader::
-ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt )
+ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt, vector<int>& elmto2 )
 {
     if( std::find( solid_dsname_.begin(),
                    solid_dsname_.end(),
@@ -2216,6 +2217,22 @@ ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
     ReadGroupDataSet( fid, solid_name.c_str(), "Nodes",
                       H5T_NATIVE_INT, elmt.data(), 2, sft, len );
 
+    bool read_elmto2 = false;
+    // this will only work if the group exists, otherwise we're dealing with a deatset with no higher order elements
+    try {
+        len[1] = 6;
+        hsize_t nd = len[0]*len[1];
+
+        elmto2.resize( nd );
+        ReadGroupDataSet( fid, solid_name.c_str(), "Nodes_O2",
+                        H5T_NATIVE_INT, elmto2.data(), 2, sft, len );
+
+        read_elmto2 = true;
+
+    } catch(std::exception& e){
+        read_elmto2 = false;
+    }
+
     vector<int> loc( nnode_ );
     std::fill( loc.begin(), loc.end(), -1 );
 
@@ -2226,6 +2243,16 @@ ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
         int ind = node_map_[idx-node_idx_mn_];
         if( loc[ind]<0 ) loc[ind]=tnp++;
         idx = loc[ind];
+    }
+
+    if (read_elmto2) {
+        for( vector<int>::iterator ie=elmto2.begin(); ie!=elmto2.end(); ie++ )
+        {
+            int& idx = *ie;
+            int ind = node_map_[idx-node_idx_mn_];
+            if( loc[ind]<0 ) loc[ind]=tnp++;
+            idx = loc[ind];
+        }
     }
 
     vmap.resize(   tnp );

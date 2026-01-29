@@ -300,16 +300,17 @@ avtPVLDFileFormat::GetMesh(int domain, const char *meshname)
     TRY
     {
         vector<int>   ele;
+        vector<int>   eleo2;
         vector<float> crd;
         if( PVLD_Reader::solid_name == meshname )
         {
             preader_->CheckNumberOfEngines( preader_->GetNumOfSolidBlocks() );
-            preader_->ReadSolidBlockMesh( domain, crd, ele );
+            preader_->ReadSolidBlockMesh( domain, crd, ele, eleo2 );
             preader_->AppendMissingMaterialMesh( PVLD_Reader::solid_elmt_type, domain, crd, ele );
 
             if( ele.size()>0 )
             {
-                vtkDataSet *ds = GenerateSolidMesh( crd, ele );
+                vtkDataSet *ds = GenerateSolidMesh( crd, ele, eleo2 );
                 CreateGlobalNodeIds(domain, meshname, preader_->GetSolidBlockMeshMap(domain));
                 return ds;
             }
@@ -2508,11 +2509,13 @@ avtPVLDFileFormat::MakePoints(vector<float> &crd)
 // ****************************************************************************
 
 vtkUnstructuredGrid*
-avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm )
+avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm, const vector<int>& elmo2 )
 {
     int nvrt = crd.size()/3;
     (void) nvrt;
     int nele = elm.size()/8;
+
+    vector<float> vcrd = crd;
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2520,15 +2523,36 @@ avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm
     ugrid->Allocate(nele);
     pts->Delete();
 
-    vtkIdType verts[8];
+
+    vtkIdType verts[10];
     const int* cnt=elm.data();
+    bool read_o2 = elmo2.size() > 0;
+    const int* cnto2=elmo2.data();
+    const int vtk_quad_tet_map[] = {0, 1, 2, 5, 3, 4}; // https://examples.vtk.org/site/VTKBook/05Chapter5/#54-cell-types
     for( int i=0; i<nele; i++ )
     {
         for( int j=0; j<8; j++ )
-            verts[j] = *cnt++;
+            verts[j] = cnt[i*8 + j];
 
-        if( verts[3] == verts[4] )   // tetra
-            ugrid->InsertNextCell( VTK_TETRA, 4, verts );
+        if( verts[3] == verts[4] ){   // tetra
+            int torder = 1;
+            if (!read_o2)
+                torder = 1;
+            else {
+                if (cnto2[6*i] > -1)
+                    torder = 2;
+            }
+
+            if (torder == 1){
+                ugrid->InsertNextCell( VTK_TETRA, 4, verts );
+            }
+            else{
+                for (int j=0; j<6; j++)
+                    verts[j+4] = cnto2[i*6 + vtk_quad_tet_map[j]]; // the node ordering is different in VTK than in Velodyne
+
+                ugrid->InsertNextCell( VTK_QUADRATIC_TETRA, 10, verts );
+            }
+        }
         else if( verts[4] == verts[5]  && verts[6] == verts[7]  )   // prism
         {
             vtkIdType prism[6];
