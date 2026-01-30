@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd /usr/workspace/wsa/visit/dashboard/dashboard
+cd /usr/WS1/visit/dashboard/dashboard
 
 # update top-level index.html file
 rm -f index.html
@@ -13,12 +13,13 @@ echo "   <td><b>Mode</b></td>" >> index.html
 echo "   <td><b>Result</b></td>" >> index.html
 echo "</tr>" >> index.html
 
-ls -1t /usr/workspace/wsa/visit/dashboard/dashboard/*/*/index.html | while read testLine; do
+ls -1t /usr/WS1/visit/dashboard/dashboard/*/*/index.html | while read testLine; do
 
-    theMode=`echo $testLine | cut -d'/' -f9`
-    theRelDir=`echo $testLine | cut -d'/' -f8-`
+    theMode=`echo $testLine | cut -d'/' -f8`
+    theRelDir=`echo $testLine | cut -d'/' -f7-`
     theRelDir="./${theRelDir}"
-    theTimeStamp=`echo $testLine | cut -d'/' -f8`
+    theTimeStamp=`echo $testLine | cut -d'/' -f7`
+    echo "theTimeStamp=${theTimeStamp}"
     theYear=`echo $theTimeStamp | cut -d'-' -f1`
     f2=`echo $theTimeStamp | cut -d'-' -f2`
     theDay=`echo $theTimeStamp | cut -d'-' -f3`
