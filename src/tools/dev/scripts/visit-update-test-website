@@ -19,7 +19,6 @@ ls -1t /usr/WS1/visit/dashboard/dashboard/*/*/index.html | while read testLine; 
     theRelDir=`echo $testLine | cut -d'/' -f7-`
     theRelDir="./${theRelDir}"
     theTimeStamp=`echo $testLine | cut -d'/' -f7`
-    echo "theTimeStamp=${theTimeStamp}"
     theYear=`echo $theTimeStamp | cut -d'-' -f1`
     f2=`echo $theTimeStamp | cut -d'-' -f2`
     theDay=`echo $theTimeStamp | cut -d'-' -f3`
