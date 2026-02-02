@@ -534,7 +534,7 @@ Lineout2D::ComputeDisplayToWorld(double x, double y, double z,
     ren->SetDisplayPoint(x, y, z);
     ren->DisplayToWorld();
     ren->GetWorldPoint(worldPt);
-    if(worldPt[3] != 0.)
+    if(worldPt[3] != 0.0)
     {
         worldPt[0] /= worldPt[3];
         worldPt[1] /= worldPt[3];
