@@ -49,9 +49,6 @@ function bv_hdf5_initialize_vars
 {
     if [[ "$USE_SYSTEM_HDF5" == "no" ]]; then
         HDF5_INSTALL_DIR="${VISITDIR}/hdf5/$HDF5_VERSION/${VISITARCH}"
-        if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes" ]]; then
-            HDF5_MPI_INSTALL_DIR="${VISITDIR}/hdf5_mpi/$HDF5_VERSION/${VISITARCH}"
-        fi
     fi
 }
 
@@ -95,12 +92,6 @@ function bv_hdf5_host_profile
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
                 >> $HOSTCONF 
 
-            if [[ -n "$HDF5_MPI_INSTALL_DIR" ]]; then
-                echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_DIR \${VISITHOME}/hdf5_mpi/$HDF5_VERSION/\${VISITARCH})" \
-                    >> $HOSTCONF 
-            fi
-
             ZLIB_LIBDEP=""
             if [[ "$DO_ZLIB" == "yes" ]] ; then
                 ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
@@ -113,11 +104,6 @@ function bv_hdf5_host_profile
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $SZIP_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                     >> $HOSTCONF
-            if [[ -n "$HDF5_MPI_INSTALL_DIR" ]]; then
-                echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP $SZIP_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
-                        >> $HOSTCONF
-            fi
         fi
     fi
 }
@@ -132,83 +118,6 @@ function bv_hdf5_ensure
             error "Unable to build HDF5.  ${HDF5_FILE} not found."
         fi
     fi
-}
-
-function apply_hdf5_post_install_patch_for_serpar
-{
-    patch -p0 << \EOF
-*** include/H5pubconf.h.orig	2025-12-10 19:46:56.567124000 -0800
---- include/H5pubconf.h	2025-12-15 21:15:56.247170000 -0800
-***************
-*** 238,244 ****
---- 238,246 ----
-  /* #undef H5_HAVE_OPENSSL_SHA_H */
-  
-  /* Define if we have parallel support */
-+ #ifdef HDF5_CONSUMER_USES_MPI
-  #define H5_HAVE_PARALLEL 1
-+ #endif
-  
-  /* Define if MPI Fortran supports mpi_f08 module */
-  /* #undef H5_HAVE_MPI_F08 */
-EOF
-    if [[ $? != 0 ]] ; then
-        error "post HDF5 install patch to H5pubconf.h failed."
-        return 1
-    fi
-
-    patch -p0 << \EOF
-*** cmake/hdf5-config.cmake.orig	2026-01-16 10:35:45
---- cmake/hdf5-config.cmake	2026-01-16 13:30:12
-@@ -109 +109 @@ set (${HDF5_PACKAGE_NAME}_TOOLSET              "")
--if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL)
-+if (${HDF5_PACKAGE_NAME}_PROVIDES_PARALLEL AND HDF5_CONSUMER_USES_MPI)
-EOF
-    if [[ $? != 0 ]] ; then
-        error "post HDF5 install patch to hdf5-config.cmake failed."
-        return 1
-    fi
-
-
-
-
-
-f="cmake/hdf5-targets.cmake"
-tmp="$(mktemp)" || exit 1
-
-sed '
-/set_target_properties(hdf5-shared[[:space:]]\+PROPERTIES/ , /^[[:space:]]*)[[:space:]]*$/ {
-  /^[[:space:]]*INTERFACE_LINK_LIBRARIES[[:space:]]/d
-  /^[[:space:]]*)[[:space:]]*$/ {
-    # only append if the marker is not already somewhere later in the file
-    # (simple guard: if HDF5_CONSUMER_USES_MPI already exists, do nothing)
-  }
-}
-' "$f" > "$tmp"
-
-if ! grep -q 'HDF5_CONSUMER_USES_MPI' "$f"; then
-  # re-run with append enabled
-  sed '
-  /set_target_properties(hdf5-shared[[:space:]]\+PROPERTIES/ , /^[[:space:]]*)[[:space:]]*$/ {
-    /^[[:space:]]*INTERFACE_LINK_LIBRARIES[[:space:]]/d
-    /^[[:space:]]*)[[:space:]]*$/ a\
-if(HDF5_CONSUMER_USES_MPI)\
-set_target_properties(hdf5-shared PROPERTIES\
-  INTERFACE_LINK_LIBRARIES "MPI::MPI_C"\
-)\
-endif()
-  }
-  ' "$f" > "$tmp" && mv "$tmp" "$f"
-else
-  mv "$tmp" "$f"   # just the deletion pass result
-fi
-
-    if [[ $? != 0 ]] ; then
-        error "post HDF5 install patch to hdf5-targets.cmake failed."
-        return 1
-    fi
-
-    return 0
 }
 
 function build_hdf5
@@ -248,14 +157,10 @@ function build_hdf5
 
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         cmk_opts="${cmk_opts} \
-           -DBUILD_STATIC_LIBS:BOOL=ON \
-           -DBUILD_SHARED_LIBS:BOOL=OFF \
-           -DONLY_SHARED_LIBS:BOOL=OFF"
+           -DHDF5_ONLY_SHARED_LIBS:BOOL=OFF"
     else
         cmk_opts="${cmk_opts} \
-           -DBUILD_STATIC_LIBS:BOOL=OFF \
-           -DBUILD_SHARED_LIBS:BOOL=ON \
-           -DONLY_SHARED_LIBS:BOOL=ON"
+           -DHDF5_ONLY_SHARED_LIBS:BOOL=ON"
     fi
 
     if [[ "$DO_MOAB" == "yes" || "$DO_MFEM" == "yes" || "$DO_NETCDF" == "yes" ]]; then
@@ -283,18 +188,7 @@ function build_hdf5
     if [[ "$PAR_COMPILER" != "" ]] ; then
         cmk_opts="${cmk_opts} \
             -DHDF5_ENABLE_PARALLEL:BOOL=ON \
-            -DMPI_C_COMPILER:PATH=\"${PAR_COMPILER}\" \
-            -DMPI_CXX_COMPILER:PATH=\"${PAR_COMPILER_CXX}\""
-    fi
-
-    if [[ "$PAR_INCLUDE" != "" ]] ; then
-        cmk_opts="${cmk_opts} \
-            -DMPI_C_COMPILER_INCLUDE_DIRS:STRING=\"${PAR_INCLUDE_PATH}\" \
-            -DMPI_C_HEADER_DIR:PATH=\"${PAR_INCLUDE_PATH}\""
-    fi
-
-    if [[ "$PAR_LIBS" != "" ]] ; then
-        cmk_opts="${cmk_opts} -DMPI_C_LINK_FLAGS:STRING=\"${PAR_LINKER_FLAGS}\""
+            -DMPI_HOME:STRING=${PAR_HOME}"
     fi
 
     # Make a build directory for an out-of-source build.. Change the
@@ -339,17 +233,6 @@ function build_hdf5
     if [[ $? != 0 ]] ; then
         warn "HDF5 install failed.  Giving up"
         return 1
-    fi
-
-    #
-    # Patch installed HDF5 so that one install handles
-    # both serial and parallel use cases. We need to do this
-    # only if we're doing a parallel build.
-    #
-    if [[ "$PAR_COMPILER" != "" ]] ; then
-        pushd ${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH} >/dev/null 2>&1
-        apply_hdf5_post_install_patch_for_serpar
-        popd >/dev/null 2>&1
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
