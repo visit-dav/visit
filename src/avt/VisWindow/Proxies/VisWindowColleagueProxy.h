@@ -123,6 +123,9 @@
 //    Kathleen Biagas, Thu Aug 28 15:39:06 PDT 2025
 //    Remove GetSurfaceRepresentation, no longer used.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added GetSize.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -254,6 +257,9 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
                              { return ProxiedGetAverageExternalRenderingTime(); }
     void                DoNextExternalRenderAsVisualQueue(int w, int h, const double *c)
                              { ProxiedDoNextExternalRenderAsVisualQueue(w,h,c); }
+
+    void                GetSize(int &w, int &h)
+                                  { ProxiedGetSize(w, h); }
 #if defined(HAVE_OSPRAY)
     bool                GetOsprayRendering()
                              { return ProxiedGetOsprayRendering(); }

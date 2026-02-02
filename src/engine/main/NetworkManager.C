@@ -102,6 +102,8 @@
 #include <vtkFloatArray.h>
 #include <vtkDataSetWriter.h>
 #include <vtkCellData.h>
+#include <vtkRenderer.h>
+#include <vtkCamera.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -2999,42 +3001,186 @@ NetworkManager::RenderValues(intVector plotIds, bool getZBuffer, int windowID, b
 avtDataObject_p
 NetworkManager::RenderInternal()
 {
+    cerr << "NetworkManager::RenderInternal: enter" << endl;
     CallInitializeProgressCallback(RenderingStages());
+
+    VisWindow *viswin = renderState.window;
+
+    int w, h; 
+    viswin->GetSize(w,h);
+    cerr << "w=" << w << ",h=" << h << endl;
+    const int numPix = w*h;
+    unsigned char *pixels = new unsigned char[numPix*3];
+
+    // Create the vtkImageData without an alpha channel.
+    vtkImageData *image = NULL;
+
+    vtkUnsignedCharArray *is = vtkUnsignedCharArray::New();
+    is->SetNumberOfComponents(3);
+    is->SetName("ImageScalars");
+    is->SetArray(pixels, 3*numPix, /*keep=*/0, /*use delete []=*/1);
+
+    image = vtkImageData::New();
+    image->SetDimensions(w,h,1);
+    image->GetPointData()->SetScalars(is);
+
+    is->Delete();
+
+    // Create the zbuffer.
+    vtkFloatArray *zbuffer = NULL;
+
+    zbuffer = vtkFloatArray::New();
+    zbuffer->SetNumberOfComponents(1);
+    zbuffer->SetNumberOfValues(numPix);
+
+    avtImage_p pass2 = new avtImage(NULL);
+    //pass2->SetImage(avtImageRepresentation(image, zbuffer));
+    pass2->SetImage(avtImageRepresentation(image));
+
+    unsigned char *rgbImage = NULL;
+    float *zbufferImage = NULL;
+    rgbImage = pass2->GetImage().GetRGBBuffer();
+    zbufferImage = pass2->GetImage().GetZBuffer();
+
+    //
+    // Determine the tile size and number of tiles.
+    //
+    const int imageWidth = w;
+    const int imageHeight = h;
+    const int xTileSize = 512;
+    const int yTileSize = 512;
+    int tileWidth = 0;
+    int tileHeight = 0;
+    if (w > tileWidth || h > tileHeight)
+    {
+        int nxTiles = int(double(imageWidth - 1) / double(xTileSize)) + 1;
+        int nyTiles = int(double(imageHeight - 1) / double(yTileSize)) + 1;
+        tileWidth = std::ceil(double(imageWidth) / double(nxTiles));
+        tileHeight = std::ceil(double(imageHeight) / double(nyTiles));
+        cerr << "tiles: width=" << tileWidth << ",height=" << tileHeight << endl;
+    }
+    const int nxTiles = int(double(imageWidth - 1) / double(tileWidth)) + 1;
+    const int nyTiles = int(double(imageHeight - 1) / double(tileHeight)) + 1;
+    cerr << "tiles: nxTiles=" << nxTiles << ",nyTiles=" << nyTiles << endl;
+
+    const avtView3D view3D = viswin->GetView3D();
+
+    const double zoomUser = view3D.imageZoom;
+    const double xPanUser = view3D.imagePan[0];
+    const double yPanUser = view3D.imagePan[1];
+    cerr << "zoomUser=" << zoomUser << ",xPanUser=" << xPanUser << ",yPanUser=" << yPanUser << endl;
+
+    // Calculate the tile zoom factor.
+    const double zoomTile = double(imageHeight) / double(tileHeight);
+    cerr << "zoomTile=" << zoomTile << endl;
+
+    // Calculate the fraction of the last tile that is each direction.
+    const double nxExtra = double((nxTiles * tileWidth) - imageWidth) / double(tileWidth);
+    const double nyExtra= double((nyTiles * tileHeight) - imageHeight) / double(tileHeight);
+
+    const double xPanInit  = xPanUser * (double(imageWidth) / double(imageHeight)) * (double(tileHeight) / double(tileWidth)) + double(nxTiles - 1 - nxExtra) / (double(zoomTile) * zoomUser * 2.);
+    const double yPanInit  = yPanUser + double(nyTiles - 1 - nyExtra) / (double(zoomTile) * zoomUser * 2.);
+    const double xPanDelta = 1. / (zoomUser * double(zoomTile));
+    const double yPanDelta = 1. / (zoomUser * double(zoomTile));
+    const double xPanInit2  = (double(nxTiles - 1 - nxExtra) / (double(zoomTile) * 2.)) * (double(imageWidth) / double(imageHeight));
+    const double yPanInit2  = double(nyTiles - 1 - nyExtra) / (double(zoomTile) * 2.);
+    const double xPanDelta2 = (1. / double(zoomTile)) * (double(imageWidth) / double(imageHeight));
+    const double yPanDelta2 = 1. / double(zoomTile);
+    cerr << "xPanInit=" << xPanInit << ",yPanInit=" << yPanInit << ",xPanDelta=" << xPanDelta << ",yPanDelta=" << yPanDelta << endl;
+    cerr << "xPanInit2=" << xPanInit2 << ",yPanInit2=" << yPanInit2 << ",xPanDelta2=" << xPanDelta2 << ",yPanDelta2=" << yPanDelta2 << endl;
 
     // ************************************************************
     // pass 1 : opaque (and translucent geometry if serial)
     // ************************************************************
-    avtImage_p pass = RenderGeometry();
+    avtView3D view3DTile = view3D;
+    view3DTile.imageZoom = zoomUser * zoomTile;
+    viswin->SetSize(tileWidth, tileHeight);
+    int remainingNyCanvas = imageHeight;
+    view3DTile.imagePan[1] = yPanInit;
+    double foregroundPan[2];
+    foregroundPan[1] = yPanInit2;
+    for (int iyTile = 0; iyTile < nyTiles; iyTile++)
+    {
+        view3DTile.imagePan[0] = xPanInit;
+        foregroundPan[0] = xPanInit2;
+        int remainingNxCanvas = imageWidth;
+        for (int ixTile = 0; ixTile < nxTiles; ixTile++)
+        {
+            cerr << "view3DTile: zoom=" << view3DTile.imageZoom << ",pan=(" << view3DTile.imagePan[0] << "," << view3DTile.imagePan[1] << ")" << endl;
+            viswin->SetView3D(view3DTile);
+            avtImage_p pass = RenderGeometry();
 
-    // ************************************************************
-    // pass 2 : shadow mapping
-    // ************************************************************
-    if (renderState.shadowMap)
-        NetworkManager::RenderShadows(pass);
+            // ************************************************************
+            // pass 2 : shadow mapping
+            // ************************************************************
+            if (renderState.shadowMap)
+                NetworkManager::RenderShadows(pass);
 
-    // ************************************************************
-    // pass 3 : depth cues
-    // ************************************************************
-    if (renderState.depthCues)
-        NetworkManager::RenderDepthCues(pass);
+            // ************************************************************
+            // pass 3 : depth cues
+            // ************************************************************
+            if (renderState.depthCues)
+                NetworkManager::RenderDepthCues(pass);
 
-    // ************************************************************
-    // pass 4 : translucent geometry if parallel
-    // ************************************************************
-    if (renderState.transparencyInPass2)
-        pass = NetworkManager::RenderTranslucent(pass);
+            // ************************************************************
+            // pass 4 : translucent geometry if parallel
+            // ************************************************************
+            if (renderState.transparencyInPass2)
+                pass2 = NetworkManager::RenderTranslucent(pass);
 
-    // ************************************************************
-    // pass 5 : 2d overlays
-    // ************************************************************
-    RenderPostProcess(pass);
+            // ************************************************************
+            // pass 5 : 2d overlays
+            // ************************************************************
+	    vtkCamera *cam = viswin->GetForeground()->GetActiveCamera();
+	    cerr << "######################################################" << endl;
+	    cerr << "zoomTile=" << zoomTile << ",foregroundPan=(" << foregroundPan[0] << "," << foregroundPan[1] << ")" << endl;
+	    cam->SetFocalPoint(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 0.);
+	    cam->SetPosition(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 1.);
+	    cam->SetViewUp(0., 1., 0.);
+	    cam->SetParallelProjection(1);
+	    cam->SetParallelScale(0.5 / zoomTile);
+	    viswin->GetForeground()->SetActiveCamera(cam);
+            RenderPostProcess(pass);
 
-    if (programmableCompositerDebug && PAR_Rank() == 0)
-        writeVTK("pass_5.vtk", pass->GetImage());
+            if (programmableCompositerDebug && PAR_Rank() == 0)
+                writeVTK("pass_5.vtk", pass->GetImage());
+
+            unsigned char *rgbTile = pass->GetImage().GetRGBBuffer();
+            float *zbufferTile = pass->GetImage().GetZBuffer();
+            cerr << "rgbTile=" << (void*)rgbTile << ",zbufferTile=" << (void*)zbufferTile << endl;
+            const int xMax = std::min(tileWidth, remainingNxCanvas);
+            const int yMax = std::min(tileHeight, remainingNyCanvas);
+	    cerr << "xMax=" << xMax << ",yMax=" << yMax << endl;
+            for (int j = 0; j < yMax; ++j)
+            {
+                int ll  = j * tileWidth * 3;
+                int ll2 = j * tileWidth;
+                int kk  = ((iyTile * tileHeight + j) * imageWidth + ixTile * tileWidth) * 3;
+                int kk2 = (iyTile * tileHeight + j) * imageWidth + ixTile * tileWidth;
+                for (int i = 0; i < xMax; ++i)
+                {
+                    rgbImage[kk]   = rgbTile[ll];
+                    rgbImage[kk+1] = rgbTile[ll+1];
+                    rgbImage[kk+2] = rgbTile[ll+2];
+                    kk  += 3;
+                    kk2 += 1;
+                    ll  += 3;
+                    ll2 += 1;
+                }
+            }
+            remainingNxCanvas -= tileWidth;
+            view3DTile.imagePan[0] -= xPanDelta;
+            foregroundPan[0] -= xPanDelta2;
+        }
+        remainingNyCanvas -= tileHeight;
+        view3DTile.imagePan[1] -= yPanDelta;
+        foregroundPan[1] -= yPanDelta2;
+    }
 
     avtDataObject_p output;
-    CopyTo(output, pass);
+    CopyTo(output, pass2);
 
+    cerr << "NetworkManager::RenderInternal: exiting" << endl;
     return output;
 }
 

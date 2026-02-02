@@ -784,6 +784,7 @@ public:
 
     void GetExtents(double ext[2]); // TODO: Remove with VTK8
 
+    vtkRenderer         *GetForeground(void);
 protected:
     VisWindowColleagueProxy            colleagueProxy;
     VisWindowInteractorProxy           interactorProxy;
@@ -888,7 +889,6 @@ protected:
 
     vtkRenderer         *GetCanvas(void);
     vtkRenderer         *GetBackground(void);
-    vtkRenderer         *GetForeground(void);
 
     vtkPolyDataMapper2D *CreateRubberbandMapper();
     vtkPolyDataMapper2D *CreateXorGridMapper();

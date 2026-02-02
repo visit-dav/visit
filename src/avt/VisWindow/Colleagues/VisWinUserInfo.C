@@ -8,6 +8,7 @@
 
 #include <time.h>
 
+#include <vtkCamera.h>
 #include <vtkRenderer.h>
 #include <vtkVisItTextActor.h>
 #include <vtkTextProperty.h>
@@ -307,12 +308,22 @@ VisWinUserInfo::SetVisibility(bool val)
 //   If we can't get the username, use the string "user" as the username so
 //   the code doesn't crash.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
 VisWinUserInfo::UpdateUserText()
 {
-    if(infoActor)
+    // The zoomTile calculation assumes that the parallel scale for the
+    // foreground renderer is 0.5.
+    double zoomTile =
+        0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
+    int w, h;
+    mediator.GetSize(w, h);
+    if(w > 0 && h > 0 && infoActor)
     {
         //
         // Get the user name.
@@ -339,8 +350,8 @@ VisWinUserInfo::UpdateUserText()
         current_time[strlen(current_time)-1] = '\0';
 
         //
-        // Set the mapper to have a combined string separated by a new line.  This
-        // makes relative positioning _much_ easier.
+        // Set the mapper to have a combined string separated by a new line.
+        // This makes relative positioning _much_ easier.
         //
         delete [] infoString;
         infoString = new char[strlen("user: ") + strlen(user) + strlen("\n") 
@@ -349,12 +360,13 @@ VisWinUserInfo::UpdateUserText()
         infoActor->SetInput(infoString);
 
         // Place the user info based on its size.
-        float scale = textAttributes.scale;
+        float textScale = textAttributes.scale;
         vtkCoordinate *pos = infoActor->GetPositionCoordinate();
-        pos->SetCoordinateSystemToNormalizedViewport();
-        pos->SetValue(1. - ((defaultUserInfoWidth * scale) + 0.05), 0.015, 0.);
-        infoActor->SetWidth(defaultUserInfoWidth * scale);
-        infoActor->SetHeight(textAttributes.scale * 2.);
+        pos->SetCoordinateSystemToWorld();
+        double windowScale = double(w) / double(h);
+        double xc = 0.5 + windowScale / 2. - ((defaultUserInfoWidth * textScale) + 0.05) * windowScale;
+        pos->SetValue(xc, 0.015, 0.);
+        infoActor->SetWidth(defaultUserInfoWidth * textScale * zoomTile);
     }
 }
 
