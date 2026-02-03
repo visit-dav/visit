@@ -12,9 +12,9 @@
 #include <VisitInteractor.h>
 
 
-class vtkActor2D;
-class vtkPolyData;
-class vtkPolyDataMapper2D;
+class vtkActor;
+class vtkLineSource;
+class vtkPolyDataMapper;
 
 class VisWindowInteractorProxy;
 
@@ -23,21 +23,29 @@ class VisWindowInteractorProxy;
 //  Class: Lineout2D
 //
 //  Purpose:
-//      Defines what Visit's 2D Lineout interactions should look like.  
+//      Defines what Visit's 2D Lineout interactions should look like.
 //
 //  Note:  Modified from Zoom2D.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments from all ButtonAction methods and OnMouseMove, 
+//    Removed arguments from all ButtonAction methods and OnMouseMove,
 //    in order to match vtk's new interactor api.
 //
-//    Kathleen Bonnell, Tue Feb 18 15:14:15 PST 2003     
+//    Kathleen Bonnell, Tue Feb 18 15:14:15 PST 2003
 //    Added OnTimer method.
-//    
+//
+//    Kathleen Biagas, Thu Jan 29, 2026
+//    Use vtkActor, vtkPolyDataMapper with vtkLineSource instead
+//    of vtkActor2D, vtkPolyDataMapper2D. To fix bug with the lineout
+//    being drawn far away from mouse location on a laptop screen.
+//    Removed DrawRubberBandLine, no longer needed.
+//    Added ComputeDisplayToWorld so the line could be set up to be drawn on
+//    the Canvas renderer.
+//
 // ****************************************************************************
 
 class VISWINDOW_API Lineout2D : public VisitInteractor
@@ -45,7 +53,7 @@ class VISWINDOW_API Lineout2D : public VisitInteractor
   public:
                         Lineout2D(VisWindowInteractorProxy &);
     virtual            ~Lineout2D();
- 
+
     virtual void        OnMouseMove();
     virtual void        OnTimer();
     virtual void        StartLeftButtonAction();
@@ -55,26 +63,25 @@ class VISWINDOW_API Lineout2D : public VisitInteractor
   protected:
     int                    anchorX, anchorY;
 
-    double                  canvasDeviceMinX, canvasDeviceMaxX;
-    double                  canvasDeviceMinY, canvasDeviceMaxY;
+    double                 canvasDeviceMinX, canvasDeviceMaxX;
+    double                 canvasDeviceMinY, canvasDeviceMaxY;
 
-    vtkPolyData           *rubberBand;
-    vtkPolyDataMapper2D   *rubberBandMapper;
-    vtkActor2D            *rubberBandActor;
+    vtkActor              *lineActor;
+    vtkLineSource         *lineSource;
+    vtkPolyDataMapper     *lineMapper;
 
     bool                   rubberBandMode;
     bool                   doAlign;
-      
+
     void                   StartRubberBand(int, int);
     void                   EndRubberBand();
     void                   UpdateRubberBand(int, int, int, int, int, int);
-    void                   DrawRubberBandLine(int, int, int, int);
 
     void                   SetCanvasViewport(void);
     void                   ForceCoordsToViewport(int &, int &);
     void                   Lineout(void);
     void                   AlignToAxis(int &, int &);
-
+    void                   ComputeDisplayToWorld(double x, double y, double z, double *worldPt);
 };
 
 
