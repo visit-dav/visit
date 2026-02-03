@@ -181,13 +181,14 @@ function build_hdf5
             -DZLIB_LIBRARY_RELEASE:FILEPATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib/libz.${SO_EXT}\""
     fi
 
-    if [[ "$DO_SZIP" == "yes" ]]; then
-        info "Configuring HDF5 with szip support."
-        cmk_opts="${cmk_opts} \
-            -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON \
-            -DSZIP_INCLUDE_DIR:PATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}/include\" \
-            -DSZIP_LIBRARY_RELEASE:FILEPATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}/lib/libsz.${SO_EXT}\""
-    fi
+# HDF5 2.0 configures correctly ONLY with newer libaec based szip. The logic below doesn't work.
+#    if [[ "$DO_SZIP" == "yes" ]]; then
+#        info "Configuring HDF5 with szip support."
+#        cmk_opts="${cmk_opts} \
+#            -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON \
+#            -DSZIP_INCLUDE_DIR:PATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}/include\" \
+#            -DSZIP_LIBRARY_RELEASE:FILEPATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}/lib/libsz.${SO_EXT}\""
+#    fi
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
         cmk_opts="${cmk_opts} -DHDF5_BUILD_FORTRAN:BOOL=OFF"
