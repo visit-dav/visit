@@ -407,6 +407,7 @@ function build_xdmf
                  -DHDF5_DIR:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/cmake" \
                  -DHDF5_INCLUDE_PATH:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include" \
                  -DHDF5_LIBRARY:FILEPATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}" \
+                 -DMPI_HOME:PATH=${PAR_HOME} \
                  -DXDMF_SYSTEM_ZLIB:BOOL=ON \
                  -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR} \
                  -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY} \
