@@ -157,9 +157,13 @@ function build_hdf5
 
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         cmk_opts="${cmk_opts} \
+           -DBUILD_STATIC_LIBS:BOOL=ON \
+           -DBUILD_SHARED_LIBS:BOOL=OFF \
            -DHDF5_ONLY_SHARED_LIBS:BOOL=OFF"
     else
         cmk_opts="${cmk_opts} \
+           -DBUILD_STATIC_LIBS:BOOL=OFF \
+           -DBUILD_SHARED_LIBS:BOOL=ON \
            -DHDF5_ONLY_SHARED_LIBS:BOOL=ON"
     fi
 
@@ -170,11 +174,19 @@ function build_hdf5
     fi   
 
     if [[ "$DO_ZLIB" == "yes" ]]; then
-        info "Configuring HDF5 with ZLib support."
+        info "Configuring HDF5 with zlib support."
         cmk_opts="${cmk_opts} \
             -DHDF5_ENABLE_ZLIB_SUPPORT:BOOL=ON \
             -DZLIB_INCLUDE_DIR:PATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include\" \
             -DZLIB_LIBRARY_RELEASE:FILEPATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib/libz.${SO_EXT}\""
+    fi
+
+    if [[ "$DO_SZIP" == "yes" ]]; then
+        info "Configuring HDF5 with szip support."
+        cmk_opts="${cmk_opts} \
+            -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON \
+            -DSZIP_INCLUDE_DIR:PATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}/include\" \
+            -DSZIP_LIBRARY_RELEASE:FILEPATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}/lib/libsz.${SO_EXT}\""
     fi
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
