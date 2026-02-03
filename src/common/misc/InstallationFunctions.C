@@ -515,6 +515,8 @@ GetVisItResourcesDirectory(VisItResourceDirectoryType t)
             retval += "movietemplates";
         else if(t == VISIT_RESOURCES_IMAGES)
             retval += "images";
+        else if(t == VISIT_RESOURCES_FONTS)
+            retval += "fonts";
     }
 
     return retval;

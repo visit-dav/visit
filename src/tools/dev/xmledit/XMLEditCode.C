@@ -71,7 +71,7 @@ XMLEditCode::XMLEditCode(QWidget *p)
     topLayout->addWidget(new QLabel(tr("Prefix"), this), row, 0);
     row++;
 
-    QFont monospaced("Courier");
+    QFont monospaced("DejaVu Sans Mono"); // Courier-like
 
     prefix = new QTextEdit(this);
     prefix->setFont(monospaced);

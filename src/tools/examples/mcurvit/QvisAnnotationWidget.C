@@ -16,6 +16,7 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObject.h>
 #include <AnnotationObjectList.h>
+#include <FontFileManager.h>
 #include <ViewAxisArrayAttributes.h>
 #include <VisItViewer.h>
 
@@ -413,8 +414,10 @@ QvisAnnotationWidget::UpdateAnnotationWidgets()
     titleGroup->setChecked(annotationAtts->GetAxesArray().GetAxes().GetTitle().GetVisible());
     titleGroup->blockSignals(false);
 
+    const std::string& titleFontKey = annotationAtts->GetAxesArray().GetAxes().GetTitle().GetFont().GetFont();
+    int titleFontIndex = FontFileManager::instance().fonts().at(titleFontKey).index;
     titleFontFamilyComboBox->blockSignals(true);
-    titleFontFamilyComboBox->setCurrentIndex(annotationAtts->GetAxesArray().GetAxes().GetTitle().GetFont().GetFont());
+    titleFontFamilyComboBox->setCurrentIndex(titleFontIndex);
     titleFontFamilyComboBox->blockSignals(false);
 
     titleFontScale->setText(QString().setNum(annotationAtts->GetAxesArray().GetAxes().GetTitle().GetFont().GetScale()));
@@ -431,8 +434,10 @@ QvisAnnotationWidget::UpdateAnnotationWidgets()
     labelGroup->setChecked(annotationAtts->GetAxesArray().GetAxes().GetLabel().GetVisible());
     labelGroup->blockSignals(false);
 
+    const std::string& labelFontKey = annotationAtts->GetAxesArray().GetAxes().GetLabel().GetFont().GetFont();
+    int labelFontIndex = FontFileManager::instance().fonts().at(labelFontKey).index;
     labelFontFamilyComboBox->blockSignals(true);
-    labelFontFamilyComboBox->setCurrentIndex(annotationAtts->GetAxesArray().GetAxes().GetLabel().GetFont().GetFont());
+    labelFontFamilyComboBox->setCurrentIndex(labelFontIndex);
     labelFontFamilyComboBox->blockSignals(false);
 
     labelFontScale->setText(QString().setNum(annotationAtts->GetAxesArray().GetAxes().GetLabel().GetFont().GetScale()));
@@ -587,7 +592,7 @@ QvisAnnotationWidget::titleFontFamilyChanged(int value)
     AnnotationAttributes *atts = viewer->DelayedState()->GetAnnotationAttributes();
     if(atts != 0)
     {
-        atts->GetAxesArray().GetAxes().GetTitle().GetFont().SetFont((FontAttributes::FontName)value);
+        atts->GetAxesArray().GetAxes().GetTitle().GetFont().SetFont((FontAttributes::LegacyFontEnums)value);
         atts->Notify();
         emit annotationChanged(atts);
     }
@@ -636,7 +641,7 @@ QvisAnnotationWidget::labelFontFamilyChanged(int value)
     AnnotationAttributes *atts = viewer->DelayedState()->GetAnnotationAttributes();
     if(atts != 0)
     {
-        atts->GetAxesArray().GetAxes().GetLabel().GetFont().SetFont((FontAttributes::FontName)value);
+        atts->GetAxesArray().GetAxes().GetLabel().GetFont().SetFont((FontAttributes::LegacyFontEnums)value);
         atts->Notify();
         emit annotationChanged(atts);
     }

@@ -13,6 +13,7 @@
 
 #include <vtkRenderer.h>
 #include <vtkVisItTextActor.h>
+#include <vtkVisItUtility.h>
 #include <vtkTextProperty.h>
 
 // ****************************************************************************
@@ -279,6 +280,7 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
         textActor->GetTextProperty()->SetItalic(annot.GetFontItalic()?1:0);
     if(currentOptions.GetFontShadow() != annot.GetFontShadow())
         textActor->GetTextProperty()->SetShadow(annot.GetFontShadow()?1:0);
+    vtkVisItUtility::AdjustPropsForNonFamilyFonts(textActor->GetTextProperty());
 
     //
     // Set the position coordinates if they are different

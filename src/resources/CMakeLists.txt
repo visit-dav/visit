@@ -34,7 +34,7 @@
 add_subdirectory(hosts)
 
 # Directories that we want installed wholesale to the "resources" directory.
-set(RESOURCE_DIRECTORIES colortables help hosts images movietemplates translations usage clients)
+set(RESOURCE_DIRECTORIES colortables fonts help hosts images movietemplates translations usage clients)
 
 # Copy the resources directory into the out of source build
 

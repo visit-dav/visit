@@ -3193,9 +3193,11 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname, avtCentering
                                 n_matset);
 
             Node n_silo_matset;
+#if 0
             conduit::blueprint::mesh::field::to_silo(*field_ptr,
                                                      n_matset,
                                                      n_silo_matset);
+#endif
 
             int mix_len  = static_cast<int>(n_silo_matset["field_mixvar_values"].dtype().number_of_elements());
 
@@ -3387,8 +3389,10 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         // that silo and visit use
 
         Node n_silo_matset;
+#if 0
         conduit::blueprint::mesh::matset::to_silo(n_matset,
                                                   n_silo_matset);
+#endif
 
         int nmats = static_cast<int>(matnames.size());
         int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
@@ -3516,13 +3520,18 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                             n_matset);
 
         Node n_silo_matset;
+#warning FIXME
+#if 0
         conduit::blueprint::mesh::matset::to_silo(n_matset,
                                                   n_silo_matset);
+#endif
 
         Node n_silo_specset;
+#if 0
         conduit::blueprint::mesh::specset::to_silo(n_specset,
                                                    n_matset,
                                                    n_silo_specset);
+#endif
 
         if (!n_silo_specset.has_child("speclist"))
         {

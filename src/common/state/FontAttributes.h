@@ -9,6 +9,7 @@
 #include <AttributeSubject.h>
 
 #include <ColorAttribute.h>
+#include <FontFileManager.h>
 
 // ****************************************************************************
 // Class: FontAttributes
@@ -28,12 +29,10 @@
 class STATE_API FontAttributes : public AttributeSubject
 {
 public:
-    enum FontName
-    {
-        Arial,
-        Courier,
-        Times
-    };
+    using LegacyFontEnums = FontFileManager::LegacyFontEnums;
+    static constexpr LegacyFontEnums Arial = FontFileManager::Arial;
+    static constexpr LegacyFontEnums Courier = FontFileManager::Courier;
+    static constexpr LegacyFontEnums Times = FontFileManager::Times;
 
     // These constructors are for objects of this class
     FontAttributes();
@@ -60,35 +59,43 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectFont();
     void SelectColor();
 
     // Property setting methods
-    void SetFont(FontName font_);
+    void SetFont(const std::string &font_);
     void SetScale(double scale_);
     void SetUseForegroundColor(bool useForegroundColor_);
     void SetColor(const ColorAttribute &color_);
     void SetBold(bool bold_);
     void SetItalic(bool italic_);
+    void SetShadow(bool shadow_);
+    void SetBoldSupported(bool boldSupported_);
+    void SetItalicSupported(bool italicSupported_);
+    void SetBoldItalicSupported(bool boldItalicSupported_);
+    void SetShadowSupported(bool shadowSupported_);
+    void SetTransparencySupported(bool transparencySupported_);
 
     // Property getting methods
-    FontName             GetFont() const;
+    const std::string    &GetFont() const;
+          std::string    &GetFont();
     double               GetScale() const;
     bool                 GetUseForegroundColor() const;
     const ColorAttribute &GetColor() const;
           ColorAttribute &GetColor();
     bool                 GetBold() const;
     bool                 GetItalic() const;
+    bool                 GetShadow() const;
+    bool                 GetBoldSupported() const;
+    bool                 GetItalicSupported() const;
+    bool                 GetBoldItalicSupported() const;
+    bool                 GetShadowSupported() const;
+    bool                 GetTransparencySupported() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
-    // Enum conversion functions
-    static std::string FontName_ToString(FontName);
-    static bool FontName_FromString(const std::string &, FontName &);
-protected:
-    static std::string FontName_ToString(int);
-public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -96,6 +103,9 @@ public:
     virtual std::string               GetFieldTypeName(int index) const;
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
+    // User-defined methods
+    void SetFont(FontAttributes::LegacyFontEnums);
+    const FontAttributes::LegacyFontEnums GetFontAsLegacyEnum() const;
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -105,21 +115,33 @@ public:
         ID_color,
         ID_bold,
         ID_italic,
+        ID_shadow,
+        ID_boldSupported,
+        ID_italicSupported,
+        ID_boldItalicSupported,
+        ID_shadowSupported,
+        ID_transparencySupported,
         ID__LAST
     };
 
 private:
-    int            font;
+    std::string    font; // Key within FontFileManager's font map
     double         scale;
     bool           useForegroundColor;
     ColorAttribute color;
     bool           bold;
     bool           italic;
+    bool           shadow;
+    bool           boldSupported; // Set false if bold is not supported
+    bool           italicSupported; // Set false if italic is not supported
+    bool           boldItalicSupported; // Set false if bold-italic is not supported
+    bool           shadowSupported; // Set false if shadows are not supported
+    bool           transparencySupported; // Set false if transparency is not supported
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define FONTATTRIBUTES_TMFS "idbabb"
+#define FONTATTRIBUTES_TMFS "sdbabbbbbbbb"
 
 #endif

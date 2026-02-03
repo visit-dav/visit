@@ -17,6 +17,8 @@
 
 #include <vtkVisItTextActor.h>
 
+#include <vtkVisItUtility.h>
+
 #include <avtActor.h>
 #include <avtLegend.h>
 
@@ -582,6 +584,7 @@ VisWinLegends::SetDatabaseInfoTextAttributes(const VisWinTextAttributes &textAtt
     dbInfoActor->GetTextProperty()->SetFontFamily((int)dbInfoTextAttributes.font);
     dbInfoActor->GetTextProperty()->SetBold(dbInfoTextAttributes.bold?1:0);
     dbInfoActor->GetTextProperty()->SetItalic(dbInfoTextAttributes.italic?1:0);
+    vtkVisItUtility::AdjustPropsForNonFamilyFonts(dbInfoActor->GetTextProperty());
 
     // We're not updating the size here. The plot list has to be updated for that
     // to happen.

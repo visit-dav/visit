@@ -22,6 +22,8 @@
 #include <vtkTextProperty.h>
 #include <vtkUnsignedIntArray.h>
 
+#include <FontFileManager.h>
+
 #include <DebugStream.h>
 #include <vtkVisItUtility.h>
 
@@ -344,8 +346,9 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             this->NodeLabelProperty->SetColor(rgb);
         }
 
+        int fontIndex = FontFileManager::instance().fonts().at(nodeFA.GetFont()).index;
         this->NodeLabelProperty->SetFontSize(nodeFA.GetScale()*0.01*sz[1]);
-        this->NodeLabelProperty->SetFontFamily((int)nodeFA.GetFont());
+        this->NodeLabelProperty->SetFontFamily(fontIndex);
         this->NodeLabelProperty->SetBold(nodeFA.GetBold());
         this->NodeLabelProperty->SetItalic(nodeFA.GetItalic());
 
@@ -360,8 +363,9 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             cellFA.GetColor().GetRgb(rgb);
             this->CellLabelProperty->SetColor(rgb);
         }
+        fontIndex = FontFileManager::instance().fonts().at(cellFA.GetFont()).index;
         this->CellLabelProperty->SetFontSize(cellFA.GetScale()*0.01*sz[1]);
-        this->CellLabelProperty->SetFontFamily((int)cellFA.GetFont());
+        this->CellLabelProperty->SetFontFamily(fontIndex);
         this->CellLabelProperty->SetBold(cellFA.GetBold());
         this->CellLabelProperty->SetItalic(cellFA.GetItalic());
 
@@ -381,12 +385,13 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             this->NodeLabelProperty->SetColor(rgb);
             this->CellLabelProperty->SetColor(rgb);
         }
+        int fontIndex = FontFileManager::instance().fonts().at(labelFA.GetFont()).index;
         this->NodeLabelProperty->SetFontSize(labelFA.GetScale()*0.01*sz[1]);
-        this->NodeLabelProperty->SetFontFamily((int)labelFA.GetFont());
+        this->NodeLabelProperty->SetFontFamily(fontIndex);
         this->NodeLabelProperty->SetBold(labelFA.GetBold());
         this->NodeLabelProperty->SetItalic(labelFA.GetItalic());
         this->CellLabelProperty->SetFontSize(labelFA.GetScale()*0.01*sz[1]);
-        this->CellLabelProperty->SetFontFamily((int)labelFA.GetFont());
+        this->CellLabelProperty->SetFontFamily(fontIndex);
         this->CellLabelProperty->SetBold(labelFA.GetBold());
         this->CellLabelProperty->SetItalic(labelFA.GetItalic());
     }

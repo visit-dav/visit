@@ -20,6 +20,10 @@ class QvisColorButton;
 class QvisOpacitySlider;
 class QvisScreenPositionEdit;
 
+class QvisFontAttributesWidget;
+
+#include <FontAttributes.h>
+
 // ****************************************************************************
 // Class: QvisLegendAttributesInterface
 //
@@ -70,14 +74,7 @@ private slots:
     void heightChanged(int);
     void orientationChanged(int);
     void textChanged();
-    void fontHeightChanged();
-    void textColorChanged(const QColor &);
-    void textOpacityChanged(int);
-    void fontFamilyChanged(int);
-    void boldToggled(bool);
-    void italicToggled(bool);
-    void shadowToggled(bool);
-    void useForegroundColorToggled(bool);
+    void legendFontChanged(const FontAttributes &);
     void drawMinmaxToggled(bool);
     void drawBoundingBoxToggled(bool);
     void boundingBoxColorChanged(const QColor &);
@@ -106,14 +103,7 @@ private:
     QComboBox              *orientationComboBox;
     QNarrowLineEdit        *formatString;
     QNarrowLineEdit        *fontHeight;
-    QLabel                 *textColorLabel;
-    QvisColorButton        *textColorButton;
-    QvisOpacitySlider      *textColorOpacity;
-    QComboBox              *fontFamilyComboBox;
-    QCheckBox              *boldCheckBox;
-    QCheckBox              *italicCheckBox;
-    QCheckBox              *shadowCheckBox;
-    QCheckBox              *useForegroundColorCheckBox;
+    QvisFontAttributesWidget *legendFont;
 
     QCheckBox              *drawMinmaxCheckBox;
     QCheckBox              *drawTitleCheckBox;
@@ -133,6 +123,8 @@ private:
     QTableWidget           *suppliedLabels;
     QPushButton            *addRowButton;
     QPushButton            *deleteRowButton;
+
+    FontAttributes         currentFontAttributes;
 };
 
 #endif

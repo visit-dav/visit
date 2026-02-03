@@ -22,48 +22,61 @@ package llnl.visit;
 
 public class FontAttributes extends AttributeSubject
 {
-    private static int FontAttributes_numAdditionalAtts = 6;
-
-    // Enum values
-    public final static int FONTNAME_ARIAL = 0;
-    public final static int FONTNAME_COURIER = 1;
-    public final static int FONTNAME_TIMES = 2;
+    private static int FontAttributes_numAdditionalAtts = 12;
 
 
     public FontAttributes()
     {
         super(FontAttributes_numAdditionalAtts);
 
-        font = FONTNAME_ARIAL;
+        font = new String("dejavusans");
         scale = 1;
         useForegroundColor = true;
         color = new ColorAttribute(0, 0, 0);
         bold = false;
         italic = false;
+        shadow = false;
+        boldSupported = true;
+        italicSupported = true;
+        boldItalicSupported = true;
+        shadowSupported = true;
+        transparencySupported = true;
     }
 
     public FontAttributes(int nMoreFields)
     {
         super(FontAttributes_numAdditionalAtts + nMoreFields);
 
-        font = FONTNAME_ARIAL;
+        font = new String("dejavusans");
         scale = 1;
         useForegroundColor = true;
         color = new ColorAttribute(0, 0, 0);
         bold = false;
         italic = false;
+        shadow = false;
+        boldSupported = true;
+        italicSupported = true;
+        boldItalicSupported = true;
+        shadowSupported = true;
+        transparencySupported = true;
     }
 
     public FontAttributes(FontAttributes obj)
     {
         super(obj);
 
-        font = obj.font;
+        font = new String(obj.font);
         scale = obj.scale;
         useForegroundColor = obj.useForegroundColor;
         color = new ColorAttribute(obj.color);
         bold = obj.bold;
         italic = obj.italic;
+        shadow = obj.shadow;
+        boldSupported = obj.boldSupported;
+        italicSupported = obj.italicSupported;
+        boldItalicSupported = obj.boldItalicSupported;
+        shadowSupported = obj.shadowSupported;
+        transparencySupported = obj.transparencySupported;
 
         SelectAll();
     }
@@ -81,16 +94,22 @@ public class FontAttributes extends AttributeSubject
     public boolean equals(FontAttributes obj)
     {
         // Create the return value
-        return ((font == obj.font) &&
+        return ((font.equals(obj.font)) &&
                 (scale == obj.scale) &&
                 (useForegroundColor == obj.useForegroundColor) &&
                 (color == obj.color) &&
                 (bold == obj.bold) &&
-                (italic == obj.italic));
+                (italic == obj.italic) &&
+                (shadow == obj.shadow) &&
+                (boldSupported == obj.boldSupported) &&
+                (italicSupported == obj.italicSupported) &&
+                (boldItalicSupported == obj.boldItalicSupported) &&
+                (shadowSupported == obj.shadowSupported) &&
+                (transparencySupported == obj.transparencySupported));
     }
 
     // Property setting methods
-    public void SetFont(int font_)
+    public void SetFont(String font_)
     {
         font = font_;
         Select(0);
@@ -126,19 +145,61 @@ public class FontAttributes extends AttributeSubject
         Select(5);
     }
 
+    public void SetShadow(boolean shadow_)
+    {
+        shadow = shadow_;
+        Select(6);
+    }
+
+    public void SetBoldSupported(boolean boldSupported_)
+    {
+        boldSupported = boldSupported_;
+        Select(7);
+    }
+
+    public void SetItalicSupported(boolean italicSupported_)
+    {
+        italicSupported = italicSupported_;
+        Select(8);
+    }
+
+    public void SetBoldItalicSupported(boolean boldItalicSupported_)
+    {
+        boldItalicSupported = boldItalicSupported_;
+        Select(9);
+    }
+
+    public void SetShadowSupported(boolean shadowSupported_)
+    {
+        shadowSupported = shadowSupported_;
+        Select(10);
+    }
+
+    public void SetTransparencySupported(boolean transparencySupported_)
+    {
+        transparencySupported = transparencySupported_;
+        Select(11);
+    }
+
     // Property getting methods
-    public int            GetFont() { return font; }
+    public String         GetFont() { return font; }
     public double         GetScale() { return scale; }
     public boolean        GetUseForegroundColor() { return useForegroundColor; }
     public ColorAttribute GetColor() { return color; }
     public boolean        GetBold() { return bold; }
     public boolean        GetItalic() { return italic; }
+    public boolean        GetShadow() { return shadow; }
+    public boolean        GetBoldSupported() { return boldSupported; }
+    public boolean        GetItalicSupported() { return italicSupported; }
+    public boolean        GetBoldItalicSupported() { return boldItalicSupported; }
+    public boolean        GetShadowSupported() { return shadowSupported; }
+    public boolean        GetTransparencySupported() { return transparencySupported; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(font);
+            buf.WriteString(font);
         if(WriteSelect(1, buf))
             buf.WriteDouble(scale);
         if(WriteSelect(2, buf))
@@ -149,6 +210,18 @@ public class FontAttributes extends AttributeSubject
             buf.WriteBool(bold);
         if(WriteSelect(5, buf))
             buf.WriteBool(italic);
+        if(WriteSelect(6, buf))
+            buf.WriteBool(shadow);
+        if(WriteSelect(7, buf))
+            buf.WriteBool(boldSupported);
+        if(WriteSelect(8, buf))
+            buf.WriteBool(italicSupported);
+        if(WriteSelect(9, buf))
+            buf.WriteBool(boldItalicSupported);
+        if(WriteSelect(10, buf))
+            buf.WriteBool(shadowSupported);
+        if(WriteSelect(11, buf))
+            buf.WriteBool(transparencySupported);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -156,7 +229,7 @@ public class FontAttributes extends AttributeSubject
         switch(index)
         {
         case 0:
-            SetFont(buf.ReadInt());
+            SetFont(buf.ReadString());
             break;
         case 1:
             SetScale(buf.ReadDouble());
@@ -174,35 +247,58 @@ public class FontAttributes extends AttributeSubject
         case 5:
             SetItalic(buf.ReadBool());
             break;
+        case 6:
+            SetShadow(buf.ReadBool());
+            break;
+        case 7:
+            SetBoldSupported(buf.ReadBool());
+            break;
+        case 8:
+            SetItalicSupported(buf.ReadBool());
+            break;
+        case 9:
+            SetBoldItalicSupported(buf.ReadBool());
+            break;
+        case 10:
+            SetShadowSupported(buf.ReadBool());
+            break;
+        case 11:
+            SetTransparencySupported(buf.ReadBool());
+            break;
         }
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + indent + "font = ";
-        if(font == FONTNAME_ARIAL)
-            str = str + "FONTNAME_ARIAL";
-        if(font == FONTNAME_COURIER)
-            str = str + "FONTNAME_COURIER";
-        if(font == FONTNAME_TIMES)
-            str = str + "FONTNAME_TIMES";
-        str = str + "\n";
+        str = str + stringToString("font", font, indent) + "\n";
         str = str + doubleToString("scale", scale, indent) + "\n";
         str = str + boolToString("useForegroundColor", useForegroundColor, indent) + "\n";
         str = str + indent + "color = {" + color.Red() + ", " + color.Green() + ", " + color.Blue() + ", " + color.Alpha() + "}\n";
         str = str + boolToString("bold", bold, indent) + "\n";
         str = str + boolToString("italic", italic, indent) + "\n";
+        str = str + boolToString("shadow", shadow, indent) + "\n";
+        str = str + boolToString("boldSupported", boldSupported, indent) + "\n";
+        str = str + boolToString("italicSupported", italicSupported, indent) + "\n";
+        str = str + boolToString("boldItalicSupported", boldItalicSupported, indent) + "\n";
+        str = str + boolToString("shadowSupported", shadowSupported, indent) + "\n";
+        str = str + boolToString("transparencySupported", transparencySupported, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private int            font;
+    private String         font;
     private double         scale;
     private boolean        useForegroundColor;
     private ColorAttribute color;
     private boolean        bold;
     private boolean        italic;
+    private boolean        shadow;
+    private boolean        boldSupported;
+    private boolean        italicSupported;
+    private boolean        boldItalicSupported;
+    private boolean        shadowSupported;
+    private boolean        transparencySupported;
 }
 

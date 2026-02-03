@@ -167,7 +167,6 @@ VisWinTriad::SetFontFamily(int font)
             triad->GetYAxis()->SetFontFamilyToTimes();
             triad->GetZAxis()->SetFontFamilyToTimes();
             break;
-
     }
 }
 

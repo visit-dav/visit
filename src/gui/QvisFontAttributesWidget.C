@@ -4,6 +4,10 @@
 
 #include <QvisFontAttributesWidget.h>
 
+#include <FontManager.h>
+#include <FontFileManager.h>
+
+#include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
@@ -50,17 +54,20 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent) :
     gLayout->setSpacing(10);
     int row = 0;
 
+    // Setup font information
+    FontManager::instance().setupFonts();
+
     // Add controls to set the font family.
+    // Make it so options appear in the list in their actual font
     fontFamilyComboBox = new QComboBox(this);
-    fontFamilyComboBox->addItem("Arial");
-    fontFamilyComboBox->addItem("Courier");
-    fontFamilyComboBox->addItem("Times");
-    fontFamilyComboBox->setEditable(false);
+    QStandardItemModel *model = new QStandardItemModel(fontFamilyComboBox);
+    FontManager::instance().setupItemModel(model);
+    fontFamilyComboBox->setModel(model);
+    fontFamilyComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    fontFamilyComboBox->setMinimumContentsLength(5);
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
-    QLabel *ffLabel = new QLabel(tr("Font name"), this);
-    ffLabel->setBuddy(fontFamilyComboBox);
-    gLayout->addWidget(ffLabel, row, 0);
+    gLayout->addWidget(new QLabel(tr("Font name"), this), row, 0);
     gLayout->addWidget(fontFamilyComboBox, row, 1);
 
     // Add control for text font height
@@ -71,16 +78,42 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent) :
     QLabel *fsLabel = new QLabel(tr("Font scale"), this);
     fsLabel->setBuddy(fontScale);
     gLayout->addWidget(fsLabel, row, 2);
+    ++row;
+
+    // Set up some preview text using the currently selected font
+    // but increased slightly in size
+    previewText = new QLabel(QString::fromUtf8(FontManager::sampleText()));
+    int defaultPointSize = QApplication::font().pointSize();
+    QFont font = fontFamilyComboBox->model()->index(0, 0).data(Qt::FontRole).value<QFont>();
+    font.setPointSize(defaultPointSize+4);
+    previewText->setFont(font);
+
+    // Should really dispaly preview text on the selected background color.
+#if 0
+    int r = 255, g = 255, b = 255, a = 255;
+    QString style = QString("background-color: rgba(%1, %2, %3, %4);").arg(r).arg(g).arg(b).arg(a);
+    previewText->setStyleSheet(style);
+#endif
+
+    gLayout->addWidget(new QLabel(tr("Sample text"), this), row, 0);
+    gLayout->addWidget(previewText, row, 1, 1, 4);
+    ++row;
 
     boldCheckBox = new QCheckBox(tr("Bold"), this);
     connect(boldCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(boldToggled(bool)));
-    gLayout->addWidget(boldCheckBox, row, 4);
+    gLayout->addWidget(boldCheckBox, row, 0);
 
     italicCheckBox = new QCheckBox(tr("Italic"), this);
     connect(italicCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(italicToggled(bool)));
-    gLayout->addWidget(italicCheckBox, row, 5);
+    gLayout->addWidget(italicCheckBox, row, 1);
+
+    shadowCheckBox = new QCheckBox(tr("Shadow"), this);
+    connect(shadowCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(shadowToggled(bool)));
+    gLayout->addWidget(shadowCheckBox, row, 2);
+    shadowCheckBox->setEnabled(false); // disable until working
     ++row;
 
     useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this);
@@ -237,7 +270,8 @@ QvisFontAttributesWidget::Update(int which_widget)
     if(doAll || which_widget == FontAttributes::ID_font)
     {
         fontFamilyComboBox->blockSignals(true);
-        fontFamilyComboBox->setCurrentIndex(int(atts.GetFont()));
+        int fontIndex = FontFileManager::instance().fonts().at(atts.GetFont()).index;
+        fontFamilyComboBox->setCurrentIndex(fontIndex);
         fontFamilyComboBox->blockSignals(false);
     }
 
@@ -282,6 +316,15 @@ QvisFontAttributesWidget::Update(int which_widget)
         italicCheckBox->setChecked(atts.GetItalic());
         italicCheckBox->blockSignals(false);
     }
+
+#if 0
+    if(doAll || which_widget == FontAttributes::ID_shadow)
+    {
+        shadowCheckBox->blockSignals(true);
+        shadowCheckBox->setChecked(atts.GetShadow());
+        shadowCheckBox->blockSignals(false);
+    }
+#endif
 }
 
 // ****************************************************************************
@@ -349,6 +392,13 @@ QvisFontAttributesWidget::Apply()
 void
 QvisFontAttributesWidget::textColorChanged(const QColor &c)
 {
+    // We should probably also update the preview text appearence with color
+    // changes. However, we should also display the preview text on the
+    // current viewer background color and not the GUI's gray and until we do
+    // that updating preview text color is probably not worthwhile.
+    // Getting the currently selected background color involves getting state
+    // from the viewer and this widget is not set up for that.
+
     int a = atts.GetColor().Alpha();
     ColorAttribute tc(c.red(), c.green(), c.blue(), a);
     atts.SetColor(tc);
@@ -401,7 +451,26 @@ QvisFontAttributesWidget::textOpacityChanged(int opacity)
 void
 QvisFontAttributesWidget::fontFamilyChanged(int value)
 {
-    atts.SetFont((FontAttributes::FontName)value);
+    QFont font = fontFamilyComboBox->model()->
+        index(value, 0).data(Qt::FontRole).value<QFont>();
+    int defaultPointSize = QApplication::font().pointSize();
+    font.setPointSize(defaultPointSize+4);
+    previewText->setFont(font);
+
+    const FontManager::QtFontInfo& fi = FontManager::instance().fontInfo(font.family());
+
+    boldCheckBox->blockSignals(true);
+    boldCheckBox->setChecked(!fi.hasReg && fi.hasBold || font.bold());
+    boldCheckBox->blockSignals(false);
+    boldCheckBox->setEnabled(fi.hasReg && fi.hasBold);
+
+    italicCheckBox->blockSignals(true);
+    italicCheckBox->setChecked(!fi.hasReg && fi.hasItalic || font.italic());
+    italicCheckBox->blockSignals(false);
+    italicCheckBox->setEnabled(fi.hasReg && fi.hasItalic);
+
+    std::string fontKey = FontFileManager::instance().fontIndices().at(value);
+    atts.SetFont(fontKey);
     Apply();
 }
 
@@ -424,6 +493,15 @@ QvisFontAttributesWidget::fontFamilyChanged(int value)
 void
 QvisFontAttributesWidget::boldToggled(bool val)
 {
+    // Make selected item appear with bold as specified
+    QFont font = fontFamilyComboBox->model()->
+        index(fontFamilyComboBox->currentIndex(), 0).data(Qt::FontRole).value<QFont>();
+    int defaultPointSize = QApplication::font().pointSize();
+    font.setPointSize(defaultPointSize+4);
+    font.setBold(val);
+    font.setItalic(italicCheckBox->isChecked());
+    previewText->setFont(font);
+
     atts.SetBold(val);
     Apply();
 }
@@ -437,6 +515,35 @@ QvisFontAttributesWidget::boldToggled(bool val)
 // Arguments:
 //   val : The new italic flag.
 //
+// Programmer: Mark C. Miller, Thu May 15 18:17:17 PDT 2025
+//   
+// ****************************************************************************
+
+void
+QvisFontAttributesWidget::italicToggled(bool val)
+{
+    // Make selected item appear with bold as specified
+    QFont font = fontFamilyComboBox->model()->
+        index(fontFamilyComboBox->currentIndex(), 0).data(Qt::FontRole).value<QFont>();
+    int defaultPointSize = QApplication::font().pointSize();
+    font.setPointSize(defaultPointSize+4);
+    font.setItalic(val);
+    font.setBold(boldCheckBox->isChecked());
+    previewText->setFont(font);
+
+    atts.SetItalic(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisFontAttributesWidget::shadowToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the shadow checkbox is toggled.
+//
+// Arguments:
+//   val : The new shadow flag.
+//
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 7 13:55:18 PST 2008
 //
@@ -445,9 +552,17 @@ QvisFontAttributesWidget::boldToggled(bool val)
 // ****************************************************************************
 
 void
-QvisFontAttributesWidget::italicToggled(bool val)
+QvisFontAttributesWidget::shadowToggled(bool val)
 {
-    atts.SetItalic(val);
+    // Make selected item appear with bold as specified
+    QFont font = fontFamilyComboBox->model()->
+        index(fontFamilyComboBox->currentIndex(), 0).data(Qt::FontRole).value<QFont>();
+    int defaultPointSize = QApplication::font().pointSize();
+    font.setPointSize(defaultPointSize+4);
+    //font.setShadow(val);
+    previewText->setFont(font);
+
+    //atts.SetShadow(val);
     Apply();
 }
 

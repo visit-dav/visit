@@ -18,6 +18,8 @@
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
+#include <vtkVisItUtility.h>
+
 #include <DebugStream.h>
 #include <avtExtents.h>
 
@@ -1597,6 +1599,7 @@ VisWinParallelAxes::UpdateLabelTextAttributes(double fr, double fg, double fb)
         axis->GetLabelTextProperty()->SetFontFamily((int)labelTextAttributes.font);
         axis->GetLabelTextProperty()->SetBold(labelTextAttributes.bold?1:0);
         axis->GetLabelTextProperty()->SetItalic(labelTextAttributes.italic?1:0);
+        vtkVisItUtility::AdjustPropsForNonFamilyFonts(axis->GetLabelTextProperty());
 
         // Pass the opacity in the line offset.
         axis->GetLabelTextProperty()->SetLineOffset(labelTextAttributes.color[3]);
@@ -1638,6 +1641,7 @@ VisWinParallelAxes::UpdateTitleTextAttributes(double fr, double fg, double fb)
         axis->GetTitleTextProperty()->SetFontFamily((int)titleTextAttributes.font);
         axis->GetTitleTextProperty()->SetBold(titleTextAttributes.bold?1:0);
         axis->GetTitleTextProperty()->SetItalic(titleTextAttributes.italic?1:0);
+        vtkVisItUtility::AdjustPropsForNonFamilyFonts(axis->GetTitleTextProperty());
 
         // Pass the opacity in the line offset.
         axis->GetTitleTextProperty()->SetLineOffset(titleTextAttributes.color[3]);
@@ -1659,6 +1663,7 @@ VisWinParallelAxes::UpdateTitleTextAttributes(double fr, double fg, double fb)
         axis->GetTitleTextProperty()->SetFontFamily((int)titleTextAttributes.font);
         axis->GetTitleTextProperty()->SetBold(titleTextAttributes.bold?1:0);
         axis->GetTitleTextProperty()->SetItalic(titleTextAttributes.italic?1:0);
+        vtkVisItUtility::AdjustPropsForNonFamilyFonts(axis->GetTitleTextProperty());
 
         // Pass the opacity in the line offset.
         axis->GetTitleTextProperty()->SetLineOffset(titleTextAttributes.color[3]);

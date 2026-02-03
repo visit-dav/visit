@@ -82,8 +82,9 @@ XMLEditConstants::XMLEditConstants(QWidget *p)
     topLayout->addWidget(new QLabel(tr("Definition"), this), row, 0);
     row++;
 
+    QFont monospaced("DejaVu Sans Mono"); // Courier-like
+
     definition = new QTextEdit(this);
-    QFont monospaced("Courier");
     definition->setFont(monospaced);
     definition->setWordWrapMode(QTextOption::NoWrap);
     topLayout->addWidget(definition, row,0, 1,2);

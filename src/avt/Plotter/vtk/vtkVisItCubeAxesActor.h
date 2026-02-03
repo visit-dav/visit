@@ -340,6 +340,8 @@ public:
   // Shallow copy of a VisItCubeAxesActor.
   void ShallowCopy(vtkVisItCubeAxesActor *actor);
 
+  vtkGetVector4Macro(XAxes, vtkVisItAxisActor*);
+
 protected:
   vtkVisItCubeAxesActor();
   ~vtkVisItCubeAxesActor();

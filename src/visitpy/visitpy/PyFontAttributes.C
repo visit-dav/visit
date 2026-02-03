@@ -43,25 +43,8 @@ PyFontAttributes_ToString(const FontAttributes *atts, const char *prefix, const 
     std::string str;
     char tmpStr[1000];
 
-    const char *font_names = "Arial, Courier, Times";
-    switch (atts->GetFont())
-    {
-      case FontAttributes::Arial:
-          snprintf(tmpStr, 1000, "%sfont = %sArial  # %s\n", prefix, prefix, font_names);
-          str += tmpStr;
-          break;
-      case FontAttributes::Courier:
-          snprintf(tmpStr, 1000, "%sfont = %sCourier  # %s\n", prefix, prefix, font_names);
-          str += tmpStr;
-          break;
-      case FontAttributes::Times:
-          snprintf(tmpStr, 1000, "%sfont = %sTimes  # %s\n", prefix, prefix, font_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
+    snprintf(tmpStr, 1000, "%sfont = \"%s\"\n", prefix, atts->GetFont().c_str());
+    str += tmpStr;
     snprintf(tmpStr, 1000, "%sscale = %g\n", prefix, atts->GetScale());
     str += tmpStr;
     if(atts->GetUseForegroundColor())
@@ -81,6 +64,36 @@ PyFontAttributes_ToString(const FontAttributes *atts, const char *prefix, const 
         snprintf(tmpStr, 1000, "%sitalic = 1\n", prefix);
     else
         snprintf(tmpStr, 1000, "%sitalic = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetShadow())
+        snprintf(tmpStr, 1000, "%sshadow = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sshadow = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetBoldSupported())
+        snprintf(tmpStr, 1000, "%sboldSupported = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sboldSupported = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetItalicSupported())
+        snprintf(tmpStr, 1000, "%sitalicSupported = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sitalicSupported = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetBoldItalicSupported())
+        snprintf(tmpStr, 1000, "%sboldItalicSupported = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sboldItalicSupported = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetShadowSupported())
+        snprintf(tmpStr, 1000, "%sshadowSupported = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sshadowSupported = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetTransparencySupported())
+        snprintf(tmpStr, 1000, "%stransparencySupported = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%stransparencySupported = 0\n", prefix);
     str += tmpStr;
     return str;
 }
@@ -129,53 +142,35 @@ FontAttributes_SetFont(PyObject *self, PyObject *args)
 
     PyObject *packaged_args = 0;
 
-    // Handle args packaged into a tuple of size one
+    // Handle args packaged as first member of a tuple of size one
     // if we think the unpackaged args matches our needs
     if (PySequence_Check(args) && PySequence_Size(args) == 1)
     {
         packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
+        if (PyUnicode_Check(packaged_args))
             args = packaged_args;
     }
 
-    if (PySequence_Check(args))
+    if (!PyUnicode_Check(args))
     {
         Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
     }
 
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
 
-    long val = PyLong_AsLong(args);
-    int cval = int(val);
-
-    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    if (val == 0 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
-    }
-
-    if (cval < 0 || cval >= 3)
-    {
-        std::stringstream ss;
-        ss << "An invalid font value was given." << std::endl;
-        ss << "Valid values are in the range [0,2]." << std::endl;
-        ss << "You can also use the following symbolic names:";
-        ss << " Arial";
-        ss << ", Courier";
-        ss << ", Times";
-        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
     }
 
     Py_XDECREF(packaged_args);
 
     // Set the font in the object.
-    obj->data->SetFont(FontAttributes::FontName(cval));
+    obj->data->SetFont(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -185,7 +180,7 @@ FontAttributes_SetFont(PyObject *self, PyObject *args)
 FontAttributes_GetFont(PyObject *self, PyObject *args)
 {
     PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetFont()));
+    PyObject *retval = PyString_FromString(obj->data->GetFont().c_str());
     return retval;
 }
 
@@ -506,6 +501,366 @@ FontAttributes_GetItalic(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+FontAttributes_SetShadow(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the shadow in the object.
+    obj->data->SetShadow(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FontAttributes_GetShadow(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShadow()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+FontAttributes_SetBoldSupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the boldSupported in the object.
+    obj->data->SetBoldSupported(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FontAttributes_GetBoldSupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetBoldSupported()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+FontAttributes_SetItalicSupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the italicSupported in the object.
+    obj->data->SetItalicSupported(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FontAttributes_GetItalicSupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetItalicSupported()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+FontAttributes_SetBoldItalicSupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the boldItalicSupported in the object.
+    obj->data->SetBoldItalicSupported(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FontAttributes_GetBoldItalicSupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetBoldItalicSupported()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+FontAttributes_SetShadowSupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the shadowSupported in the object.
+    obj->data->SetShadowSupported(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FontAttributes_GetShadowSupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShadowSupported()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+FontAttributes_SetTransparencySupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the transparencySupported in the object.
+    obj->data->SetTransparencySupported(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FontAttributes_GetTransparencySupported(PyObject *self, PyObject *args)
+{
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetTransparencySupported()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyFontAttributes_methods[FONTATTRIBUTES_NMETH] = {
@@ -523,6 +878,18 @@ PyMethodDef PyFontAttributes_methods[FONTATTRIBUTES_NMETH] = {
     {"GetBold", FontAttributes_GetBold, METH_VARARGS},
     {"SetItalic", FontAttributes_SetItalic, METH_VARARGS},
     {"GetItalic", FontAttributes_GetItalic, METH_VARARGS},
+    {"SetShadow", FontAttributes_SetShadow, METH_VARARGS},
+    {"GetShadow", FontAttributes_GetShadow, METH_VARARGS},
+    {"SetBoldSupported", FontAttributes_SetBoldSupported, METH_VARARGS},
+    {"GetBoldSupported", FontAttributes_GetBoldSupported, METH_VARARGS},
+    {"SetItalicSupported", FontAttributes_SetItalicSupported, METH_VARARGS},
+    {"GetItalicSupported", FontAttributes_GetItalicSupported, METH_VARARGS},
+    {"SetBoldItalicSupported", FontAttributes_SetBoldItalicSupported, METH_VARARGS},
+    {"GetBoldItalicSupported", FontAttributes_GetBoldItalicSupported, METH_VARARGS},
+    {"SetShadowSupported", FontAttributes_SetShadowSupported, METH_VARARGS},
+    {"GetShadowSupported", FontAttributes_GetShadowSupported, METH_VARARGS},
+    {"SetTransparencySupported", FontAttributes_SetTransparencySupported, METH_VARARGS},
+    {"GetTransparencySupported", FontAttributes_GetTransparencySupported, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -549,13 +916,6 @@ PyFontAttributes_getattro(PyObject *self, PyObject *attr_name)
 
     if(strcmp(name, "font") == 0)
         return FontAttributes_GetFont(self, NULL);
-    if(strcmp(name, "Arial") == 0)
-        return PyInt_FromLong(long(FontAttributes::Arial));
-    if(strcmp(name, "Courier") == 0)
-        return PyInt_FromLong(long(FontAttributes::Courier));
-    if(strcmp(name, "Times") == 0)
-        return PyInt_FromLong(long(FontAttributes::Times));
-
     if(strcmp(name, "scale") == 0)
         return FontAttributes_GetScale(self, NULL);
     if(strcmp(name, "useForegroundColor") == 0)
@@ -566,6 +926,18 @@ PyFontAttributes_getattro(PyObject *self, PyObject *attr_name)
         return FontAttributes_GetBold(self, NULL);
     if(strcmp(name, "italic") == 0)
         return FontAttributes_GetItalic(self, NULL);
+    if(strcmp(name, "shadow") == 0)
+        return FontAttributes_GetShadow(self, NULL);
+    if(strcmp(name, "boldSupported") == 0)
+        return FontAttributes_GetBoldSupported(self, NULL);
+    if(strcmp(name, "italicSupported") == 0)
+        return FontAttributes_GetItalicSupported(self, NULL);
+    if(strcmp(name, "boldItalicSupported") == 0)
+        return FontAttributes_GetBoldItalicSupported(self, NULL);
+    if(strcmp(name, "shadowSupported") == 0)
+        return FontAttributes_GetShadowSupported(self, NULL);
+    if(strcmp(name, "transparencySupported") == 0)
+        return FontAttributes_GetTransparencySupported(self, NULL);
 
     PyObject *meth = Py_FindMethod(PyFontAttributes_methods, self, (char*)name);
     if (meth) return meth;
@@ -593,6 +965,18 @@ PyFontAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
         obj = FontAttributes_SetBold(self, args);
     else if(strcmp(name, "italic") == 0)
         obj = FontAttributes_SetItalic(self, args);
+    else if(strcmp(name, "shadow") == 0)
+        obj = FontAttributes_SetShadow(self, args);
+    else if(strcmp(name, "boldSupported") == 0)
+        obj = FontAttributes_SetBoldSupported(self, args);
+    else if(strcmp(name, "italicSupported") == 0)
+        obj = FontAttributes_SetItalicSupported(self, args);
+    else if(strcmp(name, "boldItalicSupported") == 0)
+        obj = FontAttributes_SetBoldItalicSupported(self, args);
+    else if(strcmp(name, "shadowSupported") == 0)
+        obj = FontAttributes_SetShadowSupported(self, args);
+    else if(strcmp(name, "transparencySupported") == 0)
+        obj = FontAttributes_SetTransparencySupported(self, args);
 
     if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
     {

@@ -63,8 +63,9 @@ XMLEditEnums::XMLEditEnums(QWidget *p)
     topLayout->addWidget(new QLabel(tr("Values"), this), row, 0);
     row++;
 
+    QFont monospaced("DejaVu Sans Mono"); // Courier-like
+
     valuelist = new QTextEdit(this);
-    QFont monospaced("Courier");
     valuelist->setFont(monospaced);
     valuelist->setWordWrapMode(QTextOption::NoWrap);
     topLayout->addWidget(valuelist, row,0, 1,2);

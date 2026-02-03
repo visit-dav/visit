@@ -16,6 +16,8 @@
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
+#include <vtkVisItUtility.h>
+
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -403,4 +405,5 @@ VisWinUserInfo::SetTextAttributes(const VisWinTextAttributes &textAtts)
     infoActor->GetTextProperty()->SetFontFamily((int)textAttributes.font);
     infoActor->GetTextProperty()->SetBold(textAttributes.bold?1:0);
     infoActor->GetTextProperty()->SetItalic(textAttributes.italic?1:0);
+    vtkVisItUtility::AdjustPropsForNonFamilyFonts(infoActor->GetTextProperty());
 }

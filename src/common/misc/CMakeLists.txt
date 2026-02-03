@@ -16,6 +16,7 @@ target_sources(visitcommon PRIVATE
     DebugStreamFull.C
     Environment.C
     FileFunctions.C
+    FontFileManager.C
     InstallationFunctions.C
     PTY.C
     RuntimeSetting.C
