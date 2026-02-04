@@ -136,6 +136,8 @@
 #   Kathleen Biagas, Thu July 10, 2025
 #   Add support for OpenEXR 3.3.4.
 #
+#   Mark C. Miller, Tue Feb  3 16:37:12 PST 2026
+#   Removed NETCDF_CXX. I converted S3D plugin to use netcdf C api.
 #****************************************************************************/
 
 ##
@@ -338,7 +340,6 @@ set(ACCELERATE_FRAMEWORK_LINK_FLAGS @ACCELERATE_FRAMEWORK_LINK_FLAGS@)
 set(NETCDF_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/netcdf/include)
 set(NETCDF_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(NETCDF_LIB @NETCDF_LIB@)
-set(NETCDF_CXX_LIB @NETCDF_CXX_LIB@)
 
 set(PDB_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/silo/include)
 set(PDB_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
