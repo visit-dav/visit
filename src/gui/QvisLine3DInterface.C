@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QScrollArea>
 #include <QSpinBox>
 
 #include <AnnotationObject.h>
@@ -37,6 +38,9 @@
 //   Kathleen Biagas, Mon Jul 30 16:43:01 MST 2018
 //   Change layout for arrows, to allow more room for radius.
 //
+//   Kathleen Biagas, Wed Feb 4, 2026
+//   Add QScrollArea for easier use on smaller laptop displays.
+//
 // ****************************************************************************
 
 QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
@@ -45,8 +49,17 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     // Set the title of the group box.
     this->setTitle(GetName());
 
-    QGridLayout *cLayout = new QGridLayout(0);
-    topLayout->addLayout(cLayout);
+    // Add a scroll area
+    QScrollArea *scroll = new QScrollArea();
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setWidgetResizable(true);
+    topLayout->addWidget(scroll);
+
+    QWidget *scrollContents = new QWidget();
+    scroll->setWidget(scrollContents);
+
+    QGridLayout *cLayout = new QGridLayout(scrollContents);
     cLayout->setSpacing(10);
 
     int row = 0;

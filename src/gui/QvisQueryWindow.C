@@ -299,7 +299,7 @@ QvisQueryWindow::CreateStandardQueryWidget()
     vLayout->addWidget(queryList);
 
     // Create the argument panel with its several text fields.
-    QScrollArea * scroll = new QScrollArea();
+    QScrollArea *scroll = new QScrollArea();
     hLayout->addWidget(scroll);
     argPanel = new QWidget(central);
     QVBoxLayout *gLayout = new QVBoxLayout(argPanel);
