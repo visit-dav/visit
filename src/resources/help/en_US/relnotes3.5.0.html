@@ -73,6 +73,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where bottom of main GUI window would be hidden behind the Windows taskbar.</li>
   <li>Fixed bugs with viewer text annotation sizes and layout when moving viewer windows between displays with different DPIs.</li>
   <li>Fixed Windows displaying as too tall on smaller laptop displays by adding Scroll bars where needed.  Some of the windows changed: Set Save options, Annotation, Integral Curve.</li>
+  <li>Fixed bug with interaction tools (line/plane, etc) so that they will be updated by an operators atts at first enablement.</li>
+  <li>Fixed a bug with the Line tool where it would hide behind 2D plots during interaction.</li>
+  <li>Ensure Line tool is disabled for Curve plots, because it shouldn't be enabled in this situation.</li>
   <li>Fixed a bug where the line cue in Lineout mode would be drawn far from the mouse location when running on a laptop monitor.</li>
 </ul>
 
