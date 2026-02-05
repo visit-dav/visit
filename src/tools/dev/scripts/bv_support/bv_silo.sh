@@ -101,6 +101,89 @@ function bv_silo_ensure
     fi
 }
 
+function apply_silo_4120_const_ns_patch
+{
+    info "Patching Silo 4.12.0 for constant namescheme issue"
+    patch -p1 << \EOF
+From 43a52d788a3c15bee3b9391906e8ed276c5a456c Mon Sep 17 00:00:00 2001
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Fri, 23 Jan 2026 19:03:18 -0800
+Subject: [PATCH] fix const nameschemes
+
+---
+ src/silo/silo_ns.c | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
+
+diff --git a/Silo-4.12.0/src/silo/silo_ns.c b/Silo-4.12.0/src/silo/silo_ns.c
+index 645077dd..e17a57d4 100644
+--- a/Silo-4.12.0/src/silo/silo_ns.c
++++ b/Silo-4.12.0/src/silo/silo_ns.c
+@@ -424,22 +424,33 @@ DBMakeNamescheme(char const *fmt, ...)
+     */
+     if (rv->ncspecs == 0)
+     {
+-        int rm_unnecessary_delim = 0;
++        free(rv->fmt);
+ 
+-        if (n > 2 && fmt[0] == fmt[n-1])
+-            rm_unnecessary_delim = !db_VariableNameValid(fmt);
++        /* If whole string is valid, take all of it. */
++        if (db_VariableNameValid(fmt))
++        {
++            rv->fmt = STRNDUP(&fmt[0],n);
++            rv->fmtlen = n;
++            return rv;
++        }
+ 
+-        free(rv->fmt);
++        /* If whole string but first char is valid, take all but first char */
++        if (db_VariableNameValid(&fmt[1]))
++        {
++            rv->fmt = STRNDUP(&fmt[1],n-1);
++            rv->fmtlen = n-1;
++            return rv;
++        }
+ 
+-        if (rm_unnecessary_delim)
++        if (fmt[0] == fmt[n-1])
+         {
+             rv->fmt = STRNDUP(&fmt[1],n-2);
+             rv->fmtlen = n-2;
+         }
+         else
+         {
+-            rv->fmt = STRNDUP(&fmt[0],n);
+-            rv->fmtlen = n;
++            rv->fmt = STRNDUP(&fmt[0],n-1);
++            rv->fmtlen = n-1;
+         }
+ 
+         return rv;
+-- 
+2.50.1 (Apple Git-155)
+EOF
+
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function apply_silo_patch
+{
+    info "Patching silo . . ."
+
+    compare_version_strings $SILO_VERSION 4.12.0 -eq
+    if [[ $? -eq 0 ]]; then
+        apply_silo_4120_const_ns_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
 # *************************************************************************** #
 #                            Function 8, build_silo
 #
@@ -132,6 +215,7 @@ function build_silo
         warn "Unable to prepare Silo build directory. Giving Up!"
         return 1
     fi
+    apply_silo_patch || return 1
     
     #
     # CMake Silo
