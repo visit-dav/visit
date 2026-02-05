@@ -1145,6 +1145,8 @@ vtkVisItScalarBarActor::BuildTics(double origin, double width,
 
 void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
 {
+  cerr << "vtkVisItScalarBarActor::BuildColorBar enter" << endl;
+  cerr << "  viewport=(" << viewport->GetViewport()[0] << "," << viewport->GetViewport()[1] << "," << viewport->GetViewport()[2] << "," << viewport->GetViewport()[3] << ")" << endl;
   if (this->Type == VTK_DISCRETE && this->definedLabels.empty())
     {
     vtkWarningMacro(<< "Discrete legend specified without labels!");
@@ -1166,6 +1168,7 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
     barOrigin = (double)(rsizePixels[1] + halfFontSize);
   else
     barOrigin = 0.;
+  cerr << "barOrigin=" << barOrigin << endl;
 
   int *titleOrigin;
   double barHeight, barWidth;
@@ -1173,6 +1176,7 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
   titleOrigin = this->TitleActor->GetPositionCoordinate()->
                                   GetComputedViewportValue(viewport);
 
+  cerr << "titleOrigin[1]=" << titleOrigin[1] << endl;
   if (this->TitleOkayToDraw && this->TitleVisibility) 
     {
     barHeight = titleOrigin[1] - LastOrigin[1] - halfFontSize - barOrigin; 
@@ -1181,6 +1185,7 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
     {
     barHeight = LastSize[1] - barOrigin;
     }
+  cerr << "barHeight=" << barHeight << endl;
 
   if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
       this->Orientation == VERTICAL_TEXT_ON_LEFT)
@@ -1283,8 +1288,10 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
         x[0] = 0; 
         x[1] = i*delta+barOrigin; 
         pts->SetPoint(2*i,x);
+	cerr << "  Setting bar point=(" << x[0] << "," << x[1] << ")" << endl;
         x[0] = barWidth; 
         pts->SetPoint(2*i+1,x);
+	cerr << "  Setting bar point=(" << x[0] << "," << x[1] << ")" << endl;
         }
       else
         {
@@ -1383,6 +1390,7 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
     this->BuildLabels(viewport, barOrigin, barWidth, barHeight, numLabels);
     }
 
+  cerr << "vtkVisItScalarBarActor::BuildColorBar exit" << endl;
 } // BuildColorBar
 
 
@@ -1586,6 +1594,7 @@ void vtkVisItScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
 
 int vtkVisItScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
 {
+  cerr << "vtkVisItScalarBarActor::RenderOpaqueGeometry enter" << endl;
   int renderedSomething = 0;
   int i;
  
@@ -1600,6 +1609,7 @@ int vtkVisItScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
        ( viewport->GetVTKWindow() && 
          viewport->GetVTKWindow()->GetMTime() > this->BuildTime ) )
     {
+    cerr << "Viewport changed, checking if need to rebuild." << endl;
     // if the viewport has changed we may - or may not need
     // to rebuild, it depends on if the projected coords change
     int *barOrigin, *barUR;
@@ -1613,6 +1623,7 @@ int vtkVisItScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
         this->LastOrigin[0] != barOrigin[0] || 
         this->LastOrigin[1] != barOrigin[1])
       {
+      cerr << "Marking as modified." << endl;
       this->Modified();
       }
     }
@@ -1621,6 +1632,7 @@ int vtkVisItScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
   if ( this->GetMTime() > this->BuildTime || 
        this->LookupTable->GetMTime() > this->BuildTime )
     {
+    cerr << "Rebuilding." << endl;
     vtkDebugMacro(<<"Rebuilding sub-objects");
 
     int *legOrigin, *legUR;
@@ -1690,6 +1702,7 @@ int vtkVisItScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
         }
       }
     }
+  cerr << "vtkVisItScalarBarActor::RenderOpaqueGeometry exit" << endl;
 
   renderedSomething = (renderedSomething > 0)?(1):(0);
   return renderedSomething;

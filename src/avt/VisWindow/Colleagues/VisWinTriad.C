@@ -361,6 +361,7 @@ VisWinTriad::ShouldAddTriad()
 void
 VisWinTriad::AddTriadToWindow(void)
 {
+    cerr << "VisWinTriad::AddTriadToWindow" << endl;
     if (addedTriad)
     {
         return;

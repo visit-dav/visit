@@ -224,6 +224,7 @@ VisWinAnnotations::UpdatePlotList(std::vector<avtActor_p> &p)
 void
 VisWinAnnotations::UpdateLegends()
 {
+    cerr << "VisWinAnnotations::UpdateLegends enter" << endl;
     //
     // Manage legend layout.
     //
@@ -234,6 +235,7 @@ VisWinAnnotations::UpdateLegends()
     int legendCount = 0;
     for (it = actorList.begin() ; it != actorList.end() ; it++)
     {
+        cerr << "    Processing a legend." << endl;
         // Look in the annotation list for a suitable object that
         // can be used to set the legend for this actor.
         avtAnnotationColleague *annot = 0;
@@ -251,6 +253,7 @@ VisWinAnnotations::UpdateLegends()
         avtLegend_p legend = (*it)->GetLegend();
         if (*legend != NULL)
         {
+            cerr << "        Processing the legend." << endl;
             // The legend was added to or removed in 
             // VisWinLegends::PositionLegends. Here we want to control the
             // layout and other legend attributes.
@@ -259,11 +262,13 @@ VisWinAnnotations::UpdateLegends()
                 bool manageLayout = true;
                 if(annot != 0)
                 {
+                    cerr << "            annot != NULL." << endl;
                     manageLayout = annot->ManageLayout(legend);
                     annot->CustomizeLegend(legend);
                 }
                 if(manageLayout)
                 {
+                    cerr << "            manageLayout." << endl;
                     double width, height;
                     legend->GetLegendSize(yTop, width, height);
 
@@ -354,6 +359,7 @@ VisWinAnnotations::SetFrameAndState(int nFrames,
 bool
 VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotName)
 {
+    cerr << "VisWinAnnotations::AddAnnotationObject enter" << endl;
     int const static CREATE_ANNOTATION_OBJECT_AS_NOT_VISIBLE = 0x00010000;
     const char *mName = "VisWinAnnotations::AddAnnotationObject: ";
     bool visible = true;

@@ -34,6 +34,7 @@ vtkCxxSetObjectMacro(vtkTriad2D, Camera,vtkCamera);
 
 vtkTriad2D::vtkTriad2D()
 {
+  cerr << "vtkTriad2D::vtkTriad2D constructor" << endl;
   this->Camera           = NULL;
   this->Origin[0]        = 0.10;
   this->Origin[1]        = 0.10;
@@ -108,6 +109,7 @@ int vtkTriad2D::RenderOverlay(vtkViewport *viewport)
 
 int vtkTriad2D::RenderOpaqueGeometry(vtkViewport *viewport)
 {
+  cerr << "vtkTriad2D::RenderOpaqueGeometry" << endl;
   float  x_viewport[2];
   float  y_viewport[2];
   float  z_viewport[2];
