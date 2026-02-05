@@ -426,6 +426,13 @@ function build_cgns
     # Disable fortran
     FORTRANARGS="--with-fortran=no"
 
+    # If we're parallel, HDF5 has a dependence on mpi we need to handle here
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        CFLAGS="$CFLAGS -I${PAR_HOME}/include"
+        LDFLAGS_ENV="$LDFLAGS_ENV -L${PAR_HOME}/lib -L${PAR_HOME}/lib64"
+        LIBS_ENV="$LIBS_ENV -lmpi"
+    fi
+
     set -x
     if [[ "$OPSYS" == "Darwin" ]] ; then
         env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
