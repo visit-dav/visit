@@ -157,7 +157,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where RPATHs weren't stripped from distributions. This could lead to issues for users that didn't build the distribution. It could also cause issues when a distribution is installed on a machine different from where it was built.</li>
   <li>Fixed crash loading SILO files when compiled with version 4.11 of the SILO library.</li>
   <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
-  <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
+  <li>Eliminated many memory leaks. Here is a summary of the fixed leaks.
+    <ul>
+      <li>Fixed a leak in the operator that removes ghost zones and calculates external faces.</li>
+      <li>Fixed a leak in the Resample operator.</li>
+      <li>Fixed a leak with the zone_centers expression.</li>
+      <li>Fixed memory leaks in all the plots.</li>
+    <ul>
+  </li>
   <li>Fixed a crash with Curve plot when Curve contained more than 100000 points.</li>
   <li>Fixed a crash in the PVLD parallel test suite.</li>
   <li>Fixed a problem where the Silo plugin would not honor major_order setting for vector variables (e.g. more than one component) on 2 or 3D point- or quad- meshes.</li>
