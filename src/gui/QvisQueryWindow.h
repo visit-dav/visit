@@ -15,7 +15,6 @@ class PlotList;
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
-class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QListWidget;
@@ -109,6 +108,9 @@ class QvisXRayImageQueryWidget;
 //   Store currentFloatFormat so that the floatFormat will only be sent to
 //   viewer when it has changed. (Reduces log messages).
 //
+//   Kathleen Biagas, Monday Feb 2, 2026
+//   Change argPanel to simple QWidget for use with QScrollArea.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -178,7 +180,7 @@ private:
     QListWidget         *queryList;
     QPushButton         *queryButton;
 
-    QGroupBox           *argPanel;
+    QWidget             *argPanel;
     QLabel              *labels[6];
     QLineEdit           *textFields[6];
     QCheckBox           *useGlobal, *dumpCoordinates, *dumpValues;

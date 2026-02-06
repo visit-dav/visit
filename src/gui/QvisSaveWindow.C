@@ -4,19 +4,19 @@
 
 #include <stdio.h> // for sscanf
 
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QGroupBox>
-#include <QWidget>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
 #include <QNarrowLineEdit.h>
 #include <QPushButton>
-#include <QSlider>
-#include <QButtonGroup>
 #include <QRadioButton>
+#include <QScrollArea>
+#include <QSlider>
 #include <QStandardItemModel>
 
 #include <QvisSaveWindow.h>
@@ -97,13 +97,17 @@ int FileFormatToMenuIndex(const std::string &ext)
 //   Kathleen Biagas, Fri Aug 31 13:57:11 PDT 2018
 //   Added dbPluginInfoAtts.
 //
+//   Kathleen Biagas, Wed Feb 4, 2025
+//   Set 'stretch' (last arg to QVisPostableWindowObserver) to false to
+//   allow QScrollArea to work properly.
+//
 // ****************************************************************************
 
 QvisSaveWindow::QvisSaveWindow(
     SaveWindowAttributes *subj, const QString &caption, const QString &shortName,
     QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
-                               QvisPostableWindowObserver::ApplyButton)
+                               QvisPostableWindowObserver::ApplyButton, false)
 {
     saveWindowAtts = subj;
     dbPluginInfoAtts = NULL;
@@ -267,15 +271,31 @@ QvisSaveWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Brad Whitlock, Tue Sep 26 13:17:30 PDT 2017
 //   I added pixel data options.
 //
+//   Kathleen Biagas, Wed Feb 4, 2025
+//   Add QScrollArea so window is still useable on smaller laptop monitors.
+//
 // ****************************************************************************
 
 void
 QvisSaveWindow::CreateWindowContents()
+
 {
+    // Add a scroll area
+    QScrollArea *scroll = new QScrollArea();
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setWidgetResizable(true);
+    topLayout->addWidget(scroll);
+
+    QWidget *scrollContents = new QWidget();
+    scroll->setWidget(scrollContents);
+
+    QVBoxLayout *saveLayout = new QVBoxLayout(scrollContents);
+
     // Create a group box for the file information.
     QGroupBox *nameBox = new QGroupBox(central);
     nameBox->setTitle(tr("Filename"));
-    topLayout->addWidget(nameBox);
+    saveLayout->addWidget(nameBox);
 
     QGridLayout *nameLayout = new QGridLayout(nameBox);
 
@@ -327,7 +347,7 @@ QvisSaveWindow::CreateWindowContents()
     // Create a group box for the file format.
     QGroupBox *formatBox = new QGroupBox(central);
     formatBox->setTitle(tr("Format options"));
-    topLayout->addWidget(formatBox);
+    saveLayout->addWidget(formatBox);
 
     QGridLayout *formatLayout = new QGridLayout(formatBox);
 
@@ -394,7 +414,7 @@ QvisSaveWindow::CreateWindowContents()
     // Create a group box for the image resolution.
     aspectAndResolutionBox = new QGroupBox(central);
     aspectAndResolutionBox->setTitle(tr("Aspect ratio and resolution"));
-    topLayout->addWidget(aspectAndResolutionBox);
+    saveLayout->addWidget(aspectAndResolutionBox);
 
     QGridLayout *resolutionLayout = new QGridLayout(aspectAndResolutionBox);
 
@@ -434,7 +454,7 @@ QvisSaveWindow::CreateWindowContents()
 
     // Begin pixel data
     pdGroup = new QGroupBox(tr("Pixel data"), central);
-    topLayout->addWidget(pdGroup);
+    saveLayout->addWidget(pdGroup);
     QGridLayout *pdLayout = new QGridLayout(pdGroup);
 
     pdRGB = new QCheckBox(tr("RGB"), pdGroup);
@@ -477,7 +497,7 @@ QvisSaveWindow::CreateWindowContents()
     multiWindowSaveBox->setCheckable(true);
     connect(multiWindowSaveBox, SIGNAL(toggled(bool)),
             this, SLOT(multiWindowSaveToggled(bool)));
-    topLayout->addWidget(multiWindowSaveBox);
+    saveLayout->addWidget(multiWindowSaveBox);
 
     QGridLayout *multiWindowSaveLayout = new QGridLayout(multiWindowSaveBox);
 
@@ -593,7 +613,7 @@ QvisSaveWindow::CreateWindowContents()
 
     // The save button.
     QHBoxLayout *saveButtonLayout = new QHBoxLayout();
-    topLayout->addLayout(saveButtonLayout);
+    saveLayout->addLayout(saveButtonLayout);
 
     //saveButtonLayout->setSpacing(5);
     QPushButton *saveButton = new QPushButton(tr("Save"), central);
