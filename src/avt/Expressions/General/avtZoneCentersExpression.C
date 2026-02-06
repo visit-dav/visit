@@ -17,7 +17,6 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
-#include <vtkSmartPointer.h>
 
 // ****************************************************************************
 // Method: avtZoneCentersExpression Constructor
