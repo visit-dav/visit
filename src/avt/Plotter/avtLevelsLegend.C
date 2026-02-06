@@ -740,13 +740,17 @@ avtLevelsLegend::SetVarRange(double nmin, double nmax)
 //    Brad Whitlock, Wed Mar 21 21:46:36 PST 2007
 //    Set position2.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
 avtLevelsLegend::ChangePosition(double x, double y)
 {
-    sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
-    sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
+    sBar->GetPositionCoordinate()->SetCoordinateSystemToWorld();
+    sBar->GetPositionCoordinate()->SetValue(x, y);
 
     // Set the position 2, incorporating the scale.
     double w, h;
