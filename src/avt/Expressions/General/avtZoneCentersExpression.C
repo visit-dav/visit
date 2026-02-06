@@ -17,10 +17,9 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
-#include <vtkSmartPointer.h>
 
 // ****************************************************************************
-// Method: avtZoneCenters Constructor
+// Method: avtZoneCentersExpression Constructor
 //
 // Purpose:
 //  Construct avtZoneCentersExpression
@@ -37,7 +36,7 @@ avtZoneCentersExpression::avtZoneCentersExpression()
 }
 
 // ****************************************************************************
-// Method: avtZoneCenters Destructor
+// Method: avtZoneCentersExpression Destructor
 //
 // Purpose:
 //  Destroy avtZoneCentersExpression
@@ -54,7 +53,7 @@ avtZoneCentersExpression::~avtZoneCentersExpression()
 }
 
 // ****************************************************************************
-// Method: avtZoneCenters Destructor
+// Method: avtZoneCentersExpression::DeriveVariable
 //
 // Purpose:
 //  Calculate the center of each cell in the given vtkDataSet
@@ -63,13 +62,15 @@ avtZoneCentersExpression::~avtZoneCentersExpression()
 // Creation:   Mon Jan 31 16:05:01 EST 2022
 //
 // Modifications:
+//  Eric Brugger, Thu Feb  5 15:37:53 PST 2026
+//  I eliminated the use of vtkSmarkPointer to fix a memory leak.
 //
 // ****************************************************************************
 vtkDataArray *
 avtZoneCentersExpression::DeriveVariable(vtkDataSet *ds, int currentDomainsIndex)
 {
     // Invoke vtkCellCenters filter
-    vtkSmartPointer<vtkCellCenters> cellCenters = vtkCellCenters::New();
+    vtkCellCenters *cellCenters = vtkCellCenters::New();
     cellCenters->SetInputData(ds);
     cellCenters->Update();
 
@@ -95,5 +96,6 @@ avtZoneCentersExpression::DeriveVariable(vtkDataSet *ds, int currentDomainsIndex
         return out;
     }
     out->Register(NULL);
+    cellCenters->Delete();
     return out;
 }
