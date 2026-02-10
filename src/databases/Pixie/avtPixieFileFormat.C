@@ -476,7 +476,7 @@ avtPixieFileFormat::Initialize()
         }
 
         // Populate the scalar variable list
-        int gid;
+        hid_t gid;
         if ((gid = H5Gopen(fileId, "/")) < 0)
         {
             H5Fclose(fileId);
@@ -533,7 +533,7 @@ avtPixieFileFormat::Initialize()
         //
         // Look for expressions dataset
         //
-        int expid;
+        hid_t expid;
         if ((expid = H5Dopen(fileId,"/visit_expressions")) >= 0)
         {
             // examine size, dimensionality and type of the dataspace
