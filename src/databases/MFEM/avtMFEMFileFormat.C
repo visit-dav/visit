@@ -297,6 +297,9 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
 //    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
 //    Make an educated guess for what the centering should be.
 //
+//    Brad Whitlock, Tue Feb 10 14:13:48 PST 2026
+//    Expose QuadratureFunctions with more than 3 components as array vars.
+//
 // ****************************************************************************
 void
 avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
@@ -570,23 +573,32 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 {
                     
                     AddScalarVarToMetaData(md,
-                                           field_names[j].c_str(),
-                                           qf_mesh_name.c_str(),
+                                           field_names[j],
+                                           qf_mesh_name,
                                            cent);
                 }
                 else if(field.Tag("comps") == "2")
                 {
                     AddVectorVarToMetaData(md,
-                                           field_names[j].c_str(),
-                                           qf_mesh_name.c_str(),
+                                           field_names[j],
+                                           qf_mesh_name,
                                            cent,2);
                 }
                 else if(field.Tag("comps") == "3")
                 {
                     AddVectorVarToMetaData(md,
-                                           field_names[j].c_str(),
-                                           qf_mesh_name.c_str(),
+                                           field_names[j],
+                                           qf_mesh_name,
                                            cent,3);
+                }
+                else
+                {
+                    const int comps = atoi(field.Tag("comps").c_str());
+                    AddArrayVarToMetaData(md,
+                                          field_names[j],
+                                          comps,
+                                          qf_mesh_name,
+                                          cent);
                 }
             }
         }
