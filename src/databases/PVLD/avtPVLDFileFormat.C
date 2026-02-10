@@ -1858,12 +1858,12 @@ avtPVLDFileFormat::AddNodeVariables( const string& meshname, avtDatabaseMetaData
                 //tensor->dim = 9; //(int)dims[1];
                 md->Add(tensor);
 
-                if( name == "Stress" )
+                if( name == "Stress_n" )
                 {
                     string orgname = PVLD_Reader::ComposeNames( meshname, name );
 
                     Expression *pre= new Expression;
-                    string prename = PVLD_Reader::ComposeNames( meshname,"Pressure" );
+                    string prename = PVLD_Reader::ComposeNames( meshname,"Pressure_n" );
                     pre->SetName( prename );
                     pre->SetDefinition( "trace(<" + orgname + ">)/-3.0" );
                     pre->SetType( Expression::ScalarMeshVar );
@@ -1872,7 +1872,7 @@ avtPVLDFileFormat::AddNodeVariables( const string& meshname, avtDatabaseMetaData
                     delete pre;
 
                     Expression *vms= new Expression;
-                    string vmsname = PVLD_Reader::ComposeNames( meshname,"von_Mises_Criterion" );
+                    string vmsname = PVLD_Reader::ComposeNames( meshname,"von_Mises_Criterion_n" );
                     vms->SetName( vmsname );
                     vms->SetDefinition("sqrt(0.5*( (<" + orgname + ">[0][0]-<" + orgname + ">[1][1])^2 + " +
                                        "(<" + orgname + ">[1][1]-<" + orgname + ">[2][2])^2 + " +
@@ -1884,6 +1884,20 @@ avtPVLDFileFormat::AddNodeVariables( const string& meshname, avtDatabaseMetaData
                     vms->SetHidden( false );
                     md->AddExpression(vms);
                     delete vms;
+
+                    const char *cmpnames[]= {"11","22","33", "12","23","13" };
+                    int cmpidx[]= {0,4,8,1,5,2};
+                    for( int i=0; i<6; i++ ) {
+                        char buf[100];
+                        sprintf(buf,"%d",cmpidx[i]);
+                        Expression *exp= new Expression;
+                        exp->SetName( varname+"_"+cmpnames[i] );
+                        exp->SetDefinition( "array_decompose(<"+varname+">,"+buf+")");
+                        exp->SetType( Expression::ScalarMeshVar );
+                        exp->SetHidden( false );
+                        md->AddExpression(exp);
+                        delete exp;
+                    }
                 }
             }
         }
