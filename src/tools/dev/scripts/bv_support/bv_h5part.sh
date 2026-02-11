@@ -460,10 +460,83 @@ EOF
 
 }
 
+function apply_h5part_1_6_6_for_hdf5_2_0_patch
+{
+    info "Patching H5Part for HDF5 2.0"
+    patch -p0 << \EOF
+diff -ur H5Part-1.6.6/src/H5Block.c H5Part-1.6.6.patched/src/H5Block.c
+--- H5Part-1.6.6/src/H5Block.c	2011-10-30 10:27:11.000000000 -0700
++++ H5Part-1.6.6.patched/src/H5Block.c	2026-02-07 20:41:57.854029000 -0800
+@@ -1045,14 +1045,14 @@
+ 	if ( ! _H5Part_have_group ( b->blockgroup, name ) )
+ 		return HANDLE_H5PART_NOENT_ERR ( name );
+ 
+-	herr_t herr = H5Gopen ( b->blockgroup, name
++	hid_t gid = H5Gopen ( b->blockgroup, name
+ #ifndef H5_USE_16_API
+ 		, H5P_DEFAULT
+ #endif
+ 		);
+-	if ( herr < 0 ) return HANDLE_H5G_OPEN_ERR ( name );
++	if ( gid < 0 ) return HANDLE_H5G_OPEN_ERR ( name );
+ 
+-	b->field_group_id = herr;
++	b->field_group_id = gid;
+ 
+ 	return H5PART_SUCCESS;
+ }
+diff -ur H5Part-1.6.6/src/H5Part.c H5Part-1.6.6.patched/src/H5Part.c
+--- H5Part-1.6.6/src/H5Part.c	2026-02-10 19:44:47.903119000 -0800
++++ H5Part-1.6.6.patched/src/H5Part.c	2026-02-06 19:23:38.752988000 -0800
+@@ -2297,7 +2297,7 @@
+     case H5L_TYPE_HARD: {
+ 
+       H5O_info_t objinfo;
+-      if( H5Oget_info_by_name( group_id, member_name, &objinfo, H5P_DEFAULT ) < 0 ) {
++      if( H5Oget_info_by_name( group_id, member_name, &objinfo, H5O_INFO_ALL, H5P_DEFAULT ) < 0 ) {
+ 	return (herr_t)HANDLE_H5G_GET_OBJINFO_ERR ( member_name );
+       }
+ 
+@@ -2347,7 +2347,7 @@
+           if ( obj_id < 0 ) {
+ 	    return (herr_t)HANDLE_H5G_OPEN_ERR ( member_name );
+           }
+-          else if ( H5Oget_info ( obj_id, &objinfo ) < 0 ) {
++          else if ( H5Oget_info ( obj_id, &objinfo, H5P_DEFAULT ) < 0 ) {
+ 	    return (herr_t)HANDLE_H5G_GET_OBJINFO_ERR ( member_name );
+           }
+           else {
+@@ -2412,7 +2412,7 @@
+ 		if ( obj_id < 0 )
+ 			return (herr_t)HANDLE_H5G_OPEN_ERR ( member_name );
+ 
+-		herr = H5Oget_info ( obj_id, &objinfo );
++		herr = H5Oget_info ( obj_id, &objinfo, H5P_DEFAULT );
+ 		if ( herr < 0 )
+ 			return (herr_t)HANDLE_H5G_GET_OBJINFO_ERR ( member_name );
+ 
+diff -ur H5Part-1.6.6/src/H5PartPrivate.h H5Part-1.6.6.patched/src/H5PartPrivate.h
+--- H5Part-1.6.6/src/H5PartPrivate.h	2011-09-19 14:19:24.000000000 -0700
++++ H5Part-1.6.6.patched/src/H5PartPrivate.h	2026-02-06 19:19:24.422201000 -0800
+@@ -6,7 +6,7 @@
+ #define H5_USE_16_API
+ #endif
+ 
+-#if H5_VERS_MAJOR == 1 && H5_VERS_MINOR >= 8
++#if H5_VERS_MAJOR == 2 || (H5_VERS_MAJOR == 1 && H5_VERS_MINOR >= 8)
+ #define H5PART_HAVE_HDF5_18
+ #endif
+EOF
+}
+ 
 function apply_h5part_patch
 {
     if [[ ${H5PART_VERSION} == 1.6.6 ]] ; then
         apply_h5part_1_6_6_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_h5part_1_6_6_for_hdf5_2_0_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -527,9 +600,16 @@ function build_h5part
         export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         export SZIPROOT="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         WITHHDF5ARG="--with-hdf5=$HDF5ROOT"
-        HDF5DYLIB="-L$HDF5ROOT/lib -L$SZIPROOT/lib -lhdf5 -lsz -lz"
+        if [[ "$PAR_COMPILER" != "" ]] ; then
+            CFLAGS="$CFLAGS -I${PAR_HOME}/include"
+            LDFLAGS="-L$HDF5ROOT/lib -L${PAR_HOME}/lib -Wl,-rpath,${PAR_HOME}/lib -L${PAR_HOME}/lib64 -Wl,-rpath,${PAR_HOME}/lib64 -L$SZIPROOT/lib"
+            LIBS="-lhdf5 -lmpi -lsz -lz"
+        else
+            LDFLAGS="-L$HDF5ROOT/lib -L$SZIPROOT/lib"
+            LIBS="-lhdf5 -lsz -lz"
+        fi
     else
-        WITHHDF5ARG="--with-hdf5"
+        WITHHDF5ARG="--without-hdf5"
         HDF5DYLIB=""
     fi
 
@@ -559,8 +639,8 @@ function build_h5part
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
     set -x
-    sh -c "./configure ${WITHHDF5ARG} ${OPTIONAL} CXX=\"$CXX_COMPILER\" \
-       CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+    sh -c "./configure ${WITHHDF5ARG} CXX=\"$CXX_COMPILER\" \
+       CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
        $FORTRANARGS $EXTRAARGS \
        --prefix=\"$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH\""
     set +x
