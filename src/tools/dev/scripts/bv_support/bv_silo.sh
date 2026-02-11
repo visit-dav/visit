@@ -168,6 +168,42 @@ EOF
     fi
 }
 
+function apply_silo_4120_mpio_vfd_patch
+{
+    info "Patching Silo 4.12.0 for mpio vfd issue"
+    patch -p1 << \EOF
+From 7cb7983ed1c369b3ad47d1b5852fa8651bb7bdb2 Mon Sep 17 00:00:00 2001
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Tue, 10 Feb 2026 18:54:11 -0800
+Subject: [PATCH] rm mpio vfd from dflt list
+
+---
+ Silo-4.12.0/src/silo/silo.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Silo-4.12.0/src/silo/silo.c b/Silo-4.12.0/src/silo/silo.c
+index f34653cf..893137da 100644
+--- a/Silo-4.12.0/src/silo/silo.c
++++ b/Silo-4.12.0/src/silo/silo.c
+@@ -2837,8 +2837,6 @@ const int* db_get_used_file_options_sets_ids()
+     used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_SPLIT;
+     used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_DIRECT;
+     used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_FAMILY;
+-    used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_MPIO;
+-    used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_MPIP;
+     for (i = n; i < MAX_FILE_OPTIONS_SETS+NUM_DEFAULT_FILE_OPTIONS_SETS+1; i++)
+         used_slots[i] = -1;
+
+--
+2.50.1 (Apple Git-155)
+EOF
+
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+
 function apply_silo_patch
 {
     info "Patching silo . . ."
@@ -175,6 +211,11 @@ function apply_silo_patch
     compare_version_strings $SILO_VERSION 4.12.0 -eq
     if [[ $? -eq 0 ]]; then
         apply_silo_4120_const_ns_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_mpio_vfd_patch
         if [[ $? != 0 ]] ; then
             warn "Giving up on Silo build because the patch failed."
             return 1
