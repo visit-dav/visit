@@ -16,7 +16,10 @@ times = (0)
 timesAreAccurate = (0)
 databaseName = "VISIT_TOP_DIR/data/silo_hdf5_test_data/noise.silo"
 fileFormat = "Silo_1.0"
-databaseComment = "VisIt noise dataset"
+databaseComment = "VisIt noise dataset
+Driver: HDF5
+File: hdf5-1.8.4, silo-4.7.2
+Plugin:silo-4.12.0"
 exprList.GetExpressions(0).name = "grad_tensor"
 exprList.GetExpressions(0).definition = "{ { <tensor_comps/grad_tensor_ii>, <tensor_comps/grad_tensor_ji>, <tensor_comps/grad_tensor_ki> }, { <tensor_comps/grad_tensor_ij>, <tensor_comps/grad_tensor_jj>, <tensor_comps/grad_tensor_kj> }, { <tensor_comps/grad_tensor_ik>, <tensor_comps/grad_tensor_jk>, <tensor_comps/grad_tensor_kk> } }"
 exprList.GetExpressions(0).hidden = 0
