@@ -5,6 +5,7 @@
 import math
 import os
 import sys
+from pathlib import Path
 
 ###############################################################################
 # Class: VisItCinema
@@ -514,6 +515,8 @@ class VisItCinema(object):
     # Date:       Tue Sep 12 12:05:28 PDT 2017
     #
     # Modifications:
+    #   Kathleen Biagas, Tue Feb 10, 2026
+    #   Use pathlib with Source command to prevent syntax warning on Windows.
     #
     ###########################################################################
 
@@ -522,7 +525,7 @@ class VisItCinema(object):
             self.Debug(1, "Setting up plots from session file:"+self.sessionFile)
             RestoreSession(self.sessionFile, 0)
         elif self.scriptFile != None:
-            Source(self.scriptFile)
+            Source(Path(self.scriptFile).as_posix())
         else:
             OpenDatabase("~/Development/data/wave/wave*.silo database")
             AddPlot("Pseudocolor", "pressure")

@@ -16,11 +16,12 @@
 #    auto-regenerated. See issue #19044.
 #    Add Molecule in it's place.
 #
+#    Kathleen Biagas, Tue Feb 10, 2026
+#    Use of pathlib is now part of tests_path.
+#
 # ----------------------------------------------------------------------------
 
-from pathlib import Path
-
-Source(Path(tests_path("plugins", "pluginVsInstallHelpers")).as_posix())
+Source(tests_path("plugins", "pluginVsInstallHelpers"))
 
 do_plugin_type("plots", ["Contour", "Label", "Molecule", "Tensor"])
 
