@@ -517,6 +517,13 @@ else()
     )
 endif()
 
+if(VISIT_PARALLEL)
+    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
+    message(STATUS "PARALLEL version of VisIt")
+else()
+    message(STATUS "Serial version of VisIt")
+endif()
+
 #-----------------------------------------------------------------------------
 # Misc other things needed by windows
 #-----------------------------------------------------------------------------
@@ -528,6 +535,18 @@ endif()
 
 
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+
+# After find_package(HDF5 ...)
+get_cmake_property(_vars VARIABLES)
+
+list(SORT _vars)
+foreach(v IN LISTS _vars)
+  if(v MATCHES "^(HDF5|hdf5)_")
+    # Avoid noisy internal variables unless you want them
+    message(STATUS "${v}='${${v}}'")
+  endif()
+endforeach()
+
 
 if(VISIT_XCB_DIR)
     message(STATUS "Installing xcb")
@@ -633,13 +652,6 @@ endif()
 
 if(VISIT_FORTRAN)
     enable_language(Fortran)
-endif()
-
-if(VISIT_PARALLEL)
-    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
-    message(STATUS "PARALLEL version of VisIt")
-else()
-    message(STATUS "Serial version of VisIt")
 endif()
 
 set(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
