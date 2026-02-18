@@ -517,13 +517,6 @@ else()
     )
 endif()
 
-if(VISIT_PARALLEL)
-    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
-    message(STATUS "PARALLEL version of VisIt")
-else()
-    message(STATUS "Serial version of VisIt")
-endif()
-
 #-----------------------------------------------------------------------------
 # Misc other things needed by windows
 #-----------------------------------------------------------------------------
@@ -533,19 +526,17 @@ if(WIN32)
     visit_setup_windows()
 endif()
 
+if(VISIT_PARALLEL)
+    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
+    message(STATUS "PARALLEL version of VisIt")
+else()
+    message(STATUS "Serial version of VisIt")
+endif()
+
+# macros/defines also needed by PluginVsInstall.cmake.in
+include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
-# After find_package(HDF5 ...)
-get_cmake_property(_vars VARIABLES)
-
-list(SORT _vars)
-foreach(v IN LISTS _vars)
-  if(v MATCHES "^(HDF5|hdf5)_")
-    # Avoid noisy internal variables unless you want them
-    message(STATUS "${v}='${${v}}'")
-  endif()
-endforeach()
 
 
 if(VISIT_XCB_DIR)
@@ -654,6 +645,7 @@ if(VISIT_FORTRAN)
     enable_language(Fortran)
 endif()
 
+
 set(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
 # This include sets up vars that contains lists of include directories
@@ -664,8 +656,6 @@ if(NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
     set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
 endif()
 
-# macros/defines also needed by PluginVsInstall.cmake.in
-include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 # Mac-specific function
 function(MAC_NIB_INSTALL exename)

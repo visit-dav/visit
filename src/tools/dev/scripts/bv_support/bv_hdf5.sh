@@ -33,10 +33,6 @@ function bv_hdf5_depends_on
             depends_on="$depends_on zlib"
         fi
 
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            depends_on="$depends_on szip"
-        fi
-
         if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes"  && "$DO_MPICH" == "yes" ]]; then
             depends_on="$depends_on mpich"
         fi
@@ -95,10 +91,6 @@ function bv_hdf5_host_profile
             ZLIB_LIBDEP=""
             if [[ "$DO_ZLIB" == "yes" ]] ; then
                 ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
-            fi
-            SZIP_LIBDEP=""
-            if [[ "$DO_SZIP" == "yes" ]] ; then
-                SZIP_LIBDEP="\${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz"
             fi
             
             echo \

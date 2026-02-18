@@ -246,7 +246,11 @@ function(SET_UP_THIRD_PARTY pkg)
         #
         set(is_lib_path 1)
         foreach (X ${${lib_dep}})
-            if(${X})
+            if(TARGET ${X})
+                message("found libdep target ${X}")
+                list(APPEND "${lib_var}" ${X})
+                continue()
+            elseif(${X})
                 set(X_VALUE ${${X}})
             else()
                 set(X_VALUE ${X})
@@ -601,6 +605,8 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
 
+    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
+
     include(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
@@ -619,7 +625,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
 
-    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
 
