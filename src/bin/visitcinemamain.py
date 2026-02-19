@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 ###############################################################################
 # Function: main
@@ -9,6 +10,8 @@ import sys
 # Date:       Mon Sep 11 17:26:02 PDT 2017
 #
 # Modifications:
+#   Kathleen Biagas, Tue Feb 10, 2026
+#   Use pathlib with Source command to prevent syntax warning on Windows.
 #
 ###############################################################################
 
@@ -25,7 +28,7 @@ def main():
     else:
         # Source the visitcinema.py script, which contains all of the 
         # code for the visitcinema class.
-        Source(visitcinema)
+        Source(Path(visitcinema).as_posix())
 
         cinema = VisItCinema()
         cinema.ProcessArguments()

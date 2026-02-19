@@ -3424,15 +3424,26 @@ avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(
 
    // we need basis name to create the proper mfem quad space and quad func
    // the pattern used to encode the quad space params is:
-   // QF_{ORDER}_{VDIM}
+   // QF_{ORDER}_{VDIM} or QF_{TYPE}_{ORDER}_{VDIM}
    // ORDER is the degree of the polynomials for the quad rule
    // VDIM  is the number of components at each quad point (scalar, vector, etc)
-   
+
    int qf_order = 0;
    int qf_vdim  = 0;
+
    std::string qf_name = n_field["basis"].as_string();
    avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(qf_name, qf_order, qf_vdim);
-   // note: qf_vdim should equal vdim
+
+   // qf_vdim should equal vdim
+   if(qf_vdim != vdim)
+   {
+        // this is a fix for cases where axom mfem data are presented as one value instead 
+        // of a valid bp vector field.
+        vdim = qf_vdim;
+        AVT_CONDUIT_BP_WARNING( "Quadrature Function `values` vector dimension (" << vdim << ")"
+                                 <<  " does not match expected vdim (" << qf_vdim << ")."
+                                 <<  " using expected vdim (" << qf_vdim << ").");
+   }
 
    mfem::QuadratureSpace *quad_space = new mfem::QuadratureSpace(mesh, qf_order);
    mfem::QuadratureFunction *res = new mfem::QuadratureFunction();

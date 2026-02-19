@@ -4,21 +4,22 @@
 
 #include <stdio.h>
 #include <QvisQueryWindow.h>
+
 #include <QButtonGroup>
-#include <QComboBox>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDir>
 #include <QFileDialog>
-#include <QGroupBox>
 #include <QLabel>
-#include <QLineEdit>
 #include <QLayout>
+#include <QLineEdit>
 #include <QListWidget>
-#include <QTextEdit>
 #include <QPushButton>
 #include <QRadioButton>
-#include <QStringList>
+#include <QScrollArea>
 #include <QSplitter>
+#include <QStringList>
+#include <QTextEdit>
 #include <QTextStream>
 
 #include <QueryAttributes.h>
@@ -254,6 +255,9 @@ QvisQueryWindow::CreateWindowContents()
 //   Kathleen Biagas, Thu Jan 21, 2021
 //   Replace QString.asprintf with QString.arg.
 //
+//   Kathleen Biagas, Monday Feb 2, 2026
+//   Add QScrollArea to argPanel.
+//
 // ****************************************************************************
 
 void
@@ -295,11 +299,13 @@ QvisQueryWindow::CreateStandardQueryWidget()
     vLayout->addWidget(queryList);
 
     // Create the argument panel with its several text fields.
-    argPanel = new QGroupBox(central);
-    argPanel->setTitle(tr("Query parameters"));
-
-    hLayout->addWidget(argPanel);
+    QScrollArea *scroll = new QScrollArea();
+    hLayout->addWidget(scroll);
+    argPanel = new QWidget(central);
     QVBoxLayout *gLayout = new QVBoxLayout(argPanel);
+    gLayout->setSizeConstraint(QLayout::SetMinimumSize);
+    QLabel *t= new QLabel(tr("Query parameters"), central );
+    gLayout->addWidget(t);
 
     // Add the vars button to the argument panel
     QHBoxLayout *vbLayout = new QHBoxLayout();
@@ -418,6 +424,9 @@ QvisQueryWindow::CreateStandardQueryWidget()
             this, SLOT(apply()));
     qbLayout->addWidget(queryButton);
     qbLayout->addStretch(5);
+
+    scroll->setWidget(argPanel);
+    scroll->setWidgetResizable(true);
 
     // make sure these are sorted
     UpdateQueryList();

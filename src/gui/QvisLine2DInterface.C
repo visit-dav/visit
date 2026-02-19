@@ -8,6 +8,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QLayout>
+#include <QScrollArea>
 #include <QToolTip>
 
 #include <AnnotationObject.h>
@@ -20,7 +21,7 @@
 // ****************************************************************************
 // Method: QvisLine2DInterface::QvisLine2DInterface
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisLine2DInterface class.
 //
 // Arguments:
@@ -43,6 +44,9 @@
 //   Kathleen Biagas, Mon Jul 13 13:03:45 PDT 2015
 //   Add useForegroundColor, colorlabel.
 //
+//   Kathleen Biagas, Wed Feb 4, 2026
+//   Add QScrollArea for easier use on smaller laptop displays.
+//
 // ****************************************************************************
 
 QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
@@ -51,8 +55,17 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
     // Set the title of the group box.
     this->setTitle(GetName());
 
-    QGridLayout *cLayout = new QGridLayout(0);
-    topLayout->addLayout(cLayout);
+    // Add a scroll area
+    QScrollArea *scroll = new QScrollArea();
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setWidgetResizable(true);
+    topLayout->addWidget(scroll);
+
+    QWidget *scrollContents = new QWidget();
+    scroll->setWidget(scrollContents);
+
+    QGridLayout *cLayout = new QGridLayout(scrollContents);
     cLayout->setSpacing(10);
 
     int row = 0;
@@ -77,7 +90,7 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
     cLayout->addWidget(positionEndEdit, row, 1, 1, 3);
     cLayout->addWidget(endLabel, row, 0);
     ++row;
-   
+
     // Add controls for width.
     widthWidget = new QvisLineWidthWidget(0, this);
     connect(widthWidget, SIGNAL(lineWidthChanged(int)),
@@ -143,14 +156,14 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisLine2DInterface::~QvisLine2DInterface
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisLine2DInterface class.
 //
 // Programmer: John C. Anderson
 // Creation:   Fri Sep 03 09:31:23 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 QvisLine2DInterface::~QvisLine2DInterface()
 {
@@ -159,7 +172,7 @@ QvisLine2DInterface::~QvisLine2DInterface()
 // ****************************************************************************
 // Method: QvisLine2DInterface::GetMenuText
 //
-// Purpose: 
+// Purpose:
 //   Returns the text to use in the annotation list box.
 //
 // Arguments:
@@ -190,7 +203,7 @@ QvisLine2DInterface::GetMenuText(const AnnotationObject &annot) const
 // ****************************************************************************
 // Method: QvisLine2DInterface::UpdateControls
 //
-// Purpose: 
+// Purpose:
 //   Updates the controls in the interface using the data in the Annotation
 //   object pointed to by the annot pointer.
 //
@@ -211,12 +224,12 @@ QvisLine2DInterface::UpdateControls()
     // Set the start position.
     positionStartEdit->setPosition(annot->GetPosition()[0],
                                    annot->GetPosition()[1]);
-    
+
     // Set the end position.
     positionEndEdit->setPosition(annot->GetPosition2()[0],
                                  annot->GetPosition2()[1]);
 
-    // Set the values for the width and style 
+    // Set the values for the width and style
     widthWidget->blockSignals(true);
     widthWidget->SetLineWidth(annot->GetOptions().GetEntry("width")->AsInt());
     widthWidget->blockSignals(false);
@@ -239,7 +252,7 @@ QvisLine2DInterface::UpdateControls()
     opacitySlider->blockSignals(true);
 
     if (annot->GetUseForegroundForTextColor())
-    {    
+    {
         QColor tmp(255,255,255);
         colorButton->setButtonColor(tmp);
         colorLabel->setEnabled(false);
@@ -269,7 +282,7 @@ QvisLine2DInterface::UpdateControls()
 // ****************************************************************************
 // Method: QvisLine2DInterface::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for the text fields.
 //
 // Arguments:
@@ -310,15 +323,15 @@ QvisLine2DInterface::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisLine2DInterface::positionChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   position line edit.
 //
 // Programmer: John C. Anderson
 // Creation:   Fri Sep 03 09:32:19 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisLine2DInterface::positionStartChanged(double x, double y)
@@ -330,15 +343,15 @@ QvisLine2DInterface::positionStartChanged(double x, double y)
 // ****************************************************************************
 // Method: QvisLine2DInterface::positionChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   position line edit.
 //
 // Programmer: John C. Anderson
 // Creation:   Fri Sep 03 09:32:25 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisLine2DInterface::positionEndChanged(double x, double y)
@@ -400,7 +413,7 @@ QvisLine2DInterface::endArrowChanged(int i)
 // ****************************************************************************
 // Method: QvisLine2DInterface::widthChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the value of the width
 //   spin box changes.
 //
@@ -411,7 +424,7 @@ QvisLine2DInterface::endArrowChanged(int i)
 // Creation:   Fri Sep 03 09:33:26 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisLine2DInterface::widthChanged(int w)
@@ -422,7 +435,7 @@ QvisLine2DInterface::widthChanged(int w)
 // ****************************************************************************
 // Method: QvisLine2DInterface::colorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new color is
 //   selected.
 //
@@ -433,7 +446,7 @@ QvisLine2DInterface::widthChanged(int w)
 // Creation:   Fri Sep 03 09:33:35 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisLine2DInterface::colorChanged(const QColor &c)
@@ -446,7 +459,7 @@ QvisLine2DInterface::colorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisLine2DInterface::opacityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new opacity is
 //   selected.
 //
@@ -457,7 +470,7 @@ QvisLine2DInterface::colorChanged(const QColor &c)
 // Creation:   Fri Sep 03 09:33:47 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisLine2DInterface::opacityChanged(int opacity)
@@ -470,7 +483,7 @@ QvisLine2DInterface::opacityChanged(int opacity)
 // ****************************************************************************
 // Method: QvisLine2DInterface::visibilityToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the visibility toggle is
 //   changed.
 //
@@ -481,7 +494,7 @@ QvisLine2DInterface::opacityChanged(int opacity)
 // Creation:   Fri Sep 03 09:34:03 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisLine2DInterface::visibilityToggled(bool val)
@@ -492,18 +505,18 @@ QvisLine2DInterface::visibilityToggled(bool val)
 // ****************************************************************************
 // Method: QvisLine2DInterface::useForegroundColorToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the useForegroundColor
 //   check box is clicked.
 //
 // Arguments:
 //   val : The new setting for useForegroundColor
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

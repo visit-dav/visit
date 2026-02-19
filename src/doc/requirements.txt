@@ -4,6 +4,7 @@
 #
 #    pip-compile requirements.in
 #
+setuptools==80.9.0
 alabaster==0.7.16
     # via sphinx
 babel==2.15.0

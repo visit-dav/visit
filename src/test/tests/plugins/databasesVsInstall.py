@@ -19,11 +19,13 @@
 #    their CMakeLists.txt and tests currently available to run against the
 #    version built (to be added at a future time).
 #
+#    Kathleen Biagas, Tue Feb 10, 2026
+#    Use of pathlib is now part of tests_path.
+#
 # ----------------------------------------------------------------------------
 
-from pathlib import Path
 
-Source(Path(tests_path("plugins", "pluginVsInstallHelpers")).as_posix())
+Source(tests_path("plugins", "pluginVsInstallHelpers"))
 
 do_plugin_type("databases", ["BOV", "Blueprint", "CGNS", "Cale", "Claw", "Exodus", "FITS", "H5Part", "MFEM", "Mili", "SAMRAI", "VTK"])
 
