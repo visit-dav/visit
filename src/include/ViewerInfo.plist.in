@@ -40,5 +40,7 @@
     <string>True</string>
     <key>NSRequiresAquaSystemAppearance</key>
     <true/>
+    <key>CFBundleDisplayName</key>
+    <string>VisIt Viewer</string>
 </dict>
 </plist>
