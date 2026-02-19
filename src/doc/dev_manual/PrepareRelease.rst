@@ -116,12 +116,12 @@ modify the images so that the warning message disappears do the following. ::
 
 11. Copy the files to ``src/resources/images``.
 
-Changing the version on the macOS and Widnows icons
+Changing the version on the macOS and Windows icons
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
 
 On macOS and Windows systems we provide VisIt application icons.
 
-Follow these steps to update the version number in these icons
+Follow these steps to update the version number in these icons.
 
 1. Go to the ``src/common/icons`` directory.
 2. Open the file ``VisIt3.x-square.xcf`` in GIMP.
@@ -132,7 +132,7 @@ Follow these steps to update the version number in these icons
 8. Select a different background image, and then repeate the process to create ``VisIt3.5-square-win-256x256.png``
 
 Now you can use helper scripts that leverage ImageMagick to create a set of resized
-versions of these images and the final icon files ::
+versions of these images and the final icon files. ::
 
     python3 gen_vicon_pngs_from_256x256_ver.py
     ./gen_macos_iconset.sh
