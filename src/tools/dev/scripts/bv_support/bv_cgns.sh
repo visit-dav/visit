@@ -18,9 +18,6 @@ function bv_cgns_depends_on
     local depends=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
         depends="hdf5"
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            depends="szip hdf5"
-        fi
     fi
     
     echo $depends
@@ -413,11 +410,6 @@ function build_cgns
         LIBS_ENV="-lhdf5"
         LDFLAGS_ENV="-L$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            LIBS_ENV="$LIBS_ENV -lsz"
-            LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib"
-            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-        fi
         LIBS_ENV="$LIBS_ENV -lz"
         LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
         H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"

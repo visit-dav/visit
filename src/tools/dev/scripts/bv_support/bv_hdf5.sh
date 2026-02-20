@@ -94,7 +94,7 @@ function bv_hdf5_host_profile
             fi
             
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $SZIP_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                     >> $HOSTCONF
         fi
     fi

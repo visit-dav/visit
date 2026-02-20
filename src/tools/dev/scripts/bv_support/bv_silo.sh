@@ -34,11 +34,6 @@ function bv_silo_depends_on
         depends_on="$depends_on hdf5"
     fi
     
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        depends_on="$depends_on szip"
-    fi
-
-
     echo $depends_on
 }
 
@@ -296,10 +291,6 @@ function build_silo
             -DSILO_HDF5_DIR:PATH=\"${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}\""
     else
         cmake_opts="${cmake_opts} -DSILO_ENABLE_HDF5:BOOL=OFF"
-    fi
-
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        cmake_opts="${cmake_opts} -DSILO_HDF5_SZIP_DIR:PATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}\""
     fi
 
     if [[ "$DO_ZLIB" == "yes" ]]; then

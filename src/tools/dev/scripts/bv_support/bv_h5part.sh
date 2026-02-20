@@ -7,7 +7,6 @@ function bv_h5part_enable
 {
     DO_H5PART="yes"
     DO_HDF5="yes"
-    DO_SZIP="yes"
 }
 
 function bv_h5part_disable
@@ -17,7 +16,7 @@ function bv_h5part_disable
 
 function bv_h5part_depends_on
 {
-    echo "szip hdf5"
+    echo "hdf5"
 }
 
 function bv_h5part_info
@@ -598,15 +597,14 @@ function build_h5part
     cd $H5PART_BUILD_DIR || error "Can't cd to h5part build dir."
     if [[ "$DO_HDF5" == "yes" ]] ; then
         export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
-        export SZIPROOT="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         WITHHDF5ARG="--with-hdf5=$HDF5ROOT"
         if [[ "$PAR_COMPILER" != "" ]] ; then
             CFLAGS="$CFLAGS -I${PAR_HOME}/include"
-            LDFLAGS="-L$HDF5ROOT/lib -L${PAR_HOME}/lib -Wl,-rpath,${PAR_HOME}/lib -L${PAR_HOME}/lib64 -Wl,-rpath,${PAR_HOME}/lib64 -L$SZIPROOT/lib"
-            LIBS="-lhdf5 -lmpi -lsz -lz"
+            LDFLAGS="-L$HDF5ROOT/lib -L${PAR_HOME}/lib -Wl,-rpath,${PAR_HOME}/lib -L${PAR_HOME}/lib64 -Wl,-rpath,${PAR_HOME}/lib64"
+            LIBS="-lhdf5 -lmpi -lz"
         else
-            LDFLAGS="-L$HDF5ROOT/lib -L$SZIPROOT/lib"
-            LIBS="-lhdf5 -lsz -lz"
+            LDFLAGS="-L$HDF5ROOT/lib"
+            LIBS="-lhdf5 -lz"
         fi
     else
         WITHHDF5ARG="--without-hdf5"
@@ -614,10 +612,10 @@ function build_h5part
     fi
 
     if [[ "$OPSYS" == "Darwin" ]]; then
-        export DYLD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib:$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib:$DYLD_LIBRARY_PATH"
+        export DYLD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib:$DYLD_LIBRARY_PATH"
         SOARG="--enable-shared"
     else
-        export LD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib:$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib:$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib:$LD_LIBRARY_PATH"
         SOARG=""
     fi
     if [[ "$FC_COMPILER" == "no" ]] ; then

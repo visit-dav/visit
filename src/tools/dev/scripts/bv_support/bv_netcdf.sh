@@ -30,9 +30,6 @@ function bv_netcdf_depends_on
         local depends_on="zlib"
         if [[ "$DO_HDF5" == "yes" ]] ; then
             depends_on="hdf5"        
-            if [[ "$DO_SZIP" == "yes" ]] ; then
-                depends_on="${depends_on} szip"        
-            fi
         fi
         echo ${depends_on}
     fi
@@ -235,11 +232,7 @@ function build_netcdf
         cmake_opts="${cmake_opts} -DNETCDF_ENABLE_HDF5:BOOL=OFF"
     fi
 
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        cmake_opts="${cmake_opts} -DSzip_ROOT:PATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}\""
-    else
-        cmake_opts="${cmake_opts} -DNETCDF_ENABLE_SZIP:BOOL=OFF"
-    fi 
+    cmake_opts="${cmake_opts} -DNETCDF_ENABLE_SZIP:BOOL=OFF"
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then
         cmake_opts="${cmake_opts} -DZLIB_ROOT:PATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
