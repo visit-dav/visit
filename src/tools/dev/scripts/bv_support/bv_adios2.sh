@@ -148,9 +148,10 @@ function build_adios2
 
     #### begin parallel
 
-    par_build_types="ser"
     if [[ "$parallel" == "yes" ]]; then
-        par_build_types="$par_build_types par"
+        par_build_types="par"
+    else
+        par_build_types="ser"
     fi
 
     ADIOS2_SRC_DIR=$ADIOS2_BUILD_DIR
@@ -179,7 +180,7 @@ function build_adios2
         rm -Rf $ADIOS2_BUILD_DIR/CMakeCache.txt $ADIOS2_BUILD_DIR/*/CMakeCache.txt
 
         adios2_build_mode="${VISIT_BUILD_MODE}"
-        adios2_install_path="${VISITDIR}/adios2-$bt/${ADIOS2_VERSION}/${VISITARCH}"
+        adios2_install_path="${VISITDIR}/adios2/${ADIOS2_VERSION}/${VISITARCH}"
 
         cfg_opts=""
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:STRING=OFF"
