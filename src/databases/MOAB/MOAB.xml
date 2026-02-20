@@ -12,9 +12,6 @@
       ${MOAB_INCLUDE_DIR}
       ${HDF5_INCLUDE_DIR}
     </CXXFLAGS>
-    <DEFINES components="EPar">
-      ALLOW_MPI_WITH_HDF5
-    </DEFINES>
     <LDFLAGS components="M">
       ${MOAB_LIBRARY_DIR}
       ${HDF5_LIBRARY_DIR}

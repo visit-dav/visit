@@ -97,14 +97,13 @@ function build_moab
     cf_mpi_arg=""
     cf_par_suffix=""
     if [[ -n "$PAR_COMPILER" ]]; then
-        cf_mpi_arg="--with-mpi"
+        cf_mpi_arg="--with-mpi=${PAR_HOME}"
         cf_c_compiler="$PAR_COMPILER"
         cf_cxx_compiler="$PAR_COMPILER_CXX"
-        hdf5_consumer_uses_mpi_flag="-DHDF5_CONSUMER_USES_MPI"
     else
+        cf_mpi_arg="--without-mpi"
         cf_c_compiler="$C_COMPILER"
         cf_cxx_compiler="$CXX_COMPILER"
-        hdf5_consumer_uses_mpi_flag=""
     fi
 
     cf_prefix_arg="--prefix=$VISITDIR/moab/$MOAB_VERSION/$VISITARCH"
