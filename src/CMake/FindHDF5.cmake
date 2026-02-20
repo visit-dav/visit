@@ -38,11 +38,16 @@ endforeach()
 
 if(TARGET hdf5-shared)
    set(HDF5_LIB hdf5-shared)
+   set(HAVE_LIBHDF5 TRUE CACHE BOOL "Have HDF5 libraries")
    get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
-   message(STATUS "hdf5_locr is ${hdf5_locr}")
-   THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
+   cmake_path(GET hdf5_locr PARENT_PATH hdf5_dir)
+   THIRD_PARTY_INSTALL_LIBRARY(${hdf5_dir})
    THIRD_PARTY_INSTALL_INCLUDE(hdf5 ${HDF5_INCLUDE_DIR})
-   set(HDF5_LIBRARY_DIR ${hdf5_locr})
-   message(STATUS "HDF5_LIBRARY_DIR is ${HDF5_LIBRARY_DIR}")
-endif()
+   set(HDF5_LIBRARY_DIR ${hdf5_dir})
 
+   if(HDF5_PROVIDES_ZLIB_SUPPORT)
+      # hdf5 targets don't have 'zlib' listed as an interface-link-library
+      # but it should be.
+      target_link_libraries(${HDF5_LIB} INTERFACE ${ZLIB_LIBRARY})
+   endif()
+endif()
