@@ -198,6 +198,28 @@ EOF
     fi
 }
 
+function apply_silo_4120_lib_vs_lib64_patch
+{
+    info "Patching Silo 4.12.0 for install lib/lib64 issue"
+    patch -p1 << \EOF
+--- a/Silo-4.12.0/CMake/SiloConfig.cmake.in	2025-11-20 21:30:59.000000000 -0800
++++ b/Silo-4.12.0/CMake/SiloConfig.cmake.in	2026-02-20 16:39:18.900700000 -0800
+@@ -99,7 +99,7 @@
+ # project which has already built SILO as a subproject
+ #-----------------------------------------------------------------------------
+ if(NOT TARGET @SILO_NAME@)
+-  include (${PACKAGE_PREFIX_DIR}/lib/cmake/Silo/@silo_targets_name@.cmake)
++  include (${CMAKE_CURRENT_LIST_DIR}/@silo_targets_name@.cmake)
+ 
+   if(SILO_ENABLE_HDF5)
+       include(CMakeFindDependencyMacro)
+EOF
+
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
 
 function apply_silo_patch
 {
@@ -211,6 +233,11 @@ function apply_silo_patch
             return 1
         fi
         apply_silo_4120_mpio_vfd_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_lib_vs_lib64_patch
         if [[ $? != 0 ]] ; then
             warn "Giving up on Silo build because the patch failed."
             return 1
