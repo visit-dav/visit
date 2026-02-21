@@ -19,7 +19,7 @@ fileFormat = "Silo_1.0"
 databaseComment = "The Wave
 Driver: HDF5
 File: hdf5-1.8.4, silo-4.7.2
-Plugin:silo-4.12.0"
+Plugin: hdf5-2.0.0, silo-4.12.0"
 exprList.GetExpressions(0).name = "direction"
 exprList.GetExpressions(0).definition = "{u,v,w}"
 exprList.GetExpressions(0).hidden = 0
