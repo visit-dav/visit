@@ -127,9 +127,10 @@ Follow these steps to update the version number in these icons.
 2. Open the file ``VisIt3.x-square.xcf`` in GIMP.
 4. Select the text layer containing the version number and change it.
 5. Go to *File->Export As* and change *Name* to ``VisIt3.5-square-macos-256x256.png``.
-6. Click on *Export*. 
+6. Click on *Export*.
 7. Click on *Export* on the window that pops up to allow you to set the save options.
 8. Select a different background image, and then repeate the process to create ``VisIt3.5-square-win-256x256.png``
+
 
 Now you can use helper scripts that leverage ImageMagick to create a set of resized
 versions of these images and the final icon files. ::
