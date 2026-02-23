@@ -4,6 +4,8 @@
 
 #*****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Thu Jan 15, 2026
+#   Add vtkIOGeometry link lib.
 #
 #****************************************************************************
 
@@ -31,7 +33,7 @@ ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VTK_INCLUDE_DIRS}
 )
 
-set(vtklibs VTK::ImagingCore VTK::IOPLY)
+set(vtklibs VTK::ImagingCore VTK::IOGeometry VTK::IOPLY)
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})

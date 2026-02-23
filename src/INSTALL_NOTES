@@ -11,7 +11,7 @@ followed by the Unix installation instructions.
 Windows:
 ========
 
-1.  Download the visit3.4.1_x64.exe installer program to
+1.  Download the visit3.5.0_x64.exe installer program to
     your desktop.
 
 2.  Double click on the installer program icon to run the installer.
@@ -24,7 +24,7 @@ MacOS X:
 
 Downloads:
 
-1. Download visit-3.4.1.dmg and copy it to the desktop.
+1. Download visit-3.5.0.dmg and copy it to the desktop.
 
 2. Double click on the file to open it. This will cause MacOS to mount the
    disk image and open it in Finder.
@@ -46,16 +46,16 @@ Unix (gzipped tar file):
     script can create a new distribution directory or update an existing
     distribution.  This is handled automatically.
 
-        chmod 755 visit-install3_4_1
-        ./visit-install3_4_1 "version" "platform" "directory"
+        chmod 755 visit-install3_5_0
+        ./visit-install3_5_0 "version" "platform" "directory"
 
     where
 
-        "version" will be 3.4.1 for the current distribution.
+        "version" will be 3.5.0 for the current distribution.
 
         "platform" will be the release relevant to your system, for example:
 
-            linux-x86_64-ubuntu20
+            linux-x86_64-ubuntu24
 
         The one you use should match the name of the accompanying
         distribution file.
@@ -65,12 +65,12 @@ Unix (gzipped tar file):
 
     For example
 
-        chmod 755 visit-install3_4_1
-        ./visit-install3_4_1 3.4.1 linux-x86_64-ubuntu20 /usr/local/visit
+        chmod 755 visit-install3_5_0
+        ./visit-install3_5_0 3.5.0 linux-x86_64-ubuntu24 /usr/local/visit
 
-    will install the linux-x86_64-ubuntu20, 3.4.1 version of visit in the
+    will install the linux-x86_64-ubuntu24, 3.5.0 version of visit in the
     directory "/usr/local/visit".  Note that you will need to have the
-    file "visit3_4_1.linux-x86_64-ubuntu20.tar.gz" present in the current
+    file "visit3_5_0.linux-x86_64-ubuntu24.tar.gz" present in the current
     directory for this to function properly.
 
 2.  Add the bin directory below the installation directory

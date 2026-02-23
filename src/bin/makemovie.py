@@ -10,6 +10,7 @@ import socket
 import subprocess
 import sys
 import shutil
+from pathlib import Path
 
 if (sys.version_info > (3, 0)):
     import _thread
@@ -772,8 +773,8 @@ class MakeMovie(object):
         print("                       command line argument.")
         print("")
         print("                       Example:")
-        print("                          visit -movie -geometry 1000x1000 -format mpeg \ ")
-        print("                                -sessionfile A.session \ ")
+        print("                          visit -movie -geometry 1000x1000 -format mpeg \\ ")
+        print("                                -sessionfile A.session \\ ")
         print("                                -source new.silo -source other.silo")
         print("")
         print("                       If you are replacing a time series of files, remember")
@@ -2281,6 +2282,9 @@ class MakeMovie(object):
     #   I added code to set the number of digits in the movie file names
     #   based on the number needed rather than always four.
     #
+    #   Kathleen Biagas, Tue Feb 10, 2026
+    #   Use pathlib with Source command to prevent syntax warning on Windows.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -2342,7 +2346,7 @@ class MakeMovie(object):
                     prefix = sys.exec_prefix[:pos] + "resources" + self.slash
             templateBaseFile = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
             self.Debug(1, "GenerateFrames: sourcing template base class file %s" % templateBaseFile)
-            Source(templateBaseFile)
+            Source(Path(templateBaseFile).as_posix())
 
 
             # Determine the movie template's actual template file. We must read
@@ -2390,7 +2394,7 @@ class MakeMovie(object):
                 self.Debug(1, "GenerateFrames: sourcing %s" % templatePY)
                 try:
                     if templatePY != templateBaseFile:
-                        Source(templatePY)
+                        Source(Path(templatePY).as_posix())
                 except VisItException:
                     msg = "The movie template work file %s could not be read." % templatePY
                     self.Debug(1, msg)
@@ -2493,7 +2497,7 @@ class MakeMovie(object):
             # match legacy behavior.
             self.GenerateFileNames(1)
             # Try executing the modified version of the user's script.
-            Source(name)
+            Source(Path(name).as_posix())
             # Remove the modified script.
             RemoveFile(name);
 

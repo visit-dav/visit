@@ -21,6 +21,10 @@
 #     Where possible, perform work on all groups instead of duplicating the
 #     same code for 'reqlibs', 'optlibs' and 'explicitlibs'.
 #
+#     Cyrus Harrison, Fri Jan  9 12:09:47 PST 2026
+#     Removed direct lfs path (avoiding extra lfs costs), see
+#     https://github.com/visit-dav/visit/issues/19340
+#
 # *****************************************************************************
 
 # To create your own modular file, see the docs at
@@ -61,9 +65,6 @@ export bv_PREFIX=$bv_PATH/bv_support/
 export build_version=""
 export visitroot="https://github.com/visit-dav/visit/releases/download/"
 export thirdpartyroot="https://github.com/visit-dav/third-party/releases/download/"
-
-# for use when running a develop verison of build_visit
-export thirdpartyroot_dev="https://github.com/visit-dav/third-party/raw/master/lib"
 
 #state = "disabled", "enabled", "installed"
 declare -a reqlibs
@@ -393,9 +394,6 @@ function bv_write_unified_file
     echo "export build_version=\"\"" >> $OUTPUT_bv_FILE
     echo "export visitroot=\"https://github.com/visit-dav/visit/releases/download/\"" >> $OUTPUT_bv_FILE
     echo "export thirdpartyroot=\"https://github.com/visit-dav/third-party/releases/download/\"" >> $OUTPUT_bv_FILE
-
-    # for use when running a develop verison of build_visit
-    echo "export thirdpartyroot_dev=\"https://github.com/visit-dav/third-party/raw/master/lib\"" >> $OUTPUT_bv_FILE
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE

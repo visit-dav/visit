@@ -3485,6 +3485,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 //  Creation:   09/27/24
 //
 //  Modifications:
+//     Justin Privitera, Tue Jan 27 15:51:14 PST 2026
+//     Removed unnecessary material set conversion.
 //
 // ****************************************************************************
 avtSpecies *
@@ -3514,10 +3516,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         ReadBlueprintMatset(domain,
                             matset_name,
                             n_matset);
-
-        Node n_silo_matset;
-        conduit::blueprint::mesh::matset::to_silo(n_matset,
-                                                  n_silo_matset);
 
         Node n_silo_specset;
         conduit::blueprint::mesh::specset::to_silo(n_specset,

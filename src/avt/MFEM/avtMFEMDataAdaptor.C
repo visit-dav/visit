@@ -1602,6 +1602,8 @@ avtMFEMDataAdaptor::CheckBasisStringForQuadratureFunction(const std::string &bas
 //  Creation:   Fri Oct 10 15:09:42 PDT 2025
 //
 //  Modifications:
+//   Cyrus Harrison, Tue Feb 17 09:46:24 PST 2026
+//   Expand the string pattern to support QF_{TYPE}_{ORDER}_{VDIM} style
 //
 // ****************************************************************************
 void
@@ -1610,7 +1612,9 @@ avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(const std::string &basis,
                                                        int &qf_vdim)
 {
     // the pattern used to encode the quad space params is:
-    // QF_{ORDER}_{VDIM}
+    //  QF_{ORDER}_{VDIM}
+    // or
+    //  QF_{TYPE}_{ORDER}_{VDIM}
     //
     // ORDER is the degree of the polynmials for the quad rule
     // VDIM  is the number of components at each quad point (scalar, vector, etc)
@@ -1620,28 +1624,31 @@ avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(const std::string &basis,
     // split to parse
     std::vector<std::string> toks = StringHelpers::split(basis,'_');
 
-    // there should be 3 tokens
-    if(toks.size() != 3)
+    // there should be 3 or 4 tokens
+    if(toks.size() != 3 && toks.size() != 4)
     {
         //bad qf basis string
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "Invalid quadrature function basis string: " << basis  << std::endl
-                            << "Expected: QF_{ORDER}_{VDIM}");
+                            << "Expected: QF_{ORDER}_{VDIM} or QF_{TYPE}_{ORDER}_{VDIM}");
     }
 
+    int order_index = toks.size() - 2;
+    int vdim_index  = toks.size() - 1;
+
     // ORDER
-    if(!StringHelpers::StringToInt(toks[1],qf_order))
+    if(!StringHelpers::StringToInt(toks[order_index],qf_order))
     {
         // error
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "Failed to parse quadrature function order from " << toks[1]);
+                            "Failed to parse quadrature function order from " << toks[order_index]);
     }
     // VDIM
-    if(!StringHelpers::StringToInt(toks[2],qf_vdim))
+    if(!StringHelpers::StringToInt(toks[vdim_index],qf_vdim))
     {
         // error
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "Failed to parse quadrature function vdim from " << toks[1]);
+                            "Failed to parse quadrature function vdim from " << toks[vdim_index]);
     }
 }
 

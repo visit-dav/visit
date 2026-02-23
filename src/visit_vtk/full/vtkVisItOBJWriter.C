@@ -13,7 +13,7 @@
 //   Added ability to write out mtllib with a linked texture.
 // ****************************************************************************
 
-#include "vtkOBJWriter.h"
+#include "vtkVisItOBJWriter.h"
 
 #include <visit-config.h>
 
@@ -24,9 +24,9 @@
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
 
-vtkStandardNewMacro(vtkOBJWriter);
+vtkStandardNewMacro(vtkVisItOBJWriter);
 
-vtkOBJWriter::vtkOBJWriter()
+vtkVisItOBJWriter::vtkVisItOBJWriter()
 {
     this->Label = NULL;
     writeMTL = false;
@@ -34,7 +34,7 @@ vtkOBJWriter::vtkOBJWriter()
     basename = "";
 }
 
-vtkOBJWriter::~vtkOBJWriter()
+vtkVisItOBJWriter::~vtkVisItOBJWriter()
 {
     if (this->Label != NULL)
     {
@@ -42,22 +42,22 @@ vtkOBJWriter::~vtkOBJWriter()
     }
 }
 
-void vtkOBJWriter::SetWriteMTL(bool _writeMTL)
+void vtkVisItOBJWriter::SetWriteMTL(bool _writeMTL)
 {
     writeMTL = _writeMTL;
 }
 
-void vtkOBJWriter::SetMTLHasTexture(bool _hasTex)
+void vtkVisItOBJWriter::SetMTLHasTexture(bool _hasTex)
 {
     hasTex = _hasTex;
 }
 
-void vtkOBJWriter::SetBasename(std::string _basename)
+void vtkVisItOBJWriter::SetBasename(std::string _basename)
 {
     basename = _basename;
 }
 
-void vtkOBJWriter::SetTexFilename(std::string _texFilename)
+void vtkVisItOBJWriter::SetTexFilename(std::string _texFilename)
 {
     texFilename = _texFilename;
 }
@@ -67,7 +67,7 @@ void vtkOBJWriter::SetTexFilename(std::string _texFilename)
 //    Kathleen Biagas, Thu Aug 11, 2022
 //    Support VTK9: use vtkCellArrayIterator.
 //
-void vtkOBJWriter::WriteData()
+void vtkVisItOBJWriter::WriteData()
 {
     double *p;
     vtkIdType npts;

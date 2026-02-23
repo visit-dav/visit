@@ -6,19 +6,20 @@
 
 #include <PoincareAttributes.h>
 
-#include <QTabWidget>
+#include <QButtonGroup>
 #include <QCheckBox>
+#include <QComboBox>
+#include <QFileDialog>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QSpinBox>
-#include <QButtonGroup>
-#include <QComboBox>
-#include <QGroupBox>
-#include <QRadioButton>
-#include <QPushButton>
-#include <QFileDialog>
 #include <QListWidget>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QScrollArea>
+#include <QSpinBox>
+#include <QTabWidget>
 
 
 static void
@@ -46,7 +47,7 @@ QvisPoincareWindow::QvisPoincareWindow(const int type,
                                        const QString &caption,
                                        const QString &shortName,
                                        QvisNotepadArea *notepad)
-    : QvisOperatorWindow(type, subj, caption, shortName, notepad)
+    : QvisOperatorWindow(type, subj, caption, shortName, notepad, false)
 {
     plotType = type;
     atts = subj;
@@ -84,6 +85,10 @@ QvisPoincareWindow::~QvisPoincareWindow()
 // Programmer: xml2window
 // Creation:   omitted
 //
+// Modifications:
+//   Kathleen Biagas, Wed Feb 4, 2026
+//   Add QScrollAreas for easier use on smaller laptop displays.
+//
 // ****************************************************************************
 
 void
@@ -95,9 +100,16 @@ QvisPoincareWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // Integration tab
     // ----------------------------------------------------------------------
-    QWidget *integrationTab = new QWidget(central);
+    QScrollArea *integrationTab = new QScrollArea();
+    integrationTab->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    integrationTab->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    integrationTab->setWidgetResizable(true);
+
+    QWidget *integrationContents = new QWidget();
+    integrationTab->setWidget(integrationContents);
+
     propertyTabs->addTab(integrationTab, tr("Integration"));
-    CreateIntegrationTab(integrationTab);
+    CreateIntegrationTab(integrationContents);
 
     // ----------------------------------------------------------------------
     // Analysis tab
@@ -1018,7 +1030,7 @@ QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForCriticalPoints, 3, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
     warningsGLayout->addWidget(critPointLabel, 3, 1, 1, 2);
-    
+
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
     warningsGLayout->addWidget(criticalPointThresholdLabel, 4, 1);
