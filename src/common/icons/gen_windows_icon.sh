@@ -1,0 +1,1 @@
+magick convert VisIt3.5-square-win-512x512.png  VisIt3.5-square-win-256x256.png  VisIt3.5-square-win-128x128.png  VisIt3.5-square-win-64x64.png  VisIt3.5-square-win-32x32.png  VisIt3.5-square-win-32x32.png VisIt3.5-square-win.ico
