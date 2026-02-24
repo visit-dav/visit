@@ -252,6 +252,11 @@ function(SET_UP_THIRD_PARTY pkg)
                 set(X_VALUE ${X})
             endif()
             if(TARGET X_VALUE)
+                set(is_lib_path 0)
+                list(APPEND "${lib_var}" ${X_VALUE})
+                continue()
+            elseif(TARGET ${X_VALUE})
+                set(is_lib_path 0)
                 list(APPEND "${lib_var}" ${X_VALUE})
                 continue()
             endif()
@@ -261,8 +266,12 @@ function(SET_UP_THIRD_PARTY pkg)
                 set(current_lib_dir ${X_VALUE})
             else(is_lib_path)
                 set(is_lib_path 1)
+                set(_alt_x_value "")
+                if(${X_VALUE} STREQUAL "hdf5-shared")
+                    set(_alt_x_value "hdf5")
+                endif()
                 find_library(full_lib_path
-                             NAMES ${X_VALUE}
+                             NAMES ${X_VALUE} ${_alt_x_value}
                              PATHS ${current_lib_dir}
                              NO_DEFAULT_PATH
                              NO_CMAKE_ENVIRONMENT_PATH
