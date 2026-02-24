@@ -19,7 +19,7 @@
 #include <InstallationFunctions.h>
 #include <ConfigureInfo.h>
 
-#define TIMER_DURATION 2*1000     // 2 seconds
+#define TIMER_DURATION 4*1000     // 4 seconds
 #define NUM_PIX 6
 
 // ****************************************************************************
@@ -278,6 +278,9 @@
 //    Cyrus Harrison, Fri Jan  9 11:26:21 PST 2026
 //    Changed the date on the splash screen to January 2026.
 //
+//    Cyrus Harrison, Thu Feb 19 09:13:09 PST 2026
+//    Update spack screen version logic, change spash screen to Feb
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -327,39 +330,21 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
     if(firstPicture == 5 || cyclePictures)
          pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt6.png").c_str()));
 
-    // If we have more stuff than just a version number in the version
-    // string then draw that information onto the splashscreen.
-    QString ver;
-    bool drawVersion = false;
-    int major = 0, minor = 0, patch = 0;
-    int ret = GetVisItVersionFromString(visitcommon::Version().c_str(), major, minor, patch);
-    if(ret < 0)
-    {
-        ver = QString(visitcommon::Version().c_str());
-        if(ver.right(1) == "b")
-            ver = tr("Beta");
-        drawVersion = true;
-    }
-    else if(patch > 0)
-    {
-        ver = tr("Patch %1").arg(patch);
-        drawVersion = true;
-    }
+    // draw version info on splash screen images
+    QString ver = QString(visitcommon::Version().c_str());
 
-    if(drawVersion)
+    for(size_t i = 0; i < pictures.size(); ++i)
     {
-        for(size_t i = 0; i < pictures.size(); ++i)
-        {
-            QPainter painter(&pictures[i]);
-            double scale = 1.5;
-            painter.scale(scale, scale);
-            QFont font("helvetica", 20, QFont::Bold, true);
-            font.setItalic(false);
-            int x = 290;
-            int y = pictures[i].height() - 10;
-            painter.setPen(QColor(210,37,74));
-            painter.drawText(int(x / scale), int(y / scale), ver);
-        }
+        QPainter painter(&pictures[i]);
+        QFont font("helvetica", 30, QFont::Bold);
+        
+        painter.setFont(font);
+        QFontMetrics fmtx = painter.fontMetrics();
+        painter.setPen(QColor(0,0,0));
+        // right side at 375
+        int x = 375 - fmtx.horizontalAdvance(ver) - 1;
+        int y = 160 + fmtx.height();
+        painter.drawText(x, y, ver);
     }
 
     // Set the picture on the window
@@ -402,7 +387,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 1;
+    int currentMonth = 2;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2026", this));
 

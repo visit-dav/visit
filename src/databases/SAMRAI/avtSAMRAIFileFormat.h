@@ -69,6 +69,14 @@ class avtSpecies;
 //
 //    Mark C. Miller, Mon Dec  4 13:29:42 PST 2017
 //    Add support for databases that specify the mesh name
+//
+//    Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//    Split the reading of the meta data file into two parts. One that reads
+//    smaller items needed by PopulateDatabaseMetaData and one that reads
+//    larger items and is used to read VTK objects. This allows for a
+//    smaller meta data server and also allows freeing large cached data in
+//    FreeUpResources eliminating memory expansion during time step changes.
+//
 // ****************************************************************************
 
 class avtSAMRAIFileFormat : public avtSTMDFileFormat
@@ -158,7 +166,8 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     std::string                   file_name;
     std::string                   dir_name;
     std::string                   mesh_name;
-    bool                          have_read_metadata_file;
+    bool                          have_read_small_metadata;
+    bool                          have_read_large_metadata;
 
     std::string                   grid_type;
 
@@ -301,7 +310,8 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
 
     void            BuildDomainAuxiliaryInfo();
 
-    void            ReadMetaDataFile();
+    void            ReadSmallMetaData();
+    void            ReadLargeMetaData();
 
     int             GetGhostCodeForVar(const char * visit_var_name);
 
