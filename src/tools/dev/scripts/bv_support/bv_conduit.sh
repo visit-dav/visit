@@ -77,11 +77,11 @@ function bv_conduit_host_profile
 
         CONDUIT_HC_LIBDEPS=""
         if [[ "$DO_HDF5" == "yes" ]] ; then
-            CONDUIT_HC_LIBDEPS="HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP}"
+            CONDUIT_HC_LIBDEPS="HDF5_LIB"
         fi
 
         if [[ "$DO_SILO" == "yes" ]] ; then
-            CONDUIT_HC_LIBDEPS="${CONDUIT_HC_LIBDEPS} \${VISIT_SILO_LIBDEP}"
+            CONDUIT_HC_LIBDEPS="${CONDUIT_HC_LIBDEPS} SILO_LIB"
         fi
 
         if [[ "$CONDUIT_HC_LIBDEPS" != "" ]] ; then

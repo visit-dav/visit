@@ -73,9 +73,9 @@ function bv_silo_host_profile
 
         libdep=""
         if [[ "$DO_HDF5" == "yes" ]] ; then
-            libdep="HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP}"
+            libdep="HDF5_LIB"
         fi
-        libdep="$libdep ZLIB_LIBRARY_DIR z"
+        libdep="$libdep ZLIB_LIB"
         if [[ -n "$libdep" ]]; then
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP $libdep TYPE STRING)" \
