@@ -157,6 +157,13 @@ avtSAMRAIFileFormat::FinalizeHDF5(void)
 //    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
 //    Initialized cycle/time info to INVALID values
 //
+//    Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//    Split the reading of the meta data file into two parts. One that reads
+//    smaller items needed by PopulateDatabaseMetaData and one that reads
+//    larger items and is used to read VTK objects. This allows for a
+//    smaller meta data server and also allows freeing large cached data in
+//    FreeUpResources eliminating memory expansion during time step changes.
+//
 // ****************************************************************************
 avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     : avtSTMDFileFormat(&fname, 1)
@@ -228,7 +235,8 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
         h5files[i] = -1;
     }
 
-    have_read_metadata_file = false;
+    have_read_small_metadata = false;
+    have_read_large_metadata = false;
 }
 
 // ****************************************************************************
@@ -236,6 +244,14 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
 //
 //  Programmer:  Mark C. Miller 
 //  Creation:    November 18, 2004 
+//
+//  Modifications:
+//    Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//    Split the reading of the meta data file into two parts. One that reads
+//    smaller items needed by PopulateDatabaseMetaData and one that reads
+//    larger items and is used to read VTK objects. This allows for a
+//    smaller meta data server and also allows freeing large cached data in
+//    FreeUpResources eliminating memory expansion during time step changes.
 //
 // ****************************************************************************
 void
@@ -245,6 +261,47 @@ avtSAMRAIFileFormat::FreeUpResources()
     {
         CloseFile(i);
     }
+
+    SAFE_DELETE(patch_extents);
+    SAFE_DELETE(patch_bdry_type);
+
+    if (var_extents != NULL) {
+        for(int v=0; v<num_vars; v++) {
+            delete[] var_extents[v];
+        }
+        delete[] var_extents;
+    }
+    var_extents = NULL;
+
+    //
+    // cleanup the mesh cache
+    //
+    if (cached_patches != 0)
+    {
+        for (int p=0; p<num_patches; p++)
+        {
+            if (cached_patches[p] != 0)
+            {
+                if (has_ghost)
+                {
+                    for (int g=0; g<MAX_GHOST_CODES; g++) {
+                        if (cached_patches[p][g] != 0)
+                            cached_patches[p][g]->Delete();
+                    }
+                }
+                else
+                {
+                    if (cached_patches[p][0] != 0)
+                        cached_patches[p][0]->Delete();
+                }
+                delete[] cached_patches[p];
+            }
+        }
+        delete[] cached_patches;
+    }
+    cached_patches = 0;
+
+    have_read_large_metadata = false;
 }
 
 // ****************************************************************************
@@ -261,6 +318,13 @@ avtSAMRAIFileFormat::FreeUpResources()
 //    Mark C. Miller, Thu Nov 18 18:04:01 PST 2004
 //    Added call to FreeUpResources
 //
+//    Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//    Split the reading of the meta data file into two parts. One that reads
+//    smaller items needed by PopulateDatabaseMetaData and one that reads
+//    larger items and is used to read VTK objects. This allows for a
+//    smaller meta data server and also allows freeing large cached data in
+//    FreeUpResources eliminating memory expansion during time step changes.
+//
 // ****************************************************************************
 avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
 {
@@ -272,17 +336,7 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     SAFE_DELETE(dx);
     SAFE_DELETE(num_patches_level);
     SAFE_DELETE(ratios_coarser_levels)
-    SAFE_DELETE(patch_extents);
-    SAFE_DELETE(patch_bdry_type);
     
-    if (var_extents != NULL) {
-        for(v=0; v<num_vars; v++) {
-            delete[] var_extents[v];
-        }
-        delete[] var_extents;
-    }
-    var_extents = NULL;
-
     //
     // cleanup variable information
     //
@@ -351,37 +405,6 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     SAFE_DELETE(expr_keys);
     SAFE_DELETE(expr_types);
     SAFE_DELETE(expr_defns);
-
-    //
-    // cleanup the mesh cache
-    //
-    if (cached_patches != 0)
-    {
-        int p;
-        for (p=0; p<num_patches; p++)
-        {
-            if (cached_patches[p] != 0)
-            {
-                if (has_ghost)
-                {
-                    int g;
-                    for (g=0; g<MAX_GHOST_CODES; g++) {
-                        // XXX is it necessary??
-                        if (cached_patches[p][g] != 0)
-                            cached_patches[p][g]->Delete();
-                    }
-                }
-                else
-                {
-                    if (cached_patches[p][0] != 0)
-                        cached_patches[p][0]->Delete();
-                }
-                delete[] cached_patches[p];
-            }
-        }
-        delete[] cached_patches;
-    }
-    cached_patches = 0;
 
     SAFE_DELETE(h5files);
 
@@ -530,13 +553,24 @@ avtSAMRAIFileFormat::CloseFile(int f)
 //  Programmer: Hank Childs
 //  Creation:   March 5, 2005
 //
+//  Modifications:
+//    Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//    Split the reading of the meta data file into two parts. One that reads
+//    smaller items needed by PopulateDatabaseMetaData and one that reads
+//    larger items and is used to read VTK objects. This allows for a
+//    smaller meta data server and also allows freeing large cached data in
+//    FreeUpResources eliminating memory expansion during time step changes.
+//
 // ****************************************************************************
 
 void
 avtSAMRAIFileFormat::ActivateTimestep(void)
 {
     // Make sure the domain nest info object exists
-    ReadMetaDataFile();
+    ReadSmallMetaData();
+
+    ReadLargeMetaData();
+
     BuildDomainAuxiliaryInfo();
 }
 
@@ -2415,6 +2449,13 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
 //    Brad Whitlock, Thu Jun 19 11:46:01 PDT 2014
 //    Pass mesh name.
 //
+//    Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//    Split the reading of the meta data file into two parts. One that reads
+//    smaller items needed by PopulateDatabaseMetaData and one that reads
+//    larger items and is used to read VTK objects. This allows for a
+//    smaller meta data server and also allows freeing large cached data in
+//    FreeUpResources eliminating memory expansion during time step changes.
+//
 // ****************************************************************************
 
 bool
@@ -2560,7 +2601,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     debug5 << "avtSAMRAIFileFormat::PopulateDatabaseMetaData getting data" << endl;
 
     {
-        ReadMetaDataFile();
+        ReadSmallMetaData();
 
         //
         // Set cycle/time info
@@ -2781,11 +2822,16 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 }
 
+
 // ****************************************************************************
-//  Method:  avtSAMRAIFileFormat::ReadMetaDataFile
+//  Method:  avtSAMRAIFileFormat::ReadSmallMetaData
 //
 //  Purpose:
-//    Read the database meta-data (root) file
+//    Read the small meta data from the database meta-data (root) file.
+//    The variables read here are used by PopulateDatabaseMetaData. Any
+//    variable not used by PopulateDatabaseMetaData could be moved to
+//    ReadLargeMetaData. Most of the large variables have been moved, so
+//    doing more would lead to diminishing returns.
 //
 //  Arguments:
 //    in         the open ifstream to read from
@@ -2796,7 +2842,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Modifications:
 //
 //    Mark C. Miller, Mon Dec  8 12:03:06 PST 2003
-//    Added call to ReadAndCheckVDRVersions(); 
+//    Added call to ReadAndCheckVDRVersions();
 //    Added call to ReadVarNumGhosts();
 //
 //    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
@@ -2810,14 +2856,22 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Mon Dec  4 13:30:13 PST 2017
 //    Add support for databases that specify the mesh name
+//
+//    Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//    Split the reading of the meta data file into two parts. One that reads
+//    smaller items needed by PopulateDatabaseMetaData and one that reads
+//    larger items and is used to read VTK objects. This allows for a
+//    smaller meta data server and also allows freeing large cached data in
+//    FreeUpResources eliminating memory expansion during time step changes.
+//
 // ****************************************************************************
 void
-avtSAMRAIFileFormat::ReadMetaDataFile()
+avtSAMRAIFileFormat::ReadSmallMetaData()
 {
-    if (have_read_metadata_file)
+    if (have_read_small_metadata)
         return;
 
-    debug5 << "avtSAMRAIFileFormat::ReadMetaDataFile reading SAMRAI summary "
+    debug5 << "avtSAMRAIFileFormat::ReadSmallMetaData reading SAMRAI summary "
         "file, \"" << file_name.c_str() << "\"" << endl;
 
     hid_t h5_file = OpenFile(file_name.c_str());
@@ -2828,7 +2882,6 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
     }
     else
     {
-
         ReadAndCheckVDRVersion(h5_file);
 
         ReadMeshName(h5_file);
@@ -2858,9 +2911,6 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
         ReadVarNumGhosts(h5_file);
         ReadVarNumComponents(h5_file);
 
-        ReadVarExtents(h5_file);
-        ReadPatchExtents(h5_file);
-        ReadPatchBoundaryType(h5_file);
         ReadPatchMap(h5_file);
 
         ReadChildArrayLength(h5_file);
@@ -2875,6 +2925,70 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
         ReadSpeciesInfo(h5_file);
 
         ReadExpressions(h5_file);
+    }
+
+    have_read_small_metadata = true;
+}
+
+
+// ****************************************************************************
+//  Method:  avtSAMRAIFileFormat::ReadLargeMetaData
+//
+//  Purpose:
+//    Read the large meta data from the database meta-data (root) file
+//
+//  Arguments:
+//    in         the open ifstream to read from
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    July 07, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Dec  8 12:03:06 PST 2003
+//    Added call to ReadAndCheckVDRVersions();
+//    Added call to ReadVarNumGhosts();
+//
+//    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
+//    Changed for Windows compiler.
+//
+//    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
+//    Made it use OpenFile instead of H5Fopen & removed call to H5Fclose
+//
+//    Hank Childs, Sat Mar  5 11:47:52 PST 2005
+//    Make sure we don't read the information twice.
+//
+//    Mark C. Miller, Mon Dec  4 13:30:13 PST 2017
+//    Add support for databases that specify the mesh name
+//
+//    Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//    Split the reading of the meta data file into two parts. One that reads
+//    smaller items needed by PopulateDatabaseMetaData and one that reads
+//    larger items and is used to read VTK objects. This allows for a
+//    smaller meta data server and also allows freeing large cached data in
+//    FreeUpResources eliminating memory expansion during time step changes.
+//
+// ****************************************************************************
+void
+avtSAMRAIFileFormat::ReadLargeMetaData()
+{
+    if (have_read_large_metadata)
+        return;
+
+    debug5 << "avtSAMRAIFileFormat::ReadLargeMetaData reading SAMRAI summary "
+        "file, \"" << file_name.c_str() << "\"" << endl;
+
+    hid_t h5_file = OpenFile(file_name.c_str());
+
+    if (h5_file < 0)
+    {
+        debug1 << "Unable to open metadata file " << file_name.c_str() << endl;
+    }
+    else
+    {
+        ReadVarExtents(h5_file);
+        ReadPatchExtents(h5_file);
+        ReadPatchBoundaryType(h5_file);
 
         cached_patches = new vtkDataSet**[num_patches];
         for (int p=0; p<num_patches; p++)
@@ -2893,9 +3007,8 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
         }
     }
 
-    have_read_metadata_file = true;
+    have_read_large_metadata = true;
 }
-
 
 
 // ****************************************************************************
@@ -3701,7 +3814,7 @@ avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
 }
 
 // ****************************************************************************
-//  Method:  ReadPatchMap
+//  Method:  ReadPatchBoundaryType
 //
 //  Purpose: Read information needed to handle boundary ghost vs internal
 //  dup ghost. Each patch has 6 ints for the kind of ghost along the patch's
