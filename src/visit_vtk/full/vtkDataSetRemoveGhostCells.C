@@ -215,6 +215,11 @@ vtkDataSetRemoveGhostCells::GenericExecute()
 //    Eric Brugger, Wed Jan  9 14:56:57 PST 2013
 //    Modified to inherit from vtkDataSetAlgorithm.
 //
+//    Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//    Added code to set the size of the cell types in the output to the
+//    correct size to eliminate uninitialized memory references. Eliminated
+//    the creation of the cell locations array since it is no longer used.
+//
 // ****************************************************************************
 
 void
@@ -258,10 +263,6 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
   cellTypes->SetNumberOfValues(ncells);
   unsigned char *ct = cellTypes->GetPointer(0);
 
-  vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
-  cellLocations->SetNumberOfValues(ncells);
-  vtkIdType *cl = cellLocations->GetPointer(0);
-
   vtkCellData *inCD = inGrid->GetCellData();
   vtkCellData *outCD = outGrid->GetCellData();
   outCD->CopyAllocate(inCD, ncells);
@@ -277,7 +278,6 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
       const vtkIdType *pts;
       inGrid->GetCellPoints(i, npts, pts);
       *ct++ = inGrid->GetCellType(i);
-      *cl++ = currentIndex;
       *b++ = npts;
       currentIndex += npts+1;
       for (vtkIdType j = 0 ; j < npts ; j++)
@@ -294,13 +294,17 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
       nl[i] = buff[i];
   delete [] buff;
 
+  // We overallocated cellTypes earlier. Now that we know the correct size,
+  // set it. According to the vtkAbstractArray documentation, calling
+  // SetNumberOfValues should preserve existing values.
+  cellTypes->SetNumberOfValues(cellId);
+
   vtkCellArray *cells = vtkCellArray::New();
   cells->SetCells(cellId, nlist);
   nlist->Delete();
 
-  outGrid->SetCells(cellTypes, cellLocations, cells);
+  outGrid->SetCells(cellTypes, cells);
   cellTypes->Delete();
-  cellLocations->Delete();
   cells->Delete();
 
   outGrid->Squeeze();

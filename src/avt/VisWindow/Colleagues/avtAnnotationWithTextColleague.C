@@ -413,6 +413,11 @@ avtDataAttributes const *cda, annotdata_t const *ad)
 //   Added logic to capture timeScale,timeOffset and pass into key string
 //   processing methods.
 //
+//   Eric Brugger, Fri Feb 13 14:30:08 PST 2026
+//   Return the result in an array allocated by new so that it is properly
+//   released with delete, rather than one allocated by strdup, which
+//   requires its memory to be released with free.
+//
 // ****************************************************************************
 
 char *
@@ -457,5 +462,11 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
         }
     } 
 
-    return ::strdup(rv.c_str()); // caller must free, std:: doesn't have strdup
+    //
+    // Copy the string into a C++ allocated char array to return to
+    // the caller.
+    //
+    char *rv_cstr = new char[rv.length()+1];
+    strncpy(rv_cstr, rv.c_str(), rv.length()+1);
+    return rv_cstr;
 }
