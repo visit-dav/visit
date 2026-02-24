@@ -306,6 +306,26 @@ EOF
         return 1
     fi
 
+    info "Patching Xdmf 2.1.1 for HDF5-2.0 mpi fapl issue"
+    patch -p0 << \EOF
+diff -u Xdmf/libsrc/XdmfHDF.cxx Xdmf.new/libsrc/XdmfHDF.cxx
+--- Xdmf/libsrc/XdmfHDF.cxx	2011-03-10 17:45:29.000000000 -0800
++++ Xdmf.new/libsrc/XdmfHDF.cxx	2026-02-24 15:17:49.230873000 -0800
+@@ -48,7 +48,7 @@
+   // Defaults
+   this->NumberOfChildren = 0;
+   this->Compression = 0;
+-  this->UseSerialFile = 0;
++  this->UseSerialFile = 1;
+   // We may have been compiled with Parallel IO support, but be run only on a single
+   // machine without mpiexec. Disable parallel if just one process.
+ #if H5_HAVE_PARALLEL && ((H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=6)))
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Xdmf 2.1.1 for HDF5-2.0 patch #2 for mpi fapl issue failed."
+        return 1
+    fi
+
     return 0;
 }
 
@@ -388,6 +408,14 @@ function build_xdmf
     fi
     xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK_SHORT_VERSION}.${SO_EXT}
 
+    # If we're parallel, HDF5 has a dependence on mpi we need to handle here
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        CXX_HDF5_FLAGS="-I${PAR_HOME}/include"
+        C_HDF5_FLAGS="-I${PAR_HOME}/include"
+#        LDFLAGS_ENV="$LDFLAGS_ENV -L${PAR_HOME}/lib -L${PAR_HOME}/lib64"
+#        LIBS_ENV="$LIBS_ENV -lmpi"
+    fi
+
     # The -Wno-dev arg to CMake here makes pawing through any
     # failed output a lot easier.
     set -x
@@ -395,9 +423,9 @@ function build_xdmf
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
                  -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
-                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
+                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_HDF5_FLAGS}" \
                  -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
+                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_HDF5_FLAGS}" \
                  -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
                  -DBUILD_TESTING:BOOL=OFF \
                  -DXDMF_BUILD_MPI:BOOL=OFF \
