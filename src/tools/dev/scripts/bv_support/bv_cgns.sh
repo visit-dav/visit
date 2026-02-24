@@ -57,7 +57,7 @@ function bv_cgns_host_profile
             >> $HOSTCONF
         if [[ "$DO_HDF5" == "yes" ]] ; then
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+                "VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIB TYPE STRING)" \
                 >> $HOSTCONF
         fi
     fi

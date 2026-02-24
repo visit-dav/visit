@@ -51,16 +51,8 @@ function bv_moab_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_MOAB_DIR \${VISITHOME}/moab/$MOAB_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_MOAB_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_MOAB_LIBDEP HDF5_LIB TYPE STRING)" \
             >> $HOSTCONF
-        if [[ -n "$PAR_COMPILER" ]]; then
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_DIR \${VISITHOME}/moab_mpi/$MOAB_VERSION/\${VISITARCH})" \
-                >> $HOSTCONF
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_LIBDEP HDF5_MPI_LIBRARY_DIR hdf5_mpi \${VISIT_HDF5_MPI_LIBDEP} TYPE STRING)" \
-                >> $HOSTCONF
-        fi
     fi
 }
 

@@ -87,15 +87,6 @@ function bv_hdf5_host_profile
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
                 >> $HOSTCONF 
-
-            ZLIB_LIBDEP=""
-            if [[ "$DO_ZLIB" == "yes" ]] ; then
-                ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
-            fi
-            
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
-                    >> $HOSTCONF
         fi
     fi
 }
