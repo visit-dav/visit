@@ -20,34 +20,30 @@
 
 # Use the HDF5_DIR hint from the config-site .cmake file
 
-
 if(EXISTS ${VISIT_HDF5_DIR}/cmake)
   set(HDF5_DIR ${VISIT_HDF5_DIR}/cmake)
 endif()
 
 find_package(HDF5 CONFIG PATHS ${HDF5_DIR} NO_DEFAULT_PATH)
 
-get_cmake_property(_vars VARIABLES)
-list(SORT _vars)
-foreach(v IN LISTS _vars)
-  if(v MATCHES "^(HDF5|hdf5)_")
-    # Avoid noisy internal variables unless you want them
-    message(STATUS "${v}='${${v}}'")
-  endif()
-endforeach()
-
 if(TARGET hdf5-shared)
    set(HDF5_LIB hdf5-shared)
    set(HAVE_LIBHDF5 TRUE CACHE BOOL "Have HDF5 libraries")
    get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
-   cmake_path(GET hdf5_locr PARENT_PATH hdf5_dir)
-   THIRD_PARTY_INSTALL_LIBRARY(${hdf5_dir})
    THIRD_PARTY_INSTALL_INCLUDE(hdf5 ${HDF5_INCLUDE_DIR})
-   set(HDF5_LIBRARY_DIR ${hdf5_dir})
+   THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
+
+   if(TARGET hdf5_hl-shared)
+       set(HDF5_HL_LIB hdf5_hl-shared)
+       set(HAVE_LIBHDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
+       get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_LOCATION_RELEASE)
+       THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
+   endif()
 
    if(HDF5_PROVIDES_ZLIB_SUPPORT)
       # hdf5 targets don't have 'zlib' listed as an interface-link-library
       # but it should be.
-      target_link_libraries(${HDF5_LIB} INTERFACE ${ZLIB_LIBRARY})
+      set_property(TARGET hdf5-shared APPEND PROPERTY LINK_LIBRARIES "${ZLIB_LIBRARY}")
    endif()
+
 endif()
