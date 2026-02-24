@@ -55,9 +55,9 @@ public:
     // General
     void UpdateAnariAttributes(const AnariAttributes &);
     void SetChecked(const bool);
-    void UpdateLibraryName(const std::string);
-    void UpdateLibrarySubtypes(const std::string);
-    void UpdateRendererSubtypes(const std::string);
+    void UpdateLibraryName(const std::string &);
+    void UpdateLibrarySubtypes(const std::string &);
+    void UpdateRendererSubtypes(const std::string &);
 
     // Dynamic
     void UpdateRendererParameters(const stringVector &);
