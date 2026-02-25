@@ -97,7 +97,9 @@ protected:
 
 private:
 #ifdef HAVE_ANARI
-    bool m_anariEnabled{false};
+    std::string m_anariLibrary{""};
+    std::string m_anariLibrarySubtype{""};
+    std::string m_anariRendererSubtype{""};
 
     bool SetAnariLibrary(vtkAnariPass * const);
     void SetAnariRendererSubtype(vtkAnariPass * const);
