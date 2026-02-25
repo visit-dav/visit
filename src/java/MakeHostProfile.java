@@ -31,6 +31,9 @@ import java.util.Vector;
 //   Kathleen Biagas, Tuesday Oct 22, 2024
 //   Replace pascal with poodle.
 //
+//   Cyrus Harrison, Mon Dec  1 14:40:14 PST 2025
+//   Replace poodle with dane.
+//
 // ****************************************************************************
 
 public class MakeHostProfile extends RunViewer
@@ -43,7 +46,7 @@ public class MakeHostProfile extends RunViewer
     protected void work(String[] args)
     {
         // Change these for your remote system.
-        String host = new String("poodle.llnl.gov");
+        String host = new String("dane.llnl.gov");
         String user = new String("kbonnell");
         String remotevisitPath = new String("/usr/gapps/visit");
 

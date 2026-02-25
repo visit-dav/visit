@@ -1,0 +1,703 @@
+#!/bin/sh -x
+#
+# Modifications:
+#   Mark C. Miller, Thu Jul 29 23:35:19 PDT 2010
+#   Added option to ignore third party lib problems to cmake invokation.
+#
+#   Eric Brugger, Thu Mar 31 09:38:38 PDT 2011
+#   Modified the script to work with the 2.2RC instead of the 2.0RC.
+#
+#   Eric Brugger, Tue Apr 12 10:53:02 PDT 2011
+#   Removed the specular lighting tests from the skip list.
+#
+#   Jeremy Meredith, Tue Aug  9 17:19:55 EDT 2011
+#   Updated the subversion host/path.
+#
+#   Eric Brugger, Thu Aug 25 11:22:39 PDT 2011
+#   Modified the script to work on edge.
+#
+#   Eric Brugger, Thu Aug 25 14:11:16 PDT 2011
+#   Modified the script to send out the e-mail only after the results
+#   were posted.
+#
+#   Eric Brugger, Wed Jan 25 13:26:36 PST 2012
+#   Modified the command that submits the batch job to run the test suite
+#   to specify that it isn't using any of the Lustre file systems so that
+#   the job will run even if one of the Lustre file systems is down.
+#
+#   Eric Brugger, Fri Jun 22 07:54:19 PDT 2012
+#   I modified the script to use cmake 2.8.8. I also added several failing
+#   tests to the skip list.
+#
+#   Mark C. Miller, Wed Jun 27 12:30:13 PDT 2012
+#   Removed zipwrapper tests from skip list because the tests were updated
+#   to use STL in place of VTK.
+#
+#   Cyrus Harrison, Wed Aug 15 12:31:00 PDT 2012
+#   Update to use python test suite
+#
+#   Eric Brugger, Fri Oct 11 14:10:51 PDT 2013
+#   Change the path to the cmake used to build visit to the latest 2.8.10.2
+#   version.
+#
+#   Eric Brugger, Fri Oct 18 15:01:56 PDT 2013
+#   I changed "make test" to "make testdata" in the data directory since the
+#   name of the target changed.
+#
+#   Eric Brugger, Fri Aug 15 11:02:18 PDT 2014
+#   I added "--parallel-launch srun" to the runtest command to specify srun
+#   as the parallel launch method.
+#
+#   Eric Brugger, Fri Aug 15 12:54:39 PDT 2014
+#   I modified the script to use cmake 2.8.12.2 to configure visit.
+#
+#   Eric Brugger, Wed Oct 29 08:04:01 PDT 2014
+#   I modified the script to use surface.
+#
+#   Eric Brugger, Tue Jan 13 14:09:04 PST 2015
+#   I modified the script to use the account views for submitting the batch
+#   job.
+#
+#   Eric Brugger, Thu Feb 12 08:17:18 PST 2015
+#   I modified the script to use cmake 3.0.2 to configure visit.
+#
+#   Eric Brugger, Fri Sep 11 14:05:18 PDT 2015
+#   I added the command line option "-branch", which takes a branch name.
+#   While I was at it I also modified the script to use 16 cores instead of
+#   12 since it is grabbing an entire node of surface, which has 16 cores.
+#
+#   Eric Brugger, Wed Sep  7 09:17:29 PDT 2016
+#   I updated the script to build using the newly built 2.12 libraries.
+#
+#   Eric Brugger, Mon Jun 25 14:35:01 PDT 2018
+#   I modified the script to run on pascal.
+#
+#   Kathleen Biagas, Thu Nov  8 10:14:27 PST 2018
+#   Added creation and installation of package to the build.
+#   Added cmakeCmd, pass it to test suite.
+#
+#   Eric Brugger, Wed Dec  5 13:06:31 PST 2018
+#   I modified the script to handle the new structure of the src, data and
+#   test directories.
+#
+#   Eric Brugger, Fri Jan  4 09:34:59 PST 2019
+#   I modified the script to work with the GitHub repository.
+#
+#   Eric Brugger, Fri Oct  4 09:12:49 PDT 2019
+#   I modified the installation of visit to no longer add toss3 to the
+#   installation path.
+#
+#   Cyrus Harrison, Tue Nov 26 16:50:14 PST 2019
+#   Directly call visit_test_suite.py instead of old runtest wrapper
+#
+#   Kathleen Biagas, Mon Feb 24 2020
+#   VISIT_BUILD_AVTEXAMPLES renamed to VISIT_ENABLE_AVTEXAMPLES
+#
+#   Eric Brugger, Mon Dec 21 09:11:31 PST 2020
+#   Update cmakeCmd to use CMake 3.14.7, required by new VTKm.
+#
+#   Eric Brugger, Fri Jan  8 11:12:04 PST 2021
+#   I modified the script to also make the manuals before making the package
+#   since the manuals are now required to make the package.
+#
+#   Kathleen Biagas, Thu June 16, 2022
+#   Modified cmakeCmd to use 3.3's 3.18.2 version and to use gcc-7.3
+#   for test_trunk. Modified the test_branch to build 3.2.
+#
+#   Cyrus Harrison, Thu Sep  8 12:42:42 PDT 2022
+#   Use new entry point for visit testing module.
+#
+#   Eric Brugger, Wed Sep 28 10:11:32 PDT 2022
+#   Changed all paths using /usr/workspace/wsa to /usr/WS1 so that the
+#   launcher test would pass. They are both the same directory, but the
+#   current directory when running the tests needs to start with /usr/WS1
+#   for the launcher test to work properly.
+#
+#   Eric Brugger, Wed Feb 15 16:29:23 PST 2023
+#   I corrected the path to the pascal config site file to take into account
+#   that we were now doing out of source builds.
+#
+#   Eric Brugger, Thu Mar  9 13:10:16 PST 2023
+#   I changed the script to run the test scripts directly in the current
+#   directory without scp'ing the scripts to the test machine and running
+#   the scripts on the test machine through ssh. This looses some generality
+#   in that the tests need to be run on the same machine as the script
+#   but avoids some potential authentication issues with scp and ssh. We
+#   currently run the script and the tests on the same machine so this
+#   isn't an issue.
+#
+#   I removed references to nersc, since we no longer involve any nersc
+#   systems in our testing. 
+#
+#   I updated the script to take into account that pascal is now toss4
+#   instead of toss3. This included switching from msub to sbatch, using
+#   a toss4 config site file, and using a toss4 cmake.
+#
+#   Eric Brugger, Fri Mar 10 07:09:59 PST 2023
+#   I reduced the alloted time for the test suite to run from 10 hours to
+#   8 hours. Running the tests with 2 processors reduced the typical time
+#   to complete the tests to 5 1/2 hours, so 8 hours should be plenty. I
+#   also changed the directory to copy the results to the "old_results"
+#   directory outside the repo, which should speed up git operations. I
+#   changed a python reference to python3.
+#
+#   Eric Brugger, Fri Mar 10 14:32:00 PST 2023
+#   I renamed the "linux-x86_64" directory in the visit install to
+#   "linux-x86_64-toss4" so that the launcher script would find the
+#   installation on toss4.
+#
+#   Eric Brugger, Sun Mar 12 16:40:54 PDT 2023
+#   Install git lfs before updating the repository. Added more logging
+#   to the git repository update.
+#
+#   Eric Brugger, Wed Mar 15 13:41:38 PDT 2023
+#   Update the location of where libstripack is copied from.
+#
+#   Eric Brugger, Tue Jun  4 10:30:31 PDT 2024
+#   I moved the setting of the permissions so that others may access the
+#   test directory to another script.
+#
+#   Kathleen Biagas, Tue July 16, 2024 
+#   Added repoDir and buildDir vars to aid in changing directories between
+#   them.  Call `git submodule init` when cloning, and 'git submodule update`
+#   when updating. Don't 'lfs pull' in test and data dir, since it is already
+#   performed at the repo root. Perform the build completely outside the repo
+#   dir. Have make.out, make.err and installlog be local to the build dir.
+#
+#   Justin Privitera, Mon Sep 23 10:18:29 PDT 2024
+#   Update visit-install location.
+#
+#   Eric Brugger, Mon Oct  7 11:15:18 PDT 2024
+#   Updated to run the test suite on poodle instead of pascal. Made
+#   the logic that detects new test results more general.
+#
+#   Eric Brugger, Thu Nov 21 12:15:11 PST 2024
+#   Reorder some git operations when committing changes to GitHub to
+#   avoid unnecessary merges.
+#
+#   Eric Brugger, Mon Mar  3 09:11:37 PST 2025
+#   Include the actual hostname in the name of the sbatch output filename.
+# 
+#   Cyrus Harrison, 
+#   Removed cuda LD_LIBRARY_PATH Wed Sep 10 11:57:45 PDT 2025
+#
+#   Eric Brugger, Fri Oct 31 13:53:46 PDT 2025
+#   I changed some output to go to the buildlog instead of standard out.
+#
+#   Eric Brugger, Fri Nov  7 10:32:18 PST 2025
+#   I changed the time limit on the batch job from 8 to 10 hours. I
+#   increased the number of cores used to build visit from 36 to 56.
+# 
+#   Cyrus Harrison, Mon Dec  1 14:34:33 PST 2025
+#   Changed to run on dane (instead of poodle)
+#
+#   Eric Brugger, Fri Dec 12 14:57:38 PST 2025
+#   Updated the logging so that the checkout, run and post scripts each
+#   create their own log file. The post script now runs after a file
+#   indicating the test run finished appears rather than a fixed amount
+#   of time. Removed the debug option.
+#
+#   Eric Brugger, Tue Dec 30 09:36:22 PST 2025
+#   Add code to allow group read/write access to the dashboard repository
+#   after updating it.
+#
+
+
+# Determine the users name and e-mail address.
+#
+user=`whoami`
+
+#
+# Set the user e-mail address.
+#
+userEmail=unknown
+case $user in
+    bonnell)
+        userEmail=biagas2@llnl.gov
+        ;;
+    kbonnell)
+        userEmail=biagas2@llnl.gov
+        ;;
+    brugger)
+        userEmail=brugger1@llnl.gov
+        ;;
+    cyrush)
+        userEmail=cyrush@llnl.gov
+        ;;
+    hrchilds)
+        userEmail=hank@uoregon.edu
+        ;;
+    mcmiller)
+        userEmail=miller86@llnl.gov
+        ;;
+    miller)
+        userEmail=miller86@llnl.gov
+        ;;
+    miller86)
+        userEmail=miller86@llnl.gov
+        ;;
+    harrison37)
+        userEmail=cyrush@llnl.gov
+        ;;
+    cyrush)
+        userEmail=cyrush@llnl.gov
+        ;;
+    justin)
+        userEmail=privitera1@llnl.gov
+        ;;
+esac
+
+if test "$userEmail" = "unknown" ; then
+    echo "Unknown user name. Exiting."
+    exit 1
+fi
+
+#
+# Parse the command line to determine if we should run the test suite
+# on the trunk or RC.
+#
+branch="trunk"
+revision="latest"
+serial="false"
+testHost="dane"
+testDir="/usr/WS1/visit"
+post="true"
+
+for abc
+do
+    case $1 in
+        -trunk)
+            branch="trunk"
+            shift
+            ;;
+        -branch)
+            branch=$2
+            shift 2
+            ;;
+        -serial)
+            serial="true"
+            shift
+            ;;
+        -parallel)
+            serial="false"
+            shift
+            ;;
+        -r)
+            revision=$2
+            shift 2
+            ;;
+        -host)
+            testHost=$2
+            shift 2
+            ;;
+        -no-post)
+            post="false"
+            shift
+            ;;
+    esac
+done
+
+cmakeCmd="/usr/workspace/visit/visit/thirdparty_shared/3.5.0-python3.13/toss4/cmake/3.31.8/linux-x86_64_gcc-10.3/bin/cmake"
+
+if test "$branch" = "trunk" ; then
+    workingDir="test_trunk"
+else
+    workingDir="test_branch"
+fi
+
+subTag=`date +%Y-%m-%d-%H:%M`
+
+repoDir=$testDir/$workingDir/visit
+buildDir=$testDir/$workingDir/build
+logDir=$testDir/$workingDir/nightly_logs
+checkoutLogFile=$logDir/$subTag/checkout_${testHost}_log
+runLogFile=$logDir/$subTag/run_${testHost}_log
+postLogFile=$logDir/$subTag/post_${testHost}_log
+runFinishedFile=$testDir/$workingDir/nightly_cron/run_finished
+
+# Create the working directory if necessary.
+if test ! -e $testDir/$workingDir; then
+    mkdir $testDir/$workingDir
+fi
+
+# Create the nightly_logs directory if necessary.
+if test ! -e $logDir; then
+    mkdir $logDir
+fi
+
+# Create the log directory for this run.
+mkdir $logDir/$subTag
+
+#
+# Create the script to checkout the source code.
+#
+rm -f checkout_${testHost}
+cat <<EOF > checkout_${testHost}
+#!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
+
+dateTag=\$1
+
+cd $testDir/$workingDir
+
+# clean up from previous runs
+rm -rf build
+
+echo "Checkout of $branch started at \`date\`"
+
+# Clone the repository if necessary.
+if test ! -e $repoDir; then
+    echo "git clone started at \`date\`"
+    git clone  --recursive ssh://git@github.com/visit-dav/visit.git
+
+    # Enter the repo and perform commands only needed on a fresh clone
+    cd visit
+    git submodule init
+fi
+
+# Enter the repository.
+cd $repoDir
+
+# Update the repository.
+hostname
+git --version
+echo "rm -f .git/index.lock"
+rm -f .git/index.lock
+git checkout develop
+
+# ensure submodule is up to date
+echo "git submodule update"
+git submodule update
+
+echo "git pull"
+git pull
+
+echo "git lfs pull"
+git lfs pull
+
+echo "Repository updated at \`date\`"
+
+cd $testDir/$workingDir
+
+if test "$branch" = "trunk" ; then
+    if test "$revision" = "latest" ; then
+        echo "Using the trunk"
+        # Do nothing.
+    else
+        echo "Using a version on the trunk"
+        # Set to a specific revision
+    fi
+else
+    if test "$revision" = "latest" ; then
+        echo "Using a branch"
+        # Set to a specific branch.
+    else
+        echo "Using a specific version on a branch"
+        # Set to a specific revision on a specific branch.
+    fi
+fi
+
+echo "Checkout of $branch completed at \`date\`"
+
+EOF
+
+chmod 750 checkout_${testHost}
+
+#
+# Create the script to build and run the test suite on $testHost.
+#
+rm -f runit_${testHost}
+cat <<EOF > runit_${testHost}
+#!/bin/sh
+
+# avoid default texlive in PATH
+ml unload texlive
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
+
+dateTag=\$1
+
+echo "Test run started at \`date\`"
+
+if test "$serial" = "true" ; then
+    modes="$testHost,$branch,serial"
+else
+    modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
+fi
+
+cd $testDir/$workingDir
+
+# Build the code
+mkdir build
+cd build
+export PATH=\$PATH:/usr/bin/X11
+
+# since gcc-7 or 6 isn't the default, make sure to set CC and CXX, otherwise
+# pluginVsInstall tests won't use the right compiler
+
+if test "$branch" = "trunk" ; then
+  export CC=/usr/tce/packages/gcc/gcc-10.3.1/bin/gcc
+  export CXX=/usr/tce/packages/gcc/gcc-10.3.1/bin/g++
+else
+  export CC=/usr/tce/packages/gcc/gcc-10.3.1/bin/gcc
+  export CXX=/usr/tce/packages/gcc/gcc-10.3.1/bin/g++
+fi
+
+if test "$serial" = "true" ; then
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" $repoDir/src/config-site/dane1.cmake
+fi
+if test "$branch" = "trunk" ; then
+    $cmakeCmd \
+        -DVISIT_CONFIG_SITE=$repoDir/src/config-site/dane1.cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DVISIT_BUILD_ALL_PLUGINS=1 \
+        -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
+        -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON \
+        -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
+        -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+        -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+        $repoDir/src
+else
+    $cmakeCmd \
+        -DVISIT_CONFIG_SITE=$repoDir/src/config-site/dane1.cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DVISIT_BUILD_ALL_PLUGINS=1 \
+        -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
+        -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
+        -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+        -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+        $repoDir/src
+fi
+
+make -k -j 56 1>./make.out 2>./make.err
+make -k manuals 1>./make.out 2>./make.err
+make -k -j 56 package 1>./make.out 2>./make.err
+if test $? -ne 0; then
+    echo "Source build FAILED at \`date\`"
+    exit 1
+fi
+cat ./make.out
+cat ./make.err
+
+echo "Source build completed at \`date\`"
+
+# Copy stripack lib for ffp plugin tests
+cp /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss4/stripack/libstripack.so ./lib/.
+
+# Build the test data
+cd testdata
+make -j 8 data
+cd ../
+
+echo "Data build completed at \`date\`"
+
+echo "Starting install at \`date\`"
+
+# Install the package
+version=\`cat $repoDir/src/VERSION\`
+
+$repoDir/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ./install_log 2>&1
+
+cat ./install_log
+
+echo "Install completed at \`date\`"
+
+echo "Starting tests at \`date\`"
+
+# Run the tests, consolidating the results in one directory
+cd $testDir/$workingDir/build/test
+mkdir \$dateTag output
+for m in \$modes; do
+    theMode=\`echo \$m | tr ',' '_'\`
+    resDir=output/\$theMode
+
+    echo "runtest with mode = \$m at \`date\`"
+
+
+    # Run the test
+    ./run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd
+
+    # Move the results to the consolidation directory
+    mv \$resDir/html \$dateTag/\$theMode
+    echo "Test \$m completed at \`date\`"
+done
+
+touch $runFinishedFile
+
+EOF
+
+chmod 750 runit_${testHost}
+
+#
+# Create the script to post the test results from the test suite run
+# on $testHost.
+#
+rm -f postit_${testHost}
+cat <<EOF > postit_${testHost}
+#!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
+
+if test "\$#" -ne 1; then
+    echo "Usage: \$0 date_tag"
+    exit 1
+fi
+
+dateTag=\$1
+
+#
+# Check if the test suite completed every "retry_delay" seconds, for a
+# maximum of "retry_count" times.
+#
+finished_file="$runFinishedFile"
+retry_count=120
+retry_delay=600
+while [ ! -f "\$finished_file" ] && [ \$retry_count -gt 0 ]
+do
+    sleep \$retry_delay
+    echo "Checking if test suite completed at \`date\`, retry_count=\$retry_count."
+    ((retry_count--))
+done
+
+if [ ! -f "\$finished_file" ]; then
+    echo "Test suite never finished, aborting posting of results at \`date\`."
+    exit 1
+fi
+
+#
+# The test suite completed, let's post the results.
+#
+echo "Posting results at \`date\`."
+
+cd $buildDir/test
+
+# if we don't have a test results directory, exit with failure now
+if test ! -d "\$dateTag"; then
+    echo "\$dateTag doesn't exist, aborting posting of results at \`date\`."
+    $repoDir/src/tools/dev/scripts/visit-notify-test-failure -host $testHost
+    exit 1
+fi
+
+# Determine if the test suite passed or failed.
+if test "$serial" = "true" ; then
+    modes="$testHost,$branch,serial"
+else
+    modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
+fi
+
+hasFailed=""
+for m in \$modes; do
+    theMode=\`echo \$m | tr ',' '_'\`
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Failed 2>/dev/null\`
+    fi
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Unacceptable 2>/dev/null\`
+    fi
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 OS-Killed 2>/dev/null\`
+    fi
+done
+
+if test "$post" = "true" ; then
+    # If the test suite passed then update the revision number indicating the
+    # last pass.
+    cd $repoDir
+    if test "\$hasFailed" = ""; then
+        echo "Updating lastpass_$testHost at \`date\`."
+        gitHead=\`git log -1 | grep "^commit" | cut -d' ' -f2\`
+        # First do a "git checkout" on lastpass to restore it in case
+        # it was modified and not committed. Then do a "git pull" to
+        # update develop in case there have been an commits since the
+        # test suite run started. Then update lastpass and push to
+        # GitHub.
+        git checkout src/tools/dev/scripts/lastpass_$testHost
+        rm -f src/tools/dev/scripts/lastpass_$testHost
+        git pull
+        echo "\$gitHead" > src/tools/dev/scripts/lastpass_$testHost
+        git add src/tools/dev/scripts/lastpass_$testHost
+        git commit -m "Update the last test suite pass on $testHost."
+        git push
+    fi
+
+    # Copy the results to the dashboard checkout on quartz. 
+    echo "Updating the dashboard at \`date\`."
+    cd $buildDir/test
+    python3 $repoDir/src/tools/dev/scripts/visit-copy-test-results.py
+
+    # Update the main index.html.
+    $repoDir/src/tools/dev/scripts/visit-update-test-website
+
+    # Check the results into github.
+    cd $buildDir/test
+    newResults=\`ls -d ????-??-??-??:??\`
+    # should the dashboard have group perms?
+    cd /usr/WS1/visit/dashboard/dashboard
+    # First do a "git pull" to update main in case there have been
+    # any commits since the last update. This is most likely from
+    # removing an old test result. Then add the new results and push
+    # to GitHub.
+    git pull
+    git add \$newResults baselines index.html
+    git commit -m "Add new results to the dashboard."
+    git push
+    
+    # Set group read/write permissions so others can update the dashboard.
+    chmod -R g+rwX .
+
+    # Move the new results to old_results.
+    echo "Moving the new results to old_results at \`date\`."
+    cd $buildDir/test
+    mv \$newResults ../../old_results
+
+    # Send out an e-mail notifying the users of the test suite status.
+    #
+    # The visit-notify-test-failure script expects to be in the repo
+    # directory.
+    echo "Sending out the email at \`date\`."
+    cd $repoDir
+    if test "\$hasFailed" = ""; then
+        $repoDir/src/tools/dev/scripts/visit-notify-test-failure -pass -host $testHost
+    else
+        $repoDir/src/tools/dev/scripts/visit-notify-test-failure -host $testHost
+    fi
+
+    # log current quota usage
+    python3 $repoDir/src/tools/dev/scripts/visit-check-lc-workspace-quota.py >> /usr/workspace/visit/QUOTA_HISTORY.txt
+
+    # If its the first day of the month, purge test results from 3 months ago.
+    if test "\$(date +%d)" = "01" ; then
+        echo "Purging results from 3 months ago at \`date\`."
+        cd $testDir/$workingDir/old_results
+        month=\`date +%m\`
+        deleteMonth=\$(((month -1 + 12 - 3) % 12 + 1))
+        year=\`date +%Y\`
+        deleteYear=\$((year - 1 + (month + 12 - 4) / 12))
+        d1=\$( printf '%04d' \$deleteYear )
+        d2=\$( printf '%02d' \$deleteMonth )
+        dirs="\${d1}_\${d2}*"
+        echo "\$dirs"
+
+        # leaving commented out till it can be vetted
+        # Remove the local copies
+        # rm -f \$dirs
+    fi
+fi
+
+EOF
+
+chmod 750 postit_${testHost}
+
+# Run the test suite.
+if test "$testHost" = "dane" ; then
+    hostName=`hostname`
+    ./checkout_${testHost} $subTag > $checkoutLogFile 2>&1
+    rm -f $runFinishedFile
+    sbatch --partition=pbatch --account=wbronze --time=10:00:00 --ntasks=56 --nodes=1 --tasks-per-node=56 \
+           -o ${workingDir}/${hostName}_testit_${subTag}.out ./runit_${testHost} $subTag > $runLogFile 2>&1
+    ./postit_${testHost} $subTag > $postLogFile 2>&1
+fi

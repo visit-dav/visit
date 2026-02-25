@@ -45,6 +45,59 @@ PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, cons
     str += tmpStr;
     snprintf(tmpStr, 1000, "%smaxResolution = %d\n", prefix, atts->GetMaxResolution());
     str += tmpStr;
+    const char *meshRefMethod_names = "Default_LOR, Continuous_LOR, Discontinuous_LOR";
+    switch (atts->GetMeshRefMethod())
+    {
+      case MultiresControlAttributes::Default_LOR:
+          snprintf(tmpStr, 1000, "%smeshRefMethod = %sDefault_LOR  # %s\n", prefix, prefix, meshRefMethod_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::Continuous_LOR:
+          snprintf(tmpStr, 1000, "%smeshRefMethod = %sContinuous_LOR  # %s\n", prefix, prefix, meshRefMethod_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::Discontinuous_LOR:
+          snprintf(tmpStr, 1000, "%smeshRefMethod = %sDiscontinuous_LOR  # %s\n", prefix, prefix, meshRefMethod_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *fieldProjMethod_names = "Default_Projection, Zonal_Projection, Nodal_Projection";
+    switch (atts->GetFieldProjMethod())
+    {
+      case MultiresControlAttributes::Default_Projection:
+          snprintf(tmpStr, 1000, "%sfieldProjMethod = %sDefault_Projection  # %s\n", prefix, prefix, fieldProjMethod_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::Zonal_Projection:
+          snprintf(tmpStr, 1000, "%sfieldProjMethod = %sZonal_Projection  # %s\n", prefix, prefix, fieldProjMethod_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::Nodal_Projection:
+          snprintf(tmpStr, 1000, "%sfieldProjMethod = %sNodal_Projection  # %s\n", prefix, prefix, fieldProjMethod_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *refBasisType_names = "Gauss_Lobatto_Default, Closed_Uniform";
+    switch (atts->GetRefBasisType())
+    {
+      case MultiresControlAttributes::Gauss_Lobatto_Default:
+          snprintf(tmpStr, 1000, "%srefBasisType = %sGauss_Lobatto_Default  # %s\n", prefix, prefix, refBasisType_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::Closed_Uniform:
+          snprintf(tmpStr, 1000, "%srefBasisType = %sClosed_Uniform  # %s\n", prefix, prefix, refBasisType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     snprintf(tmpStr, 1000, "%sinfo = \"%s\"\n", prefix, atts->GetInfo().c_str());
     str += tmpStr;
     return str;
@@ -208,6 +261,206 @@ MultiresControlAttributes_GetMaxResolution(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+MultiresControlAttributes_SetMeshRefMethod(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid meshRefMethod value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Default_LOR";
+        ss << ", Continuous_LOR";
+        ss << ", Discontinuous_LOR";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the meshRefMethod in the object.
+    obj->data->SetMeshRefMethod(MultiresControlAttributes::meshRefinementMethod(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MultiresControlAttributes_GetMeshRefMethod(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMeshRefMethod()));
+    return retval;
+}
+
+/*static*/ PyObject *
+MultiresControlAttributes_SetFieldProjMethod(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid fieldProjMethod value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Default_Projection";
+        ss << ", Zonal_Projection";
+        ss << ", Nodal_Projection";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the fieldProjMethod in the object.
+    obj->data->SetFieldProjMethod(MultiresControlAttributes::fieldProjectionMethod(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MultiresControlAttributes_GetFieldProjMethod(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetFieldProjMethod()));
+    return retval;
+}
+
+/*static*/ PyObject *
+MultiresControlAttributes_SetRefBasisType(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid refBasisType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Gauss_Lobatto_Default";
+        ss << ", Closed_Uniform";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the refBasisType in the object.
+    obj->data->SetRefBasisType(MultiresControlAttributes::refinementBasisType(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MultiresControlAttributes_GetRefBasisType(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRefBasisType()));
+    return retval;
+}
+
+/*static*/ PyObject *
 MultiresControlAttributes_SetInfo(PyObject *self, PyObject *args)
 {
     PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
@@ -265,6 +518,12 @@ PyMethodDef PyMultiresControlAttributes_methods[MULTIRESCONTROLATTRIBUTES_NMETH]
     {"GetResolution", MultiresControlAttributes_GetResolution, METH_VARARGS},
     {"SetMaxResolution", MultiresControlAttributes_SetMaxResolution, METH_VARARGS},
     {"GetMaxResolution", MultiresControlAttributes_GetMaxResolution, METH_VARARGS},
+    {"SetMeshRefMethod", MultiresControlAttributes_SetMeshRefMethod, METH_VARARGS},
+    {"GetMeshRefMethod", MultiresControlAttributes_GetMeshRefMethod, METH_VARARGS},
+    {"SetFieldProjMethod", MultiresControlAttributes_SetFieldProjMethod, METH_VARARGS},
+    {"GetFieldProjMethod", MultiresControlAttributes_GetFieldProjMethod, METH_VARARGS},
+    {"SetRefBasisType", MultiresControlAttributes_SetRefBasisType, METH_VARARGS},
+    {"GetRefBasisType", MultiresControlAttributes_GetRefBasisType, METH_VARARGS},
     {"SetInfo", MultiresControlAttributes_SetInfo, METH_VARARGS},
     {"GetInfo", MultiresControlAttributes_GetInfo, METH_VARARGS},
     {NULL, NULL}
@@ -295,6 +554,31 @@ PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name)
         return MultiresControlAttributes_GetResolution(self, NULL);
     if(strcmp(name, "maxResolution") == 0)
         return MultiresControlAttributes_GetMaxResolution(self, NULL);
+    if(strcmp(name, "meshRefMethod") == 0)
+        return MultiresControlAttributes_GetMeshRefMethod(self, NULL);
+    if(strcmp(name, "Default_LOR") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Default_LOR));
+    if(strcmp(name, "Continuous_LOR") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Continuous_LOR));
+    if(strcmp(name, "Discontinuous_LOR") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Discontinuous_LOR));
+
+    if(strcmp(name, "fieldProjMethod") == 0)
+        return MultiresControlAttributes_GetFieldProjMethod(self, NULL);
+    if(strcmp(name, "Default_Projection") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Default_Projection));
+    if(strcmp(name, "Zonal_Projection") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Zonal_Projection));
+    if(strcmp(name, "Nodal_Projection") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Nodal_Projection));
+
+    if(strcmp(name, "refBasisType") == 0)
+        return MultiresControlAttributes_GetRefBasisType(self, NULL);
+    if(strcmp(name, "Gauss_Lobatto_Default") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Gauss_Lobatto_Default));
+    if(strcmp(name, "Closed_Uniform") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Closed_Uniform));
+
     if(strcmp(name, "info") == 0)
         return MultiresControlAttributes_GetInfo(self, NULL);
 
@@ -316,6 +600,12 @@ PyMultiresControlAttributes_setattro(PyObject *self, PyObject *attr_name, PyObje
         obj = MultiresControlAttributes_SetResolution(self, args);
     else if(strcmp(name, "maxResolution") == 0)
         obj = MultiresControlAttributes_SetMaxResolution(self, args);
+    else if(strcmp(name, "meshRefMethod") == 0)
+        obj = MultiresControlAttributes_SetMeshRefMethod(self, args);
+    else if(strcmp(name, "fieldProjMethod") == 0)
+        obj = MultiresControlAttributes_SetFieldProjMethod(self, args);
+    else if(strcmp(name, "refBasisType") == 0)
+        obj = MultiresControlAttributes_SetRefBasisType(self, args);
     else if(strcmp(name, "info") == 0)
         obj = MultiresControlAttributes_SetInfo(self, args);
 

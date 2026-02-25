@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QScrollArea>
 #include <QSpinBox>
 #include <QvisColorButton.h>
 #include <QvisOpacitySlider.h>
@@ -22,7 +23,7 @@
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::QvisTimeSliderInterface
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisTimeSliderInterface class.
 //
 // Arguments:
@@ -35,7 +36,7 @@
 // Modifications:
 //   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
 //   Added timeFormatLineEdit.
-//   
+//
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
@@ -46,6 +47,9 @@
 //   Place 'useForeground' checkbox before text color button, added
 //   textColorLabel so it can be disabled when the button is disabled.
 //
+//   Kathleen Biagas, Wed Feb 4, 2026
+//   Add QScrollArea for easier use on smaller laptop displays.
+//
 // ****************************************************************************
 
 QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent) :
@@ -54,8 +58,17 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent) :
     // Set the title of the group box.
     this->setTitle(GetName());
 
-    QGridLayout *cLayout = new QGridLayout(0);
-    topLayout->addLayout(cLayout);
+    // Add a scroll area
+    QScrollArea *scroll = new QScrollArea();
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setWidgetResizable(true);
+    topLayout->addWidget(scroll);
+
+    QWidget *scrollContents = new QWidget();
+    scroll->setWidget(scrollContents);
+
+    QGridLayout *cLayout = new QGridLayout(scrollContents);
     cLayout->setSpacing(10);
 
     // Add controls for the position
@@ -177,14 +190,14 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::~QvisTimeSliderInterface
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisTimeSliderInterface class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 5 11:47:58 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisTimeSliderInterface::~QvisTimeSliderInterface()
@@ -194,7 +207,7 @@ QvisTimeSliderInterface::~QvisTimeSliderInterface()
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::UpdateControls
 //
-// Purpose: 
+// Purpose:
 //   Updates the controls in the interface using the data in the Annotation
 //   object pointed to by the annot pointer.
 //
@@ -205,7 +218,7 @@ QvisTimeSliderInterface::~QvisTimeSliderInterface()
 //   Eric Brugger, Wed Aug 25 14:52:12 PDT 2004
 //   Modify the float to percent conversion for the width and height to
 //   avoid numeric issues where the percent value would be one too small.
-//   
+//
 //   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
 //   Added timeFormatLineEdit.
 //
@@ -257,7 +270,7 @@ QvisTimeSliderInterface::UpdateControls()
 
     //
     // Set the text color. If we're using the foreground color for the text
-    // color then make the button be white and only let the user change the 
+    // color then make the button be white and only let the user change the
     // opacity.
     //
     textColorOpacity->blockSignals(true);
@@ -325,7 +338,7 @@ QvisTimeSliderInterface::UpdateControls()
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for the text fields.
 //
 // Arguments:
@@ -405,15 +418,15 @@ QvisTimeSliderInterface::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::positionChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   position line edit.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -428,7 +441,7 @@ QvisTimeSliderInterface::positionChanged(double x, double y)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::widthChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the value of the width
 //   spin box changes.
 //
@@ -439,7 +452,7 @@ QvisTimeSliderInterface::positionChanged(double x, double y)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -457,7 +470,7 @@ QvisTimeSliderInterface::widthChanged(int w)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::heightChanged
 //
-// Purpose: 
+// Purpose:
 //   This a Qt slot function that is called when the value of the height spin
 //   box changes.
 //
@@ -468,7 +481,7 @@ QvisTimeSliderInterface::widthChanged(int w)
 // Creation:   Wed Nov 5 11:50:58 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -486,15 +499,15 @@ QvisTimeSliderInterface::heightChanged(int h)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::labelChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   either of the label line edits.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -507,12 +520,12 @@ QvisTimeSliderInterface::labelChanged()
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::timeFormatChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   time format line edit.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   January 12, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   January 12, 2004
 //
 // Modifications:
 //   Brad Whitlock, Thu Feb 24 16:37:32 PST 2005
@@ -530,7 +543,7 @@ QvisTimeSliderInterface::timeFormatChanged()
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::startColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start color is
 //   selected.
 //
@@ -541,7 +554,7 @@ QvisTimeSliderInterface::timeFormatChanged()
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -556,7 +569,7 @@ QvisTimeSliderInterface::startColorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::startOpacityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start opacity is
 //   selected.
 //
@@ -567,7 +580,7 @@ QvisTimeSliderInterface::startColorChanged(const QColor &c)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -583,7 +596,7 @@ QvisTimeSliderInterface::startOpacityChanged(int opacity)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::endColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new end color is
 //   selected.
 //
@@ -594,7 +607,7 @@ QvisTimeSliderInterface::startOpacityChanged(int opacity)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -609,7 +622,7 @@ QvisTimeSliderInterface::endColorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::endOpacityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new end opacity is
 //   selected.
 //
@@ -620,7 +633,7 @@ QvisTimeSliderInterface::endColorChanged(const QColor &c)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -636,7 +649,7 @@ QvisTimeSliderInterface::endOpacityChanged(int opacity)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::timeDisplayChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we change the time display.
 //
 // Arguments:
@@ -646,7 +659,7 @@ QvisTimeSliderInterface::endOpacityChanged(int opacity)
 // Creation:   Thu Nov 6 15:02:30 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -662,7 +675,7 @@ QvisTimeSliderInterface::timeDisplayChanged(int timeDisplay)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::textColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start color is
 //   selected.
 //
@@ -673,7 +686,7 @@ QvisTimeSliderInterface::timeDisplayChanged(int timeDisplay)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -688,7 +701,7 @@ QvisTimeSliderInterface::textColorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::textOpacityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start opacity is
 //   selected.
 //
@@ -699,7 +712,7 @@ QvisTimeSliderInterface::textColorChanged(const QColor &c)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -715,7 +728,7 @@ QvisTimeSliderInterface::textOpacityChanged(int opacity)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::useForegroundColorToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the useForegroundColor
 //   check box is clicked.
 //
@@ -726,7 +739,7 @@ QvisTimeSliderInterface::textOpacityChanged(int opacity)
 // Creation:   Wed Nov 5 12:34:48 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -739,7 +752,7 @@ QvisTimeSliderInterface::useForegroundColorToggled(bool val)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::visibilityToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the visibility toggle is
 //   changed.
 //
@@ -750,7 +763,7 @@ QvisTimeSliderInterface::useForegroundColorToggled(bool val)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -764,7 +777,7 @@ QvisTimeSliderInterface::visibilityToggled(bool val)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::roundedToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the rounded toggle is
 //   changed.
 //
@@ -775,7 +788,7 @@ QvisTimeSliderInterface::visibilityToggled(bool val)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -790,7 +803,7 @@ QvisTimeSliderInterface::roundedToggled(bool val)
 // ****************************************************************************
 // Method: QvisTimeSliderInterface::shadedToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the shaded toggle is
 //   changed.
 //
@@ -801,7 +814,7 @@ QvisTimeSliderInterface::roundedToggled(bool val)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

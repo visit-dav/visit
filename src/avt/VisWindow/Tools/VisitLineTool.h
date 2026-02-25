@@ -54,6 +54,9 @@ class vtkTextActor;
 //   Burlen Loring, Mon Sep 28 16:04:23 PDT 2015
 //   Added API for setting tool visibility
 //
+//   Kathleen Biagas, Tue Jan 27, 2026
+//   Add third pointTextActor to display length of line (middle hot point).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitLineTool : public VisitInteractiveTool
@@ -127,7 +130,7 @@ class VISWINDOW_API VisitLineTool : public VisitInteractiveTool
     vtkActor            *guideActor;
     vtkPolyDataMapper   *guideMapper;
     vtkPolyData         *guideData;
-    vtkTextActor        *pointTextActor[2];
+    vtkTextActor        *pointTextActor[3];
 
     avtLineToolInterface Interface;
     bool                 addedBbox;

@@ -1537,6 +1537,9 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -1562,7 +1565,8 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material, dataRequest);
+    avtCentering cent_change;
+    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -1579,13 +1583,29 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (smd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->SetScalars(var);
+        if (smd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetScalars(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetScalars(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->SetScalars(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetScalars(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetScalars(var);
+        }
     }
 
     return mesh;
@@ -1652,6 +1672,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Jul  8 18:29:43 PDT 2015
 //    Added a continue for data==NULL (possible for null returns from plugins)
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Rewrote this method to handle potential centering changes.
 // ****************************************************************************
 
 void
@@ -1680,135 +1703,30 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             continue;
 
         //
-        // Do some preparation.  Decide the variable type and
-        // if it is node centered or zone centered.
-        //
-        vtkDataSetAttributes *atts = NULL;
-        switch (vt)
-        {
-          case AVT_SCALAR_VAR:
-            {
-                const avtScalarMetaData *smd=GetMetaData(ts)->GetScalar(varName);
-                if (smd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_SYMMETRIC_TENSOR_VAR:
-            {
-                const avtSymmetricTensorMetaData *vmd =
-                                       GetMetaData(ts)->GetSymmTensor(varName);
-                if (vmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_TENSOR_VAR:
-            {
-                const avtTensorMetaData *vmd =
-                                           GetMetaData(ts)->GetTensor(varName);
-                if (vmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_VECTOR_VAR:
-            {
-                const avtVectorMetaData *vmd =
-                                           GetMetaData(ts)->GetVector(varName);
-                if (vmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_LABEL_VAR:
-            {
-                const avtLabelMetaData *lmd=GetMetaData(ts)->GetLabel(varName);
-                if (lmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_ARRAY_VAR:
-            {
-                const avtArrayMetaData *lmd=GetMetaData(ts)->GetArray(varName);
-                if (lmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_MATSPECIES:
-            atts = ds->GetCellData();
-            break;
-
-          case AVT_CURVE:
-            atts = ds->GetPointData();
-            break;
-
-          default:
-            EXCEPTION1(InvalidVariableException, varName);
-        }
-
-        //
         // Okay, now get the variable and add them to the dataset.
         //
         vtkDataArray *dat = NULL;
         vtkDataSet *mesh = NULL;
+        avtCentering cent_change = AVT_UNKNOWN_CENT;
         switch (vt)
         {
           case AVT_SCALAR_VAR:
-            dat = GetScalarVariable(varName, ts, domain, material, dataRequest);
+            dat = GetScalarVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_VECTOR_VAR:
-            dat = GetVectorVariable(varName, ts, domain, material, dataRequest);
+            dat = GetVectorVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_TENSOR_VAR:
-            dat = GetTensorVariable(varName, ts, domain, material, dataRequest);
+            dat = GetTensorVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_SYMMETRIC_TENSOR_VAR:
-            dat = GetSymmetricTensorVariable(varName, ts, domain, material, dataRequest);
+            dat = GetSymmetricTensorVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_LABEL_VAR:
-            dat = GetLabelVariable(varName, ts, domain, material);
+            dat = GetLabelVariable(varName, ts, domain, material, cent_change);
             break;
           case AVT_ARRAY_VAR:
-            dat = GetArrayVariable(varName, ts, domain, material, dataRequest);
+            dat = GetArrayVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_MATSPECIES:
             dat = GetSpeciesVariable(varName, ts, domain, material, nzones);
@@ -1821,6 +1739,91 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             break;
           default:
             EXCEPTION1(InvalidVariableException, varName);
+        }
+
+        //
+        // Do some preparation.  Decide the variable type and
+        // if it is node centered or zone centered.
+        //
+        vtkDataSetAttributes *atts = NULL;
+        avtCentering var_centering = cent_change;
+        // if there was no centering override then we must fetch it from the metadata
+        if (AVT_UNKNOWN_CENT == cent_change)
+        {
+            switch (vt)
+            {
+                case AVT_SCALAR_VAR:
+                {
+                    const avtScalarMetaData *smd=GetMetaData(ts)->GetScalar(varName);
+                    var_centering = smd->centering;
+                    break;                    
+                }
+                case AVT_SYMMETRIC_TENSOR_VAR:
+                {
+                    const avtSymmetricTensorMetaData *vmd =GetMetaData(ts)->GetSymmTensor(varName);
+                    var_centering = vmd->centering;
+                    break;                    
+                }
+                case AVT_TENSOR_VAR:
+                {
+                    const avtTensorMetaData *vmd =GetMetaData(ts)->GetTensor(varName);
+                    var_centering = vmd->centering;
+                    break;                    
+                }
+                case AVT_VECTOR_VAR:
+                {
+                    const avtVectorMetaData *vmd =GetMetaData(ts)->GetVector(varName);
+                    var_centering = vmd->centering;
+                    break;                    
+                }
+                case AVT_LABEL_VAR:
+                {
+                    const avtLabelMetaData *lmd=GetMetaData(ts)->GetLabel(varName);
+                    var_centering = lmd->centering;
+                    break;                    
+                }
+                case AVT_ARRAY_VAR:
+                {
+                    const avtArrayMetaData *lmd=GetMetaData(ts)->GetArray(varName);
+                    var_centering = lmd->centering;
+                    break;                    
+                }
+                case AVT_MATSPECIES:
+                    break;
+                case AVT_CURVE:
+                    break;
+                default:
+                    EXCEPTION1(InvalidVariableException, varName);
+            }
+        }
+        // now that we know the centering, most cases collapse to one
+        switch (vt)
+        {
+            case AVT_SCALAR_VAR:
+            case AVT_VECTOR_VAR:
+            case AVT_TENSOR_VAR:
+            case AVT_SYMMETRIC_TENSOR_VAR:
+            case AVT_ARRAY_VAR:
+            case AVT_LABEL_VAR:
+            {
+                if (var_centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+                break;                
+            }
+            case AVT_MATSPECIES:
+                atts = ds->GetCellData();
+                break;
+            case AVT_CURVE:
+                atts = ds->GetPointData();
+                break;
+            default:
+                EXCEPTION1(InvalidVariableException, varName);
         }
 
         // We can arrive here with dat == NULL when a plugin decides to
@@ -1937,6 +1940,9 @@ avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -1962,7 +1968,8 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material, dataRequest);
+    avtCentering cent_change;
+    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -1978,26 +1985,56 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (vmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        if (var->GetNumberOfComponents() == 3)
+        if (vmd->centering == AVT_NODECENT)
         {
-            mesh->GetPointData()->SetVectors(var);
+            if (var->GetNumberOfComponents() == 3)
+            {
+                mesh->GetPointData()->SetVectors(var);
+            }
+            else
+            {
+                mesh->GetPointData()->AddArray(var);
+            }
         }
         else
         {
-            mesh->GetPointData()->AddArray(var);
+            if (var->GetNumberOfComponents() == 3)
+            {
+                mesh->GetCellData()->SetVectors(var);
+            }
+            else
+            {
+                mesh->GetCellData()->AddArray(var);
+            }
         }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        if (var->GetNumberOfComponents() == 3)
+        if (cent_change == AVT_NODECENT)
         {
-            mesh->GetCellData()->SetVectors(var);
+            if (var->GetNumberOfComponents() == 3)
+            {
+                mesh->GetPointData()->SetVectors(var);
+            }
+            else
+            {
+                mesh->GetPointData()->AddArray(var);
+            }
         }
         else
         {
-            mesh->GetCellData()->AddArray(var);
+            if (var->GetNumberOfComponents() == 3)
+            {
+                mesh->GetCellData()->SetVectors(var);
+            }
+            else
+            {
+                mesh->GetCellData()->AddArray(var);
+            }
         }
     }
 
@@ -2034,6 +2071,9 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -2059,7 +2099,8 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material, dataRequest);
+    avtCentering cent_change;
+    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -2075,13 +2116,29 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (tmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->SetTensors(var);
+        if (tmd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetTensors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetTensors(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->SetTensors(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetTensors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetTensors(var);
+        }
     }
 
     return mesh;
@@ -2117,6 +2174,9 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -2143,8 +2203,9 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
+    avtCentering cent_change;
     vtkDataArray *var = GetSymmetricTensorVariable(varname, ts, domain,
-                                                   material, dataRequest);
+                                                   material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -2160,13 +2221,29 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (tmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->SetTensors(var);
+        if (tmd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetTensors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetTensors(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->SetTensors(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetTensors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetTensors(var);
+        }
     }
 
     return mesh;
@@ -2194,6 +2271,9 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -2219,7 +2299,8 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material, dataRequest);
+    avtCentering cent_change;
+    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -2235,13 +2316,29 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (tmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->AddArray(var);
+        if (tmd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->AddArray(var);
+        }
+        else
+        {
+            mesh->GetCellData()->AddArray(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->AddArray(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->AddArray(var);
+        }
+        else
+        {
+            mesh->GetCellData()->AddArray(var);
+        }
     }
 
     return mesh;
@@ -2393,6 +2490,9 @@ avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
 //    Cyrus Harrison, Fri Aug 14 11:10:03 PDT 2009
 //    Removed creation of lvs, it is no longer necessary to communicate
 //    that we have a label string.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 //
 // ****************************************************************************
 
@@ -2419,7 +2519,8 @@ avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetLabelVariable(varname, ts, domain, material);
+    avtCentering cent_change;
+    vtkDataArray *var = GetLabelVariable(varname, ts, domain, material, cent_change);
 
     if (var == NULL)
     {
@@ -2436,13 +2537,29 @@ avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (lmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->SetScalars(var);
+        if (lmd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetScalars(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetScalars(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->SetScalars(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetScalars(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetScalars(var);
+        }
     }
 
     return mesh;
@@ -2570,6 +2687,9 @@ avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -2578,7 +2698,20 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataRequest_p dataRequest)
 {
+    avtCentering cent_change;
+    return GetScalarVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+
+vtkDataArray *
+avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest,
+                                      avtCentering &cent_change)
+{
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
 
     //
     // We have to be leery about doing any caching when the variables are
@@ -2615,7 +2748,7 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
         //
         // We haven't read in this domain before, so fetch it from the files.
         //
-        var = Interface->GetVar(ts, domain, real_varname);
+        var = Interface->GetVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             //
@@ -2699,6 +2832,9 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -2707,7 +2843,21 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataRequest_p dataRequest)
 {
+    avtCentering cent_change;
+    return GetVectorVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+
+vtkDataArray *
+avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest,
+                                      avtCentering &cent_change)
+{
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2743,7 +2893,7 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
         //
         // We haven't read in this domain before, so fetch it from the files.
         //
-        var = Interface->GetVectorVar(ts, domain, real_varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
@@ -2814,6 +2964,9 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -2822,7 +2975,20 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataRequest_p dataRequest)
 {
+    avtCentering cent_change;
+    return GetTensorVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+vtkDataArray *
+avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest,
+                                      avtCentering &cent_change)
+{
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2859,7 +3025,7 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
         // We haven't read in this domain before, so fetch it from the files.
         // Note: we use the vector var interface to get tensors.
         //
-        var = Interface->GetVectorVar(ts, domain, real_varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
@@ -2929,15 +3095,31 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
 vtkDataArray *
 avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
                                                int domain,const char *material,
-                                           const avtDataRequest_p dataRequest)
+                                               const avtDataRequest_p dataRequest)
+{
+    avtCentering cent_change;
+    return GetSymmetricTensorVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+vtkDataArray *
+avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
+                                               int domain,const char *material,
+                                               const avtDataRequest_p dataRequest,
+                                               avtCentering &cent_change)
 {
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2975,7 +3157,7 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
         // We haven't read in this domain before, so fetch it from the files.
         // Note: we use the vector var interface to get tensors.
         //
-        var = Interface->GetVectorVar(ts, domain, real_varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             //
@@ -3038,6 +3220,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -3046,7 +3231,20 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
                                      const char *material,
                                      const avtDataRequest_p dataRequest)
 {
+    avtCentering cent_change;
+    return GetArrayVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+vtkDataArray *
+avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
+                                     const char *material,
+                                     const avtDataRequest_p dataRequest,
+                                     avtCentering &cent_change)
+{
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -3083,7 +3281,7 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
         // We haven't read in this domain before, so fetch it from the files.
         // Note: we use the vector var interface to get arrays.
         //
-        var = Interface->GetVectorVar(ts, domain, real_varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
@@ -3136,6 +3334,9 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
 //
 //    Hank Childs, Tue Dec 20 11:51:30 PST 2011
 //    Add support for caching with selections.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -3143,6 +3344,16 @@ vtkDataArray *
 avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
                                      const char *material)
 {
+    avtCentering cent_change;
+    return GetLabelVariable(varname, ts, domain, material, cent_change);
+}
+
+vtkDataArray *
+avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
+                                     const char *material, avtCentering &cent_change)
+{
+
+    cent_change = AVT_UNKNOWN_CENT;
 
     //
     // We have to be leery about doing any caching when the variables are
@@ -3178,7 +3389,7 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
         //
         // We haven't read in this domain before, so fetch it from the files.
         //
-        var = Interface->GetVar(ts, domain, real_varname);
+        var = Interface->GetVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
@@ -11015,6 +11226,64 @@ avtGenericDatabase::NumStagesForFetch(avtDataRequest_p spec)
     return numStages;
 }
 
+// ****************************************************************************
+//  Method: avtGenericDatabase::HandleCentering
+//
+//  Purpose:
+//    Quick helper to handle centering for all the query functions.
+//
+//  Programmer:   Justin Privitera
+//  Creation:     12/11/25
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtGenericDatabase::HandleCentering(const avtCentering cent_change,
+                                    const avtCentering var_centering,
+                                    PickVarInfo &varInfo,
+                                    bool &zoneCent,
+                                    bool &validCentering)
+{
+    zoneCent = false;
+    validCentering = true;
+    // no centering change; we can use metadata
+    if (AVT_UNKNOWN_CENT == cent_change)
+    {
+        if (AVT_NODECENT == var_centering)
+        {
+            varInfo.SetCentering(PickVarInfo::Nodal);
+            zoneCent = false;
+        }
+        else if (AVT_ZONECENT == var_centering)
+        {
+            varInfo.SetCentering(PickVarInfo::Zonal);
+            zoneCent = true;
+        }
+        else
+        {
+            validCentering = false;
+        }
+    }
+    else
+    {
+        if (AVT_NODECENT == cent_change)
+        {
+            varInfo.SetCentering(PickVarInfo::Nodal);
+            zoneCent = false;
+        }
+        else if (AVT_ZONECENT == cent_change)
+        {
+            varInfo.SetCentering(PickVarInfo::Zonal);
+            zoneCent = true;
+        }
+        else
+        {
+            validCentering = false;
+        }
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::QueryScalars
@@ -11062,6 +11331,9 @@ avtGenericDatabase::NumStagesForFetch(avtDataRequest_p spec)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 //
 // ****************************************************************************
 
@@ -11092,27 +11364,14 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *scalars = GetScalarVariable(varName.c_str(), ts, dom,
-                                                  "_all", dataRequest);
+                                                  "_all", dataRequest, cent_change);
         if (scalars)
         {
             varInfo.SetTreatAsASCII(smd->treatAsASCII);
             bool zoneCent = false, validCentering = true;
-            if (smd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (smd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
-
+            HandleCentering(cent_change, smd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 if (zoneCent != zonePick)
@@ -11278,6 +11537,9 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 // ****************************************************************************
 
 bool
@@ -11306,28 +11568,16 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *vectors = GetVectorVariable(varName.c_str(), ts, dom,
-                                                  "_all", dataRequest);
+                                                  "_all", dataRequest, cent_change);
         int nComponents = 0;;
         double *temp = NULL;
         double mag = 0.;
         if (vectors)
         {
             bool zoneCent = false, validCentering = true;
-            if (vmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (vmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, vmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = vectors->GetNumberOfComponents();
@@ -11421,6 +11671,9 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 // ****************************************************************************
 
 bool
@@ -11450,27 +11703,15 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *tensors = GetTensorVariable(varName.c_str(), ts, dom,
-                                                  "_all", dataRequest);
+                                                  "_all", dataRequest, cent_change);
         int nComponents = 0;;
         double *temp = NULL;
         if (tensors)
         {
             bool zoneCent = false, validCentering = true;
-            if (tmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (tmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, tmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = tensors->GetNumberOfComponents();
@@ -11541,6 +11782,9 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 // ****************************************************************************
 
 bool
@@ -11570,27 +11814,15 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *array = GetArrayVariable(varName.c_str(), ts, dom,
-                                                  "_all", dataRequest);
+                                                  "_all", dataRequest, cent_change);
         int nComponents = 0;;
         double *temp = NULL;
         if (array)
         {
             bool zoneCent = false, validCentering = true;
-            if (tmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (tmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, tmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = array->GetNumberOfComponents();
@@ -11669,6 +11901,9 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 // ****************************************************************************
 
 bool
@@ -11699,26 +11934,14 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *tensors = GetSymmetricTensorVariable(varName.c_str(), ts,
-                                                           dom, "_all", dataRequest);
+                                                           dom, "_all", dataRequest, cent_change);
         int nComponents = 0;;
         if (tensors)
         {
             bool zoneCent = false, validCentering = true;
-            if (tmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (tmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, tmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = tensors->GetNumberOfComponents();
@@ -11785,6 +12008,8 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
 // Creation:   Mon Apr 4 11:51:56 PDT 2005
 //
 // Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 //
 // ****************************************************************************
 
@@ -11807,27 +12032,15 @@ avtGenericDatabase::QueryLabels(const string &varName, const int dom,
         stringVector names;
         doubleVector vals;
         char buff[80];
+        avtCentering cent_change;
         vtkDataArray *labels = GetLabelVariable(varName.c_str(), ts, dom,
-                                                "_all");
+                                                "_all",cent_change);
         int nComponents = 0;
         double *temp = NULL;
         if (labels)
         {
             bool zoneCent = false, validCentering = true;
-            if (lmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (lmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, lmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = labels->GetNumberOfComponents();

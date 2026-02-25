@@ -19,7 +19,8 @@ updating a few files. These consist of ::
     INSTALL_NOTES
     gui/Splashscreen.C
 
-A ticket should be created and assigned so that the release can be tested for any obsolete code that should be removed.
+
+Update "VERSION" and "INSTALL_NOTES" to reflect the new version number. Update "gui/Splashscreen.C" to reflect the release month and year. A ticket should be created and assigned so that the release can be tested for any obsolete code that should be removed.
 Testing for obsolete code involves configuring with the CMake var **VISIT_REMOVE_OBSOLETE_CODE** turned on, then compiling and looking for compile errors of the form:  *This code is obsolete in this version. Please remove it.*
 
 Preparing for a Minor Release
@@ -66,7 +67,7 @@ Changing the version on the splashscreen
 Follow these steps to update the version on the splashscreen.
 
 1. Go to the ``src/common/icons`` directory.
-2. The splashscreen image's XCF files are named ``VisIt3.0.xcf``, ``VisIt3.1.xcf``, etc.
+2. The splashscreen image's XCF files are named ``VisIt3.4.xcf``, ``VisIt3.5.xcf``, etc.
 3. Copy the file from the last version to the new name for the current version.
 4. Open the file in GIMP.
 
@@ -78,9 +79,6 @@ You'll see that the file has several layers to it. There are six layers for
 each of the six splash screen images that get randomly choosen from when
 starting VisIt_ or are cycled through when you select *About* in the *Help*
 menu.
-
-4. Select the text layer containing the version number and change it.
-5. Save the file.
 
 Now you are ready to create the png images that are actually read in
 by Qt. When you open the XCF file all the layers corresponding to the six
@@ -118,45 +116,32 @@ modify the images so that the warning message disappears do the following. ::
 
 11. Copy the files to ``src/resources/images``.
 
-Changing the version on the MacOS X icon
-""""""""""""""""""""""""""""""""""""""""
+Changing the version on the macOS and Windows icons
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-When VisIt_ starts on MacOS X systems, it adds an icon into the Mac
-application dock. The icon that we use is based on the splashscreen but
-is stored in MacOS X icon format.
+On macOS and Windows systems we provide VisIt application icons.
 
-Follow these steps to update the version on the MacOS X icon.
+Follow these steps to update the version number in these icons.
 
 1. Go to the ``src/common/icons`` directory.
-2. Create the directory ``VisItIcon.iconset``.
-3. Open the file ``VisIt3.x-square.xcf`` in GIMP.
-4. Select the text layer containing the version number and change it.
-5. Go to *Image->Scale Image*.
-6. Change the *Image Size* *Width* and *Height* to ``1024``.
-7. Click on *Scale*.
-8. Go to *File->Export As* and change *Name* to ``VisItIcon.iconset/icon_512x512@2x.png``.
-9. Click on *Export*. 
-10. Click on *Export* on the window that pops up to allow you to set the save options.
+2. Open the file ``VisIt3.x-square.xcf`` in GIMP.
+3. Select the text layer containing the version number and change it.
+4. Go to *File->Export As* and change *Name* to ``VisIt3.5-square-macos-256x256.png``.
+5. Click on *Export*.
+6. Click on *Export* on the window that pops up to allow you to set the save options.
+7. Select a different background image, and then repeate the process to create ``VisIt3.5-square-win-256x256.png``
 
-Now you need to create several sizes of the file. You will use ImageMagick
-for this. ::
 
-    cd VisItIcon.iconset
-    convert -geometry 512x512 icon_512x512@2x.png icon_512x512.png
-    convert -geometry 512x512 icon_512x512@2x.png icon_256x256@2x.png
-    convert -geometry 256x256 icon_512x512@2x.png icon_256x256.png
-    convert -geometry 256x256 icon_512x512@2x.png icon_128x128@2x.png
-    convert -geometry 128x128 icon_512x512@2x.png icon_128x128.png
-    convert -geometry 64x64 icon_512x512@2x.png icon_32x32@2x.png
-    convert -geometry 32x32 icon_512x512@2x.png icon_32x32.png
-    convert -geometry 32x32 icon_512x512@2x.png icon_16x16@2x.png
-    convert -geometry 16x16 icon_512x512@2x.png icon_16x16.png
+Now you can use helper scripts that leverage ImageMagick to create a set of resized
+versions of these images and the final icon files. ::
 
-Now you will use iconutil to create the icns file. Note that iconutil
-is only available on the Mac. ::
+    python3 gen_vicon_pngs_from_256x256_ver.py
+    ./gen_macos_iconset.sh
+    ./gen_windows_icon.sh
 
-    cd ..
-    iconutil --convert icns VisItIcon.iconset
+This creates process creates ``VisItIcon.icns`` and ``VisIt3.5-square-win.ico``.
+The macOS icon will be used automatically from this location, and the windows icon
+needs to be integrated into the windows build process.
 
 Creating a new release notes file
 """""""""""""""""""""""""""""""""
@@ -204,7 +189,7 @@ GUI Checks
 CLI Checks
 ~~~~~~~~~~
 1. Start VisIt with CLI and check that `import numpy` works.
-2. Test `import visitmodule`.
+2. Test `import visit`.
 
 Additional macOS Checks
 ~~~~~~~~~~~~~~~~~~~~~~~

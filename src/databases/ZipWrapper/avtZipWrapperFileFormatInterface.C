@@ -1134,8 +1134,18 @@ avtZipWrapperFileFormatInterface::CreateCacheNameIncludingSelections(std::string
 //
 //    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
 //    Add return value.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
+
+vtkDataArray *
+avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVar(ts, dom, varname);
+}
 
 vtkDataArray *
 avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname)
@@ -1163,8 +1173,18 @@ avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname)
 //
 //    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
 //    Add return value.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
+
+vtkDataArray *
+avtZipWrapperFileFormatInterface::GetVectorVar(int ts, int dom, const char *varname, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVectorVar(ts, dom, varname);
+}
 
 vtkDataArray *
 avtZipWrapperFileFormatInterface::GetVectorVar(int ts, int dom, const char *varname)

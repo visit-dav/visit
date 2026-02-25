@@ -500,6 +500,10 @@ function verify_checksum_by_lookup
 #                                                                             #
 #   Kathleen Biagas, Monday May 12, 2025                                      #
 #   Return early if file to be downloaded is already present.                 #
+#
+#   Cyrus Harrison, Fri Jan  9 12:09:47 PST 2026                              #
+#   Removed direct lfs path (avoiding extra lfs costs), see                   #
+#   https://github.com/visit-dav/visit/issues/19340                           #
 # *************************************************************************** #
 
 function download_file
@@ -562,16 +566,6 @@ function download_file
                 fi
             fi
         done
-    fi
-
-    # if all else has failed, and running develop version of build_visit,
-    # then also check the master repo.
-    if [[ "$TRUNK_BUILD" == "yes" ]]; then
-        site="${thirdpartyroot_dev}"
-        try_download_file $site/$dfile $dfile
-        if [[ $? == 0 ]] ; then
-            return 0
-        fi
     fi
 
     return 1
@@ -1520,19 +1514,6 @@ function build_hostconf
     done
 
     echo >> $HOSTCONF
-
- #
- # Patch for Ubuntu 11.04
- #
- #if test -d "/usr/lib/x86_64-linux-gnu" ; then
- #    numLibs=$(ls -1 /usr/lib/x86_64-linux-gnu | wc -l)
- #    if (( $numLibs > 10 )) ; then
- #       rm -f $HOSTCONF.tmp
- #       cat $HOSTCONF | sed "s/\/usr\/lib/\/usr\/lib\/x86_64-linux-gnu/" > $HOSTCONF.tmp
- #       rm $HOSTCONF
- #       mv $HOSTCONF.tmp $HOSTCONF
- #    fi
- #fi
 
  cd "$START_DIR"
  echo "Done creating $HOSTCONF"

@@ -17,6 +17,7 @@
 #include <void_ref_ptr.h>
 #include <array_ref_ptr.h>
 #include <avtDataSelection.h>
+#include <avtTypes.h>
 
 class    vtkDataSet;
 class    vtkDataArray;
@@ -199,6 +200,9 @@ class    QueryOverTimeAttributes;
 //
 //    Alister Maguire, Mon Oct 12 14:04:09 PDT 2020
 //    Changed GetQOTMesh to GetQOTPointMesh, and added GetQOTCoordMesh.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added overrides for GetVar and GetVectorVar to handle centering changes.
 //
 // ****************************************************************************
 
@@ -210,7 +214,9 @@ class DATABASE_API avtFileFormatInterface
 
     virtual vtkDataSet     *GetMesh(int, int, const char *) = 0;
     virtual vtkDataArray   *GetVar(int, int, const char *) = 0;
+    virtual vtkDataArray   *GetVar(int, int, const char *, avtCentering &) = 0;
     virtual vtkDataArray   *GetVectorVar(int, int, const char *) = 0;
+    virtual vtkDataArray   *GetVectorVar(int, int, const char *, avtCentering &) = 0;
     virtual void           *GetAuxiliaryData(const char *, int, int, 
                                              const char *, void *, 
                                              DestructorFunction &) = 0;

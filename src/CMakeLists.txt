@@ -156,6 +156,10 @@
 #    Kathleen Biagas, Thu Jun 19, 2025
 #    Make VTK minimum version 9.5.0.
 #
+#    Kathleen Biagas, Thu Jan 8 2026
+#    Allow test data dir to be specified by VISIT_DATA_DIR var, which will
+#    only be used if 'data' dir does not exist peer to 'src'.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -526,6 +530,8 @@ if(WIN32)
     visit_setup_windows()
 endif()
 
+# some Find modules might try to setup MPI themselves (adios2 is one), see if
+# this can be mitigated by using our Parallel first, before finding any TP libs.
 if(VISIT_PARALLEL)
     include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
     message(STATUS "PARALLEL version of VisIt")
@@ -537,7 +543,6 @@ endif()
 include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
 
 if(VISIT_XCB_DIR)
     message(STATUS "Installing xcb")
@@ -898,6 +903,10 @@ if(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
     # solution file, so 'EXCLUDE_FROM_ALL' here, and create a new
     # PROJECT in data/CMakeLists.txt
     add_subdirectory(${VISIT_SOURCE_DIR}/../data
+                     ${CMAKE_CURRENT_BINARY_DIR}/testdata
+                     EXCLUDE_FROM_ALL)
+elseif(IS_DIRECTORY ${VISIT_DATA_DIR})
+    add_subdirectory(${VISIT_DATA_DIR}
                      ${CMAKE_CURRENT_BINARY_DIR}/testdata
                      EXCLUDE_FROM_ALL)
 endif()

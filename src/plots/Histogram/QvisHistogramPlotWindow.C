@@ -13,6 +13,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QScrollArea>
 #include <QSpinBox>
 #include <QVBoxLayout>
 #include <QButtonGroup>
@@ -24,14 +25,17 @@
 // ****************************************************************************
 // Method: QvisHistogramPlotWindow::QvisHistogramPlotWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Feb 3, 2025
+//   Add extra args to QvisPostableWindowObserver to ensure this window
+//   stretch is set to false so a scroll area will work correctly.
+//
 // ****************************************************************************
 
 QvisHistogramPlotWindow::QvisHistogramPlotWindow(const int type,
@@ -39,7 +43,9 @@ QvisHistogramPlotWindow::QvisHistogramPlotWindow(const int type,
                          const QString &caption,
                          const QString &shortName,
                          QvisNotepadArea *notepad)
-    : QvisPostableWindowObserver(subj, caption, shortName, notepad)
+    : QvisPostableWindowObserver(subj, caption, shortName, notepad,
+                         QvisPostableWindowSimpleObserver::AllExtraButtonsAndLoadSave,
+                         false)
 {
     plotType = type;
     atts = subj;
@@ -49,14 +55,14 @@ QvisHistogramPlotWindow::QvisHistogramPlotWindow(const int type,
 // ****************************************************************************
 // Method: QvisHistogramPlotWindow::~QvisHistogramPlotWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
@@ -67,17 +73,17 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 // ****************************************************************************
 // Method: QvisHistogramPlotWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Cyrus Harrison - generated with xml2window
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-// 
+//
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.
-//    
+//
 //    Hank Childs, Tue Dec 11 20:01:14 PST 2007
 //    Add support for scaling by an arbitrary variable.
 //
@@ -100,20 +106,30 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 //    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //    Support Qt6: buttonClicked -> idClicked.
 //
+//    Kathleen Biagas, Tue Feb 3, 2026
+//    Add QScrollArea.
+//
 // ****************************************************************************
 
 void
 QvisHistogramPlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout();
-    topLayout->addLayout(mainLayout);
+    QScrollArea *scroll = new QScrollArea();
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setWidgetResizable(true);
+    topLayout->addWidget(scroll);
+    QWidget *container = new QWidget();
+    scroll->setWidget(container);
 
+    QGridLayout *mainLayout = new QGridLayout(container);
+    mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
     basedOnLabel = new QLabel(tr("Histogram based on"), central);
     mainLayout->addWidget(basedOnLabel,0,0);
 
     QWidget *basedOnWidget = new QWidget(central);
     QHBoxLayout *basedOnLayout = new QHBoxLayout(basedOnWidget);
-    
+
     QRadioButton *basedOnBasedOnManyVarsForSingleZone =
       new QRadioButton(tr("Array of variables (one zone)"), basedOnWidget);
     QRadioButton *basedOnBasedOnManyZonesForSingleVar =
@@ -121,20 +137,20 @@ QvisHistogramPlotWindow::CreateWindowContents()
 
     basedOnLayout->addWidget(basedOnBasedOnManyVarsForSingleZone);
     basedOnLayout->addWidget(basedOnBasedOnManyZonesForSingleVar);
-    
+
     basedOnGroup = new QButtonGroup(basedOnWidget);
     basedOnGroup->addButton(basedOnBasedOnManyVarsForSingleZone,0);
     basedOnGroup->addButton(basedOnBasedOnManyZonesForSingleVar,1);
-    
+
     connect(basedOnGroup, SIGNAL(idClicked(int)),
             this, SLOT(basedOnChanged(int)));
 
     mainLayout->addWidget(basedOnWidget, 0,1);
     basedOnLabel->setEnabled(false);
     basedOnWidget->setEnabled(false);
-    
+
     // Histogram Style Group Box
-    histGroupBox =new QGroupBox(central); 
+    histGroupBox =new QGroupBox(central);
     histGroupBox->setTitle(tr("Histogram Options"));
     mainLayout->addWidget(histGroupBox, 1, 0, 1, 2);
     QVBoxLayout *hgTopLayout = new QVBoxLayout(histGroupBox);
@@ -161,22 +177,22 @@ QvisHistogramPlotWindow::CreateWindowContents()
     hgLayout->addWidget(binScaleLabel, 1, 0);
 
     QWidget     *binScaleWidget = new QWidget(histGroupBox);
-    QHBoxLayout *binScaleLayout = new QHBoxLayout(binScaleWidget);    
+    QHBoxLayout *binScaleLayout = new QHBoxLayout(binScaleWidget);
     binScaleLayout->setContentsMargins(0,0,0,0);
 
     QRadioButton *binLinearScale = new QRadioButton(tr("Linear"), binScaleWidget);
     QRadioButton *binLogScale = new QRadioButton(tr("Log"), binScaleWidget);
     QRadioButton *binSqrtScale = new QRadioButton(tr("Square root"), binScaleWidget);
-    
+
     binScaleGroup = new QButtonGroup(binScaleWidget);
     binScaleGroup->addButton(binLinearScale,0);
     binScaleGroup->addButton(binLogScale,1);
     binScaleGroup->addButton(binSqrtScale,2);
-    
+
     binScaleLayout->addWidget(binLinearScale);
     binScaleLayout->addWidget(binLogScale);
     binScaleLayout->addWidget(binSqrtScale);
-    
+
     connect(binScaleGroup, SIGNAL(idClicked(int)),
             this, SLOT(binScaleChanged(int)));
 
@@ -190,7 +206,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     histogramTypeWidget = new QWidget(central);
     QHBoxLayout *histogramTypeLayout = new QHBoxLayout(histogramTypeWidget);
     histogramTypeLayout->setContentsMargins(0,0,0,0);
-    
+
     QRadioButton *histogramTypeBinContributionFrequency =
       new QRadioButton(tr("Frequency"), histogramTypeWidget);
     QRadioButton *histogramTypeBinContributionWeighted =
@@ -199,16 +215,16 @@ QvisHistogramPlotWindow::CreateWindowContents()
     histogramTypeGroup = new QButtonGroup(histogramTypeWidget);
     histogramTypeGroup->addButton(histogramTypeBinContributionFrequency,0);
     histogramTypeGroup->addButton(histogramTypeBinContributionWeighted,1);
-    
+
     histogramTypeLayout->addWidget(histogramTypeBinContributionFrequency);
     histogramTypeLayout->addWidget(histogramTypeBinContributionWeighted);
-    
+
     connect(histogramTypeGroup, SIGNAL(idClicked(int)),
             this, SLOT(histogramTypeChanged(int)));
 
     hgLayout->addWidget(histogramTypeWidget, 2, 1, 1, 2);
 
-    
+
     // Add weighting
     QGroupBox * weightingGroup = new QGroupBox(central);
     weightingGroup->setTitle(tr("Weighting"));
@@ -221,11 +237,11 @@ QvisHistogramPlotWindow::CreateWindowContents()
 
     weightTypeLabel = new QLabel(tr("Weighted by"), histGroupBox);
     weightingLayout->addWidget(weightTypeLabel,1,0);
-    
+
     weightTypeWidget = new QWidget(histGroupBox);
     QHBoxLayout *weightTypeLayout = new QHBoxLayout(weightTypeWidget);
     weightTypeLayout->setContentsMargins(0,0,0,0);
-    
+
     QRadioButton *weightTypeVolumeArea =
       new QRadioButton(tr("Area (2D) / Volume (3D)"), weightTypeWidget);
     QRadioButton *weightTypeVariable = new QRadioButton(tr("Variable"),
@@ -233,10 +249,10 @@ QvisHistogramPlotWindow::CreateWindowContents()
     weightTypeGroup = new QButtonGroup(weightTypeWidget);
     weightTypeGroup->addButton(weightTypeVolumeArea,0);
     weightTypeGroup->addButton(weightTypeVariable,1);
-    
+
     weightTypeLayout->addWidget(weightTypeVolumeArea);
     weightTypeLayout->addWidget(weightTypeVariable);
-    
+
     connect(weightTypeGroup, SIGNAL(idClicked(int)),
             this, SLOT(weightTypeChanged(int)));
     weightingLayout->addWidget(weightTypeWidget, 1,1);
@@ -262,14 +278,14 @@ QvisHistogramPlotWindow::CreateWindowContents()
     statisticsGroupBox->setLayout(statsLayout);
 
     // Normalization
-    normalizeHistogram = 
+    normalizeHistogram =
       new QCheckBox(tr("Normalize Histogram"), statisticsGroupBox);
     statsLayout->addWidget(normalizeHistogram);
-    
+
     connect(normalizeHistogram, SIGNAL(toggled(bool)),
             this, SLOT(normalizeChanged(bool)));
-   
-    computeCDF = 
+
+    computeCDF =
       new QCheckBox(tr("Compute the CDF"), statisticsGroupBox);
     statsLayout->addWidget(computeCDF);
 
@@ -289,7 +305,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     // Create the scale radio buttons
     //
     dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
-    
+
     // Create the radio buttons
     dataScaleGroup = new QButtonGroup(central);
 
@@ -324,7 +340,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     limitsSelect->addItem(tr("Use Original Data"));
     limitsSelect->addItem(tr("Use Current Plot"));
     connect(limitsSelect, SIGNAL(activated(int)),
-            this, SLOT(limitsSelectChanged(int))); 
+            this, SLOT(limitsSelectChanged(int)));
     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
 
     // Create the min toggle and line edit
@@ -334,7 +350,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
             this, SLOT(minToggled(bool)));
     minLineEdit = new QLineEdit(central);
     connect(minLineEdit, SIGNAL(editingFinished()),
-            this, SLOT(minProcessText())); 
+            this, SLOT(minProcessText()));
     limitsLayout->addWidget(minLineEdit, 1, 1);
 
     // Create the max toggle and line edit
@@ -344,13 +360,13 @@ QvisHistogramPlotWindow::CreateWindowContents()
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central);
     connect(maxLineEdit, SIGNAL(editingFinished()),
-            this, SLOT(maxProcessText())); 
+            this, SLOT(maxProcessText()));
     limitsLayout->addWidget(maxLineEdit, 1, 3);
 
 
 
     // Bar Plot Group Box
-    barGroupBox =new QGroupBox(central); 
+    barGroupBox =new QGroupBox(central);
     barGroupBox->setTitle(tr("Single Zone Plot Options"));
     mainLayout->addWidget(barGroupBox, 2, 0, 1, 2);
     QVBoxLayout *bgTopLayout = new QVBoxLayout(barGroupBox);
@@ -384,30 +400,30 @@ QvisHistogramPlotWindow::CreateWindowContents()
     // Plot Syle Group Box
 
     // Bar Plot Group Box
-    styleGroupBox =new QGroupBox(central); 
+    styleGroupBox =new QGroupBox(central);
     styleGroupBox->setTitle(tr("Plot Style"));
     mainLayout->addWidget(styleGroupBox, 3, 0, 1, 2);
     QVBoxLayout *sgTopLayout = new QVBoxLayout(styleGroupBox);
     QGridLayout *sgLayout= new QGridLayout();
     sgTopLayout->addLayout(sgLayout);
     sgLayout->setColumnStretch(2,10);
-    
+
     // Add output type
 
     QWidget     *outputTypeWidget = new QWidget(styleGroupBox);
     QHBoxLayout *outputTypeLayout = new QHBoxLayout(outputTypeWidget);
     outputTypeLayout->setContentsMargins(0,0,0,0);
-    
+
     QRadioButton *outputTypeOutputTypeCurve = new QRadioButton(tr("Curve"), outputTypeWidget);
     QRadioButton *outputTypeOutputTypeBlock = new QRadioButton(tr("Block"), outputTypeWidget);
-    
+
     outputTypeGroup = new QButtonGroup(outputTypeWidget);
     outputTypeGroup->addButton(outputTypeOutputTypeCurve,0);
     outputTypeGroup->addButton(outputTypeOutputTypeBlock,1);
-    
+
     outputTypeLayout->addWidget(outputTypeOutputTypeCurve);
     outputTypeLayout->addWidget(outputTypeOutputTypeBlock,1);
-    
+
     connect(outputTypeGroup, SIGNAL(idClicked(int)),
             this, SLOT(outputTypeChanged(int)));
 
@@ -433,16 +449,13 @@ QvisHistogramPlotWindow::CreateWindowContents()
     connect(color, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(colorChanged(const QColor&)));
     sgLayout->addWidget(color, 2,1);
-
-
-    // Add normalization option.
 }
 
 
 // ****************************************************************************
 // Method: QvisHistogramPlotWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: Cyrus Harrison - generated using xml2window
@@ -452,7 +465,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
 //
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.
-//    
+//
 //    Hank Childs, Tue Dec 11 20:01:14 PST 2007
 //    Add support for scaling by an arbitrary variable.
 //
@@ -705,7 +718,7 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisHistogramPlotWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
@@ -810,14 +823,14 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisHistogramPlotWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   Called to apply changes in the subject.
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -843,14 +856,14 @@ QvisHistogramPlotWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisHistogramPlotWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when apply button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -863,14 +876,14 @@ QvisHistogramPlotWindow::apply()
 // ****************************************************************************
 // Method: QvisHistogramPlotWindow::makeDefault
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when "Make default" button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -885,14 +898,14 @@ QvisHistogramPlotWindow::makeDefault()
 // ****************************************************************************
 // Method: QvisHistogramPlotWindow::reset
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when reset button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -940,7 +953,7 @@ QvisHistogramPlotWindow::weightTypeChanged(int val)
         bc = HistogramAttributes::Weighted;
     else
         bc = HistogramAttributes::Variable;
-        
+
     if (bc != atts->GetHistogramType())
     {
         atts->SetHistogramType(bc);

@@ -7,7 +7,9 @@
 #include <QApplication>
 #include <QLabel>
 #include <QGridLayout>
+#include <QGroupBox>
 #include <QSlider>
+#include <QComboBox>
 
 #include "QvisMultiresControlWindow.h"
 #include <DebugStream.h>
@@ -27,6 +29,8 @@
 // Creation:   omitted
 //
 // Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Initialize high order options controls.
 //
 // ****************************************************************************
 
@@ -37,7 +41,13 @@ QvisMultiresControlWindow::QvisMultiresControlWindow(const int type,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad),
       resolution(NULL),
-      resolutionLevelLabel(NULL)
+      resolutionLevelLabel(NULL),
+      meshRefinementMethodLabel(NULL),
+      meshRefinementMethod(NULL),
+      fieldProjectionMethodLabel(NULL),
+      fieldProjectionMethod(NULL),
+      refinementBasisTypeLabel(NULL),
+      refinementBasisType(NULL)
 {
     atts = subj;
     fileServer->Attach(this);
@@ -86,6 +96,9 @@ QvisMultiresControlWindow::~QvisMultiresControlWindow()
 //   Brad Whitlock, Wed Sep  2 17:54:16 PDT 2020
 //   Use valueChanged to set the label text. Use sliderReleased to update the
 //   multires value. This makes autoupdate work better.
+// 
+//   Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//   Added new controls for the high order options.
 //
 // ****************************************************************************
 
@@ -108,6 +121,51 @@ QvisMultiresControlWindow::CreateWindowContents()
             SLOT(updateResolutionLevelLabel(int)));
     connect(this->resolution, SIGNAL(sliderReleased()), this,
             SLOT(resolutionLevelChanged()));
+
+    // High Order Options
+    QGroupBox *HOGroup = new QGroupBox(central);
+    HOGroup->setTitle(tr("High Order Options"));
+    mainLayout->addWidget(HOGroup, 1, 0, 2, 3);
+
+    QGridLayout *HOLayout = new QGridLayout(HOGroup);
+
+    // basis type
+    refinementBasisTypeLabel = new QLabel(HOGroup);
+    refinementBasisTypeLabel->setText(tr("Refinement Basis"));
+    HOLayout->addWidget(refinementBasisTypeLabel, 2, 0);
+
+    refinementBasisType = new QComboBox(HOGroup);
+    refinementBasisType->addItem(tr("Gauss Lobatto (Default)"));
+    refinementBasisType->addItem(tr("Closed Uniform"));
+    connect(refinementBasisType, SIGNAL(activated(int)),
+            this, SLOT(refinementBasisTypeChanged(int)));
+    HOLayout->addWidget(refinementBasisType, 2, 1);
+
+    // mesh refinement method
+    meshRefinementMethodLabel = new QLabel(HOGroup);
+    meshRefinementMethodLabel->setText(tr("Mesh Refinement Method"));
+    HOLayout->addWidget(meshRefinementMethodLabel, 3, 0);
+
+    meshRefinementMethod = new QComboBox(HOGroup);
+    meshRefinementMethod->addItem(tr("Default LOR"));
+    meshRefinementMethod->addItem(tr("Continuous LOR"));
+    meshRefinementMethod->addItem(tr("Discontinuous LOR"));
+    connect(meshRefinementMethod, SIGNAL(activated(int)),
+            this, SLOT(meshRefinementMethodChanged(int)));
+    HOLayout->addWidget(meshRefinementMethod, 3, 1);
+
+    // field projection method
+    fieldProjectionMethodLabel = new QLabel(HOGroup);
+    fieldProjectionMethodLabel->setText(tr("Grid Function Projection Method"));
+    HOLayout->addWidget(fieldProjectionMethodLabel, 4, 0);
+
+    fieldProjectionMethod = new QComboBox(HOGroup);
+    fieldProjectionMethod->addItem(tr("Default Projection"));
+    fieldProjectionMethod->addItem(tr("Zonal Projection"));
+    fieldProjectionMethod->addItem(tr("Nodal Projection"));
+    connect(fieldProjectionMethod, SIGNAL(activated(int)),
+            this, SLOT(fieldProjectionMethodChanged(int)));
+    HOLayout->addWidget(fieldProjectionMethod, 4, 1);
 }
 
 
@@ -126,6 +184,9 @@ QvisMultiresControlWindow::CreateWindowContents()
 //
 //   Tom Fogal, Mon Aug 30 12:30:28 MDT 2010
 //   Include resolution # in label.
+// 
+//   Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//   Added new controls for the high order options.
 //
 // ****************************************************************************
 
@@ -154,6 +215,18 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
     }
     debug1 << atts->GetMaxResolution() << " levels of detail available.\n";
 
+    this->refinementBasisType->blockSignals(true);
+    this->refinementBasisType->setCurrentIndex(atts->GetRefBasisType());
+    this->refinementBasisType->blockSignals(false);
+
+    this->meshRefinementMethod->blockSignals(true);
+    this->meshRefinementMethod->setCurrentIndex(atts->GetMeshRefMethod());
+    this->meshRefinementMethod->blockSignals(false);
+
+    this->fieldProjectionMethod->blockSignals(true);
+    this->fieldProjectionMethod->setCurrentIndex(atts->GetFieldProjMethod());
+    this->fieldProjectionMethod->blockSignals(false);
+
     this->resolution->blockSignals(true);
     this->resolution->setValue(atts->GetResolution());
     this->resolution->setMaximum(std::max(0, atts->GetMaxResolution()));
@@ -178,6 +251,8 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
 // Creation:   omitted
 //
 // Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added new controls for the high order options.
 //
 // ****************************************************************************
 
@@ -191,6 +266,21 @@ QvisMultiresControlWindow::GetCurrentValues(int which_widget)
     if(which_widget == MultiresControlAttributes::ID_resolution || doAll)
     {
         atts->SetResolution(this->resolution->value());
+    }
+    // Do refinement basis type
+    if(which_widget == MultiresControlAttributes::ID_refBasisType || doAll)
+    {
+        atts->SetRefBasisType(static_cast<MultiresControlAttributes::refinementBasisType>(this->refinementBasisType->currentIndex()));
+    }
+    // Do mesh refinement method
+    if(which_widget == MultiresControlAttributes::ID_meshRefMethod || doAll)
+    {
+        atts->SetMeshRefMethod(static_cast<MultiresControlAttributes::meshRefinementMethod>(this->meshRefinementMethod->currentIndex()));
+    }
+    // Do field projection method
+    if(which_widget == MultiresControlAttributes::ID_fieldProjMethod || doAll)
+    {
+        atts->SetFieldProjMethod(static_cast<MultiresControlAttributes::fieldProjectionMethod>(this->fieldProjectionMethod->currentIndex()));
     }
 }
 
@@ -266,3 +356,44 @@ QvisMultiresControlWindow::resolutionLevelChanged()
         Apply();
     }
 }
+
+
+void
+QvisMultiresControlWindow::refinementBasisTypeChanged(int val)
+{
+    const int currRefinementBasisType = atts->GetRefBasisType();
+    if (val != currRefinementBasisType)
+    {
+        atts->SetRefBasisType(static_cast<MultiresControlAttributes::refinementBasisType>(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisMultiresControlWindow::meshRefinementMethodChanged(int val)
+{
+    const int currMeshRefinementMethod = atts->GetMeshRefMethod();
+    if (val != currMeshRefinementMethod)
+    {
+        atts->SetMeshRefMethod(static_cast<MultiresControlAttributes::meshRefinementMethod>(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisMultiresControlWindow::fieldProjectionMethodChanged(int val)
+{
+    const int currFieldProjectionMethod = atts->GetFieldProjMethod();
+    if (val != currFieldProjectionMethod)
+    {
+        atts->SetFieldProjMethod(static_cast<MultiresControlAttributes::fieldProjectionMethod>(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+

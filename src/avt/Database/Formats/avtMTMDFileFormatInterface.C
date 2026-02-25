@@ -125,8 +125,18 @@ avtMTMDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //  Modifications:
 //    Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
 //    MTMD files can now be grouped into longer sequences.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
+
+vtkDataArray *
+avtMTMDFileFormatInterface::GetVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVar(ts, dom, var);
+}
 
 vtkDataArray *
 avtMTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
@@ -156,8 +166,18 @@ avtMTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //  Modifications:
 //    Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
 //    MTMD files can now be grouped into longer sequences.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
+
+vtkDataArray *
+avtMTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVectorVar(ts, dom, var);
+}
 
 vtkDataArray *
 avtMTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)

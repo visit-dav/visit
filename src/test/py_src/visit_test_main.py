@@ -206,6 +206,12 @@ def test_module_path(*args):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#    Kathleen Biagas, Thu Feb 5, 2026
+#    Since tests_path is often used in a 'Source' command, use posix path
+#    obtained from pathlib.Path to prevent syntax warnings on Windows.
+#
 # ----------------------------------------------------------------------------
 def tests_path(*args):
     """
@@ -213,7 +219,7 @@ def tests_path(*args):
     """
     rargs = [TestEnv.params["tests_dir"]]
     rargs.extend(args)
-    return abs_path(*rargs)
+    return Path(abs_path(*rargs)).as_posix()
 
 # ----------------------------------------------------------------------------
 #  Method: visit_bin_path
@@ -2462,6 +2468,12 @@ def TestBatchSimulation(sim):
 #    Kathleen Biagas, Tuesday Oct 22, 2024
 #    Replaced pascal with poodle.
 #
+#    Cyrus Harrison, Mon Dec  1 14:33:51 PST 2025
+#    Replaced poodle with dane.
+#
+#    Kathleen Biagas, Tue Jan 27, 2026
+#    Add rzwhippet.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1, batch=False):
@@ -2501,10 +2513,8 @@ class Simulation(object):
 
             # For now...
             import socket
-            if "poodle" in socket.gethostname() or \
-               "quartz" in socket.gethostname() or \
-               "ruby" in socket.gethostname() or \
-               "syrah" in socket.gethostname():
+            if "dane" in socket.gethostname() or \
+               "rzwhippet" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
                     msubscript = os.path.join(os.path.abspath(os.curdir), string.replace(self.sim2, "sim2", "msub"))

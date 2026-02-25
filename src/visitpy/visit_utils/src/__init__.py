@@ -21,6 +21,7 @@ from . import ult
 
 from . import moab
 from . import slurm
+from . import flux
 
 from . import qannote
 from . import qplot

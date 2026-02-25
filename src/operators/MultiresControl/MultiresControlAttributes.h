@@ -25,6 +25,24 @@
 class MultiresControlAttributes : public AttributeSubject
 {
 public:
+    enum meshRefinementMethod
+    {
+        Default_LOR,
+        Continuous_LOR,
+        Discontinuous_LOR
+    };
+    enum fieldProjectionMethod
+    {
+        Default_Projection,
+        Zonal_Projection,
+        Nodal_Projection
+    };
+    enum refinementBasisType
+    {
+        Gauss_Lobatto_Default,
+        Closed_Uniform
+    };
+
     // These constructors are for objects of this class
     MultiresControlAttributes();
     MultiresControlAttributes(const MultiresControlAttributes &obj);
@@ -55,11 +73,17 @@ public:
     // Property setting methods
     void SetResolution(int resolution_);
     void SetMaxResolution(int maxResolution_);
+    void SetMeshRefMethod(meshRefinementMethod meshRefMethod_);
+    void SetFieldProjMethod(fieldProjectionMethod fieldProjMethod_);
+    void SetRefBasisType(refinementBasisType refBasisType_);
     void SetInfo(const std::string &info_);
 
     // Property getting methods
     int               GetResolution() const;
     int               GetMaxResolution() const;
+    meshRefinementMethod GetMeshRefMethod() const;
+    fieldProjectionMethod GetFieldProjMethod() const;
+    refinementBasisType GetRefBasisType() const;
     const std::string &GetInfo() const;
           std::string &GetInfo();
 
@@ -67,6 +91,22 @@ public:
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Enum conversion functions
+    static std::string meshRefinementMethod_ToString(meshRefinementMethod);
+    static bool meshRefinementMethod_FromString(const std::string &, meshRefinementMethod &);
+protected:
+    static std::string meshRefinementMethod_ToString(int);
+public:
+    static std::string fieldProjectionMethod_ToString(fieldProjectionMethod);
+    static bool fieldProjectionMethod_FromString(const std::string &, fieldProjectionMethod &);
+protected:
+    static std::string fieldProjectionMethod_ToString(int);
+public:
+    static std::string refinementBasisType_ToString(refinementBasisType);
+    static bool refinementBasisType_FromString(const std::string &, refinementBasisType &);
+protected:
+    static std::string refinementBasisType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -79,6 +119,9 @@ public:
     enum {
         ID_resolution = 0,
         ID_maxResolution,
+        ID_meshRefMethod,
+        ID_fieldProjMethod,
+        ID_refBasisType,
         ID_info,
         ID__LAST
     };
@@ -86,12 +129,15 @@ public:
 private:
     int         resolution;
     int         maxResolution;
+    int         meshRefMethod;
+    int         fieldProjMethod;
+    int         refBasisType;
     std::string info;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MULTIRESCONTROLATTRIBUTES_TMFS "iis"
+#define MULTIRESCONTROLATTRIBUTES_TMFS "iiiiis"
 
 #endif

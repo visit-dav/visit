@@ -3174,13 +3174,12 @@ ConvertGlobalElementIdsToInt(vtkDataArray *da)
 }
 
 // Temporary hack to work-around vtkIntArray assumptions upstream
+// See issue: https://github.com/visit-dav/visit/issues/20787
+// Ideally, we move our ghost zone comm logic to leverage 64-bit ids
+// and then this conversion and guards will not be necessary.
 static vtkDataArray *
 EnsureGlobalElementIdsAreInt(vtkDataArray *da)
 {
-#if VISIT_VERSION_GE(3,5,0)
-#error EITHER FIX GLOBAL ELEMENT ID BASED GHOST-ZONE COMM OR UPDATE THIS VERSION TRIGGER
-#endif
-
     if (!da) return 0;
 
     if (da->IsA("vtkIntArray")) return da;

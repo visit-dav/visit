@@ -47,6 +47,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added environment variable logging to VisIt's debug vlog files.</li>
   <li>Fix bug in PVLD reader that caused some files to not open.</li>
   <li>Updated Python to 3.13.9, support for Python 2 was removed.</li>
+  <li>Updated encoding recipe for mp4 to use the ubiquitous x264 codec.</li>
+  <li>Added encoding recipe for gif movie files.</li>
+  <li>Changed the preferred movie format encoding to default to mp4 if available.</li>
+  <li>Removed extraneous python modules from visit installs to avoid unnecessary security scan blocks.</li>
+  <li>Added support for Sidre Tuple Views to the Blueprint Database Reader.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -67,6 +72,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Save session file now takes existing session file names into account to avoid naming collisions.</li>
   <li>Fixed a bug where bottom of main GUI window would be hidden behind the Windows taskbar.</li>
   <li>Fixed bugs with viewer text annotation sizes and layout when moving viewer windows between displays with different DPIs.</li>
+  <li>Fixed Windows displaying as too tall on smaller laptop displays by adding Scroll bars where needed.  Some of the windows changed: Set Save options, Annotation, Integral Curve.</li>
+  <li>Fixed bug with interaction tools (line/plane, etc) so that they will be updated by an operators atts at first enablement.</li>
+  <li>Fixed a bug with the Line tool where it would hide behind 2D plots during interaction.</li>
+  <li>Ensure Line tool is disabled for Curve plots, because it shouldn't be enabled in this situation.</li>
+  <li>Fixed a bug where the line cue in Lineout mode would be drawn far from the mouse location when running on a laptop monitor.</li>
 </ul>
 
 <a name="CLI_changes"></a>
@@ -90,6 +100,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug in the Blueprint reader causing successful reading of Sidre data to trigger the failure case, leading to significantly degraded performance.</li>
   <li>The VisItXdmf reader has been removed, it hasn't been maintained. The Xdmf reader that utilizes the Xdmf library is still available.</li>
   <li>Added support for MFEM Quadrature Functions to the MFEM and Blueprint database plugins.</li>
+  <li>Fixed a bug in the Blueprint reader where converting Blueprint species sets to the internal representation was performing an unnecessary conversion of the associated material set as well.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -97,14 +108,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added ANARI rendering support for volume plots.</li>
   <li>Enhanced the Pseudocolor plot to allow using the default variable for coloring the wireframe and points, as long as rendering of surfaces is turned off.</li>
-  <li>Plot Change 2</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 3.5</font></b></p>
 <ul>
-  <li>Operator Change 1</li>
-  <li>Operator Change 2</li>
+  <li>The MultiresControl Operator has been enhanced with new High-Order Options for high-order data from the MFEM and Blueprint plugins. High-order options include refinement basis selection (Gauss Lobatto and Closed Uniform), grid function projection method selection (nodal and zonal projection), and mesh refinement method selection (continuous and discontinuous refinement).</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -148,7 +157,15 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where RPATHs weren't stripped from distributions. This could lead to issues for users that didn't build the distribution. It could also cause issues when a distribution is installed on a machine different from where it was built.</li>
   <li>Fixed crash loading SILO files when compiled with version 4.11 of the SILO library.</li>
   <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
-  <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
+  <li>Eliminated many memory leaks. Here is a summary of the fixed leaks.
+    <ul>
+      <li>Fixed a leak in the operator that removes ghost zones and calculates external faces.</li>
+      <li>Fixed a leak in the Resample operator.</li>
+      <li>Fixed a leak with the zone_centers expression.</li>
+      <li>Fixed memory leaks in all the plots.</li>
+    <ul>
+  </li>
+  <li>Modified the SAMRAI reader to free most of its cached data when the timestep was changed.<li>
   <li>Fixed a crash with Curve plot when Curve contained more than 100000 points.</li>
   <li>Fixed a crash in the PVLD parallel test suite.</li>
   <li>Fixed a problem where the Silo plugin would not honor major_order setting for vector variables (e.g. more than one component) on 2 or 3D point- or quad- meshes.</li>

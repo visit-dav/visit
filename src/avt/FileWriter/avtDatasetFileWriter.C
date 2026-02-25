@@ -24,13 +24,13 @@
 #include <vtkInformation.h>
 #include <vtkFloatArray.h>
 #include <vtkGeometryFilter.h>
-#include <vtkOBJWriter.h>
+#include <vtkVisItOBJWriter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPLYWriter.h>
 #include <vtkColorTransferFunction.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkVisItSTLWriter.h>
+#include <vtkSTLWriter.h>
 #include <vtkTriangleFilter.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkGeometryFilter.h>
@@ -387,6 +387,10 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    I moved the extents calculation to the beginning to get around the bugged
 //    vtkCellDataToPointData.
 //
+//    Kathleen Biagas, Thu Jan 15, 2026
+//    Use vtkVisItOBJWriter (renamed from vtkOBJWriter to avoid conflict
+//    with VTK version).
+//
 // ****************************************************************************
 
 void
@@ -479,7 +483,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
     else
         basename = filename;
 
-    vtkOBJWriter *writer = vtkOBJWriter::New();
+    vtkVisItOBJWriter *writer = vtkVisItOBJWriter::New();
     if (label != NULL && strlen(label) > 0)
     {
         writer->SetLabel(label);
@@ -679,6 +683,9 @@ avtDatasetFileWriter::WriteVTKTree(avtDataTree_p dt, int idx,
 //    Jeremy Meredith, Wed Jul 31 17:14:02 PDT 2002
 //    Made use of our own copy of the STL writer which has some fixed bugs.
 //
+//    Kathleen Biagas, Thu Jan 15, 2026
+//    Use VTK's STL writer.
+//
 // ****************************************************************************
 
 void
@@ -700,7 +707,7 @@ avtDatasetFileWriter::WriteSTLFile(const char *filename, bool binary)
     tris->SetPassVerts(false);
     tris->SetInputData((vtkPolyData *) ds);
 
-    vtkVisItSTLWriter *writer = vtkVisItSTLWriter::New();
+    vtkSTLWriter *writer = vtkSTLWriter::New();
     if (binary)
     {
         writer->SetFileTypeToBinary();

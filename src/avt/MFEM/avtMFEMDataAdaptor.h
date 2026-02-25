@@ -7,6 +7,10 @@
 #include <avtmfem_exports.h>
 #include <mfem.hpp>
 
+#include <avtTypes.h>
+
+#include <ostream>
+
 //-----------------------------------------------------------------------------
 // vtk forward decls
 //-----------------------------------------------------------------------------
@@ -43,38 +47,72 @@ class vtkDataArray;
 //
 //    Cyrus Harrison Mon Sep 29 13:31:18 PDT 2025
 //    Added quadtrature function helpers.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added LOR enums meshRefinementMethod, fieldProjectionMethod, and
+//    refinementBasisType.
+//    Renamed LegacyRefineMeshToVTK to DiscontinuousRefineMeshToVTK.
+//    Renamed LegacyRefineGridFunctionToVTK to
+//    DiscontinuousRefineGridFunctionToVTK.
+//    Added LOR enum arguments to the refinement methods.
+//    Added printing methods for the enums for debugging.
 //
 // ****************************************************************************
 
 class AVTMFEM_API avtMFEMDataAdaptor
 {
 public:
-      static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
-                                                 int domain,
-                                                 int lod);
+      enum class meshRefinementMethod
+      {
+          Default_LOR,
+          Continuous_LOR,
+          Discontinuous_LOR
+      };
+
+      enum class fieldProjectionMethod
+      {
+          Default_Projection,
+          Zonal_Projection,
+          Nodal_Projection
+      };
+
+      enum class refinementBasisType
+      {
+          Gauss_Lobatto_Default,
+          Closed_Uniform
+      };
+
+      static vtkDataSet   *DiscontinuousRefineMeshToVTK(mfem::Mesh *mesh,
+                                                        const int domain,
+                                                        const int lod);
 
       static vtkDataSet   *LowOrderMeshToVTK(mfem::Mesh *mesh);
 
       static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
                                            int domain,
                                            int lod,
-                                           bool new_refine);
+                                           const meshRefinementMethod mesh_ref_method,
+                                           const refinementBasisType ref_basis_type);
 
       static vtkDataSet   *BoundaryMeshToVTK(mfem::Mesh *mesh);
       static vtkDataSet   *QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
-                                                       int order);
+                                                       int order,
+                                                       const refinementBasisType ref_basis_type);
 
-      static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                         mfem::GridFunction *gf,
-                                                         int lod,
-                                                         bool var_is_nodal);
+      static vtkDataArray *DiscontinuousRefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                                mfem::GridFunction *gf,
+                                                                const int lod,
+                                                                const bool var_is_nodal);
 
       static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
 
       static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                    mfem::GridFunction *gf,
-                                                   int lod,
-                                                   bool new_refine,
+                                                   const int lod,
+                                                   const meshRefinementMethod mesh_ref_method,
+                                                   const fieldProjectionMethod field_proj_method,
+                                                   const refinementBasisType ref_basis_type,
+                                                   avtCentering &cent_change,
                                                    bool var_is_nodal = true);
 
       static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,
@@ -105,5 +143,43 @@ public:
                                                               int qf_order);
 
 };
+
+inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::meshRefinementMethod method)
+{
+    using meshRefinementMethod = avtMFEMDataAdaptor::meshRefinementMethod;
+    switch(method)
+    {
+        case meshRefinementMethod::Default_LOR:       os << "Default_LOR"; break;
+        case meshRefinementMethod::Continuous_LOR:    os << "Continuous_LOR"; break;
+        case meshRefinementMethod::Discontinuous_LOR: os << "Discontinuous_LOR"; break;
+        default:                                      os << "Unknown meshRefinementMethod"; break;
+    }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::fieldProjectionMethod method)
+{
+    using fieldProjectionMethod = avtMFEMDataAdaptor::fieldProjectionMethod;
+    switch(method)
+    {
+        case fieldProjectionMethod::Default_Projection: os << "Default_Projection"; break;
+        case fieldProjectionMethod::Zonal_Projection:   os << "Zonal_Projection"; break;
+        case fieldProjectionMethod::Nodal_Projection:   os << "Nodal_Projection"; break;
+        default:                                        os << "Unknown fieldProjectionMethod"; break;
+    }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::refinementBasisType method)
+{
+    using refinementBasisType = avtMFEMDataAdaptor::refinementBasisType;
+    switch(method)
+    {
+        case refinementBasisType::Gauss_Lobatto_Default: os << "Gauss_Lobatto_Default"; break;
+        case refinementBasisType::Closed_Uniform:        os << "Closed_Uniform"; break;
+        default:                                         os << "Unknown refinementBasisType"; break;
+    }
+    return os;
+}
 
 #endif

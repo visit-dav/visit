@@ -8,6 +8,7 @@ set(AVTMFEM_SOURCES
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${VISIT_COMMON_INCLUDES}
+                    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
                     ${VTK_INCLUDE_DIRS}
                     ${MFEM_INCLUDE_DIR}
                     )
@@ -18,6 +19,6 @@ link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${MFEM_LIBRARY_DIR} )
 add_library(avtmfem ${AVTMFEM_SOURCES})
 
 set(vtklibs VTK::CommonCore VTK::FiltersCore)
-target_link_libraries(avtmfem visitcommon ${MFEM_LIB} ${vtklibs})
+target_link_libraries(avtmfem visitcommon avtdbatts ${MFEM_LIB} ${vtklibs})
 
 VISIT_INSTALL_TARGETS(avtmfem)

@@ -173,8 +173,18 @@ avtSTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //
 //    Hank Childs, Mon Jan 26 09:13:53 PST 2009
 //    Add support for readers that do their own domain decomposition.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
+
+vtkDataArray *
+avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVar(ts, dom, var);
+}
 
 vtkDataArray *
 avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
@@ -223,8 +233,18 @@ avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //
 //    Hank Childs, Mon Jan 26 09:13:53 PST 2009
 //    Add support for readers that do their own domain decomposition.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
+
+vtkDataArray *
+avtSTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVectorVar(ts, dom, var);
+}
 
 vtkDataArray *
 avtSTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)

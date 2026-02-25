@@ -178,7 +178,17 @@ avtMTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //    MTSD files can now be grouped not just into a faux MD format by having
 //    more than one block, but also into a longer sequence of MT files,
 //    each chunk with one or more timesteps.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 // ****************************************************************************
+
+vtkDataArray *
+avtMTSDFileFormatInterface::GetVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVar(ts, dom, var);
+}
 
 vtkDataArray *
 avtMTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
@@ -226,7 +236,17 @@ avtMTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //    MTSD files can now be grouped not just into a faux MD format by having
 //    more than one block, but also into a longer sequence of MT files,
 //    each chunk with one or more timesteps.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 // ****************************************************************************
+
+vtkDataArray *
+avtMTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVectorVar(ts, dom, var);
+}
 
 vtkDataArray *
 avtMTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)

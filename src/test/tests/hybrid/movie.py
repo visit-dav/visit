@@ -33,6 +33,10 @@
 #     Removed the conversion from .bmp to .png in test5, since visit_composite
 #     output is now fixed. (see bug #2386).
 #
+#     Kathleen Biagas, Tue Feb 10, 2026
+#     Changed 'plausible' movie size for test_1.mpg, due to changes in how
+#     the movie is produced.
+#
 # ----------------------------------------------------------------------------
 import os
 import subprocess
@@ -205,10 +209,10 @@ def test012():
         txt = "\n".join([x[0] for x in files]) + "\n\n"
         for f in files:
             if f[0] == "test_1.mpg":
-                if f[1] > 1400000:
+                if f[1] > 1100000:
                     txt = txt + "MPEG movie file size is plausible."
                 else:
-                    txt = txt + "MPEG movie file size is suspect."
+                    txt = txt + "MPEG movie file size (%d) is suspect, expecting > 1100000" %f[1]
                 break
         TestText("movie_1_00", txt)
 

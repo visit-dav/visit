@@ -24,7 +24,20 @@ import llnl.visit.Plugin;
 
 public class MultiresControlAttributes extends AttributeSubject implements Plugin
 {
-    private static int MultiresControlAttributes_numAdditionalAtts = 3;
+    private static int MultiresControlAttributes_numAdditionalAtts = 6;
+
+    // Enum values
+    public final static int MESHREFINEMENTMETHOD_DEFAULT_LOR = 0;
+    public final static int MESHREFINEMENTMETHOD_CONTINUOUS_LOR = 1;
+    public final static int MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR = 2;
+
+    public final static int FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION = 0;
+    public final static int FIELDPROJECTIONMETHOD_ZONAL_PROJECTION = 1;
+    public final static int FIELDPROJECTIONMETHOD_NODAL_PROJECTION = 2;
+
+    public final static int REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT = 0;
+    public final static int REFINEMENTBASISTYPE_CLOSED_UNIFORM = 1;
+
 
     public MultiresControlAttributes()
     {
@@ -32,6 +45,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
+        meshRefMethod = MESHREFINEMENTMETHOD_DEFAULT_LOR;
+        fieldProjMethod = FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION;
+        refBasisType = REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT;
         info = new String("");
     }
 
@@ -41,6 +57,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
+        meshRefMethod = MESHREFINEMENTMETHOD_DEFAULT_LOR;
+        fieldProjMethod = FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION;
+        refBasisType = REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT;
         info = new String("");
     }
 
@@ -50,6 +69,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = obj.resolution;
         maxResolution = obj.maxResolution;
+        meshRefMethod = obj.meshRefMethod;
+        fieldProjMethod = obj.fieldProjMethod;
+        refBasisType = obj.refBasisType;
         info = new String(obj.info);
 
         SelectAll();
@@ -70,6 +92,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         // Create the return value
         return ((resolution == obj.resolution) &&
                 (maxResolution == obj.maxResolution) &&
+                (meshRefMethod == obj.meshRefMethod) &&
+                (fieldProjMethod == obj.fieldProjMethod) &&
+                (refBasisType == obj.refBasisType) &&
                 (info.equals(obj.info)));
     }
 
@@ -89,15 +114,36 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         Select(1);
     }
 
+    public void SetMeshRefMethod(int meshRefMethod_)
+    {
+        meshRefMethod = meshRefMethod_;
+        Select(2);
+    }
+
+    public void SetFieldProjMethod(int fieldProjMethod_)
+    {
+        fieldProjMethod = fieldProjMethod_;
+        Select(3);
+    }
+
+    public void SetRefBasisType(int refBasisType_)
+    {
+        refBasisType = refBasisType_;
+        Select(4);
+    }
+
     public void SetInfo(String info_)
     {
         info = info_;
-        Select(2);
+        Select(5);
     }
 
     // Property getting methods
     public int    GetResolution() { return resolution; }
     public int    GetMaxResolution() { return maxResolution; }
+    public int    GetMeshRefMethod() { return meshRefMethod; }
+    public int    GetFieldProjMethod() { return fieldProjMethod; }
+    public int    GetRefBasisType() { return refBasisType; }
     public String GetInfo() { return info; }
 
     // Write and read methods.
@@ -108,6 +154,12 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         if(WriteSelect(1, buf))
             buf.WriteInt(maxResolution);
         if(WriteSelect(2, buf))
+            buf.WriteInt(meshRefMethod);
+        if(WriteSelect(3, buf))
+            buf.WriteInt(fieldProjMethod);
+        if(WriteSelect(4, buf))
+            buf.WriteInt(refBasisType);
+        if(WriteSelect(5, buf))
             buf.WriteString(info);
     }
 
@@ -122,6 +174,15 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
             SetMaxResolution(buf.ReadInt());
             break;
         case 2:
+            SetMeshRefMethod(buf.ReadInt());
+            break;
+        case 3:
+            SetFieldProjMethod(buf.ReadInt());
+            break;
+        case 4:
+            SetRefBasisType(buf.ReadInt());
+            break;
+        case 5:
             SetInfo(buf.ReadString());
             break;
         }
@@ -132,6 +193,28 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         String str = new String();
         str = str + intToString("resolution", resolution, indent) + "\n";
         str = str + intToString("maxResolution", maxResolution, indent) + "\n";
+        str = str + indent + "meshRefMethod = ";
+        if(meshRefMethod == MESHREFINEMENTMETHOD_DEFAULT_LOR)
+            str = str + "MESHREFINEMENTMETHOD_DEFAULT_LOR";
+        if(meshRefMethod == MESHREFINEMENTMETHOD_CONTINUOUS_LOR)
+            str = str + "MESHREFINEMENTMETHOD_CONTINUOUS_LOR";
+        if(meshRefMethod == MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR)
+            str = str + "MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR";
+        str = str + "\n";
+        str = str + indent + "fieldProjMethod = ";
+        if(fieldProjMethod == FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION)
+            str = str + "FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION";
+        if(fieldProjMethod == FIELDPROJECTIONMETHOD_ZONAL_PROJECTION)
+            str = str + "FIELDPROJECTIONMETHOD_ZONAL_PROJECTION";
+        if(fieldProjMethod == FIELDPROJECTIONMETHOD_NODAL_PROJECTION)
+            str = str + "FIELDPROJECTIONMETHOD_NODAL_PROJECTION";
+        str = str + "\n";
+        str = str + indent + "refBasisType = ";
+        if(refBasisType == REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT)
+            str = str + "REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT";
+        if(refBasisType == REFINEMENTBASISTYPE_CLOSED_UNIFORM)
+            str = str + "REFINEMENTBASISTYPE_CLOSED_UNIFORM";
+        str = str + "\n";
         str = str + stringToString("info", info, indent) + "\n";
         return str;
     }
@@ -140,6 +223,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
     // Attributes
     private int    resolution;
     private int    maxResolution;
+    private int    meshRefMethod;
+    private int    fieldProjMethod;
+    private int    refBasisType;
     private String info;
 }
 

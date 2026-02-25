@@ -2,13 +2,15 @@ import os
 import hashlib
 import shutil
 import fnmatch
+import argparse
 
-out_dir = "/usr/workspace/wsa/visit/dashboard/dashboard"
-
+out_dir = "/usr/WS1/visit/dashboard/dashboard"
+testHost = "dane"
 base_dirs = []
 
 imode = 0
-mode_dirs = ["poodle_trunk_serial", "poodle_trunk_parallel", "poodle_trunk_scalable_parallel_icet"]
+mode_dirs = []
+
 
 ##############################################################################
 #
@@ -17,12 +19,18 @@ mode_dirs = ["poodle_trunk_serial", "poodle_trunk_parallel", "poodle_trunk_scala
 ##############################################################################
 def calc_base_dirs():
     #
+    # Check that the mode directory exists. If it doesn't, create it.
+    #
+    mode_dir = os.path.join(out_dir, "baselines", mode_dirs[imode])
+    if (not os.path.exists(mode_dir)):
+        os.mkdir(mode_dir)
+
+    #
     # Get the list of baseline directories
     #
-    global out_dir
     global base_dirs
     base_dirs = []
-    for dir in os.listdir(os.path.join(out_dir, "baselines", mode_dirs[imode])):
+    for dir in os.listdir(mode_dir):
         base_dirs.append(dir)
 
     base_dirs.sort(reverse = True)
@@ -100,7 +108,7 @@ def copy_new_baselines(cur_dir):
     # Process the serial results.
     #
     mode_dir = os.path.join(cur_dir, mode_dirs[imode])
-    
+
     newbase = []
     for file in os.listdir(mode_dir):
         if (is_baseline(cur_dir, file)):
@@ -246,7 +254,7 @@ def copy_failed_file(cur_file, out_file):
             #
             # This is the baseline image. Change the link to point to
             # a baseline.
-            # 
+            #
             image_name = line.split("'")[3]
             base_dir = get_base_dir(image_name)
             new_line = "    <td><a href=\"\" onMouseOver=\"document.b.src='c" + \
@@ -260,7 +268,7 @@ def copy_failed_file(cur_file, out_file):
             #
             # This is the difference image. Change the link to point to
             # a baseline.
-            # 
+            #
             image_name = line.split("'")[1]
             base_dir = get_base_dir(image_name)
             new_line = "    <td><a href=\"\" onMouseOver=\"document.d.src='" + \
@@ -283,7 +291,7 @@ def copy_failed_file(cur_file, out_file):
 def copy_results(cur_dir):
     global imode
     mode_dir = os.path.join(cur_dir, mode_dirs[imode])
-    
+
     #
     # Copy the index.html, the py files, and relevant html files.
     #
@@ -332,7 +340,7 @@ def copy_results(cur_dir):
             line = f.readline()
             line = f.readline()
             #
-            # This is an html file related to a text file difference. 
+            # This is an html file related to a text file difference.
             #
             if (line[29:35] == "Legend"):
                 line1 = f.readline()
@@ -346,7 +354,7 @@ def copy_results(cur_dir):
             line = f.readline()
             line = f.readline()
             #
-            # This is an html file related to a failed test (skipped or not skipped). 
+            # This is an html file related to a failed test (skipped or not skipped).
             #
             if (line[18:24] == "Failed"):
                 print("        Copying failure %s" % file)
@@ -358,8 +366,28 @@ def copy_results(cur_dir):
 #
 # Copy any new output directories to the dashboard.
 #
+# Modifications:
+#   Eric Brugger, Tue Jan 26, 2026
+#   Ensure mode dir exists before processing. Fixes bug when 'serial' is true.
+#
+#   Kathleen Biagas, Tue Jan 27, 2026
+#   Get testHost from args, fill in mode_dirs appropriately.
+#
 ##############################################################################
 def main():
+
+    parser = argparse.ArgumentParser(
+                    prog='visit-copy-test-results',
+                    description='Copies test output to the dashboard',
+                    epilog='')
+    parser.add_argument('--host', required=True)
+    args = parser.parse_args()
+    testHost=args.host
+
+    mode_dirs.append(testHost+"_trunk_serial")
+    mode_dirs.append(testHost+"_trunk_parallel")
+    mode_dirs.append(testHost+"_trunk_scalable_parallel_icet")
+
     dirs = []
     for dir in os.listdir("."):
         if (fnmatch.fnmatch(dir, "????-??-??-??:??")):
@@ -369,11 +397,14 @@ def main():
 
     global imode
     for dir in dirs:
-        print("Processing %s" % dir)
         for imode in range(3):
-            print("    Doing mode %d" % imode)
-            copy_new_baselines(dir)
-            copy_results(dir)
+            mode_dir = os.path.join(dir, mode_dirs[imode])
+            if os.path.isdir(mode_dir):
+                print("    Doing mode %d" % imode)
+                copy_new_baselines(dir)
+                copy_results(dir)
+            else:
+                print("    Skipping mode %d" % imode)
 
 if __name__ == "__main__":
     main()
