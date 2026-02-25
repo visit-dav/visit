@@ -287,7 +287,10 @@ function build_adios
     if [[ "$VISIT_MPI_COMPILER" != "" ]] ; then
         WITH_MPI_ARGS="MPICC=\"$VISIT_MPI_COMPILER\" MPICXX=\"$VISIT_MPI_COMPILER_CXX\" LDFLAGS=\"-lpthread $PAR_LINKER_FLAGS\""
         WITH_MPI_INC="$PAR_INCLUDE"
-
+        if [[ "$PAR_COMPILER" != "" ]] ; then
+            C_OPT_FLAGS="-I${PAR_HOME}/include"
+            MAKE_OPT2_FLAGS="CPPFLAGS=-U_NOMPI"
+        fi
     else
         WITH_MPI_ARGS="--without-mpi"
     fi
@@ -351,12 +354,11 @@ function build_adios
     info "Building ADIOS . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "ADIOS build failed.  Giving up"
-        return 1
+        warn "ADIOS build failed. Attempting install anyways..."
     fi
 
     info "Installing ADIOS . . ."
-    $MAKE install
+    $MAKE $MAKE_OPT2_FLAGS install
     if [[ $? != 0 ]] ; then
         warn "ADIOS build (make install) failed.  Giving up"
         return 1
