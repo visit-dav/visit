@@ -238,6 +238,25 @@ function build_netcdf
         cmake_opts="${cmake_opts} -DZLIB_ROOT:PATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
     fi 
 
+    # netcdf needs to find mpi if hdf5 was built with mpi support
+    if [[ x"$PAR_COMPILER" != x ]] ; then
+        cmake_opts="${cmake_opts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
+    fi
+
+    if [[ x"$PAR_INCLUDE" != x ]] ; then
+        cmake_opts="${cmake_opts} -DMPI_C_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+    fi
+
+    if [[ x"$PAR_LIBS" != x ]] ; then
+        cmake_opts="${cmake_opts} -DMPI_C_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
+        cmake_opts="${cmake_opts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+    fi
+
+
     info "CMakeing NetCDF . . ."
     cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
     info "Invoking command to cmake NetCDF"
