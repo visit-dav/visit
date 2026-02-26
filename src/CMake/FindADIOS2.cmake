@@ -48,27 +48,27 @@ if(VISIT_ADIOS2_DIR)
        set(adios2_cxx_mpi_lib adios2_cxx11_mpi)
    endif()
 
-   if(NOT WIN32)
-       SET_UP_THIRD_PARTY(ADIOS2 LIBS
-           adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
-           adios2_perfstubs ${adios2_cxx_lib} adios2_core adios2_enet)
-   else()
-       SET_UP_THIRD_PARTY(ADIOS2 LIBS
-           adios2_c ${adios2_cxx_lib} adios2_core adios2_atl
-           adios2_dill adios2_ffs )
-   endif()
-
    if(VISIT_PARALLEL)
        if(NOT WIN32)
-           SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
+           SET_UP_THIRD_PARTY(ADIOS2 LIBS
                adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
                adios2_perfstubs ${adios2_cxx_lib} adios2_core adios2_enet
                adios2_c_mpi ${adios2_cxx_mpi_lib} adios2_core_mpi)
        else()
-           SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
+           SET_UP_THIRD_PARTY(ADIOS2 LIBS
                adios2_c ${adios2_cxx_lib} adios2_core
                adios2_atl adios2_dill adios2_ffs
                adios2_c_mpi ${adios2_cxx_mpi_lib} adios2_core_mpi)
+       endif()
+   else()
+       if(NOT WIN32)
+           SET_UP_THIRD_PARTY(ADIOS2 LIBS
+               adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
+               adios2_perfstubs ${adios2_cxx_lib} adios2_core adios2_enet)
+       else()
+           SET_UP_THIRD_PARTY(ADIOS2 LIBS
+               adios2_c ${adios2_cxx_lib} adios2_core adios2_atl
+               adios2_dill adios2_ffs )
        endif()
    endif()
 endif()

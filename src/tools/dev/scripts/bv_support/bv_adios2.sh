@@ -95,12 +95,6 @@ function bv_adios2_host_profile
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR \${VISITHOME}/adios2-ser/\${ADIOS2_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF
-
-            if [[ "$parallel" == "yes" ]] ; then
-                echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR \${VISITHOME}/adios2-par/\${ADIOS2_VERSION}/\${VISITARCH})" \
-                >> $HOSTCONF
-            fi
         fi
     fi
 }
