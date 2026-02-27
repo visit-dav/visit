@@ -408,7 +408,7 @@ function build_cgns
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
         LIBS_ENV="-lhdf5"
-        LDFLAGS_ENV="-L$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
+        LDFLAGS_ENV="-L$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib -Wl,-rpath,$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         LIBS_ENV="$LIBS_ENV -lz"
         LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
@@ -426,16 +426,10 @@ function build_cgns
     fi
 
     set -x
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-            LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
-            ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
-    else
-        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-            ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
-    fi
+    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
+        ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     set +x
 
     if [[ $? != 0 ]] ; then
