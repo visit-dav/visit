@@ -125,6 +125,43 @@ linear_base(key, base, nelp, width, compar, add_flag)
 EOF
 }
 
+
+
+function apply_gdal_macos_libpng_patch
+{
+    info "Patching gdal for bad fp.h include"
+    patch -p0 << \EOF
+From eb7addf79e6f6506ef5975e6b913f88dc670199a Mon Sep 17 00:00:00 2001
+From: Cyrus Harrison <cyrush@llnl.gov>
+Date: Fri, 27 Feb 2026 09:07:43 -0800
+Subject: [PATCH] fix for fp no longer
+
+---
+ frmts/png/libpng/pngconf.h | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/frmts/png/libpng/pngconf.h b/frmts/png/libpng/pngconf.h
+index 03b5e69..b6b1b33 100644
+--- gdal-2.2.4/frmts/png/libpng/pngconf.h
++++ gdal-2.2.4/frmts/png/libpng/pngconf.h
+@@ -425,14 +425,6 @@
+ 
+ #ifdef PNG_FLOATING_POINT_SUPPORTED
+ #  ifdef MACOS
+-     /* We need to check that <math.h> hasn't already been included earlier
+-      * as it seems it doesn't agree with <fp.h>, yet we should really use
+-      * <fp.h> if possible.
+-      */
+-#    if !defined(__MATH_H__) && !defined(__MATH_H) && !defined(__cmath__)
+-#      include <fp.h>
+-#    endif
+-#  else
+ #    include <math.h>
+ #  endif
+ #  if defined(_AMIGA) && defined(__SASC) && defined(_M68881)
+EOF
+}
+
 function build_gdal
 {
     #
@@ -135,6 +172,14 @@ function build_gdal
     if [[ $untarred_gdal == -1 ]] ; then
         warn "Unable to prepare GDAL Build Directory. Giving Up"
         return 1
+    fi
+
+    # pre compile patch related to libping
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        apply_gdal_macos_libpng_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
     #
