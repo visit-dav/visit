@@ -993,7 +993,9 @@ function get_par_compiler_home_dir
         PAR_COMPILER_REAL="$(cd "$(dirname "$PAR_COMPILER_PATH")" && pwd -P)/$(basename "$PAR_COMPILER_PATH")"
         PAR_BIN_DIR="$(dirname "$PAR_COMPILER_REAL")"
         PAR_HOME="$(dirname "$PAR_BIN_DIR")"
-        export PAR_HOME
+        export PAR_HOME=$PAR_HOME
+        # Precaution: export MPI_HOME too so CMake will just see it
+        export MPI_HOME=$PAR_HOME
     fi
     echo $PAR_HOME
 }
