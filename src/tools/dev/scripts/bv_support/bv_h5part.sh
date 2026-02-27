@@ -600,7 +600,7 @@ function build_h5part
         WITHHDF5ARG="--with-hdf5=$HDF5ROOT"
         if [[ "$PAR_COMPILER" != "" ]] ; then
             CFLAGS="$CFLAGS -I${PAR_HOME}/include"
-            LDFLAGS="-L$HDF5ROOT/lib -L${PAR_HOME}/lib -Wl,-rpath,${PAR_HOME}/lib -L${PAR_HOME}/lib64 -Wl,-rpath,${PAR_HOME}/lib64"
+            LDFLAGS="-L$HDF5ROOT/lib -Wl,-rpath,$HDF5ROOT/lib -L${PAR_HOME}/lib -Wl,-rpath,${PAR_HOME}/lib -L${PAR_HOME}/lib64 -Wl,-rpath,${PAR_HOME}/lib64"
             LIBS="-lhdf5 -lmpi -lz"
         else
             LDFLAGS="-L$HDF5ROOT/lib"
