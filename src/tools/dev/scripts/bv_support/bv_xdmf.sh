@@ -418,29 +418,29 @@ function build_xdmf
     fi
 
     cmake_opts="-DCMAKE_INSTALL_PREFIX:PATH=\"$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}\" \
-               -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE} \
-               -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
-               -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS} \
-               -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_HDF5_FLAGS}\" \
-               -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-               -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_HDF5_FLAGS}\" \
-               -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-               -DCMAKE_SHARED_LINKER_FLAGS:STRING=\"${LDFLAGS_HDF5}\" \
-               -DBUILD_TESTING:BOOL=OFF \
-               -DXDMF_BUILD_MPI:BOOL=OFF \
-               -DXDMF_BUILD_VTK:BOOL=OFF \
-               -DXDMF_BUILD_UTILS:BOOL=OFF \
-               -DXDMF_SYSTEM_HDF5:BOOL=ON \
-               -DHDF5_DIR:PATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/cmake\" \
-               -DHDF5_INCLUDE_PATH:PATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include\" \
-               -DHDF5_LIBRARY:FILEPATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}\" \
-               -DXDMF_SYSTEM_ZLIB:BOOL=ON \
-               -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR} \
-               -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY} \
-               -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
-               -DLIBXML2_INCLUDE_PATH:PATH=\"${xmlinc}\" \
-               -DLIBXML2_LIBRARY:FILEPATH=\"${xmllib}\" \
-               -Wno-dev "
+                -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE} \
+                -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
+                -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS} \
+                -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_HDF5_FLAGS}\" \
+                -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
+                -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_HDF5_FLAGS}\" \
+                -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
+                -DCMAKE_SHARED_LINKER_FLAGS:STRING=\"${LDFLAGS_HDF5}\" \
+                -DBUILD_TESTING:BOOL=OFF \
+                -DXDMF_BUILD_MPI:BOOL=OFF \
+                -DXDMF_BUILD_VTK:BOOL=OFF \
+                -DXDMF_BUILD_UTILS:BOOL=OFF \
+                -DXDMF_SYSTEM_HDF5:BOOL=ON \
+                -DHDF5_DIR:PATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/cmake\" \
+                -DHDF5_INCLUDE_PATH:PATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include\" \
+                -DHDF5_LIBRARY:FILEPATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}\" \
+                -DXDMF_SYSTEM_ZLIB:BOOL=ON \
+                -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR} \
+                -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY} \
+                -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
+                -DLIBXML2_INCLUDE_PATH:PATH=\"${xmlinc}\" \
+                -DLIBXML2_LIBRARY:FILEPATH=\"${xmllib}\" \
+                -Wno-dev "
 
 
     # xdmf needs to find mpi if hdf5 was built with mpi support

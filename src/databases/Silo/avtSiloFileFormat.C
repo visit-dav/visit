@@ -169,7 +169,7 @@ class SiloException : public DatabaseException
   public: SiloException(const char *)
           {
               char str[1024];
-              sprintf(str, "A Silo error occurred.\nThe error is \"%s.\"", filename);
+              sprintf(str, "A Silo error occurred.\nThe error is \"%s.\"", filename.c_str());
               msg = str;
               DBSetDataReadMask2(DBAll); // precaution against exception out from a
                                          // block where mask was other than DBAll
