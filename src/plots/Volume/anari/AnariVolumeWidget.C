@@ -26,7 +26,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-#include <algorithm>
+#include <limits>
 
 const std::string AnariVolumeWidget::USD_WIDGET_KEY = "usd";
 const std::string AnariVolumeWidget::DEFAULT_WIDGET_KEY = "default";
@@ -763,7 +763,7 @@ AnariVolumeWidget::GetBackendType(const std::string &libname) const
     {
         return BackendType::OSPRAY;
     }
-     else if(libname == "rpr")
+    else if(libname == "rpr")
     {
         return BackendType::RADEONPRORENDER;
     }
@@ -895,7 +895,7 @@ AnariVolumeWidget::UpdateAnariAttributes(const AnariAttributes &attrs)
 // ****************************************************************************
 
 void
-AnariVolumeWidget::UpdateLibrarySubtypes(const std::string subtype)
+AnariVolumeWidget::UpdateLibrarySubtypes(const std::string &subtype)
 {
     librarySubtypes->blockSignals(true);
     QString textItem = QString::fromStdString(subtype);
@@ -927,7 +927,7 @@ AnariVolumeWidget::UpdateLibrarySubtypes(const std::string subtype)
 // ****************************************************************************
 
 void
-AnariVolumeWidget::UpdateLibraryName(const std::string libname)
+AnariVolumeWidget::UpdateLibraryName(const std::string &libname)
 {
     libraryName->blockSignals(true);
     libraryName->setText(QString::fromStdString(libname));
@@ -952,7 +952,7 @@ AnariVolumeWidget::UpdateLibraryName(const std::string libname)
 // ****************************************************************************
 
 void
-AnariVolumeWidget::UpdateRendererSubtypes(const std::string subtype)
+AnariVolumeWidget::UpdateRendererSubtypes(const std::string &subtype)
 {
     rendererSubtypes->blockSignals(true);
     QString textItem = QString::fromStdString(subtype);
@@ -1000,8 +1000,11 @@ AnariVolumeWidget::UpdateRendererParameters(const stringVector &params)
 
         for (const auto& param : params)
         {
-            std::string key = param.substr(0, param.find(";"));
-            std::string value = param.substr(param.find(";") + 1);
+            size_t sep = param.find(";");
+            if(sep == std::string::npos)
+                continue;
+            std::string key = param.substr(0, sep);
+            std::string value = param.substr(sep + 1);
 
             for(auto child : children)
             {
@@ -1085,8 +1088,11 @@ AnariVolumeWidget::UpdateUSDParameters(const stringVector &params)
 
     for (const auto& param : params)
     {
-        std::string key = param.substr(0, param.find(";"));
-        std::string value = param.substr(param.find(";") + 1);
+        size_t sep = param.find(";");
+        if(sep == std::string::npos)
+            continue;
+        std::string key = param.substr(0, sep);
+        std::string value = param.substr(sep + 1);
 
         for(auto child : children)
         {
@@ -1349,6 +1355,11 @@ AnariVolumeWidget::librarySubtypeChanged(const QString &subtype)
     }
     else
     {
+        if(anariLibrary)
+        {
+            anariUnloadLibrary(anariLibrary);
+        }
+
         debug1 << "Could not create the ANARI back-end device (" << libname << ") to update the Rendering UI." << std::endl;
         emit currentBackendChanged(0);
         ClearAnariParameterAttributes();
@@ -1398,6 +1409,11 @@ AnariVolumeWidget::rendererSubtypeChanged(const QString &subtype)
     }
     else
     {
+        if(anariLibrary)
+        {
+            anariUnloadLibrary(anariLibrary);
+        }
+
         debug1 << "Could not create the ANARI back-end device (" << libname << ") to update the Rendering UI." << std::endl;
         emit currentBackendChanged(0);
 
@@ -1542,14 +1558,22 @@ void
 AnariVolumeWidget::UpdateRenderingAttributes(const bool updateApply)
 {
     auto widget = dynamicLayouts->currentWidget();
-    auto children = widget->findChildren<QWidget *>(Qt::FindDirectChildrenOnly);
+    if(!widget)
+    {
+        debug1 << "No current widget found in dynamicLayouts" << std::endl;
+        return;
+    }
+
+    auto children = widget->findChildren<QWidget *>();
     stringVector params;
 
     for(auto child : children)
     {
         std::string name = child->objectName().toStdString();
 
-        if(name.empty())
+        // Check if name begins with "qt_", which indicates it's a child widget created by 
+        // Qt (e.g., the line edits in a combo box) rather than a parameter widget. If so, skip it.
+        if(name.empty() || name.rfind("qt_", 0) == 0)
         {
             continue;
         }
@@ -1581,10 +1605,6 @@ AnariVolumeWidget::UpdateRenderingAttributes(const bool updateApply)
             auto val = comboBox->currentText().toStdString();
             std::string valStr = name + ";" + val;
             params.push_back(valStr);
-        }
-        else
-        {
-            std::cerr << "Unknown widget type: " << child->metaObject()->className() << std::endl;
         }
     }
 

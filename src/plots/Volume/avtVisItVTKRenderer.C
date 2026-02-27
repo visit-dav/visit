@@ -16,8 +16,6 @@
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 #include <avtCallback.h>
-#include <avtDatasetExaminer.h>
-
 
 #include <vtkImageData.h>
 #include <vtkCellData.h>
@@ -42,6 +40,7 @@
 #endif
 
 #ifdef HAVE_ANARI
+    #include <sstream>
     #include <vtkAnariPass.h>
     #include <vtkAnariVolumeMapper.h>
 #endif
@@ -270,7 +269,7 @@ avtVisItVTKRenderer::NeedImage(vtkDataSet *input)
         if( m_nComponents == 0 )
         {
             EXCEPTION1(ImproperUseException,
-                       "NeedImage is being called without the number of components beging set. This error is a developer error");
+                       "NeedImage is being called without the number of components being set. This error is a developer error");
         }
 
         m_firstPass = false;
@@ -402,7 +401,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             m_cellData = true;
         }
 
-        // There could be a spearate opacity scalar data array.
+        // There could be a separate opacity scalar data array.
         vtkDataArray *opacityArr = nullptr;
 
         if( m_nComponents == 2 )
@@ -436,7 +435,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         // if( gradientVarName != "default" )
         //   gradientArr = in_ds->GetPointData()->GetVectors( gradientVarName.c_str() );
 
-        // If needed adjust the colar var range
+        // If needed adjust the color var range
         if( m_atts.GetUseColorVarMin() )
             m_dataRange[0] = m_atts.GetColorVarMin();
         if( m_atts.GetUseColorVarMax() )
@@ -511,7 +510,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 
         scalars->Delete();
 
-        // The values on the image must be scale to between 0 and 255.
+        // The values on the image must be scaled to between 0 and 255.
         double dataScale    = 255.0f / (   m_dataRange[1] -    m_dataRange[0]);
         double opacityScale = 255.0f / (m_opacityRange[1] - m_opacityRange[0]);
 
@@ -585,7 +584,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
                     // }
                     // else
                     // {
-                    //     scalars->SetComponent(ptId, 2, vale);
+                    //     scalars->SetComponent(ptId, 2, val);
                     // }
 
                     ptId++;
@@ -647,13 +646,19 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 #ifdef HAVE_ANARI
     else if(m_atts.GetRendererType() == VolumeAttributes::ANARI)
     {
+        bool anariLibraryInitialized = true;
         auto anariAttributes = m_atts.GetAnariAttributes();
 
-        bool prevAnariEnabled = m_anariEnabled;
-        m_anariEnabled = anariAttributes.GetAnariRendering();
+        std::string previousAnariLibrary = m_anariLibrary;
+        m_anariLibrary = anariAttributes.GetAnariLibrary();
 
-        if(prevAnariEnabled != m_anariEnabled)
+        std::string previousAnariLibrarySubtype = m_anariLibrarySubtype;
+        m_anariLibrarySubtype = anariAttributes.GetAnariLibrarySubtype();
+
+        if(previousAnariLibrary != m_anariLibrary || previousAnariLibrarySubtype != m_anariLibrarySubtype)
         {
+            anariLibraryInitialized = false;
+            
             if(m_volumeMapper != nullptr)
             {
                 m_volumeMapper->Delete();
@@ -661,7 +666,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             }
         }
 
-        if(m_anariEnabled)
+        if(anariAttributes.GetAnariRendering())
         {
             LOCAL_DEBUG << "ANARI Volume Mapper " << std::endl;
             vtkAnariVolumeMapper *anariVolumeMapper = nullptr;
@@ -690,11 +695,21 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             }
 
             auto* anariPass = anariVolumeMapper->GetAnariPass();
-            bool success = SetAnariLibrary(anariPass);
 
-            if(success)
+            if(!anariLibraryInitialized)
             {
-                SetAnariRendererSubtype(anariPass);
+                anariLibraryInitialized = SetAnariLibrary(anariPass);
+            }
+
+            if(anariLibraryInitialized)
+            {
+                std::string previousAnariRendererSubtype = m_anariRendererSubtype;
+                m_anariRendererSubtype = anariAttributes.GetAnariRendererSubtype();
+
+                if(previousAnariRendererSubtype != m_anariRendererSubtype)
+                {
+                    SetAnariRendererSubtype(anariPass);
+                }
 
                 if(!anariAttributes.GetUsingUsdDevice())
                 {
@@ -705,21 +720,29 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
                     SetAnariUSDParameters(anariPass);
                 }
             }
-            else 
+            else
             {
-                if(anariVolumeMapper != nullptr)
-                {
-                    anariVolumeMapper->Delete();
-                    anariVolumeMapper = nullptr;
-                }
-
+                debug5 << "[ANARI::Volume] Failed to set ANARI library" << std::endl;
+                anariVolumeMapper->Delete();
                 m_volumeMapper = nullptr;
-                m_anariEnabled = false;
             }
         }
     }
 #endif
-    
+
+    // When using Serial (GPU) renderer, ensure we have the GPU mapper;
+    // switching from OSPRay or ANARI leaves the wrong mapper otherwise.
+    if (!m_atts.GetOSPRayEnabledFlag() &&
+        m_atts.GetRendererType() != VolumeAttributes::ANARI)
+    {
+        if (m_volumeMapper != nullptr &&
+            !m_volumeMapper->IsA("vtkGPUVolumeRayCastMapper"))
+        {
+            m_volumeMapper->Delete();
+            m_volumeMapper = nullptr;
+        }
+    }
+
     if( m_volumeMapper == nullptr )
     {
         m_volumeMapper = vtkGPUVolumeRayCastMapper::New();
@@ -929,16 +952,20 @@ avtVisItVTKRenderer::SetAnariLibrary(vtkAnariPass * const anariPass)
 void 
 avtVisItVTKRenderer::SetAnariRendererSubtype(vtkAnariPass * const anariPass)
 {
-    auto anariAttributes = m_atts.GetAnariAttributes();
-
     if(anariPass == nullptr)
     {
         debug5 << "[ANARI::Volume::SetAnariRendererSubtype] ANARI Pass is NULL" << std::endl;
         return;
     }
 
-    auto subtype = anariAttributes.GetAnariRendererSubtype();
     auto* ar = anariPass->GetAnariRenderer();
+    if(ar == nullptr)
+    {
+        debug5 << "[ANARI::Volume::SetAnariRendererSubtype] ANARI Renderer is NULL" << std::endl;
+        return;
+    }
+
+    auto subtype = m_atts.GetAnariAttributes().GetAnariRendererSubtype();
     ar->SetSubtype(subtype.c_str());
     debug5 << "[ANARI::Volume] Renderer subtype: " << subtype.c_str() << std::endl;
 }
