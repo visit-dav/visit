@@ -93,7 +93,7 @@ function bv_adios2_host_profile
         else
             echo "SETUP_APP_VERSION(ADIOS2 $ADIOS2_VERSION)" >> $HOSTCONF
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR \${VISITHOME}/adios2-ser/\${ADIOS2_VERSION}/\${VISITARCH})" \
+                "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR \${VISITHOME}/adios2/\${ADIOS2_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF
         fi
     fi
@@ -102,13 +102,7 @@ function bv_adios2_host_profile
 function bv_adios2_ensure
 {
     if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
-        ensure_built_or_ready "adios2-ser" $ADIOS2_VERSION $ADIOS2_BUILD_DIR $ADIOS2_FILE
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_ADIOS2="no"
-            error "Unable to build ADIOS2.  ${ADIOS2_FILE} not found."
-        fi
-        ensure_built_or_ready "adios2-par" $ADIOS2_VERSION $ADIOS2_BUILD_DIR $ADIOS2_FILE
+        ensure_built_or_ready "adios2" $ADIOS2_VERSION $ADIOS2_BUILD_DIR $ADIOS2_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ADIOS2="no"
@@ -308,14 +302,8 @@ function bv_adios2_build
     if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
         ser_installed="no"
         par_installed="no"
-        check_if_installed "adios2-ser" $ADIOS2_VERSION
-        if [[ $? == 0 ]] ; then ser_installed="yes"; fi
-        if [[ "$parallel" == "yes" ]]; then
-            check_if_installed "adios2-par" $ADIOS2_VERSION
-            if [[ $? == 0 ]] ; then par_installed="yes"; fi
-        fi
-
-        if [ "$ser_installed" == "yes" ] && ([ "$parallel" == "no" ] || [ "$par_installed" == "yes" ]) ; then
+        check_if_installed "adios2" $ADIOS2_VERSION
+        if [[ $? == 0 ]] ; then
             info "ADIOS2 already installed, skipping"
         else
             build_adios2
