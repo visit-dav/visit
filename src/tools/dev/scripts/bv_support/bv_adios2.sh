@@ -108,12 +108,6 @@ function bv_adios2_ensure
             DO_ADIOS2="no"
             error "Unable to build ADIOS2.  ${ADIOS2_FILE} not found."
         fi
-        ensure_built_or_ready "adios2" $ADIOS2_VERSION $ADIOS2_BUILD_DIR $ADIOS2_FILE
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_ADIOS2="no"
-            error "Unable to build ADIOS2.  ${ADIOS2_FILE} not found."
-        fi
     fi
 }
 

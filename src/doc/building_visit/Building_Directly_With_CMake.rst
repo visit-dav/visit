@@ -1,5 +1,21 @@
 .. _Building Directly with CMake:
 
+What is a VisIt config-site file?
+---------------------------------
+There are a number of compute platforms across the HPC/CSE community upon which VisIt is routinely built.
+For many of these systems, VisIt developers themselves or key collaborators take responsibility for building VisIt there.
+We call these *managed* installations of VisIt.
+For each managed installation, we maintain a set of VisIt-specific CMake variables in a file in ``src/config-site/<hostname>.cmake``.
+These files are called *config-site* files.
+They offer a simple, short-hand for specifying a slew of CMake variables when building VisIt.
+
+In this section, we explain how a config-site file is organized and what various of the different type of variables used there mean.
+
+* imported targets
+* LIBDEP
+* 
+
+
 Building Directly with CMake
 ----------------------------
 If a *config site file* is available for the platform you wish to build on, VisIt_ can often be built without the use of the ``build_visit`` script, with these steps.
