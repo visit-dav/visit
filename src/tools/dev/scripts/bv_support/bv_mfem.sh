@@ -61,8 +61,6 @@ function bv_mfem_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
 
-        ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
-
         CONDUIT_LIBDEP=""
         INCDEP=""
         if [[ "$DO_CONDUIT" == "yes" ]] ; then
@@ -79,7 +77,7 @@ function bv_mfem_host_profile
                     >> $HOSTCONF
         fi
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $CONDUIT_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ZLIB_LIB $CONDUIT_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
     fi
 }
