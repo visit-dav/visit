@@ -873,6 +873,8 @@ avtXGCFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 void
 avtXGCFileFormat::Initialize()
 {
+    if (! file)
+        EXCEPTION0(ImproperUseException);
     if (! file->Open())
         EXCEPTION0(ImproperUseException);
 
@@ -881,6 +883,8 @@ avtXGCFileFormat::Initialize()
     
     //Open the mesh file.
     meshFile = new ADIOSFileObject(avtXGCFileFormat::CreateMeshName(file->Filename()));
+    if (! meshFile)
+        EXCEPTION0(ImproperUseException);
     meshFile->SetResetDimensionOrder();
     if (! meshFile->Open())
         EXCEPTION0(ImproperUseException);
