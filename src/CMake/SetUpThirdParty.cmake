@@ -266,12 +266,8 @@ function(SET_UP_THIRD_PARTY pkg)
                 set(current_lib_dir ${X_VALUE})
             else(is_lib_path)
                 set(is_lib_path 1)
-                set(_alt_x_value "")
-                if(${X_VALUE} STREQUAL "hdf5-shared")
-                    set(_alt_x_value "hdf5")
-                endif()
                 find_library(full_lib_path
-                             NAMES ${X_VALUE} ${_alt_x_value}
+                             NAMES ${X_VALUE}
                              PATHS ${current_lib_dir}
                              NO_DEFAULT_PATH
                              NO_CMAKE_ENVIRONMENT_PATH
