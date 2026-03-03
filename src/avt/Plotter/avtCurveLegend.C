@@ -263,12 +263,16 @@ avtCurveLegend::SetFont(int family, bool bold, bool italic, bool shadow)
 //    Brad Whitlock, Thu Mar 22 00:15:01 PDT 2007
 //    Set the position2.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
 avtCurveLegend::ChangePosition(double x, double y)
 {
-    lineLegend->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
+    lineLegend->GetPositionCoordinate()->SetCoordinateSystemToWorld();
     lineLegend->GetPositionCoordinate()->SetValue(x, y, 0.);
 
     // Set the position 2, incorporating the scale.
