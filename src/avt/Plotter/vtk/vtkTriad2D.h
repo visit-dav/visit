@@ -55,6 +55,11 @@ public:
   vtkGetMacro(AxisLength, float);
 
   // Description:
+  // Set/Get the axes font height.
+  void SetFontHeight(double);
+  double GetFontHeight() const;
+
+  // Description:
   // Set/Get the camera to perform scaling and translation of the
   // vtkCubeAxesActor2D.
   virtual void SetCamera(vtkCamera*);

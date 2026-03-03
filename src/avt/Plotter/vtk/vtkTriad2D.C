@@ -26,6 +26,11 @@
 //    Brad Whitlock, Thu Sep 29 17:05:04 PDT 2011
 //    Override title text justification.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates
+//    instead of normalized viewport coordinates to support tiled
+//    rendering.
+//
 // *****************************************************************
 
 vtkStandardNewMacro(vtkTriad2D);
@@ -34,7 +39,6 @@ vtkCxxSetObjectMacro(vtkTriad2D, Camera,vtkCamera);
 
 vtkTriad2D::vtkTriad2D()
 {
-  cerr << "vtkTriad2D::vtkTriad2D constructor" << endl;
   this->Camera           = NULL;
   this->Origin[0]        = 0.10;
   this->Origin[1]        = 0.10;
@@ -48,10 +52,9 @@ vtkTriad2D::vtkTriad2D()
   this->XAxis->SetTitleAtEnd(1);
   this->XAxis->SetTitleJustification(0);
   this->XAxis->SetTitleVerticalJustification(0);
-  this->XAxis->GetPoint1Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
-  this->XAxis->GetPoint2Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
+  this->XAxis->SetTitleFontHeight(0.02);
+  this->XAxis->GetPoint1Coordinate()->SetCoordinateSystemToWorld(); 
+  this->XAxis->GetPoint2Coordinate()->SetCoordinateSystemToWorld(); 
 
   this->YAxis = vtkVisItAxisActor2D::New();
   this->YAxis->SetTitle("Y");
@@ -61,10 +64,9 @@ vtkTriad2D::vtkTriad2D()
   this->YAxis->SetTitleAtEnd(1);
   this->YAxis->SetTitleJustification(0);
   this->YAxis->SetTitleVerticalJustification(0);
-  this->YAxis->GetPoint1Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
-  this->YAxis->GetPoint2Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
+  this->YAxis->SetTitleFontHeight(0.02);
+  this->YAxis->GetPoint1Coordinate()->SetCoordinateSystemToWorld(); 
+  this->YAxis->GetPoint2Coordinate()->SetCoordinateSystemToWorld(); 
 
   this->ZAxis = vtkVisItAxisActor2D::New();
   this->ZAxis->SetTitle("Z");
@@ -74,10 +76,9 @@ vtkTriad2D::vtkTriad2D()
   this->ZAxis->SetTitleAtEnd(1);
   this->ZAxis->SetTitleJustification(0);
   this->ZAxis->SetTitleVerticalJustification(0);
-  this->ZAxis->GetPoint1Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
-  this->ZAxis->GetPoint2Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
+  this->ZAxis->SetTitleFontHeight(0.02);
+  this->ZAxis->GetPoint1Coordinate()->SetCoordinateSystemToWorld(); 
+  this->ZAxis->GetPoint2Coordinate()->SetCoordinateSystemToWorld(); 
 }
 
 
@@ -109,7 +110,6 @@ int vtkTriad2D::RenderOverlay(vtkViewport *viewport)
 
 int vtkTriad2D::RenderOpaqueGeometry(vtkViewport *viewport)
 {
-  cerr << "vtkTriad2D::RenderOpaqueGeometry" << endl;
   float  x_viewport[2];
   float  y_viewport[2];
   float  z_viewport[2];
@@ -189,16 +189,22 @@ void vtkTriad2D::SetOrigin(float new_origin[2])
 
 void vtkTriad2D::SetOrigin(float new_x_origin, float new_y_origin)
 {
-  if (   new_x_origin >= 0. && new_x_origin <= 1. 
-      && new_y_origin >= 0. && new_y_origin <= 1.)
-    {
-    this->Origin[0] = new_x_origin;
-    this->Origin[1] = new_y_origin;
-    }
-  else
-    {
-    vtkErrorMacro(<<"Origin must be in normalized coordinates.");
-    }
+  this->Origin[0] = new_x_origin;
+  this->Origin[1] = new_y_origin;
+}
+
+
+void vtkTriad2D::SetFontHeight(double height)
+{
+  this->XAxis->SetTitleFontHeight(height);
+  this->YAxis->SetTitleFontHeight(height);
+  this->ZAxis->SetTitleFontHeight(height);
+}
+
+
+double vtkTriad2D::GetFontHeight() const
+{
+  return this->XAxis->GetTitleFontHeight();
 }
 
 

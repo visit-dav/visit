@@ -116,16 +116,21 @@ vtkStandardNewMacro(vtkVisItAxisActor2D);
 //    Move the logic to skip major tick marks when doing scientific
 //    notation from BuildAxis to ComputeLogTicks.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates
+//    instead of normalized viewport coordinates to support tiled
+//    rendering.
+//
 // **********************************************************************
 
 vtkVisItAxisActor2D::vtkVisItAxisActor2D()
 {
   this->Point1Coordinate = vtkCoordinate::New();
-  this->Point1Coordinate->SetCoordinateSystemToNormalizedViewport();
+  this->Point1Coordinate->SetCoordinateSystemToWorld();
   this->Point1Coordinate->SetValue(0.0, 0.0);
 
   this->Point2Coordinate = vtkCoordinate::New();
-  this->Point2Coordinate->SetCoordinateSystemToNormalizedViewport();
+  this->Point2Coordinate->SetCoordinateSystemToWorld();
   this->Point2Coordinate->SetValue(0.75, 0.0);
 
   this->UseOrientationAngle = false;
