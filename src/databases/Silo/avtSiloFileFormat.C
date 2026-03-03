@@ -1734,8 +1734,8 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
             // used to produce the file and version of the hdf5 and silo
             // library being used in the current plugin reading it.
             //
-            char dbcmt[lfileinfo+256];
-            snprintf(dbcmt, sizeof(dbcmt), "%.256s%sDriver: %s\nFile: %s%s%s\nPlugin:%s%s%ssilo-%s",
+            char *dbcmt = new char[lfileinfo+256];
+            snprintf(dbcmt, lfileinfo+256, "%.256s%sDriver: %s\nFile: %s%s%s\nPlugin:%s%s%ssilo-%s",
                 fileinfo_str?fileinfo_str:"",
                 fileinfo_str?"\n":"",
                 drvrinfo_str,
@@ -1747,6 +1747,7 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                 hdf5libinfo_str?", ":"",
                 DBVersion());
             md->SetDatabaseComment(dbcmt);
+            delete[] dbcmt;
 
             if (fileinfo_str) delete [] fileinfo_str;
             if (hdf5info_str) delete [] hdf5info_str;
