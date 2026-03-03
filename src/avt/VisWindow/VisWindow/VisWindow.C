@@ -4873,12 +4873,18 @@ start_render(vtkObject *, unsigned long, void *p, void*)
 //  Programmer: Eric Brugger
 //  Creation:   August 20, 2001
 //
+//  Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Add code to trigger the calling of PlotListUpdate on the colleagues.
+//
 // ****************************************************************************
 
 void
 VisWindow::ProcessResizeEvent(void *data)
 {
     VisWindow *visWindow = (VisWindow *) data;
+
+    visWindow->plots->TriggerPlotListUpdate();
 
     visWindow->UpdateView();
 }
