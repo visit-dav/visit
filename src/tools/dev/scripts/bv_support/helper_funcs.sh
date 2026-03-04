@@ -984,7 +984,7 @@ function check_files
 # Compute path suitable for setting MPI_HOME used by CMake for finding MPI.   #
 # The computed path is exported and in subsequent calls always echoed so the  #
 # function can be used to return from anywhere in build_visit if the export,  #
-# for some reason, not available.                                             #
+# for some reason, is not available.                                          #
 # *************************************************************************** #
 function get_par_compiler_home_dir 
 {
@@ -994,8 +994,6 @@ function get_par_compiler_home_dir
         PAR_BIN_DIR="$(dirname "$PAR_COMPILER_REAL")"
         PAR_HOME="$(dirname "$PAR_BIN_DIR")"
         export PAR_HOME=$PAR_HOME
-        # Precaution: export MPI_HOME too so CMake will just see it
-        export MPI_HOME=$PAR_HOME
     fi
     echo $PAR_HOME
 }
