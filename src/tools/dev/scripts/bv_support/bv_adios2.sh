@@ -301,7 +301,7 @@ function bv_adios2_build
 
     if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
         check_if_installed "adios2" $ADIOS2_VERSION
-        if [[ $? != 0 ]] ; then
+        if [[ $? == 0 ]] ; then
             info "ADIOS2 already installed, skipping"
         else
             build_adios2
