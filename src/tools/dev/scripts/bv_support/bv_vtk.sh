@@ -102,6 +102,37 @@ function bv_vtk_ensure
     fi
 }
 
+function apply_vtk95_macos_dock_popup_fux
+
+{
+  # patch to prevent engine popup in macOS dock
+  # https://github.com/visit-dav/visit/issues/20840
+   patch -p0 << \EOF
+--- Rendering/OpenGL2/vtkCocoaRenderWindow.mm
++++ Rendering/OpenGL2/vtkCocoaRenderWindow.mm
+@@ -684,10 +684,11 @@ - (void)viewFrameDidChange:(NSNotification*)aNotification
+   if (!this->GetRootWindow() && !this->GetWindowId() && !this->GetParentId() &&
+     this->GetConnectContextToNSView())
+   {
+-    // Ordinarily, only .app bundles get proper mouse and keyboard interaction,
+-    // but here we change the 'activation policy' to behave as if we were a
+-    // .app bundle (which we may or may not be).
+-    (void)[app setActivationPolicy:NSApplicationActivationPolicyRegular];
++    // FOR VISIT AVOID SETTING ACTIVATION POLICY
++    // // Ordinarily, only .app bundles get proper mouse and keyboard interaction,
++    // // but here we change the 'activation policy' to behave as if we were a
++    // // .app bundle (which we may or may not be).
++    // (void)[app setActivationPolicy:NSApplicationActivationPolicyRegular];
+ 
+     NSWindow* theWindow = nil;
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for macOS dock fix for vtkCocoaRenderWindow.mm failed."
+        return 1
+    fi
+}
 
 function apply_vtk95_vtkRectilinearGridReader_patch
 {
@@ -2132,6 +2163,11 @@ function apply_vtk_patch
             return 1
         fi
 
+        apply_vtk95_macos_dock_popup_fux
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
         apply_vtk95_vtkdatawriter_patch
         if [[ $? != 0 ]] ; then
            return 1
@@ -2412,6 +2448,11 @@ function build_vtk
             vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/ospray/lib/cmake/ospray-${OSPRAY_VERSION}"
         elif [[ -d ${OSPRAY_INSTALL_DIR}/ospray/lib64 ]] ; then
             vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/ospray/lib64/cmake/ospray-${OSPRAY_VERSION}"
+        # newer versions of ospray (at least on macOS) install layout lack the extra ospray dir
+        elif [[ -d ${OSPRAY_INSTALL_DIR}/lib ]] ; then
+            vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/lib/cmake/ospray-${OSPRAY_VERSION}"
+        elif [[ -d ${OSPRAY_INSTALL_DIR}/lib64 ]] ; then
+            vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/lib64/cmake/ospray-${OSPRAY_VERSION}"
         else
             warn "Disabling ospray because its lib dir couldn't be found"
             vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=NO"

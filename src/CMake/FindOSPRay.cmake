@@ -44,20 +44,21 @@ find_package(ospray ${OSPRAY_VERSION} REQUIRED
 if(ospray_FOUND)
     set(HAVE_LIBOSPRAY true)
     add_definitions(-DHAVE_OSPRAY)
+    # since all the libs needed for VisIt at runtime aren't
+    # enumerated in the ospray targets from find_package,
+    # just install all of them
+    set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib)
+    if(EXISTS ${VISIT_OSPRAY_DIR}/lib64)
+        set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib64)
+    endif()
+    if(NOT ospray_lib_libs)
+        file(GLOB ospray_lib_libs
+                LIST_DIRECTORIES FALSE
+                ${LIB_SEARCH_PATH}/*)
+    endif()
+    unset(LIB_SEARCH_PATH)
+
     if(VISIT_INSTALL_THIRD_PARTY)
-        # since all the libs needed for VisIt at runtime aren't
-        # enumerated in the ospray targets from find_package,
-        # just install all of them
-        set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib)
-        if(EXISTS ${VISIT_OSPRAY_DIR}/lib64)
-            set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib64)
-        endif()
-        if(NOT ospray_lib_libs)
-            file(GLOB ospray_lib_libs
-                 LIST_DIRECTORIES FALSE
-                 ${LIB_SEARCH_PATH}/*)
-        endif()
-        unset(LIB_SEARCH_PATH)
         #  install libraries
         foreach(lib ${ospray_lib_libs})
             THIRD_PARTY_INSTALL_LIBRARY(${lib})
@@ -67,5 +68,20 @@ if(ospray_FOUND)
             THIRD_PARTY_INSTALL_INCLUDE(ospray ${OSPRAY_INCLUDE_DIR})
         endif()
     endif()
+
+    # we use ospray binaries that we dont build, and they lack usual
+    # rpath we rely on for dev builds
+    #
+    # copy the files into visit's lib dir so dev builds can locate them
+    #
+    if(NOT WIN32)
+        file(COPY ${ospray_lib_libs}
+                   DESTINATION ${VISIT_BINARY_DIR}/lib/
+                   FILE_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                    GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                    WORLD_READ WORLD_EXECUTE
+                   FOLLOW_SYMLINK_CHAIN)
+    endif()
+
 endif()
 
