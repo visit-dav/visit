@@ -1093,10 +1093,12 @@ function check_parallel
             export PAR_COMPILER="$MPICH_COMPILER"
             export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
             export PAR_INCLUDE="-I${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/include"
+            export PAR_HOME="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}"
             info  "Configuring parallel with mpich build: "
-            info  "  PAR_COMPILER: $PAR_COMPILER"
+            info  "  PAR_COMPILER:     $PAR_COMPILER"
             info  "  PAR_COMPILER_CXX: $PAR_COMPILER_CXX"
-            info  "  PAR_INCLUDE: $PAR_INCLUDE"
+            info  "  PAR_INCLUDE:      $PAR_INCLUDE"
+            info  "  PAR_HOME:         $PAR_HOME"
             get_par_compiler_home_dir > /dev/null
             return 0
         fi
