@@ -7,13 +7,16 @@
 #   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
 #   Remove ${VISIT_MSVC_VERSION} from lib location.
 #
+#   Kathleen Biagas, Wed Mar 4, 2026
+#   Update h5part library name on windows.
+#
 #****************************************************************************/
 
 # Use the H5PART_DIR hint from the config-site .cmake file
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(H5PART LIBS h5partdll)
-ELSE (WIN32)
+if(WIN32)
+  SET_UP_THIRD_PARTY(H5PART LIBS h5part)
+else()
   SET_UP_THIRD_PARTY(H5PART LIBS H5Part)
-ENDIF (WIN32)
+endif()
 
