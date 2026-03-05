@@ -417,15 +417,15 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
          break;
     }
 
-    int c_handle = H5Dopen(file_handle, "Cosmos++", H5P_DEFAULT);
-    int space_id = H5Dget_space(c_handle);
+    hid_t c_handle = H5Dopen(file_handle, "Cosmos++", H5P_DEFAULT);
+    hid_t space_id = H5Dget_space(c_handle);
 
     int pdims = 0;
     int numParticleTypes = 0;
     vector<int> numParticles, numParticleScalars, numParticleVectors;
     if (nParticleTypes > 0)
     {
-        int attr1  = H5Aopen_name(c_handle, "Number of Particle Types");
+        hid_t attr1  = H5Aopen_name(c_handle, "Number of Particle Types");
         H5Aread(attr1, H5T_NATIVE_INT, &numParticleTypes);
         H5Aclose(attr1);
         numParticles.resize(numParticleTypes, 0);
@@ -434,7 +434,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         for (i = 0; i < numParticleTypes; i++)
         {
             particleDataset[i][ts][dom] = vtkUnstructuredGrid::New();
-            int attr1  = H5Aopen_name(c_handle, particleTypeNames[i].data());
+            hid_t attr1  = H5Aopen_name(c_handle, particleTypeNames[i].data());
             H5Aread(attr1, H5T_NATIVE_INT, &numParticles[i]);
             H5Aclose(attr1);
             numParticleScalars[i] = particleScalarVarNames[i].size();
@@ -619,7 +619,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         float x = current_tmp[0];
         bounds[0] = (x < bounds[0] ? x : bounds[0]);
         bounds[1] = (x > bounds[1] ? x : bounds[1]);
-        float y = current_tmp[0];
+        float y = (rank > 1 ? current_tmp[1] : 0.0f);
         bounds[2] = (y < bounds[2] ? y : bounds[2]);
         bounds[3] = (y > bounds[3] ? y : bounds[3]);
         if (rank == 3)
@@ -638,15 +638,15 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     bounds[3] += y_diff*0.1;
     if (rank < 3)
     {
-        bounds[4] = -(bounds[1]-bounds[0])*0.5;
-        bounds[5] = +(bounds[1]-bounds[0])*0.5;
-    }
-    else
-    {
         // HACK!  The VTK point locator doesn't work very well with 2D objects,
         // so make this appear to be 3D by using the X-coordinate.
         bounds[4] = bounds[0];
         bounds[5] = bounds[1];
+    }
+    else
+    {
+        bounds[4] = -(bounds[1]-bounds[0])*0.5;
+        bounds[5] = +(bounds[1]-bounds[0])*0.5;
     }
 
     PointWithId *pwid = new PointWithId[npts];
@@ -730,7 +730,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
 
     // retrieve internal zone size attribute
     int numInternalZones;
-    int attr1  = H5Aopen_name(c_handle, "Number of Internal Zones");
+    hid_t attr1  = H5Aopen_name(c_handle, "Number of Internal Zones");
     H5Aread(attr1, H5T_NATIVE_INT, &numInternalZones);
     
     vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::New();
