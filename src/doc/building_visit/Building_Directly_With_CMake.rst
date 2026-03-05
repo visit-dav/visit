@@ -77,13 +77,13 @@ The typical way to enable support for a specific TPL involves a handfule of line
     ##
     ## FooBar
     ##
-    SETUP_APP_VERSION(FOOBAR 1.6.6)
+    SETUP_APP_VERSION(FOOBAR 6.7.8)
     VISIT_OPTION_DEFAULT(VISIT_FOOBAR_DIR ${VISITHOME}/foobar/${FOOBAR_VERSION}/${VISITARCH})
     VISIT_OPTION_DEFAULT(VISIT_FOOBAR_LIBDEP ${VISIT_GORFO_LIBDEP} HDF5_LIB TYPE STRING)
 
 The first line indicates the version number of the TPL.
 The second line indicates the location of the TPL installation.
-This is typically ways ``${VISITHOME}/<package-name>/<package-version-number>/${VISITARCH})
+This is typically always ``${VISITHOME}/<package-name>/<package-version-number>/${VISITARCH}``.
 
 The third line is only necessary when the TPL has a dependence on another TPL.
 This line defines a *library dependence* (``_LIBDEP``) variable.
@@ -101,6 +101,10 @@ The variable, ``HDF5_LIB`` is the variable which holds the imported target name 
 
 A third kind is the CMake variable representing all the dependencies of another TPL.
 In the example above, ``VISIT_FOOBAR_LIBDEP`` indicates FooBar depends on Gorfo using the ``${VISIT_GORFO_LIBDEP}`` which is interpreted to mean that because FooBar depends on Gorfo, then FooBar depends on all the libraries that Gorfo depends on.
+
+Sometimes, there is a 4th kind of line for a TPL involving *include dependencies*.
+This is needed when the TPL not only has a link-time dependence on another library but also a compile-time dependence.
+The line will appear as ``VISIT_OPTION_DEFAULT(VISIT_GORFO_INCDEP HDF5_INCLUDE_DIR FMS_INCLUDE_DIR)``.
 
 If ``build_visit`` is used to build VisIt_'s TPLs, then it will create the config-site file for the TPL installation once the build is completed.
 

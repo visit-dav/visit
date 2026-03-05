@@ -688,10 +688,10 @@ avtCarpetHDF5FileFormat::GetVectorVar(int timestate, int domain,const char *varn
    const int type = comp[var_no][0].type();
    
    float** data = NULL;
-   int dims[3] = {1, 1, 1};
+   //int dims[3] = {1, 1, 1};
    data_file->get_vector_data(!isMultipatch, timestate, domain, var_no, &data);
    
-   const int ntuples = dims[0]*dims[1]*dims[2];  // this is the number of entries in the variable.
+   const int ntuples = comp[0][domain].dims()[0]*comp[0][domain].dims()[1]*comp[0][domain].dims()[2];
    
    vtkFloatArray *rv = vtkFloatArray::New();
    int ucomps = (ncomponents == 2 ? 3 : ncomponents);
@@ -863,7 +863,7 @@ avtCarpetHDF5FileFormat::multi_file::multi_file(const char* fname) : refcount(1)
    
    hid_t attribute = H5Aopen(group, "nioprocs", H5P_DEFAULT);
    int n_io_procs = 0;
-   hid_t status = H5Aread(attribute, H5T_NATIVE_INT, &n_io_procs); (void)status;
+   herr_t status = H5Aread(attribute, H5T_NATIVE_INT, &n_io_procs); (void)status;
    status = H5Aclose(attribute);
 
    H5Gclose(group);
