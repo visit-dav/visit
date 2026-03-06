@@ -51,9 +51,6 @@
 #   Kevin Griffin, Mon 24 Feb 2025
 #   Added Include for FindANARI.cmake
 #
-#   Kathleen Biagas, Fri Mar 6, 2026
-#   Moved FindZlib to root CMakeLists.txt, as it must be found before MPI.
-#
 #****************************************************************************/
 
 # ==============================================
@@ -573,6 +570,7 @@ endif()
 
 # These need to come before VTK/Qt because they depend on it.
 
+include(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindANARI.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)

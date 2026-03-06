@@ -160,9 +160,6 @@
 #    Allow test data dir to be specified by VISIT_DATA_DIR var, which will
 #    only be used if 'data' dir does not exist peer to 'src'.
 #
-#    Kathleen Biagas, Fri Mar 6, 2026
-#    Move FindZLib from SetUpThirdParty to here, it must be found before MPI.
-#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -532,9 +529,6 @@ if(WIN32)
 
     visit_setup_windows()
 endif()
-
-# MPI might depend on zlib, so ensure we find our zlib before MPI.
-include(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 
 # some Find modules might try to setup MPI themselves (adios2 is one), see if
 # this can be mitigated by using our Parallel first, before finding any TP libs.
