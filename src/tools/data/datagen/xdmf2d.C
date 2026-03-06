@@ -87,7 +87,7 @@ write_hdf5_data()
         dataspace_id = H5Screate_simple(2, dims, NULL);
  
         dataset_id = H5Dcreate2(file_id, coordNames[did], H5T_NATIVE_FLOAT, dataspace_id,
-                               H5P_DEFAULT);
+                               H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
  
         status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                           H5P_DEFAULT, did == 0 ? x : y);
@@ -103,7 +103,7 @@ write_hdf5_data()
     dataspace_id = H5Screate_simple(2, dims, NULL);
  
     dataset_id = H5Dcreate2(file_id, "/Pressure", H5T_NATIVE_FLOAT,
-                           dataspace_id, H5P_DEFAULT);
+                           dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
  
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, pressure);
@@ -117,7 +117,7 @@ write_hdf5_data()
     dataspace_id = H5Screate_simple(2, dims, NULL);
  
     dataset_id = H5Dcreate2(file_id, "/VelocityX", H5T_NATIVE_FLOAT,
-                           dataspace_id, H5P_DEFAULT);
+                           dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
  
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, velocityx);
