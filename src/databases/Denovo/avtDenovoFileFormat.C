@@ -87,7 +87,7 @@ avtDenovoFileFormat::avtDenovoFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1), fileLoaded(false)
 {
     H5open();
-    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 }
 
 
@@ -168,7 +168,7 @@ avtDenovoFileFormat::LoadFile()
     varMetaData.push_back(varInfo(fileId, "/denovo/matids", GetFilename()));
 
     //Material IDs.
-    hid_t matId = H5Dopen(fileId, "/denovo/matids", H5P_DEFAULT);
+    hid_t matId = H5Dopen2(fileId, "/denovo/matids", H5P_DEFAULT);
     if (matId < 0) EXCEPTION1(InvalidFilesException, GetFilename());
     hid_t matIdS = H5Dget_space(matId);
     if (matIdS < 0) EXCEPTION1(InvalidFilesException, GetFilename());
@@ -177,7 +177,7 @@ avtDenovoFileFormat::LoadFile()
     H5Sget_simple_extent_dims(matIdS, dims, NULL);
 
     //Mix table.
-    hid_t mixId = H5Dopen(fileId, "/denovo/mixtable", H5P_DEFAULT);
+    hid_t mixId = H5Dopen2(fileId, "/denovo/mixtable", H5P_DEFAULT);
     if (mixId < 0) EXCEPTION1(InvalidFilesException, GetFilename());
     hid_t mixIdS = H5Dget_space(mixId);
     if (mixIdS < 0) EXCEPTION1(InvalidFilesException, GetFilename());

@@ -69,7 +69,7 @@ avtCarpetHDF5FileFormat::avtCarpetHDF5FileFormat(const char *filename)
   : avtMTMDFileFormat(filename), data_file(0), xcoord_file(0), ycoord_file(0), zcoord_file(0)
 {
     // Turn off error message printing.
-    H5Eset_auto2(0,0,0);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     // INITIALIZE DATA MEMBERS
     open_all_files(filename);
@@ -859,7 +859,7 @@ avtCarpetHDF5FileFormat::multi_file::multi_file(const char* fname) : refcount(1)
    hid_t H5f = H5Fopen(haveIndex(fname) ? indexFilename(fname).c_str() : fname, H5F_ACC_RDONLY, H5P_DEFAULT);
    
    // access global parameters and attributes group to get the number of io-processes
-   hid_t group = H5Gopen (H5f, "Parameters and Global Attributes", H5P_DEFAULT);
+   hid_t group = H5Gopen2(H5f, "Parameters and Global Attributes", H5P_DEFAULT);
    
    hid_t attribute = H5Aopen(group, "nioprocs", H5P_DEFAULT);
    int n_io_procs = 0;
@@ -1003,13 +1003,12 @@ private:
         void *client_data;
 };*/
 
-static herr_t H5iter(hid_t group_id, const char *member_name, void *operator_data)
-{
-   vector<dataset_entry>* dsetnames = (vector<dataset_entry>*) operator_data;
-   char   rootname[1000];
-   char   fullname[1000];
-   H5G_stat_t object_info;
-   int dim = avtCarpetHDF5FileFormat::dim;
+	static herr_t H5iter(hid_t group_id, const char *member_name, const H5L_info_t *, void *operator_data)
+	{
+	   vector<dataset_entry>* dsetnames = (vector<dataset_entry>*) operator_data;
+	   char   rootname[1000];
+	   char   fullname[1000];
+	   int dim = avtCarpetHDF5FileFormat::dim;
    
    // build the full name for the current object to process
    H5Iget_name(group_id, rootname, 256);
@@ -1017,25 +1016,34 @@ static herr_t H5iter(hid_t group_id, const char *member_name, void *operator_dat
    // the root name is "/", so does not need an extra "/"
    sprintf(fullname, "%s%s%s", rootname, rootname[strlen(rootname)-1]=='/' ? "" : "/",member_name);
    
-   // we are interested in datasets only - skip anything else
-   H5Gget_objinfo (group_id, member_name, 1, &object_info);
-   if (object_info.type != H5G_DATASET)
-   {
-      if (object_info.type == H5G_GROUP)
-      {
-         // iterate over all datasets in this group (if it isn't file metadata)
-         if (strcmp (member_name, "Parameters and Global Attributes"))
-         {
-            H5Giterate (group_id, member_name, NULL, H5iter, operator_data);
-         }
-      }
+	   // we are interested in datasets only - skip anything else
+	   H5O_info_t object_info;
+	   if (H5Oget_info_by_name(group_id, member_name, &object_info, H5P_DEFAULT) < 0)
+	      return 0;
+
+	   if (object_info.type != H5O_TYPE_DATASET)
+	   {
+	      if (object_info.type == H5O_TYPE_GROUP)
+	      {
+	         // iterate over all datasets in this group (if it isn't file metadata)
+	         if (strcmp (member_name, "Parameters and Global Attributes"))
+	         {
+	            hid_t subgroup = H5Gopen2(group_id, member_name, H5P_DEFAULT);
+	            if (subgroup >= 0)
+	            {
+	               hsize_t idx = 0;
+	               H5Literate(subgroup, H5_INDEX_NAME, H5_ITER_INC, &idx, H5iter, operator_data);
+	               H5Gclose(subgroup);
+	            }
+	         }
+	      }
       
    
       return 0;
    }
-   else
-   {
-      hid_t dataset = H5Dopen(group_id, member_name, H5P_DEFAULT);
+	   else
+	   {
+	      hid_t dataset = H5Dopen2(group_id, member_name, H5P_DEFAULT);
       
       hid_t dataspace = H5Dget_space(dataset);
       hid_t attrib;
@@ -1222,12 +1230,28 @@ void avtCarpetHDF5FileFormat::file_t::openfile(const char* fname)
        idx_mtime = 0;
      }
      //index_file.iterateElems("/", NULL, H5iter, &dsetnames);
-     H5Giterate (index_file, "/", NULL, H5iter, &dsetnames);
+     {
+        hid_t root = H5Gopen2(index_file, "/", H5P_DEFAULT);
+        if (root >= 0)
+        {
+           hsize_t idx = 0;
+           H5Literate(root, H5_INDEX_NAME, H5_ITER_INC, &idx, H5iter, &dsetnames);
+           H5Gclose(root);
+        }
+     }
      H5Fclose(index_file);
    } 
    else {
      //file->iterateElems("/", NULL, H5iter, &dsetnames);
-     H5Giterate (file, "/", NULL, H5iter, &dsetnames);
+     {
+        hid_t root = H5Gopen2(file, "/", H5P_DEFAULT);
+        if (root >= 0)
+        {
+           hsize_t idx = 0;
+           H5Literate(root, H5_INDEX_NAME, H5_ITER_INC, &idx, H5iter, &dsetnames);
+           H5Gclose(root);
+        }
+     }
    }
 
    // try to free memory allocated during file traversal
@@ -1271,7 +1295,7 @@ void avtCarpetHDF5FileFormat::file_t::set_varnames(const vector<string>& v, cons
 
 void avtCarpetHDF5FileFormat::file_t::get_data(const dataset_entry& dset, float** data, const bool removeGhosts)
 {
-   hid_t dataset = H5Dopen(file, dset.name().c_str(), H5P_DEFAULT);
+   hid_t dataset = H5Dopen2(file, dset.name().c_str(), H5P_DEFAULT);
       
    hid_t dataspace = H5Dget_space(dataset);
    //hid_t attrib;
@@ -1490,8 +1514,6 @@ avtCarpetHDF5FileFormat::GetAuxiliaryData(const char *var, int timestep, int dom
 
     return rv;
 }
-
-
 
 
 
