@@ -119,7 +119,7 @@ int VsFilter::visitLinks(hid_t locId, const char* name,
 #ifndef H5_USE_16_API
       hid_t obj_id = H5Oopen(locId, name, H5P_DEFAULT);
 #else
-      hid_t obj_id = H5Oopen(locId, name);        
+      hid_t obj_id = H5Oopen(locId, name, H5P_DEFAULT);
 #endif
       
       if (obj_id < 0) {
@@ -180,7 +180,7 @@ int VsFilter::visitGroup(hid_t locId, const char* name, void* opdata) {
     return 0;
   }
 
-  hid_t groupId = H5Gopen(locId, name, H5P_DEFAULT);
+  hid_t groupId = H5Gopen2(locId, name, H5P_DEFAULT);
   
   //If unable to get a handle to the hdf5 object, we just drop the object
   //But return 0 to continue iterating over objects
@@ -220,7 +220,7 @@ int VsFilter::visitDataset(hid_t locId, const char* name, void* opdata) {
   VsLog::debugLog() << "VsFilter::visitDataset: node '" << name
     <<"' is a dataset." << std::endl;
 
-  hid_t datasetId = H5Dopen(locId, name, H5P_DEFAULT);
+  hid_t datasetId = H5Dopen2(locId, name, H5P_DEFAULT);
 
   VsDataset* newDataset = new VsDataset(registry, parent, name, datasetId);
   
@@ -263,4 +263,3 @@ int VsFilter::visitAttrib(hid_t dId, const char* name,
   
   return 0;
 }
-

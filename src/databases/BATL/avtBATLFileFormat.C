@@ -112,7 +112,7 @@ avtBATLFileFormat::InitializeHDF5(void)
     debug5 << "Initializing HDF5 Library" << endl;
     H5open();
     errStack = H5Ecreate_stack();
-    H5Eset_auto(errStack,NULL, NULL);
+    H5Eset_auto2(errStack, NULL, NULL);
     H5Eclose_stack(errStack);
 
 }
@@ -789,7 +789,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
     {
 
         debug5 << "GetMesh Marker 3" << endl;
-        hid_t varId = H5Dopen(fileId, "NodesX", H5P_DEFAULT);
+        hid_t varId = H5Dopen2(fileId, "NodesX", H5P_DEFAULT);
         if (varId < 0)
         {
             EXCEPTION1(InvalidVariableException, "NodesX");
@@ -851,7 +851,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
         double *y_data = NULL;
         if (dimension > 1)
         {
-            varId = H5Dopen(fileId, "NodesY", H5P_DEFAULT);
+            varId = H5Dopen2(fileId, "NodesY", H5P_DEFAULT);
             if (varId < 0)
             {
                 EXCEPTION1(InvalidVariableException, "NodesY");
@@ -893,7 +893,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
         double *z_data = NULL;
         if (dimension == 3)
         {
-            varId = H5Dopen(fileId, "NodesZ", H5P_DEFAULT);
+            varId = H5Dopen2(fileId, "NodesZ", H5P_DEFAULT);
             if (varId < 0)
             {
                 EXCEPTION1(InvalidVariableException, "NodesZ");
@@ -987,7 +987,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
 
 
         string varname = string(meshname).substr(7);
-        hid_t varId = H5Dopen(fileId, varname.c_str(),H5P_DEFAULT);
+        hid_t varId = H5Dopen2(fileId, varname.c_str(),H5P_DEFAULT);
 
         H5Dread(varId, H5T_NATIVE_FLOAT, H5S_ALL,H5S_ALL,H5P_DEFAULT, vals);
         H5Dclose(varId);
@@ -1385,7 +1385,7 @@ avtBATLFileFormat::GetVar(int visitDomain, const char *vname)
         // It's a grid variable
         //
 
-        hid_t varId = H5Dopen(fileId, vn_substr.c_str(), H5P_DEFAULT);
+        hid_t varId = H5Dopen2(fileId, vn_substr.c_str(), H5P_DEFAULT);
         if (varId < 0)
         {
             EXCEPTION1(InvalidVariableException, vn_substr.c_str());
@@ -1685,7 +1685,7 @@ void avtBATLFileFormat::ReadProcessorNumbers()
     //
     // Read the bounding box description for the blocks
     //
-    hid_t procnumId = H5Dopen(fileId, "Processor Number", H5P_DEFAULT);
+    hid_t procnumId = H5Dopen2(fileId, "Processor Number", H5P_DEFAULT);
     if (procnumId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -1750,7 +1750,7 @@ void avtBATLFileFormat::ReadMortonOrdering()
     //
     // Read the bounding box description for the blocks
     //
-    hid_t mortonidxId = H5Dopen(fileId, "iMortonNode_A", H5P_DEFAULT);
+    hid_t mortonidxId = H5Dopen2(fileId, "iMortonNode_A", H5P_DEFAULT);
     if (mortonidxId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -1814,7 +1814,7 @@ void avtBATLFileFormat::ReadCoordinates()
     //
     // Read the coordinates description for the blocks
     //
-    hid_t coordinatesId = H5Dopen(fileId, "coordinates",H5P_DEFAULT);
+    hid_t coordinatesId = H5Dopen2(fileId, "coordinates",H5P_DEFAULT);
     if (coordinatesId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -1891,7 +1891,7 @@ void avtBATLFileFormat::ReadBlockExtents()
     //
     // Read the bounding box description for the blocks
     //
-    hid_t bboxId = H5Dopen(fileId, "bounding box",H5P_DEFAULT);
+    hid_t bboxId = H5Dopen2(fileId, "bounding box",H5P_DEFAULT);
     if (bboxId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -1954,12 +1954,12 @@ void avtBATLFileFormat::ReadBlockExtents()
 // ****************************************************************************
 void avtBATLFileFormat::ReadRefinementLevels()
 {
-    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
     debug5 << "ReadRefinementLevels Marker 1" << endl;
     //
     // Read the bounding box description for the blocks
     //
-    hid_t refinementId = H5Dopen(fileId, "refine level",H5P_DEFAULT);
+    hid_t refinementId = H5Dopen2(fileId, "refine level",H5P_DEFAULT);
     if (refinementId < 0)
     {
         for (int b=0; b<numBlocks; b++)
@@ -2009,7 +2009,7 @@ void avtBATLFileFormat::ReadRefinementLevels()
         delete[] refinement_array;
         debug5 << "ReadRefinementLevels Marker 9" << endl;
     }
-    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 }
 
 // ****************************************************************************
@@ -2034,7 +2034,7 @@ void avtBATLFileFormat::ReadSimulationParameters(hid_t fileId)
     //
     // Read the bounding box description for the blocks
     //
-    hid_t integerParamsId = H5Dopen(fileId, "Integer Plot Metadata",H5P_DEFAULT);
+    hid_t integerParamsId = H5Dopen2(fileId, "Integer Plot Metadata",H5P_DEFAULT);
     if (integerParamsId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2196,7 +2196,7 @@ void avtBATLFileFormat::ReadSimulationParameters(hid_t fileId)
 
     debug5 << "ReadSimulationParameters Marker 10" << endl;
 
-    hid_t realParamsId = H5Dopen(fileId, "Real Plot Metadata",H5P_DEFAULT);
+    hid_t realParamsId = H5Dopen2(fileId, "Real Plot Metadata",H5P_DEFAULT);
     if (realParamsId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2298,7 +2298,7 @@ avtBATLFileFormat::ReadUnknownUnits()
     //
     // Read the variable ("untnown") names
     //
-    hid_t unitsId = H5Dopen(fileId, "plotVarUnits",H5P_DEFAULT);
+    hid_t unitsId = H5Dopen2(fileId, "plotVarUnits",H5P_DEFAULT);
     if (unitsId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2376,7 +2376,7 @@ avtBATLFileFormat::ReadUnknownNames()
     //
     // Read the variable ("unknown") names
     //
-    hid_t unknownsId = H5Dopen(fileId, "plotVarNames",H5P_DEFAULT);
+    hid_t unknownsId = H5Dopen2(fileId, "plotVarNames",H5P_DEFAULT);
     if (unknownsId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2422,14 +2422,14 @@ avtBATLFileFormat::ReadUnknownNames()
     {
         string varNamesStr = varNames[v];
 
-        hid_t dataSet = H5Dopen(fileId, varNamesStr.c_str(), H5P_DEFAULT);
+        hid_t dataSet = H5Dopen2(fileId, varNamesStr.c_str(), H5P_DEFAULT);
         hid_t attribute = H5Aopen_name(dataSet, "minimum");
         H5Aread(attribute, H5T_NATIVE_DOUBLE, &minVals[v]);
         H5Dclose(dataSet);
         H5Aclose(attribute);
 
 
-        dataSet = H5Dopen(fileId, varNamesStr.c_str(), H5P_DEFAULT);
+        dataSet = H5Dopen2(fileId, varNamesStr.c_str(), H5P_DEFAULT);
         attribute  = H5Aopen_name(dataSet, "maximum");
         H5Aread(attribute, H5T_NATIVE_DOUBLE, &maxVals[v]);
         H5Dclose(dataSet);
@@ -2474,7 +2474,7 @@ avtBATLFileFormat::ReadAxisLabels()
     //
     // Read the variable ("lblnown") names
     //
-    hid_t lblnownsId = H5Dopen(fileId, "Axis Labels",H5P_DEFAULT);
+    hid_t lblnownsId = H5Dopen2(fileId, "Axis Labels",H5P_DEFAULT);
     if (lblnownsId < 0)
     {
 //        EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2554,7 +2554,7 @@ void avtBATLFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
     //
     // Read the minLogicalExtents description for the blocks
     //
-    hid_t minLogicalExtentsId = H5Dopen(fileId, "MinLogicalExtents",H5P_DEFAULT);
+    hid_t minLogicalExtentsId = H5Dopen2(fileId, "MinLogicalExtents",H5P_DEFAULT);
     if (minLogicalExtentsId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2851,7 +2851,7 @@ avtBATLFileFormat::GetAuxiliaryData(const char *var, int dom,
                                     const char * type, void *,
                                     DestructorFunction &df)
 {
-    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
     debug5 << "GetAuxiliaryData Marker 1" << endl;
     debug5 << type << endl;
     void *retval = 0;
@@ -2886,7 +2886,7 @@ avtBATLFileFormat::GetAuxiliaryData(const char *var, int dom,
         string varstr = var;
         varstr.append("_Ext");
 
-        hid_t extrId = H5Dopen(fileId, varstr.c_str(),H5P_DEFAULT);
+        hid_t extrId = H5Dopen2(fileId, varstr.c_str(),H5P_DEFAULT);
         if (extrId < 0)
         {
             return 0;
@@ -2940,7 +2940,6 @@ avtBATLFileFormat::GetAuxiliaryData(const char *var, int dom,
         retval = (void *)itree;
         df = avtIntervalTree::Destruct;
     }
-    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
     return retval;
 }
-

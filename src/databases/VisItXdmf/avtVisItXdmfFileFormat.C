@@ -42,7 +42,6 @@
 // versions of HDF5 before 1.8 and ensures correct compilation with
 // version 1.8 and thereafter. When, and if, the HDF5 code in this file
 // is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
 #include <visit-hdf5.h>
 
@@ -76,7 +75,7 @@ avtVisItXdmfFileFormat::avtVisItXdmfFileFormat(const char *filename)
     //
     // Turn off HDF5 error message to the terminal.
     //
-    H5Eset_auto(NULL, NULL);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 }
 
 
@@ -539,7 +538,7 @@ avtVisItXdmfFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
     //
     // Open the data set.
     //
-    if ((dataset_id = H5Dopen(file_id, datasetname)) < 0)
+    if ((dataset_id = H5Dopen2(file_id, datasetname, H5P_DEFAULT)) < 0)
     {
         avtCallback::IssueWarning("Unable to open dataset.");
         return 0;

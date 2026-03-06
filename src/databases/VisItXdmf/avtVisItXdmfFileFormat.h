@@ -18,7 +18,6 @@
 // versions of HDF5 before 1.8 and ensures correct compilation with
 // version 1.8 and thereafter. When, and if, the HDF5 code in this file
 // is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
 
 #include <string>
