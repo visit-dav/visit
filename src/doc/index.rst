@@ -19,6 +19,7 @@ VisIt User Manual
    How to Search this Manual <searching>
    Acknowledgements <acknowledgements>
    Glossary <glossary>
+   Spanish version (experimental) <es/index>
 
 .. Indices and tables
 .. ==================
