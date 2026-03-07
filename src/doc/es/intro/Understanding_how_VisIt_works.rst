@@ -136,7 +136,7 @@ al visor y realizar renderizado escalable, según la cantidad de geometría que 
    Renderizado escalable de VisIt_
 
 Interfaz gráfica de usuario (GUI) de VisIt_
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Cuando ejecuta la interfaz gráfica de usuario (GUI) de VisIt_, verá ventanas del GUI basado en Qt
 y del visor. El GUI es un cliente de VisIt_ que proporciona la interfaz de usuario y menús que le
