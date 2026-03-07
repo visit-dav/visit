@@ -15,7 +15,7 @@ function bv_cfitsio_disable
 
 function bv_cfitsio_depends_on
 {
-    echo ""
+    echo "cmake zlib"
 }
 
 function bv_cfitsio_info
@@ -71,54 +71,96 @@ function bv_cfitsio_ensure
 function build_cfitsio
 {
     #
+    # CFITSIO uses CMake -- make sure we have it.
+    #
+    CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
+    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
+        info "CFITSIO: CMake found"
+    else
+        warn "Unable to find cmake, cannot build CFITSIO. Giving up."
+        return 1
+    fi
+
+    #
     # Prepare build dir
     #
-    prepare_build_dir $CFITSIO_BUILD_DIR $CFITSIO_FILE
+    prepare_build_dir $CFITSIO_BUILD_DIR $CFITSIO_FILE sha256 $CFITSIO_SHA256_CHECKSUM
     untarred_cfitsio=$?
     if [[ $untarred_cfitsio == -1 ]] ; then
         warn "Unable to prepare CFITSIO Build Directory. Giving Up"
         return 1
     fi
 
+    #
+    # Configure CFITSIO (CMake)
+    #
     info "Configuring CFITSIO . . ."
-    cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
 
-    set -x
-    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        ./configure \
-        --prefix="$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH"
-    set +x
-    if [[ $? != 0 ]] ; then
-        warn "CFITSIO configure failed.  Giving up"
-        return 1
+    CFITSIO_SRC_DIR="${CFITSIO_BUILD_DIR}"
+    CFITSIO_BUILD_SUBDIR="${CFITSIO_SRC_DIR}-build"
+    CFITSIO_INSTALL_DIR="${VISITDIR}/cfitsio/${CFITSIO_VERSION}/${VISITARCH}"
+
+    if [[ ! -d "${CFITSIO_BUILD_SUBDIR}" ]] ; then
+        mkdir "${CFITSIO_BUILD_SUBDIR}" || error "Unable to create CFITSIO build directory."
     fi
+
+    cd "${CFITSIO_BUILD_SUBDIR}" || error "Can't cd to CFITSIO build dir."
+
+    #
+    # Remove the CMakeCache.txt files ... existing files sometimes prevent
+    # fields from getting overwritten properly.
+    #
+    rm -Rf CMakeCache.txt */CMakeCache.txt
+
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cfitsio_cmake_build_type="Debug"
+    else
+        cfitsio_cmake_build_type="Release"
+    fi
+
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        cfitsio_build_shared="OFF"
+    else
+        cfitsio_build_shared="ON"
+    fi
+
+    cmake_opts=""
+    cmake_opts="${cmake_opts} -DCMAKE_INSTALL_PREFIX:PATH=${CFITSIO_INSTALL_DIR}"
+    cmake_opts="${cmake_opts} -DCMAKE_BUILD_TYPE:STRING=${cfitsio_cmake_build_type}"
+    cmake_opts="${cmake_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON"
+    cmake_opts="${cmake_opts} -DBUILD_SHARED_LIBS:BOOL=${cfitsio_build_shared}"
+    cmake_opts="${cmake_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    cmake_opts="${cmake_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+
+    # cfitsio options
+    cmake_opts="${cmake_opts} -DTESTS:BOOL=OFF"
+    cmake_opts="${cmake_opts} -DUSE_CURL:BOOL=OFF"
+    cmake_opts="${cmake_opts} -DUTILS:BOOL=OFF"
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        cmake_opts="${cmake_opts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+        cmake_opts="${cmake_opts} -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+    fi
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+    echo "\"${CMAKE_COMMAND}\"" ${cmake_opts} "../${CFITSIO_SRC_DIR}" >> bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "CFITSIO configuration failed."
 
     #
     # Build CFITSIO
     #
     info "Building CFITSIO . . . (~2 minutes)"
 
-    $MAKE
-    if [[ $? != 0 ]] ; then
-        warn "CFITSIO build failed.  Giving up"
-        return 1
-    fi
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "CFITSIO did not build correctly. Giving up."
 
     #
     # Install into the VisIt third party location.
     #
     info "Installing CFITSIO . . ."
-
-    mkdir "$VISITDIR/cfitsio"
-    mkdir "$VISITDIR/cfitsio/$CFITSIO_VERSION"
-    mkdir "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH"
-
-    $MAKE install
-    if [[ $? != 0 ]] ; then
-        warn "CFITSIO install failed.  Giving up"
-        return 1
-    fi
+    ${CMAKE_COMMAND} --install . || error "CFITSIO did not install correctly. Giving up."
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/cfitsio"

@@ -15,11 +15,13 @@ function bv_cgns_disable
 
 function bv_cgns_depends_on
 {
-    local depends=""
+    local depends="cmake"
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        depends="hdf5"
+        depends="$depends hdf5"
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            depends="$depends zlib"
+        fi
     fi
-    
     echo $depends
 }
 
@@ -28,7 +30,7 @@ function bv_cgns_info
     export CGNS_FILE=${CGNS_FILE:-"CGNS-4.1.0.tar.gz"}
     export CGNS_VERSION=${CGNS_VERSION:-"4.1.0"}
     export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"4.1"}
-    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"CGNS-4.1.0/src"}
+    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"CGNS-4.1.0"}
     export CGNS_SHA256_CHECKSUM="b4584e4d0fa52c737a0fb4738157a88581df251c8c5886175ee287e1777e99fd"
 }
 
@@ -76,201 +78,80 @@ function bv_cgns_ensure
     fi
 }
 
-function apply_cgns_410_patch
-{
-    info "Patching CGNS 4.1.0"
-    patch -p0 << \EOF
-diff -c CGNS-4.1.0/src/configure.orig CGNS-4.1.0/src/configure
-*** CGNS-4.1.0/src/configure.orig	Thu Feb 11 17:51:22 2021
---- CGNS-4.1.0/src/configure	Fri Feb 12 07:55:02 2021
-***************
-*** 5939,5945 ****
-    $as_echo_n "(cached) " >&6
-  else
-    ac_check_lib_save_LIBS=$LIBS
-! LIBS="-lz  $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-  /* end confdefs.h.  */
-  
---- 5939,5945 ----
-    $as_echo_n "(cached) " >&6
-  else
-    ac_check_lib_save_LIBS=$LIBS
-! LIBS="$ZLIBLIB -lz  $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-  /* end confdefs.h.  */
-  
-***************
-*** 5974,5980 ****
-  #define HAVE_LIBZ 1
-  _ACEOF
-  
-!   LIBS="-lz $LIBS"
-  
-  else
-    unset HAVE_ZLIB
---- 5974,5980 ----
-  #define HAVE_LIBZ 1
-  _ACEOF
-  
-!   LIBS="$ZLIBLIB -lz $LIBS"
-  
-  else
-    unset HAVE_ZLIB
-***************
-*** 6031,6037 ****
-  
-  
-      if test $shared = yes; then
-!       ZLIBLIB="-L$zlib_lib"
-      else
-        if test -n "$zlib_lib"; then
-          for a in $exts ; do
---- 6031,6037 ----
-  
-  
-      if test $shared = yes; then
-!       ZLIBLIB="-L$zlib_lib -lz"
-      else
-        if test -n "$zlib_lib"; then
-          for a in $exts ; do
-***************
-*** 6050,6056 ****
-    $as_echo_n "(cached) " >&6
-  else
-    ac_check_lib_save_LIBS=$LIBS
-! LIBS="-lz  $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-  /* end confdefs.h.  */
-  
---- 6050,6056 ----
-    $as_echo_n "(cached) " >&6
-  else
-    ac_check_lib_save_LIBS=$LIBS
-! LIBS="$ZLIBLIB $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-  /* end confdefs.h.  */
-  
-***************
-*** 6085,6091 ****
-  #define HAVE_LIBZ 1
-  _ACEOF
-  
-!   LIBS="-lz $LIBS"
-  
-  else
-    unset HAVE_ZLIB
---- 6085,6091 ----
-  #define HAVE_LIBZ 1
-  _ACEOF
-  
-!   LIBS="$ZLIBLIB $LIBS"
-  
-  else
-    unset HAVE_ZLIB
-***************
-*** 6147,6153 ****
-    $as_echo_n "(cached) " >&6
-  else
-    ac_check_lib_save_LIBS=$LIBS
-! LIBS="-lsz  $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-  /* end confdefs.h.  */
-  
---- 6147,6153 ----
-    $as_echo_n "(cached) " >&6
-  else
-    ac_check_lib_save_LIBS=$LIBS
-! LIBS="$SZIPLIB -lsz  $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-  /* end confdefs.h.  */
-  
-***************
-*** 6182,6188 ****
-  #define HAVE_LIBSZ 1
-  _ACEOF
-  
-!   LIBS="-lsz $LIBS"
-  
-  else
-    unset HAVE_SZIP
---- 6182,6188 ----
-  #define HAVE_LIBSZ 1
-  _ACEOF
-  
-!   LIBS="$SZIPLIB -lsz $LIBS"
-  
-  else
-    unset HAVE_SZIP
-***************
-*** 6239,6245 ****
-  
-  
-      if test $shared = yes; then
-!       SZIPLIB="-L$szip_lib"
-      else
-        if test -n "$szip_lib"; then
-          for a in $exts ; do
---- 6239,6245 ----
-  
-  
-      if test $shared = yes; then
-!       SZIPLIB="-L$szip_lib -lsz"
-      else
-        if test -n "$szip_lib"; then
-          for a in $exts ; do
-***************
-*** 6258,6264 ****
-    $as_echo_n "(cached) " >&6
-  else
-    ac_check_lib_save_LIBS=$LIBS
-! LIBS="-lsz  $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-  /* end confdefs.h.  */
-  
---- 6258,6264 ----
-    $as_echo_n "(cached) " >&6
-  else
-    ac_check_lib_save_LIBS=$LIBS
-! LIBS="$SZIPLIB $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-  /* end confdefs.h.  */
-  
-***************
-*** 6293,6299 ****
-  #define HAVE_LIBSZ 1
-  _ACEOF
-  
-!   LIBS="-lsz $LIBS"
-  
-  else
-    unset HAVE_SZIP
---- 6293,6299 ----
-  #define HAVE_LIBSZ 1
-  _ACEOF
-  
-!   LIBS="$SZIPLIB $LIBS"
-  
-  else
-    unset HAVE_SZIP
-EOF
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
 
+function apply_cgns_410_cmake_patch
+{
+    info "Patching CGNS 4.1.0 CMakeLists.txt to remove h5dump and adjust HDF5 vars"
     patch -p0 << \EOF
-diff -u CGNS-4.1.0/src/Makefile.in.orig CGNS-4.1.0/src/Makefile.in
---- CGNS-4.1.0/src/Makefile.in.orig	2021-01-29 09:15:50.000000000 -0800
-+++ CGNS-4.1.0/src/Makefile.in	2021-05-05 08:52:32.000000000 -0700
-@@ -53,7 +53,7 @@
+--- CMakeLists.txt	2021-03-02 12:17:56.000000000 -0800
++++ CMakeLists.txt	2026-03-05 16:06:45.175797000 -0800
+@@ -202,9 +202,15 @@
+   set (SEARCH_PACKAGE_NAME "hdf5")
  
- $(CGNSLIB) : $(OBJDIR) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
- 	-@$(RM) $@
--	@AR_LIB@ $@ $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
-+	@AR_LIB@ $@ $(LDFLAGS) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS) $(CLIBS)
- 	@RAN_LIB@ $@
+   find_package (HDF5 NAMES ${SEARCH_PACKAGE_NAME} COMPONENTS ${FIND_HDF_COMPONENTS})
++
++  if(HDF5_FOUND)
++      set(HDF5_static_C_FOUND ${HDF5_PROVIDES_STATIC_LIBS})
++      set(HDF5_shared_C_FOUND ${HDF5_PROVIDES_SHARED_LIBS})
++  endif()
++
+   message (STATUS "HDF5 C libs:${HDF5_FOUND} static:${HDF5_static_C_FOUND} and shared:${HDF5_shared_C_FOUND}")
+   if (HDF5_FOUND)
+-    add_executable (h5dump IMPORTED)
++    #add_executable (h5dump IMPORTED)
+     if (NOT HDF5_static_C_FOUND AND NOT HDF5_shared_C_FOUND)
+       set (FIND_HDF_COMPONENTS C)
  
- $(OBJDIR) :
+@@ -217,9 +223,9 @@
+         add_definitions (-DH5_BUILT_AS_STATIC_LIB)
+       endif (HDF5_BUILD_SHARED_LIBS)
+       if (BUILD_SHARED_LIBS AND WIN32)
+-        set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dumpdll")
++        #set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dumpdll")
+       else (BUILD_SHARED_LIBS AND WIN32)
+-        set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dump")
++        #set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dump")
+       endif (BUILD_SHARED_LIBS AND WIN32)
+     else (NOT HDF5_static_C_FOUND AND NOT HDF5_shared_C_FOUND)
+       if (BUILD_SHARED_LIBS AND HDF5_shared_C_FOUND)
+@@ -227,9 +233,9 @@
+       else (HDF5_static_C_FOUND)
+         set (LINK_LIBS ${LINK_LIBS} ${HDF5_C_STATIC_LIBRARY})
+       endif (BUILD_SHARED_LIBS AND HDF5_shared_C_FOUND)
+-      set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dump")
++      #set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dump")
+     endif (NOT HDF5_static_C_FOUND AND NOT HDF5_shared_C_FOUND)
+-    set (HDF5_DUMP_EXECUTABLE $<TARGET_FILE:h5dump>)
++    #set (HDF5_DUMP_EXECUTABLE $<TARGET_FILE:h5dump>)
+ 
+     set (HDF5_HAVE_H5PUBCONF_H 1)
+     set (HDF5_HAVE_HDF5 1)
+@@ -250,9 +256,9 @@
+     endif ()
+     set (LINK_LIBS ${LINK_LIBS} ${HDF5_LIBRARIES})
+ 
+-    add_executable (h5dump IMPORTED)
+-    set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dump")
+-    set (HDF5_DUMP_EXECUTABLE $<TARGET_FILE:h5dump>)
++    #add_executable (h5dump IMPORTED)
++    #set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dump")
++    #set (HDF5_DUMP_EXECUTABLE $<TARGET_FILE:h5dump>)
+   endif (HDF5_FOUND)
+   set (HDF5_PACKAGE_NAME ${SEARCH_PACKAGE_NAME})
+ 
+@@ -333,7 +339,10 @@
+   set(CGNS_ENABLE_PARALLEL "OFF" CACHE BOOL "Enable or disable parallel interface ?")
+   mark_as_advanced(CLEAR CGNS_ENABLE_PARALLEL)
+   # Check that HDF5 has parallel support
+-  if (NOT (HDF5_IS_PARALLEL OR HDF5_ENABLE_PARALLEL))
++  # HDF5 2.0 changed the cmake var that indicates MPI support to HDF5_PROVIDES_PARALLEL, see:
++  # https://www.hdfgroup.org/2025/11/10/release-of-hdf5-2-0-0-newsletter-207/
++  # https://github.com/HDFGroup/hdf5/pull/5716
++  if (NOT (HDF5_IS_PARALLEL OR HDF5_ENABLE_PARALLEL OR HDF5_PROVIDES_PARALLEL))
+       message(FATAL_ERROR "HDF5 has been found, but is missing parallel support.")
+   endif()
+ else (CGNS_ENABLE_HDF5 AND HDF5_NEED_MPI)
+
 EOF
     if [[ $? != 0 ]] ; then
         return 1
@@ -279,50 +160,11 @@ EOF
     return 0
 }
 
-function apply_cgns_hdf520_patch
-{
-    info "Patching CGNS 4.1.0 configure for HDF5 2.0"
-    patch -p0 << \EOF
-diff -c CGNS-4.1.0/src/configure CGNS-4.1.0.patched/src/configure
-*** CGNS-4.1.0/src/configure	2021-03-03 08:22:54.000000000 -0800
---- CGNS-4.1.0.patched/src/configure	2025-12-10 17:36:29.764546000 -0800
-***************
-*** 5686,5692 ****
-  
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if HDF5 is 1.8 or greater" >&5
-  $as_echo_n "checking if HDF5 is 1.8 or greater... " >&6; }
-!   if test ${H5_VERS_MAJOR} -ge 1 && test ${H5_VERS_MINOR} -ge 8; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-  $as_echo "yes" >&6; }
-    else
---- 5686,5694 ----
-  
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if HDF5 is 1.8 or greater" >&5
-  $as_echo_n "checking if HDF5 is 1.8 or greater... " >&6; }
-!   if [ "$H5_VERS_MAJOR" -gt 1 ] || \
-!      { [ "$H5_VERS_MAJOR" -eq 1 ] && [ "$H5_VERS_MINOR" -ge 8 ]; }
-!   then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-  $as_echo "yes" >&6; }
-    else
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "CGNS patch for HDF5-2.0 failed."
-        return 1
-    fi
-
-    return 0
-}
 
 function apply_cgns_patch
 {
     if [[ ${CGNS_VERSION} == "4.1.0" ]] ; then
-        apply_cgns_410_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-
-        apply_cgns_hdf520_patch
+        apply_cgns_410_cmake_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -354,7 +196,7 @@ function build_cgns
     #
     # Prepare build dir
     #
-    prepare_build_dir $CGNS_BUILD_DIR $CGNS_FILE
+    prepare_build_dir $CGNS_BUILD_DIR $CGNS_FILE sha256 $CGNS_SHA256_CHECKSUM
     untarred_cgns=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -366,6 +208,7 @@ function build_cgns
     #
     # Apply patches
     #
+    cd $CGNS_BUILD_DIR
     apply_cgns_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_cgns == 1 ]] ; then
@@ -380,106 +223,88 @@ function build_cgns
     fi
 
     #
-    # Configure CGNS
+    # Configure CGNS (CMake)
     #
+
     info "Configuring CGNS . . ."
-    cd $CGNS_BUILD_DIR || error "Can't cd to CGNS build dir."
-    info "Invoking command to configure CGNS"
-    LIBEXT=""
-    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-        cf_build_type=""
-        LIBEXT="a"
-    else
-        cf_build_type="--enable-shared=all"
-        if [[ "$OPSYS" == "Darwin" ]] ; then
-            LIBEXT="dylib"
-        else
-            LIBEXT="so"
-        fi
+
+    cd ../
+    CGNS_SRC_DIR="${CGNS_BUILD_DIR}"
+    CGNS_BUILD_SUBDIR="${CGNS_SRC_DIR}-build"
+    CGNS_INSTALL_DIR="${VISITDIR}/cgns/${CGNS_VERSION}/${VISITARCH}"
+
+    if [[ ! -d "${CGNS_BUILD_SUBDIR}" ]] ; then
+        mkdir "${CGNS_BUILD_SUBDIR}" || error "Unable to create CGNS build directory."
     fi
+
+    cd "${CGNS_BUILD_SUBDIR}" || error "Can't cd to CGNS build dir."
 
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
-        cf_build_type="$cf_build_type --enable-debug"
+        cgns_cmake_build_type="Debug"
+    else
+        cgns_cmake_build_type="Release"
     fi
 
-    # optionally add HDF5 and szip to the configure.
-    LIBS_ENV=""
-    LDFLAGS_ENV=""
-    H5ARGS=""
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        cgns_build_shared="OFF"
+    else
+        cgns_build_shared="ON"
+    fi
+
+    # Help CMake find enabled deps in VisIt's prefix.
+
+    cmake_opts=""
+    cmake_opts="${cmake_opts} -DCMAKE_INSTALL_PREFIX:PATH=${CGNS_INSTALL_DIR}"
+    cmake_opts="${cmake_opts} -DCMAKE_BUILD_TYPE:STRING=${cgns_cmake_build_type}"
+    cmake_opts="${cmake_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON"
+    cmake_opts="${cmake_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    cmake_opts="${cmake_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+    cmake_opts="${cmake_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    cmake_opts="${cmake_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+
+    # CGNS-specific options.
+    cmake_opts="${cmake_opts} -DCGNS_BUILD_SHARED:BOOL=${cgns_build_shared}"
+    cmake_opts="${cmake_opts} -DCGNS_ENABLE_FORTRAN:BOOL=OFF"
+    cmake_opts="${cmake_opts} -DCGNS_BUILD_CGNSTOOLS:BOOL=OFF"
+    cmake_opts="${cmake_opts} -DCGNS_ENABLE_TESTS:BOOL=OFF"
+    cmake_opts="${cmake_opts} -DCGNS_PARALLEL:BOOL=OFF"
+
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        LIBS_ENV="-lhdf5"
-        LDFLAGS_ENV="-L$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib -Wl,-rpath,$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
-        H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
-        LIBS_ENV="$LIBS_ENV -lz"
-        LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
-        H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+        cmake_opts="${cmake_opts} -DCGNS_ENABLE_HDF5:BOOL=ON"
+        cmake_opts="${cmake_opts} -DHDF5_DIR:PATH=$VISITDIR/hdf5/$HDF5_VERSION/$VISITIARCH/cmake"
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            cmake_opts="${cmake_opts} -DHDF5_NEED_ZLIB:BOOL=ON"
+            cmake_opts="${cmake_opts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+            cmake_opts="${cmake_opts} -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+        fi
+        # if HDF5 built with parallel, then need to set MPI_HOME
+        if [[ "$PAR_COMPILER" != "" ]] ; then
+            cmake_opts="${cmake_opts} -DMPI_HOME:STRING=${PAR_HOME}"
+        fi
+    else
+        cmake_opts="${cmake_opts} -DCGNS_ENABLE_HDF5:BOOL=OFF"
     fi
 
-    # Disable fortran
-    FORTRANARGS="--with-fortran=no"
-
-    # If we're parallel, HDF5 has a dependence on mpi we need to handle here
-    if [[ "$PAR_COMPILER" != "" ]] ; then
-        CFLAGS="$CFLAGS -I${PAR_HOME}/include"
-        LDFLAGS_ENV="$LDFLAGS_ENV -L${PAR_HOME}/lib -L${PAR_HOME}/lib64"
-        LIBS_ENV="$LIBS_ENV -lmpi"
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
-
-    set -x
-    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
-        ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
-    set +x
-
-    if [[ $? != 0 ]] ; then
-        warn "CGNS configure failed.  Giving up"
-        return 1
-    fi
+    echo "\"${CMAKE_COMMAND}\"" ${cmake_opts} "../${CGNS_SRC_DIR}" >> bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "CGNS configuration failed."
 
     #
     # Build CGNS
     #
     info "Building CGNS . . . (~2 minutes)"
 
-    $MAKE cgns
-    if [[ $? != 0 ]] ; then
-        warn "CGNS build failed.  Giving up"
-        return 1
-    fi
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "CGNS did not build correctly. Giving up."
 
     #
     # Install into the VisIt third party location.
     #
     info "Installing CGNS . . ."
 
-    $MAKE install-cgns
-    if [[ $? != 0 ]] ; then
-        warn "CGNS install failed.  Giving up"
-        return 1
-    fi
-
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        #
-        # Make dynamic executable
-        #
-        info "Creating dynamic libraries for CGNS . . ."
-
-        INSTALLNAMEPATH="$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH/lib"
-
-        $C_COMPILER -dynamiclib -o libcgns.${SO_EXT} lib/*.o \
-                    -Wl,-headerpad_max_install_names \
-                    -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
-                    -Wl,-install_name,$INSTALLNAMEPATH/libcgns.${SO_EXT} \
-                    -Wl,-compatibility_version,$CGNS_COMPATIBILITY_VERSION \
-                    -Wl,-current_version,$CGNS_VERSION -lSystem 
-        if [[ $? != 0 ]] ; then
-            warn "CGNS dynamic library creation failed.  Giving up"
-            return 1
-        fi
-        rm -f "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib/libcgns.${SO_EXT}"
-        cp libcgns.${SO_EXT} "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
-    fi
+    ${CMAKE_COMMAND} --install . || error "CGNS did not install correctly. Giving up."
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/cgns"
