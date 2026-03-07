@@ -2491,6 +2491,14 @@ function build_vtk
     fi
 
     #
+    # VTK's CMake logic for version numbering the created shared libraries has
+    # a number of issues. It can wind up duplicating the maj/min pair in the
+    # the names. It can also wind up adding a 1 patch digit when the patch
+    # level is 0. So, we need to enforce it by adding these CMake variable settings.
+    #
+    vopts="${vopts} -DVTK_CUSTOM_LIBRARY_SUFFIX:STRING=\"${VTK_SHORT_VERSION}\" -DVTK_CUSTOM_LIBRARY_VERSION:STRING=\"\" -DVTK_CUSTOM_LIBRARY_SOVERSION:STRING=\"\""
+
+    #
     # Several platforms have had problems with the VTK cmake configure command
     # issued simply via "issue_command".  This was first discovered on
     # BGQ and then showed up in random cases for both OSX and Linux machines.
