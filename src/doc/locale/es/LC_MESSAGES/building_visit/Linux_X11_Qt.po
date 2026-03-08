@@ -1,0 +1,79 @@
+# Spanish translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-08 08:02+0000\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: building_visit/Linux_X11_Qt.rst:4
+msgid "Linux X11 Requirements for Qt"
+msgstr "Requisitos de Linux X11 para Qt"
+
+#: building_visit/Linux_X11_Qt.rst:6
+msgid "On Linux, Qt has specific X11 requirements that must be met for its Platform Plugin to be built successfully. Many developers encounter errors building Qt due to missing support libraries related to X11 and xcb."
+msgstr "En Linux, Qt tiene requisitos específicos de X11 que deben cumplirse para que su plugin de plataforma se compile correctamente. Muchos desarrolladores encuentran errores al compilar Qt debido a la falta de bibliotecas de soporte relacionadas con X11 y xcb."
+
+#: building_visit/Linux_X11_Qt.rst:9
+msgid "Here are a couple of Qt links that prove helpful in knowing which packages need to be installed for particular OS distros."
+msgstr "Aquí hay un par de enlaces de Qt que resultan útiles para saber qué paquetes deben instalarse para distribuciones específicas del sistema operativo."
+
+#: building_visit/Linux_X11_Qt.rst:11
+msgid "For Qt 5"
+msgstr "Para Qt 5"
+
+#: building_visit/Linux_X11_Qt.rst:13
+msgid "The libxcb section of `Building Qt5 from Git <https://wiki.qt.io/Building_Qt_5_from_Git>`_"
+msgstr "La sección libxcb de `Building Qt5 from Git <https://wiki.qt.io/Building_Qt_5_from_Git>`_"
+
+#: building_visit/Linux_X11_Qt.rst:14
+msgid "Qt5's `X11 Requirements <https://doc.qt.io/qt-5/linux-requirements.html>`__ page."
+msgstr "La página `X11 Requirements <https://doc.qt.io/qt-5/linux-requirements.html>`__ de Qt5."
+
+#: building_visit/Linux_X11_Qt.rst:16
+msgid "For Qt 6 (only on develop branch)"
+msgstr "Para Qt 6 (solo en la rama develop)"
+
+#: building_visit/Linux_X11_Qt.rst:18
+msgid "Qt6's `X11 Requirements <https://doc.qt.io/qt-6/linux-requirements.html>`__ page."
+msgstr "La página `X11 Requirements <https://doc.qt.io/qt-6/linux-requirements.html>`__ de Qt6."
+
+#: building_visit/Linux_X11_Qt.rst:20
+msgid "VisIt_ also maintains a few Docker files that may prove useful:"
+msgstr "VisIt_ también mantiene algunos archivos Docker que pueden resultar útiles:"
+
+#: building_visit/Linux_X11_Qt.rst:22
+msgid "`centos8 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-centos8>`_"
+msgstr ""
+
+#: building_visit/Linux_X11_Qt.rst:23
+msgid "`debian9 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian9>`_"
+msgstr ""
+
+#: building_visit/Linux_X11_Qt.rst:24
+msgid "`debian10 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian10>`_"
+msgstr ""
+
+#: building_visit/Linux_X11_Qt.rst:25
+msgid "`debian11 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian11>`_"
+msgstr ""
+
+#: building_visit/Linux_X11_Qt.rst:26
+msgid "`fedora31 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-fedora31>`_"
+msgstr ""
+
+#: building_visit/Linux_X11_Qt.rst:27
+msgid "`ubuntu18 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu18>`_"
+msgstr ""
+
+#: building_visit/Linux_X11_Qt.rst:28
+msgid "`ubuntu20 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu20>`_"
+msgstr ""
+
+#: building_visit/Linux_X11_Qt.rst:29
+msgid "`ubuntu21 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu21>`_"
+msgstr ""

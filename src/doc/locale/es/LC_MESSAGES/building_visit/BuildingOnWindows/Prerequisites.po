@@ -1,0 +1,75 @@
+# Spanish translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-08 08:02+0000\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:4
+msgid "Prerequisites"
+msgstr "Requisitos previos"
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:7
+msgid "VisIt's Source Code"
+msgstr "Código fuente de VisIt"
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:10
+msgid "For a released version"
+msgstr "Para una versión publicada"
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:12
+msgid "For building a released version of VisIt version 3.2.1 or earlier, you can download a windows installer that contains all that is necessary from the `downloads page <https://visit-dav.github.io/visit-website/releases-as-tables>`_. Look for the *Win 10/8/7 development*  link for the particular version you want. The file will be named *visitdev3.2.1.exe* (or similar, based on version chosen)."
+msgstr "Para compilar una versión publicada de VisIt 3.2.1 o anterior, puede descargar un instalador de Windows que contiene todo lo necesario desde la `página de descargas <https://visit-dav.github.io/visit-website/releases-as-tables>`_. Busque el enlace *Win 10/8/7 development* para la versión que desee. El archivo se llamará *visitdev3.2.1.exe* (o similar, según la versión elegida)."
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:16
+msgid "For building a released version of VisIt version 3.2.2 or newer, download the *Source* tgz file as well as the *Win 10 development* file which will be named *visit_windowsdev_3.2.2.zip* (or similar, based on version chosen). The .zip file contains all the pre-built third-party binaries needed for building VisIt on Windows. It is best to extract these files to the same folder so that *src* from the source tarball is peer to *windowsbuild* from the windows-dev zip file."
+msgstr "Para compilar una versión publicada de VisIt 3.2.2 o posterior, descargue el archivo *Source* (tgz) así como el archivo *Win 10 development*, que se llamará *visit_windowsdev_3.2.2.zip* (o similar, según la versión elegida). El archivo .zip contiene todos los binarios de terceros precompilados necesarios para compilar VisIt en Windows. Es mejor extraer estos archivos en la misma carpeta para que *src* (del tarball de código fuente) quede al mismo nivel que *windowsbuild* (del zip windows-dev)."
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:21
+msgid "For the latest development version"
+msgstr "Para la versión de desarrollo más reciente"
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:23
+msgid "If you want to build the latest development version from our repository, you need to obtain source from the `visit repo <https://github.com/visit-dav/visit>`_, and the pre-built third party dependencies from the `visit-deps repo <https://github.com/visit-dav/visit-deps>`_ on GitHub."
+msgstr "Si desea compilar la versión de desarrollo más reciente desde nuestro repositorio, debe obtener el código fuente del `repositorio visit <https://github.com/visit-dav/visit>`_ y las dependencias de terceros precompiladas desde el `repositorio visit-deps <https://github.com/visit-dav/visit-deps>`_ en GitHub."
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:27
+msgid "Other Software"
+msgstr "Otro software"
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:29
+msgid "`CMake <https://cmake.org/download>`_ version 3.24 or greater."
+msgstr "`CMake <https://cmake.org/download>`_ versión 3.24 o superior."
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:31
+msgid "Don't use the CMake included with cygwin if you plan on using the pre-built thirdparty libraries."
+msgstr "No use el CMake incluido con cygwin si planea usar las bibliotecas de terceros precompiladas."
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:33
+msgid "Visual Studio 2022 (VisIt 3.4.0 and newer) or Visual Studio 2017"
+msgstr "Visual Studio 2022 (VisIt 3.4.0 y posteriores) o Visual Studio 2017"
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:35
+msgid "Needed if you want to use our pre-built thirdparty libraries."
+msgstr "Necesario si desea usar nuestras bibliotecas de terceros precompiladas."
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:37
+msgid "`NSIS <http://www.nsis.sourceforge.net>`_ *Optional*"
+msgstr "`NSIS <http://www.nsis.sourceforge.net>`_ *Opcional*"
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:39
+msgid "For creating an installer for VisIt. NSIS 2 or 3 should work."
+msgstr "Para crear un instalador de VisIt. NSIS 2 o 3 debería funcionar."
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:41
+msgid "`Microsoft MPI <https://www.microsoft.com/en-us/download/details.aspx?id=57467>`_. *Optional*"
+msgstr "`Microsoft MPI <https://www.microsoft.com/en-us/download/details.aspx?id=57467>`_. *Opcional*"
+
+#: building_visit/BuildingOnWindows/Prerequisites.rst:43
+msgid "For building VisIt's parallel engine.  Redistributable binaries and SDK's are needed, so download and install both msmpisdk.msi and msmpisetup.exe."
+msgstr "Para compilar el motor de cómputo paralelo de VisIt. Se necesitan binarios redistribuibles y SDK, así que descargue e instale tanto msmpisdk.msi como msmpisetup.exe."

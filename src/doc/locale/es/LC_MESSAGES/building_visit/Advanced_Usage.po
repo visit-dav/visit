@@ -1,0 +1,175 @@
+# Spanish translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-08 08:02+0000\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: building_visit/Advanced_Usage.rst:4
+msgid "Advanced Usage"
+msgstr "Uso avanzado"
+
+#: building_visit/Advanced_Usage.rst:6
+msgid "``build_visit`` comes with many options for features such as building a parallel version, overcoming issues with OpenGL, a rendering library used by VisIt_ to render images, and controlling precisely what libraries VisIt_ is built with."
+msgstr "``build_visit`` incluye muchas opciones, por ejemplo: compilar una versión paralela, superar problemas con OpenGL (una biblioteca de renderizado usada por VisIt_ para renderizar imágenes) y controlar con precisión con qué bibliotecas se compila VisIt_."
+
+#: building_visit/Advanced_Usage.rst:9
+msgid "Building a parallel version"
+msgstr "Compilar una versión paralela"
+
+#: building_visit/Advanced_Usage.rst:11
+msgid "One of powerful capabilities of VisIt_ is running in parallel on large parallel clusters. VisIt_ runs in parallel using a library called MPI, which stands for Message Passing Interface. There are a couple of ways in which you can build a parallel version of VisIt_ using MPI. If your system doesn't already have MPI installed on it, which is typically the case with a desktop system or small cluster, then you can use MPICH, which is an open source implementation of MPI. The following example builds a parallel version using MPICH."
+msgstr "Una de las capacidades más potentes de VisIt_ es ejecutarse en paralelo en grandes clústeres paralelos. VisIt_ se ejecuta en paralelo usando una biblioteca llamada MPI (Message Passing Interface). Hay un par de maneras de compilar una versión paralela de VisIt_ usando MPI. Si su sistema no tiene MPI instalado, lo cual suele ser el caso en un equipo de escritorio o en un clúster pequeño, entonces puede usar MPICH, que es una implementación de código abierto de MPI. El siguiente ejemplo compila una versión paralela usando MPICH."
+
+#: building_visit/Advanced_Usage.rst:21
+msgid "If your system already has MPI installed on it, which is typically the case with a large system at a computer center, you can set several environment variables that specify the location of the MPI libraries and header files. The following example uses a system installed MPI library."
+msgstr "Si su sistema ya tiene MPI instalado, lo cual suele ser el caso en un sistema grande de un centro de cómputo, puede establecer varias variables de entorno que especifican la ubicación de las bibliotecas y archivos de encabezado de MPI. El siguiente ejemplo usa una biblioteca MPI instalada en el sistema."
+
+#: building_visit/Advanced_Usage.rst:32
+msgid "When running in parallel, the user will typically use scalable rendering for rendering images in parallel. VisIt_ does this through the use of the Mesa 3D graphics library. Because of this you will want to include Mesa 3D when building a parallel version. In the following example we have included building with the Mesa 3D library."
+msgstr "Al ejecutarse en paralelo, el usuario normalmente utilizará **renderizado escalable** para renderizar imágenes en paralelo. VisIt_ hace esto mediante la biblioteca gráfica Mesa 3D. Por este motivo, querrá incluir Mesa 3D al compilar una versión paralela. En el siguiente ejemplo se incluye la compilación con la biblioteca Mesa 3D."
+
+#: building_visit/Advanced_Usage.rst:42
+msgid "Building with Mesa as the OpenGL implementation"
+msgstr "Compilar con Mesa como implementación de OpenGL"
+
+#: building_visit/Advanced_Usage.rst:44
+msgid "Mesa 3D is also an implementation of OpenGL and it can be used in place of the system OpenGL when building VisIt_. There are a couple of reasons you would want to use Mesa 3D instead of the system OpenGL. The first is when you don't have a system OpenGL, which typically occurs when building in a container or on a virtual machine. The second is when your system implementation of OpenGL is too old to support VTK. In the following example we use Mesa 3D instead of the system OpenGL."
+msgstr "Mesa 3D también es una implementación de OpenGL y puede usarse en lugar del OpenGL del sistema al compilar VisIt_. Hay un par de razones por las que querría usar Mesa 3D en lugar del OpenGL del sistema. La primera es cuando no tiene OpenGL del sistema, lo cual suele ocurrir al compilar en un contenedor o en una máquina virtual. La segunda es cuando la implementación de OpenGL de su sistema es demasiado antigua para soportar VTK. En el siguiente ejemplo usamos Mesa 3D en lugar del OpenGL del sistema."
+
+#: building_visit/Advanced_Usage.rst:55
+msgid "The difference between ``--mesagl`` and ``--osmesa``"
+msgstr "La diferencia entre ``--mesagl`` y ``--osmesa``"
+
+#: building_visit/Advanced_Usage.rst:57
+msgid "When you specify ``--mesagl`` VTK will be built against Mesa 3D. When you specify ``--osmesa`` VTK is built against the system OpenGL and the Mesa 3D library is substituted at run time for OpenGL when running the parallel engine to enable scalable rendering. If you specify ``--mesagl`` then ``--osmesa`` is unnecessary and ignored if specified."
+msgstr "Cuando especifica ``--mesagl``, VTK se compila contra Mesa 3D. Cuando especifica ``--osmesa``, VTK se compila contra el OpenGL del sistema y la biblioteca Mesa 3D se sustituye en tiempo de ejecución por OpenGL al ejecutar el motor paralelo, para habilitar el renderizado escalable. Si especifica ``--mesagl``, entonces ``--osmesa`` no es necesario y, si se especifica, se ignora."
+
+#: building_visit/Advanced_Usage.rst:63
+msgid "Building Server only"
+msgstr "Compilar solo el servidor"
+
+#: building_visit/Advanced_Usage.rst:64
+msgid "Sometimes a special version of VisIt_ is needed for a remote server, one that only processes data and does not include any GUI elements. VisIt_ can be built in this fashion (and the build will be sped up considerably) by adding the ``-server-comonents-only flag`` to build only the server and related programs. Then you can run client/server from a desktop system running the GUI locally, and connect to the remote server to process data."
+msgstr "A veces se necesita una versión especial de VisIt_ para un servidor remoto: una que solo procese datos y no incluya elementos de la interfaz gráfica de usuario (GUI). VisIt_ se puede compilar de esta forma (y la compilación se acelerará considerablemente) agregando la marca ``-server-comonents-only flag`` para compilar solo el servidor y los programas relacionados. Luego puede ejecutar en modo cliente-servidor desde un equipo de escritorio con el GUI ejecutándose localmente y conectarse al servidor remoto para procesar datos."
+
+#: building_visit/Advanced_Usage.rst:72
+msgid "This will do a basic build, but will probably not include the IO libraries you need (unless you only need VTK). You can specify any needed libraries individually, e.g.  ``--hdf5 --netcdf --conduit --mfem`` to add HDF5, NetCDF, Conduit and Mfem IO libraries."
+msgstr "Esto realizará una compilación básica, pero probablemente no incluirá las bibliotecas de E/S que necesita (a menos que solo necesite VTK). Puede especificar las bibliotecas necesarias individualmente; por ejemplo, ``--hdf5 --netcdf --conduit --mfem`` para agregar las bibliotecas de E/S HDF5, NetCDF, Conduit y Mfem."
+
+#: building_visit/Advanced_Usage.rst:77
+msgid "Building VisIt_ with Pre-Installed (e.g. System) Libraries"
+msgstr "Compilar VisIt_ con bibliotecas preinstaladas (p. ej., del sistema)"
+
+#: building_visit/Advanced_Usage.rst:79
+msgid "On many systems, some libraries VisIt_ needs (e.g. Qt, VTK, Python OpenGL, HDF5, etc.) come pre-installed. Can a user just use those pre-installed libraries to build VisIt_?"
+msgstr "En muchos sistemas, algunas bibliotecas que VisIt_ necesita (p. ej., Qt, VTK, Python OpenGL, HDF5, etc.) vienen preinstaladas. ¿Puede un usuario usar esas bibliotecas preinstaladas para compilar VisIt_?"
+
+#: building_visit/Advanced_Usage.rst:82
+msgid "**Please don't!** In all likelihood this will not work at all or, worse, it will only partially work and fail in subtle ways that are nearly impossible to diagnose. In the unlikely chance it appears to work upon reporting any issues our first question will be, how was VisIt_ configured/built? If VisIt_ is built in a way that is not consistent with how developers routinely build, run and test it, we will not be able to reproduce the issue, debug it, identify work-arounds or otherwise provide sufficient support."
+msgstr "**¡Por favor no!** Con toda probabilidad, esto no funcionará en absoluto o, peor aún, funcionará solo parcialmente y fallará de maneras sutiles que son casi imposibles de diagnosticar. En el caso poco probable de que parezca funcionar, al reportar cualquier problema nuestra primera pregunta será: ¿cómo se configuró/compiló VisIt_? Si VisIt_ se compila de una manera que no es consistente con cómo los desarrolladores normalmente lo compilan, ejecutan y prueban, no podremos reproducir el problema, depurarlo, identificar soluciones alternativas ni proporcionar soporte suficiente."
+
+#: building_visit/Advanced_Usage.rst:87
+msgid "Apart from the general issues of reproducibility and support, there are many reasons building VisIt_ with pre-installed libraries will likely not work. Below, we breifly summarize various compatability issues with trying to use pre-installed libraries."
+msgstr "Además de los problemas generales de reproducibilidad y soporte, hay muchas razones por las que compilar VisIt_ con bibliotecas preinstaladas probablemente no funcionará. A continuación resumimos brevemente varios problemas de compatibilidad asociados con intentar usar bibliotecas preinstaladas."
+
+#: building_visit/Advanced_Usage.rst:90
+msgid "Version Compatability : Pre-installed libraries are not the version VisIt_ requires"
+msgstr "Compatibilidad de versión: las bibliotecas preinstaladas no son la versión que VisIt_ requiere"
+
+#: building_visit/Advanced_Usage.rst:-1
+msgid "Pre-installed libraries are not the version"
+msgstr "Las bibliotecas preinstaladas no son la versión"
+
+#: building_visit/Advanced_Usage.rst:91
+msgid "Often, users notice a *newer* version of a library VisIt_ needs is pre-installed on their system and expect VisIt_ will run *better* with this newer version. However, having a newer version of VTK, for example, pre-installed does not mean VisIt_ will build or run properly with that version. Major versions of VTK, for example, (e.g. 8.0 and 9.0) are not compatable. Incompatabilities sometimes exist even between minor versions of some libraries. Incorrect library versions may cause VisIt_ to either fail to build or fail to run properly."
+msgstr "A menudo, los usuarios notan que una versión *más nueva* de una biblioteca que VisIt_ necesita está preinstalada en su sistema y esperan que VisIt_ se ejecute *mejor* con esa versión más nueva. Sin embargo, por ejemplo, tener una versión más nueva de VTK preinstalada no significa que VisIt_ se compilará o ejecutará correctamente con esa versión. Las versiones mayores de VTK (p. ej., 8.0 y 9.0) no son compatibles. A veces existen incompatibilidades incluso entre versiones menores de algunas bibliotecas. Versiones incorrectas de bibliotecas pueden hacer que VisIt_ falle al compilar o falle al ejecutarse."
+
+#: building_visit/Advanced_Usage.rst:97
+msgid "Patch Compatability : Pre-installed libaries are missing patches VisIt_ requires"
+msgstr "Compatibilidad de parches: a las bibliotecas preinstaladas les faltan parches que VisIt_ requiere"
+
+#: building_visit/Advanced_Usage.rst:-1
+msgid "Pre-installed libaries are missing patches"
+msgstr "A las bibliotecas preinstaladas les faltan parches"
+
+#: building_visit/Advanced_Usage.rst:98
+msgid "In some cases, the libraries VisIt_ needs are patched to work around various issues building or running VisIt_. Such patches are almost certainly not in any pre-installed version of the library. Missing patches may cause VisIt_ to either fail to build or fail to run properly."
+msgstr "En algunos casos, las bibliotecas que VisIt_ necesita se parchean para evitar diversos problemas al compilar o ejecutar VisIt_. Es casi seguro que esos parches no estarán en ninguna versión preinstalada de la biblioteca. La falta de parches puede hacer que VisIt_ falle al compilar o falle al ejecutarse correctamente."
+
+#: building_visit/Advanced_Usage.rst:102
+msgid "Configuration Compatability : Pre-installed libraries are not configured in a way VisIt_ requires"
+msgstr "Compatibilidad de configuración: las bibliotecas preinstaladas no están configuradas de la manera que VisIt_ requiere"
+
+#: building_visit/Advanced_Usage.rst:-1
+msgid "Pre-installed libraries are not configured in a way"
+msgstr "Las bibliotecas preinstaladas no están configuradas de una manera"
+
+#: building_visit/Advanced_Usage.rst:103
+msgid "Libraries often have many build options which enable or disable certain features. The Qt library, for example, has hundreds of build options. Some build options VisIt_ may not care about. Other build options, however, VisIt_ may require to be enabled and still other options to be disabled. Incorrect library configuration may cause VisIt_ to either fail to build or fail to run properly."
+msgstr "Las bibliotecas a menudo tienen muchas opciones de compilación que habilitan o deshabilitan ciertas funcionalidades. La biblioteca Qt, por ejemplo, tiene cientos de opciones de compilación. Algunas opciones pueden no importar para VisIt_. Sin embargo, otras opciones pueden necesitar estar habilitadas y otras, deshabilitadas. Una configuración incorrecta de bibliotecas puede hacer que VisIt_ falle al compilar o falle al ejecutarse correctamente."
+
+#: building_visit/Advanced_Usage.rst:109
+msgid "Dependency Compatability : Pre-installed libraries are not built with dependencies VisIt_ requires"
+msgstr "Compatibilidad de dependencias: las bibliotecas preinstaladas no se compilaron con las dependencias que VisIt_ requiere"
+
+#: building_visit/Advanced_Usage.rst:-1
+msgid "Pre-installed libraries are not built with dependencies"
+msgstr "Las bibliotecas preinstaladas no se compilaron con dependencias"
+
+#: building_visit/Advanced_Usage.rst:110
+msgid "Libraries often have dependencies on still other libraries. For example, Qt and VTK can both depend on OpenGL. In some cases, however, VisIt_ may require a specific implementation of OpenGL called MesaGL. Incorrect dependencies may cause VisIt_ to either fail to build or fail to run properly. Such dependencies complicate things significantly because it means all of the aforementioned compatability issues apply, recursively, to any libraries a pre-installed library depends on."
+msgstr "Las bibliotecas a menudo dependen de otras bibliotecas. Por ejemplo, Qt y VTK pueden depender de OpenGL. En algunos casos, sin embargo, VisIt_ puede requerir una implementación específica de OpenGL llamada MesaGL. Dependencias incorrectas pueden hacer que VisIt_ falle al compilar o falle al ejecutarse correctamente. Estas dependencias complican las cosas de manera significativa porque significa que todos los problemas de compatibilidad mencionados se aplican, de forma recursiva, a cualquier biblioteca de la que dependa una biblioteca preinstalada."
+
+#: building_visit/Advanced_Usage.rst:116
+msgid "Compiler (Run-Time) Compatability : Pre-installed libraries are not built with a compiler (run-time) VisIt_ requires"
+msgstr "Compatibilidad del compilador (tiempo de ejecución): las bibliotecas preinstaladas no se compilaron con un compilador (tiempo de ejecución) que VisIt_ requiere"
+
+#: building_visit/Advanced_Usage.rst:-1
+msgid "Pre-installed libraries are not built with a compiler (run-time)"
+msgstr "Las bibliotecas preinstaladas no se compilaron con un compilador (tiempo de ejecución)"
+
+#: building_visit/Advanced_Usage.rst:117
+msgid "For some situations, building VisIt_ and its dependencies requires a specific compiler. The compiler (run-time) used for pre-installed libraries may not be compatable with the compiler (run-time) VisIt_ requires."
+msgstr "En algunas situaciones, compilar VisIt_ y sus dependencias requiere un compilador específico. El compilador (tiempo de ejecución) usado para bibliotecas preinstaladas puede no ser compatible con el compilador (tiempo de ejecución) que VisIt_ requiere."
+
+#: building_visit/Advanced_Usage.rst:120
+msgid "There are likely other subtle compatability issues that can arise which we have neglected to mention here. A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenGL, MPI to name a few) on any particular platform. Bottom line, the number of ways pre-installed libraries can be built such that they will cause VisIt_ to either fail to build or fail to run properly are almost boundless. For this reason, we discourage users from attempting to build VisIt_ using pre-installed libraries and warn users that in all likelihood we will not have sufficient resources to help address any resulting issues that may arise."
+msgstr "Es probable que existan otros problemas sutiles de compatibilidad que pueden surgir y que no hemos mencionado aquí. Una compilación completa de VisIt_ puede involucrar más de 35 bibliotecas, muchas de las cuales pueden venir preinstaladas (por ejemplo, Qt, VTK, Python, HDF5, netCDF, OpenGL y MPI) en una plataforma determinada. En resumen, la cantidad de maneras en que las bibliotecas preinstaladas pueden haberse compilado de tal forma que hagan que VisIt_ falle al compilar o al ejecutarse es prácticamente ilimitada. Por esta razón, desaconsejamos a los usuarios intentar compilar VisIt_ usando bibliotecas preinstaladas y advertimos que, con toda probabilidad, no tendremos recursos suficientes para ayudar a resolver los problemas resultantes."
+
+#: building_visit/Advanced_Usage.rst:126
+msgid "Building on a system without internet access"
+msgstr "Compilar en un sistema sin acceso a Internet"
+
+#: building_visit/Advanced_Usage.rst:128
+msgid "When you want to build visit on a system without internet access, you can use ``build_visit`` to download the third party libraries and source code to a system that has internet access and then move those files to your machine without access. The following example downloads the optional libraries, mpich and osmesa."
+msgstr "Cuando desea compilar VisIt en un sistema sin acceso a Internet, puede usar ``build_visit`` para descargar las bibliotecas de terceros y el código fuente en un sistema que sí tenga acceso a Internet y luego mover esos archivos a su máquina sin acceso. El siguiente ejemplo descarga las bibliotecas opcionales, mpich y osmesa."
+
+#: building_visit/Advanced_Usage.rst:137
+msgid "Different versions of ``build_visit``"
+msgstr "Diferentes versiones de ``build_visit``"
+
+#: building_visit/Advanced_Usage.rst:139
+msgid "When you use a version of ``build_visit`` that has a version number in it, for example ``build_visit3_0_1`` then it builds that tagged version of VisIt_. If the version of ``build_visit`` was from the develop branch of VisIt_, then it will grab the latest version of VisIt_ from the devlop branch. If the version of ``build_visit`` came from a release candidate branch, for example the v3.0 branch, then it will grab the latest version of VisIt_ from that branch."
+msgstr "Cuando usa una versión de ``build_visit`` que incluye un número de versión, por ejemplo ``build_visit3_0_1``, entonces compila esa versión etiquetada de VisIt_. Si la versión de ``build_visit`` proviene de la rama develop de VisIt_, tomará la versión más reciente de VisIt_ de la rama develop. Si la versión de ``build_visit`` proviene de una rama de candidato a versión (release candidate), por ejemplo la rama v3.0, entonces tomará la versión más reciente de VisIt_ de esa rama."
+
+#: building_visit/Advanced_Usage.rst:144
+msgid "Troubleshooting ``build_visit`` failures"
+msgstr "Solución de problemas de fallos de ``build_visit``"
+
+#: building_visit/Advanced_Usage.rst:146
+msgid "When ``build_visit`` runs, it generates a log file with ``_log`` added to the name of the script. For example, if you are running ``build_visit3_0_1`` then the log file will be named ``build_visit3_0_1_log``. The error that caused the failure should be near the end of the log file. When ``build_visit`` finishes running, it will leave the directories that it used to build the packages intact. You can go into the directory of the package that failed and correct the issue and finish building and installing the package. You can then execute the ``build_visit`` command again to have it continue the build."
+msgstr "Cuando se ejecuta ``build_visit``, se genera un archivo de registro con ``_log`` agregado al nombre del script. Por ejemplo, si está ejecutando ``build_visit3_0_1``, el archivo de registro se llamará ``build_visit3_0_1_log``. El error que causó el fallo debería estar cerca del final del archivo de registro. Cuando ``build_visit`` termina de ejecutarse, deja intactos los directorios que usó para compilar los paquetes. Puede entrar al directorio del paquete que falló, corregir el problema y terminar de compilar e instalar el paquete. Luego puede ejecutar nuevamente el comando ``build_visit`` para que continúe con la compilación."
+
+#: building_visit/Advanced_Usage.rst:154
+msgid "Why can't I use the Qt, Python, VTK, Mesa/GL, etc. that came on my system?"
+msgstr "¿Por qué no puedo usar Qt, Python, VTK, Mesa/GL, etc. que vienen en mi sistema?"
+
+#: building_visit/Advanced_Usage.rst:156
+msgid "As much as we might like to believe it, large, complex libraries like Qt, Python and VTK are rarely 100% compatible between newer or older versions. Furthermore, for large libraries like these, there are often many, many different installation options for a given platform. It is highly unlikely that a given installation of VTK for example, is not only of a version compatibile with a given release of VisIt_ but also configured and installed on your system in exactly the way VisIt_ needs it. In addition, VisIt_ gets developed and thoroughly tested on specific versions and configurations of various libraries meaning that when users encounter issues in other configurations, we are not always able to reproduce them. In some cases, VisIt_ developers have had to work-around a bug in a library or, worse, had to patch the actual library itself to address an issue that might be specific to just one platform. Together, these issues result in a situation where VisIt_ often must be compiled with precisely the libraries it is released on and rarely, if ever, can take advantage of an installation that came as part of the system VisIt_ is being built on. Lastly, it becomes almost impossible to duplicate and diagnose issues reported by users when users are running VisIt_ in configurations substantially different from that which is being developed and routinely tested."
+msgstr "Por mucho que nos gustaría creerlo, bibliotecas grandes y complejas como Qt, Python y VTK rara vez son 100% compatibles entre versiones más nuevas o más antiguas. Además, para bibliotecas grandes como estas, a menudo hay muchas, muchas opciones de instalación para una plataforma determinada. Es muy poco probable que una instalación dada de VTK, por ejemplo, no solo sea de una versión compatible con una versión publicada de VisIt_, sino que además esté configurada e instalada en su sistema exactamente de la manera en que VisIt_ lo necesita. Adicionalmente, VisIt_ se desarrolla y se prueba exhaustivamente con versiones y configuraciones específicas de diversas bibliotecas, lo que significa que cuando los usuarios encuentran problemas en otras configuraciones, no siempre podemos reproducirlos. En algunos casos, los desarrolladores de VisIt_ han tenido que aplicar soluciones alternativas a un bug de una biblioteca o, peor aún, han tenido que parchear la biblioteca en sí para corregir un problema que podría ser específico de una sola plataforma. En conjunto, estos problemas llevan a una situación en la que VisIt_ a menudo debe compilarse con precisión con las bibliotecas con las que se publica y rara vez, si es que alguna vez, puede aprovechar una instalación que venía como parte del sistema en el que se está compilando VisIt_. Por último, se vuelve casi imposible duplicar y diagnosticar los problemas reportados por los usuarios cuando éstos ejecutan VisIt_ en configuraciones sustancialmente diferentes de aquellas en las que se desarrolla y se prueba de forma rutinaria."

@@ -1,0 +1,20 @@
+# Spanish translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-08 08:02+0000\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: building_visit/BuildingOnMac/index.rst:4
+msgid "Building on macOS with masonry"
+msgstr "Compilar en macOS con masonry"
+
+#: building_visit/BuildingOnMac/index.rst:6
+msgid "In this chapter, we will discuss how to build VisIt_ on macOS using **masonry**. Masonry is a collection of Python scripts and JSON files that use ``build_visit``, and other system tools, to create a macOS Disk Image File (DMG)."
+msgstr "En este capítulo, hablaremos de cómo compilar VisIt_ en macOS usando **masonry**. Masonry es una colección de scripts de Python y archivos JSON que usan ``build_visit`` y otras herramientas del sistema para crear una imagen de disco de macOS (archivo DMG)."
+
