@@ -1,0 +1,149 @@
+# Spanish translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-07 00:00-0800\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: intro/Understanding_how_VisIt_works.rst:3
+msgid "Understanding how VisIt_ works"
+msgstr "Comprender cómo funciona VisIt_"
+
+#: intro/Understanding_how_VisIt_works.rst:6
+msgid "VisIt_'s Core Abstractions"
+msgstr "Abstracciones principales de VisIt_"
+
+#: intro/Understanding_how_VisIt_works.rst:8
+msgid "VisIt_'s interface is built around five core abstractions. These include:"
+msgstr "La interfaz de VisIt_ se basa en cinco abstracciones principales. Estas incluyen:"
+
+#: intro/Understanding_how_VisIt_works.rst:10
+#: intro/Understanding_how_VisIt_works.rst:17
+msgid "Databases"
+msgstr "Bases de datos"
+
+#: intro/Understanding_how_VisIt_works.rst:11
+#: intro/Understanding_how_VisIt_works.rst:50
+msgid "Plots"
+msgstr "Gráficos (plots)"
+
+#: intro/Understanding_how_VisIt_works.rst:12
+#: intro/Understanding_how_VisIt_works.rst:61
+msgid "Operators"
+msgstr "Operadores"
+
+#: intro/Understanding_how_VisIt_works.rst:13
+#: intro/Understanding_how_VisIt_works.rst:71
+msgid "Expressions"
+msgstr "Expresiones"
+
+#: intro/Understanding_how_VisIt_works.rst:14
+#: intro/Understanding_how_VisIt_works.rst:79
+msgid "Queries"
+msgstr "Consultas"
+
+#: intro/Understanding_how_VisIt_works.rst:19
+msgid "Databases read data from files and presents the data in the user interface as variables. VisIt_ supports many different types of variables including:"
+msgstr "Las bases de datos leen datos desde archivos y presentan los datos en la interfaz de usuario como variables. VisIt_ admite muchos tipos diferentes de variables, incluyendo:"
+
+#: intro/Understanding_how_VisIt_works.rst:22
+msgid "Meshes"
+msgstr "Mallas"
+
+#: intro/Understanding_how_VisIt_works.rst:23
+msgid "Scalars"
+msgstr "Escalares"
+
+#: intro/Understanding_how_VisIt_works.rst:24
+msgid "Vectors"
+msgstr "Vectores"
+
+#: intro/Understanding_how_VisIt_works.rst:25
+msgid "Tensors"
+msgstr "Tensores"
+
+#: intro/Understanding_how_VisIt_works.rst:26
+msgid "Materials"
+msgstr "Materiales"
+
+#: intro/Understanding_how_VisIt_works.rst:27
+msgid "Species"
+msgstr "Especies"
+
+#: intro/Understanding_how_VisIt_works.rst:29
+msgid "Meshes are the foundation of all the other types of variables. They consist of a discretization of space into cells. All the other variables are defined on the cells of the mesh."
+msgstr "Las mallas son la base de todos los demás tipos de variables. Consisten en una discretización del espacio en celdas (zonas). Todas las demás variables se definen sobre las celdas de la malla."
+
+#: intro/Understanding_how_VisIt_works.rst:33
+msgid "Scalars are single valued fields and examples include density, pressure and temperature. Vectors are multi valued fields that have a direction and magnitude. Examples include velocity and magnetic fields. Tensors are multi valued fields that are typically thought of as 2 x 2 matrices in the case of 2D data and 3 x 3 matrices in the case of 3D data. The typical tensor variable is the stress tensor. Materials are a special type of variable that associates one or more materials with a cell. The location of the material is not specified within the cell and in the case of multi material cells, algorithms must be used to determine where the material is located in the cell, typically by looking at the materials in neighboring cells. Species are variables that are associated with each material. For a given material, species are a further breakdown of a material. The distinctive property of a species is that it is uniformly distributed throughout the material. For example, air consists of many different gases such as oxygen, nitrogen, carbon monoxide, carbon dioxide, etc."
+msgstr "Los escalares son campos de valor único; por ejemplo, densidad, presión y temperatura. Los vectores son campos multivalorados que tienen dirección y magnitud; por ejemplo, velocidad y campos magnéticos. Los tensores son campos multivalorados que normalmente se consideran matrices de 2 x 2 para datos 2D y de 3 x 3 para datos 3D. Un tensor típico es el tensor de esfuerzos. Los materiales son un tipo especial de variable que asocia uno o más materiales con una celda. La ubicación del material no se especifica dentro de la celda y, en el caso de celdas con múltiples materiales, deben usarse algoritmos para determinar dónde está ubicado el material, normalmente examinando los materiales en celdas vecinas. Las especies son variables asociadas con cada material. Para un material dado, las especies representan un desglose adicional del material. La propiedad distintiva de una especie es que está distribuida uniformemente en todo el material. Por ejemplo, el aire consiste en muchos gases diferentes como oxígeno, nitrógeno, monóxido de carbono, dióxido de carbono, etc."
+
+#: intro/Understanding_how_VisIt_works.rst:52
+msgid "Plots take variables and generate a visual representation of the variable. Some examples include the Mesh plot, which displays the mesh lines of the mesh, the Pseudocolor plot, which maps scalar variables to color, and the Vector plot, which displays vector glyphs indicating the direction and magnitude of a vector field. Plots work on specific types of variables and the graphical user interface limits the display of variables that can be used with a given plot to the appropriate variables."
+msgstr "Los gráficos (plots) toman variables y generan una representación visual de la variable. Algunos ejemplos incluyen el gráfico de malla (Mesh plot), que muestra las líneas de la malla; el gráfico de pseudocolor (Pseudocolor plot), que asigna variables escalares a colores; y el gráfico de vectores (Vector plot), que muestra glifos de vectores que indican la dirección y magnitud de un campo vectorial. Los gráficos funcionan con tipos específicos de variables y la interfaz gráfica de usuario (GUI) limita la visualización de variables que pueden usarse con un gráfico dado a las variables apropiadas."
+
+#: intro/Understanding_how_VisIt_works.rst:63
+msgid "Operators take variables and modify them in some way. Operators perform their operations before they are plotted. Multiple operators may be applied to a variable forming a pipeline. For example, a mesh may be subsetted so that all the values fall within a given range, furthermore, the mesh may be subsetted to a portion of the mesh within a user specified box."
+msgstr "Los operadores toman variables y las modifican de alguna manera. Los operadores realizan sus operaciones antes de que se grafiquen. Se pueden aplicar múltiples operadores a una variable, formando una tubería (pipeline). Por ejemplo, una malla puede reducirse a un subconjunto para que todos los valores queden dentro de un rango dado; además, la malla puede reducirse a una porción de la malla dentro de una caja especificada por el usuario."
+
+#: intro/Understanding_how_VisIt_works.rst:73
+msgid "Expressions perform calculations on variables to generate new variables. Some common expressions consist of the standard mathematical operations such as addition, subtraction, multiplication and division. It also includes more complex operations such as gradient and divergence."
+msgstr "Las expresiones realizan cálculos sobre variables para generar nuevas variables. Algunas expresiones comunes consisten en las operaciones matemáticas estándar como suma, resta, multiplicación y división. También incluyen operaciones más complejas como el gradiente y la divergencia."
+
+#: intro/Understanding_how_VisIt_works.rst:81
+msgid "Queries summarize data and typically take variables as input and generate either a single value or some small number of values. Queries can also create curves, the most common of which is the result of a query over time that creates a curve of a scalar value over time. Some examples of queries include minimum, maximum, spatial extents and volume."
+msgstr "Las consultas resumen datos y, por lo general, toman variables como entrada y generan ya sea un valor único o un pequeño número de valores. Las consultas también pueden crear curvas; la más común es el resultado de una consulta a lo largo del tiempo que crea una curva de un valor escalar a través del tiempo. Algunos ejemplos de consultas incluyen mínimo, máximo, extensiones espaciales y volumen."
+
+#: intro/Understanding_how_VisIt_works.rst:88
+msgid "VisIt_'s Architecture"
+msgstr "Arquitectura de VisIt_"
+
+#: intro/Understanding_how_VisIt_works.rst:90
+msgid "VisIt_ has a client-server architecture that consists of one or more clients that connect to a viewer, which connects to one or more parallel servers. The clients and viewer typically run locally on the users desktop system while the parallel servers run on some remote high performance compute platform. This is shown in :numref:`Figure %s <Intro-Architecture>`. This is the most general case, but the components can also all run on a single system, either on the desktop or on a remote high performance compute platform. The server can also run in serial and for small data sets is completely sufficient."
+msgstr "VisIt_ tiene una arquitectura cliente-servidor que consiste en uno o más clientes que se conectan a un visor, que a su vez se conecta a uno o más servidores paralelos. Los clientes y el visor normalmente se ejecutan localmente en el sistema de escritorio del usuario, mientras que los servidores paralelos se ejecutan en una plataforma remota de cómputo de alto rendimiento. Esto se muestra en :numref:`Figura %s <Intro-Architecture>`. Este es el caso más general, pero los componentes también pueden ejecutarse todos en un solo sistema, ya sea en el escritorio o en una plataforma remota de cómputo de alto rendimiento. El servidor también puede ejecutarse en serie y, para conjuntos de datos pequeños, es completamente suficiente."
+
+#: intro/Understanding_how_VisIt_works.rst:104
+msgid "VisIt_'s architecture"
+msgstr "Arquitectura de VisIt_"
+
+#: intro/Understanding_how_VisIt_works.rst:106
+msgid "VisIt_ supports a number of different clients including a Graphical User Interface (GUI), a Python based Command Line Interface (CLI), and a Java programming interface. More than one client can be active at a time and VisIt_ coordinates the state between them so that they are consistent."
+msgstr "VisIt_ admite distintos clientes, incluyendo una interfaz gráfica de usuario (GUI), una interfaz de línea de comandos (CLI) basada en Python y una interfaz de programación Java. Puede haber más de un cliente activo a la vez y VisIt_ coordina el estado entre ellos para que sea consistente."
+
+#: intro/Understanding_how_VisIt_works.rst:111
+msgid "The viewer is responsible for displaying the visual results of the plots and coordinating the state information between the various clients."
+msgstr "El visor es responsable de mostrar los resultados visuales de los gráficos (plots) y de coordinar la información de estado entre los distintos clientes."
+
+#: intro/Understanding_how_VisIt_works.rst:114
+msgid "The server is responsible for reading the data from disk and performing all the manipulations on the data. The server reads and does all of its processing in parallel when running in parallel. The server can either render the data to be displayed in parallel or send the data to be rendered by the viewer. For small data sets, rendering in the viewer is faster and has less latency. For large data sets it is better to render the data in parallel (using scalable rendering) and then send the rendered image to the viewer for display. The implementation of scalable rendering is shown in :numref:`Figure %s <Intro-ScalableRendering>`. VisIt_ is by default configured to automatically switch between shipping data to the viewer and performing scalable rendering based on the amount of geometry to be rendered."
+msgstr "El servidor es responsable de leer los datos desde el disco y realizar todas las manipulaciones sobre los datos. El servidor lee y realiza todo su procesamiento en paralelo cuando se ejecuta en paralelo. El servidor puede renderizar los datos para mostrarlos en paralelo o enviar los datos para que el visor los renderice. Para conjuntos de datos pequeños, el renderizado en el visor es más rápido y tiene menor latencia. Para conjuntos de datos grandes, es mejor renderizar los datos en paralelo (usando renderizado escalable) y luego enviar la imagen renderizada al visor para su visualización. La implementación del renderizado escalable se muestra en :numref:`Figura %s <Intro-ScalableRendering>`. De forma predeterminada, VisIt_ está configurado para alternar automáticamente entre enviar datos al visor y realizar renderizado escalable, según la cantidad de geometría que deba renderizarse."
+
+#: intro/Understanding_how_VisIt_works.rst:131
+msgid "VisIt_'s scalable rendering"
+msgstr "Renderizado escalable de VisIt_"
+
+#: intro/Understanding_how_VisIt_works.rst:134
+msgid "VisIt_'s Graphical User Interface"
+msgstr "Interfaz gráfica de usuario (GUI) de VisIt_"
+
+#: intro/Understanding_how_VisIt_works.rst:136
+msgid "When you run the VisIt_ graphical user interface, you are seeing windows from the Qt based GUI and the viewer. The GUI is a VisIt_ client that provides the user interface and menus that let you choose what to visualize. The viewer displays all of the visualizations and is responsible for keeping track of VisIt_'s state and coordinating this state with the other components. Both the GUI and the viewer are meant to run locally to take advantage of the local computer's graphics hardware. The next two components can also be run on a client computer but they are more often run on a remote, parallel computer or cluster where the data files are generated."
+msgstr "Cuando ejecuta la interfaz gráfica de usuario (GUI) de VisIt_, verá ventanas del GUI basado en Qt y del visor. El GUI es un cliente de VisIt_ que proporciona la interfaz de usuario y menús que le permiten elegir qué visualizar. El visor muestra todas las visualizaciones y es responsable de mantener el estado de VisIt_ y coordinar ese estado con los demás componentes. Tanto el GUI como el visor están pensados para ejecutarse localmente para aprovechar el hardware gráfico del equipo local. Los siguientes dos componentes también pueden ejecutarse en un equipo cliente, pero con mayor frecuencia se ejecutan en un equipo remoto y paralelo o en un clúster donde se generan los archivos de datos."
+
+#: intro/Understanding_how_VisIt_works.rst:146
+msgid "The viewer supports up to 16 visualization windows. Each window is independent of the others. VisIt_ uses an active window concept; all changes made in **Main** window or one of its popup windows apply to the currently active visualization window. The **Main** window and visualization window are shown in :numref:`Figure %s <Intro-VisItGUI>`."
+msgstr "El visor admite hasta 16 ventanas de visualización. Cada ventana es independiente de las demás. VisIt_ usa el concepto de ventana activa: todos los cambios realizados en la ventana **Main** o en una de sus ventanas emergentes se aplican a la ventana de visualización actualmente activa. La ventana **Main** y una ventana de visualización se muestran en :numref:`Figura %s <Intro-VisItGUI>`."
+
+#: intro/Understanding_how_VisIt_works.rst:156
+msgid "VisIt_'s graphical user interface"
+msgstr "Interfaz gráfica de usuario de VisIt_"
+
+#: intro/Understanding_how_VisIt_works.rst:158
+msgid "Servers are launched on each machine where data to be visualized is located. Servers are launched on demand, typically when a database is opened. If there is more than one host profile on a system, VisIt_ will pop up a window asking which profile to use and additional properties such as the number of processors and nodes to use. The **Host Profiles** window is used to specify properties about the servers for different machines, such as the number of processors to use by default when running the server. The status of a compute engine is displayed in the **Compute Engines** window."
+msgstr "Los servidores se inician en cada máquina donde se encuentran los datos a visualizar. Los servidores se inician bajo demanda, típicamente cuando se abre una base de datos. Si hay más de un perfil de host en un sistema, VisIt_ mostrará una ventana solicitando qué perfil usar y propiedades adicionales, como el número de procesadores y nodos a usar. La ventana **Host Profiles** se usa para especificar propiedades sobre los servidores para diferentes máquinas, como el número de procesadores a usar de forma predeterminada al ejecutar el servidor. El estado de un motor de cómputo se muestra en la ventana **Compute Engines**."
+

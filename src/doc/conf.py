@@ -95,6 +95,22 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# -- i18n / gettext ----------------------------------------------------------
+#
+# Read the Docs supports building "translation projects" per language.
+# When RTD builds a translation, it typically sets READTHEDOCS_LANGUAGE
+# (e.g. "es"). Sphinx then loads translations from locale_dirs.
+#
+# For local builds, you can override language with:
+#   READTHEDOCS_LANGUAGE=es sphinx-build -b html . _build-es -a
+#
+gettext_compact = False
+locale_dirs = ['locale']
+
+_rtd_lang = os.environ.get('READTHEDOCS_LANGUAGE')
+if _rtd_lang and _rtd_lang.lower() not in ('en', 'en-us', 'en_us'):
+    language = _rtd_lang
+
 
 # -- Options for HTML output -------------------------------------------------
 
