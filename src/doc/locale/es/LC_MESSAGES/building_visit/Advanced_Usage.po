@@ -80,11 +80,11 @@ msgstr "Además de los problemas generales de reproducibilidad y soporte, hay mu
 
 #: building_visit/Advanced_Usage.rst:90
 msgid "Version Compatability : Pre-installed libraries are not the version VisIt_ requires"
-msgstr "Compatibilidad de versión: las bibliotecas preinstaladas no son la versión que VisIt_ requiere"
+msgstr "Compatibilidad de versión: las bibliotecas preinstaladas no son la versión que VisIt\\_ requiere"
 
 #: building_visit/Advanced_Usage.rst:-1
 msgid "Pre-installed libraries are not the version"
-msgstr "Las bibliotecas preinstaladas no son la versión"
+msgstr "Las bibliotecas preinstaladas no son la versión que VisIt_ requiere"
 
 #: building_visit/Advanced_Usage.rst:91
 msgid "Often, users notice a *newer* version of a library VisIt_ needs is pre-installed on their system and expect VisIt_ will run *better* with this newer version. However, having a newer version of VTK, for example, pre-installed does not mean VisIt_ will build or run properly with that version. Major versions of VTK, for example, (e.g. 8.0 and 9.0) are not compatable. Incompatabilities sometimes exist even between minor versions of some libraries. Incorrect library versions may cause VisIt_ to either fail to build or fail to run properly."
@@ -92,11 +92,11 @@ msgstr "A menudo, los usuarios notan que una versión *más nueva* de una biblio
 
 #: building_visit/Advanced_Usage.rst:97
 msgid "Patch Compatability : Pre-installed libaries are missing patches VisIt_ requires"
-msgstr "Compatibilidad de parches: a las bibliotecas preinstaladas les faltan parches que VisIt_ requiere"
+msgstr "Compatibilidad de parches: a las bibliotecas preinstaladas les faltan parches que VisIt\\_ requiere"
 
 #: building_visit/Advanced_Usage.rst:-1
 msgid "Pre-installed libaries are missing patches"
-msgstr "A las bibliotecas preinstaladas les faltan parches"
+msgstr "A las bibliotecas preinstaladas les faltan parches que VisIt_ requiere"
 
 #: building_visit/Advanced_Usage.rst:98
 msgid "In some cases, the libraries VisIt_ needs are patched to work around various issues building or running VisIt_. Such patches are almost certainly not in any pre-installed version of the library. Missing patches may cause VisIt_ to either fail to build or fail to run properly."
@@ -104,23 +104,23 @@ msgstr "En algunos casos, las bibliotecas que VisIt_ necesita se parchean para e
 
 #: building_visit/Advanced_Usage.rst:102
 msgid "Configuration Compatability : Pre-installed libraries are not configured in a way VisIt_ requires"
-msgstr "Compatibilidad de configuración: las bibliotecas preinstaladas no están configuradas de la manera que VisIt_ requiere"
+msgstr "Compatibilidad de configuración: las bibliotecas preinstaladas no están configuradas de la manera que VisIt\\_ requiere"
 
 #: building_visit/Advanced_Usage.rst:-1
 msgid "Pre-installed libraries are not configured in a way"
-msgstr "Las bibliotecas preinstaladas no están configuradas de una manera"
+msgstr "Las bibliotecas preinstaladas no están configuradas de la manera que VisIt_ requiere"
 
 #: building_visit/Advanced_Usage.rst:103
 msgid "Libraries often have many build options which enable or disable certain features. The Qt library, for example, has hundreds of build options. Some build options VisIt_ may not care about. Other build options, however, VisIt_ may require to be enabled and still other options to be disabled. Incorrect library configuration may cause VisIt_ to either fail to build or fail to run properly."
-msgstr "Las bibliotecas a menudo tienen muchas opciones de compilación que habilitan o deshabilitan ciertas funcionalidades. La biblioteca Qt, por ejemplo, tiene cientos de opciones de compilación. Algunas opciones pueden no importar para VisIt_. Sin embargo, otras opciones pueden necesitar estar habilitadas y otras, deshabilitadas. Una configuración incorrecta de bibliotecas puede hacer que VisIt_ falle al compilar o falle al ejecutarse correctamente."
+msgstr "Las bibliotecas a menudo tienen muchas opciones de compilación que habilitan o deshabilitan ciertas funcionalidades. La biblioteca Qt, por ejemplo, tiene cientos de opciones de compilación. Algunas opciones pueden no importar para VisIt_. Sin embargo, VisIt_ puede requerir que otras opciones estén habilitadas y que otras se deshabiliten. Una configuración incorrecta de bibliotecas puede hacer que VisIt_ falle al compilar o falle al ejecutarse correctamente."
 
 #: building_visit/Advanced_Usage.rst:109
 msgid "Dependency Compatability : Pre-installed libraries are not built with dependencies VisIt_ requires"
-msgstr "Compatibilidad de dependencias: las bibliotecas preinstaladas no se compilaron con las dependencias que VisIt_ requiere"
+msgstr "Compatibilidad de dependencias: las bibliotecas preinstaladas no se compilaron con las dependencias que VisIt\\_ requiere"
 
 #: building_visit/Advanced_Usage.rst:-1
 msgid "Pre-installed libraries are not built with dependencies"
-msgstr "Las bibliotecas preinstaladas no se compilaron con dependencias"
+msgstr "Las bibliotecas preinstaladas no se compilaron con las dependencias que VisIt_ requiere"
 
 #: building_visit/Advanced_Usage.rst:110
 msgid "Libraries often have dependencies on still other libraries. For example, Qt and VTK can both depend on OpenGL. In some cases, however, VisIt_ may require a specific implementation of OpenGL called MesaGL. Incorrect dependencies may cause VisIt_ to either fail to build or fail to run properly. Such dependencies complicate things significantly because it means all of the aforementioned compatability issues apply, recursively, to any libraries a pre-installed library depends on."
@@ -128,11 +128,11 @@ msgstr "Las bibliotecas a menudo dependen de otras bibliotecas. Por ejemplo, Qt 
 
 #: building_visit/Advanced_Usage.rst:116
 msgid "Compiler (Run-Time) Compatability : Pre-installed libraries are not built with a compiler (run-time) VisIt_ requires"
-msgstr "Compatibilidad del compilador (tiempo de ejecución): las bibliotecas preinstaladas no se compilaron con un compilador (tiempo de ejecución) que VisIt_ requiere"
+msgstr "Compatibilidad del compilador (tiempo de ejecución): las bibliotecas preinstaladas no se compilaron con un compilador (tiempo de ejecución) que VisIt\\_ requiere"
 
 #: building_visit/Advanced_Usage.rst:-1
 msgid "Pre-installed libraries are not built with a compiler (run-time)"
-msgstr "Las bibliotecas preinstaladas no se compilaron con un compilador (tiempo de ejecución)"
+msgstr "Las bibliotecas preinstaladas no se compilaron con un compilador (tiempo de ejecución) que VisIt_ requiere"
 
 #: building_visit/Advanced_Usage.rst:117
 msgid "For some situations, building VisIt_ and its dependencies requires a specific compiler. The compiler (run-time) used for pre-installed libraries may not be compatable with the compiler (run-time) VisIt_ requires."
