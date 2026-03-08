@@ -37,8 +37,16 @@ release = '3.2.2'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax',
-              'sphinx_tabs.tabs']
+extensions = ['sphinx.ext.mathjax']
+
+# sphinx-tabs is optional for some local build environments. Read the Docs
+# installs it via requirements.txt.
+try:
+    import sphinx_tabs.tabs  # noqa: F401
+except Exception:
+    pass
+else:
+    extensions.append('sphinx_tabs.tabs')
 
 # Force installation of any special stuff in the RTD virtual machine instance
 # needed to support any custom extensions.
