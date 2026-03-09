@@ -9,7 +9,7 @@ For each managed installation, we maintain a set of platform-specific CMake vari
 These files are called *config-site* files.
 They offer a simple, short-hand for specifying a slew of CMake variables when building VisIt_.
 
-In this section, we explain how a config-site file is organized and what various of the different type of variables used there mean.
+In this section, we explain how a config-site file is organized and what various of the different types of variables used there mean.
 One key thing to understand is that VisIt_'s CMake build logic pre-dates many of the more modern and useful features of CMake as well as the adoption of CMake support by a number of third-party library (TPL) providers VisIt_ relies upon.
 
 The first lines of a config-site file are a set of comments capturing some high-level information about the build the file supports.
