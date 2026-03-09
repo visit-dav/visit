@@ -48,32 +48,32 @@ msgstr "VisIt_ también mantiene algunos archivos Docker que pueden resultar út
 
 #: building_visit/Linux_X11_Qt.rst:22
 msgid "`centos8 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-centos8>`_"
-msgstr ""
+msgstr "`centos8 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-centos8>`_"
 
 #: building_visit/Linux_X11_Qt.rst:23
 msgid "`debian9 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian9>`_"
-msgstr ""
+msgstr "`debian9 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian9>`_"
 
 #: building_visit/Linux_X11_Qt.rst:24
 msgid "`debian10 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian10>`_"
-msgstr ""
+msgstr "`debian10 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian10>`_"
 
 #: building_visit/Linux_X11_Qt.rst:25
 msgid "`debian11 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian11>`_"
-msgstr ""
+msgstr "`debian11 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian11>`_"
 
 #: building_visit/Linux_X11_Qt.rst:26
 msgid "`fedora31 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-fedora31>`_"
-msgstr ""
+msgstr "`fedora31 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-fedora31>`_"
 
 #: building_visit/Linux_X11_Qt.rst:27
 msgid "`ubuntu18 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu18>`_"
-msgstr ""
+msgstr "`ubuntu18 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu18>`_"
 
 #: building_visit/Linux_X11_Qt.rst:28
 msgid "`ubuntu20 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu20>`_"
-msgstr ""
+msgstr "`ubuntu20 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu20>`_"
 
 #: building_visit/Linux_X11_Qt.rst:29
 msgid "`ubuntu21 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu21>`_"
-msgstr ""
+msgstr "`ubuntu21 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu21>`_"

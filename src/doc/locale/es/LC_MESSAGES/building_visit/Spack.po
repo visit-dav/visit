@@ -20,15 +20,15 @@ msgstr "Descripción general"
 
 #: building_visit/Spack.rst:7
 msgid "Spack is a multi-platform package manager that builds and installs multiple versions and configurations of software. It works on Linux, macOS, and many supercomputers. Spack is non-destructive: installing a new version of a package does not break existing installations, so many configurations of the same package can coexist."
-msgstr ""
+msgstr "Spack es un gestor de paquetes multiplataforma que compila e instala múltiples versiones y configuraciones de software. Funciona en Linux, macOS y muchas supercomputadoras. Spack no es destructivo: instalar una nueva versión de un paquete no rompe instalaciones existentes, por lo que pueden coexistir muchas configuraciones del mismo paquete."
 
 #: building_visit/Spack.rst:11
 msgid "Spack offers a simple \\\"spec\\\" syntax that allows users to specify versions and configuration options. Package files are written in pure Python, and specs allow package authors to write a single script for many different builds of the same package. With Spack, you can build your software all the ways you want to."
-msgstr ""
+msgstr "Spack ofrece una sintaxis sencilla de \\\"spec\\\" que permite a los usuarios especificar versiones y opciones de configuración. Los archivos de paquete están escritos en Python puro, y las specs permiten a los autores de paquetes escribir un único script para muchas compilaciones diferentes del mismo paquete. Con Spack, puede compilar su software de todas las maneras que desee."
 
 #: building_visit/Spack.rst:15
 msgid "The complete documentation can be found `here <https://spack.readthedocs.io/en/latest/index.html>`__."
-msgstr ""
+msgstr "La documentación completa se puede encontrar `aquí <https://spack.readthedocs.io/en/latest/index.html>`__."
 
 #: building_visit/Spack.rst:18
 msgid "The VisIt_ spack package"
@@ -36,230 +36,229 @@ msgstr "El paquete de Spack para VisIt_"
 
 #: building_visit/Spack.rst:20
 msgid "The spack package for VisIt_ currently only builds a subset of the libraries that ``build_visit`` builds. It builds the core libraries needed by VisIt_ and the following I/O libraries:"
-msgstr ""
+msgstr "El paquete de Spack para VisIt_ actualmente solo compila un subconjunto de las bibliotecas que compila ``build_visit``. Compila las bibliotecas núcleo necesarias para VisIt_ y las siguientes bibliotecas de E/S:"
 
 #: building_visit/Spack.rst:23
 msgid "HDF5"
-msgstr ""
+msgstr "HDF5"
 
 #: building_visit/Spack.rst:24
 msgid "Silo_"
-msgstr ""
+msgstr "Silo_"
 
 #: building_visit/Spack.rst:26
 msgid "The rest of the I/O libraries needed by the VisIt_ readers are currently not built. The expectation is that the list of I/O libraries built will grow over time."
-msgstr ""
+msgstr "El resto de las bibliotecas de E/S necesarias para los lectores de VisIt_ actualmente no se compilan. Se espera que la lista de bibliotecas de E/S compiladas crezca con el tiempo."
 
 #: building_visit/Spack.rst:30
 msgid "Building VisIt_ with spack"
-msgstr ""
+msgstr "Compilar VisIt_ con Spack"
 
 #: building_visit/Spack.rst:32
 msgid "The first step is to clone spack from GitHub. ::"
-msgstr ""
+msgstr "El primer paso es clonar Spack desde GitHub. ::"
 
 #: building_visit/Spack.rst:40
 #: building_visit/Spack.rst:553
 msgid "Now you need to set up your spack environment. ::"
-msgstr ""
+msgstr "Ahora necesita configurar su entorno de Spack. ::"
 
 #: building_visit/Spack.rst:50
 msgid "Now you need to have spack find the compilers available on your system. ::"
-msgstr ""
+msgstr "Ahora necesita que Spack detecte los compiladores disponibles en su sistema. ::"
 
 #: building_visit/Spack.rst:54
 msgid "This will also create a ``.spack`` directory in your home directory. The ``.spack`` directory also contains a ``compilers.yaml`` file, which contains properties about your compilers. You can modify the ``compilers.yaml`` file if you need to change some properties of one or more of your compilers, such as additional rpaths. This is also the directory that you would put a ``package.yaml`` file for specifying the version of mpi to use."
-msgstr ""
+msgstr "Esto también creará un directorio ``.spack`` en su directorio personal. El directorio ``.spack`` también contiene un archivo ``compilers.yaml``, que incluye propiedades sobre sus compiladores. Puede modificar el archivo ``compilers.yaml`` si necesita cambiar algunas propiedades de uno o más compiladores, como rpaths adicionales. Este también es el directorio donde colocaría un archivo ``package.yaml`` para especificar la versión de MPI que se usará."
 
 #: building_visit/Spack.rst:59
 msgid "If there is a compiler you want to use and spack didn't find it, you can tell spack about the compiler. ::"
-msgstr ""
+msgstr "Si hay un compilador que quiere usar y Spack no lo encontró, puede indicarle a Spack el compilador. ::"
 
 #: building_visit/Spack.rst:63
 msgid "If you would like to find a list of all the packages that spack will build you can use the spec command. ::"
-msgstr ""
+msgstr "Si desea ver una lista de todos los paquetes que Spack compilará, puede usar el comando spec. ::"
 
 #: building_visit/Spack.rst:67
 msgid "To build VisIt_ with the default compiler. ::"
-msgstr ""
+msgstr "Para compilar VisIt_ con el compilador predeterminado. ::"
 
 #: building_visit/Spack.rst:71
 msgid "To build VisIt_ with a specific compiler. ::"
-msgstr ""
+msgstr "Para compilar VisIt_ con un compilador específico. ::"
 
 #: building_visit/Spack.rst:75
 msgid "To build VisIt_ and specify a specific version of a dependent library. ::"
-msgstr ""
+msgstr "Para compilar VisIt_ y especificar una versión específica de una biblioteca dependiente. ::"
 
 #: building_visit/Spack.rst:79
 msgid "To uninstall a package (the ``--dependents`` uninstalls all the packages that depend on the uninstalled packages). ::"
-msgstr ""
+msgstr "Para desinstalar un paquete (``--dependents`` desinstala todos los paquetes que dependen de los paquetes desinstalados). ::"
 
 #: building_visit/Spack.rst:83
 msgid "To uninstall all the packages. ::"
-msgstr ""
+msgstr "Para desinstalar todos los paquetes. ::"
 
 #: building_visit/Spack.rst:87
 msgid "The package files for a package are located in ``var/spack/repos/builtin/package``. Here are some examples. ::"
-msgstr ""
+msgstr "Los archivos de paquete se encuentran en ``var/spack/repos/builtin/package``. Aquí hay algunos ejemplos. ::"
 
 #: building_visit/Spack.rst:93
 msgid "The installed packages are stored in ``opt/spack/<architecture>/<compiler>``. Here are some examples. ::"
-msgstr ""
+msgstr "Los paquetes instalados se almacenan en ``opt/spack/<architecture>/<compiler>``. Aquí hay algunos ejemplos. ::"
 
 #: building_visit/Spack.rst:100
 msgid "Building VisIt with the development version of spack"
-msgstr ""
+msgstr "Compilar VisIt con la versión de desarrollo de Spack"
 
 #: building_visit/Spack.rst:102
 msgid "The following 3 patches should be applied. These are patches to `package.py` files that cannot be patched as part of the VisIt_ spack package."
-msgstr ""
+msgstr "Se deben aplicar los siguientes 3 parches. Son parches a archivos `package.py` que no pueden aplicarse como parte del paquete de Spack de VisIt_."
 
 #: building_visit/Spack.rst:192
 msgid "Building on Frontier"
-msgstr ""
+msgstr "Compilar en Frontier"
 
 #: building_visit/Spack.rst:194
 msgid "You will first need to copy the `packages.yaml` file from `scripts/spack/configs/olcf/frontier/` to your `.spack` directory in your home directory."
-msgstr ""
+msgstr "Primero deberá copiar el archivo `packages.yaml` desde `scripts/spack/configs/olcf/frontier/` a su directorio `.spack` en su directorio personal."
 
 #: building_visit/Spack.rst:196
 msgid "In order to have spack install the packages in the User Managed Software space the following patch will need to be applied."
-msgstr ""
+msgstr "Para que Spack instale los paquetes en el espacio de User Managed Software, se debe aplicar el siguiente parche."
 
 #: building_visit/Spack.rst:214
 msgid "The following spack command is used to build VisIt_."
-msgstr ""
+msgstr "El siguiente comando de Spack se usa para compilar VisIt_."
 
 #: building_visit/Spack.rst:220
 msgid "The installation will fail to install some shared libraries in the VisIt_ lib directory. The following script will copy the necessary libraries."
-msgstr ""
+msgstr "La instalación fallará al instalar algunas bibliotecas compartidas en el directorio lib de VisIt_. El siguiente script copiará las bibliotecas necesarias."
 
 #: building_visit/Spack.rst:242
 msgid "Building on Perlmutter"
-msgstr ""
+msgstr "Compilar en Perlmutter"
 
 #: building_visit/Spack.rst:244
 msgid "You will first need to copy the `packages.yaml` files from `scripts/spack/configs/nersc/perlmutter/` to your `.spack` directory in your home directory."
-msgstr ""
+msgstr "Primero deberá copiar los archivos `packages.yaml` desde `scripts/spack/configs/nersc/perlmutter/` a su directorio `.spack` en su directorio personal."
 
 #: building_visit/Spack.rst:246
 msgid "The following spack command is used to build with spack."
-msgstr ""
+msgstr "El siguiente comando de Spack se usa para compilar con Spack."
 
 #: building_visit/Spack.rst:252
 msgid "The installation will fail to install some shared libraries in the VisIt_ lib directory. The following script will copy the necessary libraries (you will need to modify the paths as appropriate.)"
-msgstr ""
+msgstr "La instalación fallará al instalar algunas bibliotecas compartidas en el directorio lib de VisIt_. El siguiente script copiará las bibliotecas necesarias (tendrá que modificar las rutas según corresponda)."
 
 #: building_visit/Spack.rst:262
 msgid "Working around recurring download failures"
-msgstr ""
+msgstr "Solucionar fallos recurrentes de descarga"
 
 #: building_visit/Spack.rst:264
 msgid "Depending on context, recurring issues downloading a particular *dependent* package may arise. When this happens, SSL certificate handling may be the cause. A quick work-around is to disable this `security checking feature <https://spack.readthedocs.io/en/latest/config_yaml.html?highlight=ssl%20certificates#verify-ssl>`_ in Spack by adding the ``--insecure`` command-line option as the second option *just* after ``spack``. Alternatively, you may be able to manually download the needed files and place them in a directory for Spack to use as a `mirror <https://spack.readthedocs.io/en/latest/mirrors.html?highlight=mirror#mirrors-mirrors-yaml>`_. For example, starting from the point of having successfully downloaded the ``Python-3.7.13.tgz`` file somewhere, here are the Spack steps... ::"
-msgstr ""
+msgstr "Según el contexto, pueden surgir problemas recurrentes al descargar un paquete *dependiente* en particular. Cuando esto sucede, la causa puede ser el manejo de certificados SSL. Una solución rápida es deshabilitar esta `funcionalidad de comprobación de seguridad <https://spack.readthedocs.io/en/latest/config_yaml.html?highlight=ssl%20certificates#verify-ssl>`_ en Spack añadiendo la opción de línea de comandos ``--insecure`` como la segunda opción *justo* después de ``spack``. Alternativamente, quizá pueda descargar manualmente los archivos necesarios y colocarlos en un directorio para que Spack los use como `mirror <https://spack.readthedocs.io/en/latest/mirrors.html?highlight=mirror#mirrors-mirrors-yaml>`_. Por ejemplo, partiendo de haber descargado correctamente el archivo ``Python-3.7.13.tgz`` en algún lugar, estos son los pasos de Spack... ::"
 
 #: building_visit/Spack.rst:274
 msgid "Note that change in case of the file name. Doing this will cause Spack to go get the file you manually downloaded. The first step to add the mirror is only needed once. To add additional files for which recurring download failures are occurring, just copy them into the mirror following the Spack naming conventions for packages."
-msgstr ""
+msgstr "Tenga en cuenta el cambio de mayúsculas/minúsculas en el nombre del archivo. Al hacerlo, Spack irá a buscar el archivo que usted descargó manualmente. El primer paso para añadir el mirror solo es necesario una vez. Para añadir archivos adicionales con fallos recurrentes de descarga, simplemente cópielos al mirror siguiendo las convenciones de nombres de Spack para los paquetes."
 
 #: building_visit/Spack.rst:280
 msgid "The spack environment files"
-msgstr ""
+msgstr "Los archivos de entorno de Spack"
 
 #: building_visit/Spack.rst:282
 msgid "Spack uses two files to control the environment on a system. They are the ``compilers.yaml`` file and the ``packages.yaml`` file."
-msgstr ""
+msgstr "Spack usa dos archivos para controlar el entorno en un sistema: el archivo ``compilers.yaml`` y el archivo ``packages.yaml``."
 
 #: building_visit/Spack.rst:284
 msgid "The ``compilers.yaml`` file is used to specify information about compilers on a system. The ``spack compilers`` command, as mentioned earlier, will create one for you with all the compilers on the system. You can then customize it. The complete documentation on the ``compilers.yaml`` file can be found `here <https://spack.readthedocs.io/en/latest/getting_started.html#compiler-configuration>`__."
-msgstr ""
+msgstr "El archivo ``compilers.yaml`` se usa para especificar información sobre los compiladores en un sistema. El comando ``spack compilers``, como se mencionó anteriormente, creará uno por usted con todos los compiladores del sistema. Luego puede personalizarlo. La documentación completa del archivo ``compilers.yaml`` se puede encontrar `aquí <https://spack.readthedocs.io/en/latest/getting_started.html#compiler-configuration>`__."
 
 #: building_visit/Spack.rst:289
 msgid "The ``packages.yaml`` file is used to specify information about external packages on a system. By default, spack will want to build everything from scratch for your system. If some of the packages are already installed on the system you can use those by listing them in a ``packages.yaml`` file. Typically, you will want to use an external MPI library on most HPC systems. The ``spack external find`` command will create an initial ``packages.yaml`` file for you. The ``spack external find`` command is non-destructive and will append to an existing ``packages.yaml`` file. You can then customize it. The complete documentation on the ``packages.yaml`` file can be found `here <https://spack.readthedocs.io/en/latest/build_settings.html>`__."
-msgstr ""
+msgstr "El archivo ``packages.yaml`` se usa para especificar información sobre paquetes externos en un sistema. De forma predeterminada, Spack querrá compilar todo desde cero para su sistema. Si algunos paquetes ya están instalados, puede usarlos listándolos en un archivo ``packages.yaml``. Normalmente, en la mayoría de sistemas HPC querrá usar una biblioteca MPI externa. El comando ``spack external find`` creará un archivo ``packages.yaml`` inicial. El comando ``spack external find`` no es destructivo y agregará entradas al final de un ``packages.yaml`` existente. Luego puede personalizarlo. La documentación completa del archivo ``packages.yaml`` se puede encontrar `aquí <https://spack.readthedocs.io/en/latest/build_settings.html>`__."
 
 #: building_visit/Spack.rst:298
 msgid "These files are stored in your ``~/.spack`` directory. ::"
-msgstr ""
+msgstr "Estos archivos se almacenan en su directorio ``~/.spack``. ::"
 
 #: building_visit/Spack.rst:305
 msgid "The VisIt_ repository at GitHub contains ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``."
-msgstr ""
+msgstr "El repositorio de VisIt_ en GitHub contiene archivos ``packages.yaml`` para sistemas populares en el directorio ``scripts/spack/configs``."
 
 #: building_visit/Spack.rst:307
 msgid "Here is the ``packages.yaml`` file for ``frontier.olcf.ornl.gov`` for VisIt_."
-msgstr ""
+msgstr "Aquí está el archivo ``packages.yaml`` para ``frontier.olcf.ornl.gov`` para VisIt_."
 
 #: building_visit/Spack.rst:494
 msgid "Debugging a spack package"
-msgstr ""
+msgstr "Depurar un paquete de Spack"
 
 #: building_visit/Spack.rst:496
 msgid "When doing a spack install and the install fails, it will automatically keep the directory where it did the work, called the `stage` directory, which will allow you debug the failure. If you want to modify an otherwise successful install or explore the state of a successful install you can use the ``--keep-stage`` flag to the ``spack install`` command. ::"
-msgstr ""
+msgstr "Cuando se ejecuta ``spack install`` y la instalación falla, Spack conservará automáticamente el directorio donde realizó el trabajo, llamado directorio `stage`, lo que le permitirá depurar el fallo. Si quiere modificar una instalación que de otro modo fue exitosa o explorar el estado de una instalación exitosa, puede usar la opción ``--keep-stage`` del comando ``spack install``. ::"
 
 #: building_visit/Spack.rst:501
 msgid "If you are developing a new package from scratch and need to create the stage directory. ::"
-msgstr ""
+msgstr "Si está desarrollando un paquete nuevo desde cero y necesita crear el directorio stage. ::"
 
 #: building_visit/Spack.rst:505
 msgid "To go to the stage directory and set up the spack environment. ::"
-msgstr ""
+msgstr "Para ir al directorio stage y configurar el entorno de Spack. ::"
 
 #: building_visit/Spack.rst:510
 msgid "Note that this will create a new shell so you will want to do an ``exit`` when you are finished."
-msgstr ""
+msgstr "Tenga en cuenta que esto creará un nuevo shell, por lo que querrá ejecutar ``exit`` cuando termine."
 
 #: building_visit/Spack.rst:512
 msgid "Spack will cache various items that will sometimes undermine changes you are making while developing a package. If you believe this is happening then you can clear all the caches. ::"
-msgstr ""
+msgstr "Spack almacenará en caché varios elementos que a veces pueden interferir con los cambios que está haciendo mientras desarrolla un paquete. Si cree que esto está ocurriendo, puede limpiar todas las cachés. ::"
 
 #: building_visit/Spack.rst:517
 msgid "Here are some common locations of stage directories. ::"
-msgstr ""
+msgstr "Aquí hay algunas ubicaciones comunes de directorios stage. ::"
 
 #: building_visit/Spack.rst:523
 msgid "E4S Project"
-msgstr ""
+msgstr "Proyecto E4S"
 
 #: building_visit/Spack.rst:525
 msgid "The Extreme-scale Scientific Software Stack (E4S) is a community effort to provide open source software packages for developing, deploying and running scientific applications on high-performance computing (HPC) platforms. E4S provides from-source builds and containers of a broad collection of HPC software packages."
-msgstr ""
+msgstr "El Extreme-scale Scientific Software Stack (E4S) es un esfuerzo comunitario para proporcionar paquetes de software de código abierto para desarrollar, desplegar y ejecutar aplicaciones científicas en plataformas de computación de alto rendimiento (HPC). E4S ofrece compilaciones desde código fuente y contenedores de una amplia colección de paquetes de software HPC."
 
 #: building_visit/Spack.rst:528
 msgid "E4S exists to accelerate the development, deployment and use of HPC software, lowering the barriers for HPC users. E4S provides containers and turn-key, from-source builds of more than 80 popular HPC products in programming models, such as MPI; development tools such as HPCToolkit, TAU and PAPI; math libraries such as PETSc and Trilinos; and Data and Viz tools such as HDF5 and VisIt_."
-msgstr ""
+msgstr "E4S existe para acelerar el desarrollo, despliegue y uso de software HPC, reduciendo las barreras para los usuarios de HPC. E4S proporciona contenedores y compilaciones listas para usar (desde código fuente) de más de 80 productos HPC populares en modelos de programación, como MPI; herramientas de desarrollo como HPCToolkit, TAU y PAPI; bibliotecas matemáticas como PETSc y Trilinos; y herramientas de datos y visualización como HDF5 y VisIt_."
 
 #: building_visit/Spack.rst:531
 msgid "E4S packages build on most computer systems, from laptops to supercomputers by using spack as the meta-build tool for the packages."
-msgstr ""
+msgstr "Los paquetes de E4S se compilan en la mayoría de los sistemas informáticos, desde portátiles hasta supercomputadoras, usando Spack como herramienta meta-build para los paquetes."
 
 #: building_visit/Spack.rst:533
 msgid "The E4S software distribution is tested regularly on a variety of platforms, from Linux clusters to leadership platforms."
-msgstr ""
+msgstr "La distribución de software E4S se prueba regularmente en una variedad de plataformas, desde clústeres Linux hasta plataformas líderes."
 
 #: building_visit/Spack.rst:536
 msgid "The E4S testsuite"
-msgstr ""
+msgstr "La suite de pruebas de E4S"
 
 #: building_visit/Spack.rst:538
 msgid "As a member of E4S, VisIt_ has tests that are part of the E4S-Project testsuite repository at GitHub."
-msgstr ""
+msgstr "Como miembro de E4S, VisIt_ tiene pruebas que forman parte del repositorio de la suite de pruebas de E4S-Project en GitHub."
 
 #: building_visit/Spack.rst:540
 msgid "Complete information on the testsuite can be found in the README at the bottom of the testsuite repository located `here <https://github.com/E4S-Project/testsuite>`__."
-msgstr ""
+msgstr "La información completa sobre la suite de pruebas se puede encontrar en el README al final del repositorio de la suite de pruebas ubicado `aquí <https://github.com/E4S-Project/testsuite>`__."
 
 #: building_visit/Spack.rst:543
 msgid "Running the tests"
-msgstr ""
+msgstr "Ejecutar las pruebas"
 
 #: building_visit/Spack.rst:545
 msgid "The first step is to clone the testsuite from GitHub. ::"
-msgstr ""
+msgstr "El primer paso es clonar la suite de pruebas desde GitHub. ::"
 
 #: building_visit/Spack.rst:561
 msgid "Now you are ready to run the VisIt_ tests. ::"
-msgstr ""
-
+msgstr "Ahora está listo para ejecutar las pruebas de VisIt_. ::"

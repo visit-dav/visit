@@ -16,23 +16,23 @@ msgstr "Escenarios de compilación comunes"
 
 #: building_visit/Common_Build_Scenarios.rst:6
 msgid "Building VisIt_ is an involved process and even with ``build_visit``, just determining the correct selection of options can sometimes be daunting. To help, here are the steps used to build VisIt_ on a collection of different platforms that may serve as a starting point for your system."
-msgstr ""
+msgstr "Compilar VisIt_ es un proceso complejo y, incluso con ``build_visit``, a veces puede resultar abrumador determinar la selección correcta de opciones. Para ayudar, aquí se muestran los pasos utilizados para compilar VisIt_ en una colección de plataformas diferentes que pueden servir como punto de partida para su sistema."
 
 #: building_visit/Common_Build_Scenarios.rst:11
 msgid "In each of the scenarios below, the result is a distribution file that can be used with ``visit-install`` to install VisIt_. Furthermore, in all these scenarios, ``build_visit`` was used to build the third party libraries and the initial config site file. VisIt_ was then manually built as outlined by doing an out of source build. The advantage to building VisIt_ manually is that you have more control over the build and its easier to troubleshoot failures. The advantage to an out of source build is that you can easily restart the build simply by deleting the build directory."
-msgstr ""
+msgstr "En cada uno de los escenarios siguientes, el resultado es un archivo de distribución que se puede usar con ``visit-install`` para instalar VisIt_. Además, en todos estos escenarios se utilizó ``build_visit`` para compilar las bibliotecas de terceros y el archivo config site inicial. Luego VisIt_ se compiló manualmente según se describe, realizando una compilación fuera del árbol de fuentes (out-of-source). La ventaja de compilar VisIt_ manualmente es que tiene más control sobre la compilación y es más fácil diagnosticar fallos. La ventaja de una compilación out-of-source es que puede reiniciar fácilmente la compilación simplemente eliminando el directorio de compilación."
 
 #: building_visit/Common_Build_Scenarios.rst:21
 msgid "Kickit, a RedHat Enterprise Linux 7 system"
-msgstr ""
+msgstr "Kickit, un sistema RedHat Enterprise Linux 7"
 
 #: building_visit/Common_Build_Scenarios.rst:23
 msgid "``build_visit`` was run to generate the third party libraries. In this case all the required and optional libraries build without problem, so ``--required --optional`` could be used. Also, in this case there wasn't a system MPI installed so ``--mpich`` was specified to use MPICH. The ``--osmesa`` flag was also included so that VisIt could do off screen rendering."
-msgstr ""
+msgstr "Se ejecutó ``build_visit`` para generar las bibliotecas de terceros. En este caso, todas las bibliotecas requeridas y opcionales se compilaron sin problemas, por lo que se pudo usar ``--required --optional``. Además, en este caso no había un MPI del sistema instalado, así que se especificó ``--mpich`` para usar MPICH. También se incluyó la opción ``--osmesa`` para que VisIt pudiera realizar renderizado fuera de pantalla."
 
 #: building_visit/Common_Build_Scenarios.rst:35
 msgid "This built the third party libraries and generated a ``kickit.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
-msgstr ""
+msgstr "Esto compiló las bibliotecas de terceros y generó un archivo config site ``kickit.cmake``. La sección ``Setup VISITHOME & VISITARCH variables.`` se cambió a"
 
 #: building_visit/Common_Build_Scenarios.rst:48
 #: building_visit/Common_Build_Scenarios.rst:113
@@ -41,19 +41,19 @@ msgstr ""
 #: building_visit/Common_Build_Scenarios.rst:401
 #: building_visit/Common_Build_Scenarios.rst:481
 msgid "VisIt_ was then manually built with the following steps."
-msgstr ""
+msgstr "Luego VisIt_ se compiló manualmente con los siguientes pasos."
 
 #: building_visit/Common_Build_Scenarios.rst:64
 msgid "Quartz, a Linux X86_64 TOSS3 cluster"
-msgstr ""
+msgstr "Quartz, un clúster Linux X86_64 TOSS3"
 
 #: building_visit/Common_Build_Scenarios.rst:66
 msgid "``build_visit`` was run to generate the third party libraries. In this case the system MPI was used, so information about the system MPI had to be provided with environment variables and the ``--parallel`` flag had to be specified. In this case, all the required and optional third party libraries build without problem, so ``--required --optional`` could be used. Also, the system OpenGL implementation was outdated and ``--mesagl`` had to be included to provide an OpenGL implementation suitable for VisIt_. Lastly, the Uintah library was built to enable building the Uintah reader."
-msgstr ""
+msgstr "Se ejecutó ``build_visit`` para generar las bibliotecas de terceros. En este caso se usó el MPI del sistema, por lo que se tuvo que proporcionar información sobre ese MPI mediante variables de entorno y se tuvo que especificar la opción ``--parallel``. En este caso, todas las bibliotecas de terceros requeridas y opcionales se compilaron sin problemas, por lo que se pudo usar ``--required --optional``. Además, la implementación de OpenGL del sistema estaba desactualizada y se tuvo que incluir ``--mesagl`` para proporcionar una implementación de OpenGL adecuada para VisIt_. Por último, se compiló la biblioteca Uintah para habilitar el lector de Uintah."
 
 #: building_visit/Common_Build_Scenarios.rst:86
 msgid "This built the third party libraries and generated a ``quartz386.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
-msgstr ""
+msgstr "Esto compiló las bibliotecas de terceros y generó un archivo config site ``quartz386.cmake``. La sección ``Setup VISITHOME & VISITARCH variables.`` se cambió a"
 
 #: building_visit/Common_Build_Scenarios.rst:99
 #: building_visit/Common_Build_Scenarios.rst:170
@@ -61,92 +61,91 @@ msgstr ""
 #: building_visit/Common_Build_Scenarios.rst:371
 #: building_visit/Common_Build_Scenarios.rst:467
 msgid "The ``Parallel build Setup.`` section was changed to"
-msgstr ""
+msgstr "La sección ``Parallel build Setup.`` se cambió a"
 
 #: building_visit/Common_Build_Scenarios.rst:128
 msgid "Lassen, a Linux Power9 BlueOS cluster"
-msgstr ""
+msgstr "Lassen, un clúster Linux Power9 BlueOS"
 
 #: building_visit/Common_Build_Scenarios.rst:130
 #: building_visit/Common_Build_Scenarios.rst:332
 msgid "``build_visit`` was run to generate the third party libraries. In this case the system MPI was used, so information about the system MPI had to be provided with environment variables and the ``--parallel`` flag had to be specified. In this case, a few of the optional third party libraries do not build on the system so all the desired optional third party libraries had to be explicitly listed. Also, the system OpenGL implementation was outdated and ``--mesagl`` had to be included to provide an OpenGL implementation suitable for VisIt_. Lastly, the Uintah library was built to enable building the Uintah reader."
-msgstr ""
+msgstr "Se ejecutó ``build_visit`` para generar las bibliotecas de terceros. En este caso se usó el MPI del sistema, por lo que se tuvo que proporcionar información sobre ese MPI mediante variables de entorno y se tuvo que especificar la opción ``--parallel``. En este caso, algunas bibliotecas opcionales de terceros no se compilan en el sistema, por lo que se tuvo que listar explícitamente cada biblioteca opcional de terceros deseada. Además, la implementación de OpenGL del sistema estaba desactualizada y se tuvo que incluir ``--mesagl`` para proporcionar una implementación de OpenGL adecuada para VisIt_. Por último, se compiló la biblioteca Uintah para habilitar el lector de Uintah."
 
 #: building_visit/Common_Build_Scenarios.rst:156
 msgid "This built the third party libraries and generated a ``lassen708.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
-msgstr ""
+msgstr "Esto compiló las bibliotecas de terceros y generó un archivo config site ``lassen708.cmake``. La sección ``Setup VISITHOME & VISITARCH variables.`` se cambió a"
 
 #: building_visit/Common_Build_Scenarios.rst:199
 msgid "Cori, a Cray KNL cluster"
-msgstr ""
+msgstr "Cori, un clúster Cray KNL"
 
 #: building_visit/Common_Build_Scenarios.rst:201
 #: building_visit/Common_Build_Scenarios.rst:418
 msgid "The system is set up to support the Intel compiler by default so we need to swap out the Intel environment for the GNU environment."
-msgstr ""
+msgstr "El sistema está configurado para admitir el compilador Intel de forma predeterminada, por lo que debemos cambiar el entorno Intel por el entorno GNU."
 
 #: building_visit/Common_Build_Scenarios.rst:208
 #: building_visit/Common_Build_Scenarios.rst:425
 msgid "The Cray compiler wrappers are set up to do static linking, which causes a problem with building parallel hdf5. The linking can be changed to link dynamically by setting a couple of environment variables."
-msgstr ""
+msgstr "Los wrappers del compilador Cray están configurados para enlazar de forma estática, lo que causa un problema al compilar hdf5 en paralelo. El enlazado puede cambiarse a dinámico configurando un par de variables de entorno."
 
 #: building_visit/Common_Build_Scenarios.rst:217
 msgid "The linker has a bug that prevents VTK from building, which is fixed with the linker in binutils 2.32. Binutils was then manually built with the following steps."
-msgstr ""
+msgstr "El enlazador tiene un error que impide compilar VTK, lo cual se corrige usando el enlazador de binutils 2.32. Luego, binutils se compiló manualmente con los siguientes pasos."
 
 #: building_visit/Common_Build_Scenarios.rst:231
 msgid "The following lines in ``build_visit``"
-msgstr ""
+msgstr "Las siguientes líneas en ``build_visit``"
 
 #: building_visit/Common_Build_Scenarios.rst:238
 msgid "were changed to"
-msgstr ""
+msgstr "se cambiaron a"
 
 #: building_visit/Common_Build_Scenarios.rst:245
 msgid "to build VTK with the linker from binutils 2.32."
-msgstr ""
+msgstr "para compilar VTK con el enlazador de binutils 2.32."
 
 #: building_visit/Common_Build_Scenarios.rst:247
 msgid "``build_visit`` was run to generate the third party libraries. In this case the system MPI was used, so information about the system MPI had to be provided with environment variables and the ``--parallel`` flag had to be specified. In this case, all the required and optional third party libraries built without problem, so ``--required --optional`` could be used. Also, the system OpenGL implementation was outdated and ``--mesagl`` had to be included to provide an OpenGL implementation suitable for VisIt_. Lastly, the Uintah library was built to enable building the Uintah reader."
-msgstr ""
+msgstr "Se ejecutó ``build_visit`` para generar las bibliotecas de terceros. En este caso se usó el MPI del sistema, por lo que se tuvo que proporcionar información sobre ese MPI mediante variables de entorno y se tuvo que especificar la opción ``--parallel``. En este caso, todas las bibliotecas de terceros requeridas y opcionales se compilaron sin problemas, por lo que se pudo usar ``--required --optional``. Además, la implementación de OpenGL del sistema estaba desactualizada y se tuvo que incluir ``--mesagl`` para proporcionar una implementación de OpenGL adecuada para VisIt_. Por último, se compiló la biblioteca Uintah para habilitar el lector de Uintah."
 
 #: building_visit/Common_Build_Scenarios.rst:267
 msgid "This built the third party libraries and generated a ``cori08.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
-msgstr ""
+msgstr "Esto compiló las bibliotecas de terceros y generó un archivo config site ``cori08.cmake``. La sección ``Setup VISITHOME & VISITARCH variables.`` se cambió a"
 
 #: building_visit/Common_Build_Scenarios.rst:280
 msgid "The ``VISIT_C_FLAGS`` and ``VISIT_CXX_FLAGS`` were changed to"
-msgstr ""
+msgstr "Se cambiaron ``VISIT_C_FLAGS`` y ``VISIT_CXX_FLAGS`` a"
 
 #: building_visit/Common_Build_Scenarios.rst:316
 msgid "Summit, a Linux Power9 BlueOS cluster"
-msgstr ""
+msgstr "Summit, un clúster Linux Power9 BlueOS"
 
 #: building_visit/Common_Build_Scenarios.rst:318
 msgid "The system is set up to support the IBM XL compiler by default so we need to swap out the XL compiler for the GNU compiler."
-msgstr ""
+msgstr "El sistema está configurado para admitir el compilador IBM XL de forma predeterminada, por lo que debemos cambiar el compilador XL por el compilador GNU."
 
 #: building_visit/Common_Build_Scenarios.rst:325
 msgid "There was an error building CMake, so we used the system CMake after module loading CMake 3.9.2."
-msgstr ""
+msgstr "Hubo un error al compilar CMake, así que se usó el CMake del sistema después de cargar el módulo de CMake 3.9.2."
 
 #: building_visit/Common_Build_Scenarios.rst:358
 msgid "This built the third party libraries and generated a ``login1.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
-msgstr ""
+msgstr "Esto compiló las bibliotecas de terceros y generó un archivo config site ``login1.cmake``. La sección ``Setup VISITHOME & VISITARCH variables.`` se cambió a"
 
 #: building_visit/Common_Build_Scenarios.rst:385
 msgid "The compiler didn't like one of the boost header files, so it was manually patched."
-msgstr ""
+msgstr "Al compilador no le gustó uno de los archivos de cabecera de boost, así que se parchó manualmente."
 
 #: building_visit/Common_Build_Scenarios.rst:416
 msgid "Trinity, a Cray KNL cluster"
-msgstr ""
+msgstr "Trinity, un clúster Cray KNL"
 
 #: building_visit/Common_Build_Scenarios.rst:434
 msgid "``build_visit`` was run to generate the third party libraries. In this case the system MPI was used, so information about the system MPI had to be provided with environment variables and the ``--parallel`` flag had to be specified. In this case, all the required and optional third party libraries built except for Sphinx and Mili, so ``--no-sphinx --no-mili`` in addition to ``--required --optional`` could be used. Also, the system OpenGL implementation was outdated and ``--mesagl`` had to be included to provide an OpenGL implementation suitable for VisIt_."
-msgstr ""
+msgstr "Se ejecutó ``build_visit`` para generar las bibliotecas de terceros. En este caso se usó el MPI del sistema, por lo que se tuvo que proporcionar información sobre ese MPI mediante variables de entorno y se tuvo que especificar la opción ``--parallel``. En este caso, todas las bibliotecas de terceros requeridas y opcionales se compilaron excepto Sphinx y Mili, por lo que se pudo usar ``--no-sphinx --no-mili`` además de ``--required --optional``. Además, la implementación de OpenGL del sistema estaba desactualizada y se tuvo que incluir ``--mesagl`` para proporcionar una implementación de OpenGL adecuada para VisIt_."
 
 #: building_visit/Common_Build_Scenarios.rst:454
 msgid "This built the third party libraries and generated a ``tr-fe2.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
-msgstr ""
-
+msgstr "Esto compiló las bibliotecas de terceros y generó un archivo config site ``tr-fe2.cmake``. La sección ``Setup VISITHOME & VISITARCH variables.`` se cambió a"

@@ -16,15 +16,15 @@ msgstr "Compilar directamente con CMake"
 
 #: building_visit/Building_Directly_With_CMake.rst:5
 msgid "If a *config site file* is available for the platform you wish to build on, VisIt_ can often be built without the use of the ``build_visit`` script, with these steps."
-msgstr ""
+msgstr "Si hay disponible un *config site file* para la plataforma en la que desea compilar, a menudo VisIt_ se puede compilar sin usar el script ``build_visit`` siguiendo estos pasos."
 
 #: building_visit/Building_Directly_With_CMake.rst:13
 msgid "If ``build_visit`` was used to build VisIt_ on the platform in the past, it should have created a cmake file specific to your machine which we call a *config site* file. CMake simply needs to be told where to find it using the ``-DVISIT_CONFIG_SITE`` option. Examples of *config site* files for a variety of machines VisIt_ developers directly support can be found in the `config-site <https://github.com/visit-dav/visit/tree/develop/src/config-site>`_ directory."
-msgstr ""
+msgstr "Si en el pasado se usó ``build_visit`` para compilar VisIt_ en la plataforma, debería haber creado un archivo cmake específico de su máquina al que llamamos *config site* file. Solo es necesario indicarle a CMake dónde encontrarlo usando la opción ``-DVISIT_CONFIG_SITE``. Se pueden encontrar ejemplos de *config site* files para varias máquinas que los desarrolladores de VisIt_ soportan directamente en el directorio `config-site <https://github.com/visit-dav/visit/tree/develop/src/config-site>`_."
 
 #: building_visit/Building_Directly_With_CMake.rst:22
 msgid "For cases where a *config-site* file will not be used, this must be explicitly indicated by passing ``-DVISIT_CONFIG_SITE=NONE``. This is useful in cases where ``-C CMakeCache.txt`` is used, or where all the relevant CMake variables are specified on the command-line to CMake itself instead of a *config-site* file."
-msgstr ""
+msgstr "En los casos en los que no se usará un archivo *config-site*, esto debe indicarse explícitamente pasando ``-DVISIT_CONFIG_SITE=NONE``. Esto es útil en casos donde se usa ``-C CMakeCache.txt`` o cuando todas las variables relevantes de CMake se especifican en la línea de comandos a CMake en lugar de un archivo *config-site*."
 
 #: building_visit/Building_Directly_With_CMake.rst:33
 msgid "CMake Variables"
@@ -32,478 +32,477 @@ msgstr "Variables de CMake"
 
 #: building_visit/Building_Directly_With_CMake.rst:35
 msgid "The following CMake vars can be modified to suit your build needs."
-msgstr ""
+msgstr "Las siguientes variables de CMake se pueden modificar para adaptarse a sus necesidades de compilación."
 
 #: building_visit/Building_Directly_With_CMake.rst:37
 msgid "When specified via a command-line invocation of CMake, they should be specified as: VARNAME:TYPE=value, eg 'VISIT_BUILD_ALL_PLUGINS:BOOL=ON'."
-msgstr ""
+msgstr "Cuando se especifican mediante una invocación de CMake desde la línea de comandos, deben indicarse como: VARNAME:TYPE=value, p. ej., 'VISIT_BUILD_ALL_PLUGINS:BOOL=ON'."
 
 #: building_visit/Building_Directly_With_CMake.rst:39
 msgid "The defaults listed are the settings used if the Variable has not been set in a *config-site* file."
-msgstr ""
+msgstr "Los valores predeterminados listados son los que se usan si la variable no se ha establecido en un archivo *config-site*."
 
 #: building_visit/Building_Directly_With_CMake.rst:44
 msgid "Controlling major components being built"
-msgstr ""
+msgstr "Controlar los componentes principales que se compilan"
 
 #: building_visit/Building_Directly_With_CMake.rst:46
 msgid "VISIT_DBIO_ONLY"
-msgstr ""
+msgstr "VISIT_DBIO_ONLY"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "BOOL"
-msgstr ""
+msgstr "BOOL"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "OFF"
-msgstr ""
+msgstr "OFF"
 
 #: building_visit/Building_Directly_With_CMake.rst:47
 msgid "Toggles building of only visitconvert and engine plugins."
-msgstr ""
+msgstr "Activa/desactiva la compilación únicamente de visitconvert y de los plugins del motor."
 
 #: building_visit/Building_Directly_With_CMake.rst:49
 msgid "VISIT_ENGINE_ONLY"
-msgstr ""
+msgstr "VISIT_ENGINE_ONLY"
 
 #: building_visit/Building_Directly_With_CMake.rst:50
 msgid "Toggles building of only the compute engine and its plugins."
-msgstr ""
+msgstr "Activa/desactiva la compilación únicamente del motor de cómputo y sus plugins."
 
 #: building_visit/Building_Directly_With_CMake.rst:52
 msgid "VISIT_SERVER_COMPONENTS_ONLY"
-msgstr ""
+msgstr "VISIT_SERVER_COMPONENTS_ONLY"
 
 #: building_visit/Building_Directly_With_CMake.rst:53
 msgid "Build only vcl, mdserver, engine and their plugins."
-msgstr ""
+msgstr "Compila solo vcl, mdserver, engine y sus plugins."
 
 #: building_visit/Building_Directly_With_CMake.rst:55
 msgid "VISIT_ENABLE_LIBSIM"
-msgstr ""
+msgstr "VISIT_ENABLE_LIBSIM"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "ON"
-msgstr ""
+msgstr "ON"
 
 #: building_visit/Building_Directly_With_CMake.rst:56
 msgid "Toggles building of libsim."
-msgstr ""
+msgstr "Activa/desactiva la compilación de libsim."
 
 #: building_visit/Building_Directly_With_CMake.rst:60
 msgid "Controlling plugins being built"
-msgstr ""
+msgstr "Controlar los plugins que se compilan"
 
 #: building_visit/Building_Directly_With_CMake.rst:62
 msgid "VISIT_BUILD_ALL_PLUGINS"
-msgstr ""
+msgstr "VISIT_BUILD_ALL_PLUGINS"
 
 #: building_visit/Building_Directly_With_CMake.rst:63
 msgid "Toggles the building of all plugins. When turned on the following optional plugins will be added to the build:"
-msgstr ""
+msgstr "Activa/desactiva la compilación de todos los plugins. Cuando está activado, se añadirán a la compilación los siguientes plugins opcionales:"
 
 #: building_visit/Building_Directly_With_CMake.rst:66
 msgid "Database: PICS_Tester, Rect"
-msgstr ""
+msgstr "Database: PICS_Tester, Rect"
 
 #: building_visit/Building_Directly_With_CMake.rst:68
 msgid "Operator: Context ConnCompReduce, MetricThreshold, RemoveCells, SurfCompPrep"
-msgstr ""
+msgstr "Operator: Context ConnCompReduce, MetricThreshold, RemoveCells, SurfCompPrep"
 
 #: building_visit/Building_Directly_With_CMake.rst:70
 msgid "Plot: Topology"
-msgstr ""
+msgstr "Plot: Topology"
 
 #: building_visit/Building_Directly_With_CMake.rst:72
 msgid "Note: the list of optional plugins is subject to change."
-msgstr ""
+msgstr "Nota: la lista de plugins opcionales está sujeta a cambios."
 
 #: building_visit/Building_Directly_With_CMake.rst:74
 msgid "VISIT_BUILD_MINIMAL_PLUGINS"
-msgstr ""
+msgstr "VISIT_BUILD_MINIMAL_PLUGINS"
 
 #: building_visit/Building_Directly_With_CMake.rst:75
 msgid "Toggles the building of a minimal set of database, operator, and plot plugins. When turned on, only the following plugins will be built:"
-msgstr ""
+msgstr "Activa/desactiva la compilación de un conjunto mínimo de plugins de bases de datos, operadores y gráficos (plots). Cuando está activado, solo se compilarán los siguientes plugins:"
 
 #: building_visit/Building_Directly_With_CMake.rst:78
 msgid "Database: Curve2D, RAW, VTK, PICS_Tester"
-msgstr ""
+msgstr "Database: Curve2D, RAW, VTK, PICS_Tester"
 
 #: building_visit/Building_Directly_With_CMake.rst:80
 msgid "Operator: Lineout, Slice, Threshold"
-msgstr ""
+msgstr "Operator: Lineout, Slice, Threshold"
 
 #: building_visit/Building_Directly_With_CMake.rst:82
 msgid "Plot: Curve, Mesh, Pseudocolor"
-msgstr ""
+msgstr "Plot: Curve, Mesh, Pseudocolor"
 
 #: building_visit/Building_Directly_With_CMake.rst:84
 msgid "Note: the list of minimal plugins is subject to change."
-msgstr ""
+msgstr "Nota: la lista de plugins mínimos está sujeta a cambios."
 
 #: building_visit/Building_Directly_With_CMake.rst:86
 msgid "VISIT_SELECTED_DATABASE_PLUGINS"
-msgstr ""
+msgstr "VISIT_SELECTED_DATABASE_PLUGINS"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "STRING"
-msgstr ""
+msgstr "STRING"
 
 #: building_visit/Building_Directly_With_CMake.rst:87
 msgid "';' separated list of database plugins to build, eg: VTK;Silo"
-msgstr ""
+msgstr "Lista de plugins de base de datos a compilar separada por ';', p. ej.: VTK;Silo"
 
 #: building_visit/Building_Directly_With_CMake.rst:89
 msgid "If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for database plugins."
-msgstr ""
+msgstr "Si no está vacío, reemplazará la configuración de VISIT_BUILD_MINIMAL_PLUGINS y VISIT_BUILD_ALL_PLUGINS para los plugins de base de datos."
 
 #: building_visit/Building_Directly_With_CMake.rst:91
 msgid "VISIT_SELECTED_OPERATOR_PLUGINS"
-msgstr ""
+msgstr "VISIT_SELECTED_OPERATOR_PLUGINS"
 
 #: building_visit/Building_Directly_With_CMake.rst:92
 msgid "';' separated list of operator plugins to build, eg: Slice;Lineout;Transform"
-msgstr ""
+msgstr "Lista de plugins de operador a compilar separada por ';', p. ej.: Slice;Lineout;Transform"
 
 #: building_visit/Building_Directly_With_CMake.rst:94
 msgid "If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for operator plugins."
-msgstr ""
+msgstr "Si no está vacío, reemplazará la configuración de VISIT_BUILD_MINIMAL_PLUGINS y VISIT_BUILD_ALL_PLUGINS para los plugins de operador."
 
 #: building_visit/Building_Directly_With_CMake.rst:96
 msgid "VISIT_SELECTED_PLOT_PLUGINS"
-msgstr ""
+msgstr "VISIT_SELECTED_PLOT_PLUGINS"
 
 #: building_visit/Building_Directly_With_CMake.rst:97
 msgid "';' separated list of plot plugins to build, eg: Mesh;Pseudocolor"
-msgstr ""
+msgstr "Lista de plugins de plot a compilar separada por ';', p. ej.: Mesh;Pseudocolor"
 
 #: building_visit/Building_Directly_With_CMake.rst:99
 msgid "If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for plot plugins."
-msgstr ""
+msgstr "Si no está vacío, reemplazará la configuración de VISIT_BUILD_MINIMAL_PLUGINS y VISIT_BUILD_ALL_PLUGINS para los plugins de plot."
 
 #: building_visit/Building_Directly_With_CMake.rst:103
 msgid "Controlling extra tools being built"
-msgstr ""
+msgstr "Controlar herramientas adicionales que se compilan"
 
 #: building_visit/Building_Directly_With_CMake.rst:104
 msgid "VISIT_ENABLE_ANNOTATION_TOOLS"
-msgstr ""
+msgstr "VISIT_ENABLE_ANNOTATION_TOOLS"
 
 #: building_visit/Building_Directly_With_CMake.rst:105
 msgid "Toggles the generation of annotation tools: text2polys, time_annotation."
-msgstr ""
+msgstr "Activa/desactiva la generación de herramientas de anotación: text2polys, time_annotation."
 
 #: building_visit/Building_Directly_With_CMake.rst:107
 msgid "VISIT_ENABLE_DATAGEN"
-msgstr ""
+msgstr "VISIT_ENABLE_DATAGEN"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "BOOL: ON"
-msgstr ""
+msgstr "BOOL: ON"
 
 #: building_visit/Building_Directly_With_CMake.rst:108
 msgid "Toggles the generation of sample data files."
-msgstr ""
+msgstr "Activa/desactiva la generación de archivos de datos de ejemplo."
 
 #: building_visit/Building_Directly_With_CMake.rst:110
 msgid "VISIT_ENABLE_DATA_MANUAL_EXAMPLES: BOOL"
-msgstr ""
+msgstr "VISIT_ENABLE_DATA_MANUAL_EXAMPLES: BOOL"
 
 #: building_visit/Building_Directly_With_CMake.rst:111
 msgid "Toggles generation of :ref:`Getting Data Into Visit<Getting Data into VisIt_>` examples."
-msgstr ""
+msgstr "Activa/desactiva la generación de ejemplos de :ref:`Getting Data Into Visit<Getting Data into VisIt_>`."
 
 #: building_visit/Building_Directly_With_CMake.rst:113
 msgid "VISIT_ENABLE_DIAGNOSTICS"
-msgstr ""
+msgstr "VISIT_ENABLE_DIAGNOSTICS"
 
 #: building_visit/Building_Directly_With_CMake.rst:114
 msgid "Toggles building of diagnostic tools: exceptiontest, mpitest, networktest, osmesatest."
-msgstr ""
+msgstr "Activa/desactiva la compilación de herramientas de diagnóstico: exceptiontest, mpitest, networktest, osmesatest."
 
 #: building_visit/Building_Directly_With_CMake.rst:116
 msgid "VISIT_ENABLE_MANUALS"
-msgstr ""
+msgstr "VISIT_ENABLE_MANUALS"
 
 #: building_visit/Building_Directly_With_CMake.rst:117
 msgid "Toggles building of manuals, requires Sphinx in Python."
-msgstr ""
+msgstr "Activa/desactiva la compilación de manuales; requiere Sphinx en Python."
 
 #: building_visit/Building_Directly_With_CMake.rst:119
 msgid "VISIT_ENABLE_SILO_TOOLS"
-msgstr ""
+msgstr "VISIT_ENABLE_SILO_TOOLS"
 
 #: building_visit/Building_Directly_With_CMake.rst:120
 msgid "Toggles building of Silo tools: mrgtree2dot, add_visit_searchpath."
-msgstr ""
+msgstr "Activa/desactiva la compilación de herramientas de Silo: mrgtree2dot, add_visit_searchpath."
 
 #: building_visit/Building_Directly_With_CMake.rst:122
 msgid "VISIT_ENABLE_UNIT_TESTS"
-msgstr ""
+msgstr "VISIT_ENABLE_UNIT_TESTS"
 
 #: building_visit/Building_Directly_With_CMake.rst:123
 msgid "Toggles building of unit tests: MRUCache, Namescheme, Utilty, StringHelpers, exprconfig, exprtest."
-msgstr ""
+msgstr "Activa/desactiva la compilación de pruebas unitarias: MRUCache, Namescheme, Utilty, StringHelpers, exprconfig, exprtest."
 
 #: building_visit/Building_Directly_With_CMake.rst:126
 msgid "Useful for developers"
-msgstr ""
+msgstr "Útil para desarrolladores"
 
 #: building_visit/Building_Directly_With_CMake.rst:129
 msgid "VISIT_CREATE_SOCKET_RELAY_EXECUTABLE: BOOL"
-msgstr ""
+msgstr "VISIT_CREATE_SOCKET_RELAY_EXECUTABLE: BOOL"
 
 #: building_visit/Building_Directly_With_CMake.rst:130
 msgid "Toggles creation of separate executable that forwards VisIt_'s socket connection between engine and component launcher."
-msgstr ""
+msgstr "Activa/desactiva la creación de un ejecutable separado que reenvía la conexión de socket de VisIt_ entre el motor (engine) y el lanzador de componentes."
 
 #: building_visit/Building_Directly_With_CMake.rst:132
 msgid "VISIT_CREATE_XMLTOOLS_GEN_TARGETS"
-msgstr ""
+msgstr "VISIT_CREATE_XMLTOOLS_GEN_TARGETS"
 
 #: building_visit/Building_Directly_With_CMake.rst:133
 msgid "Toggles the creation of build targets to run xmltools code generation. More information can be found in the :ref:`XML Tools<XML Tools>` section of the *Developer Manual*"
-msgstr ""
+msgstr "Activa/desactiva la creación de objetivos de compilación para ejecutar la generación de código de xmltools. Se puede encontrar más información en la sección :ref:`XML Tools<XML Tools>` del *Developer Manual*."
 
 #: building_visit/Building_Directly_With_CMake.rst:136
 msgid "**Be careful on Windows**, *all of the codegen targets will be built unless you tell Visual Studio to build the ALL_BUILD project (instead of the Solution). This will cause a lot of source files to be regenerated and may cause problems with the build.*"
-msgstr ""
+msgstr "**Tenga cuidado en Windows**, *todos los objetivos de codegen se compilarán a menos que indique a Visual Studio que compile el proyecto ALL_BUILD (en lugar de la Solution). Esto hará que se regeneren muchos archivos fuente y puede causar problemas en la compilación.*"
 
 #: building_visit/Building_Directly_With_CMake.rst:141
 msgid "VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH"
-msgstr ""
+msgstr "VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH"
 
 #: building_visit/Building_Directly_With_CMake.rst:142
 msgid "Install rpath relative to executable location using \\\\$ORIGIN tag."
-msgstr ""
+msgstr "Instala el rpath relativo a la ubicación del ejecutable usando la etiqueta \\\\$ORIGIN."
 
 #: building_visit/Building_Directly_With_CMake.rst:144
 msgid "CMAKE_SUPPRESS_REGENERATION"
-msgstr ""
+msgstr "CMAKE_SUPPRESS_REGENERATION"
 
 #: building_visit/Building_Directly_With_CMake.rst:145
 msgid "When on, tells CMake to suppress regeneration of project/make files when CMakeLists.txt or .cmake files have changed."
-msgstr ""
+msgstr "Cuando está activado, le indica a CMake que suprima la regeneración de archivos de proyecto/make cuando hayan cambiado CMakeLists.txt o archivos .cmake."
 
 #: building_visit/Building_Directly_With_CMake.rst:148
 msgid "Miscellany"
-msgstr ""
+msgstr "Miscelánea"
 
 #: building_visit/Building_Directly_With_CMake.rst:150
 msgid "CMAKE_BUILD_TYPE"
-msgstr ""
+msgstr "CMAKE_BUILD_TYPE"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "Release"
-msgstr ""
+msgstr "Release"
 
 #: building_visit/Building_Directly_With_CMake.rst:151
 msgid "Specifies the build type for single-configuration generators (like Makefiles)."
-msgstr ""
+msgstr "Especifica el tipo de compilación para generadores de configuración única (como Makefiles)."
 
 #: building_visit/Building_Directly_With_CMake.rst:153
 msgid "CMAKE_INSTALL_PREFIX : *default is system dependent*"
-msgstr ""
+msgstr "CMAKE_INSTALL_PREFIX : *el valor predeterminado depende del sistema*"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "PATH"
-msgstr ""
+msgstr "PATH"
 
 #: building_visit/Building_Directly_With_CMake.rst:152
 msgid "default is system dependent"
-msgstr ""
+msgstr "el valor predeterminado depende del sistema"
 
 #: building_visit/Building_Directly_With_CMake.rst:154
 msgid "Specifies the location for files installed with *make install.*"
-msgstr ""
+msgstr "Especifica la ubicación de los archivos instalados con *make install*."
 
 #: building_visit/Building_Directly_With_CMake.rst:156
 msgid "IGNORE_THIRD_PARTY_LIB_PROBLEMS"
-msgstr ""
+msgstr "IGNORE_THIRD_PARTY_LIB_PROBLEMS"
 
 #: building_visit/Building_Directly_With_CMake.rst:157
 msgid "Ignore problems finding requested third party libraries."
-msgstr ""
+msgstr "Ignora problemas al encontrar bibliotecas de terceros solicitadas."
 
 #: building_visit/Building_Directly_With_CMake.rst:159
 msgid "VISIT_CONFIG_SITE"
-msgstr ""
+msgstr "VISIT_CONFIG_SITE"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "FILEPATH"
-msgstr ""
+msgstr "FILEPATH"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "${VISIT_SOURCE_DIR}/config-site/<localhost>.cmake"
-msgstr ""
+msgstr "${VISIT_SOURCE_DIR}/config-site/<localhost>.cmake"
 
 #: building_visit/Building_Directly_With_CMake.rst:160
 msgid "Location of a config-site cmake file that has settings to control the build, including locations of third-party libraries. Created automatically by build_visit script."
-msgstr ""
+msgstr "Ubicación de un archivo cmake config-site que contiene configuraciones para controlar la compilación, incluidas las ubicaciones de bibliotecas de terceros. Se crea automáticamente mediante el script build_visit."
 
 #: building_visit/Building_Directly_With_CMake.rst:163
 msgid "VISIT_DDT"
-msgstr ""
+msgstr "VISIT_DDT"
 
 #: building_visit/Building_Directly_With_CMake.rst:164
 msgid "Toggles support for the DDT debugger."
-msgstr ""
+msgstr "Activa/desactiva el soporte para el depurador DDT."
 
 #: building_visit/Building_Directly_With_CMake.rst:166
 msgid "VISIT_DEFAULT_SILO_DRIVER"
-msgstr ""
+msgstr "VISIT_DEFAULT_SILO_DRIVER"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "PDB"
-msgstr ""
+msgstr "PDB"
 
 #: building_visit/Building_Directly_With_CMake.rst:167
 msgid "Designates the default Silo driver to use when generating silo data. Options: PDB, HDF5"
-msgstr ""
+msgstr "Designa el driver de Silo predeterminado que se usará al generar datos de Silo. Opciones: PDB, HDF5"
 
 #: building_visit/Building_Directly_With_CMake.rst:170
 msgid "VISIT_DISABLE_SELECT"
-msgstr ""
+msgstr "VISIT_DISABLE_SELECT"
 
 #: building_visit/Building_Directly_With_CMake.rst:171
 msgid "Toggles the disablement for use of the select() function."
-msgstr ""
+msgstr "Activa/desactiva la deshabilitación del uso de la función select()."
 
 #: building_visit/Building_Directly_With_CMake.rst:173
 msgid "VISIT_FORCE_SSH_TUNNELING"
-msgstr ""
+msgstr "VISIT_FORCE_SSH_TUNNELING"
 
 #: building_visit/Building_Directly_With_CMake.rst:174
 msgid "Toggles use of SSH tunneling for sockets."
-msgstr ""
+msgstr "Activa/desactiva el uso de túneles SSH para sockets."
 
 #: building_visit/Building_Directly_With_CMake.rst:176
 msgid "VISIT_FORTRAN"
-msgstr ""
+msgstr "VISIT_FORTRAN"
 
 #: building_visit/Building_Directly_With_CMake.rst:177
 msgid "Toggles building of Fortran example programs."
-msgstr ""
+msgstr "Activa/desactiva la compilación de programas de ejemplo de Fortran."
 
 #: building_visit/Building_Directly_With_CMake.rst:179
 msgid "VISIT_INSTALL_THIRD_PARTY"
-msgstr ""
+msgstr "VISIT_INSTALL_THIRD_PARTY"
 
 #: building_visit/Building_Directly_With_CMake.rst:180
 msgid "Intall VisIt_'s 3rd part I/O libraries and includes to permit plugin development."
-msgstr ""
+msgstr "Instala las bibliotecas e includes de E/S de terceros de VisIt_ para permitir el desarrollo de plugins."
 
 #: building_visit/Building_Directly_With_CMake.rst:182
 msgid "VISIT_JAVA"
-msgstr ""
+msgstr "VISIT_JAVA"
 
 #: building_visit/Building_Directly_With_CMake.rst:183
 msgid "Build VisIt_'s Java client interface."
-msgstr ""
+msgstr "Compila la interfaz de cliente Java de VisIt_."
 
 #: building_visit/Building_Directly_With_CMake.rst:185
 msgid "VISIT_NOLINK_MPI_WITH_LIBRARIES"
-msgstr ""
+msgstr "VISIT_NOLINK_MPI_WITH_LIBRARIES"
 
 #: building_visit/Building_Directly_With_CMake.rst:186
 msgid "Do not link MPI with VisIt_'s parallel shared libraries; just with executables"
-msgstr ""
+msgstr "No enlaza MPI con las bibliotecas compartidas paralelas de VisIt_; solo con ejecutables."
 
 #: building_visit/Building_Directly_With_CMake.rst:188
 msgid "VISIT_PARALLEL"
-msgstr ""
+msgstr "VISIT_PARALLEL"
 
 #: building_visit/Building_Directly_With_CMake.rst:189
 msgid "Build VisIt_'s parallel compute engine."
-msgstr ""
+msgstr "Compila el motor de cómputo paralelo de VisIt_."
 
 #: building_visit/Building_Directly_With_CMake.rst:191
 msgid "VISIT_PYTHON_SCRIPTING"
-msgstr ""
+msgstr "VISIT_PYTHON_SCRIPTING"
 
 #: building_visit/Building_Directly_With_CMake.rst:192
 msgid "Build VisIt_ with Python scripting support."
-msgstr ""
+msgstr "Compila VisIt_ con soporte de scripting en Python."
 
 #: building_visit/Building_Directly_With_CMake.rst:194
 msgid "VISIT_PYTHON_FILTERS"
-msgstr ""
+msgstr "VISIT_PYTHON_FILTERS"
 
 #: building_visit/Building_Directly_With_CMake.rst:195
 msgid "Build VisIt_ with Python Engine Filter support."
-msgstr ""
+msgstr "Compila VisIt_ con soporte para filtros del motor en Python."
 
 #: building_visit/Building_Directly_With_CMake.rst:197
 msgid "VISIT_SLIVR"
-msgstr ""
+msgstr "VISIT_SLIVR"
 
 #: building_visit/Building_Directly_With_CMake.rst:198
 msgid "Build VisIt_ with support for the SLIVR volume rendering library."
-msgstr ""
+msgstr "Compila VisIt_ con soporte para la biblioteca de renderizado de volumen SLIVR."
 
 #: building_visit/Building_Directly_With_CMake.rst:200
 msgid "VISIT_STATIC"
-msgstr ""
+msgstr "VISIT_STATIC"
 
 #: building_visit/Building_Directly_With_CMake.rst:201
 msgid "Build VisIt_ statically."
-msgstr ""
+msgstr "Compila VisIt_ de forma estática."
 
 #: building_visit/Building_Directly_With_CMake.rst:204
 msgid "Mac OS only"
-msgstr ""
+msgstr "Solo macOS"
 
 #: building_visit/Building_Directly_With_CMake.rst:206
 msgid "VISIT_CREATE_APPBUNDLE_PACKAGE"
-msgstr ""
+msgstr "VISIT_CREATE_APPBUNDLE_PACKAGE"
 
 #: building_visit/Building_Directly_With_CMake.rst:207
 msgid "Toggles creation of DMG file with Mac App bundle with make package."
-msgstr ""
+msgstr "Activa/desactiva la creación de un archivo DMG con el bundle de la app de Mac mediante make package."
 
 #: building_visit/Building_Directly_With_CMake.rst:211
 msgid "Windows OS only"
-msgstr ""
+msgstr "Solo Windows"
 
 #: building_visit/Building_Directly_With_CMake.rst:213
 msgid "VISIT_MAKE_NSIS_INSTALLER"
-msgstr ""
+msgstr "VISIT_MAKE_NSIS_INSTALLER"
 
 #: building_visit/Building_Directly_With_CMake.rst:214
 msgid "Toggles creation of an installer package using NSIS."
-msgstr ""
+msgstr "Activa/desactiva la creación de un paquete instalador usando NSIS."
 
 #: building_visit/Building_Directly_With_CMake.rst:216
 #: building_visit/Building_Directly_With_CMake.rst:221
 msgid "The windows.cmake *config-site* file turns this ON."
-msgstr ""
+msgstr "El archivo *config-site* windows.cmake activa esto (ON)."
 
 #: building_visit/Building_Directly_With_CMake.rst:218
 msgid "VISIT_MESA_REPLACE_OPENGL"
-msgstr ""
+msgstr "VISIT_MESA_REPLACE_OPENGL"
 
 #: building_visit/Building_Directly_With_CMake.rst:219
 msgid "Toggles use of Mesa as a drop-in replacement for OpenGL when system OpenGL is insufficient."
-msgstr ""
+msgstr "Activa/desactiva el uso de Mesa como reemplazo compatible (drop-in) de OpenGL cuando el OpenGL del sistema es insuficiente."
 
 #: building_visit/Building_Directly_With_CMake.rst:223
 msgid "VISIT_WINDOWS_APPLICATION"
-msgstr ""
+msgstr "VISIT_WINDOWS_APPLICATION"
 
 #: building_visit/Building_Directly_With_CMake.rst:224
 msgid "Toggles creation of Windows-style applications with no console."
-msgstr ""
+msgstr "Activa/desactiva la creación de aplicaciones estilo Windows sin consola."
 
 #: building_visit/Building_Directly_With_CMake.rst:226
 msgid "VISIT_WINDOWS_DIR"
-msgstr ""
+msgstr "VISIT_WINDOWS_DIR"
 
 #: building_visit/Building_Directly_With_CMake.rst:-1
 msgid "PATH :"
-msgstr ""
+msgstr "PATH :"
 
 #: building_visit/Building_Directly_With_CMake.rst:227
 msgid "Specifies the location of the pre-built third party library binaries. See :ref:`Location of windowsbuild directory<Location of windowsbuild Directory>` for default locations."
-msgstr ""
-
+msgstr "Especifica la ubicación de los binarios de bibliotecas de terceros precompilados. Consulte :ref:`Location of windowsbuild directory<Location of windowsbuild Directory>` para las ubicaciones predeterminadas."

@@ -20,7 +20,7 @@ msgstr "Scripts de masonry"
 
 #: building_visit/BuildingOnMac/Setup.rst:9
 msgid "The masonry scripts are bundled with VisIt_'s source code. You will need to download the source code and extract masonry from ``visit/src/tools/dev``. There are a few options for downloading the source code. If you want a released version of VisIt_ then go to the `source code downloads page <https://visit.llnl.gov/source>`_ and look for the *VisIt sources* link. The other option is to download from the `git repository <https://github.com/visit-dav/visit>`_. Once you have the source code, copy ``visit/src/tools/dev/masonry`` to a location of your choosing."
-msgstr ""
+msgstr "Los scripts de masonry se incluyen con el código fuente de VisIt_. Deberá descargar el código fuente y extraer masonry desde ``visit/src/tools/dev``. Hay algunas opciones para descargar el código fuente. Si desea una versión publicada de VisIt_, vaya a la `página de descargas del código fuente <https://visit.llnl.gov/source>`_ y busque el enlace *VisIt sources*. La otra opción es descargar desde el `repositorio git <https://github.com/visit-dav/visit>`_. Una vez que tenga el código fuente, copie ``visit/src/tools/dev/masonry`` a la ubicación que prefiera."
 
 #: building_visit/BuildingOnMac/Setup.rst:17
 msgid "Configuration"
@@ -28,446 +28,445 @@ msgstr "Configuración"
 
 #: building_visit/BuildingOnMac/Setup.rst:19
 msgid "In the ``opts`` directory copy one of the ``*.json`` files and rename it as desired. For example: ``cp mb-3.1.1-darwin-10.14-x86_64-release.json mb-3.1.2-darwin-10.14-x86_64-release.json``"
-msgstr ""
+msgstr "En el directorio ``opts``, copie uno de los archivos ``*.json`` y renómbrelo como desee. Por ejemplo: ``cp mb-3.1.1-darwin-10.14-x86_64-release.json mb-3.1.2-darwin-10.14-x86_64-release.json``"
 
 #: building_visit/BuildingOnMac/Setup.rst:22
 msgid "Open the JSON configuration file (see :numref:`Figure %s<masonry_config_file>`)  created in **step 1** and modify or add the following options as needed:"
-msgstr ""
+msgstr "Abra el archivo de configuración JSON (consulte :numref:`Figure %s<masonry_config_file>`) creado en el **paso 1** y modifique o añada las siguientes opciones según sea necesario:"
 
 #: building_visit/BuildingOnMac/Setup.rst:24
 msgid "``arch``: **required**"
-msgstr ""
+msgstr "``arch``: **obligatorio**"
 
 #: building_visit/BuildingOnMac/Setup.rst:25
 msgid "The build architecture (e.g., darwin-x86_64)."
-msgstr ""
+msgstr "La arquitectura de compilación (p. ej., darwin-x86_64)."
 
 #: building_visit/BuildingOnMac/Setup.rst:27
 msgid "``boost_dir``: **optional**"
-msgstr ""
+msgstr "``boost_dir``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:28
 msgid "The path to boost if installed on your system. This also triggers the setting of two CMake options (**VISIT_USE_BOOST:BOOL** and **BOOST_ROOT:PATH**)."
-msgstr ""
+msgstr "La ruta a boost si está instalado en su sistema. Esto también activa la configuración de dos opciones de CMake (**VISIT_USE_BOOST:BOOL** y **BOOST_ROOT:PATH**)."
 
 #: building_visit/BuildingOnMac/Setup.rst:30
 msgid "``branch``: **required**"
-msgstr ""
+msgstr "``branch``: **obligatorio**"
 
 #: building_visit/BuildingOnMac/Setup.rst:31
 msgid "The git branch to checkout and build."
-msgstr ""
+msgstr "La rama de git a la que hacer checkout y compilar."
 
 #: building_visit/BuildingOnMac/Setup.rst:33
 msgid "``build_dir``: **optional**"
-msgstr ""
+msgstr "``build_dir``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:34
 msgid "The directory to place all of the files generated from the build process. If this option isn't specified the build directory will default to ``build-<json_base>`` (e.g., build-mb-3.1.2-darwin-10.14-x86_64-release) in your current working directory."
-msgstr ""
+msgstr "El directorio donde colocar todos los archivos generados por el proceso de compilación. Si no se especifica esta opción, el directorio de compilación se establecerá de forma predeterminada en ``build-<json_base>`` (p. ej., build-mb-3.1.2-darwin-10.14-x86_64-release) dentro del directorio de trabajo actual."
 
 #: building_visit/BuildingOnMac/Setup.rst:36
 msgid "``build_types``: **required**"
-msgstr ""
+msgstr "``build_types``: **obligatorio**"
 
 #: building_visit/BuildingOnMac/Setup.rst:37
 msgid "A list of builds for masonry to create."
-msgstr ""
+msgstr "Una lista de compilaciones que masonry debe crear."
 
 #: building_visit/BuildingOnMac/Setup.rst:39
 msgid "``build_visit``: **required**"
-msgstr ""
+msgstr "``build_visit``: **obligatorio**"
 
 #: building_visit/BuildingOnMac/Setup.rst:40
 msgid "Allows you to set the ``build_visit`` options."
-msgstr ""
+msgstr "Le permite establecer las opciones de ``build_visit``."
 
 #: building_visit/BuildingOnMac/Setup.rst:42
 msgid "``cmake_ver``: **required** - the CMake version to use"
-msgstr ""
+msgstr "``cmake_ver``: **obligatorio** - la versión de CMake que se usará"
 
 #: building_visit/BuildingOnMac/Setup.rst:44
 msgid "``args``: **optional** - arguments for ``build_visits``"
-msgstr ""
+msgstr "``args``: **opcional** - argumentos para ``build_visits``"
 
 #: building_visit/BuildingOnMac/Setup.rst:46
 msgid "``libs``: **optional** - third-party libraries to build"
-msgstr ""
+msgstr "``libs``: **opcional** - bibliotecas de terceros a compilar"
 
 #: building_visit/BuildingOnMac/Setup.rst:48
 msgid "``make_flags``: **optional** - Make flags"
-msgstr ""
+msgstr "``make_flags``: **opcional** - flags de Make"
 
 #: building_visit/BuildingOnMac/Setup.rst:50
 msgid "``build_xdb``: **optional**"
-msgstr ""
+msgstr "``build_xdb``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:51
 msgid "Set the **VISIT_ENABLE_XDB:BOOL** option to *ON* if true."
-msgstr ""
+msgstr "Si es verdadero, establece la opción **VISIT_ENABLE_XDB:BOOL** en *ON*."
 
 #: building_visit/BuildingOnMac/Setup.rst:53
 msgid "``cert``: **required for signing/notarization**"
-msgstr ""
+msgstr "``cert``: **obligatorio para firma/notarización**"
 
 #: building_visit/BuildingOnMac/Setup.rst:54
 msgid "The Developer ID signing certificate **Common Name**."
-msgstr ""
+msgstr "El **Common Name** del certificado de firma (Developer ID)."
 
 #: building_visit/BuildingOnMac/Setup.rst:56
 msgid "``cmake_extra_args``: **optional**"
-msgstr ""
+msgstr "``cmake_extra_args``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:57
 msgid "Specify extra arguments for CMake."
-msgstr ""
+msgstr "Especifique argumentos adicionales para CMake."
 
 #: building_visit/BuildingOnMac/Setup.rst:59
 msgid "``config_site``: **optional**"
-msgstr ""
+msgstr "``config_site``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:60
 msgid "Specify a path for the config site file."
-msgstr ""
+msgstr "Especifique una ruta para el archivo config site."
 
 #: building_visit/BuildingOnMac/Setup.rst:62
 msgid "``cxx_compiler``: **optional**"
-msgstr ""
+msgstr "``cxx_compiler``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:63
 msgid "Specify the C++ compiler"
-msgstr ""
+msgstr "Especifique el compilador de C++."
 
 #: building_visit/BuildingOnMac/Setup.rst:65
 msgid "``c_compiler``: **optional**"
-msgstr ""
+msgstr "``c_compiler``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:66
 msgid "Specify the C compiler"
-msgstr ""
+msgstr "Especifique el compilador de C."
 
 #: building_visit/BuildingOnMac/Setup.rst:68
 msgid "``entitlements``: **required for notarization**"
-msgstr ""
+msgstr "``entitlements``: **obligatorio para notarización**"
 
 #: building_visit/BuildingOnMac/Setup.rst:69
 msgid "Specify the location of VisIt's entitlements file. The one used for VisIt releases is located in the ``opts`` directory and is named **visit.entitlements**. See `Hardened Runtime <https://developer.apple.com/documentation/security/hardened_runtime>`_ for more details on entitlements."
-msgstr ""
+msgstr "Especifique la ubicación del archivo de entitlements de VisIt. El que se usa para las versiones oficiales de VisIt se encuentra en el directorio ``opts`` y se llama **visit.entitlements**. Consulte `Hardened Runtime <https://developer.apple.com/documentation/security/hardened_runtime>`_ para obtener más detalles sobre los entitlements."
 
 #: building_visit/BuildingOnMac/Setup.rst:71
 msgid "``force_clean``: **optional**"
-msgstr ""
+msgstr "``force_clean``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:72
 msgid "Removes all files and directories from your build folder."
-msgstr ""
+msgstr "Elimina todos los archivos y directorios de su carpeta de compilación."
 
 #: building_visit/BuildingOnMac/Setup.rst:74
 msgid "``git``: **required**"
-msgstr ""
+msgstr "``git``: **obligatorio**"
 
 #: building_visit/BuildingOnMac/Setup.rst:75
 msgid "``mode``: **required** - set this option to **ssh** or **https**"
-msgstr ""
+msgstr "``mode``: **obligatorio** - establezca esta opción en **ssh** o **https**"
 
 #: building_visit/BuildingOnMac/Setup.rst:77
 msgid "``git_uname``: **optional** - github username"
-msgstr ""
+msgstr "``git_uname``: **opcional** - nombre de usuario de GitHub"
 
 #: building_visit/BuildingOnMac/Setup.rst:79
 msgid "``depth``: **optional** - specify an integer value for a shallow clone with a history truncated to the specified number of commits."
-msgstr ""
+msgstr "``depth``: **opcional** - especifique un valor entero para un clon superficial con un historial truncado al número de commits indicado."
 
 #: building_visit/BuildingOnMac/Setup.rst:81
 msgid "``make_nthreads``: **optional**"
-msgstr ""
+msgstr "``make_nthreads``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:82
 msgid "The number of parallel threads to use when building the source code."
-msgstr ""
+msgstr "El número de hilos paralelos que se usarán al compilar el código fuente."
 
 #: building_visit/BuildingOnMac/Setup.rst:84
 msgid "``notarize``: **required for notarization**"
-msgstr ""
+msgstr "``notarize``: **obligatorio para notarización**"
 
 #: building_visit/BuildingOnMac/Setup.rst:85
 msgid "Specify the options needed for notarization."
-msgstr ""
+msgstr "Especifique las opciones necesarias para la notarización."
 
 #: building_visit/BuildingOnMac/Setup.rst:87
 msgid "``username``: - Apple ID email"
-msgstr ""
+msgstr "``username``: - correo electrónico del Apple ID"
 
 #: building_visit/BuildingOnMac/Setup.rst:89
 msgid "``password``: - App-specific password or keychain string containing the App-specific password"
-msgstr ""
+msgstr "``password``: - contraseña específica de app (App-specific) o una cadena del llavero que contenga la contraseña específica de app"
 
 #: building_visit/BuildingOnMac/Setup.rst:91
 msgid "``asc_provider``: - Provider short name"
-msgstr ""
+msgstr "``asc_provider``: - nombre corto del proveedor"
 
 #: building_visit/BuildingOnMac/Setup.rst:93
 msgid "``bundle_id``: - VisIt's bundle identifier"
-msgstr ""
+msgstr "``bundle_id``: - identificador de bundle de VisIt"
 
 #: building_visit/BuildingOnMac/Setup.rst:95
 msgid "``platform``: **optional**"
-msgstr ""
+msgstr "``platform``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:96
 msgid "Specify the platform (**osx** or **linux**)"
-msgstr ""
+msgstr "Especifique la plataforma (**osx** o **linux**)."
 
 #: building_visit/BuildingOnMac/Setup.rst:98
 msgid "``skip_checkout``: **optional**"
-msgstr ""
+msgstr "``skip_checkout``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:99
 msgid "if you have to restart masonry and already have the source code checked out you can skip that step by setting this option to *yes*."
-msgstr ""
+msgstr "Si tiene que reiniciar masonry y ya tiene el código fuente con checkout, puede omitir ese paso estableciendo esta opción en *yes*."
 
 #: building_visit/BuildingOnMac/Setup.rst:101
 msgid "``tarball``: **optional**"
-msgstr ""
+msgstr "``tarball``: **opcional**"
 
 #: building_visit/BuildingOnMac/Setup.rst:102
 msgid "Specify the path to the source tar file. This option is currently not being used."
-msgstr ""
+msgstr "Especifique la ruta al archivo tar del código fuente. Actualmente esta opción no se utiliza."
 
 #: building_visit/BuildingOnMac/Setup.rst:104
 msgid "``version``: **required**"
-msgstr ""
+msgstr "``version``: **obligatorio**"
 
 #: building_visit/BuildingOnMac/Setup.rst:105
 msgid "The version of VisIt you are building."
-msgstr ""
+msgstr "La versión de VisIt que está compilando."
 
 #: building_visit/BuildingOnMac/Setup.rst:113
 msgid "Masonry's JSON config file"
-msgstr ""
+msgstr "Archivo de configuración JSON de Masonry"
 
 #: building_visit/BuildingOnMac/Setup.rst:116
 msgid "You Might Have to Adjust your PATH"
-msgstr ""
+msgstr "Quizá tenga que ajustar su PATH"
 
 #: building_visit/BuildingOnMac/Setup.rst:118
 msgid "There are cases where individual package's configuration processes wind up executing tools in your path (``$PATH``) to help set variables used in compilation. For example, the ``MPICH`` configuration winds up using ``pkg-config``, if it is found in your path, to help set ``CPPFLAGS`` and ``LDFLAGS``. In one case, ``libxml2`` was installed in both ``/opt/local/lib`` and in ``/usr/lib`` but because ``/opt/local/bin`` was first in ``$PATH``, ``/opt/local/bin/pkg-config`` was used to set paths for ``libxml2`` to ``/opt/local/include`` and ``/opt/local/lib``. This results in a build of ``MPICH`` using non-system ``libxml2`` which will fail the ``macOS`` (``otool -L``) ``@rpath`` validation checks on each of the shared libs VisIt is built with later."
-msgstr ""
+msgstr "En algunos casos, los procesos de configuración de paquetes individuales terminan ejecutando herramientas que estén en su ruta (``$PATH``) para ayudar a establecer variables usadas en la compilación. Por ejemplo, la configuración de ``MPICH`` termina usando ``pkg-config`` (si se encuentra en su ruta) para ayudar a establecer ``CPPFLAGS`` y ``LDFLAGS``. En un caso, ``libxml2`` estaba instalado tanto en ``/opt/local/lib`` como en ``/usr/lib``, pero como ``/opt/local/bin`` aparecía primero en ``$PATH``, se usó ``/opt/local/bin/pkg-config`` para configurar las rutas de ``libxml2`` a ``/opt/local/include`` y ``/opt/local/lib``. Esto produce una compilación de ``MPICH`` que usa un ``libxml2`` no perteneciente al sistema, lo que fallará las comprobaciones de validación ``@rpath`` de ``macOS`` (``otool -L``) sobre cada una de las bibliotecas compartidas con las que más tarde se compila VisIt."
 
 #: building_visit/BuildingOnMac/Setup.rst:123
 msgid "The solution is to be sure your ``$PATH`` variable is set such that nothing *non-standard* can be found in your path prior to running masonry. One way to do this is to ``echo $PATH | tr ':' '\\\\n'`` to display, line-by-line, each path defined in ``$PATH`` and then remove from that list all *non-standard* (for example, anything beginning with ``/opt``) paths ::"
-msgstr ""
+msgstr "La solución es asegurarse de que la variable ``$PATH`` esté configurada de modo que no se encuentre nada *no estándar* en su ruta antes de ejecutar masonry. Una forma de hacerlo es ejecutar ``echo $PATH | tr ':' '\\\\n'`` para mostrar, línea por línea, cada ruta definida en ``$PATH`` y luego eliminar de esa lista todas las rutas *no estándar* (por ejemplo, cualquier cosa que comience con ``/opt``) ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:129
 msgid "Sometimes, it is useful to get tracing information from the masonry scripts. Python has a built in `tracing feature <https://docs.python.org/3/library/trace.html>`__. To use it, invoke the python interpreter with the tracing module like so... ::"
-msgstr ""
+msgstr "A veces es útil obtener información de trazado de los scripts de masonry. Python incluye una `función de trazado <https://docs.python.org/3/library/trace.html>`__. Para usarla, invoque el intérprete de python con el módulo de trazado, por ejemplo... ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:135
 msgid "or ::"
-msgstr ""
+msgstr "o ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:139
 msgid "The first command will result in unbuffered output to the screen and file. The second will buffer the output to the file."
-msgstr ""
+msgstr "El primer comando producirá salida sin búfer en la pantalla y en el archivo. El segundo almacenará la salida en búfer y la escribirá en el archivo."
 
 #: building_visit/BuildingOnMac/Setup.rst:143
 msgid "What Can Go Wrong?"
-msgstr ""
+msgstr "¿Qué puede salir mal?"
 
 #: building_visit/BuildingOnMac/Setup.rst:145
 msgid "Apart from commonly encountered issues building each third party library built by a ``bv_xxx.sh`` script, there are many other ways getting the macOS release ready can fail."
-msgstr ""
+msgstr "Además de los problemas comunes al compilar cada biblioteca de terceros construida por un script ``bv_xxx.sh``, hay muchas otras formas en que puede fallar la preparación de la versión de macOS."
 
 #: building_visit/BuildingOnMac/Setup.rst:147
 msgid "There are at least 3 levels of *certifications* (from your macOS keychain) involved."
-msgstr ""
+msgstr "Hay al menos 3 niveles de *certificados* (de su llavero de macOS) involucrados."
 
 #: building_visit/BuildingOnMac/Setup.rst:149
 msgid "The Apple *Root* Certificate Authority (CA) certificates (``Apple Root CA`` or ``Apple Root CA - G2`` or ``Apple Root CA - G3``"
-msgstr ""
+msgstr "Los certificados de la Autoridad Certificadora (CA) *raíz* de Apple (``Apple Root CA`` o ``Apple Root CA - G2`` o ``Apple Root CA - G3``"
 
 #: building_visit/BuildingOnMac/Setup.rst:150
 msgid "Apple Worldwide Developer Relations Certificate Authority certificates (also called the *intermediate* certificate authority)"
-msgstr ""
+msgstr "Los certificados de Apple Worldwide Developer Relations Certificate Authority (también llamados autoridad certificadora *intermedia*)"
 
 #: building_visit/BuildingOnMac/Setup.rst:151
 msgid "Developer ID Certificate Authority for the organization (Lawrence Livermore) and yourself. These all need to be correctly configured and tied to each other from the lowest level (also called a *leaf* certificate), yourself to the root."
-msgstr ""
+msgstr "La autoridad certificadora Developer ID para la organización (Lawrence Livermore) y para usted. Todo esto debe estar correctamente configurado y encadenado entre sí desde el nivel más bajo (también llamado certificado *leaf*), pasando por usted, hasta la raíz."
 
 #: building_visit/BuildingOnMac/Setup.rst:154
 msgid "Sometimes Apple expires its certificates and you may need to go get `updated certificates. <https://www.apple.com/certificateauthority/>`__"
-msgstr ""
+msgstr "A veces Apple deja caducar sus certificados y puede necesitar obtener `certificados actualizados <https://www.apple.com/certificateauthority/>`__."
 
 #: building_visit/BuildingOnMac/Setup.rst:155
 msgid "Sometimes your own certificate can expire. Currently, Charles Heizer is the LLNL point of contact for adding developers and updating their expired certificates."
-msgstr ""
+msgstr "A veces su propio certificado puede caducar. Actualmente, Charles Heizer es el punto de contacto en LLNL para agregar desarrolladores y actualizar sus certificados caducados."
 
 #: building_visit/BuildingOnMac/Setup.rst:157
 msgid "You might need to *evaluate* the validity of your certificate using `Apple KeyChain Certificate Assistant <https://support.apple.com/guide/keychain-access/determine-if-a-certificate-is-valid-kyca2794/mac>`__ to confirm its all working."
-msgstr ""
+msgstr "Puede que necesite *evaluar* la validez de su certificado usando `Apple KeyChain Certificate Assistant <https://support.apple.com/guide/keychain-access/determine-if-a-certificate-is-valid-kyca2794/mac>`__ para confirmar que todo funciona."
 
 #: building_visit/BuildingOnMac/Setup.rst:158
 msgid "If you are VPN'd into LLNL, codesigning and notorizing a release may fail."
-msgstr ""
+msgstr "Si está conectado a LLNL mediante VPN, el firmado de código y la notarización de una versión pueden fallar."
 
 #: building_visit/BuildingOnMac/Setup.rst:159
 msgid "If you have MacPorts, Homebrew, Fink or other macOS package managers, python package builds may wind up enabling (and then creating a release that is dependent upon) libraries that are available only to users with similar package managers installed. Worse, you won't have any idea this has happend until you give the release to another developer who has a mac that is not using said package managers and they try to use it and it doesn't work due to missing libraries. You can use ``otool`` combined with ``find`` to try to find any cases where the release has such dependences. For example, the command ::"
-msgstr ""
+msgstr "Si tiene MacPorts, Homebrew, Fink u otros gestores de paquetes de macOS, las compilaciones de paquetes de Python pueden terminar habilitando (y creando una versión que dependa de) bibliotecas que solo están disponibles para usuarios con gestores de paquetes similares instalados. Peor aún, puede que no se dé cuenta de que esto ocurrió hasta que entregue la versión a otro desarrollador que tenga un mac que no use dichos gestores de paquetes, y al intentar usarla no funcione por falta de bibliotecas. Puede usar ``otool`` combinado con ``find`` para intentar encontrar casos en los que la versión tenga estas dependencias. Por ejemplo, el comando ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:166
 msgid "will find cases of non-rpath'd library dependencies build into either shared (``.so``) or dynamic (``.dylib``) libraries. Note, however, that sometimes Python EGG's contain Zip-compressed ``.so`` files that this check won't find."
-msgstr ""
+msgstr "encontrará casos de dependencias de bibliotecas sin rpath incorporadas en bibliotecas compartidas (``.so``) o dinámicas (``.dylib``). Sin embargo, tenga en cuenta que a veces los EGG de Python contienen archivos ``.so`` comprimidos en ZIP que esta comprobación no encontrará."
 
 #: building_visit/BuildingOnMac/Setup.rst:169
 msgid "Just removing associated stuff from your ``$PATH`` will not prevent these build dependencies. Fixing them likely means finding some of the individual packages in ``bv_python.sh`` and adding ``site.cfg`` files or otherwise finding build switches that explicitly disable the features creating the need for these dependencies."
-msgstr ""
+msgstr "Solo eliminar elementos relacionados de su ``$PATH`` no evitará estas dependencias de compilación. Corregirlas probablemente implique localizar algunos paquetes individuales en ``bv_python.sh`` y añadir archivos ``site.cfg`` o, de otro modo, encontrar opciones de compilación que deshabiliten explícitamente las características que crean la necesidad de estas dependencias."
 
 #: building_visit/BuildingOnMac/Setup.rst:171
 msgid "Sometimes, a python package winds up using the python interpreter in ``Xcode`` instead of the one built for the release of VisIt you are preparing. For example, Sphinx can wind up getting installed with all command-line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter. We've added patching code to ``bv_python.sh`` to help correct for this."
-msgstr ""
+msgstr "A veces, un paquete de Python termina usando el intérprete de Python de ``Xcode`` en lugar del que se compila para la versión de VisIt que está preparando. Por ejemplo, Sphinx puede quedar instalado con scripts de línea de comandos que usan un `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ que es una ruta absoluta al intérprete de Python de ``Xcode``. Hemos añadido código de parcheo a ``bv_python.sh`` para ayudar a corregir esto."
 
 #: building_visit/BuildingOnMac/Setup.rst:176
 msgid "Codesigning, Notarizing and Stapling macOS Builds"
-msgstr ""
+msgstr "Firmar código, notarizar y adjuntar el ticket de notarización en compilaciones de macOS"
 
 #: building_visit/BuildingOnMac/Setup.rst:178
 msgid "There are several aspects to producing a ``.dmg`` application bundle for macOS. The most involved of these steps is *codesigning*. Codesigning involves iterating over all the libraries and executables in the bundle and doing so in a bottom-up or inside-out fashion such that the leaves of any dependency chains are codesigned first. Its not a manual process and the masonry scripts involve quite a bit of logic (thanks Kevin Griffin) to get it right. However, the remaining steps involving notarizing and stapling the notarization ticket to the ``.dmg`` bundle can easily be handled manually. The masonry scripts are designed to do these steps automatically as well but they can also be handled manually if necessary. Because Apple seems to change these processes frequently, we capture here some of the key steps."
-msgstr ""
+msgstr "Hay varios aspectos para producir un bundle de aplicación ``.dmg`` para macOS. El paso más complejo es el *firmado de código* (*codesigning*). El firmado de código implica recorrer todas las bibliotecas y ejecutables del bundle y firmarlos de abajo hacia arriba o de adentro hacia afuera, de modo que primero se firmen las hojas de cualquier cadena de dependencias. No es un proceso manual y los scripts de masonry incluyen bastante lógica (gracias Kevin Griffin) para hacerlo correctamente. Sin embargo, los pasos restantes —notarizar y adjuntar (stapling) el ticket de notarización al bundle ``.dmg``— se pueden realizar fácilmente de forma manual. Los scripts de masonry están diseñados para ejecutar estos pasos automáticamente, pero también se pueden hacer manualmente si es necesario. Dado que Apple parece cambiar estos procesos con frecuencia, aquí capturamos algunos de los pasos clave."
 
 #: building_visit/BuildingOnMac/Setup.rst:187
 msgid "Notarizing"
-msgstr ""
+msgstr "Notarización"
 
 #: building_visit/BuildingOnMac/Setup.rst:189
 msgid "Prior to November, 2023, ``xcrun altool`` was used to notarize macOS bundles. This was changed by Apple to use ``xcrun notarytool``. `Migrating <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool>`__ from the old approach to the new one is straightforward."
-msgstr ""
+msgstr "Antes de noviembre de 2023, se utilizaba ``xcrun altool`` para notarizar bundles de macOS. Apple cambió esto para usar ``xcrun notarytool``. `Migrar <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool>`__ del enfoque antiguo al nuevo es sencillo."
 
 #: building_visit/BuildingOnMac/Setup.rst:193
 msgid "Old way using ``xcrun altool``... ::"
-msgstr ""
+msgstr "Forma antigua usando ``xcrun altool``... ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:197
 msgid "New way using ``xcrun notarytool``... ::"
-msgstr ""
+msgstr "Forma nueva usando ``xcrun notarytool``... ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:201
 msgid "Where ``APPLE_ID`` is your Apple Id login with Apple, ``APP_PASSWORD`` is the clear-text name for the `app-specific password <https://support.apple.com/en-us/102654>`__ you created (once probably in the distant past and you can no longer remember the steps involved) in your keychain and ``TEAM_ID`` is the Apple Developer ID for LLNL. For the ``APP_PASSWORD`` to work correctly with ``notarytool``, you will need to `copy over <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool#Save-credentials-in-the-keychain>`__ the app-specific password you were using for ``altool`` so that it can also be used for ``notarytool``."
-msgstr ""
+msgstr "Donde ``APPLE_ID`` es su inicio de sesión de Apple ID, ``APP_PASSWORD`` es el nombre en texto claro de la `contraseña específica de app <https://support.apple.com/en-us/102654>`__ que creó (probablemente hace mucho tiempo y ya no recuerda los pasos) en su llavero, y ``TEAM_ID`` es el Apple Developer ID de LLNL. Para que ``APP_PASSWORD`` funcione correctamente con ``notarytool``, tendrá que `copiar <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool#Save-credentials-in-the-keychain>`__ la contraseña específica de app que estaba usando con ``altool`` para que también pueda usarse con ``notarytool``."
 
 #: building_visit/BuildingOnMac/Setup.rst:204
 msgid "The submission process can take a while because it is uploading the (very large) ``.dmg`` file to Apple's servers and then processing it there. When the *submission* completes, you will see a message such as ::"
-msgstr ""
+msgstr "El proceso de envío puede tardar un rato porque está subiendo el archivo ``.dmg`` (muy grande) a los servidores de Apple y luego procesándolo allí. Cuando se completa el *envío*, verá un mensaje como ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:214
 msgid "That means only that the file uploaded successfully. The notarization will not necessarily complete right away. You can check progress on the notarization by the following command ::"
-msgstr ""
+msgstr "Eso solo significa que el archivo se subió correctamente. La notarización no necesariamente se completará de inmediato. Puede comprobar el progreso de la notarización con el siguiente comando ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:220
 msgid "which, if it is still processing the notarization request, will produce an output like so ::"
-msgstr ""
+msgstr "que, si todavía está procesando la solicitud de notarización, producirá una salida como ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:228
 msgid "If the notarization has completed, the output will look like ::"
-msgstr ""
+msgstr "Si la notarización se ha completado, la salida se verá como ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:236
 msgid "Finally, *stapling* the notarization to the ``.dmg`` file is an easy final step ::"
-msgstr ""
+msgstr "Por último, *stapling* (adjuntar) la notarización al archivo ``.dmg`` es un paso final sencillo ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:244
 msgid "Confirming"
-msgstr ""
+msgstr "Confirmación"
 
 #: building_visit/BuildingOnMac/Setup.rst:246
 msgid "You can check whether ``VisIt.app`` is properly codesigned by mounting the ``.dmg`` file and then using this command ::"
-msgstr ""
+msgstr "Puede comprobar si ``VisIt.app`` está firmado correctamente montando el archivo ``.dmg`` y luego usando este comando ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:250
 #: building_visit/BuildingOnMac/Setup.rst:259
 msgid "which should produce output like so... ::"
-msgstr ""
+msgstr "lo cual debería producir una salida como... ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:255
 msgid "You can check whether ``VisIt.app`` is properly notarized using this command ::"
-msgstr ""
+msgstr "Puede comprobar si ``VisIt.app`` está correctamente notarizado usando este comando ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:265
 msgid "You can get more details about why a notorization failed using the command ::"
-msgstr ""
+msgstr "Puede obtener más detalles sobre por qué falló una notarización usando el comando ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:269
 msgid "where ``SUBMISSION_ID`` is the id you get (printed by masonry to the logs) in the ``id:`` field of the details returned from ``xcrun notarytool submit`` command. And, this should produce a lot of output like so... ::"
-msgstr ""
+msgstr "donde ``SUBMISSION_ID`` es el id que obtiene (impreso por masonry en los registros) en el campo ``id:`` de los detalles devueltos por el comando ``xcrun notarytool submit``. Y esto debería producir mucha salida como... ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:310
 msgid "A simple test application"
-msgstr ""
+msgstr "Una aplicación de prueba sencilla"
 
 #: building_visit/BuildingOnMac/Setup.rst:311
 msgid "In ``src/tools/dev/masnory/test``, there is a very simple (and very small in size so easy to run through all the notarization steps) test macOS app bundle there, ``TestDmgNotarization.app`` and a python script ``test_notarize.py``. The test app is a combination of a python script that turns around and uses a function in a ``.dylib``. The ``.dylib`` is a universal binary so should work on Intel or Apple CPU macs."
-msgstr ""
+msgstr "En ``src/tools/dev/masnory/test`` hay un bundle de aplicación de macOS de prueba muy sencillo (y muy pequeño, por lo que es fácil pasarlo por todos los pasos de notarización), ``TestDmgNotarization.app``, y un script de Python ``test_notarize.py``. La aplicación de prueba es una combinación de un script de Python que, a su vez, usa una función en una ``.dylib``. La ``.dylib`` es un binario universal, por lo que debería funcionar en Macs con CPU Intel o Apple."
 
 #: building_visit/BuildingOnMac/Setup.rst:315
 msgid "To try it, use the command ``python3 test_notarize.py`` (or maybe with tracing enabled ``python3 -m trace --trace test_notarize.py``) and then take the resulting ``.dmg`` file to a different macOS system and install it and try running it. New developers should workout all the issues first using this test application. Once all the steps work, then doing a VisIt notarization should also work."
-msgstr ""
+msgstr "Para probarlo, use el comando ``python3 test_notarize.py`` (o quizá con trazado habilitado ``python3 -m trace --trace test_notarize.py``) y luego lleve el archivo ``.dmg`` resultante a otro sistema macOS, instálelo e intente ejecutarlo. Los desarrolladores nuevos deberían resolver primero todos los problemas usando esta aplicación de prueba. Una vez que todos los pasos funcionen, la notarización de VisIt también debería funcionar."
 
 #: building_visit/BuildingOnMac/Setup.rst:320
 msgid "Certificates for signing macOS Builds"
-msgstr ""
+msgstr "Certificados para firmar compilaciones de macOS"
 
 #: building_visit/BuildingOnMac/Setup.rst:321
 msgid "To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_index.html>`_ your VisIt_ build, you must be enrolled in the `Apple Developer Program <https://developer.apple.com/programs/>`_ and have a valid Developer ID certificate. Below are simple steps to get started, reference the links for more detailed information."
-msgstr ""
+msgstr "Para `firmar código <https://developer.apple.com/library/archive/technotes/tn2206/_index.html>`_ en su compilación de VisIt_, debe estar inscrito en el `Apple Developer Program <https://developer.apple.com/programs/>`_ y tener un certificado Developer ID válido. A continuación se muestran pasos sencillos para comenzar; consulte los enlaces para obtener información más detallada."
 
 #: building_visit/BuildingOnMac/Setup.rst:323
 msgid "Enroll in the Apple Developer Program, if needed, and create your Developer ID certificates."
-msgstr ""
+msgstr "Inscríbase en el Apple Developer Program (si es necesario) y cree sus certificados Developer ID."
 
 #: building_visit/BuildingOnMac/Setup.rst:325
 msgid "Install Apple certificates into your keychain"
-msgstr ""
+msgstr "Instale los certificados de Apple en su llavero"
 
 #: building_visit/BuildingOnMac/Setup.rst:327
 msgid "From **Xcode** go to the account preferences (``Xcode->Preferences->Account``) and select the **Manage Certificates...** button."
-msgstr ""
+msgstr "Desde **Xcode**, vaya a las preferencias de la cuenta (``Xcode->Preferences->Account``) y seleccione el botón **Manage Certificates...**."
 
 #: building_visit/BuildingOnMac/Setup.rst:329
 msgid "Click the **+** to add your certificates (see :numref:`Figure %s<xcode_certs_image>`)."
-msgstr ""
+msgstr "Haga clic en **+** para añadir sus certificados (consulte :numref:`Figure %s<xcode_certs_image>`)."
 
 #: building_visit/BuildingOnMac/Setup.rst:331
 msgid "Add the Developer ID signing certificate **Common Name** to the **cert** option in the masonry JSON configuration file."
-msgstr ""
+msgstr "Añada el **Common Name** del certificado de firma (Developer ID) a la opción **cert** en el archivo de configuración JSON de masonry."
 
 #: building_visit/BuildingOnMac/Setup.rst:339
 msgid "Xcode Manage Certificates Dialog"
-msgstr ""
+msgstr "Diálogo “Manage Certificates” de Xcode"
 
 #: building_visit/BuildingOnMac/Setup.rst:343
 msgid "Remain disconnected from VPN when building and code signing a VisIt release. The code signing process talks to Apple servers and validates credentials with them. If you are on VPN, the validation may fail with a message similar to: ::"
-msgstr ""
+msgstr "Permanezca desconectado de la VPN al compilar y firmar código para una versión de VisIt. El proceso de firmado de código se comunica con servidores de Apple y valida credenciales con ellos. Si está en VPN, la validación puede fallar con un mensaje similar a: ::"
 
 #: building_visit/BuildingOnMac/Setup.rst:353
 msgid "Read more about `Apple's Code Signing documentation. <https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/Procedures/Procedures.html>`__"
-msgstr ""
+msgstr "Lea más sobre la `documentación de firmado de código de Apple <https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/Procedures/Procedures.html>`__."
 
 #: building_visit/BuildingOnMac/Setup.rst:356
 msgid "App-Specific Password"
-msgstr ""
+msgstr "Contraseña específica de app"
 
 #: building_visit/BuildingOnMac/Setup.rst:357
 msgid "To create an app-specific password go to: `https://appleid.apple.com/account/manage <https://appleid.apple.com/account/manage>`_ . Generate the app-specific password by navigating to: *Security->App-Specific Password*."
-msgstr ""
+msgstr "Para crear una contraseña específica de app, vaya a: `https://appleid.apple.com/account/manage <https://appleid.apple.com/account/manage>`_. Genere la contraseña específica de app navegando a: *Security->App-Specific Password*."
 
 #: building_visit/BuildingOnMac/Setup.rst:359
 msgid "To avoid having a plain-text password in your config file, you can add the app-specific password to your macOS keychain. To do this, run the following command:"
-msgstr ""
+msgstr "Para evitar tener una contraseña en texto plano en su archivo de configuración, puede añadir la contraseña específica de app a su llavero de macOS. Para ello, ejecute el siguiente comando:"
 
 #: building_visit/BuildingOnMac/Setup.rst:361
 msgid "``security add-generic-password -a \\\"apple-id-email\\\" -w \\\"app-specific password\\\" -s \\\"notarizing-name\\\"``"
-msgstr ""
+msgstr "``security add-generic-password -a \\\"apple-id-email\\\" -w \\\"app-specific password\\\" -s \\\"notarizing-name\\\"``"
 
 #: building_visit/BuildingOnMac/Setup.rst:363
 msgid "The ``-s`` parameter is the name that this item will have in your keychain. Apple's documentation on `Customizing the Notarization Workflow <https://developer.apple.com/documentation/xcode/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow>`_ provides a good overview of the notarization process and a `link <https://support.apple.com/en-us/HT204397>`_ detailing how to generate and manage app-specific passwords."
-msgstr ""
-
+msgstr "El parámetro ``-s`` es el nombre que este elemento tendrá en su llavero. La documentación de Apple sobre `Customizing the Notarization Workflow <https://developer.apple.com/documentation/xcode/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow>`_ ofrece una buena descripción general del proceso de notarización y un `enlace <https://support.apple.com/en-us/HT204397>`_ que detalla cómo generar y administrar contraseñas específicas de app."
