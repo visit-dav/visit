@@ -43,6 +43,21 @@ extensions = ['sphinx.ext.mathjax']
 # installs it via requirements.txt.
 try:
     import sphinx_tabs.tabs  # noqa: F401
+except ModuleNotFoundError as exc:
+    # Some RTD base images may not include setuptools' pkg_resources module,
+    # which sphinx-tabs imports at module import time.
+    if os.environ.get('READTHEDOCS') and getattr(exc, "name", None) == "pkg_resources":
+        from subprocess import call
+
+        call(['pip', 'install', 'setuptools'])
+        try:
+            import sphinx_tabs.tabs  # noqa: F401
+        except Exception:
+            pass
+        else:
+            extensions.append('sphinx_tabs.tabs')
+    else:
+        pass
 except Exception:
     pass
 else:
