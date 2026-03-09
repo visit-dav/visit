@@ -43,6 +43,10 @@ function bv_adios2_depends_on
             depends_on="$depends_on hdf5"
         fi
 
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            depends_on="$depends_on zlib"
+        fi
+
         depends_on="$depends_on blosc2"
 
         echo $depends_on
@@ -174,10 +178,13 @@ function build_adios2
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:STRING=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:STRING=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_Fortran:STRING=OFF"
+        cfg_opts="${cfg_opts} -DBUILD_TESTING:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_Python:STRING=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_PIP:STRING=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_PNG:STRING=OFF"
 
         # Disable PNG and FFI dependence on macOS
         if [[ "$OPSYS" == "Darwin" ]]; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_PNG:STRING=OFF"
             cfg_opts="${cfg_opts} -DCMAKE_DISABLE_FIND_PACKAGE_LibFFI=TRUE"
         fi
 
@@ -196,18 +203,15 @@ function build_adios2
         # Use Blosc2
         if [[ "$DO_BLOSC2" == "yes" ]] ; then
             BLOSC2_INSTALL_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
-            BLOSC2_INCLUDE_DIR="${BLOSC2_INSTALL_DIR}/include"
             # note: lib dir can be `lib``, or `lib64` depending on the platform
             if [[ -d "${BLOSC2_INSTALL_DIR}/lib64/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib64/libblosc2.${SO_EXT}"
+                BLOSC2_DIR="${BLOSC2_INSTALL_DIR}/lib64/cmake/Blosc2"
             elif [[ -d "${BLOSC2_INSTALL_DIR}/lib/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.${SO_EXT}"
+                BLOSC2_DIR="${BLOSC2_INSTALL_DIR}/lib/cmake/Blosc2"
             fi
 
             cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:STRING=ON"
-            cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_INSTALL_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
+            cfg_opts="${cfg_opts} -DBlosc2_DIR:PATH=${BLOSC2_DIR}"
         fi
 
         if [[ "$bt" == "ser" ]]; then
@@ -223,8 +227,16 @@ function build_adios2
         # Use HDF5?
         if [[ "$DO_HDF5" == "yes" ]] ; then
             hdf5_install_path="${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}"
-            cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH:PATH=${hdf5_install_path}"
+            cfg_opts="${cfg_opts} -DHDF5_DIR:PATH=${hdf5_install_path}/cmake"
         fi
+
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            # ensure hdf5 finds the correct zlib
+            cfg_opts="${cfg_opts} -DZLIB_ROOT:PATH=${VISIT_ZLIB_DIR}"
+            # ensure adios2 uses the correct zlib
+            cfg_opts="${cfg_opts} -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+        fi
+
 
         # call configure.
         CMAKE_BIN="${CMAKE_INSTALL}/cmake"
@@ -232,7 +244,9 @@ function build_adios2
             rm -f bv_run_cmake.sh
         fi
 
-        echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../ > bv_run_cmake.sh
+        # ran into an issue (only with adios2) where cmake didn't
+        # recognize '../' as the project SOURCE dir, so use -S
+        echo "\"${CMAKE_BIN}\"" ${cfg_opts} -S ../ > bv_run_cmake.sh
         cat bv_run_cmake.sh
         issue_command bash bv_run_cmake.sh
 

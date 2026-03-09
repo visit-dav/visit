@@ -231,6 +231,15 @@ function build_hdf5
         return 1
     fi
 
+    # ensure hdf5-shared target specifies it needs to link with zlib
+    if [[ "$DO_ZLIB" == "yes" && "$DO_STATIC_BUILD" == "no" ]]; then
+        targetsfile=${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}/cmake/hdf5-targets.cmake
+        info "adding ZLIB::ZLIB to $targetsfile"
+        echo "if(TARGET ZLIB::ZLIB)" >> $targetsfile
+        echo "    set_property(TARGET hdf5-shared APPEND PROPERTY INTERFACE_LINK_LIBRARIES ZLIB::ZLIB)" >> $targetsfile
+        echo "endif()" >> $targetsfile
+    fi
+
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/hdf5"
         chgrp -R ${GROUP} "$VISITDIR/hdf5"

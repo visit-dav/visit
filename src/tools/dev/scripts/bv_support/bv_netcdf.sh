@@ -205,13 +205,17 @@ function build_netcdf
     #
     cmake_opts="\
         -DCMAKE_INSTALL_PREFIX:PATH=\"${VISITDIR}/netcdf/${NETCDF_VERSION}/${VISITARCH}\" \
-        -DNETCDF_ENABLE_V2_API:BOOL=ON \
-        -DNETCDF_ENABLE_TESTS:BOOL=OFF \
-        -DNETCDF_ENABLE_FILTER_ZSTD:BOOL=OFF \
-        -DNETCDF_ENABLE_FILTER_BZ2:BOOL=OFF \
-        -DNETCDF_ENABLE_FILTER_BLOSC:BOOL=OFF \
+        -DNETCDF_BUILD_UTILITIES:BOOL=OFF \
         -DNETCDF_ENABLE_EXAMPLES:BOOL=OFF \
-        -DNETCDF_ENABLE_REMOTE_FUNCTIONALITY:BOOL=OFF"
+        -DNETCDF_ENABLE_FILTER_BLOSC:BOOL=OFF \
+        -DNETCDF_ENABLE_FILTER_BZ2:BOOL=OFF \
+        -DNETCDF_ENABLE_FILTER_SZIP:BOOL=OFF \
+        -DNETCDF_ENABLE_FILTER_TESTING:BOOL=OFF \
+        -DNETCDF_ENABLE_FILTER_ZSTD:BOOL=OFF \
+        -DNETCDF_ENABLE_REMOTE_FUNCTIONALITY:BOOL=OFF \
+        -DNETCDF_ENABLE_TESTS:BOOL=OFF \
+        -DNETCDF_ENABLE_V2_API:BOOL=ON \
+        -DBUILD_TESTING:BOOL=OFF"
 
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         cmake_opts="${cmake_opts} -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo"
@@ -232,8 +236,6 @@ function build_netcdf
     else
         cmake_opts="${cmake_opts} -DNETCDF_ENABLE_HDF5:BOOL=OFF"
     fi
-
-    cmake_opts="${cmake_opts} -DNETCDF_ENABLE_SZIP:BOOL=OFF"
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then
         cmake_opts="${cmake_opts} -DZLIB_ROOT:PATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
@@ -260,6 +262,10 @@ function build_netcdf
 
     info "CMakeing NetCDF . . ."
     cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
+
+    # their FindZLIB module interfere's with cmake's, and we want cmake's
+    rm cmake/modules/FindZLIB.cmake
+
     info "Invoking command to cmake NetCDF"
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"

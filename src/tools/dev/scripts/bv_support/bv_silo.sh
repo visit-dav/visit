@@ -220,43 +220,6 @@ EOF
     fi
 }
 
-function apply_silo_4120_zlib_hdf5_link_patch
-{
-    info "Patching Silo 4.12.0 for zlib linking issue"
-    patch -p1 << \EOF
-From 062720d4e9fcb0d00680dc92e49122a4f6835f87 Mon Sep 17 00:00:00 2001
-From: Cyrus Harrison <cyrush@llnl.gov>
-Date: Thu, 26 Feb 2026 13:11:16 -0800
-Subject: [PATCH] add zlib link patch
-
----
- CMakeLists.txt | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e9118ff..5c239e6 100644
---- a/Silo-4.12.0/CMakeLists.txt
-+++ b/Silo-4.12.0/CMakeLists.txt
-@@ -711,6 +711,9 @@ if(SILO_ENABLE_HDF5 AND HDF5_FOUND)
-     # when telling broswer and silex to link with silo
-     set_target_properties(silo PROPERTIES OUTPUT_NAME siloh5)
-     target_link_libraries(silo ${HDF5_C_LIBRARIES})
-+    if( TRUE ) # HDF5_ENABLE_Z_LIB_SUPPORT
-+        target_link_libraries(silo ${ZLIB_LIBRARIES})
-+    endif()
-     target_include_directories(silo PRIVATE ${HDF5_INCLUDE_DIRS})
- endif()
- 
--- 
-EOF
-
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-}
-
-
-
 function apply_silo_patch
 {
     info "Patching silo . . ."
@@ -274,12 +237,6 @@ function apply_silo_patch
             return 1
         fi
         apply_silo_4120_lib_vs_lib64_patch
-        if [[ $? != 0 ]] ; then
-            warn "Giving up on Silo build because the patch failed."
-            return 1
-        fi
-
-        apply_silo_4120_zlib_hdf5_link_patch
         if [[ $? != 0 ]] ; then
             warn "Giving up on Silo build because the patch failed."
             return 1
@@ -364,10 +321,11 @@ function build_silo
 
     if [[ "$DO_ZLIB" == "yes" ]]; then
         cmake_opts="${cmake_opts} \
+            -DZLIB_ROOT:PATH=${VISIT_ZLIB_DIR} \
             -DSILO_BUILD_FOR_BSD_LICENSE:BOOL=OFF \
             -DSILO_ENABLE_HZIP:BOOL=ON \
             -DSILO_ENABLE_FPZIP:BOOL=ON \
-            -DSILO_ZLIB_DIR:PATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
+            -DSILO_ZLIB_DIR:PATH=${VISIT_ZLIB_DIR}"
     fi
 
     if [[ "$DO_SILEX" == "yes" ]]; then
@@ -378,7 +336,6 @@ function build_silo
 
     # silo needs to find mpi if hdf5 was built with mpi support
     if [[ "$PAR_COMPILER" != "" ]] ; then
-        cmake_opts="${cmake_opts} -DENABLE_MPI:BOOL=ON"
         cmake_opts="${cmake_opts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
         cmake_opts="${cmake_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
     fi
