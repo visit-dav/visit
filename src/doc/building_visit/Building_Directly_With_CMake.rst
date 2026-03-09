@@ -96,7 +96,7 @@ The second entry in the pair is the name of the library such as would be used in
 
 The second kind is a CMake variable representing a bonified CMake *imported target*.
 For all TPLs VisIt supports, only a few (HDF5, Silo, ZLIB) are currently handled as bonified CMake imported targets.
-This situation will improve to include many more TPLs as imported targets but currently, only a handful of TPLs are handled this way.
+This situation will improve to include many more TPLs as imported targets but currently (as of version 3.5.0), only a handful of TPLs are handled this way.
 The variable, ``HDF5_LIB`` is the variable which holds the imported target name for the HDF5 library (typically ``hdf5-shared``).
 
 A third kind is the CMake variable representing all the dependencies of another TPL.
