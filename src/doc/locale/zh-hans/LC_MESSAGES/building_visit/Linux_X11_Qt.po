@@ -1,0 +1,78 @@
+# Simplified Chinese translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-09 00:00+0000\n"
+"Language: zh-hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Last-Translator:\n"
+"Language-Team:\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+#: building_visit/Linux_X11_Qt.rst:4
+msgid "Linux X11 Requirements for Qt"
+msgstr "Qt 的 Linux X11 依赖"
+#: building_visit/Linux_X11_Qt.rst:6
+msgid "On Linux, Qt has specific X11 requirements that must be met for its Platform Plugin to be built successfully. Many developers encounter errors building Qt due to missing support libraries related to X11 and xcb."
+msgstr ""
+"在 Linux 上，Qt 对 X11 有特定的依赖要求，必须满足这些要求才能成功构建其平台插件。许多开发者在构建 Qt 时会因缺少与 X11 和 xcb 相关的支持库而遇到错误。"
+#: building_visit/Linux_X11_Qt.rst:9
+msgid "Here are a couple of Qt links that prove helpful in knowing which packages need to be installed for particular OS distros."
+msgstr ""
+"下面是一些 Qt 相关链接，有助于了解在特定操作系统发行版上需要安装哪些软件包。"
+#: building_visit/Linux_X11_Qt.rst:11
+msgid "For Qt 5"
+msgstr "Qt 5"
+#: building_visit/Linux_X11_Qt.rst:13
+msgid "The libxcb section of `Building Qt5 from Git <https://wiki.qt.io/Building_Qt_5_from_Git>`_"
+msgstr ""
+"`Building Qt5 from Git <https://wiki.qt.io/Building_Qt_5_from_Git>`_ 中的 libxcb 部分"
+#: building_visit/Linux_X11_Qt.rst:14
+msgid "Qt5's `X11 Requirements <https://doc.qt.io/qt-5/linux-requirements.html>`__ page."
+msgstr ""
+"Qt5 的 `X11 Requirements <https://doc.qt.io/qt-5/linux-requirements.html>`__ 页面。"
+#: building_visit/Linux_X11_Qt.rst:16
+msgid "For Qt 6 (only on develop branch)"
+msgstr "Qt 6（仅在 develop 分支）"
+#: building_visit/Linux_X11_Qt.rst:18
+msgid "Qt6's `X11 Requirements <https://doc.qt.io/qt-6/linux-requirements.html>`__ page."
+msgstr ""
+"Qt6 的 `X11 Requirements <https://doc.qt.io/qt-6/linux-requirements.html>`__ 页面。"
+#: building_visit/Linux_X11_Qt.rst:20
+msgid "VisIt_ also maintains a few Docker files that may prove useful:"
+msgstr "VisIt_ 也维护了一些可能有用的 Docker 文件："
+#: building_visit/Linux_X11_Qt.rst:22
+msgid "`centos8 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-centos8>`_"
+msgstr ""
+"`centos8 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-centos8>`_"
+#: building_visit/Linux_X11_Qt.rst:23
+msgid "`debian9 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian9>`_"
+msgstr ""
+"`debian9 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian9>`_"
+#: building_visit/Linux_X11_Qt.rst:24
+msgid "`debian10 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian10>`_"
+msgstr ""
+"`debian10 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian10>`_"
+#: building_visit/Linux_X11_Qt.rst:25
+msgid "`debian11 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian11>`_"
+msgstr ""
+"`debian11 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian11>`_"
+#: building_visit/Linux_X11_Qt.rst:26
+msgid "`fedora31 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-fedora31>`_"
+msgstr ""
+"`fedora31 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-fedora31>`_"
+#: building_visit/Linux_X11_Qt.rst:27
+msgid "`ubuntu18 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu18>`_"
+msgstr ""
+"`ubuntu18 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu18>`_"
+#: building_visit/Linux_X11_Qt.rst:28
+msgid "`ubuntu20 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu20>`_"
+msgstr ""
+"`ubuntu20 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu20>`_"
+#: building_visit/Linux_X11_Qt.rst:29
+msgid "`ubuntu21 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu21>`_"
+msgstr ""
+"`ubuntu21 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu21>`_"

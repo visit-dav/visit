@@ -1,0 +1,184 @@
+# Simplified Chinese translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-09 00:00+0000\n"
+"Language: zh-hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Last-Translator:\n"
+"Language-Team:\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:4
+msgid "Configuring With CMake GUI"
+msgstr "使用 CMake GUI 配置"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:6
+msgid "Run cmake-gui.exe, which will display this window. :numref:`Figure %s<cmake_gui_01_image>`"
+msgstr ""
+"运行 cmake-gui.exe，会显示此窗口。 :numref:`Figure %s<cmake_gui_01_image>`"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:13
+msgid "CMake-gui"
+msgstr "CMake-gui"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:17
+msgid "Locating Source and Build Directories"
+msgstr "定位源代码与构建目录"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:18
+msgid "Fill in the location of VisIt_'s src directory in the *Where is the source code:* section."
+msgstr ""
+"在 *Where is the source code:* 一栏中填写 VisIt_ 的 src 目录位置。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:20
+msgid "Then tell CMake where you want the build to go by filling in *Where to build the binaries*. It is best to create a new build directory somewhere other than inside the *src* or *windowsbuild* directories. This is called *out-of-source build* and it prevents pollution of your src directory."
+msgstr ""
+"然后在 *Where to build the binaries* 一栏中告诉 CMake 你希望把构建输出放到哪里。最好在 *src* 或 *windowsbuild* 目录之外创建一个新的构建目录。这称为 *out-of-source build*（源码外构建），可以避免污染你的 src 目录。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:24
+msgid "The Browse buttons come in handy here."
+msgstr "这里的 Browse 按钮会很方便。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:26
+msgid "If you are building from a clone of the github repository, it is recommended to do the build in a directory outside the repo (eg peer to *visit*) to keep your checkout clean. :numref:`Figure %s<cmake_gui_02_image>`"
+msgstr ""
+"如果你是从 GitHub 仓库的克隆版本进行构建，建议在仓库之外的目录中构建（例如与 *visit* 同级），以保持检出目录干净。 :numref:`Figure %s<cmake_gui_02_image>`"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:32
+msgid "Setting source and build directories"
+msgstr "设置源与构建目录"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:39
+msgid "Location of windowsbuild Directory"
+msgstr "windowsbuild 目录位置"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:41
+msgid "For a released version of  VisIt_'s source code, the *windowsbuild* directory containing the pre-built thirdparty binaries is located peer to *src*. CMake generation should locate this directory automatically. :numref:`Figure %s<visit_dirs_from_released_source_image>`"
+msgstr ""
+"对于 VisIt_ 源代码的发布版本，包含预构建第三方二进制文件的 *windowsbuild* 目录与 *src* 同级。CMake 生成过程应当会自动定位到该目录。 :numref:`Figure %s<visit_dirs_from_released_source_image>`"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:49
+msgid "Directory structure with source from a released version"
+msgstr "发布版源代码的目录结构"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:51
+msgid "In order for CMake to locate the directory automatically for a development build cloned or downloaded from the github repositories, *visit-deps* should be peer to *visit*. :numref:`Figure %s<visit_dirs_from_github_repos_image>`"
+msgstr ""
+"对于从 GitHub 仓库克隆或下载的开发版本构建，为了让 CMake 自动定位相关目录，*visit-deps* 应与 *visit* 同级。 :numref:`Figure %s<visit_dirs_from_github_repos_image>`"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:58
+msgid "Expected directory structure with source from GitHub repo"
+msgstr "GitHub 仓库源代码的预期目录结构"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:60
+msgid "If neither of the above is true for your situation, use the CMake gui to set *VISIT_WINDOWS_DIR* to the location of the *windowsbuild* directory. :numref:`Figure %s<adding_windowsbuild_dir_image>`"
+msgstr ""
+"如果以上两种情况都不符合你的环境，请在 CMake GUI 中将 *VISIT_WINDOWS_DIR* 设为 *windowsbuild* 目录的位置。 :numref:`Figure %s<adding_windowsbuild_dir_image>`"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:67
+msgid "Setting VISIT_WINDOWS_DIR"
+msgstr "设置 VISIT_WINDOWS_DIR"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:71
+msgid "Limiting Plugins"
+msgstr "限制插件"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:73
+msgid "By default, most of the supported database reader plugins are built, which can slow down loading of the solution in the Visual Studio IDE, and slow down the build. If you want to reduce the number of plugins built, add a CMake var using the **Add Entry** Button. If you are producing a version of VisIt_ that you plan to distribute, you should skip this step so all database reader plugins are built. :numref:`Figure %s<selected_databases_image>`"
+msgstr ""
+"默认情况下，会构建大多数受支持的数据库读取器插件，这可能会减慢在 Visual Studio IDE 中加载解决方案的速度，并减慢构建过程。如果你想减少构建的插件数量，可以使用 **Add Entry** 按钮添加一个 CMake 变量。如果你要生成一个计划对外发布的 VisIt_ 版本，应跳过此步骤，以便构建所有数据库读取器插件。 :numref:`Figure %s<selected_databases_image>`"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:82
+msgid "Selecting a limited number of database plugins"
+msgstr "选择有限数量的数据库插件"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:84
+msgid "To limit the database plugins to a specific set of plugins, set the **Name:**  to *VISIT_SELECTED_DATABASE_PLUGINS*. The **Type:** should be *STRING*. The **Value:** should be a ';' separated list of database plugins names. Case must match the name of the folder in */src/databases*."
+msgstr ""
+"要将数据库插件限制为某个特定集合，将 **Name:** 设为 *VISIT_SELECTED_DATABASE_PLUGINS*。**Type:** 应为 *STRING*。**Value:** 应为用 ';' 分隔的数据库插件名称列表。大小写必须与 */src/databases* 中对应文件夹名一致。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:89
+msgid "The same procedure applies to plots and operators. The VisIt_ CMake variables to limit plots and operator plugins are *VISIT_SELECTED_PLOT_PLUGINS* and *VISIT_SELECTED_OPERATOR_PLUGINS*, respectively."
+msgstr ""
+"同样的步骤也适用于 plots 和 operators。用于限制 plot 插件和 operator 插件的 VisIt_ CMake 变量分别是 *VISIT_SELECTED_PLOT_PLUGINS* 和 *VISIT_SELECTED_OPERATOR_PLUGINS*。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:92
+msgid "Click **OK** when finished."
+msgstr "完成后点击 **OK**。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:95
+msgid "Configuring"
+msgstr "配置"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:96
+msgid "Before configuring, you may want to suppress warnings. From the **Options** menu, choose *Warnings*. Check the *Developer Warnings* and *Deprecated Warnings* in the *Suppress Warnings* section. Click **OK**. :numref:`Figure %s<suppress_cmake_warnings_image>`"
+msgstr ""
+"在配置之前，你可能希望先抑制警告。在 **Options** 菜单中选择 *Warnings*。在 *Suppress Warnings* 区域勾选 *Developer Warnings* 和 *Deprecated Warnings*。点击 **OK**。 :numref:`Figure %s<suppress_cmake_warnings_image>`"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:106
+msgid "Suppress CMake warnings"
+msgstr "抑制 CMake 警告"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:108
+msgid "In the main CMake Window, click the **Configure** button."
+msgstr "在 CMake 主窗口中点击 **Configure** 按钮。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:110
+msgid "If the build directory does not exist, you will be prompted to allow its creation."
+msgstr ""
+"如果构建目录不存在，会提示你是否允许创建该目录。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:112
+msgid "You will also be prompted to choose a *generator*. On Windows, this corresponds to the version of Visual Studio for which you plan to generate a solution and projects."
+msgstr ""
+"还会提示你选择一个 *generator*（生成器）。在 Windows 上，这对应于你计划生成解决方案与项目所使用的 Visual Studio 版本。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:115
+msgid "Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt thirdparty libraries. Choose *Visual Studio 15 2017 Win64* from the generator dropdown. Choose *x64* from the dropdown for the *Optional platform*. Then enter *host=x64* in the *Optional toolset* to use the full 64-bit toolset. :numref:`Figure %s<choose_generator_popup_image>`"
+msgstr ""
+"目前预构建的第三方库仅支持 Visual Studio 2017（64 位）。在生成器下拉框中选择 *Visual Studio 15 2017 Win64*。在 *Optional platform* 下拉框中选择 *x64*。然后在 *Optional toolset* 中输入 *host=x64* 以使用完整的 64 位工具集。 :numref:`Figure %s<choose_generator_popup_image>`"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:125
+msgid "Choosing the generator"
+msgstr "选择生成器"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:127
+msgid "CMakeCache entries will be displayed after the initial configure. All entries at this point will be highlighted reddish orange -- a signal that you may want to modify some of them. Subsequent clicks of the **Configure** button highlight only entries that contain errors or entries that are new since the last configure."
+msgstr ""
+"初次配置完成后会显示 CMakeCache 条目。此时所有条目会以偏红橙色高亮，提示你可能需要修改其中一些。之后再次点击 **Configure** 按钮时，只会高亮包含错误的条目或自上次配置以来新增的条目。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:131
+msgid "You can modify how many entries are seen, and how they are viewed by selecting the: **Grouped**, and/or **Advanced** buttons. *Grouped* option groups similarly named items, *Advanced* option shows all the entries. Using both is probably the easiest to navigate for use with VisIt_. Mouse-hover over individual entries (not groups) will generate a brief description. :numref:`Figure %s<after_first_configure_image>`"
+msgstr ""
+"你可以通过选择 **Grouped** 和/或 **Advanced** 按钮来调整显示条目的数量及其查看方式。*Grouped* 会将名称相近的条目分组，*Advanced* 会显示所有条目。两者同时使用通常最便于在 VisIt_ 相关设置中导航。将鼠标悬停在单个条目（非分组）上会显示简短描述。 :numref:`Figure %s<after_first_configure_image>`"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:142
+msgid "After first configure"
+msgstr "首次配置后"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:144
+msgid "Most of the default settings should be fine, though you may want to change *CMAKE_INSTALL_PREFIX* from its default location within the Build directory. If you've grouped the entries, click the **+** button next to *CMAKE*, find *CMAKE_INSTALL_PREFIX* and modify it as desired."
+msgstr ""
+"大多数默认设置应该都没问题，不过你可能希望把 *CMAKE_INSTALL_PREFIX* 从默认的构建目录内位置改掉。如果你启用了分组显示，点击 *CMAKE* 旁边的 **+** 按钮，找到 *CMAKE_INSTALL_PREFIX* 并按需修改。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:147
+msgid "See :ref:`CMake Variables<CMake Variables>` for a comprehensive list of settings that can be modified to control aspects of the build."
+msgstr ""
+"可修改以控制构建各方面的设置完整列表，请参见 :ref:`CMake Variables<CMake Variables>`。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:150
+msgid "Parallel"
+msgstr "并行"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:151
+msgid "If you have an MPI implementation installed (Microsoft's MPI), you can choose to create a parallel build. Expand the *VISIT* section within the CMake gui, then check the box for *VISIT_PARALLEL*. You will have to scroll to find it."
+msgstr ""
+"如果你安装了 MPI 实现（Microsoft MPI），可以选择创建并行构建。在 CMake GUI 中展开 *VISIT* 分组，然后勾选 *VISIT_PARALLEL*。你可能需要滚动才能找到它。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:155
+msgid "Click the **Configure** button again to have CMake check the prerequisites for building parallel VisIt_. If the prerequisites are met then some new cache entries related to MPI will be created. If not, the MPI entries may have to be modified by hand."
+msgstr ""
+"再次点击 **Configure** 按钮，让 CMake 检查并行构建 VisIt_ 的前置条件。如果满足条件，将会生成一些与 MPI 相关的新缓存条目；否则可能需要手动修改 MPI 相关条目。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:161
+msgid "Suppressing Regeneration"
+msgstr "抑制自动重新生成"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:162
+msgid "The solution file that CMake creates has a project called *ZERO_CHECK* that is occasionally invoked to regenerate the projects. This can be highly undesirable during development, since it may be triggered during a build and can cause numerous projects to be reloaded into the VS IDE, wasting time unnecessarily. To avoid this behavior, you can create a new CMake cache entry named *CMAKE_SUPPRESS_REGENERATION*,  with type *BOOL* and make sure that it is checked. If you made this change click **Configure** again."
+msgstr ""
+"CMake 生成的解决方案文件中包含一个名为 *ZERO_CHECK* 的项目，它会偶尔被触发以重新生成项目。这在开发过程中可能非常不受欢迎，因为它可能在构建期间触发，导致大量项目在 Visual Studio IDE 中被重新加载，从而浪费时间。为避免这种行为，你可以创建一个名为 *CMAKE_SUPPRESS_REGENERATION* 的 CMake 缓存条目，类型为 *BOOL*，并确保其被勾选。完成更改后再次点击 **Configure**。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:168
+msgid "You can automate this step in your host.cmake file by adding this line to your host.cmake file:"
+msgstr ""
+"你可以在 host.cmake 文件中加入下面这一行来自动化此步骤："
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:169
+msgid "``set(CMAKE_SUPPRESS_REGENERATION TRUE)``"
+msgstr "``set(CMAKE_SUPPRESS_REGENERATION TRUE)``"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:171
+msgid "Note that setting this flag means that CMake won't automatically reconfigure from within the VS IDE when changes are made to the build scripts (CMakeLists.txt) or Cache entries. You will have to manually reconfigure. Once reconfigured, Visual Studio will notify you the project files have been modified and prompt you to reload."
+msgstr ""
+"注意：设置该标志意味着，当构建脚本（CMakeLists.txt）或缓存条目发生变化时，CMake 不会在 Visual Studio IDE 内自动重新配置；你需要手动重新配置。重新配置后，Visual Studio 会提示项目文件已更改，并要求你重新加载。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:176
+msgid "Generate"
+msgstr "生成"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:177
+msgid "The *Generate* step creates the Visual Studio project and solution files. Make sure any changes made to the cache entries have been *Configured* and that no entries remain red, then click the **Generate** button."
+msgstr ""
+"*Generate* 步骤会创建 Visual Studio 的项目与解决方案文件。请确保对缓存条目的更改已经 *Configured*，并且没有条目仍为红色，然后点击 **Generate** 按钮。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:181
+msgid "Compile"
+msgstr "编译"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:182
+msgid "Open the generated *VisIt.sln* file with Visual Studio (it may take awhile to load all the project files). Select the desired Configuration and Build the solution."
+msgstr ""
+"用 Visual Studio 打开生成的 *VisIt.sln* 文件（加载所有项目文件可能需要一些时间）。选择所需的 Configuration，然后构建该解决方案。"
+#: building_visit/BuildingOnWindows/ConfiguringWithCMakeGUI.rst:186
+msgid "**Note:** if VISIT_CREATE_XMLTOOLS_GEN_TARGETS is ON, choose the *ALL_BUILD* project to build instead of the *Solution* . More information on this variable can found in the :ref:`CMake Variables<CMake Variables>` section."
+msgstr ""
+"**注意：**如果 VISIT_CREATE_XMLTOOLS_GEN_TARGETS 为 ON，请选择构建 *ALL_BUILD* 项目，而不是构建 *Solution*。关于该变量的更多信息请参见 :ref:`CMake Variables<CMake Variables>`。"

@@ -1,0 +1,409 @@
+# Simplified Chinese translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-09 00:00+0000\n"
+"Language: zh-hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Last-Translator:\n"
+"Language-Team:\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+#: building_visit/Building_Directly_With_CMake.rst:4
+msgid "Building Directly with CMake"
+msgstr "直接使用 CMake 构建"
+#: building_visit/Building_Directly_With_CMake.rst:5
+msgid "If a *config site file* is available for the platform you wish to build on, VisIt_ can often be built without the use of the ``build_visit`` script, with these steps."
+msgstr ""
+"如果你要构建的平台有可用的 *config site file*，通常可以不使用 ``build_visit`` 脚本，按以下步骤直接构建 VisIt_。"
+#: building_visit/Building_Directly_With_CMake.rst:13
+msgid "If ``build_visit`` was used to build VisIt_ on the platform in the past, it should have created a cmake file specific to your machine which we call a *config site* file. CMake simply needs to be told where to find it using the ``-DVISIT_CONFIG_SITE`` option. Examples of *config site* files for a variety of machines VisIt_ developers directly support can be found in the `config-site <https://github.com/visit-dav/visit/tree/develop/src/config-site>`_ directory."
+msgstr ""
+"如果过去在该平台上使用过 ``build_visit`` 构建 VisIt_，它应当会创建一个与你的机器对应的 cmake 文件，我们称之为 *config site* file。CMake 只需要通过 ``-DVISIT_CONFIG_SITE`` 选项知道该文件的位置即可。VisIt_ 开发者直接支持的多种机器对应的 *config site* file 示例可以在 `config-site <https://github.com/visit-dav/visit/tree/develop/src/config-site>`_ 目录中找到。"
+#: building_visit/Building_Directly_With_CMake.rst:22
+msgid "For cases where a *config-site* file will not be used, this must be explicitly indicated by passing ``-DVISIT_CONFIG_SITE=NONE``. This is useful in cases where ``-C CMakeCache.txt`` is used, or where all the relevant CMake variables are specified on the command-line to CMake itself instead of a *config-site* file."
+msgstr ""
+"如果不使用 *config-site* 文件，必须显式传入 ``-DVISIT_CONFIG_SITE=NONE`` 来指明。这在使用 ``-C CMakeCache.txt`` 的情况下，或将所有相关 CMake 变量直接在 CMake 命令行中指定（而不是通过 *config-site* 文件）时很有用。"
+#: building_visit/Building_Directly_With_CMake.rst:33
+msgid "CMake Variables"
+msgstr "CMake 变量"
+#: building_visit/Building_Directly_With_CMake.rst:35
+msgid "The following CMake vars can be modified to suit your build needs."
+msgstr "以下 CMake 变量可根据你的构建需求进行修改。"
+#: building_visit/Building_Directly_With_CMake.rst:37
+msgid "When specified via a command-line invocation of CMake, they should be specified as: VARNAME:TYPE=value, eg 'VISIT_BUILD_ALL_PLUGINS:BOOL=ON'."
+msgstr ""
+"通过命令行调用 CMake 指定变量时，应使用：VARNAME:TYPE=value 的形式，例如 'VISIT_BUILD_ALL_PLUGINS:BOOL=ON'。"
+#: building_visit/Building_Directly_With_CMake.rst:39
+msgid "The defaults listed are the settings used if the Variable has not been set in a *config-site* file."
+msgstr ""
+"这里列出的默认值是在 *config-site* 文件中未设置该变量时所使用的设置。"
+#: building_visit/Building_Directly_With_CMake.rst:44
+msgid "Controlling major components being built"
+msgstr "控制主要构建组件"
+#: building_visit/Building_Directly_With_CMake.rst:46
+msgid "VISIT_DBIO_ONLY"
+msgstr "VISIT_DBIO_ONLY"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "BOOL"
+msgstr "BOOL"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "OFF"
+msgstr "OFF"
+#: building_visit/Building_Directly_With_CMake.rst:47
+msgid "Toggles building of only visitconvert and engine plugins."
+msgstr "仅构建 visitconvert 与引擎插件（engine plugins）。"
+#: building_visit/Building_Directly_With_CMake.rst:49
+msgid "VISIT_ENGINE_ONLY"
+msgstr "VISIT_ENGINE_ONLY"
+#: building_visit/Building_Directly_With_CMake.rst:50
+msgid "Toggles building of only the compute engine and its plugins."
+msgstr "仅构建计算引擎（compute engine）及其插件。"
+#: building_visit/Building_Directly_With_CMake.rst:52
+msgid "VISIT_SERVER_COMPONENTS_ONLY"
+msgstr "VISIT_SERVER_COMPONENTS_ONLY"
+#: building_visit/Building_Directly_With_CMake.rst:53
+msgid "Build only vcl, mdserver, engine and their plugins."
+msgstr "只构建 vcl、mdserver、engine 及其插件。"
+#: building_visit/Building_Directly_With_CMake.rst:55
+msgid "VISIT_ENABLE_LIBSIM"
+msgstr "VISIT_ENABLE_LIBSIM"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "ON"
+msgstr "ON"
+#: building_visit/Building_Directly_With_CMake.rst:56
+msgid "Toggles building of libsim."
+msgstr "启用/禁用构建 libsim。"
+#: building_visit/Building_Directly_With_CMake.rst:60
+msgid "Controlling plugins being built"
+msgstr "控制构建的插件"
+#: building_visit/Building_Directly_With_CMake.rst:62
+msgid "VISIT_BUILD_ALL_PLUGINS"
+msgstr "VISIT_BUILD_ALL_PLUGINS"
+#: building_visit/Building_Directly_With_CMake.rst:63
+msgid "Toggles the building of all plugins. When turned on the following optional plugins will be added to the build:"
+msgstr ""
+"启用/禁用构建所有插件。启用后，将把以下可选插件加入构建："
+#: building_visit/Building_Directly_With_CMake.rst:66
+msgid "Database: PICS_Tester, Rect"
+msgstr "数据库：PICS_Tester, Rect"
+#: building_visit/Building_Directly_With_CMake.rst:68
+msgid "Operator: Context ConnCompReduce, MetricThreshold, RemoveCells, SurfCompPrep"
+msgstr "算子：Context ConnCompReduce, MetricThreshold, RemoveCells, SurfCompPrep"
+#: building_visit/Building_Directly_With_CMake.rst:70
+msgid "Plot: Topology"
+msgstr "绘图：Topology"
+#: building_visit/Building_Directly_With_CMake.rst:72
+msgid "Note: the list of optional plugins is subject to change."
+msgstr "注意：可选插件列表可能会变更。"
+#: building_visit/Building_Directly_With_CMake.rst:74
+msgid "VISIT_BUILD_MINIMAL_PLUGINS"
+msgstr "VISIT_BUILD_MINIMAL_PLUGINS"
+#: building_visit/Building_Directly_With_CMake.rst:75
+msgid "Toggles the building of a minimal set of database, operator, and plot plugins. When turned on, only the following plugins will be built:"
+msgstr ""
+"启用/禁用构建最小集合的数据库、算子与绘图插件。启用后，仅构建以下插件："
+#: building_visit/Building_Directly_With_CMake.rst:78
+msgid "Database: Curve2D, RAW, VTK, PICS_Tester"
+msgstr "数据库：Curve2D, RAW, VTK, PICS_Tester"
+#: building_visit/Building_Directly_With_CMake.rst:80
+msgid "Operator: Lineout, Slice, Threshold"
+msgstr "算子：Lineout, Slice, Threshold"
+#: building_visit/Building_Directly_With_CMake.rst:82
+msgid "Plot: Curve, Mesh, Pseudocolor"
+msgstr "绘图：Curve, Mesh, Pseudocolor"
+#: building_visit/Building_Directly_With_CMake.rst:84
+msgid "Note: the list of minimal plugins is subject to change."
+msgstr "注意：最小插件列表可能会变更。"
+#: building_visit/Building_Directly_With_CMake.rst:86
+msgid "VISIT_SELECTED_DATABASE_PLUGINS"
+msgstr "VISIT_SELECTED_DATABASE_PLUGINS"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "STRING"
+msgstr "STRING"
+#: building_visit/Building_Directly_With_CMake.rst:87
+msgid "';' separated list of database plugins to build, eg: VTK;Silo"
+msgstr "用 ';' 分隔的要构建的数据库插件列表，例如：VTK;Silo"
+#: building_visit/Building_Directly_With_CMake.rst:89
+msgid "If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for database plugins."
+msgstr ""
+"若非空，将覆盖数据库插件方面的 VISIT_BUILD_MINIMAL_PLUGINS 与 VISIT_BUILD_ALL_PLUGINS 设置。"
+#: building_visit/Building_Directly_With_CMake.rst:91
+msgid "VISIT_SELECTED_OPERATOR_PLUGINS"
+msgstr "VISIT_SELECTED_OPERATOR_PLUGINS"
+#: building_visit/Building_Directly_With_CMake.rst:92
+msgid "';' separated list of operator plugins to build, eg: Slice;Lineout;Transform"
+msgstr "用 ';' 分隔的要构建的算子插件列表，例如：Slice;Lineout;Transform"
+#: building_visit/Building_Directly_With_CMake.rst:94
+msgid "If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for operator plugins."
+msgstr ""
+"若非空，将覆盖算子插件方面的 VISIT_BUILD_MINIMAL_PLUGINS 与 VISIT_BUILD_ALL_PLUGINS 设置。"
+#: building_visit/Building_Directly_With_CMake.rst:96
+msgid "VISIT_SELECTED_PLOT_PLUGINS"
+msgstr "VISIT_SELECTED_PLOT_PLUGINS"
+#: building_visit/Building_Directly_With_CMake.rst:97
+msgid "';' separated list of plot plugins to build, eg: Mesh;Pseudocolor"
+msgstr "用 ';' 分隔的要构建的绘图插件列表，例如：Mesh;Pseudocolor"
+#: building_visit/Building_Directly_With_CMake.rst:99
+msgid "If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for plot plugins."
+msgstr ""
+"若非空，将覆盖绘图插件方面的 VISIT_BUILD_MINIMAL_PLUGINS 与 VISIT_BUILD_ALL_PLUGINS 设置。"
+#: building_visit/Building_Directly_With_CMake.rst:103
+msgid "Controlling extra tools being built"
+msgstr "控制构建的额外工具"
+#: building_visit/Building_Directly_With_CMake.rst:104
+msgid "VISIT_ENABLE_ANNOTATION_TOOLS"
+msgstr "VISIT_ENABLE_ANNOTATION_TOOLS"
+#: building_visit/Building_Directly_With_CMake.rst:105
+msgid "Toggles the generation of annotation tools: text2polys, time_annotation."
+msgstr "启用/禁用生成注释工具：text2polys、time_annotation。"
+#: building_visit/Building_Directly_With_CMake.rst:107
+msgid "VISIT_ENABLE_DATAGEN"
+msgstr "VISIT_ENABLE_DATAGEN"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "BOOL: ON"
+msgstr "BOOL: ON"
+#: building_visit/Building_Directly_With_CMake.rst:108
+msgid "Toggles the generation of sample data files."
+msgstr "启用/禁用生成示例数据文件。"
+#: building_visit/Building_Directly_With_CMake.rst:110
+msgid "VISIT_ENABLE_DATA_MANUAL_EXAMPLES: BOOL"
+msgstr "VISIT_ENABLE_DATA_MANUAL_EXAMPLES: BOOL"
+#: building_visit/Building_Directly_With_CMake.rst:111
+msgid "Toggles generation of :ref:`Getting Data Into Visit<Getting Data into VisIt_>` examples."
+msgstr ""
+"启用/禁用生成 :ref:`Getting Data Into Visit<Getting Data into VisIt_>` 示例。"
+#: building_visit/Building_Directly_With_CMake.rst:113
+msgid "VISIT_ENABLE_DIAGNOSTICS"
+msgstr "VISIT_ENABLE_DIAGNOSTICS"
+#: building_visit/Building_Directly_With_CMake.rst:114
+msgid "Toggles building of diagnostic tools: exceptiontest, mpitest, networktest, osmesatest."
+msgstr ""
+"启用/禁用构建诊断工具：exceptiontest、mpitest、networktest、osmesatest。"
+#: building_visit/Building_Directly_With_CMake.rst:116
+msgid "VISIT_ENABLE_MANUALS"
+msgstr "VISIT_ENABLE_MANUALS"
+#: building_visit/Building_Directly_With_CMake.rst:117
+msgid "Toggles building of manuals, requires Sphinx in Python."
+msgstr "启用/禁用构建手册（manuals）；需要 Python 中的 Sphinx。"
+#: building_visit/Building_Directly_With_CMake.rst:119
+msgid "VISIT_ENABLE_SILO_TOOLS"
+msgstr "VISIT_ENABLE_SILO_TOOLS"
+#: building_visit/Building_Directly_With_CMake.rst:120
+msgid "Toggles building of Silo tools: mrgtree2dot, add_visit_searchpath."
+msgstr "启用/禁用构建 Silo 工具：mrgtree2dot、add_visit_searchpath。"
+#: building_visit/Building_Directly_With_CMake.rst:122
+msgid "VISIT_ENABLE_UNIT_TESTS"
+msgstr "VISIT_ENABLE_UNIT_TESTS"
+#: building_visit/Building_Directly_With_CMake.rst:123
+msgid "Toggles building of unit tests: MRUCache, Namescheme, Utilty, StringHelpers, exprconfig, exprtest."
+msgstr ""
+"启用/禁用构建单元测试：MRUCache、Namescheme、Utilty、StringHelpers、exprconfig、exprtest。"
+#: building_visit/Building_Directly_With_CMake.rst:126
+msgid "Useful for developers"
+msgstr "开发者相关"
+#: building_visit/Building_Directly_With_CMake.rst:129
+msgid "VISIT_CREATE_SOCKET_RELAY_EXECUTABLE: BOOL"
+msgstr "VISIT_CREATE_SOCKET_RELAY_EXECUTABLE: BOOL"
+#: building_visit/Building_Directly_With_CMake.rst:130
+msgid "Toggles creation of separate executable that forwards VisIt_'s socket connection between engine and component launcher."
+msgstr ""
+"启用/禁用创建一个单独的可执行文件，用于在引擎与组件启动器之间转发 VisIt_ 的 socket 连接。"
+#: building_visit/Building_Directly_With_CMake.rst:132
+msgid "VISIT_CREATE_XMLTOOLS_GEN_TARGETS"
+msgstr "VISIT_CREATE_XMLTOOLS_GEN_TARGETS"
+#: building_visit/Building_Directly_With_CMake.rst:133
+msgid "Toggles the creation of build targets to run xmltools code generation. More information can be found in the :ref:`XML Tools<XML Tools>` section of the *Developer Manual*"
+msgstr ""
+"启用/禁用创建用于运行 xmltools 代码生成的构建目标。更多信息请参见 *Developer Manual* 中的 :ref:`XML Tools<XML Tools>`。"
+#: building_visit/Building_Directly_With_CMake.rst:136
+msgid "**Be careful on Windows**, *all of the codegen targets will be built unless you tell Visual Studio to build the ALL_BUILD project (instead of the Solution). This will cause a lot of source files to be regenerated and may cause problems with the build.*"
+msgstr ""
+"**在 Windows 上请小心**：*除非你让 Visual Studio 构建 ALL_BUILD 项目（而不是构建 Solution），否则所有 codegen 目标都会被构建。这会导致大量源文件被重新生成，并可能引起构建问题。*"
+#: building_visit/Building_Directly_With_CMake.rst:141
+msgid "VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH"
+msgstr "VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH"
+#: building_visit/Building_Directly_With_CMake.rst:142
+msgid "Install rpath relative to executable location using \\\\$ORIGIN tag."
+msgstr "使用 \\\\$ORIGIN 标签，将 rpath 相对安装到可执行文件位置。"
+#: building_visit/Building_Directly_With_CMake.rst:144
+msgid "CMAKE_SUPPRESS_REGENERATION"
+msgstr "CMAKE_SUPPRESS_REGENERATION"
+#: building_visit/Building_Directly_With_CMake.rst:145
+msgid "When on, tells CMake to suppress regeneration of project/make files when CMakeLists.txt or .cmake files have changed."
+msgstr ""
+"启用时，当 CMakeLists.txt 或 .cmake 文件发生变化，会让 CMake 抑制项目/Make 文件的重新生成。"
+#: building_visit/Building_Directly_With_CMake.rst:148
+msgid "Miscellany"
+msgstr "杂项"
+#: building_visit/Building_Directly_With_CMake.rst:150
+msgid "CMAKE_BUILD_TYPE"
+msgstr "CMAKE_BUILD_TYPE"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "Release"
+msgstr "Release"
+#: building_visit/Building_Directly_With_CMake.rst:151
+msgid "Specifies the build type for single-configuration generators (like Makefiles)."
+msgstr "为单配置生成器（如 Makefiles）指定构建类型。"
+#: building_visit/Building_Directly_With_CMake.rst:153
+msgid "CMAKE_INSTALL_PREFIX : *default is system dependent*"
+msgstr "CMAKE_INSTALL_PREFIX：*默认值取决于系统*"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "PATH"
+msgstr "PATH"
+#: building_visit/Building_Directly_With_CMake.rst:152
+msgid "default is system dependent"
+msgstr "默认值取决于系统"
+#: building_visit/Building_Directly_With_CMake.rst:154
+msgid "Specifies the location for files installed with *make install.*"
+msgstr "指定通过 *make install* 安装的文件的位置。"
+#: building_visit/Building_Directly_With_CMake.rst:156
+msgid "IGNORE_THIRD_PARTY_LIB_PROBLEMS"
+msgstr "IGNORE_THIRD_PARTY_LIB_PROBLEMS"
+#: building_visit/Building_Directly_With_CMake.rst:157
+msgid "Ignore problems finding requested third party libraries."
+msgstr "忽略查找所请求第三方库时出现的问题。"
+#: building_visit/Building_Directly_With_CMake.rst:159
+msgid "VISIT_CONFIG_SITE"
+msgstr "VISIT_CONFIG_SITE"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "FILEPATH"
+msgstr "FILEPATH"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "${VISIT_SOURCE_DIR}/config-site/<localhost>.cmake"
+msgstr "${VISIT_SOURCE_DIR}/config-site/<localhost>.cmake"
+#: building_visit/Building_Directly_With_CMake.rst:160
+msgid "Location of a config-site cmake file that has settings to control the build, including locations of third-party libraries. Created automatically by build_visit script."
+msgstr ""
+"config-site cmake 文件的位置，该文件包含用于控制构建的设置（包括第三方库的位置）。由 build_visit 脚本自动创建。"
+#: building_visit/Building_Directly_With_CMake.rst:163
+msgid "VISIT_DDT"
+msgstr "VISIT_DDT"
+#: building_visit/Building_Directly_With_CMake.rst:164
+msgid "Toggles support for the DDT debugger."
+msgstr "启用/禁用对 DDT 调试器的支持。"
+#: building_visit/Building_Directly_With_CMake.rst:166
+msgid "VISIT_DEFAULT_SILO_DRIVER"
+msgstr "VISIT_DEFAULT_SILO_DRIVER"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "PDB"
+msgstr "PDB"
+#: building_visit/Building_Directly_With_CMake.rst:167
+msgid "Designates the default Silo driver to use when generating silo data. Options: PDB, HDF5"
+msgstr ""
+"指定生成 Silo 数据时使用的默认 Silo 驱动。选项：PDB、HDF5"
+#: building_visit/Building_Directly_With_CMake.rst:170
+msgid "VISIT_DISABLE_SELECT"
+msgstr "VISIT_DISABLE_SELECT"
+#: building_visit/Building_Directly_With_CMake.rst:171
+msgid "Toggles the disablement for use of the select() function."
+msgstr "启用/禁用对 select() 函数使用的禁用。"
+#: building_visit/Building_Directly_With_CMake.rst:173
+msgid "VISIT_FORCE_SSH_TUNNELING"
+msgstr "VISIT_FORCE_SSH_TUNNELING"
+#: building_visit/Building_Directly_With_CMake.rst:174
+msgid "Toggles use of SSH tunneling for sockets."
+msgstr "启用/禁用为 sockets 使用 SSH 隧道。"
+#: building_visit/Building_Directly_With_CMake.rst:176
+msgid "VISIT_FORTRAN"
+msgstr "VISIT_FORTRAN"
+#: building_visit/Building_Directly_With_CMake.rst:177
+msgid "Toggles building of Fortran example programs."
+msgstr "启用/禁用构建 Fortran 示例程序。"
+#: building_visit/Building_Directly_With_CMake.rst:179
+msgid "VISIT_INSTALL_THIRD_PARTY"
+msgstr "VISIT_INSTALL_THIRD_PARTY"
+#: building_visit/Building_Directly_With_CMake.rst:180
+msgid "Intall VisIt_'s 3rd part I/O libraries and includes to permit plugin development."
+msgstr ""
+"安装 VisIt_ 的第三方 I/O 库及头文件，以支持插件开发。"
+#: building_visit/Building_Directly_With_CMake.rst:182
+msgid "VISIT_JAVA"
+msgstr "VISIT_JAVA"
+#: building_visit/Building_Directly_With_CMake.rst:183
+msgid "Build VisIt_'s Java client interface."
+msgstr "构建 VisIt_ 的 Java 客户端接口。"
+#: building_visit/Building_Directly_With_CMake.rst:185
+msgid "VISIT_NOLINK_MPI_WITH_LIBRARIES"
+msgstr "VISIT_NOLINK_MPI_WITH_LIBRARIES"
+#: building_visit/Building_Directly_With_CMake.rst:186
+msgid "Do not link MPI with VisIt_'s parallel shared libraries; just with executables"
+msgstr "不要将 MPI 链接到 VisIt_ 的并行共享库；只链接到可执行文件。"
+#: building_visit/Building_Directly_With_CMake.rst:188
+msgid "VISIT_PARALLEL"
+msgstr "VISIT_PARALLEL"
+#: building_visit/Building_Directly_With_CMake.rst:189
+msgid "Build VisIt_'s parallel compute engine."
+msgstr "构建 VisIt_ 的并行计算引擎。"
+#: building_visit/Building_Directly_With_CMake.rst:191
+msgid "VISIT_PYTHON_SCRIPTING"
+msgstr "VISIT_PYTHON_SCRIPTING"
+#: building_visit/Building_Directly_With_CMake.rst:192
+msgid "Build VisIt_ with Python scripting support."
+msgstr "构建带 Python 脚本支持的 VisIt_。"
+#: building_visit/Building_Directly_With_CMake.rst:194
+msgid "VISIT_PYTHON_FILTERS"
+msgstr "VISIT_PYTHON_FILTERS"
+#: building_visit/Building_Directly_With_CMake.rst:195
+msgid "Build VisIt_ with Python Engine Filter support."
+msgstr "构建带 Python Engine Filter 支持的 VisIt_。"
+#: building_visit/Building_Directly_With_CMake.rst:197
+msgid "VISIT_SLIVR"
+msgstr "VISIT_SLIVR"
+#: building_visit/Building_Directly_With_CMake.rst:198
+msgid "Build VisIt_ with support for the SLIVR volume rendering library."
+msgstr "构建带 SLIVR 体渲染库支持的 VisIt_。"
+#: building_visit/Building_Directly_With_CMake.rst:200
+msgid "VISIT_STATIC"
+msgstr "VISIT_STATIC"
+#: building_visit/Building_Directly_With_CMake.rst:201
+msgid "Build VisIt_ statically."
+msgstr "以静态方式构建 VisIt_。"
+#: building_visit/Building_Directly_With_CMake.rst:204
+msgid "Mac OS only"
+msgstr "仅 macOS"
+#: building_visit/Building_Directly_With_CMake.rst:206
+msgid "VISIT_CREATE_APPBUNDLE_PACKAGE"
+msgstr "VISIT_CREATE_APPBUNDLE_PACKAGE"
+#: building_visit/Building_Directly_With_CMake.rst:207
+msgid "Toggles creation of DMG file with Mac App bundle with make package."
+msgstr "启用/禁用通过 make package 创建包含 Mac App bundle 的 DMG 文件。"
+#: building_visit/Building_Directly_With_CMake.rst:211
+msgid "Windows OS only"
+msgstr "仅 Windows"
+#: building_visit/Building_Directly_With_CMake.rst:213
+msgid "VISIT_MAKE_NSIS_INSTALLER"
+msgstr "VISIT_MAKE_NSIS_INSTALLER"
+#: building_visit/Building_Directly_With_CMake.rst:214
+msgid "Toggles creation of an installer package using NSIS."
+msgstr "启用/禁用使用 NSIS 创建安装包。"
+#: building_visit/Building_Directly_With_CMake.rst:216
+#: building_visit/Building_Directly_With_CMake.rst:221
+msgid "The windows.cmake *config-site* file turns this ON."
+msgstr "windows.cmake *config-site* 文件会将其设为 ON。"
+#: building_visit/Building_Directly_With_CMake.rst:218
+msgid "VISIT_MESA_REPLACE_OPENGL"
+msgstr "VISIT_MESA_REPLACE_OPENGL"
+#: building_visit/Building_Directly_With_CMake.rst:219
+msgid "Toggles use of Mesa as a drop-in replacement for OpenGL when system OpenGL is insufficient."
+msgstr ""
+"当系统 OpenGL 不足时，启用/禁用使用 Mesa 作为 OpenGL 的可替换实现（drop-in replacement）。"
+#: building_visit/Building_Directly_With_CMake.rst:223
+msgid "VISIT_WINDOWS_APPLICATION"
+msgstr "VISIT_WINDOWS_APPLICATION"
+#: building_visit/Building_Directly_With_CMake.rst:224
+msgid "Toggles creation of Windows-style applications with no console."
+msgstr "启用/禁用创建不带控制台的 Windows 风格应用程序。"
+#: building_visit/Building_Directly_With_CMake.rst:226
+msgid "VISIT_WINDOWS_DIR"
+msgstr "VISIT_WINDOWS_DIR"
+#: building_visit/Building_Directly_With_CMake.rst:-1
+msgid "PATH :"
+msgstr "PATH："
+#: building_visit/Building_Directly_With_CMake.rst:227
+msgid "Specifies the location of the pre-built third party library binaries. See :ref:`Location of windowsbuild directory<Location of windowsbuild Directory>` for default locations."
+msgstr ""
+"指定预构建第三方库二进制文件的位置。默认位置请参见 :ref:`Location of windowsbuild directory<Location of windowsbuild Directory>`。"

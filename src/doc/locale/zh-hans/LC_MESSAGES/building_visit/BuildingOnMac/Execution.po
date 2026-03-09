@@ -1,0 +1,38 @@
+# Simplified Chinese translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-09 00:00+0000\n"
+"Language: zh-hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Last-Translator:\n"
+"Language-Team:\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+#: building_visit/BuildingOnMac/Execution.rst:4
+msgid "Running Masonry Scripts"
+msgstr "运行 Masonry 脚本"
+#: building_visit/BuildingOnMac/Execution.rst:7
+msgid "bootstrap_visit.py"
+msgstr "bootstrap_visit.py"
+#: building_visit/BuildingOnMac/Execution.rst:9
+msgid "The ``bootstrap_visit.py`` file contains all of the logic to execute the necessary steps for creating the macOS Disk Image File (DMG). It takes the JSON configuration file as an argument::"
+msgstr ""
+"``bootstrap_visit.py`` 文件包含了执行创建 macOS 磁盘映像文件（DMG）所需步骤的全部逻辑。它以 JSON 配置文件作为参数::"
+#: building_visit/BuildingOnMac/Execution.rst:16
+msgid "masonry_view_log.py"
+msgstr "masonry_view_log.py"
+#: building_visit/BuildingOnMac/Execution.rst:18
+msgid "Once masonry is running, it will produce log files in the ``_logs`` directory. To view the logs in HTML format (see :numref:`Figure %s<masonry_log_file>`), run the ``masonry_view_log.py`` script. This script takes the log file as an argument::"
+msgstr ""
+"masonry 运行后会在 ``_logs`` 目录中生成日志文件。要以 HTML 格式查看日志（参见 :numref:`Figure %s<masonry_log_file>`），请运行 ``masonry_view_log.py`` 脚本。该脚本以日志文件作为参数::"
+#: building_visit/BuildingOnMac/Execution.rst:28
+msgid "Mansonry Logs in HTML format"
+msgstr "HTML 格式的 Masonry 日志"
+#: building_visit/BuildingOnMac/Execution.rst:30
+msgid "The script will launch a web browser to connect to a local web server. If you already have a web browser running on your system the script will use it. In this situation that web browser may not be able to connect to the local web server. If this happens you should exit your existing web browser and try again."
+msgstr ""
+"该脚本会启动一个浏览器以连接到本地 Web 服务器。如果系统中已有浏览器在运行，脚本会复用它。在这种情况下，该浏览器可能无法连接到本地 Web 服务器。如果发生这种情况，请退出现有浏览器后重试。"

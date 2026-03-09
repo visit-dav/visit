@@ -1,0 +1,141 @@
+# Simplified Chinese translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-09 00:00+0000\n"
+"Language: zh-hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Last-Translator:\n"
+"Language-Team:\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+#: building_visit/Common_Build_Scenarios.rst:4
+msgid "Common Build Scenarios"
+msgstr "常见构建场景"
+#: building_visit/Common_Build_Scenarios.rst:6
+msgid "Building VisIt_ is an involved process and even with ``build_visit``, just determining the correct selection of options can sometimes be daunting. To help, here are the steps used to build VisIt_ on a collection of different platforms that may serve as a starting point for your system."
+msgstr ""
+"构建 VisIt_ 是一个较为复杂的过程，即使使用 ``build_visit``，仅仅确定正确的选项组合有时也会让人望而生畏。为此，这里给出在若干不同平台上构建 VisIt_ 的步骤，可作为你所在系统的起点。"
+#: building_visit/Common_Build_Scenarios.rst:11
+msgid "In each of the scenarios below, the result is a distribution file that can be used with ``visit-install`` to install VisIt_. Furthermore, in all these scenarios, ``build_visit`` was used to build the third party libraries and the initial config site file. VisIt_ was then manually built as outlined by doing an out of source build. The advantage to building VisIt_ manually is that you have more control over the build and its easier to troubleshoot failures. The advantage to an out of source build is that you can easily restart the build simply by deleting the build directory."
+msgstr ""
+"在下面每个场景中，最终产物都是一个发行文件，可配合 ``visit-install`` 安装 VisIt_。此外，在所有这些场景中，都使用 ``build_visit`` 来构建第三方库并生成初始的 config-site 文件。随后按照文档所述，通过源码外构建（out-of-source build）方式手动构建 VisIt_。手动构建 VisIt_ 的优点是对构建过程有更多控制，也更便于排查失败。源码外构建的优点是只需删除构建目录即可轻松重新开始构建。"
+#: building_visit/Common_Build_Scenarios.rst:21
+msgid "Kickit, a RedHat Enterprise Linux 7 system"
+msgstr "Kickit（RedHat Enterprise Linux 7 系统）"
+#: building_visit/Common_Build_Scenarios.rst:23
+msgid "``build_visit`` was run to generate the third party libraries. In this case all the required and optional libraries build without problem, so ``--required --optional`` could be used. Also, in this case there wasn't a system MPI installed so ``--mpich`` was specified to use MPICH. The ``--osmesa`` flag was also included so that VisIt could do off screen rendering."
+msgstr ""
+"运行 ``build_visit`` 以生成第三方库。在该案例中，所有必需库和可选库都能顺利构建，因此可以使用 ``--required --optional``。此外，该系统没有安装系统 MPI，因此指定 ``--mpich`` 来使用 MPICH。还包含了 ``--osmesa`` 选项，以便 VisIt 进行离屏渲染（off-screen rendering）。"
+#: building_visit/Common_Build_Scenarios.rst:35
+msgid "This built the third party libraries and generated a ``kickit.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
+msgstr ""
+"这会构建第三方库并生成 ``kickit.cmake`` config-site 文件。将 ``Setup VISITHOME & VISITARCH variables.`` 这一节改为"
+#: building_visit/Common_Build_Scenarios.rst:48
+#: building_visit/Common_Build_Scenarios.rst:113
+#: building_visit/Common_Build_Scenarios.rst:184
+#: building_visit/Common_Build_Scenarios.rst:301
+#: building_visit/Common_Build_Scenarios.rst:401
+#: building_visit/Common_Build_Scenarios.rst:481
+msgid "VisIt_ was then manually built with the following steps."
+msgstr "随后按以下步骤手动构建 VisIt_。"
+#: building_visit/Common_Build_Scenarios.rst:64
+msgid "Quartz, a Linux X86_64 TOSS3 cluster"
+msgstr "Quartz（Linux X86_64 TOSS3 集群）"
+#: building_visit/Common_Build_Scenarios.rst:66
+msgid "``build_visit`` was run to generate the third party libraries. In this case the system MPI was used, so information about the system MPI had to be provided with environment variables and the ``--parallel`` flag had to be specified. In this case, all the required and optional third party libraries build without problem, so ``--required --optional`` could be used. Also, the system OpenGL implementation was outdated and ``--mesagl`` had to be included to provide an OpenGL implementation suitable for VisIt_. Lastly, the Uintah library was built to enable building the Uintah reader."
+msgstr ""
+"运行 ``build_visit`` 以生成第三方库。在该案例中使用系统 MPI，因此需要通过环境变量提供系统 MPI 的相关信息，并且需要指定 ``--parallel``。该案例中所有必需与可选的第三方库都能顺利构建，因此可以使用 ``--required --optional``。此外，系统 OpenGL 实现过旧，需要包含 ``--mesagl`` 以提供适用于 VisIt_ 的 OpenGL 实现。最后，为了启用 Uintah 读取器，还构建了 Uintah 库。"
+#: building_visit/Common_Build_Scenarios.rst:86
+msgid "This built the third party libraries and generated a ``quartz386.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
+msgstr ""
+"这会构建第三方库并生成 ``quartz386.cmake`` config-site 文件。将 ``Setup VISITHOME & VISITARCH variables.`` 这一节改为"
+#: building_visit/Common_Build_Scenarios.rst:99
+#: building_visit/Common_Build_Scenarios.rst:170
+#: building_visit/Common_Build_Scenarios.rst:287
+#: building_visit/Common_Build_Scenarios.rst:371
+#: building_visit/Common_Build_Scenarios.rst:467
+msgid "The ``Parallel build Setup.`` section was changed to"
+msgstr "将 ``Parallel build Setup.`` 这一节改为"
+#: building_visit/Common_Build_Scenarios.rst:128
+msgid "Lassen, a Linux Power9 BlueOS cluster"
+msgstr "Lassen（Linux Power9 BlueOS 集群）"
+#: building_visit/Common_Build_Scenarios.rst:130
+#: building_visit/Common_Build_Scenarios.rst:332
+msgid "``build_visit`` was run to generate the third party libraries. In this case the system MPI was used, so information about the system MPI had to be provided with environment variables and the ``--parallel`` flag had to be specified. In this case, a few of the optional third party libraries do not build on the system so all the desired optional third party libraries had to be explicitly listed. Also, the system OpenGL implementation was outdated and ``--mesagl`` had to be included to provide an OpenGL implementation suitable for VisIt_. Lastly, the Uintah library was built to enable building the Uintah reader."
+msgstr ""
+"运行 ``build_visit`` 以生成第三方库。在该案例中使用系统 MPI，因此需要通过环境变量提供系统 MPI 的相关信息，并且需要指定 ``--parallel``。该案例中有少数可选第三方库无法在该系统上构建，因此需要显式列出想要构建的所有可选第三方库。此外，系统 OpenGL 实现过旧，需要包含 ``--mesagl`` 以提供适用于 VisIt_ 的 OpenGL 实现。最后，为了启用 Uintah 读取器，还构建了 Uintah 库。"
+#: building_visit/Common_Build_Scenarios.rst:156
+msgid "This built the third party libraries and generated a ``lassen708.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
+msgstr ""
+"这会构建第三方库并生成 ``lassen708.cmake`` config-site 文件。将 ``Setup VISITHOME & VISITARCH variables.`` 这一节改为"
+#: building_visit/Common_Build_Scenarios.rst:199
+msgid "Cori, a Cray KNL cluster"
+msgstr "Cori（Cray KNL 集群）"
+#: building_visit/Common_Build_Scenarios.rst:201
+#: building_visit/Common_Build_Scenarios.rst:418
+msgid "The system is set up to support the Intel compiler by default so we need to swap out the Intel environment for the GNU environment."
+msgstr ""
+"系统默认配置为支持 Intel 编译器，因此需要将 Intel 环境切换为 GNU 环境。"
+#: building_visit/Common_Build_Scenarios.rst:208
+#: building_visit/Common_Build_Scenarios.rst:425
+msgid "The Cray compiler wrappers are set up to do static linking, which causes a problem with building parallel hdf5. The linking can be changed to link dynamically by setting a couple of environment variables."
+msgstr ""
+"Cray 编译器封装器默认进行静态链接，这会导致并行 hdf5 构建出现问题。可以通过设置几个环境变量将链接方式改为动态链接。"
+#: building_visit/Common_Build_Scenarios.rst:217
+msgid "The linker has a bug that prevents VTK from building, which is fixed with the linker in binutils 2.32. Binutils was then manually built with the following steps."
+msgstr ""
+"链接器存在一个 bug，导致 VTK 无法构建；binutils 2.32 中的链接器修复了该问题。随后按以下步骤手动构建 binutils。"
+#: building_visit/Common_Build_Scenarios.rst:231
+msgid "The following lines in ``build_visit``"
+msgstr "``build_visit`` 中的以下几行"
+#: building_visit/Common_Build_Scenarios.rst:238
+msgid "were changed to"
+msgstr "被修改为"
+#: building_visit/Common_Build_Scenarios.rst:245
+msgid "to build VTK with the linker from binutils 2.32."
+msgstr "以便使用 binutils 2.32 的链接器来构建 VTK。"
+#: building_visit/Common_Build_Scenarios.rst:247
+msgid "``build_visit`` was run to generate the third party libraries. In this case the system MPI was used, so information about the system MPI had to be provided with environment variables and the ``--parallel`` flag had to be specified. In this case, all the required and optional third party libraries built without problem, so ``--required --optional`` could be used. Also, the system OpenGL implementation was outdated and ``--mesagl`` had to be included to provide an OpenGL implementation suitable for VisIt_. Lastly, the Uintah library was built to enable building the Uintah reader."
+msgstr ""
+"运行 ``build_visit`` 以生成第三方库。在该案例中使用系统 MPI，因此需要通过环境变量提供系统 MPI 的相关信息，并且需要指定 ``--parallel``。该案例中所有必需与可选的第三方库都能顺利构建，因此可以使用 ``--required --optional``。此外，系统 OpenGL 实现过旧，需要包含 ``--mesagl`` 以提供适用于 VisIt_ 的 OpenGL 实现。最后，为了启用 Uintah 读取器，还构建了 Uintah 库。"
+#: building_visit/Common_Build_Scenarios.rst:267
+msgid "This built the third party libraries and generated a ``cori08.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
+msgstr ""
+"这会构建第三方库并生成 ``cori08.cmake`` config-site 文件。将 ``Setup VISITHOME & VISITARCH variables.`` 这一节改为"
+#: building_visit/Common_Build_Scenarios.rst:280
+msgid "The ``VISIT_C_FLAGS`` and ``VISIT_CXX_FLAGS`` were changed to"
+msgstr "将 ``VISIT_C_FLAGS`` 和 ``VISIT_CXX_FLAGS`` 修改为"
+#: building_visit/Common_Build_Scenarios.rst:316
+msgid "Summit, a Linux Power9 BlueOS cluster"
+msgstr "Summit（Linux Power9 BlueOS 集群）"
+#: building_visit/Common_Build_Scenarios.rst:318
+msgid "The system is set up to support the IBM XL compiler by default so we need to swap out the XL compiler for the GNU compiler."
+msgstr ""
+"系统默认配置为支持 IBM XL 编译器，因此需要将 XL 编译器切换为 GNU 编译器。"
+#: building_visit/Common_Build_Scenarios.rst:325
+msgid "There was an error building CMake, so we used the system CMake after module loading CMake 3.9.2."
+msgstr ""
+"构建 CMake 时出现错误，因此在加载 CMake 3.9.2 模块后使用系统自带的 CMake。"
+#: building_visit/Common_Build_Scenarios.rst:358
+msgid "This built the third party libraries and generated a ``login1.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
+msgstr ""
+"这会构建第三方库并生成 ``login1.cmake`` config-site 文件。将 ``Setup VISITHOME & VISITARCH variables.`` 这一节改为"
+#: building_visit/Common_Build_Scenarios.rst:385
+msgid "The compiler didn't like one of the boost header files, so it was manually patched."
+msgstr ""
+"编译器无法接受某个 boost 头文件，因此对其进行了手动补丁。"
+#: building_visit/Common_Build_Scenarios.rst:416
+msgid "Trinity, a Cray KNL cluster"
+msgstr "Trinity（Cray KNL 集群）"
+#: building_visit/Common_Build_Scenarios.rst:434
+msgid "``build_visit`` was run to generate the third party libraries. In this case the system MPI was used, so information about the system MPI had to be provided with environment variables and the ``--parallel`` flag had to be specified. In this case, all the required and optional third party libraries built except for Sphinx and Mili, so ``--no-sphinx --no-mili`` in addition to ``--required --optional`` could be used. Also, the system OpenGL implementation was outdated and ``--mesagl`` had to be included to provide an OpenGL implementation suitable for VisIt_."
+msgstr ""
+"运行 ``build_visit`` 以生成第三方库。在该案例中使用系统 MPI，因此需要通过环境变量提供系统 MPI 的相关信息，并且需要指定 ``--parallel``。该案例中除 Sphinx 和 Mili 外，所有必需与可选的第三方库都能顺利构建，因此除了 ``--required --optional`` 之外，还可以使用 ``--no-sphinx --no-mili``。此外，系统 OpenGL 实现过旧，需要包含 ``--mesagl`` 以提供适用于 VisIt_ 的 OpenGL 实现。"
+#: building_visit/Common_Build_Scenarios.rst:454
+msgid "This built the third party libraries and generated a ``tr-fe2.cmake`` config site file. The ``Setup VISITHOME & VISITARCH variables.`` section was changed to"
+msgstr ""
+"这会构建第三方库并生成 ``tr-fe2.cmake`` config-site 文件。将 ``Setup VISITHOME & VISITARCH variables.`` 这一节改为"

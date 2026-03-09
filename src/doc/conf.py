@@ -116,8 +116,19 @@ gettext_compact = False
 locale_dirs = ['locale']
 
 _rtd_lang = os.environ.get('READTHEDOCS_LANGUAGE')
-if _rtd_lang and _rtd_lang.lower() not in ('en', 'en-us', 'en_us'):
-    language = _rtd_lang
+if _rtd_lang:
+    _rtd_lang_norm = _rtd_lang.strip()
+    _rtd_lang_norm_lower = _rtd_lang_norm.lower().replace('_', '-')
+
+    if _rtd_lang_norm_lower not in ('en', 'en-us'):
+        # RTD uses a fixed set of language codes. Normalize common variants
+        # so we can keep a single locale directory name in-tree.
+        #
+        # See: src/doc/locale/<language>/LC_MESSAGES
+        if _rtd_lang_norm_lower in ('zh', 'zh-cn', 'zh-hans', 'zh-hans-cn'):
+            language = 'zh-hans'
+        else:
+            language = _rtd_lang_norm
 
 
 # -- Options for HTML output -------------------------------------------------

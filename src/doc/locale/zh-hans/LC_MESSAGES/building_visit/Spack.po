@@ -1,0 +1,237 @@
+# Simplified Chinese translations for the VisIt User Manual.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VisIt User Manual\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-09 00:00+0000\n"
+"Language: zh-hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Last-Translator:\n"
+"Language-Team:\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+#: building_visit/Spack.rst:2
+msgid "Building with Spack"
+msgstr "使用 Spack 构建"
+#: building_visit/Spack.rst:5
+msgid "Overview"
+msgstr "概述"
+#: building_visit/Spack.rst:7
+msgid "Spack is a multi-platform package manager that builds and installs multiple versions and configurations of software. It works on Linux, macOS, and many supercomputers. Spack is non-destructive: installing a new version of a package does not break existing installations, so many configurations of the same package can coexist."
+msgstr ""
+"Spack 是一个跨平台的包管理器，用于构建并安装软件的多个版本与配置。它可运行于 Linux、macOS 以及许多超级计算机系统。Spack 是非破坏性的：安装某个包的新版本不会破坏已有安装，因此同一软件包的多种配置可以共存。"
+#: building_visit/Spack.rst:11
+msgid "Spack offers a simple \\\"spec\\\" syntax that allows users to specify versions and configuration options. Package files are written in pure Python, and specs allow package authors to write a single script for many different builds of the same package. With Spack, you can build your software all the ways you want to."
+msgstr ""
+"Spack 提供了一种简单的 \\\"spec\\\" 语法，使用户可以指定版本和配置选项。包定义文件使用纯 Python 编写，spec 让包作者可以用一个脚本支持同一软件包的多种不同构建方式。借助 Spack，你可以按你想要的方式构建软件。"
+#: building_visit/Spack.rst:15
+msgid "The complete documentation can be found `here <https://spack.readthedocs.io/en/latest/index.html>`__."
+msgstr ""
+"完整文档请见 `这里 <https://spack.readthedocs.io/en/latest/index.html>`__。"
+#: building_visit/Spack.rst:18
+msgid "The VisIt_ spack package"
+msgstr "VisIt_ 的 Spack 包"
+#: building_visit/Spack.rst:20
+msgid "The spack package for VisIt_ currently only builds a subset of the libraries that ``build_visit`` builds. It builds the core libraries needed by VisIt_ and the following I/O libraries:"
+msgstr ""
+"VisIt_ 的 Spack 包目前只构建 ``build_visit`` 会构建的库的一个子集。它会构建 VisIt_ 所需的核心库，以及以下 I/O 库："
+#: building_visit/Spack.rst:23
+msgid "HDF5"
+msgstr "HDF5"
+#: building_visit/Spack.rst:24
+msgid "Silo_"
+msgstr "Silo_"
+#: building_visit/Spack.rst:26
+msgid "The rest of the I/O libraries needed by the VisIt_ readers are currently not built. The expectation is that the list of I/O libraries built will grow over time."
+msgstr ""
+"VisIt_ 各类读取器所需的其余 I/O 库目前尚未构建。预计未来 Spack 构建的 I/O 库列表会逐步扩展。"
+#: building_visit/Spack.rst:30
+msgid "Building VisIt_ with spack"
+msgstr "使用 Spack 构建 VisIt_"
+#: building_visit/Spack.rst:32
+msgid "The first step is to clone spack from GitHub. ::"
+msgstr "第一步是从 GitHub 克隆 Spack。 ::"
+#: building_visit/Spack.rst:40
+#: building_visit/Spack.rst:553
+msgid "Now you need to set up your spack environment. ::"
+msgstr "接下来需要设置 Spack 环境。 ::"
+#: building_visit/Spack.rst:50
+msgid "Now you need to have spack find the compilers available on your system. ::"
+msgstr "接下来需要让 Spack 发现系统中可用的编译器。 ::"
+#: building_visit/Spack.rst:54
+msgid "This will also create a ``.spack`` directory in your home directory. The ``.spack`` directory also contains a ``compilers.yaml`` file, which contains properties about your compilers. You can modify the ``compilers.yaml`` file if you need to change some properties of one or more of your compilers, such as additional rpaths. This is also the directory that you would put a ``package.yaml`` file for specifying the version of mpi to use."
+msgstr ""
+"这还会在你的主目录中创建一个 ``.spack`` 目录。``.spack`` 目录中还包含 ``compilers.yaml`` 文件，用于记录编译器的属性信息。如果需要修改一个或多个编译器的某些属性（例如额外的 rpath），可以编辑 ``compilers.yaml``。此外，如果要指定使用的 MPI 版本，你也会在这个目录中放置 ``packages.yaml`` 文件。"
+#: building_visit/Spack.rst:59
+msgid "If there is a compiler you want to use and spack didn't find it, you can tell spack about the compiler. ::"
+msgstr ""
+"如果有你想使用的编译器但 Spack 没有发现它，你可以把该编译器信息告知 Spack。 ::"
+#: building_visit/Spack.rst:63
+msgid "If you would like to find a list of all the packages that spack will build you can use the spec command. ::"
+msgstr ""
+"如果你想查看 Spack 将要构建的所有包的列表，可以使用 spec 命令。 ::"
+#: building_visit/Spack.rst:67
+msgid "To build VisIt_ with the default compiler. ::"
+msgstr "使用默认编译器构建 VisIt_。 ::"
+#: building_visit/Spack.rst:71
+msgid "To build VisIt_ with a specific compiler. ::"
+msgstr "使用指定编译器构建 VisIt_。 ::"
+#: building_visit/Spack.rst:75
+msgid "To build VisIt_ and specify a specific version of a dependent library. ::"
+msgstr "构建 VisIt_ 并指定某个依赖库的特定版本。 ::"
+#: building_visit/Spack.rst:79
+msgid "To uninstall a package (the ``--dependents`` uninstalls all the packages that depend on the uninstalled packages). ::"
+msgstr ""
+"卸载一个包（``--dependents`` 会卸载所有依赖于被卸载包的其他包）。 ::"
+#: building_visit/Spack.rst:83
+msgid "To uninstall all the packages. ::"
+msgstr "卸载所有包。 ::"
+#: building_visit/Spack.rst:87
+msgid "The package files for a package are located in ``var/spack/repos/builtin/package``. Here are some examples. ::"
+msgstr ""
+"包的定义文件位于 ``var/spack/repos/builtin/package``。以下是一些示例。 ::"
+#: building_visit/Spack.rst:93
+msgid "The installed packages are stored in ``opt/spack/<architecture>/<compiler>``. Here are some examples. ::"
+msgstr ""
+"已安装的包存储在 ``opt/spack/<architecture>/<compiler>``。以下是一些示例。 ::"
+#: building_visit/Spack.rst:100
+msgid "Building VisIt with the development version of spack"
+msgstr "使用 Spack 开发版构建 VisIt"
+#: building_visit/Spack.rst:102
+msgid "The following 3 patches should be applied. These are patches to `package.py` files that cannot be patched as part of the VisIt_ spack package."
+msgstr ""
+"需要应用以下 3 个补丁。这些补丁作用于 `package.py` 文件，无法作为 VisIt_ 的 Spack 包的一部分自动打补丁。"
+#: building_visit/Spack.rst:192
+msgid "Building on Frontier"
+msgstr "在 Frontier 上构建"
+#: building_visit/Spack.rst:194
+msgid "You will first need to copy the `packages.yaml` file from `scripts/spack/configs/olcf/frontier/` to your `.spack` directory in your home directory."
+msgstr ""
+"首先需要将 `scripts/spack/configs/olcf/frontier/` 中的 `packages.yaml` 文件复制到你主目录下的 `.spack` 目录。"
+#: building_visit/Spack.rst:196
+msgid "In order to have spack install the packages in the User Managed Software space the following patch will need to be applied."
+msgstr ""
+"为了让 Spack 把包安装到 User Managed Software 空间，需要应用如下补丁。"
+#: building_visit/Spack.rst:214
+msgid "The following spack command is used to build VisIt_."
+msgstr "以下 Spack 命令用于构建 VisIt_。"
+#: building_visit/Spack.rst:220
+msgid "The installation will fail to install some shared libraries in the VisIt_ lib directory. The following script will copy the necessary libraries."
+msgstr ""
+"安装过程会在将某些共享库安装到 VisIt_ 的 lib 目录时失败。下面的脚本会复制所需的库。"
+#: building_visit/Spack.rst:242
+msgid "Building on Perlmutter"
+msgstr "在 Perlmutter 上构建"
+#: building_visit/Spack.rst:244
+msgid "You will first need to copy the `packages.yaml` files from `scripts/spack/configs/nersc/perlmutter/` to your `.spack` directory in your home directory."
+msgstr ""
+"首先需要将 `scripts/spack/configs/nersc/perlmutter/` 中的 `packages.yaml` 文件复制到你主目录下的 `.spack` 目录。"
+#: building_visit/Spack.rst:246
+msgid "The following spack command is used to build with spack."
+msgstr "以下 Spack 命令用于使用 Spack 构建。"
+#: building_visit/Spack.rst:252
+msgid "The installation will fail to install some shared libraries in the VisIt_ lib directory. The following script will copy the necessary libraries (you will need to modify the paths as appropriate.)"
+msgstr ""
+"安装过程会在将某些共享库安装到 VisIt_ 的 lib 目录时失败。下面的脚本会复制所需的库（你需要按实际情况修改路径）。"
+#: building_visit/Spack.rst:262
+msgid "Working around recurring download failures"
+msgstr "应对反复的下载失败"
+#: building_visit/Spack.rst:264
+msgid "Depending on context, recurring issues downloading a particular *dependent* package may arise. When this happens, SSL certificate handling may be the cause. A quick work-around is to disable this `security checking feature <https://spack.readthedocs.io/en/latest/config_yaml.html?highlight=ssl%20certificates#verify-ssl>`_ in Spack by adding the ``--insecure`` command-line option as the second option *just* after ``spack``. Alternatively, you may be able to manually download the needed files and place them in a directory for Spack to use as a `mirror <https://spack.readthedocs.io/en/latest/mirrors.html?highlight=mirror#mirrors-mirrors-yaml>`_. For example, starting from the point of having successfully downloaded the ``Python-3.7.13.tgz`` file somewhere, here are the Spack steps... ::"
+msgstr ""
+"视具体情况，下载某个特定的*依赖*包时可能会反复出现问题。发生这种情况时，原因可能与 SSL 证书处理有关。一个快速的变通办法是，在 ``spack`` 之后*紧接着*添加第二个命令行选项 ``--insecure``，以禁用 Spack 的 `安全检查功能 <https://spack.readthedocs.io/en/latest/config_yaml.html?highlight=ssl%20certificates#verify-ssl>`_。或者，你也可以手动下载所需文件，并将其放入某个目录，让 Spack 将其用作 `镜像（mirror）<https://spack.readthedocs.io/en/latest/mirrors.html?highlight=mirror#mirrors-mirrors-yaml>`_。例如，假设你已经在某处成功下载了 ``Python-3.7.13.tgz`` 文件，以下是 Spack 的操作步骤... ::"
+#: building_visit/Spack.rst:274
+msgid "Note that change in case of the file name. Doing this will cause Spack to go get the file you manually downloaded. The first step to add the mirror is only needed once. To add additional files for which recurring download failures are occurring, just copy them into the mirror following the Spack naming conventions for packages."
+msgstr ""
+"请注意文件名大小写的变化。这样做会让 Spack 去获取你手动下载的文件。添加 mirror 的第一步只需要执行一次。对于其他也出现反复下载失败的文件，只需按照 Spack 对包的命名约定将它们复制到 mirror 中即可。"
+#: building_visit/Spack.rst:280
+msgid "The spack environment files"
+msgstr "Spack 环境文件"
+#: building_visit/Spack.rst:282
+msgid "Spack uses two files to control the environment on a system. They are the ``compilers.yaml`` file and the ``packages.yaml`` file."
+msgstr ""
+"Spack 使用两个文件来控制系统环境：``compilers.yaml`` 和 ``packages.yaml``。"
+#: building_visit/Spack.rst:284
+msgid "The ``compilers.yaml`` file is used to specify information about compilers on a system. The ``spack compilers`` command, as mentioned earlier, will create one for you with all the compilers on the system. You can then customize it. The complete documentation on the ``compilers.yaml`` file can be found `here <https://spack.readthedocs.io/en/latest/getting_started.html#compiler-configuration>`__."
+msgstr ""
+"``compilers.yaml`` 用于指定系统中编译器的相关信息。如前所述，``spack compilers`` 命令会为你生成该文件，并列出系统中的所有编译器。之后你可以按需自定义它。关于 ``compilers.yaml`` 的完整文档请见 `这里 <https://spack.readthedocs.io/en/latest/getting_started.html#compiler-configuration>`__。"
+#: building_visit/Spack.rst:289
+msgid "The ``packages.yaml`` file is used to specify information about external packages on a system. By default, spack will want to build everything from scratch for your system. If some of the packages are already installed on the system you can use those by listing them in a ``packages.yaml`` file. Typically, you will want to use an external MPI library on most HPC systems. The ``spack external find`` command will create an initial ``packages.yaml`` file for you. The ``spack external find`` command is non-destructive and will append to an existing ``packages.yaml`` file. You can then customize it. The complete documentation on the ``packages.yaml`` file can be found `here <https://spack.readthedocs.io/en/latest/build_settings.html>`__."
+msgstr ""
+"``packages.yaml`` 用于指定系统中外部包（external packages）的信息。默认情况下，Spack 会倾向于为你的系统从零开始构建所有内容。如果系统里已经安装了某些包，你可以在 ``packages.yaml`` 中列出它们以复用这些外部安装。在大多数 HPC 系统上，通常希望使用外部 MPI 库。``spack external find`` 命令会为你生成一个初始的 ``packages.yaml`` 文件。该命令是非破坏性的：它会向现有的 ``packages.yaml`` 追加内容。之后你可以按需自定义它。关于 ``packages.yaml`` 的完整文档请见 `这里 <https://spack.readthedocs.io/en/latest/build_settings.html>`__。"
+#: building_visit/Spack.rst:298
+msgid "These files are stored in your ``~/.spack`` directory. ::"
+msgstr "这些文件存储在你的 ``~/.spack`` 目录中。 ::"
+#: building_visit/Spack.rst:305
+msgid "The VisIt_ repository at GitHub contains ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``."
+msgstr ""
+"GitHub 上的 VisIt_ 仓库在 ``scripts/spack/configs`` 目录中包含了面向常见系统的 ``packages.yaml`` 文件。"
+#: building_visit/Spack.rst:307
+msgid "Here is the ``packages.yaml`` file for ``frontier.olcf.ornl.gov`` for VisIt_."
+msgstr "下面是 VisIt_ 在 ``frontier.olcf.ornl.gov`` 上使用的 ``packages.yaml`` 文件。"
+#: building_visit/Spack.rst:494
+msgid "Debugging a spack package"
+msgstr "调试 Spack 包"
+#: building_visit/Spack.rst:496
+msgid "When doing a spack install and the install fails, it will automatically keep the directory where it did the work, called the `stage` directory, which will allow you debug the failure. If you want to modify an otherwise successful install or explore the state of a successful install you can use the ``--keep-stage`` flag to the ``spack install`` command. ::"
+msgstr ""
+"当执行 ``spack install`` 且安装失败时，Spack 会自动保留其工作目录（称为 `stage` 目录），以便你调试失败原因。如果你想修改一次成功的安装，或查看一次成功安装的状态，也可以在 ``spack install`` 命令中使用 ``--keep-stage`` 选项。 ::"
+#: building_visit/Spack.rst:501
+msgid "If you are developing a new package from scratch and need to create the stage directory. ::"
+msgstr ""
+"如果你正在从零开发一个新包，并需要创建 stage 目录。 ::"
+#: building_visit/Spack.rst:505
+msgid "To go to the stage directory and set up the spack environment. ::"
+msgstr "进入 stage 目录并设置 Spack 环境。 ::"
+#: building_visit/Spack.rst:510
+msgid "Note that this will create a new shell so you will want to do an ``exit`` when you are finished."
+msgstr ""
+"注意：这会创建一个新的 shell，因此完成后请执行 ``exit`` 退出。"
+#: building_visit/Spack.rst:512
+msgid "Spack will cache various items that will sometimes undermine changes you are making while developing a package. If you believe this is happening then you can clear all the caches. ::"
+msgstr ""
+"Spack 会缓存各种内容，这有时会影响你在开发包时所做的更改。如果你认为发生了这种情况，可以清理所有缓存。 ::"
+#: building_visit/Spack.rst:517
+msgid "Here are some common locations of stage directories. ::"
+msgstr "下面是一些常见的 stage 目录位置。 ::"
+#: building_visit/Spack.rst:523
+msgid "E4S Project"
+msgstr "E4S 项目"
+#: building_visit/Spack.rst:525
+msgid "The Extreme-scale Scientific Software Stack (E4S) is a community effort to provide open source software packages for developing, deploying and running scientific applications on high-performance computing (HPC) platforms. E4S provides from-source builds and containers of a broad collection of HPC software packages."
+msgstr ""
+"Extreme-scale Scientific Software Stack（E4S）是一个社区项目，旨在为高性能计算（HPC）平台上的科学应用开发、部署与运行提供开源软件包。E4S 提供大量 HPC 软件包的源码构建与容器。"
+#: building_visit/Spack.rst:528
+msgid "E4S exists to accelerate the development, deployment and use of HPC software, lowering the barriers for HPC users. E4S provides containers and turn-key, from-source builds of more than 80 popular HPC products in programming models, such as MPI; development tools such as HPCToolkit, TAU and PAPI; math libraries such as PETSc and Trilinos; and Data and Viz tools such as HDF5 and VisIt_."
+msgstr ""
+"E4S 的目标是加速 HPC 软件的开发、部署与使用，降低 HPC 用户的门槛。E4S 为 80 多种常见的 HPC 产品提供容器以及开箱即用的源码构建，包括编程模型（如 MPI）、开发工具（如 HPCToolkit、TAU、PAPI）、数学库（如 PETSc、Trilinos）以及数据与可视化工具（如 HDF5、VisIt_）。"
+#: building_visit/Spack.rst:531
+msgid "E4S packages build on most computer systems, from laptops to supercomputers by using spack as the meta-build tool for the packages."
+msgstr ""
+"E4S 包使用 Spack 作为元构建工具（meta-build tool），可在从笔记本到超级计算机的多数系统上构建。"
+#: building_visit/Spack.rst:533
+msgid "The E4S software distribution is tested regularly on a variety of platforms, from Linux clusters to leadership platforms."
+msgstr ""
+"E4S 软件发行版会在多种平台上定期进行测试，从 Linux 集群到领导级平台（leadership platforms）。"
+#: building_visit/Spack.rst:536
+msgid "The E4S testsuite"
+msgstr "E4S 测试套件"
+#: building_visit/Spack.rst:538
+msgid "As a member of E4S, VisIt_ has tests that are part of the E4S-Project testsuite repository at GitHub."
+msgstr ""
+"作为 E4S 的成员，VisIt_ 的测试是 GitHub 上 E4S-Project 测试套件仓库的一部分。"
+#: building_visit/Spack.rst:540
+msgid "Complete information on the testsuite can be found in the README at the bottom of the testsuite repository located `here <https://github.com/E4S-Project/testsuite>`__."
+msgstr ""
+"关于测试套件的完整信息请参见 `这里 <https://github.com/E4S-Project/testsuite>`__ 的测试套件仓库底部的 README。"
+#: building_visit/Spack.rst:543
+msgid "Running the tests"
+msgstr "运行测试"
+#: building_visit/Spack.rst:545
+msgid "The first step is to clone the testsuite from GitHub. ::"
+msgstr "第一步是从 GitHub 克隆测试套件。 ::"
+#: building_visit/Spack.rst:561
+msgid "Now you are ready to run the VisIt_ tests. ::"
+msgstr "现在你已经可以运行 VisIt_ 的测试了。 ::"
