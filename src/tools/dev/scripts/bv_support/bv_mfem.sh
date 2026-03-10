@@ -61,12 +61,18 @@ function bv_mfem_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
 
-        ZLIB_LIBDEP="ZLIB_LIB"
         CONDUIT_LIBDEP=""
+        HDF5_LIBDEP=""
         INCDEP=""
         if [[ "$DO_CONDUIT" == "yes" ]] ; then
             CONDUIT_LIBDEP="\${VISIT_CONDUIT_LIBDEP}"
             INCDEP="CONDUIT_INCLUDE_DIR"
+        fi
+        # conduit also depends on hdf5, so if both are being built there
+        # is no need to duplicate conduit's hdf5-dependency, but otherwise
+        # the hdf5 dependency should be added
+        if [[ "$DO_HDF5" == "yes" && "$DO_CONDUIT" == "no" ]] ; then
+            HDF5_LIBDEP="HDF5_LIB"
         fi
         if [[ "$DO_FMS" == "yes" ]] ; then
             INCDEP="$INCDEP FMS_INCLUDE_DIR"
@@ -78,7 +84,7 @@ function bv_mfem_host_profile
                     >> $HOSTCONF
         fi
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $ZLIB_LIBDEP $CONDUIT_LIBDEP TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $CONDUIT_LIBDEP $HDF5_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
     fi
 }

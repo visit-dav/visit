@@ -9,7 +9,7 @@ For each managed installation, we maintain a set of platform-specific CMake vari
 These files are called *config-site* files.
 They offer a simple, short-hand for specifying a slew of CMake variables when building VisIt_.
 
-In this section, we explain how a config-site file is organized and what various of the different type of variables used there mean.
+In this section, we explain how a config-site file is organized and what various of the different types of variables used there mean.
 One key thing to understand is that VisIt_'s CMake build logic pre-dates many of the more modern and useful features of CMake as well as the adoption of CMake support by a number of third-party library (TPL) providers VisIt_ relies upon.
 
 The first lines of a config-site file are a set of comments capturing some high-level information about the build the file supports.
@@ -96,7 +96,7 @@ The second entry in the pair is the name of the library such as would be used in
 
 The second kind is a CMake variable representing a bonified CMake *imported target*.
 For all TPLs VisIt supports, only a few (HDF5, Silo, ZLIB) are currently handled as bonified CMake imported targets.
-This situation will improve to include many more TPLs as imported targets but currently, only a handful of TPLs are handled this way.
+This situation will improve to include many more TPLs as imported targets but currently (as of version 3.5.0), only a handful of TPLs are handled this way.
 The variable, ``HDF5_LIB`` is the variable which holds the imported target name for the HDF5 library (typically ``hdf5-shared``).
 
 A third kind is the CMake variable representing all the dependencies of another TPL.

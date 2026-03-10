@@ -220,42 +220,39 @@ EOF
     fi
 }
 
-function apply_silo_4120_zlib_hdf5_link_patch
+function apply_silo_4120_hzip_needs_zlib_patch
 {
-    info "Patching Silo 4.12.0 for zlib linking issue"
-    patch -p1 << \EOF
-From 062720d4e9fcb0d00680dc92e49122a4f6835f87 Mon Sep 17 00:00:00 2001
-From: Cyrus Harrison <cyrush@llnl.gov>
-Date: Thu, 26 Feb 2026 13:11:16 -0800
-Subject: [PATCH] add zlib link patch
-
----
- CMakeLists.txt | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e9118ff..5c239e6 100644
---- a/Silo-4.12.0/CMakeLists.txt
-+++ b/Silo-4.12.0/CMakeLists.txt
-@@ -711,6 +711,9 @@ if(SILO_ENABLE_HDF5 AND HDF5_FOUND)
-     # when telling broswer and silex to link with silo
-     set_target_properties(silo PROPERTIES OUTPUT_NAME siloh5)
-     target_link_libraries(silo ${HDF5_C_LIBRARIES})
-+    if( TRUE ) # HDF5_ENABLE_Z_LIB_SUPPORT
-+        target_link_libraries(silo ${ZLIB_LIBRARIES})
-+    endif()
-     target_include_directories(silo PRIVATE ${HDF5_INCLUDE_DIRS})
- endif()
+    info "Patching Silo 4.12.0 for hzip needs zlib issue"
+    patch -p0 << \EOF
+--- Silo-4.12.0/CMakeLists.txt.orig	2026-03-10 12:08:28.256403000 -0700
++++ Silo-4.12.0/CMakeLists.txt	2026-03-10 12:08:15.604238000 -0700
+@@ -617,9 +617,7 @@
+             ${Silo_SOURCE_DIR}/src/hzip)
+     endif()
  
--- 
+-    if(ZLIB_FOUND)
+-        list(APPEND silo_library_include_dirs ${ZLIB_INCLUDE_DIR})
+-    else()
++    if(NOT ZLIB_FOUND)
+         list(APPEND SILO_COMPILE_DEFINES WITHOUT_ZLIB)
+     endif()
+ endif()
+@@ -627,6 +625,10 @@
+ add_library(silo ${silo_library_sources})
+ set_target_properties(silo PROPERTIES VERSION ${SILO_VERSION} SOVERSION ${SILO_SOVERSION})
+ 
++if(ZLIB_FOUND AND SILO_ENABLE_HZIP)
++    target_link_libraries(silo  ZLIB::ZLIB)
++endif()
++
+ target_compile_definitions(silo PRIVATE ${SILO_COMPILE_DEFINES})
+ add_dependencies(silo pdb_detect)
+ target_include_directories(silo PRIVATE ${silo_library_include_dirs})
 EOF
-
     if [[ $? != 0 ]] ; then
         return 1
     fi
 }
-
-
 
 function apply_silo_patch
 {
@@ -278,8 +275,7 @@ function apply_silo_patch
             warn "Giving up on Silo build because the patch failed."
             return 1
         fi
-
-        apply_silo_4120_zlib_hdf5_link_patch
+        apply_silo_4120_hzip_needs_zlib_patch
         if [[ $? != 0 ]] ; then
             warn "Giving up on Silo build because the patch failed."
             return 1
@@ -364,10 +360,11 @@ function build_silo
 
     if [[ "$DO_ZLIB" == "yes" ]]; then
         cmake_opts="${cmake_opts} \
+            -DZLIB_ROOT:PATH=${VISIT_ZLIB_DIR} \
             -DSILO_BUILD_FOR_BSD_LICENSE:BOOL=OFF \
             -DSILO_ENABLE_HZIP:BOOL=ON \
             -DSILO_ENABLE_FPZIP:BOOL=ON \
-            -DSILO_ZLIB_DIR:PATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
+            -DSILO_ZLIB_DIR:PATH=${VISIT_ZLIB_DIR}"
     fi
 
     if [[ "$DO_SILEX" == "yes" ]]; then
@@ -378,7 +375,6 @@ function build_silo
 
     # silo needs to find mpi if hdf5 was built with mpi support
     if [[ "$PAR_COMPILER" != "" ]] ; then
-        cmake_opts="${cmake_opts} -DENABLE_MPI:BOOL=ON"
         cmake_opts="${cmake_opts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
         cmake_opts="${cmake_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
     fi

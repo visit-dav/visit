@@ -26,39 +26,33 @@
 #   Kathleen Biagas, Tue May 28 09:08:56 PDT 2019
 #   Since we require zlib from build_visit, no longer need HAVE_ZLIB_H
 #
+#   Kathleen Biagas, Mon Mar 9, 2026
+#   Use find_package.
+#
 #****************************************************************************/
 
 # Use the ZLIB_DIR hint from the config-site .cmake file
 
-if (WIN32)
-    if(ZLIB_LIB_NAME)
-        SET_UP_THIRD_PARTY(ZLIB LIBS ${ZLIB_LIB_NAME})
-    else()
-        SET_UP_THIRD_PARTY(ZLIB LIBS zlib1)
-    endif()
-    if (ZLIB_FOUND)
-        # use full path here, instead of just lib file.
-        #set(ZLIB_LIBRARY "${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
-        set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "full path to zlib library" FORCE)
-        message(STATUS "ZLIB_LIBRARY = ${ZLIB_LIBRARY}.")
-    else ()
-        message(WARNING "ZLIB_LIBRARY not found.  VISIT_ZLIB_DIR = ${VISIT_ZLIB_DIR}, ZLIB_LIB_NAME = ${ZLIB_LIB_NAME}.")
-    endif ()
-else (WIN32)
-    # Have we told VisIt where to look for zlib?
-    if (VISIT_ZLIB_DIR)
-        SET_UP_THIRD_PARTY(ZLIB LIBS z)
-        if (ZLIB_FOUND)
-        # use full path here, instead of just lib file.
-            set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
-        endif ()
-    else ()
-      message(WARNING "VISIT_ZLIB_DIR not set.")
-    endif ()
-endif (WIN32)
+if(VISIT_ZLIB_DIR)
+    set(ZLIB_ROOT ${VISIT_ZLIB_DIR})
+endif()
+
+find_package(ZLIB)
 
 if(ZLIB_FOUND)
     set(HAVE_LIBZ true CACHE BOOL "Have lib z")
+
+    if(TARGET ZLIB::ZLIB)
+        # for VisIt libraries' needs
+        set(ZLIB_LIBRARY ZLIB::ZLIB)
+
+        # Install 
+        get_target_property(zlib_loc ZLIB::ZLIB IMPORTED_LOCATION_RELEASE)
+        get_target_property(zlib_inc ZLIB::ZLIB INTERFACE_INCLUDE_DIRECTORIES)
+        THIRD_PARTY_INSTALL_LIBRARY(${zlib_loc})
+        THIRD_PARTY_INSTALL_INCLUDE(zlib ${zlib_inc})
+    endif()
+
 else()
     message(FATAL_ERROR "VisIt requires lib z and it could not be found.")
 endif()

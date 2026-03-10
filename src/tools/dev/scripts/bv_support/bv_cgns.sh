@@ -102,7 +102,7 @@ function apply_cgns_410_cmake_patch
      if (NOT HDF5_static_C_FOUND AND NOT HDF5_shared_C_FOUND)
        set (FIND_HDF_COMPONENTS C)
  
-@@ -217,9 +223,9 @@
+@@ -217,19 +223,19 @@
          add_definitions (-DH5_BUILT_AS_STATIC_LIB)
        endif (HDF5_BUILD_SHARED_LIBS)
        if (BUILD_SHARED_LIBS AND WIN32)
@@ -114,9 +114,11 @@ function apply_cgns_410_cmake_patch
        endif (BUILD_SHARED_LIBS AND WIN32)
      else (NOT HDF5_static_C_FOUND AND NOT HDF5_shared_C_FOUND)
        if (BUILD_SHARED_LIBS AND HDF5_shared_C_FOUND)
-@@ -227,9 +233,9 @@
+-        set (LINK_LIBS ${LINK_LIBS} ${HDF5_C_SHARED_LIBRARY})
++        set (LINK_LIBS ${LINK_LIBS} hdf5-shared )
        else (HDF5_static_C_FOUND)
-         set (LINK_LIBS ${LINK_LIBS} ${HDF5_C_STATIC_LIBRARY})
+-        set (LINK_LIBS ${LINK_LIBS} ${HDF5_C_STATIC_LIBRARY})
++        set (LINK_LIBS ${LINK_LIBS} hdf5-static)
        endif (BUILD_SHARED_LIBS AND HDF5_shared_C_FOUND)
 -      set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dump")
 +      #set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dump")
@@ -151,7 +153,6 @@ function apply_cgns_410_cmake_patch
        message(FATAL_ERROR "HDF5 has been found, but is missing parallel support.")
    endif()
  else (CGNS_ENABLE_HDF5 AND HDF5_NEED_MPI)
-
 EOF
     if [[ $? != 0 ]] ; then
         return 1
@@ -257,28 +258,28 @@ function build_cgns
     cmake_opts="${cmake_opts} -DCMAKE_INSTALL_PREFIX:PATH=${CGNS_INSTALL_DIR}"
     cmake_opts="${cmake_opts} -DCMAKE_BUILD_TYPE:STRING=${cgns_cmake_build_type}"
     cmake_opts="${cmake_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON"
-    cmake_opts="${cmake_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     cmake_opts="${cmake_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
-    cmake_opts="${cmake_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    cmake_opts="${cmake_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+    cmake_opts="${cmake_opts} -DBUILD_SHARED_LIBS:BOOL=${cgns_build_shared}"
 
     # CGNS-specific options.
     cmake_opts="${cmake_opts} -DCGNS_BUILD_SHARED:BOOL=${cgns_build_shared}"
     cmake_opts="${cmake_opts} -DCGNS_ENABLE_FORTRAN:BOOL=OFF"
     cmake_opts="${cmake_opts} -DCGNS_BUILD_CGNSTOOLS:BOOL=OFF"
     cmake_opts="${cmake_opts} -DCGNS_ENABLE_TESTS:BOOL=OFF"
-    cmake_opts="${cmake_opts} -DCGNS_PARALLEL:BOOL=OFF"
+    cmake_opts="${cmake_opts} -DCGNS_ENABLE_PARALLEL:BOOL=OFF"
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
         cmake_opts="${cmake_opts} -DCGNS_ENABLE_HDF5:BOOL=ON"
-        cmake_opts="${cmake_opts} -DHDF5_DIR:PATH=$VISITDIR/hdf5/$HDF5_VERSION/$VISITIARCH/cmake"
+        cmake_opts="${cmake_opts} -DHDF5_DIR:PATH=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/cmake"
         if [[ "$DO_ZLIB" == "yes" ]] ; then
             cmake_opts="${cmake_opts} -DHDF5_NEED_ZLIB:BOOL=ON"
-            cmake_opts="${cmake_opts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
-            cmake_opts="${cmake_opts} -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+            # allow using ZLIB_ROOT
+            cmake_opts="${cmake_opts} -DCMAKE_POLICY_DEFAULT_CMP0074=NEW"
+            cmake_opts="${cmake_opts} -DZLIB_ROOT:PATH=${VISIT_ZLIB_DIR}"
         fi
         # if HDF5 built with parallel, then need to set MPI_HOME
         if [[ "$PAR_COMPILER" != "" ]] ; then
+            cmake_opts="${cmake_opts} -DHDF5_NEED_MPI:BOOL=ON"
             cmake_opts="${cmake_opts} -DMPI_HOME:STRING=${PAR_HOME}"
         fi
     else

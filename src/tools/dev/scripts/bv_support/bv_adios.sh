@@ -130,118 +130,10 @@ function bv_adios_ensure
 #
 # ***************************************************************************
 
-function apply_adios_1_6_0_patch
-{
-    # fix for osx -- malloc.h doesn't exist (examples/C/schema includes this file)
-    info "Patching ADIOS"
-    patch -p0 << \EOF
-diff -rcN adios-1.6.0-orig/examples/C/schema/rectilinear2d.c adios-1.6.0/examples/C/schema/rectilinear2d.c
-*** adios-1.6.0-orig/examples/C/schema/rectilinear2d.c  2013-12-05 08:15:37.000000000 -0800
---- adios-1.6.0/examples/C/schema/rectilinear2d.c       2014-06-02 15:27:23.000000000 -0700
-***************
-*** 10,16 ****
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-! #include <malloc.h>
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include <errno.h>
---- 10,18 ----
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-! #if !defined(__APPLE__)
-!  #include <malloc.h>
-! #endif
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include <errno.h>
-diff -rcN adios-1.6.0-orig/examples/C/schema/structured2d.c adios-1.6.0/examples/C/schema/structured2d.c
-*** adios-1.6.0-orig/examples/C/schema/structured2d.c   2013-12-05 08:15:37.000000000 -0800
---- adios-1.6.0/examples/C/schema/structured2d.c        2014-06-02 15:27:23.000000000 -0700
-***************
-*** 10,16 ****
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-! #include <malloc.h>
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include <errno.h>
---- 10,18 ----
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-! #if !defined(__APPLE__)
-!  #include <malloc.h>
-! #endif
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include <errno.h>
-diff -rcN adios-1.6.0-orig/examples/C/schema/tri2d.c adios-1.6.0/examples/C/schema/tri2d.c
-*** adios-1.6.0-orig/examples/C/schema/tri2d.c  2013-12-05 08:15:37.000000000 -0800
---- adios-1.6.0/examples/C/schema/tri2d.c       2014-06-02 15:27:23.000000000 -0700
-***************
-*** 10,16 ****
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-! #include <malloc.h>
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include <errno.h>
---- 10,18 ----
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-! #if !defined(__APPLE__)
-!  #include <malloc.h>
-! #endif
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include <errno.h>
-diff -rcN adios-1.6.0-orig/examples/C/schema/uniform2d.c adios-1.6.0/examples/C/schema/uniform2d.c
-*** adios-1.6.0-orig/examples/C/schema/uniform2d.c      2013-12-05 08:15:37.000000000 -0800
---- adios-1.6.0/examples/C/schema/uniform2d.c   2014-06-02 15:27:23.000000000 -0700
-***************
-*** 10,16 ****
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-! #include <malloc.h>
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include <errno.h>
---- 10,18 ----
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-! #if !defined(__APPLE__)
-!  #include <malloc.h>
-! #endif
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include <errno.h>
-
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "ADIOS patch failed."
-        return 1
-    fi
-
-    return 0;
-}
 
 function apply_adios_patch
 {
-    if [[ ${ADIOS_VERSION} == 1.6.0 ]] ; then
-        apply_adios_1_6_0_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
+    info "No patches for adios"
     return 0
 }
 
@@ -299,10 +191,15 @@ function build_adios
     if [[ "$DO_HDF5" == "yes" ]] ; then
         export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         WITH_HDF5_ARGS="--with-hdf5=$HDF5ROOT"
-        #HDF5_DYLIB="-L$HDF5ROOT/lib -lhdf5 -lz"
     else
         WITH_HDF5_ARGS="--without-hdf5"
         #HDF5_DYLIB=""
+    fi
+
+    if [[ "$DO_ZLIB" == "yes" && "$DO_HDF5" == "yes" ]] ; then
+        WITH_ZLIB_ARGS="--with-zlib=${VISIT_ZLIB_DIR}"
+    else
+        WITH_ZLIB_ARGS="--without-zlib"
     fi
 
     # blosc support
@@ -317,11 +214,16 @@ function build_adios
         sed -i '' 's/^libparse_test_query_xml_a_LIBADD/#libparse_test_query_xml_a_LIBADD/' tests/C/query/common/Makefile.in
     fi
 
+    pyenv=""
+    if [[ "$DO_PYTHON" == "yes" ]]; then
+        pyenv="env PYTHON=$PYTHON_COMMAND"
+    fi
+
     set -x
-    sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+    ${pyenv} sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
            CFLAGS=\"$CFLAGS $C_OPT_FLAGS $WITH_MPI_INC\" \
            CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $WITH_MPI_INC\" \
-           $WITH_MPI_ARGS $WITH_HDF5_ARGS $WITH_BLOSC_ARGS \
+           $WITH_MPI_ARGS $WITH_HDF5_ARGS $WITH_BLOSC_ARGS $WITH_ZLIB_ARGS \
            --disable-fortran \
            --without-netcdf --without-nc4par --without-phdf5 --without-mxml \
            --prefix=\"$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH\""

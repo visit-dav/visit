@@ -598,13 +598,16 @@ function build_h5part
     if [[ "$DO_HDF5" == "yes" ]] ; then
         export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         WITHHDF5ARG="--with-hdf5=$HDF5ROOT"
+        LDFLAGS="-L$HDF5ROOT/lib"
+        LIBS="-lhdf5"
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            LDFLAGS="$LDFLAGS -L${VISIT_ZLIB_DIR}/lib"
+            LIBS="$LIBS -lz"
+        fi
         if [[ "$PAR_COMPILER" != "" ]] ; then
             CFLAGS="$CFLAGS -I${PAR_HOME}/include"
-            LDFLAGS="-L$HDF5ROOT/lib -Wl,-rpath,$HDF5ROOT/lib -L${PAR_HOME}/lib -Wl,-rpath,${PAR_HOME}/lib -L${PAR_HOME}/lib64 -Wl,-rpath,${PAR_HOME}/lib64"
-            LIBS="-lhdf5 -lmpi -lz"
-        else
-            LDFLAGS="-L$HDF5ROOT/lib"
-            LIBS="-lhdf5 -lz"
+            LDFLAGS="$LDFLAGS -Wl,-rpath,$HDF5ROOT/lib -L${PAR_HOME}/lib -Wl,-rpath,${PAR_HOME}/lib -L${PAR_HOME}/lib64 -Wl,-rpath,${PAR_HOME}/lib64"
+            LIBS="$LIBS -lmpi"
         fi
     else
         WITHHDF5ARG="--without-hdf5"
