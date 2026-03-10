@@ -85,86 +85,90 @@ If you use the Fortran interface to Silo, you will have to write out the vector 
 
     Example for writing vector data using Silo.
 
-  .. tabs::
+  .. tab-set::
 
-    .. code-tab:: c
+    .. tab-item:: C
 
-      int i, dims[3], ndims = 3;
-      int nnodes = NX*NY*NZ;
-      float *comp[3];
-      char *varnames[] = {"nodal_comp0","nodal_comp1","nodal_comp2"};
-      comp[0] = (float *)malloc(sizeof(float)*nnodes);
-      comp[1] = (float *)malloc(sizeof(float)*nnodes);
-      comp[2] = (float *)malloc(sizeof(float)*nnodes);
-      for(i = 0; i < nnodes; ++i)
-      {
-          comp[0][i] = (float)i; /*vector component 0*/
-          comp[1][i] = (float)i; /*vector component 1*/
-          comp[2][i] = (float)i; /*vector component 2*/
-      }
-      dims[0] = NX; dims[1] = NY; dims[2] = NZ;
-      DBPutQuadvar(dbfile, "nodal", "quadmesh",
-                   3, varnames, comp, dims,
-                   ndims, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
-      free(comp[0]);
-      free(comp[1]);
-      free(comp[2]);
+      .. code-block:: c
 
-    .. code-tab:: fortranfixed
+        int i, dims[3], ndims = 3;
+        int nnodes = NX*NY*NZ;
+        float *comp[3];
+        char *varnames[] = {"nodal_comp0","nodal_comp1","nodal_comp2"};
+        comp[0] = (float *)malloc(sizeof(float)*nnodes);
+        comp[1] = (float *)malloc(sizeof(float)*nnodes);
+        comp[2] = (float *)malloc(sizeof(float)*nnodes);
+        for(i = 0; i < nnodes; ++i)
+        {
+            comp[0][i] = (float)i; /*vector component 0*/
+            comp[1][i] = (float)i; /*vector component 1*/
+            comp[2][i] = (float)i; /*vector component 2*/
+        }
+        dims[0] = NX; dims[1] = NY; dims[2] = NZ;
+        DBPutQuadvar(dbfile, "nodal", "quadmesh",
+                     3, varnames, comp, dims,
+                     ndims, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+        free(comp[0]);
+        free(comp[1]);
+        free(comp[2]);
 
-          subroutine write_nodecent_quadvar(dbfile)
-          implicit none
-          integer dbfile
-          include "silo.inc"
-          integer err, ierr, dims(3), ndims,i,j,k,index,NX,NY,NZ
-          parameter (NX = 4)
-          parameter (NY = 3)
-          parameter (NZ = 2)
-          real comp0(NX,NY,NZ), comp1(NX,NY,NZ), comp2(NX,NY,NZ)
-          data dims/NX,NY,NZ/
-          index = 0
-          do 20020 k=1,NZ
-              do 20010 j=1,NY
-                  do 20000 i=1,NX
-                      comp0(i,j,k) = float(index)
-                      comp1(i,j,k) = float(index)
-                      comp2(i,j,k) = float(index)
-                      index = index + 1
-      20000 continue
-      20010 continue
-      20020 continue
-          ndims = 3
-          err = dbputqv1(dbfile, "n_comp0", 11, "quadmesh", 8, comp0, dims, ndims,
-          .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
-          err = dbputqv1(dbfile, "n_comp1", 11, "quadmesh", 8, comp1, dims, ndims,
-          .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
-          err = dbputqv1(dbfile, "n_comp2", 11, "quadmesh", 8, comp2, dims, ndims,
-          .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
-          end
-          subroutine write_defvars(dbfile)
-          implicit none
-          integer dbfile
-          include "silo.inc"
-          integer err, ierr, types(2), lnames(2), ldefs(2), oldlen
-      c Initialize some 20 character length strings
-          character*40 names(2) /'zonalvec ' ,
-          .                      ' nodalvec ' /
-          character*40 defs(2) /'{z_comp0,z_comp1,z_comp2} ',
-          .                     '{n_comp0,n_comp1,n_comp2} '/
-      c Store the length of each string
-          data lnames/8, 8/
-          data ldefs/37, 37/
-          data types/DB_VARTYPE_VECTOR, DB_VARTYPE_VECTOR/
-      c Set the maximum string length to 40 since that is how long our
-      c strings are
-          oldlen = dbget2dstrlen()
-          err = dbset2dstrlen(40)
-      c Write out the expressions
-          err = dbputdefvars(dbfile, "defvars", 7, 2, names, lnames,
-          .                  types, defs, ldefs, DB_F77NULL, ierr)
-      c Restore the previous value for maximum string length
-          err = dbset2dstrlen(oldlen)
-          end
+    .. tab-item:: Fortran
+
+      .. code-block:: fortranfixed
+
+            subroutine write_nodecent_quadvar(dbfile)
+            implicit none
+            integer dbfile
+            include 'silo.inc'
+            integer err, ierr, dims(3), ndims,i,j,k,index,NX,NY,NZ
+            parameter (NX = 4)
+            parameter (NY = 3)
+            parameter (NZ = 2)
+            real comp0(NX,NY,NZ), comp1(NX,NY,NZ), comp2(NX,NY,NZ)
+            data dims/NX,NY,NZ/
+            index = 0
+            do 20020 k=1,NZ
+                do 20010 j=1,NY
+                    do 20000 i=1,NX
+                        comp0(i,j,k) = float(index)
+                        comp1(i,j,k) = float(index)
+                        comp2(i,j,k) = float(index)
+                        index = index + 1
+        20000 continue
+        20010 continue
+        20020 continue
+            ndims = 3
+            err = dbputqv1(dbfile, 'n_comp0', 11, 'quadmesh', 8, comp0, dims, ndims,
+            .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
+            err = dbputqv1(dbfile, 'n_comp1', 11, 'quadmesh', 8, comp1, dims, ndims,
+            .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
+            err = dbputqv1(dbfile, 'n_comp2', 11, 'quadmesh', 8, comp2, dims, ndims,
+            .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
+            end
+            subroutine write_defvars(dbfile)
+            implicit none
+            integer dbfile
+            include 'silo.inc'
+            integer err, ierr, types(2), lnames(2), ldefs(2), oldlen
+        c Initialize some 20 character length strings
+            character*40 names(2) /'zonalvec ' ,
+            .                      ' nodalvec ' /
+            character*40 defs(2) /'{z_comp0,z_comp1,z_comp2} ',
+            .                     '{n_comp0,n_comp1,n_comp2} '/
+        c Store the length of each string
+            data lnames/8, 8/
+            data ldefs/37, 37/
+            data types/DB_VARTYPE_VECTOR, DB_VARTYPE_VECTOR/
+        c Set the maximum string length to 40 since that is how long our
+        c strings are
+            oldlen = dbget2dstrlen()
+            err = dbset2dstrlen(40)
+        c Write out the expressions
+            err = dbputdefvars(dbfile, 'defvars', 7, 2, names, lnames,
+            .                  types, defs, ldefs, DB_F77NULL, ierr)
+        c Restore the previous value for maximum string length
+            err = dbset2dstrlen(oldlen)
+            end
 
 
 
@@ -228,33 +232,37 @@ The layout of the min and max values within that array are as follows: *min_dom1
 
     Example for writing data extents using Silo.
 
-  .. tabs::
+  .. tab-set::
 
-    .. code-tab:: c
+    .. tab-item:: C
 
-      const int two = 2;
-      double extents[NDOMAINS][2];
-      DBoptlist *optlist = NULL;
-      /* Calculate the per-domain data extents for this variable. */
-      /* Write the multivar.*/
-      optlist = DBMakeOptlist(2);
-      DBAddOption(optlist, DBOPT_EXTENTS_SIZE, (void *)&two);
-      DBAddOption(optlist, DBOPT_EXTENTS, (void *)extents);
-      DBPutMultivar(dbfile, "var", nvar, varnames, vartypes, optlist);
-      DBFreeOptlist(optlist);
+      .. code-block:: c
 
-    .. code-tab:: fortranfixed
+        const int two = 2;
+        double extents[NDOMAINS][2];
+        DBoptlist *optlist = NULL;
+        /* Calculate the per-domain data extents for this variable. */
+        /* Write the multivar.*/
+        optlist = DBMakeOptlist(2);
+        DBAddOption(optlist, DBOPT_EXTENTS_SIZE, (void *)&two);
+        DBAddOption(optlist, DBOPT_EXTENTS, (void *)extents);
+        DBPutMultivar(dbfile, "var", nvar, varnames, vartypes, optlist);
+        DBFreeOptlist(optlist);
 
-          double precision extents(2,NDOMAINS)
-          integer err, optlist
-      c Calculate the per-domain data extents for this variable.
-      c Write the multivar.
-          err = dbmkoptlist(2, optlist)
-          err = dbaddiopt(optlist, DBOPT_EXTENTS_SIZE, 2)
-          err = dbadddopt(optlist, DBOPT_EXTENTS, extents)
-          err = dbputmvar(dbfile, "var", 3, nvar, varnames, lvarnames,
-          .               vartypes, optlist, ierr)
-          err = dbfreeoptlist(optlist)
+    .. tab-item:: Fortran
+
+      .. code-block:: fortranfixed
+
+            double precision extents(2,NDOMAINS)
+            integer err, optlist
+        c Calculate the per-domain data extents for this variable.
+        c Write the multivar.
+            err = dbmkoptlist(2, optlist)
+            err = dbaddiopt(optlist, DBOPT_EXTENTS_SIZE, 2)
+            err = dbadddopt(optlist, DBOPT_EXTENTS, extents)
+            err = dbputmvar(dbfile, 'var', 3, nvar, varnames, lvarnames,
+            .               vartypes, optlist, ierr)
+            err = dbfreeoptlist(optlist)
 
 
 Writing spatial extents
@@ -278,51 +286,54 @@ In the event that you have 2D domains then you can omit the z-components of the 
 
     Example for writing spatial extents using Silo.
 
-  .. tabs::
+  .. tab-set::
 
-    .. code-tab:: c
+    .. tab-item:: C
 
-      const int six = 6;
-      double spatial_extents[NDOMAINS][6];
-      DBoptlist *optlist = NULL;
-      /* Calculate the per-domain spatial extents for this mesh. */
-      for(int i = 0; i < NDOMAINS; ++i)
-      {
-          spatial_extents[i][0] = xmin; /* xmin for i'th domain */
-          spatial_extents[i][1] = ymin; /* ymin for i'th domain */
-          spatial_extents[i][2] = zmin; /* zmin for i'th domain */
-          spatial_extents[i][3] = xmin; /* xmax for i'th domain */
-          spatial_extents[i][4] = ymax; /* ymax for i'th domain */
-          spatial_extents[i][5] = zmax; /* zmax for i'th domain */
-      }
-      /* Write the multimesh. */
-      optlist = DBMakeOptlist(2);
-      DBAddOption(optlist, DBOPT_EXTENTS_SIZE, (void *)&six);
-      DBAddOption(optlist, DBOPT_EXTENTS, (void *)spatial_extents);
-      DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, optlist);
-      DBFreeOptlist(optlist);
+      .. code-block:: c
 
+        const int six = 6;
+        double spatial_extents[NDOMAINS][6];
+        DBoptlist *optlist = NULL;
+        /* Calculate the per-domain spatial extents for this mesh. */
+        for(int i = 0; i < NDOMAINS; ++i)
+        {
+            spatial_extents[i][0] = xmin; /* xmin for i'th domain */
+            spatial_extents[i][1] = ymin; /* ymin for i'th domain */
+            spatial_extents[i][2] = zmin; /* zmin for i'th domain */
+            spatial_extents[i][3] = xmin; /* xmax for i'th domain */
+            spatial_extents[i][4] = ymax; /* ymax for i'th domain */
+            spatial_extents[i][5] = zmax; /* zmax for i'th domain */
+        }
+        /* Write the multimesh. */
+        optlist = DBMakeOptlist(2);
+        DBAddOption(optlist, DBOPT_EXTENTS_SIZE, (void *)&six);
+        DBAddOption(optlist, DBOPT_EXTENTS, (void *)spatial_extents);
+        DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, optlist);
+        DBFreeOptlist(optlist);
 
-    .. code-tab:: fortranfixed
+    .. tab-item:: Fortran
 
-          double precision spatial_extents(6,NDOMAINS)
-          integer optlist, err, dom
-      c Calculate the per-domain spatial extents for this mesh.
-          do 10000 dom=1,NDOMAINS
-              spatial_extents(1,dom) = xmin
-              spatial_extents(2,dom) = ymin
-              spatial_extents(3,dom) = zmin
-              spatial_extents(4,dom) = xmin
-              spatial_extents(5,dom) = ymax
-              spatial_extents(6,dom) = zmax
-          10000 continue
-      c Write the multimesh
-          err = dbmkoptlist(2, optlist)
-          err = dbaddiopt(optlist, DBOPT_EXTENTS_SIZE, 6)
-          err = dbadddopt(optlist, DBOPT_EXTENTS, spatial_extents)
-          err = dbputmmesh(dbfile, "quadmesh", 8, nmesh, meshnames,
-          .                lmeshnames, meshtypes, optlist, ierr)
-          err = dbfreeoptlist(optlist)
+      .. code-block:: fortranfixed
+
+            double precision spatial_extents(6,NDOMAINS)
+            integer optlist, err, dom
+        c Calculate the per-domain spatial extents for this mesh.
+            do 10000 dom=1,NDOMAINS
+                spatial_extents(1,dom) = xmin
+                spatial_extents(2,dom) = ymin
+                spatial_extents(3,dom) = zmin
+                spatial_extents(4,dom) = xmin
+                spatial_extents(5,dom) = ymax
+                spatial_extents(6,dom) = zmax
+            10000 continue
+        c Write the multimesh
+            err = dbmkoptlist(2, optlist)
+            err = dbaddiopt(optlist, DBOPT_EXTENTS_SIZE, 6)
+            err = dbadddopt(optlist, DBOPT_EXTENTS, spatial_extents)
+            err = dbputmmesh(dbfile, 'quadmesh', 8, nmesh, meshnames,
+            .                lmeshnames, meshtypes, optlist, ierr)
+            err = dbfreeoptlist(optlist)
 
 
 Ghost zones
@@ -652,85 +663,86 @@ That is, the **matlist** array does not contain any negative mixed material arra
 
     Example for writing mixed materials using Silo.
 
-  .. tabs::
+  .. tab-set::
 
-    .. code-tab:: c
+    .. tab-item:: C
 
-      /* Material arrays */
-      int nmats = 2, mdims[2];
-      int matnos[] = {1,2,3};
-      char *matnames[] = {"Water", "Membrane", "Air"};
-      int matlist[] = {
-          3, -1, -3, 1,
-          3, -5, -7, 1,
-          3, -9, -11, -14
-      };
-      float mix_vf[] = {
-          0.75,0.25, 0.1875,0.8125,
-          0.625,0.375, 0.4375,0.56250,
-          0.3,0.7, 0.2,0.4,0.4, 0.45,0.55
-      };
-      int mix_zone[] = {
-          1,1, 2,2,
-          5,5, 6,6,
-          9,9, 10,10,10, 11,11
-      };
-      int mix_mat[] = {
-          2,3, 2,1,
-          2,3, 2,1,
-          2,3, 1,2,3, 2,1
-      };
-      int mix_next[] = {
-          2,0, 4,0,
-          6,0, 8,0,
-          10,0, 12,13,0, 15,0
-      };
-      int mixlen = 15;
-      /* Write out the material */
-      mdims[0] = NX-1;
-      mdims[1] = NY-1;
-      optlist = DBMakeOptlist(1);
-      DBAddOption(optlist, DBOPT_MATNAMES, matnames);
-      DBPutMaterial(dbfile, "mat", "quadmesh", nmats, matnos, matlist,
-                    mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf, mixlen,
-                    DB_FLOAT, optlist);
-      DBFreeOptlist(optlist);
+      .. code-block:: c
 
+        /* Material arrays */
+        int nmats = 2, mdims[2];
+        int matnos[] = {1,2,3};
+        char *matnames[] = {"Water", "Membrane", "Air"};
+        int matlist[] = {
+            3, -1, -3, 1,
+            3, -5, -7, 1,
+            3, -9, -11, -14
+        };
+        float mix_vf[] = {
+            0.75,0.25, 0.1875,0.8125,
+            0.625,0.375, 0.4375,0.56250,
+            0.3,0.7, 0.2,0.4,0.4, 0.45,0.55
+        };
+        int mix_zone[] = {
+            1,1, 2,2,
+            5,5, 6,6,
+            9,9, 10,10,10, 11,11
+        };
+        int mix_mat[] = {
+            2,3, 2,1,
+            2,3, 2,1,
+            2,3, 1,2,3, 2,1
+        };
+        int mix_next[] = {
+            2,0, 4,0,
+            6,0, 8,0,
+            10,0, 12,13,0, 15,0
+        };
+        int mixlen = 15;
+        /* Write out the material */
+        mdims[0] = NX-1;
+        mdims[1] = NY-1;
+        optlist = DBMakeOptlist(1);
+        DBAddOption(optlist, DBOPT_MATNAMES, matnames);
+        DBPutMaterial(dbfile, "mat", "quadmesh", nmats, matnos, matlist,
+                      mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf, mixlen,
+                      DB_FLOAT, optlist);
+        DBFreeOptlist(optlist);
 
-    .. code-tab:: fortranfixed
+    .. tab-item:: Fortran
 
-          subroutine write_mixedmaterial(dbfile)
-          implicit none
-          integer dbfile
-          include "silo.inc"
-          integer NX, NY
-          parameter (NX = 5)
-          parameter (NY = 4)
-          integer err, ierr, optlist, ndims, nmats, mixlen
-          integer mdims(2) /NX-1, NY-1/
-          integer matnos(3) /1,2,3/
-          integer matlist(12) /3, -1, -3, 1,
-          .                    3, -5, -7, 1,
-          .                    3, -9, -11, -14/
-          real mix_vf(15) /0.75,0.25, 0.1875,0.8125,
-          .                0.625,0.375, 0.4375,0.56250,
-          .                0.3,0.7, 0.2,0.4,0.4, 0.45,0.55/
-          integer mix_zone(15) /1,1, 2,2,
-          .                     5,5, 6,6,
-          .                     9,9, 10,10,10, 11,11/
-          integer mix_mat(15) /2,3, 2,1,
-          .                    2,3, 2,1,
-          .                    2,3, 1,2,3, 2,1/
-          integer mix_next(15) /2,0, 4,0,
-          .                     6,0, 8,0,
-          .                     10,0, 12,13,0, 15,0/
-          ndims = 2
-          nmats = 3
-          mixlen = 15
-      c Write out the material
-          err = dbputmat(dbfile, "mat", 3, "quadmesh", 8, nmats, matnos,
-          .              matlist, mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf,
-          .              mixlen, DB_FLOAT, DB_F77NULL, ierr)
-          end
+      .. code-block:: fortranfixed
 
-
+            subroutine write_mixedmaterial(dbfile)
+            implicit none
+            integer dbfile
+            include 'silo.inc'
+            integer NX, NY
+            parameter (NX = 5)
+            parameter (NY = 4)
+            integer err, ierr, optlist, ndims, nmats, mixlen
+            integer mdims(2) /NX-1, NY-1/
+            integer matnos(3) /1,2,3/
+            integer matlist(12) /3, -1, -3, 1,
+            .                    3, -5, -7, 1,
+            .                    3, -9, -11, -14/
+            real mix_vf(15) /0.75,0.25, 0.1875,0.8125,
+            .                0.625,0.375, 0.4375,0.56250,
+            .                0.3,0.7, 0.2,0.4,0.4, 0.45,0.55/
+            integer mix_zone(15) /1,1, 2,2,
+            .                     5,5, 6,6,
+            .                     9,9, 10,10,10, 11,11/
+            integer mix_mat(15) /2,3, 2,1,
+            .                    2,3, 2,1,
+            .                    2,3, 1,2,3, 2,1/
+            integer mix_next(15) /2,0, 4,0,
+            .                     6,0, 8,0,
+            .                     10,0, 12,13,0, 15,0/
+            ndims = 2
+            nmats = 3
+            mixlen = 15
+        c Write out the material
+            err = dbputmat(dbfile, 'mat', 3, 'quadmesh', 8, nmats, matnos,
+            .              matlist, mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf,
+            .              mixlen, DB_FLOAT, DB_F77NULL, ierr)
+            end

@@ -336,7 +336,7 @@ Extra details and code samples are a couple of reasons for wanting collapsible c
 Tabbed content
 --------------
 It may be useful at times to create tabbed content, such as wanting to display multiple-language code examples without taking up too much space.
-The `sphinx-tabs <https://sphinx-tabs.readthedocs.io/en/latest/>`_ extension is useful for this.
+The `sphinx-design <https://sphinx-design.readthedocs.io/>`_ extension is useful for this (e.g. using the ``.. tab-set::`` and ``.. tab-item::`` directives).
 Another example would be instructions for how to do something on different platforms.
 See the above referenced documentation for more information.
 

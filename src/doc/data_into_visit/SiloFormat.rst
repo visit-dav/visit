@@ -22,15 +22,19 @@ Including Silo
 When using any library in a program, you must tell the compiler about the symbols provided by the library.
 Here is what you need to include in your source code in order to use Silo:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    #include <silo.h>
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
-  
-    include "silo.inc"
+      #include <silo.h>
+
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+      include 'silo.inc'
 
 
 Linking with Silo
@@ -132,49 +136,53 @@ If your Silo_ library does not have built-in HDF5 support then you can pass ``DB
 
 Example for creating a new Silo file:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    #include <silo.h>
-    #include <stdio.h>
+    .. code-block:: c
 
-    int
-    main(int argc, char *argv[])
-    {
-        DBfile *dbfile = NULL;
-        /* Open the Silo file */
-        dbfile = DBCreate("basic.silo", DB_CLOBBER, DB_LOCAL,
-                          "Comment about the data", DB_HDF5);
-        if(dbfile == NULL)
-        {
-            fprintf(stderr, "Could not create Silo file!\n");
-            return -1;
-        }
-        /* Add other Silo calls here. */
-        /* Close the Silo file. */
-        DBClose(dbfile);
-        return 0;
-    }
+      #include <silo.h>
+      #include <stdio.h>
 
-  .. code-tab:: fortranfixed
+      int
+      main(int argc, char *argv[])
+      {
+          DBfile *dbfile = NULL;
+          /* Open the Silo file */
+          dbfile = DBCreate("basic.silo", DB_CLOBBER, DB_LOCAL,
+                            "Comment about the data", DB_HDF5);
+          if(dbfile == NULL)
+          {
+              fprintf(stderr, "Could not create Silo file!\n");
+              return -1;
+          }
+          /* Add other Silo calls here. */
+          /* Close the Silo file. */
+          DBClose(dbfile);
+          return 0;
+      }
 
-        progam main
-        implicit none
-        include "silo.inc"
-        integer dbfile, ierr
-    c The 11 and 22 arguments represent the lengths of strings
-        ierr = dbcreate("fbasic.silo", 11, DB_CLOBBER, DB_LOCAL,
-        .               "Comment about the data", 22, DB_HDF5, dbfile)
-        if(dbfile.eq.-1) then
-            write (6,*) 'Could not create Silo file!\n'
-            goto 10000
-        endif
-    c Add other Silo calls here.
-    c Close the Silo file.
-        ierr = dbclose(dbfile)
-    10000 stop
-        end
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+          progam main
+          implicit none
+          include 'silo.inc'
+          integer dbfile, ierr
+      c The 11 and 22 arguments represent the lengths of strings
+          ierr = dbcreate('fbasic.silo', 11, DB_CLOBBER, DB_LOCAL,
+          .               'Comment about the data', 22, DB_HDF5, dbfile)
+          if(dbfile.eq.-1) then
+              write (6,*) 'Could not create Silo file!\n'
+              goto 10000
+          endif
+      c Add other Silo calls here.
+      c Close the Silo file.
+          ierr = dbclose(dbfile)
+          10000 stop
+          end
 
 In addition to using the ``DBCreate`` function, the previous examples also use the ``DBClose`` function.
 The ``DBClose`` function ensures that all data is written to the file and then closes the Silo_ file.
@@ -258,38 +266,41 @@ It is also possible to use Silo_'s option list feature to directly encode the cy
 
 Example for saving cycle and time using an option list.
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Create an option list to save cycle and time values. */
-    int cycle = 100;
-    double dtime = 1.23456789;
-    DBoptlist *optlist = DBMakeOptlist(2);
-    DBAddOption(optlist, DBOPT_DTIME, &time);
-    DBAddOption(optlist, DBOPT_CYCLE, &cycle);
-    /* Write a mesh using the option list. */
-    DBPutQuadmesh(dbfile, "quadmesh", coordnames, coords, dims, ndims,
-                  DB_FLOAT, DB_COLLINEAR, optlist);
-    /* Free the option list. */
-    DBFreeOptlist(optlist);
+    .. code-block:: c
 
+      /* Create an option list to save cycle and time values. */
+      int cycle = 100;
+      double dtime = 1.23456789;
+      DBoptlist *optlist = DBMakeOptlist(2);
+      DBAddOption(optlist, DBOPT_DTIME, &time);
+      DBAddOption(optlist, DBOPT_CYCLE, &cycle);
+      /* Write a mesh using the option list. */
+      DBPutQuadmesh(dbfile, "quadmesh", coordnames, coords, dims, ndims,
+                    DB_FLOAT, DB_COLLINEAR, optlist);
+      /* Free the option list. */
+      DBFreeOptlist(optlist);
 
-  .. code-tab:: fortranfixed
+  .. tab-item:: Fortran
 
-    c Create an option list to save cycle and time values.
-        integer cycle /100/
-        double precision dtime /1.23456789/
-        integer err, ierr, optlistid
-        err = dbmkoptlist(2, optlistid)
-        err = dbaddiopt(optlistid, DBOPT_CYCLE, cycle)
-        err = dbadddopt(optlistid, DBOPT_DTIME, dtime)
-    c Write a mesh using the option list.
-        err = dbputqm (dbfile, "quadmesh", 8, "xc", 2, "yc", 2,
-        .              "zc", 2, x, y, DB_F77NULL, dims, ndims,
-        .              DB_FLOAT, DB_COLLINEAR, optlistid, ierr)
-    c Free the option list.
-        err = dbfreeoptlist(optlistid)
+    .. code-block:: fortranfixed
+
+      c Create an option list to save cycle and time values.
+          integer cycle /100/
+          double precision dtime /1.23456789/
+          integer err, ierr, optlistid
+          err = dbmkoptlist(2, optlistid)
+          err = dbaddiopt(optlistid, DBOPT_CYCLE, cycle)
+          err = dbadddopt(optlistid, DBOPT_DTIME, dtime)
+      c Write a mesh using the option list.
+          err = dbputqm (dbfile, 'quadmesh', 8, 'xc', 2, 'yc', 2,
+          .              'zc', 2, x, y, DB_F77NULL, dims, ndims,
+          .              DB_FLOAT, DB_COLLINEAR, optlistid, ierr)
+      c Free the option list.
+          err = dbfreeoptlist(optlistid)
 
 
 .. _silo_writing_rect_mesh:
@@ -314,34 +325,37 @@ The Silo function call to write a rectlinear mesh is called ``DBPutQuadmesh``.
 
 Example for writing a 2D rectilinear mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Write a rectilinear mesh. */
-    float x[] = {0., 1., 2.5, 5.};
-    float y[] = {0., 2., 2.25, 2.55, 5.};
-    int dims[] = {4, 5};
-    int ndims = 2;
-    float *coords[] = {x, y};
-    DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
-        DB_FLOAT, DB_COLLINEAR, NULL);
+    .. code-block:: c
 
+      /* Write a rectilinear mesh. */
+      float x[] = {0., 1., 2.5, 5.};
+      float y[] = {0., 2., 2.25, 2.55, 5.};
+      int dims[] = {4, 5};
+      int ndims = 2;
+      float *coords[] = {x, y};
+      DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
+          DB_FLOAT, DB_COLLINEAR, NULL);
 
-  .. code-tab:: fortranfixed
+  .. tab-item:: Fortran
 
-    c Write a rectilinear mesh
-        integer err, ierr, dims(2), ndims, NX, NY
-        parameter (NX = 4)
-        parameter (NY = 5)
-        real x(NX), y(NY)
-        data dims/NX, NY/
-        data x/0., 1., 2.5, 5./
-        data y/0., 2., 2.25, 2.55, 5./
-        ndims = 2
-        err = dbputqm (dbfile, "quadmesh", 8, "xc", 2, "yc", 2,
-        .              "zc", 2, x, y, DB_F77NULL, dims, ndims,
-        .              DB_FLOAT, DB_COLLINEAR, DB_F77NULL, ierr)
+    .. code-block:: fortranfixed
+
+      c Write a rectilinear mesh
+          integer err, ierr, dims(2), ndims, NX, NY
+          parameter (NX = 4)
+          parameter (NY = 5)
+          real x(NX), y(NY)
+          data dims/NX, NY/
+          data x/0., 1., 2.5, 5./
+          data y/0., 2., 2.25, 2.55, 5./
+          ndims = 2
+          err = dbputqm (dbfile, 'quadmesh', 8, 'xc', 2, 'yc', 2,
+          .              'zc', 2, x, y, DB_F77NULL, dims, ndims,
+          .              DB_FLOAT, DB_COLLINEAR, DB_F77NULL, ierr)
 
 
 
@@ -366,35 +380,39 @@ The dimensions are passed in an array, along with the number of dimensions, whic
 
 Example for writing a 3D rectilinear mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Write a rectilinear mesh. */
-    float x[] = {0., 1., 2.5, 5.};
-    float y[] = {0., 2., 2.25, 2.55, 5.};
-    float z[] = {0., 1., 3.};
-    int dims[] = {4, 5, 3};
-    int ndims = 3;
-    float *coords[] = {x, y, z};
-    DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
-        DB_FLOAT, DB_COLLINEAR, NULL);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      /* Write a rectilinear mesh. */
+      float x[] = {0., 1., 2.5, 5.};
+      float y[] = {0., 2., 2.25, 2.55, 5.};
+      float z[] = {0., 1., 3.};
+      int dims[] = {4, 5, 3};
+      int ndims = 3;
+      float *coords[] = {x, y, z};
+      DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
+          DB_FLOAT, DB_COLLINEAR, NULL);
 
-    integer err, ierr, dims(3), ndims, NX, NY, NZ
-    parameter (NX = 4)
-    parameter (NY = 5)
-    parameter (NZ = 3)
-    real x(NX), y(NY), z(NZ)
-    data x/0., 1., 2.5, 5./
-    data y/0., 2., 2.25, 2.55, 5./
-    data z/0., 1., 3./
-    ndims = 3
-    data dims/NX, NY, NZ/
-    err = dbputqm (dbfile, "quadmesh", 8, "xc", 2,
-    .              "yc", 2, "zc", 2, x, y, z, dims, ndims,
-    .              DB_FLOAT, DB_COLLINEAR, DB_F77NULL, ierr)
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+          integer err, ierr, dims(3), ndims, NX, NY, NZ
+          parameter (NX = 4)
+          parameter (NY = 5)
+          parameter (NZ = 3)
+          real x(NX), y(NY), z(NZ)
+          data x/0., 1., 2.5, 5./
+          data y/0., 2., 2.25, 2.55, 5./
+          data z/0., 1., 3./
+          ndims = 3
+          data dims/NX, NY, NZ/
+          err = dbputqm (dbfile, 'quadmesh', 8, 'xc', 2,
+          .              'yc', 2, 'zc', 2, x, y, z, dims, ndims,
+          .              DB_FLOAT, DB_COLLINEAR, DB_F77NULL, ierr)
 
 
 
@@ -428,41 +446,45 @@ You can pass the ``DB_NONCOLLINEAR`` flag to the ``DBPutQuadmesh`` function in o
 
 Example for writing a 2D curvilinear mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Write a curvilinear mesh. */
-    #define NX 4
-    #define NY 3
-    float x[NY][NX] = {{0., 1., 3., 3.5}, {0., 1., 2.5, 3.5},
-        {0.7, 1.3, 2.3, 3.5}};
-    float y[NY][NX] = {{0., 0., 0., 0.}, {1.5, 1.5, 1.25, 1.5},
-        {3., 2.75, 2.75, 3.}};
-    int dims[] = {NX, NY};
-    int ndims = 2;
-    float *coords[] = {(float*)x, (float*)y};
-    DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
-                  DB_FLOAT, DB_NONCOLLINEAR, NULL);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      /* Write a curvilinear mesh. */
+      #define NX 4
+      #define NY 3
+      float x[NY][NX] = {{0., 1., 3., 3.5}, {0., 1., 2.5, 3.5},
+          {0.7, 1.3, 2.3, 3.5}};
+      float y[NY][NX] = {{0., 0., 0., 0.}, {1.5, 1.5, 1.25, 1.5},
+          {3., 2.75, 2.75, 3.}};
+      int dims[] = {NX, NY};
+      int ndims = 2;
+      float *coords[] = {(float*)x, (float*)y};
+      DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
+                    DB_FLOAT, DB_NONCOLLINEAR, NULL);
 
-    c Write a curvilinear mesh.
-        integer err, ierr, dims(2), ndims, NX, NY
-        parameter (NX = 4)
-        parameter (NY = 3)
-        real x(NX,NY), y(NX,NY)
-        data x/0., 1.,  3.,  3.5,
-        .    0.,   1.,  2.5, 3.5,
-        .    0.7,  1.3, 2.3, 3.5/
-        data y/0., 0.,   0.,   0.,
-        .    1.5,  1.5,  1.25, 1.5,
-        .    3.,   2.75, 2.75, 3./
-        ndims = 2
-        data dims/NX, NY/
-        err = dbputqm (dbfile, "quadmesh", 8, "xc", 2, "yc", 2,
-        .              "zc", 2, x, y, DB_F77NULL, dims, ndims,
-        .              DB_FLOAT, DB_NONCOLLINEAR, DB_F77NULL, ierr)
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+      c Write a curvilinear mesh.
+          integer err, ierr, dims(2), ndims, NX, NY
+          parameter (NX = 4)
+          parameter (NY = 3)
+          real x(NX,NY), y(NX,NY)
+          data x/0., 1.,  3.,  3.5,
+          .    0.,   1.,  2.5, 3.5,
+          .    0.7,  1.3, 2.3, 3.5/
+          data y/0., 0.,   0.,   0.,
+          .    1.5,  1.5,  1.25, 1.5,
+          .    3.,   2.75, 2.75, 3./
+          ndims = 2
+          data dims/NX, NY/
+          err = dbputqm (dbfile, 'quadmesh', 8, 'xc', 2, 'yc', 2,
+          .              'zc', 2, x, y, DB_F77NULL, dims, ndims,
+          .              DB_FLOAT, DB_NONCOLLINEAR, DB_F77NULL, ierr)
 
 
 :numref:`Figure %s <silo_meshcurv3d>` shows a simple 3D curvilinear mesh that is 1 cell thick in the Z-dimension.
@@ -478,51 +500,55 @@ As you increase the number of nodes in the Z-dimension, you must also add more X
 
 Example for writing a 3D curvilinear mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Write a curvilinear mesh. */
-    #define NX 4
-    #define NY 3
-    #define NZ 2
-    float x[NZ][NY][NX] = {
-        {{0.,1.,2.,3.},{0.,1.,2.,3.}, {0.,1.,2.,3.}},
-        {{0.,1.,2.,3.},{0.,1.,2.,3.}, {0.,1.,2.,3.}}
-    };
-    float y[NZ][NY][NX] = {
-        {{0.5,0.,0.,0.5},{1.,1.,1.,1.}, {1.5,2.,2.,1.5}},
-        {{0.5,0.,0.,0.5},{1.,1.,1.,1.}, {1.5,2.,2.,1.5}}
-    };
-    float z[NZ][NY][NX] = {
-        {{0.,0.,0.,0.},{0.,0.,0.,0.},{0.,0.,0.,0.}},
-        {{1.,1.,1.,1.},{1.,1.,1.,1.},{1.,1.,1.,1.}}
-    };
-    int dims[] = {NX, NY, NZ};
-    int ndims = 3;
-    float *coords[] = {(float*)x, (float*)y, (float*)z};
-    DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
-                  DB_FLOAT, DB_NONCOLLINEAR, NULL);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      /* Write a curvilinear mesh. */
+      #define NX 4
+      #define NY 3
+      #define NZ 2
+      float x[NZ][NY][NX] = {
+          {{0.,1.,2.,3.},{0.,1.,2.,3.}, {0.,1.,2.,3.}},
+          {{0.,1.,2.,3.},{0.,1.,2.,3.}, {0.,1.,2.,3.}}
+      };
+      float y[NZ][NY][NX] = {
+          {{0.5,0.,0.,0.5},{1.,1.,1.,1.}, {1.5,2.,2.,1.5}},
+          {{0.5,0.,0.,0.5},{1.,1.,1.,1.}, {1.5,2.,2.,1.5}}
+      };
+      float z[NZ][NY][NX] = {
+          {{0.,0.,0.,0.},{0.,0.,0.,0.},{0.,0.,0.,0.}},
+          {{1.,1.,1.,1.},{1.,1.,1.,1.},{1.,1.,1.,1.}}
+      };
+      int dims[] = {NX, NY, NZ};
+      int ndims = 3;
+      float *coords[] = {(float*)x, (float*)y, (float*)z};
+      DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
+                    DB_FLOAT, DB_NONCOLLINEAR, NULL);
 
-    c Write a curvilinear mesh
-        integer err, ierr, dims(3), ndims, NX, NY, NZ
-        parameter (NX = 4)
-        parameter (NY = 3)
-        parameter (NZ = 2)
-        real x(NX,NY,NZ), y(NX,NY,NZ), z(NX,NY,NZ)
-        data x/0., 1.,2.,3.,  0.,1.,2.,3., 0., 1.,2.,3.,
-        .    0.,   1.,2.,3.,  0.,1.,2.,3., 0., 1.,2.,3./
-        data y/0.5,0.,0.,0.5, 1.,1.,1.,1., 1.5,2.,2.,1.5,
-        .    0.5,  0.,0.,0.5, 1.,1.,1.,1., 1.5,2.,2.,1.5/
-        data z/0., 0.,0.,0.,  0.,0.,0.,0., 0., 0.,0.,0,
-        .    1.,   1.,1.,1.,  1.,1.,1.,1., 1., 1.,1.,1./
-        ndims = 3
-        data dims/NX, NY, NZ/
-        err = dbputqm (dbfile, "quadmesh", 8, "xc", 2,
-        .              "yc", 2, "zc", 2, x, y, z, dims, ndims,
-        .              DB_FLOAT, DB_NONCOLLINEAR, DB_F77NULL, ierr)
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+      c Write a curvilinear mesh
+          integer err, ierr, dims(3), ndims, NX, NY, NZ
+          parameter (NX = 4)
+          parameter (NY = 3)
+          parameter (NZ = 2)
+          real x(NX,NY,NZ), y(NX,NY,NZ), z(NX,NY,NZ)
+          data x/0., 1.,2.,3.,  0.,1.,2.,3., 0., 1.,2.,3.,
+          .    0.,   1.,2.,3.,  0.,1.,2.,3., 0., 1.,2.,3./
+          data y/0.5,0.,0.,0.5, 1.,1.,1.,1., 1.5,2.,2.,1.5,
+          .    0.5,  0.,0.,0.5, 1.,1.,1.,1., 1.5,2.,2.,1.5/
+          data z/0., 0.,0.,0.,  0.,0.,0.,0., 0., 0.,0.,0,
+          .    1.,   1.,1.,1.,  1.,1.,1.,1., 1., 1.,1.,1./
+          ndims = 3
+          data dims/NX, NY, NZ/
+          err = dbputqm (dbfile, 'quadmesh', 8, 'xc', 2,
+          .              'yc', 2, 'zc', 2, x, y, z, dims, ndims,
+          .              DB_FLOAT, DB_NONCOLLINEAR, DB_F77NULL, ierr)
 
 
 Writing a point mesh
@@ -540,42 +566,46 @@ Silo_ provides the ``DBPutPointmesh`` function so you can write out particle sys
 
 Example for writing a 2D point mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Create some points to save. */
-    #define NPTS 100
-    int i, ndims = 2;
-    float x[NPTS], y[NPTS];
-    float *coords[] = {(float*)x, (float*)y};
-    for(i = 0; i < NPTS; ++i)
-    {
-        float t = ((float)i) / ((float)(NPTS-1));
-        float angle = 3.14159 * 10. * t;
-        x[i] = t * cos(angle);
-        y[i] = t * sin(angle);
-    }
-    /* Write a point mesh. */
-    DBPutPointmesh(dbfile, "pointmesh", ndims, coords, NPTS,
-                   DB_FLOAT, NULL);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      /* Create some points to save. */
+      #define NPTS 100
+      int i, ndims = 2;
+      float x[NPTS], y[NPTS];
+      float *coords[] = {(float*)x, (float*)y};
+      for(i = 0; i < NPTS; ++i)
+      {
+          float t = ((float)i) / ((float)(NPTS-1));
+          float angle = 3.14159 * 10. * t;
+          x[i] = t * cos(angle);
+          y[i] = t * sin(angle);
+      }
+      /* Write a point mesh. */
+      DBPutPointmesh(dbfile, "pointmesh", ndims, coords, NPTS,
+                     DB_FLOAT, NULL);
 
-    c Create some points to save.
-        integer err, ierr, i, ndims, NPTS
-        parameter (NPTS = 100)
-        real x(NPTS), y(NPTS), t, angle
-        do 10000 i = 0,NPTS-1
-            t = float(i) / float(NPTS-1)
-            angle = 3.14159 * 10. * t
-            x(i+1) = t * cos(angle);
-            y(i+1) = t * sin(angle);
-    10000 continue
-        ndims = 2
-    c Write a point mesh.
-        err = dbputpm (dbfile, "pointmesh", 9, ndims, x, y,
-        .              DB_F77NULL, NPTS, DB_FLOAT, DB_F77NULL, ierr)
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+      c Create some points to save.
+          integer err, ierr, i, ndims, NPTS
+          parameter (NPTS = 100)
+          real x(NPTS), y(NPTS), t, angle
+          do 10000 i = 0,NPTS-1
+              t = float(i) / float(NPTS-1)
+              angle = 3.14159 * 10. * t
+              x(i+1) = t * cos(angle);
+              y(i+1) = t * sin(angle);
+          10000 continue
+          ndims = 2
+      c Write a point mesh.
+          err = dbputpm (dbfile, 'pointmesh', 9, ndims, x, y,
+          .          DB_F77NULL, NPTS, DB_FLOAT, DB_F77NULL, ierr)
 
 Writing a 3D point mesh is very similar to writing a 2D point mesh with the exception that for a 3D point mesh, you must specify a Z-coordinate.
 :numref:`Figure %s <silo_meshpoint3d>` shows what happens when we extend our 2D point mesh example into 3D.
@@ -590,44 +620,48 @@ Writing a 3D point mesh is very similar to writing a 2D point mesh with the exce
 
 Example for writing a 3D point mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Create some points to save. */
-    #define NPTS 100
-    int i, ndims = 3;
-    float x[NPTS], y[NPTS], z[NPTS];
-    float *coords[] = {(float*)x, (float*)y, (float*)z};
-    for(i = 0; i < NPTS; ++i)
-    {
-        float t = ((float)i) / ((float)(NPTS-1));
-        float angle = 3.14159 * 10. * t;
-        x[i] = t * cos(angle);
-        y[i] = t * sin(angle);
-        z[i] = t;
-    }
-    /* Write a point mesh. */
-    DBPutPointmesh(dbfile, "pointmesh", ndims, coords, NPTS,
-                    DB_FLOAT, NULL);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      /* Create some points to save. */
+      #define NPTS 100
+      int i, ndims = 3;
+      float x[NPTS], y[NPTS], z[NPTS];
+      float *coords[] = {(float*)x, (float*)y, (float*)z};
+      for(i = 0; i < NPTS; ++i)
+      {
+          float t = ((float)i) / ((float)(NPTS-1));
+          float angle = 3.14159 * 10. * t;
+          x[i] = t * cos(angle);
+          y[i] = t * sin(angle);
+          z[i] = t;
+      }
+      /* Write a point mesh. */
+      DBPutPointmesh(dbfile, "pointmesh", ndims, coords, NPTS,
+                      DB_FLOAT, NULL);
 
-    c Create some points to save
-        integer err, ierr, i, ndims, NPTS
-        parameter (NPTS = 100)
-        real x(NPTS), y(NPTS), z(NPTS), t, angle
-        do 10000 i = 0,NPTS-1
-            t = float(i) / float(NPTS-1)
-            angle = 3.14159 * 10. * t
-            x(i+1) = t * cos(angle);
-            y(i+1) = t * sin(angle);
-            z(i+1) = t
-    10000 continue
-        ndims = 3
-    c Write a point mesh
-        err = dbputpm (dbfile, "pointmesh", 9, ndims, x, y, z,
-        .              NPTS, DB_FLOAT, DB_F77NULL, ierr)
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+      c Create some points to save
+          integer err, ierr, i, ndims, NPTS
+          parameter (NPTS = 100)
+          real x(NPTS), y(NPTS), z(NPTS), t, angle
+          do 10000 i = 0,NPTS-1
+              t = float(i) / float(NPTS-1)
+              angle = 3.14159 * 10. * t
+              x(i+1) = t * cos(angle);
+              y(i+1) = t * sin(angle);
+              z(i+1) = t
+          10000 continue
+          ndims = 3
+      c Write a point mesh
+          err = dbputpm (dbfile, 'pointmesh', 9, ndims, x, y, z,
+          .              NPTS, DB_FLOAT, DB_F77NULL, ierr)
 
 
 Writing an unstructured mesh
@@ -655,68 +689,71 @@ The coordinates for the unstructured mesh itself is written out using the
 
 Example for writing a 2D unstructured mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Node coordinates */
-    float x[] = {0., 2., 5., 3., 5., 0., 2., 4., 5.};
-    float y[] = {0., 0., 0., 3., 3., 5., 5., 5., 5.};
-    float *coords[] = {x, y};
-    /* Connectivity */
-    int nodelist[] = {
-        2,4,7, /* tri zone 1 */
-        4,8,7, /* tri zone 2 */
-        1,2,7,6, /* quad zone 3 */
-        2,3,5,4, /* quad zone 4 */
-        4,5,9,8 /* quad zone 5 */
-    };
-    int lnodelist = sizeof(nodelist) / sizeof(int);
-    /* shape type 1 has 3 nodes (tri), shape type 2 is quad */
-    int shapesize[] = {3, 4};
-    /* We have 2 tris and 3 quads */
-    int shapecounts[] = {2, 3};
-    int nshapetypes = 2;
-    int nnodes = 9;
-    int nzones = 5;
-    int ndims = 2;
-    /* Write out connectivity information. */
-    DBPutZonelist(dbfile, "zonelist", nzones, ndims, nodelist, lnodelist,
-                  1, shapesize, shapecounts, nshapetypes);
-    /* Write an unstructured mesh. */
-    DBPutUcdmesh(dbfile, "mesh", ndims, NULL, coords, nnodes, nzones,
-                "zonelist", NULL, DB_FLOAT, NULL);
+    .. code-block:: c
 
+      /* Node coordinates */
+      float x[] = {0., 2., 5., 3., 5., 0., 2., 4., 5.};
+      float y[] = {0., 0., 0., 3., 3., 5., 5., 5., 5.};
+      float *coords[] = {x, y};
+      /* Connectivity */
+      int nodelist[] = {
+          2,4,7, /* tri zone 1 */
+          4,8,7, /* tri zone 2 */
+          1,2,7,6, /* quad zone 3 */
+          2,3,5,4, /* quad zone 4 */
+          4,5,9,8 /* quad zone 5 */
+      };
+      int lnodelist = sizeof(nodelist) / sizeof(int);
+      /* shape type 1 has 3 nodes (tri), shape type 2 is quad */
+      int shapesize[] = {3, 4};
+      /* We have 2 tris and 3 quads */
+      int shapecounts[] = {2, 3};
+      int nshapetypes = 2;
+      int nnodes = 9;
+      int nzones = 5;
+      int ndims = 2;
+      /* Write out connectivity information. */
+      DBPutZonelist(dbfile, "zonelist", nzones, ndims, nodelist, lnodelist,
+                    1, shapesize, shapecounts, nshapetypes);
+      /* Write an unstructured mesh. */
+      DBPutUcdmesh(dbfile, "mesh", ndims, NULL, coords, nnodes, nzones,
+                  "zonelist", NULL, DB_FLOAT, NULL);
 
-  .. code-tab:: fortranfixed
+  .. tab-item:: Fortran
 
-        integer err, ierr, ndims, nshapetypes, nnodes, nzones
-    c Node coordinates
-        real x(9) /0., 2., 5., 3., 5., 0., 2., 4., 5./
-        real y(9) /0., 0., 0., 3., 3., 5., 5., 5., 5./
-    c Connectivity
-        integer LNODELIST
-        parameter (LNODELIST = 18)
-        integer nodelist(LNODELIST) /2,4,7,
-        . 4,8,7,
-        . 1,2,7,6,
-        . 2,3,5,4,
-        . 4,5,9,8/
-    c Shape type 1 has 3 nodes (tri), shape type 2 is quad
-        integer shapesize(2) /3, 4/
-    c We have 2 tris and 3 quads
-        integer shapecounts(2) /2, 3/
-        nshapetypes = 2
-        nnodes = 9
-        nzones = 5
-        ndims = 2
-    c Write out connectivity information.
-        err = dbputzl(dbfile, "zonelist", 8, nzones, ndims, nodelist,
-        . LNODELIST, 1, shapesize, shapecounts, nshapetypes, ierr)
-    c Write an unstructured mesh
-        err = dbputum(dbfile, "mesh", 4, ndims, x, y, DB_F77NULL,
-        . "X", 1, "Y", 1, DB_F77NULL, 0, DB_FLOAT, nnodes, nzones,
-        . "zonelist", 8, DB_F77NULL, 0, DB_F77NULL, ierr)
+    .. code-block:: fortranfixed
+
+          integer err, ierr, ndims, nshapetypes, nnodes, nzones
+      c Node coordinates
+          real x(9) /0., 2., 5., 3., 5., 0., 2., 4., 5./
+          real y(9) /0., 0., 0., 3., 3., 5., 5., 5., 5./
+      c Connectivity
+          integer LNODELIST
+          parameter (LNODELIST = 18)
+          integer nodelist(LNODELIST) /2,4,7,
+          . 4,8,7,
+          . 1,2,7,6,
+          . 2,3,5,4,
+          . 4,5,9,8/
+      c Shape type 1 has 3 nodes (tri), shape type 2 is quad
+          integer shapesize(2) /3, 4/
+      c We have 2 tris and 3 quads
+          integer shapecounts(2) /2, 3/
+          nshapetypes = 2
+          nnodes = 9
+          nzones = 5
+          ndims = 2
+      c Write out connectivity information.
+          err = dbputzl(dbfile, "zonelist", 8, nzones, ndims, nodelist,
+          . LNODELIST, 1, shapesize, shapecounts, nshapetypes, ierr)
+      c Write an unstructured mesh
+          err = dbputum(dbfile, "mesh", 4, ndims, x, y, DB_F77NULL,
+          . "X", 1, "Y", 1, DB_F77NULL, 0, DB_FLOAT, nnodes, nzones,
+          . "zonelist", 8, DB_F77NULL, 0, DB_F77NULL, ierr)
 
 3D unstructured meshes are created much the same way as 2D unstructured meshes are created.
 The main difference is that in 2D, you use triangles and quadrilateral zone types, in 3D, you use hexahedrons, pyramids, prisms, and tetrahedrons to compose your mesh.
@@ -738,76 +775,80 @@ The proper zone ordering for each of the four supported 3D zone shapes is shown 
 
 Example for writing a 3D unstructured mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Node coordinates */
-    float x[] = {0.,2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,1.,2.,4.,4.};
-    float y[] = {0.,0.,0.,0.,2.,2.,2.,2.,4.,4.,4.,4.,6.,0.,0.,0.};
-    float z[] = {2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,0.,1.,4.,2.,0.};
-    float *coords[] = {x, y, z};
-    /* Connectivity */
-    int nodelist[] = {
-        1,2,3,4,5,6,7,8,    /* hex, zone 1 */
-        5,6,7,8,9,10,11,12, /* hex, zone 2 */
-        9,10,11,12,13,      /* pyramid, zone 3 */
-        2,3,16,15,6,7,      /* prism, zone 4 */
-        2,15,14,6           /* tet, zone 5 */
-    };
-    int lnodelist = sizeof(nodelist) / sizeof(int);
-    /* shape type 1 has 8 nodes (hex) */
-    /* shape type 2 has 5 nodes (pyramid) */
-    /* shape type 3 has 6 nodes (prism) */
-    /* shape type 4 has 4 nodes (tet) */
-    int shapesize[] = {8,5,6,4};
-    /* We have 2 hex, 1 pyramid, 1 prism, 1 tet */
-    int shapecounts[] = {2,1,1,1};
-    int nshapetypes = 4;
-    int nnodes = 16;
-    int nzones = 5;
-    int ndims = 3;
-    /* Write out connectivity information. */
-    DBPutZonelist(dbfile, "zonelist", nzones, ndims, nodelist, lnodelist,
-                  1, shapesize, shapecounts, nshapetypes);
-    /* Write an unstructured mesh. */
-    DBPutUcdmesh(dbfile, "mesh", ndims, NULL, coords, nnodes, nzones,
-                 "zonelist", NULL, DB_FLOAT, NULL);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      /* Node coordinates */
+      float x[] = {0.,2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,1.,2.,4.,4.};
+      float y[] = {0.,0.,0.,0.,2.,2.,2.,2.,4.,4.,4.,4.,6.,0.,0.,0.};
+      float z[] = {2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,0.,1.,4.,2.,0.};
+      float *coords[] = {x, y, z};
+      /* Connectivity */
+      int nodelist[] = {
+          1,2,3,4,5,6,7,8,    /* hex, zone 1 */
+          5,6,7,8,9,10,11,12, /* hex, zone 2 */
+          9,10,11,12,13,      /* pyramid, zone 3 */
+          2,3,16,15,6,7,      /* prism, zone 4 */
+          2,15,14,6           /* tet, zone 5 */
+      };
+      int lnodelist = sizeof(nodelist) / sizeof(int);
+      /* shape type 1 has 8 nodes (hex) */
+      /* shape type 2 has 5 nodes (pyramid) */
+      /* shape type 3 has 6 nodes (prism) */
+      /* shape type 4 has 4 nodes (tet) */
+      int shapesize[] = {8,5,6,4};
+      /* We have 2 hex, 1 pyramid, 1 prism, 1 tet */
+      int shapecounts[] = {2,1,1,1};
+      int nshapetypes = 4;
+      int nnodes = 16;
+      int nzones = 5;
+      int ndims = 3;
+      /* Write out connectivity information. */
+      DBPutZonelist(dbfile, "zonelist", nzones, ndims, nodelist, lnodelist,
+                    1, shapesize, shapecounts, nshapetypes);
+      /* Write an unstructured mesh. */
+      DBPutUcdmesh(dbfile, "mesh", ndims, NULL, coords, nnodes, nzones,
+                   "zonelist", NULL, DB_FLOAT, NULL);
 
-        integer err, ierr, ndims, nzones
-        integer NSHAPETYPES, NNODES
-        parameter (NSHAPETYPES = 4)
-        parameter (NN = 16)
-    c Node coordinates
-        real x(NN) /0.,2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,1.,2.,4.,4./
-        real y(NN) /0.,0.,0.,0.,2.,2.,2.,2.,4.,4.,4.,4.,6.,0.,0.,0./
-        real z(NN) /2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,0.,1.,4.,2.,0./
-    c Connectivity
-        integer LNODELIST
-        parameter (LNODELIST = 31)
-        integer nodelist(LNODELIST) /1,2,3,4,5,6,7,8,
-        . 5,6,7,8,9,10,11,12,
-        . 9,10,11,12,13,
-        . 2,3,16,15,6,7,
-        . 2,15,14,6/
-    c Shape type 1 has 8 nodes (hex)
-    c Shape type 2 has 5 nodes (pyramid)
-    c Shape type 3 has 6 nodes (prism)
-    c Shape type 4 has 4 nodes (tet)
-        integer shapesize(NSHAPETYPES) /8, 5, 6, 4/
-    c We have 2 hex, 1 pyramid, 1 prism, 1 tet
-        integer shapecounts(NSHAPETYPES) /2, 1, 1, 1/
-        nzones = 5
-        ndims = 3
-    c Write out connectivity information.
-        err = dbputzl(dbfile, "zonelist", 8, nzones, ndims, nodelist,
-        .             LNODELIST, 1, shapesize, shapecounts, NSHAPETYPES, ierr)
-    c Write an unstructured mesh
-        err = dbputum(dbfile, "mesh", 4, ndims, x, y, z,
-        .             "X", 1, "Y", 1, "Z", 1, DB_FLOAT, NN, nzones,
-        .             "zonelist", 8, DB_F77NULL, 0, DB_F77NULL, ierr)
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+          integer err, ierr, ndims, nzones
+          integer NSHAPETYPES, NNODES
+          parameter (NSHAPETYPES = 4)
+          parameter (NN = 16)
+      c Node coordinates
+          real x(NN) /0.,2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,1.,2.,4.,4./
+          real y(NN) /0.,0.,0.,0.,2.,2.,2.,2.,4.,4.,4.,4.,6.,0.,0.,0./
+          real z(NN) /2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,0.,1.,4.,2.,0./
+      c Connectivity
+          integer LNODELIST
+          parameter (LNODELIST = 31)
+          integer nodelist(LNODELIST) /1,2,3,4,5,6,7,8,
+          . 5,6,7,8,9,10,11,12,
+          . 9,10,11,12,13,
+          . 2,3,16,15,6,7,
+          . 2,15,14,6/
+      c Shape type 1 has 8 nodes (hex)
+      c Shape type 2 has 5 nodes (pyramid)
+      c Shape type 3 has 6 nodes (prism)
+      c Shape type 4 has 4 nodes (tet)
+          integer shapesize(NSHAPETYPES) /8, 5, 6, 4/
+      c We have 2 hex, 1 pyramid, 1 prism, 1 tet
+          integer shapecounts(NSHAPETYPES) /2, 1, 1, 1/
+          nzones = 5
+          ndims = 3
+      c Write out connectivity information.
+          err = dbputzl(dbfile, 'zonelist', 8, nzones, ndims, nodelist,
+          .             LNODELIST, 1, shapesize, shapecounts, NSHAPETYPES, ierr)
+      c Write an unstructured mesh
+          err = dbputum(dbfile, 'mesh', 4, ndims, x, y, z,
+          .             'X', 1, 'Y', 1, 'Z', 1, DB_FLOAT, NN, nzones,
+      .                 'zonelist', 8, DB_F77NULL, 0, DB_F77NULL, ierr)
 
 
 Adding axis labels and axis units
@@ -834,37 +875,41 @@ Adding customized labels and units for a mesh by using option lists ensures that
 
 Example for associating new axis labels and units with a mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Create an option list to contain labels and units. */
-    DBoptlist *optlist = DBMakeOptlist(4);
-    DBAddOption(optlist, DBOPT_XLABEL, (void *)"Pressure");
-    DBAddOption(optlist, DBOPT_XUNITS, (void *)"kP");
-    DBAddOption(optlist, DBOPT_YLABEL, (void *)"Temperature");
-    DBAddOption(optlist, DBOPT_YUNITS, (void *)"Degrees Celsius");
-    /* Write a quadmesh with an option list. */
-    DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
-                  DB_FLOAT, DB_COLLINEAR, optlist);
-    /* Free the option list. */
-    DBFreeOptlist(optlist);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      /* Create an option list to contain labels and units. */
+      DBoptlist *optlist = DBMakeOptlist(4);
+      DBAddOption(optlist, DBOPT_XLABEL, (void *)"Pressure");
+      DBAddOption(optlist, DBOPT_XUNITS, (void *)"kP");
+      DBAddOption(optlist, DBOPT_YLABEL, (void *)"Temperature");
+      DBAddOption(optlist, DBOPT_YUNITS, (void *)"Degrees Celsius");
+      /* Write a quadmesh with an option list. */
+      DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
+                    DB_FLOAT, DB_COLLINEAR, optlist);
+      /* Free the option list. */
+      DBFreeOptlist(optlist);
 
-    c Create an option list to contain labels and units.
-        integer err, ierr, optlistid
-        err = dbmkoptlist(4, optlistid)
-        err = dbaddcopt(optlistid, DBOPT_XLABEL, "Pressure", 8)
-        err = dbaddcopt(optlistid, DBOPT_XUNITS, "kP", 2)
-        err = dbaddcopt(optlistid, DBOPT_YLABEL, "Temperature", 11)
-        err = dbaddcopt(optlistid, DBOPT_YUNITS, "Celsius", 7)
-    c Write a quadmesh with an option list.
-        err = dbputqm (dbfile, "quadmesh", 8, "xc", 2,
-        .              "yc", 2, "zc", 2, x, y, DB_F77NULL, dims, ndims,
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+      c Create an option list to contain labels and units.
+          integer err, ierr, optlistid
+          err = dbmkoptlist(4, optlistid)
+          err = dbaddcopt(optlistid, DBOPT_XLABEL, 'Pressure', 8)
+          err = dbaddcopt(optlistid, DBOPT_XUNITS, 'kP', 2)
+          err = dbaddcopt(optlistid, DBOPT_YLABEL, 'Temperature', 11)
+          err = dbaddcopt(optlistid, DBOPT_YUNITS, 'Celsius', 7)
+      c Write a quadmesh with an option list.
+          err = dbputqm (dbfile, 'quadmesh', 8, 'xc', 2,
+        .              'yc', 2, 'zc', 2, x, y, DB_F77NULL, dims, ndims,
         .              DB_FLOAT, DB_COLLINEAR, optlistid, ierr)
-    c Free the option list
-        err = dbfreeoptlist(optlistid)
+      c Free the option list
+          err = dbfreeoptlist(optlistid)
 
 Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <https://silo.readthedocs.io/globals.html#dbsetcompression>`__ for more information.
 
@@ -927,92 +972,95 @@ Silo_ provides the ``DBPutQuadvar1`` function to write scalar variables for both
 
 Example for writing zone-centered variables:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* The data must be (NX-1) * (NY-1) since it is zonal. */
-    float var1[] = {
-        0., 1., 2.,
-        3., 4., 5.,
-        6., 7., 8.,
-        9., 10., 11.
-    };
-    double var2[] = {
-        0.00, 1.11, 2.22,
-        3.33, 4.44, 5.55,
-        6.66, 7.77, 8.88,
-        9.99, 10.1, 11.11
-    };
-    int var3[] = {
-        0, 1, 2,
-        3, 4, 5,
-        6, 7, 8,
-        9, 10, 11
-    };
-    char var4[] = {
-        0, 1, 2,
-        3, 4, 5,
-        6, 7, 8,
-        9, 10, 11
-    };
-    /* Note dims are 1 less than mesh's dims in each dimension. */
-    int dims[]={3, 4};
-    int ndims = 2;
-    DBPutQuadvar1(dbfile, "var1", "quadmesh", var1, dims,
-                  ndims, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
-    /* Write a double-precision variable. */
-    DBPutQuadvar1(dbfile, "var2", "quadmesh", (float*)var2, dims,
-                  ndims, NULL, 0, DB_DOUBLE, DB_ZONECENT, NULL);
-    /* Write an integer variable */
-    DBPutQuadvar1(dbfile, "var3", "quadmesh", (float*)var3, dims,
-                  ndims, NULL, 0, DB_INT, DB_ZONECENT, NULL);
-    /* Write a char variable */
-    DBPutQuadvar1(dbfile, "var4", "quadmesh", (float*)var4, dims,
-                  ndims, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
+    .. code-block:: c
 
+      /* The data must be (NX-1) * (NY-1) since it is zonal. */
+      float var1[] = {
+          0., 1., 2.,
+          3., 4., 5.,
+          6., 7., 8.,
+          9., 10., 11.
+      };
+      double var2[] = {
+          0.00, 1.11, 2.22,
+          3.33, 4.44, 5.55,
+          6.66, 7.77, 8.88,
+          9.99, 10.1, 11.11
+      };
+      int var3[] = {
+          0, 1, 2,
+          3, 4, 5,
+          6, 7, 8,
+          9, 10, 11
+      };
+      char var4[] = {
+          0, 1, 2,
+          3, 4, 5,
+          6, 7, 8,
+          9, 10, 11
+      };
+      /* Note dims are 1 less than mesh's dims in each dimension. */
+      int dims[]={3, 4};
+      int ndims = 2;
+      DBPutQuadvar1(dbfile, "var1", "quadmesh", var1, dims,
+                    ndims, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+      /* Write a double-precision variable. */
+      DBPutQuadvar1(dbfile, "var2", "quadmesh", (float*)var2, dims,
+                    ndims, NULL, 0, DB_DOUBLE, DB_ZONECENT, NULL);
+      /* Write an integer variable */
+      DBPutQuadvar1(dbfile, "var3", "quadmesh", (float*)var3, dims,
+                    ndims, NULL, 0, DB_INT, DB_ZONECENT, NULL);
+      /* Write a char variable */
+      DBPutQuadvar1(dbfile, "var4", "quadmesh", (float*)var4, dims,
+                    ndims, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
 
-  .. code-tab:: fortranfixed
+  .. tab-item:: Fortran
 
-        integer err, ierr, dims(2), ndims, NX, NY, ZX, ZY
-        parameter (NX = 4)
-        parameter (NY = 5)
-        parameter (ZX = NX-1)
-        parameter (ZY = NY-1)
-        real var1(ZX,ZY)
-        double precision var2(ZX,ZY)
-        integer var3(ZX,ZY)
-        character var4(ZX,ZY)
-        data var1/0., 1., 2.,
-        .         3., 4., 5.,
-        .         6., 7., 8.,
-        .         9., 10., 11./
-        data var2/0.,1.11,2.22,
-        .         3.33, 4.44, 5.55,
-        .         6.66, 7.77, 8.88,
-        .         9.99, 10.1, 11.11/
-        data var3/0,1,2,
-        .         3, 4, 5,
-        .         6, 7, 8,
-        .         9, 10, 11/
-        data var4/0,1,2,
-        .         3, 4, 5,
-        .         6, 7, 8,
-        .         9, 10, 11/
-        data dims/ZX, ZY/
-        ndims = 2
-        err = dbputqv1(dbfile, "var1", 4, "quadmesh", 8, var1, dims,
-        .              ndims, DB_F77NULL, 0, DB_FLOAT, DB_ZONECENT, DB_F77NULL, ierr)
-    c Write a double-precision variable
-        err = dbputqv1(dbfile, "var2", 4, "quadmesh", 8, var2, dims,
-        .              ndims, DB_F77NULL, 0, DB_DOUBLE, DB_ZONECENT,
-        .              DB_F77NULL, ierr)
-    c Write an integer variable
-        err = dbputqv1(dbfile, "var3", 4, "quadmesh", 8, var3, dims,
-        .              ndims, DB_F77NULL, 0, DB_INT, DB_ZONECENT, DB_F77NULL, ierr)
-    c Write a char variable
-        err = dbputqv1(dbfile, "var4", 4, "quadmesh", 8, var4, dims,
-        .              ndims, DB_F77NULL, 0, DB_CHAR, DB_ZONECENT, DB_F77NULL, ierr)
+    .. code-block:: fortranfixed
+
+          integer err, ierr, dims(2), ndims, NX, NY, ZX, ZY
+          parameter (NX = 4)
+          parameter (NY = 5)
+          parameter (ZX = NX-1)
+          parameter (ZY = NY-1)
+          real var1(ZX,ZY)
+          double precision var2(ZX,ZY)
+          integer var3(ZX,ZY)
+          character var4(ZX,ZY)
+          data var1/0., 1., 2.,
+         .         3., 4., 5.,
+         .         6., 7., 8.,
+         .         9., 10., 11./
+          data var2/0.,1.11,2.22,
+         .         3.33, 4.44, 5.55,
+         .         6.66, 7.77, 8.88,
+         .         9.99, 10.1, 11.11/
+          data var3/0,1,2,
+         .         3, 4, 5,
+         .         6, 7, 8,
+         .         9, 10, 11/
+          data var4/0,1,2,
+         .         3, 4, 5,
+         .         6, 7, 8,
+         .         9, 10, 11/
+          data dims/ZX, ZY/
+          ndims = 2
+          err = dbputqv1(dbfile, 'var1', 4, 'quadmesh', 8, var1, dims,
+         .              ndims, DB_F77NULL, 0, DB_FLOAT, DB_ZONECENT, DB_F77NULL, ierr)
+      c Write a double-precision variable
+          err = dbputqv1(dbfile, 'var2', 4, 'quadmesh', 8, var2, dims,
+         .              ndims, DB_F77NULL, 0, DB_DOUBLE, DB_ZONECENT,
+         .              DB_F77NULL, ierr)
+      c Write an integer variable
+          err = dbputqv1(dbfile, 'var3', 4, 'quadmesh', 8, var3, dims,
+         .              ndims, DB_F77NULL, 0, DB_INT, DB_ZONECENT, DB_F77NULL, ierr)
+      c Write a char variable
+          err = dbputqv1(dbfile, 'var4', 4, 'quadmesh', 8, var4, dims,
+         .              ndims, DB_F77NULL, 0, DB_CHAR, DB_ZONECENT, DB_F77NULL, ierr)
 
 Both of the previous code examples produce a data file with 4 different scalar arrays.
 Note that in both of the previous code examples, the same ``DBPutQuadvar1`` function (or ``dbputqv1`` in Fortran) function was used to write out data arrays of differing types.
@@ -1023,44 +1071,47 @@ First, the data array that you pass to the ``DBPutQuadvar1`` function must be la
 
 Example for writing node-centered variables:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* The data must be NX * NY since it is nodal. */
-    #define NX 4
-    #define NY 5
-    float nodal[] = {
-        0., 1., 2., 3.,
-        4., 5., 6., 7.,
-        8., 9., 10., 11.,
-        12., 13., 14., 15.,
-        16., 17., 18., 19.
-    };
-    /* Nodal variables have same #values as #nodes in mesh */
-    int dims[]={NX, NY};
-    int ndims = 2;
-    DBPutQuadvar1(dbfile, "nodal", "quadmesh", nodal, dims,
-                  ndims, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+    .. code-block:: c
 
+      /* The data must be NX * NY since it is nodal. */
+      #define NX 4
+      #define NY 5
+      float nodal[] = {
+          0., 1., 2., 3.,
+          4., 5., 6., 7.,
+          8., 9., 10., 11.,
+          12., 13., 14., 15.,
+          16., 17., 18., 19.
+      };
+      /* Nodal variables have same #values as #nodes in mesh */
+      int dims[]={NX, NY};
+      int ndims = 2;
+      DBPutQuadvar1(dbfile, "nodal", "quadmesh", nodal, dims,
+                    ndims, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
 
-  .. code-tab:: fortranfixed
+  .. tab-item:: Fortran
 
-    c The data must be NX * NY since it is nodal.
-        integer err, ierr, dims(2), ndims, NX, NY
-        parameter (NX = 4)
-        parameter (NY = 5)
-        real nodal(NX, NY)
-        data dims/NX, NY/
-        data nodal/0., 1., 2., 3.,
-        .          4., 5., 6., 7.,
-        .          8., 9., 10., 11.,
-        .          12., 13., 14., 15.,
-        .          16., 17., 18., 19./
-    c Nodal variables have same #values as #nodes in mesh
-        err = dbputqv1(dbfile, "nodal", 5, "quadmesh", 8, nodal,
-        .              dims, ndims, DB_F77NULL, 0, DB_FLOAT, DB_NODECENT,
-        .              DB_F77NULL, ierr)
+    .. code-block:: fortranfixed
+
+      c The data must be NX * NY since it is nodal.
+          integer err, ierr, dims(2), ndims, NX, NY
+          parameter (NX = 4)
+          parameter (NY = 5)
+          real nodal(NX, NY)
+          data dims/NX, NY/
+          data nodal/0., 1., 2., 3.,
+         .          4., 5., 6., 7.,
+         .          8., 9., 10., 11.,
+         .          12., 13., 14., 15.,
+         .          16., 17., 18., 19./
+      c Nodal variables have same #values as #nodes in mesh
+          err = dbputqv1(dbfile, 'nodal', 5, 'quadmesh', 8, nodal,
+         .              dims, ndims, DB_F77NULL, 0, DB_FLOAT, DB_NODECENT,
+         .              DB_F77NULL, ierr)
 
 
 Writing variables to 3D curvilinear and rectilinear meshes follows the same basic rules as writing variables for 2D meshes.
@@ -1076,92 +1127,96 @@ For zone-centered variables, you must have (NX- 1)*(NY-1)*(NZ-1) data values and
 
 Example for writing variables on a 3D mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    #define NX 4
-    #define NY 3
-    #define NZ 2
+    .. code-block:: c
 
-    /* Write a zone-centered variable. */
-    void write_zonecent_quadvar(DBfile *dbfile)
-    {
-        int i, dims[3], ndims = 3;
-        int ncells = (NX-1)*(NY-1)*(NZ-1);
-        float *data = (float *)malloc(sizeof(float)*ncells);
-        for(i = 0; i < ncells; ++i)
-            data[i] = (float)i;
-        dims[0] = NX-1; dims[1] = NY-1; dims[2] = NZ-1;
-        DBPutQuadvar1(dbfile, "zonal", "quadmesh", data, dims,
-                      ndims, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
-        free(data);
-    }
+      #define NX 4
+      #define NY 3
+      #define NZ 2
 
-    /* Write a node-centered variable. */
-    void write_nodecent_quadvar(DBfile *dbfile)
-    {
-        int i, dims[3], ndims = 3;
-        int nnodes = NX*NY*NZ;
-        float *data = (float *)malloc(sizeof(float)*nnodes);
-        for(i = 0; i < nnodes; ++i)
-            data[i] = (float)i;
-        dims[0] = NX; dims[1] = NY; dims[2] = NZ;
-        DBPutQuadvar1(dbfile, "nodal", "quadmesh", data, dims,
-                      ndims, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
-        free(data);
-    }
+      /* Write a zone-centered variable. */
+      void write_zonecent_quadvar(DBfile *dbfile)
+      {
+          int i, dims[3], ndims = 3;
+          int ncells = (NX-1)*(NY-1)*(NZ-1);
+          float *data = (float *)malloc(sizeof(float)*ncells);
+          for(i = 0; i < ncells; ++i)
+              data[i] = (float)i;
+          dims[0] = NX-1; dims[1] = NY-1; dims[2] = NZ-1;
+          DBPutQuadvar1(dbfile, "zonal", "quadmesh", data, dims,
+                        ndims, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+          free(data);
+      }
 
-  .. code-tab:: fortranfixed
+      /* Write a node-centered variable. */
+      void write_nodecent_quadvar(DBfile *dbfile)
+      {
+          int i, dims[3], ndims = 3;
+          int nnodes = NX*NY*NZ;
+          float *data = (float *)malloc(sizeof(float)*nnodes);
+          for(i = 0; i < nnodes; ++i)
+              data[i] = (float)i;
+          dims[0] = NX; dims[1] = NY; dims[2] = NZ;
+          DBPutQuadvar1(dbfile, "nodal", "quadmesh", data, dims,
+                        ndims, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+          free(data);
+      }
 
-    c Write a zone-centered variable.
-        subroutine write_zonecent_quadvar(dbfile)
-        implicit none
-        integer dbfile
-        include "silo.inc"
-        integer err, ierr, dims(3), ndims, i,j,k,index, ZX,ZY,ZZ
-        parameter (ZX = 3)
-        parameter (ZY = 2)
-        parameter (ZZ = 1)
-        integer zonal(ZX, ZY, ZZ)
-        data dims/ZX, ZY, ZZ/
-        index = 0
-        do 10020 k=1,ZZ
-        do 10010 j=1,ZY
-        do 10000 i=1,ZX
-            zonal(i,j,k) = index
-            index = index + 1
-    10000 continue
-    10010 continue
-    10020 continue
-        ndims = 3
-        err = dbputqv1(dbfile, "zonal", 5, "quadmesh", 8, zonal, dims,
-        .              ndims, DB_F77NULL, 0, DB_INT, DB_ZONECENT, DB_F77NULL, ierr)
-        end
-    c Write a node-centered variable.
-        subroutine write_nodecent_quadvar(dbfile)
-        implicit none
-        integer dbfile
-        include "silo.inc"
-        integer err, ierr, dims(3), ndims, i,j,k,index, NZ, NY, NZ
-        parameter (NX = 4)
-        parameter (NY = 3)
-        parameter (NZ = 2)
-        real nodal(NX, NY, NZ)
-        data dims/NX, NY, NZ/
-        index = 0
-        do 20020 k=1,NZ
-        do 20010 j=1,NY
-        do 20000 i=1,NX
-            nodal(i,j,k) = float(index)
-            index = index + 1
-    20000 continue
-    20010 continue
-    20020 continue
-        ndims = 3
-        err = dbputqv1(dbfile, "nodal", 5, "quadmesh", 8, nodal, dims,
-        .              ndims, DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
-        end
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+      c Write a zone-centered variable.
+          subroutine write_zonecent_quadvar(dbfile)
+          implicit none
+          integer dbfile
+          include 'silo.inc'
+          integer err, ierr, dims(3), ndims, i,j,k,index, ZX,ZY,ZZ
+          parameter (ZX = 3)
+          parameter (ZY = 2)
+          parameter (ZZ = 1)
+          integer zonal(ZX, ZY, ZZ)
+          data dims/ZX, ZY, ZZ/
+          index = 0
+          do 10020 k=1,ZZ
+          do 10010 j=1,ZY
+          do 10000 i=1,ZX
+              zonal(i,j,k) = index
+              index = index + 1
+          10000 continue
+          10010 continue
+          10020 continue
+          ndims = 3
+          err = dbputqv1(dbfile, 'zonal', 5, 'quadmesh', 8, zonal, dims,
+         .              ndims, DB_F77NULL, 0, DB_INT, DB_ZONECENT, DB_F77NULL, ierr)
+          end
+      c Write a node-centered variable.
+          subroutine write_nodecent_quadvar(dbfile)
+          implicit none
+          integer dbfile
+          include 'silo.inc'
+          integer err, ierr, dims(3), ndims, i,j,k,index, NZ, NY, NZ
+          parameter (NX = 4)
+          parameter (NY = 3)
+          parameter (NZ = 2)
+          real nodal(NX, NY, NZ)
+          data dims/NX, NY, NZ/
+          index = 0
+          do 20020 k=1,NZ
+          do 20010 j=1,NY
+          do 20000 i=1,NX
+              nodal(i,j,k) = float(index)
+              index = index + 1
+          20000 continue
+          20010 continue
+          20020 continue
+          ndims = 3
+          err = dbputqv1(dbfile, 'nodal', 5, 'quadmesh', 8, nodal, dims,
+         .              ndims, DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
+          end
 
 Point meshes
 """"""""""""
@@ -1180,31 +1235,35 @@ Nodes and the zones are really the same thing in a point mesh so you can conside
  
 Example for writing variables on a 3D point mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Create some values to save. */
-    int i;
-    float var[NPTS];
-    for(i = 0; i < NPTS; ++i)
-        var[i] = (float)i;
-    /* Write the point variable. */
-    DBPutPointvar1(dbfile, "pointvar", "pointmesh", var, NPTS,
-                   DB_FLOAT, NULL);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      /* Create some values to save. */
+      int i;
+      float var[NPTS];
+      for(i = 0; i < NPTS; ++i)
+          var[i] = (float)i;
+      /* Write the point variable. */
+      DBPutPointvar1(dbfile, "pointvar", "pointmesh", var, NPTS,
+                     DB_FLOAT, NULL);
 
-    c Create some values to save.
-        integer err, ierr, i, NPTS
-        parameter (NPTS = 100)
-        real var(NPTS)
-        do 10010 i = 1,NPTS
-            var(i) = float(i-1)
-    10010 continue
-    c Write the point variable
-        err = dbputpv1(dbfile, "pointvar", 8, "pointmesh", 9,
-        .              var, NPTS, DB_FLOAT, DB_F77NULL, ierr)
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+      c Create some values to save.
+          integer err, ierr, i, NPTS
+          parameter (NPTS = 100)
+          real var(NPTS)
+          do 10010 i = 1,NPTS
+              var(i) = float(i-1)
+          10010 continue
+      c Write the point variable
+          err = dbputpv1(dbfile, 'pointvar', 8, 'pointmesh', 9,
+         .              var, NPTS, DB_FLOAT, DB_F77NULL, ierr)
 
 Unstructured meshes
 """""""""""""""""""
@@ -1227,34 +1286,38 @@ Silo_ provides the ``DBPutUcdvar1`` function for writing scalar variables on uns
 
 Example for writing variables on an unstructured mesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    float nodal[] = {1.,2.,3.,4.,5.,6.,7.,8.,9.};
-    float zonal[] = {1.,2.,3.,4.,5.};
-    int nnodes = 9;
-    int nzones = 5;
-    /* Write a zone-centered variable. */
-    DBPutUcdvar1(dbfile, "zonal", "mesh", zonal, nzones, NULL, 0,
-                 DB_FLOAT, DB_ZONECENT, NULL);
-    /* Write a node-centered variable. */
-    DBPutUcdvar1(dbfile, "nodal", "mesh", nodal, nnodes, NULL, 0,
-                 DB_FLOAT, DB_NODECENT, NULL);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      float nodal[] = {1.,2.,3.,4.,5.,6.,7.,8.,9.};
+      float zonal[] = {1.,2.,3.,4.,5.};
+      int nnodes = 9;
+      int nzones = 5;
+      /* Write a zone-centered variable. */
+      DBPutUcdvar1(dbfile, "zonal", "mesh", zonal, nzones, NULL, 0,
+                   DB_FLOAT, DB_ZONECENT, NULL);
+      /* Write a node-centered variable. */
+      DBPutUcdvar1(dbfile, "nodal", "mesh", nodal, nnodes, NULL, 0,
+                   DB_FLOAT, DB_NODECENT, NULL);
 
-        integer err, ierr, NNODES, NZONES
-        parameter (NNODES = 9)
-        parameter (NZONES = 5)
-        real nodal(NNODES) /1.,2.,3.,4.,5.,6.,7.,8.,9./
-        real zonal(NZONES) /1.,2.,3.,4.,5./
-    c Write a zone-centered variable.
-        err = dbputuv1(dbfile, "zonal", 5, "mesh", 4, zonal, NZONES,
-        .              DB_F77NULL, 0, DB_FLOAT, DB_ZONECENT, DB_F77NULL, ierr)
-    c Write a node-centered variable.
-        err = dbputuv1(dbfile, "nodal", 5, "mesh", 4, nodal, NNODES,
-        .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+          integer err, ierr, NNODES, NZONES
+          parameter (NNODES = 9)
+          parameter (NZONES = 5)
+          real nodal(NNODES) /1.,2.,3.,4.,5.,6.,7.,8.,9./
+          real zonal(NZONES) /1.,2.,3.,4.,5./
+      c Write a zone-centered variable.
+          err = dbputuv1(dbfile, 'zonal', 5, 'mesh', 4, zonal, NZONES,
+         .              DB_F77NULL, 0, DB_FLOAT, DB_ZONECENT, DB_F77NULL, ierr)
+      c Write a node-centered variable.
+          err = dbputuv1(dbfile, 'nodal', 5, 'mesh', 4, nodal, NNODES,
+         .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
 
 
 Adding variable units
@@ -1279,30 +1342,34 @@ In order to add units to the option list, you must add the ``DBOPT_UNITS`` optio
 
 Example for writing a variable with units:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Create an option list and add "g/cc" units to it. */
-    DBoptlist *optlist = DBMakeOptlist(1);
-    DBAddOption(optlist, DBOPT_UNITS, (void*)"g/cc");
-    /* Write a variable that has units. */
-    DBPutUcdvar1(dbfile, "zonal", "mesh", zonal, nzones, NULL, 0,
-                 DB_FLOAT, DB_ZONECENT, optlist);
-    /* Free the option list. */
-    DBFreeOptlist(optlist);
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      /* Create an option list and add "g/cc" units to it. */
+      DBoptlist *optlist = DBMakeOptlist(1);
+      DBAddOption(optlist, DBOPT_UNITS, (void*)"g/cc");
+      /* Write a variable that has units. */
+      DBPutUcdvar1(dbfile, "zonal", "mesh", zonal, nzones, NULL, 0,
+                   DB_FLOAT, DB_ZONECENT, optlist);
+      /* Free the option list. */
+      DBFreeOptlist(optlist);
 
-    c Create an option list and add "g/cc" units to it.
-        integer err, optlistid
-        err = dbmkoptlist(1, optlistid)
-        err = dbaddcopt(optlistid, DBOPT_UNITS, "g/cc", 4)
-    c Write a variable that has units.
-        err = dbputuv1(dbfile, "zonal", 5, "mesh", 4, zonal, NZONES,
-        .              DB_F77NULL, 0, DB_FLOAT, DB_ZONECENT, optlistid, ierr)
-    c Free the option list.
-        err = dbfreeoptlist(optlistid)
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+      c Create an option list and add "g/cc" units to it.
+          integer err, optlistid
+          err = dbmkoptlist(1, optlistid)
+          err = dbaddcopt(optlistid, DBOPT_UNITS, "g/cc", 4)
+      c Write a variable that has units.
+          err = dbputuv1(dbfile, 'zonal', 5, 'mesh', 4, zonal, NZONES,
+         .              DB_F77NULL, 0, DB_FLOAT, DB_ZONECENT, optlistid, ierr)
+      c Free the option list.
+          err = dbfreeoptlist(optlistid)
 
 
 Single precision vs. Double precision
@@ -1348,40 +1415,43 @@ Writing out vector and tensor variables as expressions involving scalar variable
 
 Example for writing out expression definitions:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    /* Write some expressions to the Silo file. */
-    const char *names[] = {"velocity", "speed"};
-    const char *defs[] = {"{xc,yc,zc}", "magnitude(velocity)"};
-    int types[] = {DB_VARTYPE_VECTOR, DB_VARTYPE_SCALAR};
-    DBPutDefvars(dbfile, "defvars", 2, names, types, defs, NULL);
+    .. code-block:: c
 
+      /* Write some expressions to the Silo file. */
+      const char *names[] = {"velocity", "speed"};
+      const char *defs[] = {"{xc,yc,zc}", "magnitude(velocity)"};
+      int types[] = {DB_VARTYPE_VECTOR, DB_VARTYPE_SCALAR};
+      DBPutDefvars(dbfile, "defvars", 2, names, types, defs, NULL);
 
-  .. code-tab:: fortranfixed
+  .. tab-item:: Fortran
 
-        integer err, ierr, types(2), lnames(2), ldefs(2)
-        integer numexpressions, oldlen
-    c Initialize some 20 character length strings
-        character*20 names(2) /'velocity ',
-        .                      'speed '/
-        character*20 defs(2) /'{xc,yc,zc} ',
-        .                     'magnitude(velocity) '/
-    c Store the length of each string
-        data lnames/8, 5/
-        data ldefs/10, 19/
-        data types/DB_VARTYPE_VECTOR, DB_VARTYPE_SCALAR/
-    c Set the maximum string length to 20 since that's how long
-    c our strings are
-        oldlen = dbget2dstrlen()
-        err = dbset2dstrlen(20)
-    c Write out the expressions
-        numexpressions = 2
-        err = dbputdefvars(dbfile, "defvars", 7, numexpressions,
-        .                  names, lnames, types, defs, ldefs, DB_F77NULL, ierr)
-    c Restore the previous value for maximum string length
-        err = dbset2dstrlen(oldlen)
+    .. code-block:: fortranfixed
+
+          integer err, ierr, types(2), lnames(2), ldefs(2)
+          integer numexpressions, oldlen
+      c Initialize some 20 character length strings
+          character*20 names(2) /'velocity ',
+         .                      'speed '/
+          character*20 defs(2) /'{xc,yc,zc} ',
+         .                     'magnitude(velocity) '/
+      c Store the length of each string
+          data lnames/8, 5/
+          data ldefs/10, 19/
+          data types/DB_VARTYPE_VECTOR, DB_VARTYPE_SCALAR/
+      c Set the maximum string length to 20 since that's how long
+      c our strings are
+          oldlen = dbget2dstrlen()
+          err = dbset2dstrlen(20)
+      c Write out the expressions
+          numexpressions = 2
+          err = dbputdefvars(dbfile, 'defvars', 7, numexpressions,
+         .                  names, lnames, types, defs, ldefs, DB_F77NULL, ierr)
+      c Restore the previous value for maximum string length
+          err = dbset2dstrlen(oldlen)
 
 
 In the previous Fortran example for writing expressions, there are more functions involved than just the ``dbputdefvars`` function.
@@ -1438,74 +1508,78 @@ The following examples assume that the domain files will exist in the same direc
 
 Example for writing a multimesh:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    void write_masterfile(void)
-    {
-        DBfile *dbfile = NULL;
-        char **meshnames = NULL;
-        int dom, nmesh = 4, *meshtypes = NULL;
-        /* Create the list of mesh names. */
-        meshnames = (char **)malloc(nmesh * sizeof(char *));
-        for(dom = 0; dom < nmesh; ++dom)
-        {
-            char tmp[100];
-            sprintf(tmp, "multimesh.%d:quadmesh", dom);
-            meshnames[dom] = strdup(tmp);
-        }
-        /* Create the list of mesh types. */
-        meshtypes = (int *)malloc(nmesh * sizeof(int));
-        for(dom = 0; dom < nmesh; ++dom)
-            meshtypes[dom] = DB_QUAD_RECT;
-        /* Open the Silo file */
-        dbfile = DBCreate("multimesh.root", DB_CLOBBER, DB_LOCAL,
-                          "Master file", DB_HDF5);
-        /* Write the multimesh. */
-        DBPutMultimesh(dbfile, "quadmesh", nmesh, meshnames,
-                       meshtypes, NULL);
-        /* Close the Silo file. */
-        DBClose(dbfile);
-        /* Free the memory*/
-        for(dom = 0; dom < nmesh; ++dom)
-            free(meshnames[dom]);
-        free(meshnames);
-    }
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      void write_masterfile(void)
+      {
+          DBfile *dbfile = NULL;
+          char **meshnames = NULL;
+          int dom, nmesh = 4, *meshtypes = NULL;
+          /* Create the list of mesh names. */
+          meshnames = (char **)malloc(nmesh * sizeof(char *));
+          for(dom = 0; dom < nmesh; ++dom)
+          {
+              char tmp[100];
+              sprintf(tmp, "multimesh.%d:quadmesh", dom);
+              meshnames[dom] = strdup(tmp);
+          }
+          /* Create the list of mesh types. */
+          meshtypes = (int *)malloc(nmesh * sizeof(int));
+          for(dom = 0; dom < nmesh; ++dom)
+              meshtypes[dom] = DB_QUAD_RECT;
+          /* Open the Silo file */
+          dbfile = DBCreate("multimesh.root", DB_CLOBBER, DB_LOCAL,
+                            "Master file", DB_HDF5);
+          /* Write the multimesh. */
+          DBPutMultimesh(dbfile, "quadmesh", nmesh, meshnames,
+                         meshtypes, NULL);
+          /* Close the Silo file. */
+          DBClose(dbfile);
+          /* Free the memory*/
+          for(dom = 0; dom < nmesh; ++dom)
+              free(meshnames[dom]);
+          free(meshnames);
+      }
 
-        subroutine write_master()
-        implicit none
-        include "silo.inc"
-        integer err, ierr, dbfile, nmesh, oldlen
-        character*20 meshnames(4) /'multimesh.1:quadmesh',
-        .                          'multimesh.2:quadmesh',
-        .                          'multimesh.3:quadmesh',
-        .                          'multimesh.4:quadmesh'/
-        integer lmeshnames(4) /20,20,20,20/
-        integer meshtypes(4) /DB_QUAD_RECT, DB_QUAD_RECT,
-        .                     DB_QUAD_RECT, DB_QUAD_RECT/
-    c Create a new silo file
-        err = dbcreate("multimesh.root", 14, DB_CLOBBER, DB_LOCAL,
-        .              "multimesh root", 14, DB_HDF5, dbfile)
-        if(dbfile.eq.-1) then
-            write (6,*) 'Could not create Silo file!\n'
-            return
-        endif
-    c Set the maximum string length to 20 since that's how long our
-    c strings are
-        oldlen = dbget2dstrlen()
-        err = dbset2dstrlen(20)
-    c Write the multimesh object.
-        nmesh = 4
-        err = dbputmmesh(dbfile, "quadmesh", 8, nmesh, meshnames,
-        .                lmeshnames, meshtypes, DB_F77NULL, ierr)
-    c Restore the previous value for maximum string length
-        err = dbset2dstrlen(oldlen)
-    c Close the Silo file
-        err = dbclose(dbfile)
-        end
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+          subroutine write_master()
+          implicit none
+          include 'silo.inc'
+          integer err, ierr, dbfile, nmesh, oldlen
+          character*20 meshnames(4) /'multimesh.1:quadmesh',
+         .                          'multimesh.2:quadmesh',
+         .                          'multimesh.3:quadmesh',
+         .                          'multimesh.4:quadmesh'/
+          integer lmeshnames(4) /20,20,20,20/
+          integer meshtypes(4) /DB_QUAD_RECT, DB_QUAD_RECT,
+         .                     DB_QUAD_RECT, DB_QUAD_RECT/
+      c Create a new silo file
+          err = dbcreate('multimesh.root', 14, DB_CLOBBER, DB_LOCAL,
+         .              'multimesh root', 14, DB_HDF5, dbfile)
+          if(dbfile.eq.-1) then
+              write (6,*) 'Could not create Silo file!\n'
+              return
+          endif
+      c Set the maximum string length to 20 since that's how long our
+      c strings are
+          oldlen = dbget2dstrlen()
+          err = dbset2dstrlen(20)
+      c Write the multimesh object.
+          nmesh = 4
+          err = dbputmmesh(dbfile, 'quadmesh', 8, nmesh, meshnames,
+         .                lmeshnames, meshtypes, DB_F77NULL, ierr)
+      c Restore the previous value for maximum string length
+          err = dbset2dstrlen(oldlen)
+      c Close the Silo file
+          err = dbclose(dbfile)
+          end
 
 Sometimes it can be advantageous to have each processor write its files to a unique subdirectory (e.g. proc-0, proc-1, proc-2, ...).
 You can also choose for each processor to write its files to a common directory so all files for a given time step are contained in a single place (e.g. cycle0000, cycle0001, cycle0002, ...).
@@ -1542,59 +1616,63 @@ Silo_ provides the ``DBPutMultivar`` function for writing out multivar objects.
 
 Example for writing a multivar:
 
-.. tabs::
+.. tab-set::
 
-  .. code-tab:: c
+  .. tab-item:: C
 
-    void write_multivar(DBfile *dbfile)
-    {
-        char **varnames = NULL;
-        int dom, nvar = 4, *vartypes = NULL;
-        /* Create the list of var names. */
-        varnames = (char **)malloc(nvar * sizeof(char *));
-        for(dom = 0; dom < nvar; ++dom)
-        {
-            char tmp[100];
-            sprintf(tmp, "multivar.%d:var", dom);
-            varnames[dom] = strdup(tmp);
-        }
-        /* Create the list of var types. */
-        vartypes = (int *)malloc(nvar * sizeof(int));
-        for(dom = 0; dom < nvar; ++dom)
-            vartypes[dom] = DB_QUADVAR;
-        /* Write the multivar. */
-        DBPutMultivar(dbfile, "var", nvar, varnames, vartypes, NULL);
-        /* Free the memory*/
-        for(dom = 0; dom < nvar; ++dom)
-            free(varnames[dom]);
-        free(varnames);
-        free(vartypes);
-    }
+    .. code-block:: c
 
-  .. code-tab:: fortranfixed
+      void write_multivar(DBfile *dbfile)
+      {
+          char **varnames = NULL;
+          int dom, nvar = 4, *vartypes = NULL;
+          /* Create the list of var names. */
+          varnames = (char **)malloc(nvar * sizeof(char *));
+          for(dom = 0; dom < nvar; ++dom)
+          {
+              char tmp[100];
+              sprintf(tmp, "multivar.%d:var", dom);
+              varnames[dom] = strdup(tmp);
+          }
+          /* Create the list of var types. */
+          vartypes = (int *)malloc(nvar * sizeof(int));
+          for(dom = 0; dom < nvar; ++dom)
+              vartypes[dom] = DB_QUADVAR;
+          /* Write the multivar. */
+          DBPutMultivar(dbfile, "var", nvar, varnames, vartypes, NULL);
+          /* Free the memory*/
+          for(dom = 0; dom < nvar; ++dom)
+              free(varnames[dom]);
+          free(varnames);
+          free(vartypes);
+      }
 
-        subroutine write_multivar(dbfile)
-        implicit none
-        include "silo.inc"
-        integer err, ierr, dbfile, nvar, oldlen
-        character*20 varnames(4) /'multivar.1:var ',
-        .                         'multivar.2:var ',
-        .                         'multivar.3:var ',
-        .                         'multivar.4:var '/
-        integer lvarnames(4) /14,14,14,14/
-        integer vartypes(4) /DB_QUADVAR,DB_QUADVAR,
-        .                    DB_QUADVAR,DB_QUADVAR/
-    c Set the maximum string length to 20 since that's how long
-    c our strings are
-        oldlen = dbget2dstrlen()
-        err = dbset2dstrlen(20)
-    c Write the multivar.
-        nvar = 4
-        err = dbputmvar(dbfile, "var", 3, nvar, varnames, lvarnames,
-        .               vartypes, DB_F77NULL, ierr)
-    c Restore the previous value for maximum string length
-        err = dbset2dstrlen(oldlen)
-        end
+  .. tab-item:: Fortran
+
+    .. code-block:: fortranfixed
+
+          subroutine write_multivar(dbfile)
+          implicit none
+          include 'silo.inc'
+          integer err, ierr, dbfile, nvar, oldlen
+          character*20 varnames(4) /'multivar.1:var ',
+         .                         'multivar.2:var ',
+         .                         'multivar.3:var ',
+         .                         'multivar.4:var '/
+          integer lvarnames(4) /14,14,14,14/
+          integer vartypes(4) /DB_QUADVAR,DB_QUADVAR,
+         .                    DB_QUADVAR,DB_QUADVAR/
+      c Set the maximum string length to 20 since that's how long
+      c our strings are
+          oldlen = dbget2dstrlen()
+          err = dbset2dstrlen(20)
+      c Write the multivar.
+          nvar = 4
+          err = dbputmvar(dbfile, 'var', 3, nvar, varnames, lvarnames,
+         .               vartypes, DB_F77NULL, ierr)
+      c Restore the previous value for maximum string length
+          err = dbset2dstrlen(oldlen)
+          end
 
 EMPTY contributions
 """""""""""""""""""
@@ -1626,4 +1704,3 @@ Note that if you use the ``"EMPTY"`` keyword in a multivar object then the same 
 
 For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating file system paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multi-block objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multi-block objects.
 You can find many more examples of various features of Silo by browsing source code in either `VisIt's <https://github.com/visit-dav/visit/tree/develop/src/tools/data/datagen>`__ or `Silo's <https://github.com/LLNL/Silo/tree/main/tests>`__ test suites or the `test data files <https://github.com/search?q=repo%3Avisit-dav%2Fvisit%20path%3Asilo*.tar.xz&type=code>`__ used in VisIt_'s testing.
-

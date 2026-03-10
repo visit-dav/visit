@@ -1,5 +1,5 @@
 setuptools==70.2.0
 sphinx==7.0.1
 sphinx-rtd-theme==2.0.0
-sphinx-tabs==3.4.1
+sphinx-design==0.6.1
 sphinx-notfound-page==1.0.0
