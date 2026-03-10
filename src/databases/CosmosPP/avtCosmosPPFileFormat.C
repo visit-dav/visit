@@ -619,7 +619,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         float x = current_tmp[0];
         bounds[0] = (x < bounds[0] ? x : bounds[0]);
         bounds[1] = (x > bounds[1] ? x : bounds[1]);
-        float y = (rank > 1 ? current_tmp[1] : 0.0f);
+        float y = current_tmp[0];
         bounds[2] = (y < bounds[2] ? y : bounds[2]);
         bounds[3] = (y > bounds[3] ? y : bounds[3]);
         if (rank == 3)
@@ -638,15 +638,15 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     bounds[3] += y_diff*0.1;
     if (rank < 3)
     {
+        bounds[4] = -(bounds[1]-bounds[0])*0.5;
+        bounds[5] = +(bounds[1]-bounds[0])*0.5;
+    }
+    else
+    {
         // HACK!  The VTK point locator doesn't work very well with 2D objects,
         // so make this appear to be 3D by using the X-coordinate.
         bounds[4] = bounds[0];
         bounds[5] = bounds[1];
-    }
-    else
-    {
-        bounds[4] = -(bounds[1]-bounds[0])*0.5;
-        bounds[5] = +(bounds[1]-bounds[0])*0.5;
     }
 
     PointWithId *pwid = new PointWithId[npts];
