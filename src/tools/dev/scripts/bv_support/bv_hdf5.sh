@@ -164,15 +164,6 @@ function build_hdf5
             -DZLIB_LIBRARY_RELEASE:FILEPATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib/libz.${SO_EXT}\""
     fi
 
-# HDF5 2.0 configures correctly ONLY with newer libaec based szip. The logic below doesn't work.
-#    if [[ "$DO_SZIP" == "yes" ]]; then
-#        info "Configuring HDF5 with szip support."
-#        cmk_opts="${cmk_opts} \
-#            -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON \
-#            -DSZIP_INCLUDE_DIR:PATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}/include\" \
-#            -DSZIP_LIBRARY_RELEASE:FILEPATH=\"${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}/lib/libsz.${SO_EXT}\""
-#    fi
-
     if [[ "$FC_COMPILER" == "no" ]] ; then
         cmk_opts="${cmk_opts} -DHDF5_BUILD_FORTRAN:BOOL=OFF"
     else
@@ -232,13 +223,13 @@ function build_hdf5
     fi
 
     # ensure hdf5-shared target specifies it needs to link with zlib
-    if [[ "$DO_ZLIB" == "yes" && "$DO_STATIC_BUILD" == "no" ]]; then
-        targetsfile=${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}/cmake/hdf5-targets.cmake
-        info "adding ZLIB::ZLIB to $targetsfile"
-        echo "if(TARGET ZLIB::ZLIB)" >> $targetsfile
-        echo "    set_property(TARGET hdf5-shared APPEND PROPERTY INTERFACE_LINK_LIBRARIES ZLIB::ZLIB)" >> $targetsfile
-        echo "endif()" >> $targetsfile
-    fi
+    #if [[ "$DO_ZLIB" == "yes" && "$DO_STATIC_BUILD" == "no" ]]; then
+    #    targetsfile=${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}/cmake/hdf5-targets.cmake
+    #    info "adding ZLIB::ZLIB to $targetsfile"
+    #    echo "if(TARGET ZLIB::ZLIB)" >> $targetsfile
+    #    echo "    set_property(TARGET hdf5-shared APPEND PROPERTY INTERFACE_LINK_LIBRARIES ZLIB::ZLIB)" >> $targetsfile
+    #    echo "endif()" >> $targetsfile
+    #fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/hdf5"

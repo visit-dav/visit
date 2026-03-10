@@ -220,6 +220,40 @@ EOF
     fi
 }
 
+function apply_silo_4120_hzip_needs_zlib_patch
+{
+    info "Patching Silo 4.12.0 for hzip needs zlib issue"
+    patch -p0 << \EOF
+--- Silo-4.12.0/CMakeLists.txt.orig	2026-03-10 12:08:28.256403000 -0700
++++ Silo-4.12.0/CMakeLists.txt	2026-03-10 12:08:15.604238000 -0700
+@@ -617,9 +617,7 @@
+             ${Silo_SOURCE_DIR}/src/hzip)
+     endif()
+ 
+-    if(ZLIB_FOUND)
+-        list(APPEND silo_library_include_dirs ${ZLIB_INCLUDE_DIR})
+-    else()
++    if(NOT ZLIB_FOUND)
+         list(APPEND SILO_COMPILE_DEFINES WITHOUT_ZLIB)
+     endif()
+ endif()
+@@ -627,6 +625,10 @@
+ add_library(silo ${silo_library_sources})
+ set_target_properties(silo PROPERTIES VERSION ${SILO_VERSION} SOVERSION ${SILO_SOVERSION})
+ 
++if(ZLIB_FOUND AND SILO_ENABLE_HZIP)
++    target_link_libraries(silo  ZLIB::ZLIB)
++endif()
++
+ target_compile_definitions(silo PRIVATE ${SILO_COMPILE_DEFINES})
+ add_dependencies(silo pdb_detect)
+ target_include_directories(silo PRIVATE ${silo_library_include_dirs})
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
 function apply_silo_patch
 {
     info "Patching silo . . ."
@@ -237,6 +271,11 @@ function apply_silo_patch
             return 1
         fi
         apply_silo_4120_lib_vs_lib64_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_hzip_needs_zlib_patch
         if [[ $? != 0 ]] ; then
             warn "Giving up on Silo build because the patch failed."
             return 1

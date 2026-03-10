@@ -426,7 +426,9 @@ function build_xdmf
                 -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_HDF5_FLAGS}\" \
                 -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
                 -DCMAKE_SHARED_LINKER_FLAGS:STRING=\"${LDFLAGS_HDF5}\" \
+                -DCMAKE_POLICY_DEFAULT_CMP0074=NEW \
                 -DBUILD_TESTING:BOOL=OFF \
+                -DXDMF_BUILD_EXAMPLES:BOOL=OFF \
                 -DXDMF_BUILD_MPI:BOOL=OFF \
                 -DXDMF_BUILD_VTK:BOOL=OFF \
                 -DXDMF_BUILD_UTILS:BOOL=OFF \
@@ -435,8 +437,7 @@ function build_xdmf
                 -DHDF5_INCLUDE_PATH:PATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include\" \
                 -DHDF5_LIBRARY:FILEPATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}\" \
                 -DXDMF_SYSTEM_ZLIB:BOOL=ON \
-                -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR} \
-                -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY} \
+                -DZLIB_ROOT:PATH=${VISIT_ZLIB_DIR} \
                 -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
                 -DLIBXML2_INCLUDE_PATH:PATH=\"${xmlinc}\" \
                 -DLIBXML2_LIBRARY:FILEPATH=\"${xmllib}\" \
