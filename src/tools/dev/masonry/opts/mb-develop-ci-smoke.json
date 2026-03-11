@@ -19,7 +19,6 @@
                   "mesagl",
                   "hdf5",
                   "silo",
-                  "szip",
                   "zlib",
                   "mpich"]}
 }}

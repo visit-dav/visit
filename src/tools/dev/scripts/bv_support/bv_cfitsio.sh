@@ -15,16 +15,16 @@ function bv_cfitsio_disable
 
 function bv_cfitsio_depends_on
 {
-    echo ""
+    echo "cmake zlib"
 }
 
 function bv_cfitsio_info
 {
-    export CFITSIO_FILE=${CFITSIO_FILE:-"cfitsio3006.tar.gz"}
-    export CFITSIO_VERSION=${CFITSIO_VERSION:-"3006"}
-    export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION:-"3.0"}
-    export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR:-"cfitsio"}
-    export CFITSIO_SHA256_CHECKSUM="c156ee0becee8987a14229e705f0f9f39dd2b73bbc9e73bc5d69f43896cb9a63"
+    export CFITSIO_FILE=${CFITSIO_FILE:-"cfitsio-4.6.3.tar.gz"}
+    export CFITSIO_VERSION=${CFITSIO_VERSION:-"4.6.3"}
+    export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION:-"4.0"}
+    export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR:-"cfitsio-${CFITSIO_VERSION}"}
+    export CFITSIO_SHA256_CHECKSUM="fad44fff274fdda5ffcc0c0fff3bc3c596362722b9292fc8944db91187813600"
 }
 
 function bv_cfitsio_print
@@ -68,80 +68,23 @@ function bv_cfitsio_ensure
 #                         Function 8.9, build_cfitsio                         #
 # *************************************************************************** #
 
-function apply_mv_vs_cp_patch
-{
-    patch -p0 << \EOF
---- cfitsio/Makefile.in	2024-02-20 16:26:11.776100000 -0800
-+++ cfitsio_patched/Makefile.in	2024-02-20 16:34:10.879376000 -0800
-@@ -88,10 +88,10 @@
- 
- install:	libcfitsio.a ${CFITSIO_PREFIX} ${CFITSIO_LIB} ${CFITSIO_INCLUDE}
- 		@if [ -f libcfitsio.a ]; then \
--			/bin/mv libcfitsio.a ${CFITSIO_LIB}; \
-+			/bin/cp libcfitsio.a ${CFITSIO_LIB}; \
- 		fi; \
- 		if [ -f libcfitsio${SHLIB_SUFFIX} ]; then \
--			/bin/mv libcfitsio${SHLIB_SUFFIX} ${CFITSIO_LIB}; \
-+			/bin/cp libcfitsio${SHLIB_SUFFIX} ${CFITSIO_LIB}; \
- 		fi; \
- 		/bin/cp fitsio.h fitsio2.h longnam.h drvrsmem.h ${CFITSIO_INCLUDE}/
-
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "CFITSIO Makefile patch failed."
-        return 1
-    fi
-
-    return 0;
-
-}
-
-function apply_cfitsio_configure_patch
-{
-    # fixes configure error on Fedora40 with gcc 14.
-    patch -p0 << \EOF
-diff -u cfitsio/configure.orig cfitsio/configure
---- cfitsio/configure.orig	2025-07-07 15:51:29.700266000 -0700
-+++ cfitsio/configure	2025-07-07 15:51:39.430265000 -0700
-@@ -764,7 +764,7 @@
- #line 765 "configure"
- #include "confdefs.h"
- 
--main(){return(0);}
-+int main(){return(0);}
- EOF
- if { (eval echo configure:770: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
-   ac_cv_prog_cc_works=yes
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "CFITSIO configure patch failed."
-        return 1
-    fi
-
-    return 0;
-}
-
-function apply_cfitsio_patch
-{
-    apply_mv_vs_cp_patch
-    if [[ $? != 0 ]]; then
-        return 1
-    fi
-
-    apply_cfitsio_configure_patch
-    if [[ $? != 0 ]]; then
-        return 1
-    fi
-
-    return 0;
-}
-
 function build_cfitsio
 {
     #
+    # CFITSIO uses CMake -- make sure we have it.
+    #
+    CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
+    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
+        info "CFITSIO: CMake found"
+    else
+        warn "Unable to find cmake, cannot build CFITSIO. Giving up."
+        return 1
+    fi
+
+    #
     # Prepare build dir
     #
-    prepare_build_dir $CFITSIO_BUILD_DIR $CFITSIO_FILE
+    prepare_build_dir $CFITSIO_BUILD_DIR $CFITSIO_FILE sha256 $CFITSIO_SHA256_CHECKSUM
     untarred_cfitsio=$?
     if [[ $untarred_cfitsio == -1 ]] ; then
         warn "Unable to prepare CFITSIO Build Directory. Giving Up"
@@ -149,94 +92,75 @@ function build_cfitsio
     fi
 
     #
-    # Apply patches
-    #
-    info "Patching cfitsio . . ."
-    apply_cfitsio_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_cfitsio == 1 ]] ; then
-            warn "Giving up on CFITSIO build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
-
+    # Configure CFITSIO (CMake)
     #
     info "Configuring CFITSIO . . ."
-    cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
 
-    #
-    # Fix an issue with configure
-    #
-    if [[ "$OPSYS" == "Darwin" && $(uname -r | cut -d'.' -f1) -ge 23 ]]; then
-        sed -i '' 's/^main(){return(0);}/int main(){return(0);}/' configure
+    CFITSIO_SRC_DIR="${CFITSIO_BUILD_DIR}"
+    CFITSIO_BUILD_SUBDIR="${CFITSIO_SRC_DIR}-build"
+    CFITSIO_INSTALL_DIR="${VISITDIR}/cfitsio/${CFITSIO_VERSION}/${VISITARCH}"
+
+    if [[ ! -d "${CFITSIO_BUILD_SUBDIR}" ]] ; then
+        mkdir "${CFITSIO_BUILD_SUBDIR}" || error "Unable to create CFITSIO build directory."
     fi
 
-    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
-    set -x
-    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        ./configure \
-        --prefix="$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH"
-    set +x
-    if [[ $? != 0 ]] ; then
-        warn "CFITSIO configure failed.  Giving up"
-        return 1
+    cd "${CFITSIO_BUILD_SUBDIR}" || error "Can't cd to CFITSIO build dir."
+
+    #
+    # Remove the CMakeCache.txt files ... existing files sometimes prevent
+    # fields from getting overwritten properly.
+    #
+    rm -Rf CMakeCache.txt */CMakeCache.txt
+
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cfitsio_cmake_build_type="Debug"
+    else
+        cfitsio_cmake_build_type="Release"
     fi
+
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        cfitsio_build_shared="OFF"
+    else
+        cfitsio_build_shared="ON"
+    fi
+
+    cmake_opts=""
+    cmake_opts="${cmake_opts} -DCMAKE_INSTALL_PREFIX:PATH=${CFITSIO_INSTALL_DIR}"
+    cmake_opts="${cmake_opts} -DCMAKE_BUILD_TYPE:STRING=${cfitsio_cmake_build_type}"
+    cmake_opts="${cmake_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON"
+    cmake_opts="${cmake_opts} -DBUILD_SHARED_LIBS:BOOL=${cfitsio_build_shared}"
+    cmake_opts="${cmake_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    cmake_opts="${cmake_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+
+    # cfitsio options
+    cmake_opts="${cmake_opts} -DTESTS:BOOL=OFF"
+    cmake_opts="${cmake_opts} -DUSE_CURL:BOOL=OFF"
+    cmake_opts="${cmake_opts} -DUTILS:BOOL=OFF"
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        cmake_opts="${cmake_opts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+        cmake_opts="${cmake_opts} -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+    fi
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+    echo "\"${CMAKE_COMMAND}\"" ${cmake_opts} "../${CFITSIO_SRC_DIR}" >> bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "CFITSIO configuration failed."
 
     #
     # Build CFITSIO
     #
     info "Building CFITSIO . . . (~2 minutes)"
 
-    $MAKE
-    if [[ $? != 0 ]] ; then
-        warn "CFITSIO build failed.  Giving up"
-        return 1
-    fi
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "CFITSIO did not build correctly. Giving up."
 
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        #
-        # Make dynamic executable
-        #
-        info "Creating dynamic libraries for CFITSIO . . ."
-
-        INSTALLNAMEPATH="$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH/lib"
-        ## switch back to gcc "external relocation entries" restFP saveFP
-        ##      /usr/bin/libtool -o libcfitsio.$SO_EXT -dynamic libcfitsio.a -lSystem \
-        ##      -headerpad_max_install_names \
-        ##      -install_name $INSTALLNAMEPATH/libcfitsio.$SO_EXT \
-        ##      -compatibility_version $CFITSIO_COMPATIBILITY_VERSION \
-        ##      -current_version $CFITSIO_VERSION
-        gcc -o libcfitsio.$SO_EXT -dynamiclib *.o -lSystem \
-            -Wl,-headerpad_max_install_names \
-            -Wl,-install_name,$INSTALLNAMEPATH/libcfitsio.$SO_EXT \
-            -Wl,-compatibility_version,$CFITSIO_COMPATIBILITY_VERSION \
-            -Wl,-current_version,$CFITSIO_VERSION
-        if [[ $? != 0 ]] ; then
-            warn "Creating dynamic CFITSIO library failed.  Giving up"
-            return 1
-        fi
-        #       cp libcfitsio.$SO_EXT "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH/lib"
-    fi
     #
     # Install into the VisIt third party location.
     #
     info "Installing CFITSIO . . ."
-
-    mkdir "$VISITDIR/cfitsio"
-    mkdir "$VISITDIR/cfitsio/$CFITSIO_VERSION"
-    mkdir "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH"
-
-    $MAKE install
-    if [[ $? != 0 ]] ; then
-        warn "CFITSIO install failed.  Giving up"
-        return 1
-    fi
+    ${CMAKE_COMMAND} --install . || error "CFITSIO did not install correctly. Giving up."
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/cfitsio"

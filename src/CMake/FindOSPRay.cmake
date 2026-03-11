@@ -19,6 +19,9 @@
 #   Kathleen Biagas, Fri Dec  2 20:16:38 PST 2022
 #   Use cmake_path to get PARENT_PATH when handling tbb and embree.
 #
+#   Kathleen Biagas, Wed Mar 4, 2026
+#   Ensure ospray's dependent dlls get installed on Windows.
+#
 #*****************************************************************************
 
 if(NOT EXISTS ${VISIT_OSPRAY_DIR})
@@ -44,28 +47,57 @@ find_package(ospray ${OSPRAY_VERSION} REQUIRED
 if(ospray_FOUND)
     set(HAVE_LIBOSPRAY true)
     add_definitions(-DHAVE_OSPRAY)
+    # since all the libs needed for VisIt at runtime aren't
+    # enumerated in the ospray targets from find_package,
+    # just install all of them
+    set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib)
+    if(EXISTS ${VISIT_OSPRAY_DIR}/lib64)
+        set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib64)
+    endif()
+    if(NOT ospray_lib_libs)
+        file(GLOB ospray_lib_libs
+                LIST_DIRECTORIES FALSE
+                ${LIB_SEARCH_PATH}/*)
+    endif()
+    unset(LIB_SEARCH_PATH)
+
     if(VISIT_INSTALL_THIRD_PARTY)
-        # since all the libs needed for VisIt at runtime aren't
-        # enumerated in the ospray targets from find_package,
-        # just install all of them
-        set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib)
-        if(EXISTS ${VISIT_OSPRAY_DIR}/lib64)
-            set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib64)
-        endif()
-        if(NOT ospray_lib_libs)
-            file(GLOB ospray_lib_libs
-                 LIST_DIRECTORIES FALSE
-                 ${LIB_SEARCH_PATH}/*)
-        endif()
-        unset(LIB_SEARCH_PATH)
         #  install libraries
         foreach(lib ${ospray_lib_libs})
             THIRD_PARTY_INSTALL_LIBRARY(${lib})
         endforeach()
 
+        if(WIN32)
+            file(GLOB ospray_lib_dlls
+                 LIST_DIRECTORIES FALSE
+                 ${VISIT_OSPRAY_DIR}/bin/*.dll)
+            install(FILES ${ospray_lib_dlls}
+                    DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                WORLD_READ WORLD_EXECUTE)
+            file(COPY ${ospray_lib_dlls}
+                 DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        endif()
+
         if(NOT VISIT_HEADERS_SKIP_INSTALL)
             THIRD_PARTY_INSTALL_INCLUDE(ospray ${OSPRAY_INCLUDE_DIR})
         endif()
     endif()
+
+    # we use ospray binaries that we dont build, and they lack usual
+    # rpath we rely on for dev builds
+    #
+    # copy the files into visit's lib dir so dev builds can locate them
+    #
+    if(NOT WIN32)
+        file(COPY ${ospray_lib_libs}
+                   DESTINATION ${VISIT_BINARY_DIR}/lib/
+                   FILE_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                    GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                    WORLD_READ WORLD_EXECUTE
+                   FOLLOW_SYMLINK_CHAIN)
+    endif()
+
 endif()
 

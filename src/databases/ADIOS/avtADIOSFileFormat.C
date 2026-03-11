@@ -147,7 +147,7 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
             ffi = avtStagingFileFormat::CreateInterface(list, nList, nBlock);
             break;
             */
-          case BASIC:
+         case BASIC:
             ffi = avtADIOSBasicFileFormat::CreateInterface(list, nList, nBlock);
             break;
           default:

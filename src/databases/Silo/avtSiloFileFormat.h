@@ -388,9 +388,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  ReadDefvars(DBfile*,int,char**,avtDatabaseMetaData*);
 
     void                  DoRootDirectoryWork(avtDatabaseMetaData*);
-#ifdef PARALLEL
     void                  BroadcastGlobalInfo(avtDatabaseMetaData*);
-#endif
     void                  StoreMultimeshInfo(const char *const dirname,
                                              const char *const name_w_dir,
                                              int meshnum,

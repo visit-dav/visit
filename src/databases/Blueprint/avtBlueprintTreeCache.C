@@ -34,6 +34,11 @@
 #include "mfem.hpp"
 
 //-----------------------------------------------------------------------------
+// hdf5 includes
+//-----------------------------------------------------------------------------
+#include <hdf5.h>
+
+//-----------------------------------------------------------------------------
 // bp visit plugin includes
 //-----------------------------------------------------------------------------
 #include "avtBlueprintLogging.h"
@@ -357,11 +362,6 @@ avtBlueprintTreeCache::IO::CreateSidreMetaViewPath(const std::string &tree_path)
     }
 
     return oss.str();
-
-   
-    std::string curr,next;
-    
-    
 }
 
 

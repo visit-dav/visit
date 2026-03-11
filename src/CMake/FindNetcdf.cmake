@@ -17,13 +17,6 @@
 SET_UP_THIRD_PARTY(NETCDF LIBS netcdf)
 
 if (WIN32)
-    if (MSVC_VERSION LESS "1910")
-      set(NETCDF_CXX_DIR ${NETCDF_DIR})
-      SET_UP_THIRD_PARTY(NETCDF_CXX LIBS netcdf_c++)
-    endif()
     set(NETCDF_WIN32_DEFINES "DLL_NETCDF")
-else()
-    set(NETCDF_CXX_DIR ${NETCDF_DIR})
-    SET_UP_THIRD_PARTY(NETCDF_CXX LIBS netcdf_c++)
 endif()
 

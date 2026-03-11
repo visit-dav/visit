@@ -251,6 +251,11 @@ function(SET_UP_THIRD_PARTY pkg)
             else()
                 set(X_VALUE ${X})
             endif()
+            if(TARGET ${X_VALUE})
+                set(is_lib_path 0)
+                list(APPEND "${lib_var}" ${X_VALUE})
+                continue()
+            endif()
             if(is_lib_path)
                 set(is_lib_path 0)
                 list(APPEND "${lib_dir_var}" ${X_VALUE})
@@ -601,6 +606,8 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
 
+    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
+
     include(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
@@ -619,7 +626,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
 
-    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
 

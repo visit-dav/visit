@@ -30,9 +30,6 @@ function bv_netcdf_depends_on
         local depends_on="zlib"
         if [[ "$DO_HDF5" == "yes" ]] ; then
             depends_on="hdf5"        
-            if [[ "$DO_SZIP" == "yes" ]] ; then
-                depends_on="${depends_on} szip"        
-            fi
         fi
         echo ${depends_on}
     fi
@@ -47,11 +44,11 @@ function bv_netcdf_initialize_vars
 
 function bv_netcdf_info
 {
-    export NETCDF_VERSION=${NETCDF_VERSION-"4.1.1"}
-    export NETCDF_FILE=${NETCDF_FILE-"netcdf-${NETCDF_VERSION}.tar.gz"}
-    export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"4.1"}
-    export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-4.1.1"}
-    export NETCDF_SHA256_CHECKSUM="7933d69d378c57f038375bae4dd78c52442a06e2647fce4b75c13a225e342fb0"
+    export NETCDF_VERSION=${NETCDF_VERSION-"4.9.3"}
+    export NETCDF_FILE=${NETCDF_FILE-"netcdf-c-${NETCDF_VERSION}.tar.gz"}
+    export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"4.9"}
+    export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-c-4.9.3"}
+    export NETCDF_SHA256_CHECKSUM="a474149844e6144566673facf097fea253dc843c37bc0a7d3de047dc8adda5dd"
 }
 
 function bv_netcdf_print
@@ -86,7 +83,7 @@ function bv_netcdf_host_profile
                 >> $HOSTCONF
             if [[ "$DO_HDF5" == "yes" ]] ; then
                 echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+                    "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_HL_LIB TYPE STRING)" \
                     >> $HOSTCONF
             fi
         fi
@@ -107,230 +104,58 @@ function bv_netcdf_ensure
     fi
 }
 
-function apply_netcdf_411_macOS_patch
+function apply_netcdfc493_patches_for_hdf20
 {
+    info "Patching netcdf-c 4.9.3 for HDF5-2.0"
     patch -p0 << \EOF
-diff -c netcdf-4.1.1/ncgen3/orig/genlib.h netcdf-4.1.1/ncgen3/genlib.h 
-*** netcdf-4.1.1/ncgen3/orig/genlib.h	Thu Aug 23 21:46:38 2018
---- netcdf-4.1.1/ncgen3/genlib.h	Thu Aug 23 21:07:33 2018
-***************
-*** 5,10 ****
---- 5,11 ----
-   *   See netcdf/COPYRIGHT file for copying and redistribution conditions.
-   *   $Header: /upc/share/CVS/netcdf-3/ncgen3/genlib.h,v 1.15 2009/12/29 18:42:35 dmh Exp $
-   *********************************************************************/
-+ #include <config.h>
-  #include <stdlib.h>
-  #include <limits.h>
-  
+diff -r -u netcdf-c-4.9.3.orig/libhdf5/H5FDhttp.c netcdf-c-4.9.3/libhdf5/H5FDhttp.c
+--- netcdf-c-4.9.3.orig/libhdf5/H5FDhttp.c	2025-02-07 13:40:00.000000000 -0800
++++ netcdf-c-4.9.3/libhdf5/H5FDhttp.c	2026-01-31 16:12:50.659720000 -0800
+@@ -49,6 +49,7 @@
+ Define a simple #ifdef test for the version of H5FD_class_t we are using 
+ */
+ 
++#if 0
+ #if H5_VERS_MAJOR == 1
+ #if H5_VERS_MINOR < 10
+ #define H5FDCLASS1 1
+@@ -56,6 +57,7 @@
+ #else
+ #error "Cannot determine version of H5FD_class_t"
+ #endif
++#endif
+ 
+ #ifdef H5_HAVE_WIN32_API
+ /* The following two defines must be before any windows headers are included */
+diff -r -u netcdf-c-4.9.3.orig/libhdf5/H5FDhttp.h netcdf-c-4.9.3/libhdf5/H5FDhttp.h
+--- netcdf-c-4.9.3.orig/libhdf5/H5FDhttp.h	2025-02-07 13:40:00.000000000 -0800
++++ netcdf-c-4.9.3/libhdf5/H5FDhttp.h	2026-01-31 16:22:30.395734000 -0800
+@@ -31,7 +31,7 @@
+ 
+ #if H5_VERSION_GE(1,13,2)
+ #define H5_VFD_HTTP     ((H5FD_class_value_t)(514))
+-#define H5FD_HTTP	(H5FDperform_init(H5FD_http_init))
++#define H5FD_HTTP	(H5OPEN H5FD_HTTP_g)
+ #else
+ #define H5FD_HTTP	(H5FD_http_init())
+ #endif
 EOF
     if [[ $? != 0 ]] ; then
-        warn "netcdf 4.1.1 OSX 10.13 patch failed."
-        return 1
-    fi
-
-    return 0;
-}
-
-function apply_netcdf_411_darwin_patch
-{
-    patch -p0 << \EOF
-diff -c netcdf-4.1.1/ncgen3/genlib.h.orig netcdf-4.1.1/ncgen3/genlib.h
-*** netcdf-4.1.1/ncgen3/genlib.h.orig   2014-11-13 17:16:23.000000000 -0800
---- netcdf-4.1.1/ncgen3/genlib.h        2014-11-13 16:27:08.000000000 -0800
-***************
-*** 81,87 ****
-  
-  /* In case we are missing strlcat */
-  #ifndef HAVE_STRLCAT
-! extern size_t strlcat(char *dst, const char *src, size_t siz);
-  #endif
-  
-  #ifdef __cplusplus
---- 81,87 ----
-  
-  /* In case we are missing strlcat */
-  #ifndef HAVE_STRLCAT
-! /* extern size_t strlcat(char *dst, const char *src, size_t siz); */
-  #endif
-  
-  #ifdef __cplusplus
-EOF
-
-    if [[ $? == 0 ]] ; then
-        return 0;
-    fi
-
-    return 1;
-}
-
-function apply_netcdf_patch_for_exodusii
-{
-    local retval=0
-    pushd $NETCDF_BUILD_DIR 1>/dev/null 2>&1
-    patch -p0 << \EOF
-*** libsrc/netcdf.h     Wed Oct 27 11:50:22 2010
---- libsrc/netcdf.h.ex  Wed Oct 27 11:50:31 2010
-***************
-*** 141,151 ****
-   * applications and utilities.  However, nothing is statically allocated to
-   * these sizes internally.
-   */
-! #define NC_MAX_DIMS   1024     /* max dimensions per file */
-! #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   8192     /* max variables per file */
-! #define NC_MAX_NAME   256      /* max length of a name */
-! #define NC_MAX_VAR_DIMS       NC_MAX_DIMS /* max per variable dimensions */
-  
-  /*
-   * The netcdf version 3 functions all return integer error status.
---- 141,152 ----
-   * applications and utilities.  However, nothing is statically allocated to
-   * these sizes internally.
-   */
-! #define NC_MAX_DIMS   65536    /* max dimensions per file */
-! #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   524288   /* max variables per file */
-! #define NC_MAX_NAME   256      /* max length of a name */
-! #define NC_MAX_VAR_DIMS 8      /* max per variable dimensions */
-! 
-  
-  /*
-   * The netcdf version 3 functions all return integer error status.
-EOF
-    retval1=$?
-    patch -p0 << \EOF
-*** libsrc4/netcdf.h    2010-04-12 11:48:02.000000000 -0700
---- libsrc4/netcdf.h.ex 2011-01-03 15:51:46.000000000 -0800
-***************
-*** 199,209 ****
-   * applications and utilities.  However, nothing is statically allocated to
-   * these sizes internally.
-   */
-! #define NC_MAX_DIMS   1024     /* max dimensions per file */
-  #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   8192     /* max variables per file */
-  #define NC_MAX_NAME   256      /* max length of a name */
-! #define NC_MAX_VAR_DIMS       NC_MAX_DIMS /* max per variable dimensions */
-  
-  /* In HDF5 files you can set the endianness of variables with
-   * nc_def_var_endian(). These defines are used there. */   
---- 199,209 ----
-   * applications and utilities.  However, nothing is statically allocated to
-   * these sizes internally.
-   */
-! #define NC_MAX_DIMS   65536    /* max dimensions per file */
-  #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   524288   /* max variables per file */
-  #define NC_MAX_NAME   256      /* max length of a name */
-! #define NC_MAX_VAR_DIMS       8        /* max per variable dimensions */
-  
-  /* In HDF5 files you can set the endianness of variables with
-   * nc_def_var_endian(). These defines are used there. */   
-EOF
-    retval2=$?
-    patch -p0 << \EOF
-*** libsrc4/netcdf_base.h       2010-01-21 08:00:18.000000000 -0800
---- libsrc4/netcdf_base.h.ex    2011-01-03 16:03:36.000000000 -0800
-***************
-*** 192,202 ****
-   * applications and utilities.  However, nothing is statically allocated to
-   * these sizes internally.
-   */
-! #define NC_MAX_DIMS   1024     /* max dimensions per file */
-  #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   8192     /* max variables per file */
-  #define NC_MAX_NAME   256      /* max length of a name */
-! #define NC_MAX_VAR_DIMS       NC_MAX_DIMS /* max per variable dimensions */
-  
-  /* In HDF5 files you can set the endianness of variables with
-   * nc_def_var_endian(). These defines are used there. */   
---- 192,202 ----
-   * applications and utilities.  However, nothing is statically allocated to
-   * these sizes internally.
-   */
-! #define NC_MAX_DIMS   65536    /* max dimensions per file */
-  #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   524288   /* max variables per file */
-  #define NC_MAX_NAME   256      /* max length of a name */
-! #define NC_MAX_VAR_DIMS       8        /* max per variable dimensions */
-  
-  /* In HDF5 files you can set the endianness of variables with
-   * nc_def_var_endian(). These defines are used there. */   
-EOF
-    retval3=$?
-    popd 1>/dev/null 2>&1
-    if [[ $retval1 -eq 0 && $retval2 -eq 0 && $retval3 -eq 0 ]]; then
-        return 0
-    fi
-    return 1
-}
-
-function apply_netcdf_strlcat_patch
-{
-    info "Patching netcdf for strlcat"
-    local retval=0
-    pushd $NETCDF_BUILD_DIR 1>/dev/null 2>&1
-    patch -p0 << \EOF
-*** ncgen3/genlib.h.orig	2023-04-14 11:00:05.000000000 -0700
---- ncgen3/genlib.h	2023-04-07 17:04:37.000000000 -0700
-*************** extern void nc_fill ( nc_type  type, siz
-*** 81,89 ****
---- 81,91 ----
-  extern void clearout(void);
-  
-  /* In case we are missing strlcat */
-+ #if 0
-  #ifndef HAVE_STRLCAT
-  extern size_t strlcat(char *dst, const char *src, size_t siz);
-  #endif
-+ #endif
-  
-  #ifdef __cplusplus
-  }
-EOF
-    retval=$?
-    popd 1>/dev/null 2>&1
-
-    if [[ $retval != 0 ]] ; then
-      warn "netcdf patch for strlcat failed."
+      warn "netcdf-c 4.9.3 patch for HDF5-2.0 failed."
       return 1
     fi
-    return 0;
+    return 0
 }
 
 function apply_netcdf_patch
 {
-    apply_netcdf_patch_for_exodusii
-
-    if [[ ${NETCDF_VERSION} == 4.1.1 ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]] ; then
-            productVersion=`sw_vers -productVersion`
-            if [[ $productVersion == 10.9.[0-9]* ||
-                  $productVersion == 10.10.[0-9]* ||
-                  $productVersion == 10.11.[0-9]* ||
-                  $productVersion == 10.12.[0-9]* ]] ; then
-                info "Applying OS X 10.9 and up patch . . ."
-                apply_netcdf_411_darwin_patch
-            fi
-            
-            if [[ $productVersion == 10.13.[0-9]* ||
-                  $productVersion == 10.14.[0-9]* || 
-                  $productVersion == 10.15.[0-9]* ]] ; then
-                info "Applying macOS 10.13 and up patch . . ."
-                apply_netcdf_411_macOS_patch
-            fi
-        fi
-    fi
-    
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-        apply_netcdf_strlcat_patch
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        apply_netcdfc493_patches_for_hdf20
         if [[ $? != 0 ]] ; then
            return 1
         fi
     fi
-
-    return $?
+    return 0
 }
 
 # *************************************************************************** #
@@ -376,62 +201,82 @@ function build_netcdf
     fi
 
     #
-    # Configure NetCDF
+    # CMake NetCDF
     #
-    info "Configuring NetCDF . . ."
-    cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
-    info "Invoking command to configure NetCDF"
-    EXTRA_FLAGS=""
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        if [[ "$DO_STATIC_BUILD" == "no" ]]; then
-            EXTRA_FLAGS="--enable-largefile --enable-shared --disable-static"
-        else
-            EXTRA_FLAGS="--enable-largefile"
-        fi
+    cmake_opts="\
+        -DCMAKE_INSTALL_PREFIX:PATH=\"${VISITDIR}/netcdf/${NETCDF_VERSION}/${VISITARCH}\" \
+        -DNETCDF_BUILD_UTILITIES:BOOL=OFF \
+        -DNETCDF_ENABLE_EXAMPLES:BOOL=OFF \
+        -DNETCDF_ENABLE_FILTER_BLOSC:BOOL=OFF \
+        -DNETCDF_ENABLE_FILTER_BZ2:BOOL=OFF \
+        -DNETCDF_ENABLE_FILTER_SZIP:BOOL=OFF \
+        -DNETCDF_ENABLE_FILTER_TESTING:BOOL=OFF \
+        -DNETCDF_ENABLE_FILTER_ZSTD:BOOL=OFF \
+        -DNETCDF_ENABLE_REMOTE_FUNCTIONALITY:BOOL=OFF \
+        -DNETCDF_ENABLE_TESTS:BOOL=OFF \
+        -DNETCDF_ENABLE_V2_API:BOOL=ON \
+        -DBUILD_TESTING:BOOL=OFF"
+
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cmake_opts="${cmake_opts} -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo"
+    else
+        cmake_opts="${cmake_opts} -DCMAKE_BUILD_TYPE:STRING=Release"
     fi
-    EXTRA_AC_FLAGS=""
-    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
-    # autoconf don't detect
-    if [[ "$(uname -m)" == "ppc64le" ]] ; then
-         EXTRA_AC_FLAGS="ac_cv_build=powerpc64le-unknown-linux-gnu"
-    elif [[ "$(uname -m)" == "aarch64" ]] ; then
-         EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
+
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        cmake_opts="${cmake_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    else
+        cmake_opts="${cmake_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
-    H5ARGS=""
+
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        H5ARGS="--enable-netcdf4"
-        H5ARGS="$H5ARGS --with-hdf5=$HDF5_INSTALL_DIR"
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            H5ARGS="$H5ARGS --with-szlib=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-        fi
+        cmake_opts="${cmake_opts} \
+            -DNETCDF_ENABLE_HDF5:BOOL=ON \
+            -DHDF5_ROOT:PATH=\"${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}\""
+    else
+        cmake_opts="${cmake_opts} -DNETCDF_ENABLE_HDF5:BOOL=OFF"
     fi
-    ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
 
-    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
-    set -x
-    env ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                FC="" FCFLAGS="" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS \
-                --disable-dap --disable-fortran \
-                --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
-    set +x
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        cmake_opts="${cmake_opts} -DZLIB_ROOT:PATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
+    fi 
 
+    # netcdf needs to find mpi if hdf5 was built with mpi support
+    if [[ x"$PAR_COMPILER" != x ]] ; then
+        cmake_opts="${cmake_opts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
+    fi
+
+    if [[ x"$PAR_INCLUDE" != x ]] ; then
+        cmake_opts="${cmake_opts} -DMPI_C_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+    fi
+
+    if [[ x"$PAR_LIBS" != x ]] ; then
+        cmake_opts="${cmake_opts} -DMPI_C_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
+        cmake_opts="${cmake_opts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+    fi
+
+
+    info "CMakeing NetCDF . . ."
+    cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
+
+    # their FindZLIB module interfere's with cmake's, and we want cmake's
+    rm cmake/modules/FindZLIB.cmake
+
+    info "Invoking command to cmake NetCDF"
+
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+    rm -f bv_run_cmake.sh
+    echo "\"${CMAKE_BIN}\"" ${cmake_opts} ../netcdf-c-${NETCDF_VERSION} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh
 
     if [[ $? != 0 ]] ; then
-        warn "NetCDF configure failed.  Giving up"
+        warn "NetCDF cmake failed.  Giving up"
         return 1
-    fi
-
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-        # there is an include file on newer macOS #include <version> which case-clashes
-        # with any file living in a dir that is -I included on the compilation line
-        mv -f VERSION VERSION.orig
-
-        # Apparently, netCDF is often compiled with undefined refs to methods that should not
-        # be used in the current configuration. However, sometimes it won't set the flags needed
-        # so the linker will ignore those. Here, we just override libtool with what it would have
-        # had specified if it had configured correctly.
-        sed -I "" -E -e 's@^allow_undefined_flag="?([^"]*)"?$@allow_undefined_flag="\1 \\${wl}-flat_namespace \\${wl}-undefined \\${wl}suppress"@' libtool
     fi
 
     #
@@ -452,13 +297,6 @@ function build_netcdf
     if [[ $? != 0 ]] ; then
         warn "NetCDF install failed.  Giving up"
         return 1
-    fi
-
-    #
-    # Patch up the library names on Darwin.
-    #
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        info "Creating dynamic libraries for NetCDF . . ."
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then

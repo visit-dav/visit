@@ -126,12 +126,12 @@ avtUNICFileFormat::avtUNICFileFormat(const char *filename)
         EXCEPTION1(InvalidDBTypeException, "Cannot be a UNIC data file, since "
                                            "it is not even an HDF5 file.");
     }
-    int control = H5Dopen(file_handle, "CONTROL");
+    hid_t control = H5Dopen(file_handle, "CONTROL");
     if (control < 0)
     {
         H5Fclose(file_handle);
         EXCEPTION1(InvalidDBTypeException, "Cannot be a UNIC data file, since "
-                                  "it is not contain the dataset \"control\".");    
+                                  "it is not contain the dataset \"CONTROL\".");    
     }
 
     H5Fclose(file_handle);
@@ -200,10 +200,11 @@ avtUNICFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     if (file_handle < 0)
         file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
-    int control = H5Dopen(file_handle, "CONTROL");
+    hid_t control = H5Dopen(file_handle, "CONTROL");
     int info[5];
-    int space_id = H5Dget_space(control);
+    hid_t space_id = H5Dget_space(control);
     H5Dread(control, H5T_NATIVE_INT, H5S_ALL, space_id, H5P_DEFAULT, info);
+    H5Sclose(space_id);
     H5Dclose(control);
 
     avtMeshMetaData *mesh = new avtMeshMetaData;
@@ -226,7 +227,7 @@ avtUNICFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     char *pt_name_buff   = new char[nPtVars*slen+1];
     char *cell_name_buff = new char[nCellVars*slen+1];
 
-    int pt_names = H5Dopen(file_handle, "VERTEX_VECTOR_NAMES");
+    hid_t pt_names = H5Dopen(file_handle, "VERTEX_VECTOR_NAMES");
     if (pt_names < 0)
     {
         EXCEPTION1(InvalidDBTypeException, "Cannot be a UNIC data file, since "
@@ -234,17 +235,19 @@ avtUNICFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     hid_t type_id = H5Dget_type(pt_names);
     H5Dread(pt_names, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, pt_name_buff);
-    //H5Dclose(pt_names);
+    H5Tclose(type_id);
+    H5Dclose(pt_names);
 
-    int cell_names = H5Dopen(file_handle, "ELEMENT_VECTOR_NAMES");
+    hid_t cell_names = H5Dopen(file_handle, "ELEMENT_VECTOR_NAMES");
     if (cell_names < 0)
     {
         EXCEPTION1(InvalidDBTypeException, "Cannot be a UNIC data file, since "
                      "it is not contain the dataset \"ELEMENT_VECTOR_NAMES\".");
     }
-    type_id = H5Dget_type(pt_names);
+    type_id = H5Dget_type(cell_names);
     H5Dread(cell_names, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, cell_name_buff);
-    //H5Dclose(cell_names);
+    H5Tclose(type_id);
+    H5Dclose(cell_names);
 
     char *fixed_name = new char[slen+1];
     fixed_name[slen] = '\0';
@@ -363,7 +366,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         EXCEPTION1(InvalidDBTypeException, "Cannot locate BLOCK data");
     }
 
-    int control = H5Dopen(block, "INFO");
+    hid_t control = H5Dopen(block, "INFO");
     int info[3];
     H5Dread(control, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, info);
     H5Dclose(control);
@@ -374,7 +377,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
     int theVtkCellType = info[2];
 
     float *xyz = new float[3*numVertices];
-    int xyz_id = H5Dopen(block, "XYZ");
+    hid_t xyz_id = H5Dopen(block, "XYZ");
     H5Dread(xyz_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, xyz);
     H5Dclose(xyz_id);
     
@@ -1447,7 +1450,7 @@ avtUNICFileFormat::GetVar(int domain, const char *varname)
         EXCEPTION1(InvalidDBTypeException, "Cannot locate BLOCK data");
     }
 
-    int control = H5Dopen(block, "INFO");
+    hid_t control = H5Dopen(block, "INFO");
     int info[3];
     H5Dread(control, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, info);
     H5Dclose(control);
@@ -1558,7 +1561,7 @@ avtUNICFileFormat::GetVar(int domain, const char *varname)
     hssize_t counts[2];
 #endif
 
-    int id = -1;
+    hid_t id = -1;
     if (isPtVar)
         id = H5Dopen(block, "VERTEXDATA");
     else

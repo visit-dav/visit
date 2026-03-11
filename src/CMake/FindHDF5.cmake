@@ -20,30 +20,30 @@
 
 # Use the HDF5_DIR hint from the config-site .cmake file
 
+if(EXISTS ${VISIT_HDF5_DIR}/cmake)
+  set(HDF5_DIR ${VISIT_HDF5_DIR}/cmake)
+endif()
 
-OPTION(HDF5_LIBNAMES_AFFIX_DLL "Whether HDF5 library base names end with dll" ON)
-IF(WIN32)
-  if(HDF5_LIB_NAME)
-    SET_UP_THIRD_PARTY(HDF5 LIBS ${HDF5_LIB_NAME})
-    IF(VISIT_PARALLEL)
-        SET_UP_THIRD_PARTY(HDF5_MPI LIBS ${HDF5_LIB_NAME})
-    ENDIF(VISIT_PARALLEL)
-  else()
-    if(HDF5_LIBNAMES_AFFIX_DLL)
-      SET_UP_THIRD_PARTY(HDF5 LIBS hdf5dll hdf5_hldll)
-      IF(VISIT_PARALLEL)
-          SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpidll hdf5_mpi_hldll)
-      ENDIF(VISIT_PARALLEL)
-    else()
-      SET_UP_THIRD_PARTY(HDF5 LIBS hdf5 hdf5_hl)
-      IF(VISIT_PARALLEL)
-          SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpi hdf5_mpi_hl)
-      ENDIF(VISIT_PARALLEL)
-    endif()
-  endif()
-ELSE()
-  SET_UP_THIRD_PARTY(HDF5 LIBS hdf5 hdf5_hl)
-  IF(VISIT_PARALLEL)
-      SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpi hdf5_mpi_hl)
-  ENDIF(VISIT_PARALLEL)
-ENDIF()
+find_package(HDF5 CONFIG PATHS ${HDF5_DIR} NO_DEFAULT_PATH)
+
+if(TARGET hdf5-shared)
+   set(HDF5_LIB hdf5-shared)
+   set(HAVE_LIBHDF5 TRUE CACHE BOOL "Have HDF5 libraries")
+   get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
+   THIRD_PARTY_INSTALL_INCLUDE(hdf5 ${HDF5_INCLUDE_DIR})
+   THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
+
+   if(TARGET hdf5_hl-shared)
+       set(HDF5_HL_LIB hdf5_hl-shared)
+       set(HAVE_LIBHDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
+       get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_LOCATION_RELEASE)
+       THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
+   endif()
+
+   if(HDF5_PROVIDES_ZLIB_SUPPORT)
+      # hdf5 targets don't have 'zlib' listed as an interface-link-library
+      # but it should be.
+      set_property(TARGET hdf5-shared APPEND PROPERTY LINK_LIBRARIES "${ZLIB_LIBRARY}")
+   endif()
+
+endif()

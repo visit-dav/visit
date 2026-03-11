@@ -978,6 +978,25 @@ function check_files
     return 0
 }
 
+# *************************************************************************** #
+#                         Function get_par_compiler_home_dir                  #
+# --------------------------------------------------------------------------- #
+# Compute path suitable for setting MPI_HOME used by CMake for finding MPI.   #
+# The computed path is exported and in subsequent calls always echoed so the  #
+# function can be used to return from anywhere in build_visit if the export,  #
+# for some reason, is not available.                                          #
+# *************************************************************************** #
+function get_par_compiler_home_dir 
+{
+    if [ -n "$PAR_COMPILER" ] && [ "${PAR_HOME+x}" != x ]; then
+        PAR_COMPILER_PATH=$(command -v $PAR_COMPILER)
+        PAR_COMPILER_REAL="$(cd "$(dirname "$PAR_COMPILER_PATH")" && pwd -P)/$(basename "$PAR_COMPILER_PATH")"
+        PAR_BIN_DIR="$(dirname "$PAR_COMPILER_REAL")"
+        PAR_HOME="$(dirname "$PAR_BIN_DIR")"
+        export PAR_HOME=$PAR_HOME
+    fi
+    echo $PAR_HOME
+}
 
 # *************************************************************************** #
 #                          process_parallel_ldflags                           #
@@ -1054,6 +1073,7 @@ function check_parallel
                 info \
                     "Configuring with mpi c++ compiler wrapper: $VISIT_MPI_COMPILER_CXX"
             fi
+            get_par_compiler_home_dir > /dev/null
             return 0
         fi
 
@@ -1071,10 +1091,13 @@ function check_parallel
             export PAR_COMPILER="$MPICH_COMPILER"
             export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
             export PAR_INCLUDE="-I${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/include"
+            export PAR_HOME="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}"
             info  "Configuring parallel with mpich build: "
-            info  "  PAR_COMPILER: $PAR_COMPILER"
+            info  "  PAR_COMPILER:     $PAR_COMPILER"
             info  "  PAR_COMPILER_CXX: $PAR_COMPILER_CXX"
-            info  "  PAR_INCLUDE: $PAR_INCLUDE"
+            info  "  PAR_INCLUDE:      $PAR_INCLUDE"
+            info  "  PAR_HOME:         $PAR_HOME"
+            get_par_compiler_home_dir > /dev/null
             return 0
         fi
 
@@ -1107,6 +1130,7 @@ function check_parallel
             export PAR_COMPILER=$MPIWRAPPER
             info \
                 "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
+            get_par_compiler_home_dir > /dev/null
             return 0
         fi
 
@@ -1122,6 +1146,7 @@ function check_parallel
             export PAR_COMPILER="$MPICH_COMPILER"
             info \
                 "Configuring with build mpich: $MPICH_COMPILER"
+            get_par_compiler_home_dir > /dev/null
             return 0
         fi
 
@@ -1197,6 +1222,7 @@ function check_parallel
         fi
     fi
 
+    get_par_compiler_home_dir > /dev/null
     return 0
 }
 

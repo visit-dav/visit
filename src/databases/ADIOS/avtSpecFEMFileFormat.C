@@ -69,6 +69,7 @@ avtSpecFEMFileFormat::Identify(const char *fname)
         {
             ADIOSFileObject *f = new ADIOSFileObject(meshNm);
             f->Open();
+            if (!f->IsOpen()) return false;
             if (! avtSpecFEMFileFormat::IsMeshFile(f))
                 valid = false;
             delete f;
@@ -78,6 +79,7 @@ avtSpecFEMFileFormat::Identify(const char *fname)
         {
             ADIOSFileObject *f = new ADIOSFileObject(dataNm);
             f->Open();
+            if (!f->IsOpen()) return false;
             if (! avtSpecFEMFileFormat::IsDataFile(f))
                 valid = false;
             delete f;
