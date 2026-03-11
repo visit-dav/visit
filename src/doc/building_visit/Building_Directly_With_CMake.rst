@@ -128,7 +128,7 @@ Examples of *config site* files for a variety of machines VisIt_ developers dire
   make -j
 
 For cases where a *config-site* file will not be used, this must be explicitly indicated by passing ``-DVISIT_CONFIG_SITE=NONE``.
-This is useful in cases where ``-C CMakeCache.txt`` is used, or where all the relevant CMake variables are specified on the command-line to CMake itself instead of a *config-site* file.
+This is useful in cases where ``-C CMakeCache.txt`` is used, or where all the relevant CMake variables are specified on the command line to CMake itself instead of a *config-site* file.
 
 .. code:: bash
 
@@ -142,7 +142,7 @@ CMake Variables
 
 The following CMake vars can be modified to suit your build needs.
 
-When specified via a command-line invocation of CMake, they should be specified as: VARNAME:TYPE=value, eg 'VISIT_BUILD_ALL_PLUGINS:BOOL=ON'.
+When specified via a command line invocation of CMake, they should be specified as: VARNAME:TYPE=value, eg 'VISIT_BUILD_ALL_PLUGINS:BOOL=ON'.
 
 The defaults listed are the settings used if the Variable has not been set in a *config-site* file.
 
@@ -152,24 +152,24 @@ Controlling major components being built
 """"""""""""""""""""""""""""""""""""""""
 
 VISIT_DBIO_ONLY : BOOL : OFF
-    Toggles building of only visitconvert and engine plugins.
+    Toggles building of only visitconvert and engine plug-ins.
 
 VISIT_ENGINE_ONLY : BOOL : OFF
-    Toggles building of only the compute engine and its plugins.
+    Toggles building of only the compute engine and its plug-ins.
 
 VISIT_SERVER_COMPONENTS_ONLY : BOOL : OFF
-    Build only vcl, mdserver, engine and their plugins.
+    Build only vcl, mdserver, engine and their plug-ins.
 
 VISIT_ENABLE_LIBSIM : BOOL : ON
     Toggles building of libsim.
 
 
-Controlling plugins being built
+Controlling plug-ins being built
 """""""""""""""""""""""""""""""
 
 VISIT_BUILD_ALL_PLUGINS : BOOL : OFF
-    Toggles the building of all plugins.
-    When turned on the following optional plugins will be added to the build:
+    Toggles the building of all plug-ins.
+    When turned on the following optional plug-ins will be added to the build:
 
     Database: PICS_Tester, Rect
 
@@ -177,11 +177,11 @@ VISIT_BUILD_ALL_PLUGINS : BOOL : OFF
 
     Plot: Topology
 
-    Note: the list of optional plugins is subject to change.
+    Note: the list of optional plug-ins is subject to change.
 
 VISIT_BUILD_MINIMAL_PLUGINS : BOOL : OFF
-    Toggles the building of a minimal set of database, operator, and plot plugins.
-    When turned on, only the following plugins will be built:
+    Toggles the building of a minimal set of database, operator, and plot plug-ins.
+    When turned on, only the following plug-ins will be built:
 
     Database: Curve2D, RAW, VTK, PICS_Tester
 
@@ -189,22 +189,22 @@ VISIT_BUILD_MINIMAL_PLUGINS : BOOL : OFF
 
     Plot: Curve, Mesh, Pseudocolor
 
-    Note: the list of minimal plugins is subject to change.
+    Note: the list of minimal plug-ins is subject to change.
 
 VISIT_SELECTED_DATABASE_PLUGINS : STRING
-    ';' separated list of database plugins to build, eg: VTK;Silo
+    ';' separated list of database plug-ins to build, eg: VTK;Silo
 
-     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for database plugins.
+     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for database plug-ins.
 
 VISIT_SELECTED_OPERATOR_PLUGINS : STRING
-    ';' separated list of operator plugins to build, eg: Slice;Lineout;Transform
+    ';' separated list of operator plug-ins to build, eg: Slice;Lineout;Transform
 
-     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for operator plugins.
+     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for operator plug-ins.
 
 VISIT_SELECTED_PLOT_PLUGINS : STRING
-    ';' separated list of plot plugins to build, eg: Mesh;Pseudocolor
+    ';' separated list of plot plug-ins to build, eg: Mesh;Pseudocolor
 
-     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for plot plugins.
+     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for plot plug-ins.
 
 
 Controlling extra tools being built
@@ -285,7 +285,7 @@ VISIT_FORTRAN : BOOL : OFF
     Toggles building of Fortran example programs.
 
 VISIT_INSTALL_THIRD_PARTY : BOOL : OFF
-    Install VisIt_'s 3rd part I/O libraries and includes to permit plugin development.
+    Install VisIt_'s 3rd part I/O libraries and includes to permit plug-in development.
 
 VISIT_JAVA : BOOL : OFF
     Build VisIt_'s Java client interface.
@@ -308,7 +308,7 @@ VISIT_SLIVR : BOOL : ON
 VISIT_STATIC : BOOL : OFF
     Build VisIt_ statically.
 
-Mac OS only
+macOS only
 """""""""""
 
 VISIT_CREATE_APPBUNDLE_PACKAGE : BOOL : OFF

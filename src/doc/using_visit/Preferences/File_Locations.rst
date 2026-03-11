@@ -46,7 +46,7 @@ On Windows and macOS it is most common to start VisIt_ by clicking an icon. In t
 cases, VisIt_ uses the user's ``$HOME`` or login directory as the current working
 directory.
 
-However, when VisIt_ is started by typing a command-line at a shell terminal
+However, when VisIt_ is started by typing a command line at a shell terminal
 prompt, then VisIt_ uses whatever that shell's ``CWD`` is at the time of
 launch.
 
@@ -72,10 +72,10 @@ role in effecting behavior in client/server mode.
 * Purpose: Holds user settings from **Preferences Window**
   plus numerous other settings such as default attributes for operators and plots,
   default database read options, default color tables, as well as the
-  enabled/disabled state of various plot, operator and database plugins.
+  enabled/disabled state of various plot, operator and database plug-ins.
 * Written: When user :ref:`saves settings <How to Save Settings>`.
 * Read: On VisIt_ startup but this can be overridden by the ``-noconfig``
-  command-line :ref:`startup option <StartupOptions>`.
+  command line :ref:`startup option <StartupOptions>`.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_
 
 GUI Configuration File
@@ -146,12 +146,12 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 `Custom Plugin <http://visitusers.org/index.php?title=Building_plugins_using_CMake>`_ Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): There are separate directories in ``VUSER_HOME``
-  for *private*, user-specific operator, database and plot plugins. On UNIX/macOS,
+  for *private*, user-specific operator, database and plot plug-ins. On UNIX/macOS,
   these are
 
-  * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/operators/``
-  * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/databases/``
-  * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/plots/``
+  * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/operators/``
+  * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/databases/``
+  * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/plots/``
 
   where ``<visit-version>`` and  ``<visit-arch>`` are the VisIt_ version number
   and VisIt_ architecture moniker. On Windows, these diretories are
@@ -160,24 +160,24 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
   * ``VUSER_HOME/databases/``
   * ``VUSER_HOME/plots/``
 
-  If the ``-public`` command-line option to ``xml2cmake`` is used when building
-  a plugin and the user performing this operation has appropriate permissions,
-  the plugin will instead be installed to the VisIt_ *public* installation
+  If the ``-public`` command line option to ``xml2cmake`` is used when building
+  a plug-in and the user performing this operation has appropriate permissions,
+  the plug-in will instead be installed to the VisIt_ *public* installation
   directory for *all* users of that installation. If a previous version of
-  this plugin exists there, it will be overwritten by this operation.
+  this plug-in exists there, it will be overwritten by this operation.
 
-  A single plugin involves a set of related files for the mdserver, engine and
+  A single plug-in involves a set of related files for the mdserver, engine and
   those common all VisIt_ components. For example, on UNIX the files for the
-  Silo_ database plugin are ``libESiloDatabase_par.so``,
+  Silo_ database plug-in are ``libESiloDatabase_par.so``,
   ``libESiloDatabase_ser.so``, ``libISiloDatabase.so``, and
   ``libMSiloDatabase.so``.
-* Purpose: Directories to hold custom plugin shared library files.
+* Purpose: Directories to hold custom plug-in shared library files.
 * Written: When the user makes and installs or copies the shared libraries for
-  a custom plugin.
+  a custom plug-in.
 * Read: On VisIt_ startup, all :ref:`enabled <Preferences_Enabling_Plugins>`
-  plugin *info* files are read. The remaining plugin files are read only when
-  the plugin is actually used. In client/server mode, it is important to ensure
-  that the same plugin files have been installed on *both* the client and the
+  plug-in *info* files are read. The remaining plug-in files are read only when
+  the plug-in is actually used. In client/server mode, it is important to ensure
+  that the same plug-in files have been installed on *both* the client and the
   server.
 * Format: Binary shared library files in the machine format of the host
   architecture.
@@ -209,7 +209,7 @@ Crash Recovery Files
 * Read: When user starts VisIt_ and answers ``yes`` when queried whether to
   start up from the most recent crash recovery file or when user explicitly
   specifies the crash recovery file as an argument to the ``-sessionfile``
-  command-line :ref:`startup option <StartupOptions>`.
+  command line :ref:`startup option <StartupOptions>`.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_, same as any
   other VisIt_ :ref:`session files <Session files>`.
 
@@ -229,11 +229,11 @@ other than ``VUSER_HOME``. These are briefly described in this section.
 * Written: By data producers, simulation codes or instruments, upstream of
   VisIt_ in the scientific analysis workflow.
 * Read: On demand when user selects :menuselection:`File --> Open...`. The
-  ``-o`` command-line :ref:`startup option <StartupOptions>` can be used to
+  ``-o`` command line :ref:`startup option <StartupOptions>` can be used to
   select a database file to open at startup. VisIt_ uses the
   :ref:`file's extension <Supported File Types>` to decide what
   `type of database <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_
-  the file is and then select the appropriate plugin to read it.
+  the file is and then select the appropriate plug-in to read it.
 * Format: Varies by 
   `database type <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_.
 
@@ -246,8 +246,8 @@ other than ``VUSER_HOME``. These are briefly described in this section.
   ``VUSER_HOME`` but on UNIX/macOS the logs on the client are written to whatever
   the ``CWD`` was when VisIt_ was started. If started by
   clicking on an icon, this is most
-  likely the user's login directory. If started from a command-line, it is
-  whatever the shell's ``CWD`` for that command-line was. On
+  likely the user's login directory. If started from a command line, it is
+  whatever the shell's ``CWD`` for that command line was. On
   the server, the logs are written to the user's login (home) directory. In a
   typical client/server scenario, the user gets gui and viewer logs locally in
   the ``CWD`` and mdserver and engine logs on the remote
@@ -259,21 +259,21 @@ other than ``VUSER_HOME``. These are briefly described in this section.
   ``<letter>`` is one of ``A`` through ``E``, ``<component-name>`` is one of
   ``gui``, ``mdserver``, ``viewer``, ``engine_ser``, ``engine_par``,
   ``<mpi-rank-or-$pid>`` is the MPI rank for a parallel engine (``engine_par``)
-  or, optionally if ``-pid`` is given as a command-line
+  or, optionally if ``-pid`` is given as a command line
   :ref:`startup option <StartupOptions>`) the component's process id,
   and ``<debug-level>`` is the integer argument for the ``-debug``
-  command-line :ref:`startup option <StartupOptions>`. For example the file
+  command line :ref:`startup option <StartupOptions>`. For example the file
   names are ``A.mdserver.5.vlog`` or ``C.engine_par.123.2.vlog``.
 
   On Windows, the names of the log files are slightly different and are of the
   form ``<component-name>.exe.<$pid>.<debug-level>.vlog`` or
   ``<component-name>.exe.<mpi-rank>.<$pid>.<debug-level>.vlog`` for a parellel
-  engine. On Windows, the ``-pid`` command-line 
+  engine. On Windows, the ``-pid`` command line 
   :ref:`startup option <StartupOptions>`) is ignored and ``<$pid>`` is always
   included in the file names.
 * Purpose: Capture streaming debugging messages from various VisIt_ components.
 * Written: Continuously by VisIt if ``-debug L`` where ``L`` is the debug *level*
-  and is an integer in the range ``[1...5]`` is given on the command-line that
+  and is an integer in the range ``[1...5]`` is given on the command line that
   starts VisIt_ or buffered if a ``b`` is given immediately afte the debug level
   integer. In addition, on UNIX/macOS VisIt_ maintains the 5 most recently written
   logs from the 5 most recent component executions each beginning with the letters
@@ -301,7 +301,7 @@ Plot and Operator Attribute Files
 * Written: On demand when user selects :menuselection:`File --> Save session...`
 * Read: On demand when user selects :menuselection:`File --> Restor session...`
   or when the ``-sessionfile`` 
-  command-line :ref:`startup option <StartupOptions>` is used to specify
+  command line :ref:`startup option <StartupOptions>` is used to specify
   a session file to open at startup.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_.
 

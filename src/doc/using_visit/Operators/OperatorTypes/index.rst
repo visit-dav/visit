@@ -1,7 +1,7 @@
 Operator Types
 --------------
 
-VisIt is installed with operator plugins, which perform a wide variety of 
+VisIt is installed with operator plug-ins, which perform a wide variety of 
 functions. Some of the operators are not be enabled by default so they do not 
 show up in the **Operator** menu. Use the :ref:`Plugin Manager Window`, which 
 can be opened by clicking on the **Plugin Manager** option in the 

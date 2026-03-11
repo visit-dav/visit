@@ -39,9 +39,9 @@ What if VisIt_ opens a NETCDF file with 4D array data?
 In theory, it may be possible to apply a **Slice** operator and display a subset of its dimensions.
 In practice, this may not be possible.
 
-Whether VisIt_ handles bare array data in a desirable way depends on the database plugin used to read it.
-The **Image** plugin, for example, presents both zone-centered and node-centered options allowing the user to choose and even switch between treatments.
-But, the **Image** plugin will treat a stack of images as a 3D *volume* and not a 2D array of images over time.
+Whether VisIt_ handles bare array data in a desirable way depends on the database plug-in used to read it.
+The **Image** plug-in, for example, presents both zone-centered and node-centered options allowing the user to choose and even switch between treatments.
+But, the **Image** plug-in will treat a stack of images as a 3D *volume* and not a 2D array of images over time.
 Whether this is the correct thing to do depends on information unknown to VisIt_.
 
 These kinds of issues often arise when crafting a ``.xdmf`` file to read some bare HDF5 data into VisIt_.

@@ -27,7 +27,7 @@ Installing VisIt_ on platforms other than those listed here requires :ref:`build
     This is normal.
     If it occurs, it should occur only on the *first* time a fresh installation is started.
     Thereafter, VisIt_ should start up fairly quickly (< 10 seconds).
-    Depending on the platform, the delays may involve some computational effort and network latency as a variety of integrity checks are performed on all of VisIt_'s libraries and plugins.
+    Depending on the platform, the delays may involve some computational effort and network latency as a variety of integrity checks are performed on all of VisIt_'s libraries and plug-ins.
 
 .. _MacOSX Installation Instructions:
 
@@ -137,8 +137,8 @@ Available options are as follows::
                            (eg Silo, FLASH, etc).
                            Default: None
  
-     -DEV                  Install plugin development tools.
-                           Default: no plugin dev tools
+     -DEV                  Install plug-in development tools.
+                           Default: no plug-in dev tools
  
      -LIBSIM               Install libsim tools.
                            Default: no libsim tools

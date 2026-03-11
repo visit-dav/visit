@@ -16,7 +16,7 @@ itself such as
 
     * A botched *managed* VisIt_ installation.
     * An update to host profiles to address site access changes.
-    * A missing database reader plugin.
+    * A missing database reader plug-in.
 
 or, the underlying computing infrastructure upon which VisIt_ depends such as
 

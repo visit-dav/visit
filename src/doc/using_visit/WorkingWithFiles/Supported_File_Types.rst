@@ -5,13 +5,13 @@ Supported File Types
 
 VisIt_ can create visualizations from databases that are stored in many types 
 of underlying file formats. VisIt_ has a database reader for each supported 
-file format and the database reader is a plugin that reads the data from the 
+file format and the database reader is a plug-in that reads the data from the 
 input file and imports it into VisIt_. If your data format is not listed in 
 `File formats supported by VisIt 
 <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_
 then you can first translate your data into a format that VisIt_ can read 
-(e.g. Silo_, VTK, etc.) or you can create a new database reader plugin for 
-VisIt_. For more information on developing a database reader plugin, refer to 
+(e.g. Silo_, VTK, etc.) or you can create a new database reader plug-in for 
+VisIt_. For more information on developing a database reader plug-in, refer to 
 the `Getting Data Into VisIt  
 <https://visit-dav.github.io/visit-website/pdfs/GettingDataIntoVisIt2.0.0.pdf?#page=97>`_
 manual or contact us via `Getting help <https://visit-dav.github.io/visit-website/support/>`_.
@@ -19,32 +19,32 @@ manual or contact us via `Getting help <https://visit-dav.github.io/visit-websit
 File extensions
 ~~~~~~~~~~~~~~~
 
-VisIt_ uses file extension matching to decide which database reader plugin should be used to open a particular file.
-Each database reader plugin has a set of file extensions that are used to match a filename to it.
-When a file's extension matches (case sensitive except on MS Windows) that of a certain plugin, VisIt_ attempts to load the file with that plugin.
-If the plugin cannot load the file, then VisIt_ attempts to open the file with the next plugin that matches the extension.
+VisIt_ uses file extension matching to decide which database reader plug-in should be used to open a particular file.
+Each database reader plug-in has a set of file extensions that are used to match a filename to it.
+When a file's extension matches (case sensitive except on MS Windows) that of a certain plug-in, VisIt_ attempts to load the file with that plug-in.
+If the plug-in cannot load the file, then VisIt_ attempts to open the file with the next plug-in that matches the extension.
 
-If you have a file with a common extension like ``.hdf5`` or ``.h5``, there can be *many* VisIt plugins that match those extensions.
-VisIt_ will use the *first* plugin it tries that appears to successfully open the file.
-Sometimes, the first plugin that can read the file isn't the one you really wanted.
-In that case, your options are to explicitly select the plugin or to add it to the list of *preferred* plugins.
+If you have a file with a common extension like ``.hdf5`` or ``.h5``, there can be *many* VisIt plug-ins that match those extensions.
+VisIt_ will use the *first* plug-in it tries that appears to successfully open the file.
+Sometimes, the first plug-in that can read the file isn't the one you really wanted.
+In that case, your options are to explicitly select the plug-in or to add it to the list of *preferred* plug-ins.
 
-To explicitly select the plugin, use **File --> Open file...** and select the plugin you want from the **Open file as type** pull down list.
-To add a plugin to the list of *Preferred Database Plugins*, go to **Options --> Plugin Manager...** and then the **Databases** tab.
-Select the plugin from the list on the left and then hit the **Add to preferred list** button.
+To explicitly select the plug-in, use **File --> Open file...** and select the plug-in you want from the **Open file as type** pull down list.
+To add a plug-in to the list of *Preferred Database Plugins*, go to **Options --> Plugin Manager...** and then the **Databases** tab.
+Select the plug-in from the list on the left and then hit the **Add to preferred list** button.
 Be sure to go to **Options --> Save settings...** if you want your selections to persist across VisIt_ sessions.
-If VisIt_ finds it is unable to open a file either because there are no plugins matching the extension or all the matching plugins failed to open the file, it will begin trying preferred plugins in the order from *top* to *bottom* of the list.
+If VisIt_ finds it is unable to open a file either because there are no plug-ins matching the extension or all the matching plug-ins failed to open the file, it will begin trying preferred plug-ins in the order from *top* to *bottom* of the list.
 
-VisIt_ also supports the ``-fallback_format`` command-line option.
-This option adds the specified plugin to the list of preferred plugins.
-For example, ``-fallback_format VTK`` adds the VTK plugin to the list of preferred plugins.
-More than one ``-fallback_format`` option can be specified on the command-line and earlier encountered options take precedence over later ones.
+VisIt_ also supports the ``-fallback_format`` command line option.
+This option adds the specified plug-in to the list of preferred plug-ins.
+For example, ``-fallback_format VTK`` adds the VTK plug-in to the list of preferred plug-ins.
+More than one ``-fallback_format`` option can be specified on the command line and earlier encountered options take precedence over later ones.
 
-Finally, you can also specify the plugin to use to open a file as part of the ``-o`` command-line option.
-For example, to open the file ``foobar.gorfo`` as a Silo file, you can specify ``-o foobar.gorfo,Silo_1.0`` on the command-line when starting VisIt_.
-Note this feature of the ``-o`` option *requires* the plugin name (in correct case) followed by an underscore (``_``) and then its version number which is almost always ``1.0``. 
-If you want to see the plugin name options as well as their version numbers, go to **Options --> Plugin Manager...** and then the **Databases** tab. 
-Adding plugins to the list of *Preferred Database Plugins* will display their names and version numbers.
+Finally, you can also specify the plug-in to use to open a file as part of the ``-o`` command line option.
+For example, to open the file ``foobar.gorfo`` as a Silo file, you can specify ``-o foobar.gorfo,Silo_1.0`` on the command line when starting VisIt_.
+Note this feature of the ``-o`` option *requires* the plug-in name (in correct case) followed by an underscore (``_``) and then its version number which is almost always ``1.0``. 
+If you want to see the plug-in name options as well as their version numbers, go to **Options --> Plugin Manager...** and then the **Databases** tab. 
+Adding plug-ins to the list of *Preferred Database Plugins* will display their names and version numbers.
 
 Example Data Files
 ~~~~~~~~~~~~~~~~~~
@@ -69,8 +69,8 @@ To create a ``.visit`` file, simply make a new text file that contains the names
 of the files that you want to visualize and save the file with a ``.visit`` extension.
 
 * Visit will take the first entry in the ``.visit`` file and attempt to determine the
-  appropriate plugin to read the file.
-* Not all plugins can be used with ``.visit`` files. In general, **MD** or **MT** formats
+  appropriate plug-in to read the file.
+* Not all plug-ins can be used with ``.visit`` files. In general, **MD** or **MT** formats
   sometimes do not work.
 
   * An **MT** file is a file format that provides multiple time steps in a single file. Thus,

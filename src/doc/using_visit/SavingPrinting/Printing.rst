@@ -16,7 +16,7 @@ The Printer Window
 Open the **Printer Window** by selecting **Print window** from the
 **Main Window's File** menu. The **Printer Window's** appearance is influenced
 by the platform on which you are running VisIt so you may find that it looks
-somewhat different when you use the Windows, Unix, or MacOS X versions of
-VisIt. The MacOS X  version of the **Printer Window** is shown in
+somewhat different when you use the Windows, Unix, or macOS X versions of
+VisIt. The macOS X  version of the **Printer Window** is shown in
 :numref:`Figure %s<printer_window>` .
 

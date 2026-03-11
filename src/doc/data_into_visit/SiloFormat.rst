@@ -4,7 +4,7 @@ The Silo file format
 ====================
 
 If you are writing a conversion utility or if you have a simulation code written in C, C++, or Fortran then writing out Silo_ files is a good choice for getting your data into VisIt_.
-One reason for this is that among all of VisIt_'s plugins, the Silo_ plugin is likely one of the most advanced in terms of the various data features it supports.
+One reason for this is that among all of VisIt_'s plug-ins, the Silo_ plug-in is likely one of the most advanced in terms of the various data features it supports.
 This section will illustrate how to use the Silo_ library to write out various types of scientific data.
 Since the Silo_ library provides bindings for multiple languages, including C, Fortran, and Python, the source code examples that demonstrate a particular topic will be given in more than one programming language, when appropriate.
 One goal of this section is to provide examples that are complete enough so that they can be readily adapted into working source code.
@@ -39,7 +39,7 @@ Linking with Silo
 Before you can build a program that uses Silo_, you must locate the Silo_ header and library files.
 Silo_ is distributed as part of VisIt_ binary distributions but is installed in those distributions differently than it would be if it was installed as a stand-alone package.
 For example, in Linux distros, the library file, ``libsiloh5.so`` (or ``libsilo.so`` for non-HDF5 based Silo), is in the VisIt_ installation's ``<version>/<arch>/lib`` directory and the header file, ``silo.h``, is in the VisIt_ installation's ``<version>/<arch>/include/silo`` directory.
-A link to the most up-to-date version of the Silo_ library's source code can be found on `Silo's Github site <https://github.com/LLNL/Silo/releases>`_.
+A link to the most up-to-date version of the Silo_ library's source code can be found on `Silo's GitHub site <https://github.com/LLNL/Silo/releases>`_.
 
 Once you download the Silo_ source code, building and installing it is usually only a matter of running its ``configure`` script and running ``make``.
 You can even use the ``build_visit`` script from the `VisIt Web site <https://github.com/visit-dav/visit/releases>`_ to build Silo_ with support for HDF5.
@@ -186,7 +186,7 @@ Dealing with time
 A Silo_ file is a flexible container for storing many types of data.
 Silo_'s ability to store data hierarchically in directories can allow you to store multiple time states of your simulation data within a single data file.
 However, Silo_ is most often used to store one time state per Silo_ file (or ensemble of files in a parallel context)
-VisIt_'s Silo_ plugin is primarily designed and used to work with Silo_ files in this modality.
+VisIt_'s Silo_ plug-in is primarily designed and used to work with Silo_ files in this modality.
 Consequently, when writing data, programs that use Silo_ will write a new Silo_ file for each time step.
 By convention, the new file will contain an index indicating either the simulation cycle or a simple integer counter.
 

@@ -3,15 +3,15 @@
 Updating Plugins
 ================
 
-When modifying existing plugins, keep in mind that there are certain files that have an automated re-generation process. 
+When modifying existing plug-ins, keep in mind that there are certain files that have an automated re-generation process. 
 These include *CMakeLists.txt*, *PluginInfo*, and (for Plots and Operators) *Attributes (cpp, python, java)*.
-Being able to regenerate these files aids in future maintenance when the API needs to be changed for all plugins.
+Being able to regenerate these files aids in future maintenance when the API needs to be changed for all plug-ins.
 
 
 CMakeLists.txt
 --------------
 Regeneration of CMakeLists.txt is handled by the *xml2cmake* :ref:`XML Tool<XML Tools>`. 
-Most changes to CMakeLists.txt can be handled by modifying/adding the necessary tags to the plugin's .xml file.
+Most changes to CMakeLists.txt can be handled by modifying/adding the necessary tags to the plug-in's .xml file.
 Some tags have an optional *components* attribute that specifies for which component the tag applies.
 Multiple components can be specified in a single tag, and must be comma separated.
 If no *components* attribute is specified, the tag will be applied to all components.
@@ -65,7 +65,7 @@ Info files
 ----------
 Regeneration of Info files is handled by the *xml2info* :ref:`XML Tool<XML Tools>`. 
 
-Changes to Info files should be placed in the plugin's *.code* file with the *Target* specified as *xml2info*, and a corresponding *Function* tag placed in the *.xml* file.
+Changes to Info files should be placed in the plug-in's *.code* file with the *Target* specified as *xml2info*, and a corresponding *Function* tag placed in the *.xml* file.
 
 For instance, if an operator's Filter becomes useful elsewhere in VisIt, it may be moved out of the operator's directory and into src/avt/Filters.
 In which case, a custom method for allcoating the filter must be created, as was done for the *Displace* operator.

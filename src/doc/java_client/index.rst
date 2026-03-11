@@ -218,7 +218,7 @@ When you open a file, you get a list of variables in the metadata object.
 You must match up the variable types supported by a plot and the variables from the metadata in order to determine which plots can accept which variables from the database.
 This example program demonstrates a method for doing this comparison.
 
-.. note:: The Java implementation does not offer a ``GetVariableTypes`` method in the plugin interface as it should.
+.. note:: The Java implementation does not offer a ``GetVariableTypes`` method in the plug-in interface as it should.
    This is an oversight that may be corrected in a future version of VisIt_.
    In the meantime, this program's ``GetVariableTypes`` method can be used to fulfill the same purpose.
 

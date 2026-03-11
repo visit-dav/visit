@@ -97,7 +97,7 @@ The base filename for the movie is the name that is prepended to all of the movi
 When generating multiple movies with differing resolutions, the movie resolution is often encoded into the filename.
 VisIt_ may generate many different movies with different names but they will all share the same base filename that you provided by typing into the **Base filename** text field.
 
-Choosing e-mail notification
+Choosing email notification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _save_movie_wizard_5:
@@ -106,8 +106,8 @@ Choosing e-mail notification
    
    Save movie wizard (screen 5)
 
-If you want to be notified by e-mail when the movie creation is complete, then select the **Yes** option and enter the appropriate e-mail address (see :numref:`Figure %s<save_movie_wizard_5>`).
-By default, no e-mail notification is sent once the movie creation is complete. 
+If you want to be notified by email when the movie creation is complete, then select the **Yes** option and enter the appropriate email address (see :numref:`Figure %s<save_movie_wizard_5>`).
+By default, no email notification is sent once the movie creation is complete. 
 
 Choosing movie generation method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

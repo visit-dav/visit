@@ -103,5 +103,5 @@ We can also save the animation as a jpeg movie.
 5. Click the *Next>* button to move to the next wizard pane.
 6. Click the *Next>* button to save all the frames.
 7. Click the *Next>* button to save the movie with the basename ``movie``.
-8. Click the *Next>* button to skip sending an e-mail when the movie is completed.
+8. Click the *Next>* button to skip sending an email when the movie is completed.
 9. Click the *Finish* button to create the movie.

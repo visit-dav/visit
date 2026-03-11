@@ -133,7 +133,7 @@ The list of tests must be the last entries on the command line. ::
 
     ./run_visit_test_suite.sh -n 1 tests/databases/silo.py tests/databases/xdmf.py
 
-There are a number of additional command-line options to the test suite.
+There are a number of additional command line options to the test suite.
 ``./run_visit_test_suite.sh -help`` will give you details about these options.
 
 Accessing nightly regression test results
@@ -184,7 +184,7 @@ c) optionally adding any necessary input data files to the top-level ``data`` di
 
 .. warning::
 
-   Steps b) and c) can almost never be avoided for tests involving new database plugins.
+   Steps b) and c) can almost never be avoided for tests involving new database plug-ins.
    However, in almost all other cases, steps b) and c) can and probably should be avoided.
    Instead, developers are encouraged to adopt new practices and use new testing features where tests *and* their expected outcomes are programmatically included in *just* the ``.py``, so there is no need for separate *baseline* files and/or new data files.
 
@@ -418,7 +418,7 @@ Avg. Diff (``avgdiff``) :
 
 Fuzzy Matching Thresholds
 """""""""""""""""""""""""
-There are some command-line arguments to run tests that control *fuzzy* matching.
+There are some command line arguments to run tests that control *fuzzy* matching.
 When computed results match bit-for-bit with the baseline, a **PASS** is reported and it is colored green in the HTML reports. 
 When a computed result fails the bit-for-bit match but passes the fuzzy match, a **PASS** is reported on the terminal and it is colored yellow in the HTML reports.
 
@@ -436,17 +436,17 @@ Numerical (textual) Difference Threshold (``--numdiff``) :
     Specifies the acceptable *relative* numerical difference threshold in computed, non-zero numerical results. 
     The relative difference is computed as the ratio of the magnitude of the difference between the current and baseline results and the minimum magnitude value of the two results.
 
-The command-line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with *fewer* than 0.5% of pixels that are different is a **PASS** and anything with more than 0.5% of pixels different but where the average pixel gray-scale difference is less than .1 is still a **PASS**.
+The command line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with *fewer* than 0.5% of pixels that are different is a **PASS** and anything with more than 0.5% of pixels different but where the average pixel gray-scale difference is less than .1 is still a **PASS**.
 
 Testing on Non-Baseline Configurations
 """"""""""""""""""""""""""""""""""""""
 
-When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command-line options will be very useful.
+When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command line options will be very useful.
 
-For numerical textual results, there is also a ``--numdiff`` command-line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
-The command-line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
+For numerical textual results, there is also a ``--numdiff`` command line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
+The command line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
 
-When specified on the command-line to a test suite run, the above tolerances wind up being applied to *all* test results computed during a test suite run. 
+When specified on the command line to a test suite run, the above tolerances wind up being applied to *all* test results computed during a test suite run. 
 It is also possible to specify these tolerances in specific tests by passing them as arguments, for example ``Test(pixdiff=4.5)`` and ``TestText(numdiff=0.01)``, in the methods used to check test outputs.
 
 Finally, it may make sense for developers to generate (though not ever commit) a complete and validated set of baselines on their target development platform and then use those (uncommitted) baselines to enable them to run tests and track code changes using an exact match methodology.
@@ -478,7 +478,7 @@ Tips on writing regression tests
 +===================================+====================================================================+
 |tests/faulttolerant/savewindow.py  |  * uses python exceptions                                          |
 +-----------------------------------+--------------------------------------------------------------------+
-| tests/databases/itaps.py          |  * uses OpenDatabase with specific plugin                          |
+| tests/databases/itaps.py          |  * uses OpenDatabase with specific plug-in                          |
 |                                   |  * uses SIL restriction via names of sets                          |
 +-----------------------------------+--------------------------------------------------------------------+
 |tests/databases/silo.py            |  * uses OpenDatabase with virtual database and a specific timestep |
@@ -564,7 +564,7 @@ On some platforms, that operation may fail.
 If it does, an error message is reported informing the user to use the ``fbarchive`` target instead.
 
 The ``fbarchive`` target is a fall-back if the ``archive`` target fails.
-It uses CMake's `run a command-line tool <https://cmake.org/cmake/help/v3.23/manual/cmake.1.html#run-a-command-line-tool>`_ feature to run ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
+It uses CMake's `run a command line tool <https://cmake.org/cmake/help/v3.23/manual/cmake.1.html#run-a-command line-tool>`_ feature to run ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
 Users are not *required* to use these targets but they are highly recommended to ensure optimal compression and portability of the resulting data archives.
 
 Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
@@ -626,17 +626,17 @@ For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesti
 
 Diagnosing pluginVsInstall failures
 -----------------------------------
-pluginsVsInstall test output is generated in the ``current/plugins`` subdirectory of the test results location.
-There will be a further subdirectory for each type of plugin: databasesVsInstall, operatorsVsInstall and plotsVsInstall.
-The output consists of text files containing the name of each plugin tested and either ``success`` or one of the following errors:
+pluginsVsInstall test output is generated in the ``current/plug-ins`` subdirectory of the test results location.
+There will be a further subdirectory for each type of plug-in: databasesVsInstall, operatorsVsInstall and plotsVsInstall.
+The output consists of text files containing the name of each plug-in tested and either ``success`` or one of the following errors:
 
 * ``No installed package.`` Indicates a failure in install of VisIt.
-* ``cmake configure failed`` Failure with cmake to configure the plugin for build.
-* ``make failed`` Failure with the build of the plugin.
+* ``cmake configure failed`` Failure with cmake to configure the plug-in for build.
+* ``make failed`` Failure with the build of the plug-in.
 * ``cmake executable could not be found``   (rare, just for completeness)
 * ``make executable could not be found``  (rare, just for completeness)
 
-When a failure occurs, another output file is generated in ``logs/plugins`` subdirectory in the form  ``<PluginName>_build_res.txt`` which should contain sufficient information for fixing the error.
+When a failure occurs, another output file is generated in ``logs/plug-ins`` subdirectory in the form  ``<PluginName>_build_res.txt`` which should contain sufficient information for fixing the error.
 
 The most likely culprit for errors is missing information in one of the following files:
 
@@ -697,7 +697,7 @@ When first running the test suite after new tests have been added, it is general
 ..
 .. If VisIt_ complains about an empty window, you do *not* have a Mesa stub issue and you *can* run regression tests.  If it complain about Mesa stubs, then you *do* have the issue and you *can't* run regression tests.
 ..
-.. === PIL on MacOS X ===
+.. === PIL on macOS X ===
 .. If you attempt to execute runtest and it gives errors indicating that it assumed the test crashed then you might have problems with your PIL installation. These manifest as an error with text like ''"The _imaging C module is not installed"'', which can be obtained if you add the '''-v''' argument to ''runtest''.
 ..
 .. PIL, as installed by build_visit, can pick up an invalid jpeg library on certain systems. If you run ''python -v'' and then try to ''import _imaging'' then Python will print out the reason that the library failed to import. This can often be due to missing jpeg library symbols. It is also possible to observe this situation even when libjpeg is available in /sw/lib but is compiled for a different target architecture (e.g. not x86_64) that what build_visit is using. The effect of this is that when _imaging.so library is linked, there is an error message saying saying something like...

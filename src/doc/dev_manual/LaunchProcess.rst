@@ -190,8 +190,8 @@ Then an ``msub`` batch job is submitted with the following command. ::
   /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:
   /usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/gapps/visit/3.2.1,
   VISITARCHHOME=/usr/gapps/visit/3.2.1/linux-x86_64,
-  VISITPLUGINDIR=/g/g17/brugger/.visit/3.2.1/linux-x86_64/plugins:
-  /usr/gapps/visit/3.2.1/linux-x86_64/plugins -l nodes=1 -l walltime=30:00 -q
+  VISITPLUGINDIR=/g/g17/brugger/.visit/3.2.1/linux-x86_64/plug-ins:
+  /usr/gapps/visit/3.2.1/linux-x86_64/plug-ins -l nodes=1 -l walltime=30:00 -q
   pvis -A wbronze /tmp/visit.brugger.Mon-Nov-22-11:03:01-2021
 
 The file ``/tmp/visit.brugger.Mon-Nov-22-11:03:01-2021`` contains. ::

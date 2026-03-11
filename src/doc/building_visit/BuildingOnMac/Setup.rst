@@ -169,7 +169,7 @@ Apart from commonly encountered issues building each third party library built b
   Just removing associated stuff from your ``$PATH`` will not prevent these build dependencies.
   Fixing them likely means finding some of the individual packages in ``bv_python.sh`` and adding ``site.cfg`` files or otherwise finding build switches that explicitly disable the features creating the need for these dependencies.
 * Sometimes, a python package winds up using the python interpreter in ``Xcode`` instead of the one built for the release of VisIt you are preparing.
-  For example, Sphinx can wind up getting installed with all command-line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter.
+  For example, Sphinx can wind up getting installed with all command line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter.
   We've added patching code to ``bv_python.sh`` to help correct for this.
 
 Codesigning, Notarizing and Stapling macOS Builds
@@ -291,7 +291,7 @@ Confirming
              "arch": "x86_64"
            },
            {
-             "path": "VisIt.dmg/VisIt.app/Contents/MacOS/VisIt",
+             "path": "VisIt.dmg/VisIt.app/Contents/macOS/VisIt",
              "digestAlgorithm": "SHA-256",
              "cdhash": "68c549e036f09fc440ddfdd7b52d63f718276957",
              "arch": "x86_64"

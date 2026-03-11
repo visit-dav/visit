@@ -217,7 +217,7 @@ USAGE: visit [options]::
                              differencing mode and specify the two databases
                              to difference.
 
-                             Note: All options occurring on the command-line
+                             Note: All options occurring on the command line
                              *after* the '-diff' option are treated as options
                              to the differencing script while all options
                              occurring *before* the '-diff' option are treated
@@ -253,7 +253,7 @@ USAGE: visit [options]::
                              /bin is automatically appended to this path.
         -forceversion <ver>  Force the given version.  Overrides all
                              intelligent version selection logic.
-        -publicpluginsonly   Disable all plugins but the default ones.
+        -publicpluginsonly   Disable all plug-ins but the default ones.
         -compiler <cc>       Require version built with the specified compiler.
         -objectmode <mode>   Require a specific object file mode.
         -forceinteractivecli Force the CLI to behave interactively, even if run
@@ -331,8 +331,8 @@ USAGE: visit [options]::
 
     Developer options (most for xml2... tools)
     ---------------------------------------------------------------------------
-        -public              xml2cmake: force install plugins publicly
-        -private             xml2cmake: force install plugins privately
+        -public              xml2cmake: force install plug-ins publicly
+        -private             xml2cmake: force install plug-ins privately
         -clobber             Permit xml2... tools to overwrite old files
         -noprint             Silence debugging output from xml2... tools
         -outputtoinputdir    Force xml2... tools to write output files to
@@ -428,7 +428,7 @@ USAGE: visit [options]::
 
         -debug-malloc <args> <comp>
                              Run the component with the libMallocDebug library
-                             on MacOS X systems. The libMallocDebug library
+                             on macOS X systems. The libMallocDebug library
                              lets the MallocDebug application attach to the
                              instrumented application and retrieve memory
                              allocation statistics. The -debug-malloc flag

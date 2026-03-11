@@ -35,7 +35,7 @@ This is where all of hand-crafted scripts begin.
 The first step in creating a visualization is opening a database. 
 VisIt provides the OpenDatabase function to open a database. 
 Once a database has been opened, you can create plots from its variables using the AddPlot function. 
-The AddPlot function takes a plot plugin name and the name of a variable from the open database. 
+The AddPlot function takes a plot plug-in name and the name of a variable from the open database. 
 Once you've added a plot, it is in the new state, which means that it has not yet been submitted to the compute engine for processing. 
 To make sure that the plot gets drawn, call the DrawPlots function.
 
@@ -301,7 +301,7 @@ Creating a plot
 
 The function for adding a plot in VisIt is: AddPlot. 
 The AddPlot function takes the name of a plot type and the name of a variable that is to be plotted and creates a new plot and adds it to the plot list.  
-The name of the plot to be created corresponds to the name of one of VisIt_'s plot plugins, which can be queried using the PlotPlugins function. 
+The name of the plot to be created corresponds to the name of one of VisIt_'s plot plug-ins, which can be queried using the PlotPlugins function. 
 The variable that you pass to the AddPlot function must be a valid variable for the opened database. 
 New plots are not realized, meaning that they have not been submitted to the compute engine for processing. 
 If you want to force VisIt to process the new plot you must call the DrawPlots function.

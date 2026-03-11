@@ -12,10 +12,10 @@ We are going to focus on the legacy files, since they are a little bit simpler.
 
 * VTK files can be text or binary
 
-  * Both text and binary files have text meta data.
+  * Both text and binary files have text metadata.
   * Binary files have binary fields and coordinates embedded in the text.
 
-* VisIt_ has conventions for additional meta data that fits within the VTK specification.
+* VisIt_ has conventions for additional metadata that fits within the VTK specification.
 
 The remainder of this VTK documentation consists of a description of the file format, a simple example, and then more complex examples of the different mesh types.
 
@@ -25,8 +25,8 @@ The official VTK file format descriptions can be found at the `VTK website <http
 
     Reading VTK files into VisIt_ requires *strict* file extension matching.
     For example, if you have a pvtu file, it must have the ``.pvtu`` extension or VisIt_ will not be able to open and read the file.
-    This is true even when using VisIt_'s feature to explicitly specify the plugin to use to open the file.
-    For example, if you know ``file.foo`` is a VTK file and try to open it using VisIt_'s VTK plugin, it will fail because the extension does not match a known extension for VTK files.
+    This is true even when using VisIt_'s feature to explicitly specify the plug-in to use to open the file.
+    For example, if you know ``file.foo`` is a VTK file and try to open it using VisIt_'s VTK plug-in, it will fail because the extension does not match a known extension for VTK files.
     For VisIt_ to read VTK files, the files *must have* the correct VTK extensions.
 
 .. _data_into_visit_vtk_structure:
@@ -335,12 +335,12 @@ Each field starts with a single line with the field name, the number of componen
 
 .. _data_into_visit_vtk_conventions:
 
-VisIt_ meta data conventions for VTK files
+VisIt_ metadata conventions for VTK files
 ------------------------------------------
 
 VisIt_ supports a number of conventions for storing additional data. This data is stored as FIELD data as additional information in the DATASET, CELL_DATA or POINT_DATA.
 
-The following meta data is stored as DATASET FIELD data.
+The following metadata is stored as DATASET FIELD data.
 
 MeshCoordType
 ~~~~~~~~~~~~~
@@ -403,7 +403,7 @@ avtGhostZones
 The ghost zones specify a flag indicating if the zone is a ghost zone or a real zone.
 A one indicates a ghost zone.
 A zero indicates a real zone.
-The ghost zone meta data is stored as CELL_DATA FIELD data.
+The ghost zone metadata is stored as CELL_DATA FIELD data.
 
 Here is an example of specifying ghost zones.
 
@@ -466,7 +466,7 @@ The information tells us that there are 12 values for the point data, that it is
 An example of a VTK file with extra metadata
 --------------------------------------------
 
-A VTK file with extra meta data is shown here.
+A VTK file with extra metadata is shown here.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
    :lines: 1-45

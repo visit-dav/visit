@@ -163,7 +163,7 @@ The axis titles are the names that are drawn along each axis, indicating
 the meaning of the values shown along the axis. Normally, the names used
 for the axis titles come from the database being plotted so the axis titles
 are relevant for the displayed plots. Many of VisIt_'s database readers
-plugins read file formats that have no support for storing axis titles
+plug-ins read file formats that have no support for storing axis titles
 so VisIt_ uses default values such as: "X-Axis", "Y-Axis". VisIt_ provides
 options that allow you to override the defaults or the axis titles that
 come from the file. You can control the display of the axis titles by
@@ -272,7 +272,7 @@ The axis titles are the names that are drawn along each axis, indicating
 the meaning of the values shown along the axis. Normally, the names used
 for the axis titles come from the database being plotted so the axis titles
 are relevant for the displayed plots. Many of VisIt_'s database readers
-plugins read file formats that have no support for storing axis titles
+plug-ins read file formats that have no support for storing axis titles
 so VisIt_ uses default values such as: "X-Axis", "Y-Axis" and "Z-Axis".
 VisIt_ provides options that allow you to override the defaults or the axis
 titles that come from the file. You can control the display of the axis

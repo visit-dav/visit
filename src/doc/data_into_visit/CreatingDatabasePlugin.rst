@@ -150,7 +150,7 @@ At this point, you can skip ahead to generating your plug-in code skeleton or yo
 CMake options
 ~~~~~~~~~~~~~
 
-VisIt_ uses CMake for its build system and for the build systems of its plugins.
+VisIt_ uses CMake for its build system and for the build systems of its plug-ins.
 XMLEdit contains controls on its CMake tab that allow you to add options to your XML file that will influence how your plug-in code is built when you go to compile it.
 For example, the **CMake** tab includes options that allow you to specify compiler options such as **CXXFLAGS**, **LDFLAGS** and **LIBS**.
 
@@ -158,11 +158,11 @@ Adding options to these fields can be particularly useful if your plug-in uses a
 If you are using a library that VisIt_ provides (NetCDF, HDF5, CGNS, Silo, etc.) then you can use special predefined CMake variables that VisIt_'s build defines to locate those libraries.
 For example, you could use ${NETCDF_INCLUDE_DIR}, ${NETCDF_LIBRARY_DIR}, ${NETCDF_LIB} to reference the include directory, library directory, and library name for the NetCDF library.
 Just substitute another capitalized library name for NetCDF to use variables for other I/O libraries.
-It is better to use these CMake variables for libraries that VisIt_ provides to ensure that your plugin is linked against the right libraries.
+It is better to use these CMake variables for libraries that VisIt_ provides to ensure that your plug-in is linked against the right libraries.
 
 If you are using a library that VisIt_ does not support, you can add the include file and library file locations to ensure that the compiler will know where to look for your external library when your plug-in is built.
-Be sure to use ``-I/path/to/include`` in the **CXXFLAGS** when you want to add include directories for your plugin.
-Use ``-L/path/to/lib`` in the **LDFLAGS** when you want to add link directories for your plugin.
+Be sure to use ``-I/path/to/include`` in the **CXXFLAGS** when you want to add include directories for your plug-in.
+Use ``-L/path/to/lib`` in the **LDFLAGS** when you want to add link directories for your plug-in.
 Finally, add the name of the library (e.g. ``netcdf`` instead of ``-lnetcdf``) in the **LIBS** when you need to link against additional libraries.
 **LIBS** may contain the full-path to a library, in which case use of **LDFLAGS** to locate the library is unnecessary.
 
@@ -197,8 +197,8 @@ The command that you will run is:
 Be sure to replace ``FILE.xml`` with the name of your own XML file.
 Once you run the ``xml2plugin`` program, if you look in your directory, you will see several new files.
 
-You can also generate the plugin skeleton code from XMLEdit by Choosing **Generate code** from the **File menu**.
-You can check all the options, the ones that don't apply to database plugins (C++, Java, Python, Window) will be ignored.
+You can also generate the plug-in skeleton code from XMLEdit by Choosing **Generate code** from the **File menu**.
+You can check all the options, the ones that don't apply to database plug-ins (C++, Java, Python, Window) will be ignored.
 
 .. _xmledit_generatecode:
 
@@ -270,7 +270,7 @@ It is also a good idea that you remove the CMakeCache.txt file before rerunning 
 Once your plug-in is built, it will be stored in a platform-specific subdirectory of the *.visit*  directory in your home directory (``~/.visit``).
 If you type: ``find ~/.visit -name "*.so"`` into your command window, you will be able to locate the *libE*, *libI*, and *libM* files that make up your compiled plug-in (see :numref:`Figure %s <pluginbuildresults>`).
 
-If you develop for MacOS X, you should substitute ``*.dylib`` for ``*.so`` in the previous command because shared libraries on MacOS X have a *.dylib* file extension instead of a *.so* file extension.
+If you develop for macOS X, you should substitute ``*.dylib`` for ``*.so`` in the previous command because shared libraries on macOS X have a *.dylib* file extension instead of a *.so* file extension.
 
 If you develop on Windows, the files will be in your profile directory (generally ``C:\users\<yourname>``) in a ``VisIt`` folder. The file extension is ``.dll``.
 
@@ -287,7 +287,7 @@ When VisIt_'s database server and compute engine execute, they look in your *~/.
 This means that even if you build plug-ins against the installed version of VisIt_, it will still be able to find your private plug-ins.
 
 It is recommended that while you develop your plug-ins, you only install them in your *~/.visit*  directory so other VisIt_ users will not be affected.
-However, if you develop your plug-in on MacOS X, you will have to make sure that your plug-ins are installed publicly so that they can be loaded at runtime.
+However, if you develop your plug-in on macOS X, you will have to make sure that your plug-ins are installed publicly so that they can be loaded at runtime.
 You can also choose to install your plug-ins publicly once you have completed development.
 To install plug-ins publicly, first remove the files that were installed to your *~/.visit*  directory by typing the ``make clean`` command in your command window.
 Next, re-run the ``xml2cmake`` program like this:
@@ -307,8 +307,8 @@ Once you have completed building your plug-in for the first time, all that you n
 When you open one of your files, the database server should match the file extension of the file that you tried to open with the list of file extensions that your plug-in accepts, causing your plug-in to be loaded and used for opening the file.
 You can verify that VisIt_ used your plug-in by opening the **File Information** window (see :numref:`Figure %s <fileinformationwin>`) in the VisIt_ GUI and looking for the name of your plug-in in the listed information.
 
-If your plug-in wasn't used by VisIt_, it may mean that other formats can read the same extensions as your plugin.
-In that case, you would need to select your plugin from the **Open file as type:** dropdown option in the **File open** window to make VisIt_ choose your plugin.
+If your plug-in wasn't used by VisIt_, it may mean that other formats can read the same extensions as your plug-in.
+In that case, you would need to select your plug-in from the **Open file as type:** dropdown option in the **File open** window to make VisIt_ choose your plug-in.
 
 Note that at this stage, the database server should be properly loading your database reader plug-in but since no code to actually read your files has yet been added to the AVT source code files, no plottable meshes or variables will be available.
 
@@ -338,7 +338,7 @@ The only methods that you absolutely must implement are:
   File metadata consists of the list of names of meshes, scalar variables, vector variables, tensor variables, label variables, array variables, expressions, cycles, and times contained in the file.
   These lists of variables and meshes let VisIt_ know the names of the objects that can be plotted from your file.
   The metadata is used primarily to populate the plot menus in the GUI and viewer components.
-  The *PopulateDatabaseMetaData* method is called by both the *libM* and *libE* plugins.
+  The *PopulateDatabaseMetaData* method is called by both the *libM* and *libE* plug-ins.
 
 **GetMesh**
   VisIt_ calls the *GetMesh* method in a *libE* plug-in when it needs to plot a mesh.
@@ -372,7 +372,7 @@ Opening your file
 When VisIt_ receives a list of files to open, it tries to determine which plug-in should be loaded to access the data in those files.
 The match is performed by comparing the file extension of the files against the known file extensions or patterns for all database reader plug-ins.
 Each plug-in in the list of matches is loaded and VisIt_ creates instances of the plug-in's AVT file format classes that are then used to access the data in the files.
-If the plugin's file format classes can be successfully constructed then VisIt_ tries to get the file's metadata.
+If the plug-in's file format classes can be successfully constructed then VisIt_ tries to get the file's metadata.
 It is very important that your file format's constructor do as little work as possible, and try at all costs to avoid opening the files.
 Remember, VisIt_ could be creating a long list of your file format objects and opening the file in the constructor will really slow down the process of opening a file.
 It is better to instead add a boolean *initialized* member to your class and an *Initialize* method that reads the file to check its contents.
@@ -1868,7 +1868,7 @@ The software process that reads in data and processes it is the compute engine, 
 All of the *libE* plug-ins in VisIt_ also have both serial and parallel versions.
 The parallel *libE* plug-ins can contain specialized MPI communication to support the communication patterns needed by the algorithms used.
 If you want to parallelize your database reader plug-in then, in most cases, you will have to use the *MD* interface or convert from *SD* to *MD*.
-There are some *SD* formats that can adaptively decompose their data so each processor has work (see the DDCMD plug-in) but most database plug-ins that benefit from parallelism instead are implemented as *MD* plugins.
+There are some *SD* formats that can adaptively decompose their data so each processor has work (see the DDCMD plug-in) but most database plug-ins that benefit from parallelism instead are implemented as *MD* plug-ins.
 *MD* plug-ins are a natural fit for the parallel compute engine because they serve data that is already decomposed into domains.
 Some database reader plug-ins, such as the BOV plug-in, take single domain meshes and automatically decompose them into multiple domains for faster processing on multiple processors.
 
@@ -1891,7 +1891,7 @@ If your parallel database reader needs to do parallel communication such as broa
 Third party library support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If your plugin depends on an I/O library not already supported by VisIt_, and if the plugin will be contributed to VisIt_'s repo, then support for the library needs to be added to the `build_visit` script.
+If your plug-in depends on an I/O library not already supported by VisIt_, and if the plug-in will be contributed to VisIt_'s repo, then support for the library needs to be added to the `build_visit` script.
 Please see :ref:`dev_create_bv_module` for how to add a new module to build_visit.
 A CMake `Find` module will also need to be added to ``src/CMake`` and ``src/CMake/SetupThirdParty.cmake`` will need to be modified to include that module.
 See :ref:`dev_adding_find_module` for more information.

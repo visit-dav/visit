@@ -8,9 +8,9 @@ engine uses that variable to generate a plot. VisIt provides several standard
 operator types that allow various operations to be performed on plot data.
 The standard operators perform data restriction operations like planar
 slicing, spherical slicing, and thresholding, as well as more sophisticated
-operations like peeling off mesh layers. All of VisIt's operators are plugins
+operations like peeling off mesh layers. All of VisIt's operators are plug-ins
 and new operators can be written to extend VisIt in new ways. For help
-creating new operator plugins contact us via our
+creating new operator plug-ins contact us via our
 `getting help <https://visit-dav.github.io/visit-website/support/>`_ page.
 
 Managing operators

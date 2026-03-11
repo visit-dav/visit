@@ -224,12 +224,12 @@ Encoding the movie with the movie wizard
 
    Setting the name of the movie.
 
-12. You can have VisIt_ send you an e-mail when it has finished creating the movie. Since we will wait for the movie to complete, we don't need an e-mail message to be sent when the movie has been finished and can use the default values.
+12. You can have VisIt_ send you an email when it has finished creating the movie. Since we will wait for the movie to complete, we don't need an email message to be sent when the movie has been finished and can use the default values.
 13. Click *Next*.
 
 .. figure:: images/MakingMovies-Encoding5.png
 
-   Setting the e-mail notification for when the movie is complete.
+   Setting the email notification for when the movie is complete.
 
 14. You can have VisIt_ generate the movie now using the currently allocated processors, generate the movie with a new instance of VisIt_, or generate the movie at some later time. We will generate the movie now so we can use the default value.
 15. Click *Finish*.

@@ -137,7 +137,7 @@ return type : CLI_return_t
     The AddOperator function adds a VisIt operator to the active plots. The
     operator argument is a string containing the name of the operator to be
     added to the active plots. The operatore name must be a valid operator
-    plugin name that is a member of the tuple returned by the OperatorPlugins
+    plug-in name that is a member of the tuple returned by the OperatorPlugins
     function. The all argument is an integer that determines
     whether or not the operator is applied to all plots. If the all argument is
     not provided, the operator is only added to active plots. Once the
@@ -173,7 +173,7 @@ AddPlot
 
 
 plotType : string
-    The name of a valid plot plugin type.
+    The name of a valid plot plug-in type.
 
 variableName : string
     A valid variable name for the open database.
@@ -199,7 +199,7 @@ return type : CLI_return_t
 
     The AddPlot function creates a new plot of the specified type using a
     variable from the open database. The plotType argument is a string that
-    contains the name of a valid plot plugin type which must be a member of the
+    contains the name of a valid plot plug-in type which must be a member of the
     string tuple that is returned by the PlotPlugins function.
     The variableName argument is a string that contains the name of a variable
     in the open database. After the AddPlot function is called, a new plot is
@@ -1451,7 +1451,7 @@ DatabasePlugins
 
 
 host : string
-    The name of the host for which we want database plugins.
+    The name of the host for which we want database plug-ins.
 
 return type : dictionary
     The DatabasePlugins functions returns a dictionary.
@@ -1460,8 +1460,8 @@ return type : dictionary
 **Description:**
 
     The DatabasePlugins function returns a dictionary containing the names of
-    the database plugins for the specified host. If no host is given, localhost
-    is assumed. The dictionary contains two keys: "host" and "plugins".
+    the database plug-ins for the specified host. If no host is given, localhost
+    is assumed. The dictionary contains two keys: "host" and "plug-ins".
 
 
 **Example:**
@@ -1471,7 +1471,7 @@ return type : dictionary
   #% visit -cli
   dbp = DatabasePlugins("localhost")
   print(dbp["host"])
-  print(dbp["plugins"])
+  print(dbp["plug-ins"])
 
 
 DeIconifyAllWindows
@@ -2888,7 +2888,7 @@ e : ExportDBAttributes object
 o : dictionary
     A dictionary containing a key/value mapping to set options needed by the
     database exporter.  The default values can be obtained in the appropriate
-    format using GetExportOptions('plugin').
+    format using GetExportOptions('plug-in').
 
 return type : CLI_return_t
     Returns 1 on success, 0 on failure.
@@ -3473,7 +3473,7 @@ GetDefaultFileOpenOptions
 
 
 pluginName : string
-    The name of a plugin.
+    The name of a plug-in.
 
 return type : dictionary
     Returns a dictionary containing the options.
@@ -3482,7 +3482,7 @@ return type : dictionary
 **Description:**
 
     GetDefaultFileOpenOptions returns the current options used to open new
-    files when a specific plugin is triggered.
+    files when a specific plug-in is triggered.
 
 
 **Example:**
@@ -3635,7 +3635,7 @@ GetExportOptions
 
 
 pluginName : string
-    The name of a plugin.
+    The name of a plug-in.
 
 return type : dictionary
     Returns a dictionary containing the options.
@@ -3644,7 +3644,7 @@ return type : dictionary
 **Description:**
 
     GetExportOptions returns the current export options used to export
-    files when a specific plugin is triggered.
+    files when a specific plug-in is triggered.
 
 
 **Example:**
@@ -4548,13 +4548,13 @@ GetPreferredFileFormats
   GetPreferredFileFormats() -> tuple of strings
 
 return type : tuple of strings
-    The GetPreferredFileFormats returns the current list of preferred plugins.
+    The GetPreferredFileFormats returns the current list of preferred plug-ins.
 
 
 **Description:**
 
     The GetPreferredFileFormats method is a way to get the list of
-    file format reader plugins which are tried before any others.
+    file format reader plug-ins which are tried before any others.
     These IDs are full IDs, not just names, and are tried in order.
 
 
@@ -5705,7 +5705,7 @@ LocalNameSpace
 
 **Description:**
 
-    The LocalNameSpace function tells the VisIt module to add plugin functions
+    The LocalNameSpace function tells the VisIt module to add plug-in functions
     to the global namespace when the VisIt module is imported into a
     stand-alone Python interpreter. This is the default behavior when using
     VisIt's cli program.
@@ -6240,7 +6240,7 @@ return type : CLI_return_t
 **Description:**
 
     The NumOperatorPlugins function returns the number of available operator
-    plugins.
+    plug-ins.
 
 
 **Example:**
@@ -6248,8 +6248,8 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  print("The number of operator plugins is: ", NumOperatorPlugins())
-  print("The names of the plugins are: ", OperatorPlugins())
+  print("The number of operator plug-ins is: ", NumOperatorPlugins())
+  print("The names of the plug-ins are: ", OperatorPlugins())
 
 
 NumPlotPlugins
@@ -6267,7 +6267,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The NumPlotPlugins function returns the number of available plot plugins.
+    The NumPlotPlugins function returns the number of available plot plug-ins.
 
 
 **Example:**
@@ -6275,8 +6275,8 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  print("The number of plot plugins is: ", NumPlotPlugins())
-  print("The names of the plugins are: ", PlotPlugins())
+  print("The number of plot plug-ins is: ", NumPlotPlugins())
+  print("The names of the plug-ins are: ", PlotPlugins())
 
 
 OpenCLI
@@ -6385,12 +6385,12 @@ timeIndex : integer
     assumed.
 
 dbPluginIndex : string
-    An optional string containing the name of the plugin to use. Note that
-    this string must also include the plugin's version number (with few
-    exceptions, almost all plugins' version numbers are 1.0). Note also
-    that you must capitalize the spelling identically to what the plugin's
+    An optional string containing the name of the plug-in to use. Note that
+    this string must also include the plug-in's version number (with few
+    exceptions, almost all plug-ins' version numbers are 1.0). Note also
+    that you must capitalize the spelling identically to what the plug-in's
     GetName() method returns. For example, "XYZ_1.0" is the string you would
-    use for the XYZ plugin.
+    use for the XYZ plug-in.
 
 return type : CLI_return_t
     The OpenDatabase function returns an integer value of 1 for success and 0
@@ -6494,12 +6494,12 @@ return type : CLI_return_t
     It also allows you to debug VisIt in distributed mode.
     -fallback_format <format>
     The -fallback_format argument allows you to specify the
-    database plugin that will be used to open files if all
+    database plug-in that will be used to open files if all
     other guessing failed. This is useful when the files
     that you want to open do not have file extensions.
     -assume_format <format>
     The -assume_format argument allows you to specify the
-    database plugin that will be used FIRST when attempting
+    database plug-in that will be used FIRST when attempting
     to open files. This is useful when the files that you
     want to open have a file extension which may match
     multiple file format readers.
@@ -6536,9 +6536,9 @@ return type : tuple of strings
 **Description:**
 
     The OperatorPlugins function returns a tuple of strings that contain the
-    names of the loaded operator plugins. This can be useful for the creation
+    names of the loaded operator plug-ins. This can be useful for the creation
     of scripts that alter their behavior based on the available operator
-    plugins.
+    plug-ins.
 
 
 **Example:**
@@ -6546,8 +6546,8 @@ return type : tuple of strings
 ::
 
   #% visit -cli
-  for plugin in OperatorPlugins():
-      print("The %s operator plugin is loaded." % plugin)
+  for plug-in in OperatorPlugins():
+      print("The %s operator plug-in is loaded." % plug-in)
 
 
 OverlayDatabase
@@ -7094,8 +7094,8 @@ return type : tuple of strings
 **Description:**
 
     The PlotPlugins function returns a tuple of strings that contain the names
-    of the loaded plot plugins. This can be useful for the creation of scripts
-    that alter their behavior based on the available plot plugins.
+    of the loaded plot plug-ins. This can be useful for the creation of scripts
+    that alter their behavior based on the available plot plug-ins.
 
 
 **Example:**
@@ -7103,8 +7103,8 @@ return type : tuple of strings
 ::
 
   #% visit -cli
-  for plugin in PluginPlugins():
-      print("The %s plot plugin is loaded." % plugin)
+  for plug-in in PluginPlugins():
+      print("The %s plot plug-in is loaded." % plug-in)
 
 
 PointPick
@@ -9289,10 +9289,10 @@ SetDefaultFileOpenOptions
 
 
 pluginName : string
-    The name of a plugin.
+    The name of a plug-in.
 
 options : dictionary
-    A dictionary containing the new default options for that plugin.
+    A dictionary containing the new default options for that plug-in.
 
 return type : CLI_return_t
     The SetDefaultFileOpenOptions function returns 1 on success and 0 on
@@ -9302,7 +9302,7 @@ return type : CLI_return_t
 **Description:**
 
     SetDefaultFileOpenOptions sets the current options used to open new
-    files when a specific plugin is triggered.
+    files when a specific plug-in is triggered.
 
 
 **Example:**
@@ -10450,7 +10450,7 @@ SetPreferredFileFormats
 
 
 pluginIDs : tuple
-    A tuple of plugin IDs to be attempted first when opening files.
+    A tuple of plug-in IDs to be attempted first when opening files.
 
 return type : CLI_return_t
     The SetPreferredFileFormats method does not return a value.
@@ -10459,7 +10459,7 @@ return type : CLI_return_t
 **Description:**
 
     The SetPreferredFileFormats method is a way to set the list of
-    file format reader plugins which are tried before any others.
+    file format reader plug-ins which are tried before any others.
     These IDs must be full IDs, not just names, and are tried in order.
 
 

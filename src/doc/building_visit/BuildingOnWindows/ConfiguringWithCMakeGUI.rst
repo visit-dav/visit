@@ -70,24 +70,24 @@ If neither of the above is true for your situation, use the CMake gui to set *VI
 Limiting Plugins
 ~~~~~~~~~~~~~~~~
 
-By default, most of the supported database reader plugins are built, which can slow down loading of the solution in the Visual Studio IDE, and slow down the build.  
-If you want to reduce the number of plugins built, add a CMake var using the **Add Entry** Button. 
-If you are producing a version of VisIt_ that you plan to distribute, you should skip this step so all database reader plugins are built.
+By default, most of the supported database reader plug-ins are built, which can slow down loading of the solution in the Visual Studio IDE, and slow down the build.  
+If you want to reduce the number of plug-ins built, add a CMake var using the **Add Entry** Button. 
+If you are producing a version of VisIt_ that you plan to distribute, you should skip this step so all database reader plug-ins are built.
 :numref:`Figure %s<selected_databases_image>`
 
 .. _selected_databases_image:
 
 .. figure:: images/selected_databases.png
 
-   Selecting a limited number of database plugins
+   Selecting a limited number of database plug-ins
 
-To limit the database plugins to a specific set of plugins, set the **Name:**  to *VISIT_SELECTED_DATABASE_PLUGINS*. 
+To limit the database plug-ins to a specific set of plug-ins, set the **Name:**  to *VISIT_SELECTED_DATABASE_PLUGINS*. 
 The **Type:** should be *STRING*. 
-The **Value:** should be a ';' separated list of database plugins names. 
+The **Value:** should be a ';' separated list of database plug-ins names. 
 Case must match the name of the folder in */src/databases*.
 
 The same procedure applies to plots and operators. 
-The VisIt_ CMake variables to limit plots and operator plugins are *VISIT_SELECTED_PLOT_PLUGINS* and *VISIT_SELECTED_OPERATOR_PLUGINS*, respectively.
+The VisIt_ CMake variables to limit plots and operator plug-ins are *VISIT_SELECTED_PLOT_PLUGINS* and *VISIT_SELECTED_OPERATOR_PLUGINS*, respectively.
 
 Click **OK** when finished.
 

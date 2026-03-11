@@ -2,9 +2,9 @@
 
 Database Read Options
 ---------------------
-Several database plugins have options that affect reading and/or writing with that
+Several database plug-ins have options that affect reading and/or writing with that
 format. These are described in this section. Alternatively, in some cases, the
-behavior of a database plugin may be affected by enviornment variables.
+behavior of a database plug-in may be affected by enviornment variables.
 
 Exodus
 ~~~~~~
@@ -12,10 +12,10 @@ Exodus
 Detect Compound Variables
 """""""""""""""""""""""""
 
-Checking this option will cause the plugin to try to guess that similarly named
+Checking this option will cause the plug-in to try to guess that similarly named
 variables are the scalar components of an aggregate type such as a vector,
-tensor or array variable. The plugin will then automatically define expressions
-for these aggregate typed variables. For example, it will cause the plugin to
+tensor or array variable. The plug-in will then automatically define expressions
+for these aggregate typed variables. For example, it will cause the plug-in to
 combine three scalar variables with names such as ``velx``, ``vely`` and ``velz``
 into a *vector* expression ``vel`` defined as ``{velx, vely, velz}``. Note that
 this is just a convenience to free users from having to define expressions
@@ -24,7 +24,7 @@ manally within their VisIt_ session.
 Use Material Convention
 """""""""""""""""""""""
 
-With this option, the user can cause the plugin to recognize standard or custom
+With this option, the user can cause the plug-in to recognize standard or custom
 *material conventions*. The Exodus file format does not define any specific
 standards for handling advecting and *mixing* materials. Different data
 producers have defined different conventions. A few pre-defined conventions for
@@ -54,13 +54,13 @@ one (1).  The special material id of zero (0) is used to denote void.
 Material Count
 ++++++++++++++
 
-Ordinarily, the plugin will determine the material count from the material
+Ordinarily, the plug-in will determine the material count from the material
 convention nameschemes. However, if it is having trouble getting the correct
 count, users can specify it manually with this option. 
 
 ffp
 ~~~
-The ffp plugin can optionally use the
+The ffp plug-in can optionally use the
 `STRIPACK library <https://people.sc.fsu.edu/~jburkardt/f_src/stripack/stripack.html>`_
 to improve its behavior and performance. It will do so by loading the STRIPACK library as
 a dynamicaly loaded shared library *when* VisIt_ can find it. VisIt_ will find the
@@ -84,7 +84,7 @@ In client/server mode, the STRIPACK library must be installed on both the client
 and the server.
 
 The :ref:`build_visit <Building>` tool can be used to download, build and install the
-STRIPACK library. Here is an example bash shell ``build_visit`` command-line...
+STRIPACK library. Here is an example bash shell ``build_visit`` command line...
 
 .. code-block:: shell
 
@@ -100,12 +100,12 @@ NASTRAN
 
 Num Materials
 """""""""""""
-This option allows the user to indicate that the NASTRAN plugin
+This option allows the user to indicate that the NASTRAN plug-in
 should look for and try to define a material object. If the user knows the
 *number* of materials in the input database, it is best to specify it here
-because that will avert the plugin having to read all lines of the input before
+because that will avert the plug-in having to read all lines of the input before
 understanding the material configuration. However, if the user does not know
-the number of materials, enter ``-1`` here and the plugin will search for
+the number of materials, enter ``-1`` here and the plug-in will search for
 all information related to the material configuration during the *open*. This will
 lead to longer open times. A value of ``0`` here means to ignore any material
 information if present.
@@ -293,12 +293,12 @@ Silo_
 Ignore Extents
 """"""""""""""
 
-The Silo_ database plugin has the ability to load spatial and data extents for
+The Silo_ database plug-in has the ability to load spatial and data extents for
 Silo_ multi-block (e.g. multiple domain) objects. This feature is an optional
 *acceleration* feature that enables VisIt to cull domains based on knowledge
 of downstream operations. For example, it can avoid reading domains known not
 to intersect a slice plane. However, if the data producer creates buggy extents
-data, this can lead to problems during visualization. So, the Silo_ plugin has
+data, this can lead to problems during visualization. So, the Silo_ plug-in has
 read options to disable spatial and data extents. The options for each are
 ``Always``, ``Auto``, ``Never`` and ``Undef``\ (ined) where ``Always`` and
 ``Never`` mean to always *ignore* or never *ignore* the extents data and
