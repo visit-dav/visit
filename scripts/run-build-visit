@@ -307,8 +307,8 @@ elif [ "$crossroads" = true ]; then
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
    export LD_LIBRARY_PATH="/opt/cray/pe/lib64:/opt/cray/lib64:/opt/cray/pe/papi/7.2.0.2/lib64:/opt/cray/libfabric/2.1/lib64:${LD_LIBRARY_PATH}"
-   env CC=cc \
-       CXX=CC \
+   env CC=gcc \
+       CXX=g++ \
        PAR_COMPILER=cc \
        PAR_COMPILER_CXX=CC \
        ./$build_visit_script --group ${dest_group} --required --optional --anari --osmesa --parallel \
