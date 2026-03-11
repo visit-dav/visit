@@ -21,7 +21,7 @@ At most five sets of debugging logs will be kept.
 The logs from the most current run will always begin with *A*.
 If you don't want that behavior, you may add ``-clobber_vlogs`` to VisIt_'s command line arguments.
 The A.mdserver*.vlog and A.engine*.vlog files are useful when debugging a database reader plug-in.
-The A.viewer*.vlog and A.engine*.vlog files are usefule when debugging a plot plugin.
+The A.viewer*.vlog and A.engine*.vlog files are useful when debugging a plot plugin.
 
 The debugging logs will contain information written to them by the debugging statements in VisIt_'s source code.
 If you want to add debugging statements to your AVT code then you can use the *debug1*, *debug2*, *debug3*, *debug4*, or *debug5* streams as shown in the following code listing.
@@ -171,7 +171,7 @@ cli        src/visitpy/cli/cli.C      main
 raise(SIGSTOP)
 --------------
 
-Sometimes, its easiest to get a debugger to break exactly where you want by modifing the source code using the `raise() <https://man7.org/linux/man-pages/man3/raise.3.html>`__ function.
+Sometimes, it's easiest to get a debugger to break exactly where you want by modifying the source code using the `raise() <https://man7.org/linux/man-pages/man3/raise.3.html>`__ function.
 The following example shows how to use ``raise()`` to have the program break in ``factorial()``
 
 .. container:: collapsible

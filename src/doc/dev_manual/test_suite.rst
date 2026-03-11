@@ -57,16 +57,18 @@ For example, expanding a data archive can fail ::
     % make ANAME=zipwrapper_test_data.tar.xz expand
     [100%] Generating _archive_expand
     CMake Error: Problem with archive_read_open_file(): Unrecognized archive format
-    CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xzor as another example using ImageMagick's ``display`` command on an lfs'd ``.png`` file still in its *pointer* state ::
+    CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xz
+
+Or, as another example, using ImageMagick's ``display`` command on an lfs'd ``.png`` file still in its *pointer* state can fail ::
 
 Or, trying to display a baseline image can fail ::
 
     % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
     display: improper image header '../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
     
-When this happens, its likely because a ``git lfs pull`` operation is again needed.
+When this happens, it's likely because a ``git lfs pull`` operation is again needed.
 
-There are other tell tale signs to help recognize whether an lfs'd file is in its pointer/proxy state or actua/real state.
+There are other telltale signs to help recognize whether an lfs'd file is in its pointer/proxy state or actual/real state.
 In the examples below, ``xolotl_test_data.tar.xz`` and ``xyz_test_data.tar.xz`` are in their actual/real state while ``zipwrapper_test_data.tar.xz`` is in its pointer/proxy state.
 First, in their pointer/proxy state, the files are very small text files, usually less than 150 bytes ::
 
@@ -741,13 +743,13 @@ When first running the test suite after new tests have been added, it is general
 ..
 .. The ultimate aim of compiler warning testing is to improve the quality of the code by averting ''would-be'' problems. However, in the presence of an already robust, run-time test suite, compiler warnings more often than not alert us to ''potential'' problems and not necessarily any real bugs that manifest for users.
 ..
-.. Totally eliminating compiler warnings is a good goal. But, it is important to keep in mind that that goal is really only ''indirectly'' related to improving code quality. Its also important to keep in mind that all warnings are not equal nor are all compilers equal to the task of detecting and reporting them. For example, an ''unused variable'' warning in a code block may be a potential code maintenance nuisance but will not in any way manifest as a bug for a user.
+.. Totally eliminating compiler warnings is a good goal. But, it is important to keep in mind that that goal is really only ''indirectly'' related to improving code quality. It's also important to keep in mind that all warnings are not equal nor are all compilers equal to the task of detecting and reporting them. For example, an ''unused variable'' warning in a code block may be a potential code maintenance nuisance but will not in any way manifest as a bug for a user.
 ..
-.. As developers, when we ''fix'' warnings we typically take action by adjusting code. But, we are doing so in response to one compiler's (often myopic) view of the code and typically not to any real bug encountered by a user. We need to take care the the adjustments we make lead to improved quality. In particular, adjusting code for no other purpose except to silence a given compiler warning seems an unproductive exercise. Besides, there are many other options for managing unhelpful compiler warnings apart from adjusting actual code.
+.. As developers, when we ''fix'' warnings we typically take action by adjusting code. But, we are doing so in response to one compiler's (often myopic) view of the code and typically not to any real bug encountered by a user. We need to take care that the adjustments we make lead to improved quality. In particular, adjusting code for no other purpose except to silence a given compiler warning seems an unproductive exercise. Besides, there are many other options for managing unhelpful compiler warnings apart from adjusting actual code.
 ..
-.. Finally, we're introducing compiler warning checking into a code that has been developed for many years by many developers without having payed significant attention to this issue. As of this writing, the existing code generates thousands of warnings. To make matters worse, we are dialing up compiler options to report as many warnings as possible. This leads to two somewhat distinct problems. One is to resolve warning issues in the existing code. The other, and the more important long term goal, is to prevent further warning issues from being introduced into the code.
+.. Finally, we're introducing compiler warning checking into a code that has been developed for many years by many developers without having paid significant attention to this issue. As of this writing, the existing code generates thousands of warnings. To make matters worse, we are dialing up compiler options to report as many warnings as possible. This leads to two somewhat distinct problems. One is to resolve warning issues in the existing code. The other, and the more important long term goal, is to prevent further warning issues from being introduced into the code.
 ..
-.. If we take the appraoch that we must achieve the first '''before''' we can start on the second, we wind up holding our long term goal hostage to the laborious and resource intensive task of addressing existing warning issues. Or, we hold a gun to everyone's head to drop whatever they are doing and spend time addressing existing warnings to eliminate ''noise'' from useful warnings.
+.. If we take the approach that we must achieve the first '''before''' we can start on the second, we wind up holding our long term goal hostage to the laborious and resource intensive task of addressing existing warning issues. Or, we hold a gun to everyone's head to drop whatever they are doing and spend time addressing existing warnings to eliminate ''noise'' from useful warnings.
 ..
 .. But, we don't have to do either of these. Instead, we can add logic to our regression testing framework to detect the introduction of ''new'' warning issues apart from existing warnings and then only fail the test when ''new'' warnings are introduced.
 ..

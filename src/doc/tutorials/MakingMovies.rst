@@ -201,7 +201,7 @@ Encoding the movie with the movie wizard
    Using the movie wizard to create a simple movie.
 
 3. Select *Specify movie size*.
-4. Ensure the the *lock aspect* setting is selected. While you can encode movies with a different aspect ratio than the aspect ratio of the window on the screen, it is generally not a good idea. Objects are positioned based on a zero to one coordinate system where zero represents either the left edge or the bottom of the image and the heights and widths of objects are based on fraction of the height and width. This causes objects to change position and relative size as the aspect ratio is changed.
+4. Ensure the *lock aspect* setting is selected. While you can encode movies with a different aspect ratio than the aspect ratio of the window on the screen, it is generally not a good idea. Objects are positioned based on a zero to one coordinate system where zero represents either the left edge or the bottom of the image and the heights and widths of objects are based on fraction of the height and width. This causes objects to change position and relative size as the aspect ratio is changed.
 5. Change the *Width* to *600*. The *Height* will automatically change to maintain the aspect ratio.
 6. Click the right arrow button to create an entry in the *Output* list with the format and resolution information specified on the right hand side of the window. It is possible to change the format and resolution information and click the right arrow button to create additional entries in the *Output* list to encode multiple movies with different settings at once. We are just going to create a single mpeg movie.
 7. Click *Next*.

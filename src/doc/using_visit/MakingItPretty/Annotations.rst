@@ -299,7 +299,7 @@ first unchecking the **Auto set ticks** check box on the **General 3D**
 tab then typing new tick spacing values into the **Major minimum**,
 **Major maximum**, **Major spacing**, and **Minor spacing** text fields.
 
-The 3D grid lines are a set of lines that make a grid over the the bounding
+The 3D grid lines are a set of lines that make a grid over the bounding
 box. The grid lines are disabled by default but you can enable them by
 checking the **Show grid** check box. The grid lines correspond to the
 major tick marks.

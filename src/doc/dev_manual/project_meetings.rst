@@ -8,8 +8,8 @@ Dialog at the end of the Tuesday project meeting determines if the *special topi
 Round Robin Dialog
 ------------------
 The meeting begins with round-robin remarks from contributors on key items from the preceding week's work.
-The intention is to keep remarks brief and to highlights mainly to ensure everyone is aware of key and impending changes related to VisIt_.
-Sometimes contributors have nothing relevant to VisIt_ to mention in which case its perfectly fine for the contributor to *pass* during this round-robin dialog.
+The intention is to keep remarks brief and to highlight key and impending changes to ensure everyone is aware of them.
+Sometimes contributors have nothing relevant to VisIt_ to mention, in which case it's perfectly fine for the contributor to *pass* during this round-robin dialog.
 
 New Issue Triage
 ----------------

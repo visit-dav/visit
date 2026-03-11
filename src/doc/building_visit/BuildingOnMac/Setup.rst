@@ -154,7 +154,7 @@ Apart from commonly encountered issues building each third party library built b
 * Sometimes Apple expires its certificates and you may need to go get `updated certificates. <https://www.apple.com/certificateauthority/>`__
 * Sometimes your own certificate can expire.
   Currently, Charles Heizer is the LLNL point of contact for adding developers and updating their expired certificates.
-* You might need to *evaluate* the validity of your certificate using `Apple KeyChain Certificate Assistant <https://support.apple.com/guide/keychain-access/determine-if-a-certificate-is-valid-kyca2794/mac>`__ to confirm its all working.
+* You might need to *evaluate* the validity of your certificate using `Apple KeyChain Certificate Assistant <https://support.apple.com/guide/keychain-access/determine-if-a-certificate-is-valid-kyca2794/mac>`__ to confirm it's all working.
 * If you are VPN'd into LLNL, codesigning and notarizing a release may fail.
 * If you have MacPorts, Homebrew, Fink or other macOS package managers, python package builds may wind up enabling (and then creating a release that is dependent upon) libraries that are available only to users with similar package managers installed.
   Worse, you won't have any idea this has happened until you give the release to another developer who has a mac that is not using said package managers and they try to use it and it doesn't work due to missing libraries.
@@ -178,7 +178,7 @@ Codesigning, Notarizing and Stapling macOS Builds
 There are several aspects to producing a ``.dmg`` application bundle for macOS.
 The most involved of these steps is *codesigning*.
 Codesigning involves iterating over all the libraries and executables in the bundle and doing so in a bottom-up or inside-out fashion such that the leaves of any dependency chains are codesigned first.
-Its not a manual process and the masonry scripts involve quite a bit of logic (thanks Kevin Griffin) to get it right.
+It's not a manual process and the masonry scripts involve quite a bit of logic (thanks Kevin Griffin) to get it right.
 However, the remaining steps involving notarizing and stapling the notarization ticket to the ``.dmg`` bundle can easily be handled manually.
 The masonry scripts are designed to do these steps automatically as well but they can also be handled manually if necessary.
 Because Apple seems to change these processes frequently, we capture here some of the key steps.

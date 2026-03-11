@@ -221,7 +221,7 @@ By convention, the new file will contain an index indicating either the simulati
       return 0;
   }
 
-The above code listing will write out Silo_ files with names such as: ``output0000.silo``, ``output0001.silo``, ``output0002.silo``, ... .
+The above code listing will write out Silo_ files with names such as: ``output0000.silo``, ``output0001.silo``, ``output0002.silo``, ...
 Each file contains the data from a particular simulation time state.
 It may seem like the data are less related because they are stored in different files but the fact that the files are related in time is subtly encoded in the name of each of the files.
 When VisIt_ recognizes a pattern in the names of the files such as ``output????.silo``, in this case, VisIt_ automatically recognizes the files as a time-varying database (e.g. a *virtual* database).
@@ -1399,7 +1399,7 @@ Creating a master file for parallel
 When a parallel program saves out its data files, often the most efficient method of I/O is for each processor to write its own piece of the simulation, or domain, to its own Silo_ file.
 If each processor writes its own Silo_ file then no communication or synchronization must take place to manage access to a shared file.
 However, once the simulation has completed, there are many files and all of them are required to reconstitute the simulated object.
-Expecting a user to plot each domain file manually in VisIt would be very tedious. So, Silo_ provides functions to create what is known as a *master* file (or *root* file), which is a top-level file that defines cooresponding objects which list all their constituent Silo_ objects in the the domain files.
+Expecting a user to plot each domain file manually in VisIt would be very tedious. So, Silo_ provides functions to create what is known as a *master* file (or *root* file), which is a top-level file that defines corresponding objects which list all their constituent Silo_ objects in the domain files.
 When you open a master file in VisIt_ and plot variables out of it, all domains are plotted.
 
 Master files contain what are known as multimeshes, multivars, and multimaterials.

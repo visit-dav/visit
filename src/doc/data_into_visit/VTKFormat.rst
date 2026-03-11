@@ -38,7 +38,7 @@ The ``visit_writer.c`` and ``visit_writer.h`` files contain C source code with s
 The library can write either text or binary files.
 The library can output point, unstructured, rectilinear, regular and curvilinear meshes.
 
-The `header <https:github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.h>`_ and `source <https:github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.c>`_ files can be found in the VisIt_ repository on GitHub.
+The `header <https://github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.h>`_ and `source <https://github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.c>`_ files can be found in the VisIt_ repository on GitHub.
 
 Binary files
 ------------
@@ -340,7 +340,7 @@ VisIt_ meta data conventions for VTK files
 
 VisIt_ supports a number of conventions for storing additional data. This data is stored as FIELD data as additional information in the DATASET, CELL_DATA or POINT_DATA.
 
-The Following meta data is stored as DATASET FIELD data.
+The following meta data is stored as DATASET FIELD data.
 
 MeshCoordType
 ~~~~~~~~~~~~~

@@ -11901,7 +11901,7 @@ return type : CLI_return_t
     visualization window. When time locking is on in a visualization window,
     VisIt creates a database correlation that works for the databases in all
     visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
+    using the time slider for the afore-mentioned database correlation, it
     has the effect of updating time in all time-locked visualization windows.
 
 
@@ -11962,7 +11962,7 @@ return type : CLI_return_t
     visualization window. When time locking is on in a visualization window,
     VisIt creates a database correlation that works for the databases in all
     visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
+    using the time slider for the afore-mentioned database correlation, it
     has the effect of updating time in all time-locked visualization windows.
     The ToggleLockViewMode function turns lock view mode on and off. When
     windows are in lock view mode, each view change is broadcast to other

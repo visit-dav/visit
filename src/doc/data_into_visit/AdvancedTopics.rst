@@ -36,7 +36,7 @@ However, VisIt_ may properly recognize the time dimension or may treat it as an 
 Sometimes the user may prefer one or the other of these choices.
 
 What if VisIt_ opens a NETCDF file with 4D array data?
-In theory, it maybe should be possible to apply a **Slice** operator and display a subset of its dimensions.
+In theory, it may be possible to apply a **Slice** operator and display a subset of its dimensions.
 In practice, this may not be possible.
 
 Whether VisIt_ handles bare array data in a desirable way depends on the database plugin used to read it.

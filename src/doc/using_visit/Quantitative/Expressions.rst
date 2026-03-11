@@ -1561,12 +1561,12 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    ``State Id`` substring is a square-bracket enclosed number used to identify
    *which state* from which to take the donor variable. The ``Modality``
    substring is a one- or two-character moniker. The first character indicates
-   whether the number in the the ``State Id`` substring is a cycle (``c``),
+   whether the number in the ``State Id`` substring is a cycle (``c``),
    a time (``t``), or an index (``i``). The second character, if present, is a
    ``d`` character to indicate the cycle, time or index is *relative* (e.g. a
    *delta*) to the current state. For example, the substring ``[200]c`` means to
    treat the ``200`` as a *cycle* number in the donor database whereas the
-   the substring ``[-10]id`` means to treat the ``-10`` as an (``i``) index
+   substring ``[-10]id`` means to treat the ``-10`` as an (``i``) index
    (``d``) delta. So, ``[200]c`` would map the *donor* at cycle 200
    to the *current* cycle of the *target* and ``[-10]id`` would map the
    *donor* at the current *index minus 10* to the *current* index of the *target*.

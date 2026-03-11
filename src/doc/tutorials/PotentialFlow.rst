@@ -146,7 +146,7 @@ simulated "v" vector field.
    *Vectors* tab settings for example vector plot of velocity
 
 
-5. Go the the *Data* tab.
+5. Go to the *Data* tab.
 6. In the *Limits* section, enable the *Maximum* checkbox and set the value to "1".
 7. In the *Color* section, change the *Magnitude* to *viridis*
 

@@ -275,7 +275,7 @@ parameters can be set.
 
 7. The "View geometry" can be restricted to being Points, Lines, or
    Surfaces. Normally each channel is drawn as a line. By setting the
-   "View geometry" to "Points," the the actual sample points will be
+   "View geometry" to "Points," the actual sample points will be
    drawn.
 
    Future work includes cylindrical and cone sampling geometries. For

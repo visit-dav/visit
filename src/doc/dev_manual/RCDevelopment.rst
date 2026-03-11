@@ -174,7 +174,7 @@ do a ``git am --continue``.  ::
     git add src/resources/help/en_US/relnotes3.0.2.html
     git am --continue
 
-Now you changes will have been committed to the branch with the appropriate
+Now your changes will have been committed to the branch with the appropriate
 commit message. You are now ready to push the change to GitHub and create
 a new pull request.
 

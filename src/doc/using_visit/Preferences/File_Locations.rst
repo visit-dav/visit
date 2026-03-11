@@ -246,7 +246,7 @@ other than ``VUSER_HOME``. These are briefly described in this section.
   ``VUSER_HOME`` but on UNIX/macOS the logs on the client are written to whatever
   the ``CWD`` was when VisIt_ was started. If started by
   clicking on an icon, this is most
-  likely the the user's login directory. If started from a command-line, it is
+  likely the user's login directory. If started from a command-line, it is
   whatever the shell's ``CWD`` for that command-line was. On
   the server, the logs are written to the user's login (home) directory. In a
   typical client/server scenario, the user gets gui and viewer logs locally in

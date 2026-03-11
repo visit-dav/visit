@@ -183,6 +183,6 @@ Open the generated *VisIt.sln* file with Visual Studio (it may take awhile to
 load all the project files). 
 Select the desired Configuration and Build the solution.
 
-**Note:** if VISIT_CREATE_XMLTOOLS_GEN_TARGETS is ON, choose the *ALL_BUILD* project to build instead of the *Solution* .
+**Note:** if VISIT_CREATE_XMLTOOLS_GEN_TARGETS is ON, choose the *ALL_BUILD* project to build instead of the *Solution*.
 More information on this variable can found in the :ref:`CMake Variables<CMake Variables>` section.
 

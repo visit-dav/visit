@@ -8,9 +8,9 @@ Glossary
    AAN
    Always, Auto, Never
        Various features in VisIt_ support an **Always, Auto, Never** choice.
-       A setting of **Never** means to never enable the the feature and a
+       A setting of **Never** means to never enable the feature and a
        setting of **Always** means to always enable the feature. A setting
-       of **Auto**, which is typically the default, means the allow VisIt_ 
+       of **Auto**, which is typically the default, means it allows VisIt_ 
        to decide when it thinks it is best to enable or disable the feature.
     
    Integral Curve
@@ -67,7 +67,7 @@ Glossary
 
    Zone
    Cell
-       These terms refer to the the individual computational elements comprising
+       These terms refer to the individual computational elements comprising
        a mesh.
 
    Zone-centered

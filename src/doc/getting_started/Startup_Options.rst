@@ -224,7 +224,7 @@ USAGE: visit [options]::
                              as options to VisIt.
 
         -diffsum <ldb> <rdb> Run only the difference summary method of the
-                             'visit -diff' script, in nowin mode so its fast,
+                             'visit -diff' script, in nowin mode so it's fast,
                              print the results, and immediately exit.
 
         -force_pos_cmfe      Force use of position-based CMFE expressions.

@@ -13,7 +13,7 @@ Pre-built binaries for VisIt_ are provided on the following platforms:
 For an explanation of what *fully* and *partially* supported mean, see our section on :ref:`supported platforms <supported_platforms>`.
 
 New versions are usually released every 2-3 months.
-Users can find releases at the `VisIt releases page <https://visit-dav.github.io/visit-website/releases-as-tables/>`_. 
+Users can find releases at the `VisIt releases page <https://visit-dav.github.io/visit-website/releases-as-tables/>`_.
 See our section on :ref:`managing GitHub notifications <managing_github_notifications>` to get notified of new releases.
 
 Download a binary release compatible with the machine on which you want to run VisIt_.

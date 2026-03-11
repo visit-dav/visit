@@ -120,7 +120,7 @@ within the response time goal, to each inquiry. Ideally, all SRE
 activity during the week is handled and :ref:`resolved <sre_response_vs_resolution>`
 solely by the **Primary**. However, :ref:`escalations <sre_escalation>`, which we
 hope are rare, will wind up engaging the **Backup** and may even engage other
-developers. In addition, any :ref:`active SRE dicussions <sre_active_discussions>` that remain
+developers. In addition, any :ref:`active SRE discussions <sre_active_discussions>` that remain
 unresolved at the end of the week are formally :ref:`handed off <sre_handoffs>` to
 the next **Primary**.
 
@@ -137,7 +137,7 @@ At these *idle* times, the **Primary** shall use their time to address general
 :ref:`housekeeping <sre_sre_vs_product_development>` or other *low-hanging fruit* type work. In
 particular, there shall be no expectation that a developer serving as **Primary**
 can get any other work done beyond their active or idle SRE obligations. In slow
-weeks, its conceivable they can. But, there can be no implied assumption or
+weeks, it's conceivable they can. But, there can be no implied assumption or
 expectation that this will be the case.
 
 A :ref:`schedule <sre_scheduling>` of the **Primary** and **Backup** assignments going
@@ -146,7 +146,7 @@ of a shared calendar. **Primary** and **Backup** responsibilities are rotated
 so as to balance the load among team members.
 
 The preceding paragraphs describe VisIt_'s SRE processes at a
-basic level and in the ideal. Nonetheless, several terms here (those that are 
+basic level and in the ideal. Nonetheless, several terms here (those that are
 links or in *italics* in the paragraphs above) require elaboration. In addition,
 there are also many practical matters which can serve to complicate the basic
 process. These details are addressed in the remaining sections.
@@ -511,7 +511,7 @@ Our current plan is to handle this on a case-by-case basis. If neither the
 requiring classified computing, the **Primary** should
 
   * First determine the customer's required response time. It may be hours
-    or it may be days. If it is days. Its conceivable the issue could be
+    or it may be days. If it is days, it's conceivable the issue could be
     handled in the following week by a new **Primary/Backup** pair.
   * If customer indicates immediate response is required, the **Primary**
     should query the whole team to arrange another developer who can
