@@ -312,7 +312,7 @@ elif [ "$tuolumne" = true ]; then
        PAR_COMPILER=cc \
        PAR_COMPILER_CXX=CC \
        ./$build_visit_script --group ${dest_group} --required --optional --anari --osmesa --parallel \
-       --no-adios --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
+       --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
