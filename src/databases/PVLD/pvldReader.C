@@ -2224,7 +2224,7 @@ ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
         hsize_t nd = len[0]*len[1];
 
         elmto2.resize( nd );
-        ReadGroupDataSet( fid, solid_name.c_str(), "Nodes_O2",
+        ReadGroupDataSet( fid, solid_name.c_str(), "HigherOrderNodes",
                         H5T_NATIVE_INT, elmto2.data(), 2, sft, len );
 
         read_elmto2 = true;
