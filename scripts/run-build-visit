@@ -282,7 +282,6 @@ fi
 # Call build_visit
 #
 if [ "$dane" = true ] || [ "$rzwhippet" = true ]; then
-   ml gcc
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
@@ -312,7 +311,7 @@ elif [ "$tuolumne" = true ]; then
        PAR_COMPILER=cc \
        PAR_COMPILER_CXX=CC \
        ./$build_visit_script --group ${dest_group} --required --optional --anari --osmesa --parallel \
-       --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
+       --no-adios --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
