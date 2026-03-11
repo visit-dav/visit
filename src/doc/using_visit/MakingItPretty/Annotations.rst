@@ -602,7 +602,7 @@ A common use case for ``$<T>tafile<I>`` named values is for animations to displa
 
 Multiple named values can appear in a text annotation string and the same named value can also appear multiple times.
 
-For example, to create a text annoation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
+For example, to create a text annotation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
 To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle%06d$`` where the optional ``%`` followed by a :ref:`printf-style <FormattingNumbers>` format string is specified.
 To display the first 3 characters of the variable name, use the string ``$varname%.3s$``.
 Note that in both of the preceding examples, because the optional formatting string is used, the terminating ``$`` is also required.
@@ -941,7 +941,7 @@ Once you release the left mouse button, the location of the cross-hairs is used 
 
 The **X scale** and **Y scale** spin boxes control the size of the legend, with values of '100%' being the default size.  You can enter new values using the text field or use the + and - buttons to the right of the text field.
 
-The **Orientation** of the legend is changed using the corresponding drop-down menu, with options: **Vertical, Text on Right**; **Vertical, Text on Left**; **Horizontal, Text on Top** and **Horizonatal, Text on Bottom**.
+The **Orientation** of the legend is changed using the corresponding drop-down menu, with options: **Vertical, Text on Right**; **Vertical, Text on Left**; **Horizontal, Text on Top** and **Horizontal, Text on Bottom**.
 
 .. _legend_position_image:
 

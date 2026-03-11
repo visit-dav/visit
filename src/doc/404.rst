@@ -13,7 +13,7 @@ Use your browser's back button to go back to the page that sent you here and ref
 Some other possible causes of this problem are
 
 * You followed an outdated link from an *external* source.
-  If so, please contact the adminstrator of the associated page to have it corrected.
+  If so, please contact the administrator of the associated page to have it corrected.
   This is not something we have the control to correct ourselves.
 * You followed a bad *internal* link from within our documentation.
   If so, please cut and paste the URL and either create a `discussion`_ or file

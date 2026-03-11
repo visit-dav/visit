@@ -45,7 +45,7 @@ You'll notice that the visualization doesn't look very interesting at this point
 Add an Isovolume operator
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Adding an Isolvolume operator will help us remove sections of the dataset that we're uninterested in.
+Adding an Isovolume operator will help us remove sections of the dataset that we're uninterested in.
 
 1. Go to *Operators->Selection->Isovolume* to add the Isovolume operator.
 
@@ -71,7 +71,7 @@ Adding an Isolvolume operator will help us remove sections of the dataset that w
 
    Visualizing the underlying data of our dataset.
 
-5. You can experiment with changing the lower and upper bounds of the Isolvoume attributes to visualize different sections of the dataset.
+5. You can experiment with changing the lower and upper bounds of the Isovolume attributes to visualize different sections of the dataset.
 
 Change the color table
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -140,7 +140,7 @@ Another usefull operator that is similar to Slice is ThreeSlice. This operator c
 
 Performing a ThreeSlice using the point tool
 """"""""""""""""""""""""""""""""""""""""""""
-Along with directly entering the X, Y, Z coordinates for your ThreeSlice in the attributes window, Visit_ also provides the option of using an interactive Point tool for determing these coordinates.
+Along with directly entering the X, Y, Z coordinates for your ThreeSlice in the attributes window, Visit_ also provides the option of using an interactive Point tool for determining these coordinates.
 
 1. In the top left-hand corner of the visualization window, you'll find a button that activates the Point tool. *Click* this button.
 

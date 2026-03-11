@@ -29,7 +29,7 @@ For a node-centered treatment, the mesh is the same size as the array.
 For these two cases to be compatible, the node-centered mesh needs to be offset a half-step in each dimension from the zone-centered mesh.
 In other words, the nodes of the node-centered case should coincide with the geometric centers of the zones in the zone-centered mesh.
 
-When there are many related arrays, it may be desireable to treat some as node-centered and some as zone-centered.
+When there are many related arrays, it may be desirable to treat some as node-centered and some as zone-centered.
 Sometimes, one of the dimensions of a multidimension array may represent a *time* dimension.
 This can happen with *basic* NETCDF data, for example.
 However, VisIt_ may properly recognize the time dimension or may treat it as an additional spatial dimension.
@@ -39,7 +39,7 @@ What if VisIt_ opens a NETCDF file with 4D array data?
 In theory, it maybe should be possible to apply a **Slice** operator and display a subset of its dimensions.
 In practice, this may not be possible.
 
-Whether VisIt_ handles bare array data in a desireable way depends on the database plugin used to read it.
+Whether VisIt_ handles bare array data in a desirable way depends on the database plugin used to read it.
 The **Image** plugin, for example, presents both zone-centered and node-centered options allowing the user to choose and even switch between treatments.
 But, the **Image** plugin will treat a stack of images as a 3D *volume* and not a 2D array of images over time.
 Whether this is the correct thing to do depends on information unknown to VisIt_.
@@ -732,5 +732,4 @@ That is, the **matlist** array does not contain any negative mixed material arra
           .              matlist, mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf,
           .              mixlen, DB_FLOAT, DB_F77NULL, ierr)
           end
-
 

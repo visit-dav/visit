@@ -76,7 +76,7 @@ Follow these steps to update the version on the splashscreen.
    The splashscreen in GIMP.
 
 You'll see that the file has several layers to it. There are six layers for
-each of the six splash screen images that get randomly choosen from when
+each of the six splash screen images that get randomly chosen from when
 starting VisIt_ or are cycled through when you select *About* in the *Help*
 menu.
 

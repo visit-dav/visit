@@ -217,7 +217,7 @@ Files In Other Locations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are several other kinds of files VisIt_ reads and writes to locations
-other than ``VUSER_HOME``. These are breifly described in this section.
+other than ``VUSER_HOME``. These are briefly described in this section.
 
 :ref:`Database Files <Supported File Types>`
 """"""""""""""""""""""""""""""""""""""""""""

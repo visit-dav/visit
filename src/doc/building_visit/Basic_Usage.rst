@@ -9,7 +9,7 @@ Doing a minimal build
 When using ``build_visit`` without any arguments it will do a minimal build of VisIt_ downloading the VisIt_ source code by making an anonymous git clone from GitHub and downloading the source code for the third party libraries from VisIt_'s third-party GitHub repo.
 It will build a serial version of the code without any of the optional I/O libraries.
 This will result in only the file readers that require no external dependencies to be built.
-Buiding VisIt_ in this fashion will give you the highest probability of success.
+Building VisIt_ in this fashion will give you the highest probability of success.
 
 .. code:: bash
 
@@ -125,4 +125,3 @@ If building Qt 6, then a fully compliant c++17 compiler is required (g++8 or new
 
 Sometimes the absolute latest releases of compilers will cause compile errors during the building of third_party libraries requiring patches to the library's code base, a change to an older compiler version, or an update to a newer version of the library.
 If this is the case, and you would like us to support the compiler version you are using, please contact us by one of our :ref:`Contact methods <methods_of_contact>`, letting us know the OS and OS-version as well as the compiler version you are attempting to use, and the version of VisIt_ being built, along with all compile error messages.
-

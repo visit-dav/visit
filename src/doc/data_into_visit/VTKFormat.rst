@@ -13,11 +13,11 @@ We are going to focus on the legacy files, since they are a little bit simpler.
 * VTK files can be text or binary
 
   * Both text and binary files have text meta data.
-  * Binary files have binary fields and coordinates imbedded in the text.
+  * Binary files have binary fields and coordinates embedded in the text.
 
 * VisIt_ has conventions for additional meta data that fits within the VTK specification.
 
-The remainder of this VTK documentation consistes of a description of the file format, a simple example, and then more complex examples of the different mesh types.
+The remainder of this VTK documentation consists of a description of the file format, a simple example, and then more complex examples of the different mesh types.
 
 The official VTK file format descriptions can be found at the `VTK website <https://kitware.github.io/vtk-examples/site/VTKFileFormats/>`_.
 
@@ -329,7 +329,7 @@ Field data has the following general format. ::
     ...
     tn1 tn2 ... tncn
 
-The field data section begines with a single line that starts with the keywords `FIELD` and `FieldData` followed by the number of fields.
+The field data section begins with a single line that starts with the keywords `FIELD` and `FieldData` followed by the number of fields.
 Next come the fields.
 Each field starts with a single line with the field name, the number of components, the number of tuples and the data type.
 
@@ -389,7 +389,7 @@ VisItExpressions
 
 Each string represents a single expression.
 The string contains the expression name, the expression type and the expression.
-The three properties are seperated by semicolons.
+The three properties are separated by semicolons.
 The expression type consists of one of `curve`, `scalar`, `vector`, `tensor`, `array`, `material` or `species`.
 
 Here is an example of specifying the expressions.

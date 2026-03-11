@@ -719,8 +719,8 @@ The details of reading data from your file format are omitted from the example c
 The central message in this section is how to use data from a file format to
 construct different mesh types.
 
-Determing which mesh to return
-""""""""""""""""""""""""""""""
+Determining which mesh to return
+""""""""""""""""""""""""""""""""
 
 The *GetMesh* method is always passed a string containing the name of the mesh that should be returned from the plug-in.
 If your file format only ever has one mesh then you can ignore the meshname argument.
@@ -1439,7 +1439,7 @@ Replace the capitalized sections of code in the listing with code to read the co
 
   .. container:: header
 
-    Example for returning cyles, times from ST plug-in.
+    Example for returning cycles, times from ST plug-in.
 
   .. code-block:: c
 

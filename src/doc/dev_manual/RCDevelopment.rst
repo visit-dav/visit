@@ -75,7 +75,7 @@ Making the changes
 ------------------
 
 At this point you would modify your branch as you normally do, modifying,
-adding or deleting files, and then commiting the changes to the branch.
+adding or deleting files, and then committing the changes to the branch.
 
 Creating the pull request on the release candidate
 --------------------------------------------------
@@ -174,7 +174,7 @@ do a ``git am --continue``.  ::
     git add src/resources/help/en_US/relnotes3.0.2.html
     git am --continue
 
-Now you changes will have been commited to the branch with the appropriate
+Now you changes will have been committed to the branch with the appropriate
 commit message. You are now ready to push the change to GitHub and create
 a new pull request.
 

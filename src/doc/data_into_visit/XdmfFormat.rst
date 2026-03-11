@@ -83,7 +83,7 @@ The following is an example of a ``DataItem`` that references an array in a bina
 The valid values for ``Format`` are:
 
 ======  ===================================
-XML     Text imbedded in the xml file
+XML     Text embedded in the xml file
 HDF     Binary data stored in an HDF5 file
 Binary  Binary data stored in a binary file
 ======  ===================================

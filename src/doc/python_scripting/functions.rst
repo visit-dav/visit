@@ -861,7 +861,7 @@ Close
 **Description:**
 
     The Close function terminates VisIt's viewer. This is useful for Python
-    scripts that only need access to VisIt's capabilties for a short time
+    scripts that only need access to VisIt's capabilities for a short time
     before closing VisIt.
 
 
@@ -1737,7 +1737,7 @@ file : string
 type : string
     An optional string defining the output type of the expression.
     Default type - 'scalar'
-    Avalaible types - 'scalar','vector','tensor','array','curve'
+    Available types - 'scalar','vector','tensor','array','curve'
     Note - Use only one of the 'source' or 'file' arguments.
     If both are used the 'source' argument overrides 'file'.
 
@@ -4951,7 +4951,7 @@ return type : SelectionSummary object
 **Description:**
 
     Named selections have both properties, which describe how the selection is
-    defined, and a summary that desribes the data that was processed while creating
+    defined, and a summary that describes the data that was processed while creating
     the selection. The selection summary object contains some statistics about
     the selection such as how many cells it contains and histograms of the various
     variables that were used in creating the selection.
@@ -10942,7 +10942,7 @@ return type : CLI_return_t
     and queried. The cost of the operation gets worse the more time states there are
     in the database. Ordinarily, VisIt does not bother to query each time state for
     precise cycle/time information. In fact, often VisIt can guess this information
-    from the filename(s) comprising the databse. However, turning this feature on
+    from the filename(s) comprising the database. However, turning this feature on
     will force VisIt to obtain accurate cycle/time information for all time states
     by opening and querying all file(s) in the database.
 

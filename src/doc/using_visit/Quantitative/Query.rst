@@ -181,7 +181,7 @@ Grid Information
     *get_ghosttype* parameter that causes the ghost zone information for each
     domain to be obtained. Both the numerical value and list of or'd values for
     ghost values are obtained. All query outputs are printed to the
-    **Queryresults**.
+    **Query results**.
 
 Integrate
     The Integrate query calculates the area under the Curve plot that is
@@ -569,7 +569,6 @@ this is the name VisIt_ uses to connect your Python script to the
 Python Filter Runtime in the engine.
 
 When you run your Python Query, results are presented like any other Query: Displayed in the Query window and can be accessed via VisIt_'s Query output CLI functions.
-
 
 
 

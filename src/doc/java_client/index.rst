@@ -266,7 +266,7 @@ Changing plot attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example program shows how to set plot attributes.
-It changes a Pseudoocolor plot to be semi-transparent.
+It changes a Pseudocolor plot to be semi-transparent.
 
 .. container:: collapsible
 
@@ -313,4 +313,3 @@ Acknowledgements
 
 This document is primarily based on visitusers.org wiki pages written by Brad Whitlock.
 The Java client itself and most of the examples were also initially created by Brad in 2002.
-

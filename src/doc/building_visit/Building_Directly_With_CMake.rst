@@ -94,8 +94,8 @@ The first kind is a *pair* of space separated entries as is seen in ``VISIT_GORF
 The first entry in the pair is the path to a directory holding library such as would be used in a ``-L</path/to/lib/dir>`` linker flag.
 The second entry in the pair is the name of the library such as would be used in a ``-l<libname>`` linker flag.
 
-The second kind is a CMake variable representing a bonified CMake *imported target*.
-For all TPLs VisIt supports, only a few (HDF5, Silo, ZLIB) are currently handled as bonified CMake imported targets.
+The second kind is a CMake variable representing a bona fide CMake *imported target*.
+For all TPLs VisIt supports, only a few (HDF5, Silo, ZLIB) are currently handled as bona fide CMake imported targets.
 This situation will improve to include many more TPLs as imported targets but currently (as of version 3.5.0), only a handful of TPLs are handled this way.
 The variable, ``HDF5_LIB`` is the variable which holds the imported target name for the HDF5 library (typically ``hdf5-shared``).
 
@@ -285,7 +285,7 @@ VISIT_FORTRAN : BOOL : OFF
     Toggles building of Fortran example programs.
 
 VISIT_INSTALL_THIRD_PARTY : BOOL : OFF
-    Intall VisIt_'s 3rd part I/O libraries and includes to permit plugin development.
+    Install VisIt_'s 3rd part I/O libraries and includes to permit plugin development.
 
 VISIT_JAVA : BOOL : OFF
     Build VisIt_'s Java client interface.
@@ -334,4 +334,3 @@ VISIT_WINDOWS_APPLICATION : BOOL : ON
 VISIT_WINDOWS_DIR : PATH : 
     Specifies the location of the pre-built third party library binaries.
     See :ref:`Location of windowsbuild directory<Location of windowsbuild Directory>` for default locations.
-
