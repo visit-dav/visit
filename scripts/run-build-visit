@@ -309,7 +309,7 @@ elif [ "$tuolumne" = true ]; then
    env CC=/usr/tce/packages/gcc/gcc-10.3.1-magic/bin/gcc \
        CXX=/usr/tce/packages/gcc/gcc-10.3.1-magic/bin/g++ \
        PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-9.0.1-gcc-10.3.1-magic/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-9.0.1-gcc-10.3.1-magic/bin/mpi++ \
+       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-9.0.1-gcc-10.3.1-magic/bin/mpic++ \
        ./$build_visit_script --group ${dest_group} --required --optional --anari --osmesa --parallel \
        --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
