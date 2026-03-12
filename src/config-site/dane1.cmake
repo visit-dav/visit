@@ -11,6 +11,11 @@
 SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 
+### NOTE: Modified from build_visit output
+#-------
+VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
+#-------
+
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
@@ -25,6 +30,14 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
 VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc TYPE FILEPATH)
+
+### NOTE: Modified from build_visit output
+#-------
+##
+## Turn on DDT support
+##
+VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
+#-------
 
 ##
 ## VisIt Thread Option
