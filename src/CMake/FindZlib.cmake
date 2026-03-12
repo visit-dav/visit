@@ -51,8 +51,10 @@ if(ZLIB_FOUND)
         get_target_property(zlib_inc ZLIB::ZLIB INTERFACE_INCLUDE_DIRECTORIES)
         THIRD_PARTY_INSTALL_LIBRARY(${zlib_loc})
         THIRD_PARTY_INSTALL_INCLUDE(zlib ${zlib_inc})
-    endif()
 
+        # for plugin vs install:
+        cmake_path(GET zlib_loc FILENAME ZLIB_IMPORT_LIB)
+    endif()
 else()
     message(FATAL_ERROR "VisIt requires lib z and it could not be found.")
 endif()
