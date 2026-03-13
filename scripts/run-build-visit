@@ -306,11 +306,11 @@ elif [ "$crossroads" = true ]; then
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
-   export LD_LIBRARY_PATH="/opt/cray/pe/lib64:/opt/cray/lib64:/opt/cray/pe/papi/7.2.0.2/lib64:/opt/cray/libfabric/2.1/lib64:${LD_LIBRARY_PATH}"
    env CC=/usr/tce/packages/gcc/gcc-10.3.1-magic/bin/gcc \
        CXX=/usr/tce/packages/gcc/gcc-10.3.1-magic/bin/g++ \
        PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-9.0.1-gcc-10.3.1-magic/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-9.0.1-gcc-10.3.1-magic/bin/mpic++ \
+       PAR_LIBS="-L/opt/cray/libfabric/2.1/lib64/ -Wl,-rpath=/opt/cray/libfabric/2.1/lib64/" \
        ./$build_visit_script --group ${dest_group} --required --optional --anari --osmesa --parallel \
        --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
