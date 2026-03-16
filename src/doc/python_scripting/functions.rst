@@ -6546,8 +6546,8 @@ return type : tuple of strings
 ::
 
   #% visit -cli
-  for plug-in in OperatorPlugins():
-      print("The %s operator plug-in is loaded." % plug-in)
+  for plugin in OperatorPlugins():
+      print("The %s operator plug-in is loaded." % plugin)
 
 
 OverlayDatabase
@@ -7103,8 +7103,8 @@ return type : tuple of strings
 ::
 
   #% visit -cli
-  for plug-in in PluginPlugins():
-      print("The %s plot plug-in is loaded." % plug-in)
+  for plugin in PluginPlugins():
+      print("The %s plot plug-in is loaded." % plugin)
 
 
 PointPick
