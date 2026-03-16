@@ -7103,7 +7103,7 @@ return type : tuple of strings
 ::
 
   #% visit -cli
-  for plugin in PluginPlugins():
+  for plugin in PlotPlugins():
       print("The %s plot plug-in is loaded." % plugin)
 
 

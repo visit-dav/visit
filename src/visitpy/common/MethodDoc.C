@@ -6322,8 +6322,8 @@ const char *visit_OperatorPlugins_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"for plug-in in OperatorPlugins():\n"
-"    print(\"The %s operator plug-in is loaded.\" % plug-in)\n"
+"for plugin in OperatorPlugins():\n"
+"    print(\"The %s operator plug-in is loaded.\" % plugin)\n"
 ;
 const char *visit_OverlayDatabase_doc = 
 "OverlayDatabase\n"
@@ -6837,8 +6837,8 @@ const char *visit_PlotPlugins_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"for plug-in in PluginPlugins():\n"
-"    print(\"The %s plot plug-in is loaded.\" % plug-in)\n"
+"for plugin in PlotPlugins():\n"
+"    print(\"The %s plot plug-in is loaded.\" % plugin)\n"
 ;
 const char *visit_PointPick_doc = 
 "PointPick\n"
