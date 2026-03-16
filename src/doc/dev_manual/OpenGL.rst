@@ -21,7 +21,7 @@ The sections of Qt that deal with OpenGL are ::
   qtbase/src/opengl
   qtbase/src/openglextensions
 
-  qtbase/src/plug-ins/platforms/xcb/gl_integrations/xcb_glx
+  qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_glx
 
   qtbase/src/platformsupport/glxconvenience
 
