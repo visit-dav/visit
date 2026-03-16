@@ -32,7 +32,7 @@ try:
     import PySide2.QtCore
     __pyside_imported = True
 except:
-__pyside_imported = False
+    __pyside_imported = False
 
 
 #
