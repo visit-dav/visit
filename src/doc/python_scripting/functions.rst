@@ -1461,7 +1461,7 @@ return type : dictionary
 
     The DatabasePlugins function returns a dictionary containing the names of
     the database plug-ins for the specified host. If no host is given, localhost
-    is assumed. The dictionary contains two keys: "host" and "plug-ins".
+    is assumed. The dictionary contains two keys: "host" and "plugins".
 
 
 **Example:**
@@ -1471,7 +1471,7 @@ return type : dictionary
   #% visit -cli
   dbp = DatabasePlugins("localhost")
   print(dbp["host"])
-  print(dbp["plug-ins"])
+  print(dbp["plugins"])
 
 
 DeIconifyAllWindows
@@ -2888,7 +2888,7 @@ e : ExportDBAttributes object
 o : dictionary
     A dictionary containing a key/value mapping to set options needed by the
     database exporter.  The default values can be obtained in the appropriate
-    format using GetExportOptions('plug-in').
+    format using GetExportOptions('plugin').
 
 return type : CLI_return_t
     Returns 1 on success, 0 on failure.

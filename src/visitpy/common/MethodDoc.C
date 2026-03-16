@@ -1424,7 +1424,7 @@ const char *visit_DatabasePlugins_doc =
 "The DatabasePlugins function returns a dictionary containing the names\n"
 "of the database plug-ins for the specified host. If no host is given,\n"
 "localhost is assumed. The dictionary contains two keys: \"host\" and\n"
-"\"plug-ins\".\n"
+"\"plugins\".\n"
 "\n"
 "\n"
 "Example:\n"
@@ -1432,7 +1432,7 @@ const char *visit_DatabasePlugins_doc =
 "#% visit -cli\n"
 "dbp = DatabasePlugins(\"localhost\")\n"
 "print(dbp[\"host\"])\n"
-"print(dbp[\"plug-ins\"])\n"
+"print(dbp[\"plugins\"])\n"
 ;
 const char *visit_DeIconifyAllWindows_doc = 
 "DeIconifyAllWindows\n"
@@ -2852,7 +2852,7 @@ const char *visit_ExportDatabase_doc =
 "o : dictionary\n"
 "    A dictionary containing a key/value mapping to set options needed by the\n"
 "    database exporter.  The default values can be obtained in the appropriate\n"
-"    format using GetExportOptions('plug-in').\n"
+"    format using GetExportOptions('plugin').\n"
 "\n"
 "\n"
 "Returns:\n"
