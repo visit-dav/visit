@@ -624,7 +624,7 @@ For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesti
 
 Diagnosing pluginVsInstall failures
 -----------------------------------
-pluginsVsInstall test output is generated in the ``current/plug-ins`` subdirectory of the test results location.
+pluginsVsInstall test output is generated in the ``current/plugins`` subdirectory of the test results location.
 There will be a further subdirectory for each type of plug-in: databasesVsInstall, operatorsVsInstall and plotsVsInstall.
 The output consists of text files containing the name of each plug-in tested and either ``success`` or one of the following errors:
 
