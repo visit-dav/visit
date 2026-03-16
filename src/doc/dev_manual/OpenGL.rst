@@ -21,13 +21,13 @@ The sections of Qt that deal with OpenGL are ::
   qtbase/src/opengl
   qtbase/src/openglextensions
 
-  qtbase/src/plug-ins/platforms/xcb/gl_integrations/xcb_glx
+  qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_glx
 
   qtbase/src/platformsupport/glxconvenience
 
 The context creation is performed in ::
 
-  qtbase/src/plug-ins/platforms/xcb/gl_integrations/xcb_glx/qglxintegration.cpp
+  qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_glx/qglxintegration.cpp
 
   void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
 
