@@ -165,7 +165,7 @@ VISIT_ENABLE_LIBSIM : BOOL : ON
 
 
 Controlling plug-ins being built
-"""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""
 
 VISIT_BUILD_ALL_PLUGINS : BOOL : OFF
     Toggles the building of all plug-ins.

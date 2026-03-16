@@ -64,8 +64,8 @@ Or, as another example, using ImageMagick's ``display`` command on an lfs'd ``.p
 Or, trying to display a baseline image can fail ::
 
     % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
-    display: improper image header '../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
-    
+    display: improper image header '../test/baseline/databases/silo/silo_curvilinear_3d_surface_6.png'
+
 When this happens, it's likely because a ``git lfs pull`` operation is again needed.
 
 There are other telltale signs to help recognize whether an lfs'd file is in its pointer/proxy state or actual/real state.
@@ -478,7 +478,7 @@ Tips on writing regression tests
 +===================================+====================================================================+
 |tests/faulttolerant/savewindow.py  |  * uses python exceptions                                          |
 +-----------------------------------+--------------------------------------------------------------------+
-| tests/databases/itaps.py          |  * uses OpenDatabase with specific plug-in                          |
+| tests/databases/itaps.py          |  * uses OpenDatabase with specific plug-in                         |
 |                                   |  * uses SIL restriction via names of sets                          |
 +-----------------------------------+--------------------------------------------------------------------+
 |tests/databases/silo.py            |  * uses OpenDatabase with virtual database and a specific timestep |
