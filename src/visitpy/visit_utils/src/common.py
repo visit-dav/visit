@@ -28,11 +28,10 @@ except:
     __visit_imported = False
 
 
-#LC Python crashes when PySide2 is imported
-#try:
-#    import PySide2.QtCore
-#    __pyside_imported = True
-#except:
+try:
+    import PySide2.QtCore
+    __pyside_imported = True
+except:
 __pyside_imported = False
 
 
