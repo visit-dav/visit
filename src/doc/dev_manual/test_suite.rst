@@ -61,9 +61,7 @@ For example, expanding a data archive can fail ::
 
 Or, as another example, using ImageMagick's ``display`` command on an lfs'd ``.png`` file still in its *pointer* state can fail ::
 
-Or, trying to display a baseline image can fail ::
-
-    % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
+    % display ../test/baseline/databases/silo/silo_curvilinear_3d_surface_6.png
     display: improper image header '../test/baseline/databases/silo/silo_curvilinear_3d_surface_6.png'
 
 When this happens, it's likely because a ``git lfs pull`` operation is again needed.
