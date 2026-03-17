@@ -20,62 +20,58 @@
  * the place where the shell frontendlauncher bootstrap is installed on macOS
  * that really handles launching of VisIt.
  *
- * It aims to construct the path to that script and then start it with a 
- * system call.
+ * It aims to construct the path to that script and then start it with an
+ * execv call.
  * 
  * Mark C. Miller, Wed Oct 12 09:48:36 PDT 2022
  *****************************************************************************/
 
-int system(char const *); /* declare instead of #include <stdlib.h> */
+#include <errno.h>
+#include <limits.h>
+#include <mach-o/dyld.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-/* Implement this as macro so any error is returned from main.
-   Wrap with do-while to enforce normal semicolon termination. */
-#define COPYCHARS(CHARS)                     \
-do                                           \
-{                                            \
-    for (int i = 0; CHARS[i]; i++, cmdidx++) \
-    {                                        \
-        if (cmdidx >= sizeof(syscmd))        \
-            return 12; /* ENOMEM */          \
-        syscmd[cmdidx] = CHARS[i];           \
-    }                                        \
-} while (0)
+#define VISIT_MAX_ARGS 256
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
-    char const *peerPath = "/../Resources/bin/visit";
-    int cmdidx;
-    char syscmd[8192];
+    char exe_tmp[PATH_MAX];
+    char exe_real[PATH_MAX];
+    char launcher[PATH_MAX];
+    char *child_argv[VISIT_MAX_ARGS + 1];
+    char *slash;
+    uint32_t n;
+    int i;
 
-    /* initialize syscmd to all null chars */
-    cmdidx = 0;
-    while (cmdidx < sizeof(syscmd))
-        syscmd[cmdidx++] = '\0';
-    cmdidx = 0;
+    if (argc > VISIT_MAX_ARGS)
+        return E2BIG;
 
-    /* start by building from full copy of argv[0] */
-    COPYCHARS(argv[0]);
+    n = sizeof(exe_tmp);
+    if (_NSGetExecutablePath(exe_tmp, &n) != 0)
+        return ENAMETOOLONG;
 
-    /* walk backwards from end of argv[0] to first slash char */
-    while ((cmdidx >= 0) && (syscmd[cmdidx] != '/')) cmdidx--;
+    if (realpath(exe_tmp, exe_real) == 0)
+        return errno ? errno : EINVAL;
 
-    /* if we didn't actually find a slash char, cmdidx will be -1
-       and we're in a funky place. Just use "." */
-    if (cmdidx == -1)
-    {
-        cmdidx = 0;
-        COPYCHARS(".");
-    }
+    slash = strrchr(exe_real, '/');
+    if (slash == 0)
+        return EINVAL;
+    *slash = '\0';
 
-    COPYCHARS(peerPath);
+    if (snprintf(launcher, sizeof(launcher),
+                 "%s/../Resources/bin/visit", exe_real) >= (int) sizeof(launcher))
+        return ENAMETOOLONG;
 
-    /* add any command-line arguments */
-    for (int j = 1; j < argc; j++)
-    {
-        COPYCHARS(" ");
-        COPYCHARS(argv[j]);
-    }
-    
-    /* do what we came here for */
-    return system(syscmd);
+    child_argv[0] = launcher;
+    for (i = 1; i < argc; i++)
+        child_argv[i] = argv[i];
+    child_argv[argc] = 0;
+
+    execv(launcher, child_argv);
+
+    return errno ? errno : EINVAL;
 }
