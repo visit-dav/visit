@@ -11,6 +11,11 @@
 SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4-cray-gfx942)
 SET(VISITARCH linux-x86_64_gcc-13.3)
 
+### NOTE: Modified from build_visit output
+#-------
+VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
+#-------
+
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
