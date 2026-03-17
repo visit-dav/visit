@@ -81,18 +81,25 @@ if test "$post" = "true" ; then
     if test "$hasFailed" = ""; then
         echo "Updating lastpass_$testHost at `date`."
         gitHead=`git log -1 | grep "^commit" | cut -d' ' -f2`
-        # First do a "git checkout" on lastpass to restore it in case
-        # it was modified and not committed. Then do a "git pull" to
-        # update develop in case there have been an commits since the
-        # test suite run started. Then update lastpass and push to
-        # GitHub.
+        gitBranch="task/visit/`date +%Y_%m_%d`_update_lastpass"
+        # First do a git checkout of develop, do a git pull to update
+        # it, then create a branch to update lastpass, update lastpass,
+        # merge the branch into develop, push develop to the remote and
+        # finally delete the branch used to update lastpass.
+        git checkout develop
+        git pull
+        git checkout -b $gitBranch
         git checkout src/tools/dev/scripts/lastpass_$testHost
         rm -f src/tools/dev/scripts/lastpass_$testHost
         git pull
         echo "$gitHead" > src/tools/dev/scripts/lastpass_$testHost
         git add src/tools/dev/scripts/lastpass_$testHost
         git commit -m "Update the last test suite pass on $testHost."
-        git push
+        git fetch origin
+        git checkout develop
+        git merge $gitBranch
+        git push origin develop
+        git branch -D $gitBranch
     fi
 
     # Copy the results to the dashboard checkout on quartz. 
