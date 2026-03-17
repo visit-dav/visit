@@ -51,7 +51,7 @@ repo_deployment
 
 public_repo
 
-https://help.github.com/articles/creating-a-personal-access-token-for-the-command line/
+https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/
 
 The following link describes how to add your ssh key to your GitHub account.
 

@@ -270,7 +270,7 @@ It is also a good idea that you remove the CMakeCache.txt file before rerunning 
 Once your plug-in is built, it will be stored in a platform-specific subdirectory of the *.visit*  directory in your home directory (``~/.visit``).
 If you type: ``find ~/.visit -name "*.so"`` into your command window, you will be able to locate the *libE*, *libI*, and *libM* files that make up your compiled plug-in (see :numref:`Figure %s <pluginbuildresults>`).
 
-If you develop for macOS X, you should substitute ``*.dylib`` for ``*.so`` in the previous command because shared libraries on macOS X have a *.dylib* file extension instead of a *.so* file extension.
+If you develop for macOS, you should substitute ``*.dylib`` for ``*.so`` in the previous command because shared libraries on macOS have a *.dylib* file extension instead of a *.so* file extension.
 
 If you develop on Windows, the files will be in your profile directory (generally ``C:\users\<yourname>``) in a ``VisIt`` folder. The file extension is ``.dll``.
 
@@ -287,7 +287,7 @@ When VisIt_'s database server and compute engine execute, they look in your *~/.
 This means that even if you build plug-ins against the installed version of VisIt_, it will still be able to find your private plug-ins.
 
 It is recommended that while you develop your plug-ins, you only install them in your *~/.visit*  directory so other VisIt_ users will not be affected.
-However, if you develop your plug-in on macOS X, you will have to make sure that your plug-ins are installed publicly so that they can be loaded at runtime.
+However, if you develop your plug-in on macOS, you will have to make sure that your plug-ins are installed publicly so that they can be loaded at runtime.
 You can also choose to install your plug-ins publicly once you have completed development.
 To install plug-ins publicly, first remove the files that were installed to your *~/.visit*  directory by typing the ``make clean`` command in your command window.
 Next, re-run the ``xml2cmake`` program like this:

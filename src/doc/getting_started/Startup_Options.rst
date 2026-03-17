@@ -428,7 +428,7 @@ USAGE: visit [options]::
 
         -debug-malloc <args> <comp>
                              Run the component with the libMallocDebug library
-                             on macOS X systems. The libMallocDebug library
+                             on macOS systems. The libMallocDebug library
                              lets the MallocDebug application attach to the
                              instrumented application and retrieve memory
                              allocation statistics. The -debug-malloc flag

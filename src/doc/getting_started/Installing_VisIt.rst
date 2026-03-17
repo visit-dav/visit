@@ -29,7 +29,7 @@ Installing VisIt_ on platforms other than those listed here requires :ref:`build
     Thereafter, VisIt_ should start up fairly quickly (< 10 seconds).
     Depending on the platform, the delays may involve some computational effort and network latency as a variety of integrity checks are performed on all of VisIt_'s libraries and plug-ins.
 
-.. _MacOSX Installation Instructions:
+.. _macOS Installation Instructions:
 
 Installing on macOS
 ~~~~~~~~~~~~~~~~~~~

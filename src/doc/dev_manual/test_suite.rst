@@ -345,7 +345,7 @@ There are many alternative ways for both compiling and even running VisIt_ to pr
 Nonetheless, we expect results to be nearly if not perfectly identical. 
 For example, we expect VisIt_ running on two different implementations of the GL library to produce by and large the same images. 
 We expect VisIt_ running in serial or parallel to produce the same images. 
-We expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on Mac macOS. 
+We expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on macOS. 
 We expect VisIt_ running in client-server mode to produce the same images as VisIt_ running entirely remotely.
 
 In many cases, we expect outputs produced by these alternative approaches to be nearly the same but not always bit-for-bit identical. 
@@ -562,7 +562,7 @@ On some platforms, that operation may fail.
 If it does, an error message is reported informing the user to use the ``fbarchive`` target instead.
 
 The ``fbarchive`` target is a fall-back if the ``archive`` target fails.
-It uses CMake's `run a command line tool <https://cmake.org/cmake/help/v3.23/manual/cmake.1.html#run-a-command line-tool>`_ feature to run ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
+It uses CMake's `run a command line tool <https://cmake.org/cmake/help/v3.23/manual/cmake.1.html#run-a-command-line-tool>`_ feature to run ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
 Users are not *required* to use these targets but they are highly recommended to ensure optimal compression and portability of the resulting data archives.
 
 Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
@@ -695,7 +695,7 @@ When first running the test suite after new tests have been added, it is general
 ..
 .. If VisIt_ complains about an empty window, you do *not* have a Mesa stub issue and you *can* run regression tests.  If it complain about Mesa stubs, then you *do* have the issue and you *can't* run regression tests.
 ..
-.. === PIL on macOS X ===
+.. === PIL on macOS ===
 .. If you attempt to execute runtest and it gives errors indicating that it assumed the test crashed then you might have problems with your PIL installation. These manifest as an error with text like ''"The _imaging C module is not installed"'', which can be obtained if you add the '''-v''' argument to ''runtest''.
 ..
 .. PIL, as installed by build_visit, can pick up an invalid jpeg library on certain systems. If you run ''python -v'' and then try to ''import _imaging'' then Python will print out the reason that the library failed to import. This can often be due to missing jpeg library symbols. It is also possible to observe this situation even when libjpeg is available in /sw/lib but is compiled for a different target architecture (e.g. not x86_64) that what build_visit is using. The effect of this is that when _imaging.so library is linked, there is an error message saying saying something like...

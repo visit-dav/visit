@@ -98,7 +98,7 @@ When generating multiple movies with differing resolutions, the movie resolution
 VisIt_ may generate many different movies with different names but they will all share the same base filename that you provided by typing into the **Base filename** text field.
 
 Choosing email notification
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _save_movie_wizard_5:
 

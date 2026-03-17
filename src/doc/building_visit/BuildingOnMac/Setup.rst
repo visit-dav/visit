@@ -291,7 +291,7 @@ Confirming
              "arch": "x86_64"
            },
            {
-             "path": "VisIt.dmg/VisIt.app/Contents/macOS/VisIt",
+             "path": "VisIt.dmg/VisIt.app/Contents/MacOS/VisIt",
              "digestAlgorithm": "SHA-256",
              "cdhash": "68c549e036f09fc440ddfdd7b52d63f718276957",
              "arch": "x86_64"

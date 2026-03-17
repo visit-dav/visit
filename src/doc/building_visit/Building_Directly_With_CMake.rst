@@ -309,7 +309,7 @@ VISIT_STATIC : BOOL : OFF
     Build VisIt_ statically.
 
 macOS only
-"""""""""""
+""""""""""
 
 VISIT_CREATE_APPBUNDLE_PACKAGE : BOOL : OFF
     Toggles creation of DMG file with Mac App bundle with make package.
