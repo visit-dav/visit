@@ -420,19 +420,9 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 string(REPLACE ${inptNAME} "" curEXT ${realNAME})
                 # We will have a "." at the end of the string, remove it
                 string(REGEX REPLACE "\\.$" "" inptNAME ${inptNAME})
-                string(REPLACE "." ";" extList ${curEXT})
-                set(curNAME "${curPATH}/${inptNAME}")
-                # Come up with all of the possible library and symlink names
-                set(allNAMES "${curNAME}${LIBEXT}")
-                set(allNAMES ${allNAMES} "${curNAME}${LIBEXT}.1") # seems to be a standard linux-ism that isn't always covered by the foreach-loop on ${extList}
-                set(allNAMES ${allNAMES} "${curNAME}.a")
-                foreach(X ${extList})
-                    set(curNAME "${curNAME}.${X}")
-                    set(allNAMES ${allNAMES} "${curNAME}")           # Linux way
-                    set(allNAMES ${allNAMES} "${curNAME}${LIBEXT}")  # Mac way
-                endforeach()
 
-                list(REMOVE_DUPLICATES allNAMES)
+                # get all files that begin with 'inptNAME.'
+                file(GLOB allNAMES "${curPATH}/${inptNAME}.*")
 
                 # Add the names that exist to the install.
                 foreach(curNAMEWithExt ${allNAMES})
