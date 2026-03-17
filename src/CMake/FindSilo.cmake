@@ -61,7 +61,11 @@ find_package(Silo PATHS ${SILO_DIR} NO_DEFAULT_PATH)
 if(TARGET silo)
     set(SILO_FOUND true)
     set(SILO_LIB silo)
-    get_target_property(silo_loc silo IMPORTED_LOCATION_RELEASE)
+    if(WIN32)
+        get_target_property(silo_loc silo IMPORTED_IMPLIB_RELEASE)
+    else()
+        get_target_property(silo_loc silo IMPORTED_LOCATION_RELEASE)
+    endif()
     # include dirs aren't attached to the library in the export set
     target_include_directories(silo INTERFACE ${SILO_INCLUDE_DIR})
     THIRD_PARTY_INSTALL_LIBRARY(${silo_loc})
@@ -76,5 +80,7 @@ if(SILO_FOUND)
     set(PDB_LIB silo CACHE STRING "PDB library" FORCE)
     mark_as_advanced(PDB_LIB)
 
+   # for plugin vs install:
+   cmake_path(GET silo_loc FILENAME SILO_IMPORT_LIB)
 endif()
 
