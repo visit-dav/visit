@@ -39,9 +39,9 @@ What if VisIt_ opens a NETCDF file with 4D array data?
 In theory, it may be possible to apply a **Slice** operator and display a subset of its dimensions.
 In practice, this may not be possible.
 
-Whether VisIt_ handles bare array data in a desirable way depends on the database plug-in used to read it.
-The **Image** plug-in, for example, presents both zone-centered and node-centered options allowing the user to choose and even switch between treatments.
-But, the **Image** plug-in will treat a stack of images as a 3D *volume* and not a 2D array of images over time.
+Whether VisIt_ handles bare array data in a desirable way depends on the database plugin used to read it.
+The **Image** plugin, for example, presents both zone-centered and node-centered options allowing the user to choose and even switch between treatments.
+But, the **Image** plugin will treat a stack of images as a 3D *volume* and not a 2D array of images over time.
 Whether this is the correct thing to do depends on information unknown to VisIt_.
 
 These kinds of issues often arise when crafting a ``.xdmf`` file to read some bare HDF5 data into VisIt_.
@@ -329,7 +329,7 @@ Ghost zones
 ~~~~~~~~~~~
 
 Ghost zones are zones external to a domain, which correspond to zones in an adjacent domain.
-Ghost zones allow VisIt_ to ensure continuity between domains containing zonecentered data, making surfaces such as :ref:`Contour plot <contour_plot_head>` continuous across domain boundaries instead of creating surfaces with ugly gaps at the domain boundaries.
+Ghost zones allow VisIt_ to ensure continuity between domains containing zone-centered data, making surfaces such as :ref:`Contour plot <contour_plot_head>` continuous across domain boundaries instead of creating surfaces with ugly gaps at the domain boundaries.
 Ghost zones also allow VisIt_ to remove internal surfaces from the visualized data for plots such as :ref:`Pseudocolor plot <pseudocolor_plot_head>`, which only wants to keep the surfaces that are external to the model.
 Removing internal surfaces results in fewer primitives that must be rendered on the graphics card and that increases interactivity with plots.
 See :numref:`Figure %s <ghostzoneproblem>` for examples of the problems that ghost zones allow VisIt_ to fix.
@@ -625,7 +625,7 @@ That is, if you examine element 14 in the **mix_zone array**, you will know that
 The **mix_mat** array contains the material numbers of the materials that occupy a zone.
 Material numbers correspond to the names of materials (e.g. 1 = Water) and should begin at 1 and increment from there.
 The range of material numbers used may contain gaps without causing any problems in VisIt_.
-However, if you create databases that have many domains that vary over time, you will want to make sure that each domain has the same list of materials at every time step.
+However, if you create databases that have many domains that vary over time, you will want to make sure that each domain has the same list of materials at every timestep.
 It is not necessary to use a material number in the **matlist** array or in the mixed material arrays in order to include it in a material object.
 Look at element 11 in the **mix_mat** array in :numref:`Figure %s <mixedmaterialexample>`.
 Element 11 contains material 1, element 12 contains material 2, and element 13 contains material 3.

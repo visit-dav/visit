@@ -15,7 +15,7 @@ What are queries
 ~~~~~~~~~~~~~~~~
 
 Queries are a mechanism for performing data analysis. 
-Example use cases include querying for a number or curve that helps to describe the data set.
+Example use cases include querying for a number or curve that helps to describe the dataset.
 
 Experiment with queries
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,7 +58,7 @@ Variable related queries provide information about variables.
   * For 3D, it will weight by volume.
   * For axi-symmetric 2D calculations, it will weight by revolved volume.
 
-3. Note that both queries have options for doing queries over time (grayed out because we don't have a time varying data set).
+3. Note that both queries have options for doing queries over time (grayed out because we don't have a time varying dataset).
 
   * This is for time varying data and will produce a curve in a separate window.
 
@@ -142,7 +142,7 @@ Weighted Variable Sum
 4. Find and Highlight *Weighted Variable Sum* and click *Do Time Query*.
 5. Options for changing the *Starting timestep*, *Ending timestep* and *Stride* will be available.
 
-  * Note that these are 0-origin timestate indices and not cycles or times.
+  * Note that these are 0-origin time-state indices and not cycles or times.
 
 6. Click *Query*.
 
@@ -428,7 +428,7 @@ Or, "magnitude(grad)+shepardglobal" would also have worked.
 Centering compatibility
 """""""""""""""""""""""
 
-In "noise2d.silo", some variables are zone centered and some are node
+In "noise2d.silo", some variables are zone-centered and some are node
 centered. What happens if you combine these in an expression? VisIt_ will
 default to zone centering for the result. If this is not the desired
 result, use the "recenter()" expression function, where appropriate,
@@ -437,11 +437,11 @@ again using "noise2d.silo".
 
 1. Define the *Scalar mesh variable* expression "bar" as "shepardglobal+airVf".
 
-  * For reference, in "noise2d.silo", "shepardglobal" is node centered while "airVf" is zone centered.
+  * For reference, in "noise2d.silo", "shepardglobal" is node-centered while "airVf" is zone-centered.
 
 2. Do a Pseudocolor plot of "bar".
 
-  * Note that "bar" displays as a zone centered quantity.
+  * Note that "bar" displays as a zone-centered quantity.
 
 3. Now, go back to the expression and recenter "airVf" by adjusting the definition to "shepardglobal+recenter(airVf)".
 
@@ -629,7 +629,7 @@ VisIt_ defines several types of expressions automatically. For all vector
 variables from a database, VisIt_ will automatically define the associated
 magnitude expressions. For unstructured meshes, VisIt_ will automatically
 define *mesh quality* expressions. For any databases consisting of
-multiple time states, VisIt_ will define *time derivative* expressions.
+multiple time-states, VisIt_ will define *time derivative* expressions.
 This behavior can be controlled by going to VisIt_'s *Preferences* dialog
 and enabling or disabling various kinds of *automatic* expressions.
 

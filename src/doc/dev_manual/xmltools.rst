@@ -10,7 +10,7 @@ The source core for these tools is kept in ``src/tools/dev/xml/`` and ``src/tool
 
 Types Managed by XML Tools
 --------------------------
-These XML tools are designed to be aware of a number of basic data types. 
+These XML tools are designed to be aware of a number of basic datatypes. 
 These include...
 
 * ``Bool``
@@ -47,14 +47,14 @@ CMake Integration
 --------------------
 
 We rely on xml code generation to keep our State object, Attribute, and Plugin APIs up-to-date. 
-To automate the process we provide CMake targets that call our xml code generation tools for each object or plug-in registered. 
+To automate the process we provide CMake targets that call our xml code generation tools for each object or plugin registered. 
 Individual code gen targets are all wired into top level targets that allow you to apply the code gen tools to categories of code gen tasks.  
 These targets replace older tools such as regen-ajp and various regenerateatts.py scripts. 
 
 .. danger::
 
-   Keep in mind however, that these targets are only created for plug-ins that are enabled for building. 
-   Any use of the plug-in-reducing CMake vars (``VISIT_BUILD_MINIMAL_PLUGINS`` and any of the ``VISIT_SELECTED_XXX_PLUGINS``) will limit the created code gen targets to those plug-ins being built.
+   Keep in mind however, that these targets are only created for plugins that are enabled for building. 
+   Any use of the plugin-reducing CMake vars (``VISIT_BUILD_MINIMAL_PLUGINS`` and any of the ``VISIT_SELECTED_XXX_PLUGINS``) will limit the created code gen targets to those plugins being built.
 
 
 Top Level CMake Code Gen Targets
@@ -66,9 +66,9 @@ CMake Target                 Target Action
 **gen_cpp_all**              Run xml2atts on all identified objects
 **gen_python_all**           Run xml2python on all identified objects
 **gen_java_all**             Run xml2java on all identified objects
-**gen_info_all**             Run xml2info on all plug-ins
-**gen_cmake_all**            Run xml2cmake on all plug-ins
-**gen_plugin_all**           Run all applicable xml tools for all plug-ins
+**gen_info_all**             Run xml2info on all plugins
+**gen_cmake_all**            Run xml2cmake on all plugins
+**gen_plugin_all**           Run all applicable xml tools for all plugins
 =========================== ==================================================
 
 CMake Code Gen Functions
@@ -91,7 +91,7 @@ CMake Function               Target Action
 
 
 The xml2plugin and xml2avt tools are only called when you first create a new
-plug-in or object, they are not exposed here. 
+plugin or object, they are not exposed here. 
 
 Plugin Tools Helper functions in ``src/CMake/PluginMacros.cmake``:
 

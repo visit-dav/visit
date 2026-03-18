@@ -6,7 +6,7 @@ Reporting Issues
 When reporting issues, we ask users to please make every effort to collect and provide as much of the information identified below as possible.
 We understand that thorough issue reporting can be onerous.
 At the same time, being as thorough as possible in issue reporting is a key way users can reciprocate for the free and open source software projects they benefit from.
-In addition, the more information that is included in an issue report, the more likely the issue can be diagnoseed quickly and a work-around or resolution developed.
+In addition, the more information that is included in an issue report, the more likely the issue can be diagnoseed quickly and a workaround or resolution developed.
 
 For these reasons, we urge users to please provide as much of the following information as practical...
 
@@ -16,7 +16,7 @@ For these reasons, we urge users to please provide as much of the following info
 * If you are running `client/server <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/ClientServer/index.html?highlight=client>`__, then provide the above 3 items of information for both the client and the server machines.
 * If reporting issues involving the CLI and you are not running the Python installed with VisIt_, then please provide the python version information.
 * The plot(s) and operator(s), if any, being used.
-* The database plug-in type, if any, being used.
+* The database plugin type, if any, being used.
 * Any `expression(s) <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Quantitative/Expressions.html>`__ in use at the time the issue was encountered. 
 * Any `subset selection <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Subsetting/Using_the_Subset_Window.html?highlight=SIL#using-the-subset-window>`__ in effect, if any, at the time the issue was encountered.
 * The `rendering mode <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Preferences/Rendering_Options_Window.html?highlight=rendering%20mode#rendering-options-window>`__ VisIt_ was in at the time of the issue.

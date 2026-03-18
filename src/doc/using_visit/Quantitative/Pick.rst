@@ -105,7 +105,7 @@ smaller area, click the **Concise output** check box. Sometimes, not all of
 the information is relevant for your analysis so VisIt provides options to
 hide certain items in the pick output. If you don't want VisIt to display
 the name of the picked mesh, turn off the **Show Mesh Name** check box.
-If you don't want VisIt to show the time state, turn of the **Show timestep**
+If you don't want VisIt to show the time-state, turn of the **Show timestep**
 check box.
 
 Turning off incident nodes and cells in pick output
@@ -192,4 +192,4 @@ time.
 the picked *coordinates* or the picked *element* through time. While each
 of these options generates very different results, it's worth keeping in
 mind that following the picked *element* will be substantially faster when
-working with datasets with large numbers of time steps.
+working with datasets with large numbers of timesteps.

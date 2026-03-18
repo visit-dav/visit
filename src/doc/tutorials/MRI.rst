@@ -14,7 +14,7 @@ This tutorial uses the `MRI <https://visit-dav.github.io/largedata/datarchives/m
 
 1. Download `the MRI dataset <https://visit-dav.github.io/largedata/datarchives/mri>`_.
 2. Click on the *Open* icon to bring up the File open window.
-3. Navigate your file system to the folder containing "s01_anatomy_stripped.img".
+3. Navigate your filesystem to the folder containing "s01_anatomy_stripped.img".
 4. Highlight the file "s01_anatomy_stripped.img" and then click *OK*.
 
 Plotting areas of interest

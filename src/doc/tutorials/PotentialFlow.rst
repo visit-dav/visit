@@ -8,7 +8,7 @@ Potential Flow
 
 This tutorial demonstrates VisIt's features while exploring results from simple simulations of `potential based flow <https://en.wikipedia.org/wiki/Potential_flow>`_ around an obstruction, specifically an airfoil. Potential flow assumes irrotational flow. That is, there is no rotational motion in the flow, no vortices or eddies. This assumption is valid for low velocities and certain types of gases/fluids and obstructions. When the flow does involve rotation, a more complex solution involving Navier-Stokes equations is required.
 
-The potential flow solver is a mini-app developed using the `MFEM <http://www.mfem.org/>`_ finite element library. The example is available for this tutorial thanks to Aaron Fischer and Mark Miller of `LLNL <http://www.llnl.gov>`_. The data set includes VTK output files for a set of solutions where the angle of attack of the velocity varies from -5 degrees to 25 degrees.
+The potential flow solver is a mini-app developed using the `MFEM <http://www.mfem.org/>`_ finite element library. The example is available for this tutorial thanks to Aaron Fischer and Mark Miller of `LLNL <http://www.llnl.gov>`_. The dataset includes VTK output files for a set of solutions where the angle of attack of the velocity varies from -5 degrees to 25 degrees.
 
 Open the dataset
 ----------------
@@ -17,7 +17,7 @@ This tutorial uses the `potential flow <https://visit-dav.github.io/largedata/da
 
 1. `Download <https://visit-dav.github.io/largedata/datarchives/potential_flow>`_ the potential flow dataset.
 2. Click on the *Open* icon to bring up the File open window.
-3. Navigate your file system to the folder containing "potential_flow_ang_sweep.visit".
+3. Navigate your filesystem to the folder containing "potential_flow_ang_sweep.visit".
 4. Highlight the file "potential_flow_ang_sweep.visit" and then click *OK*.
 
 Plotting the mesh topology
@@ -131,7 +131,7 @@ to visualize the velocity vector field from the simulation.
 Plotting the vector field directly with glyphs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-VisIt_'s Vector plot renders a vector field at each time step as a collection
+VisIt_'s Vector plot renders a vector field at each timestep as a collection
 of arrow glyphs. This allows us to see the direction of the vectors as well
 as their magnitude. We will create a vector plot to directly view the
 simulated "v" vector field. 

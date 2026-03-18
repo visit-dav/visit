@@ -88,9 +88,9 @@ Here is a simple example of opening a database, adding a "Pseudocolor" plot and 
     DrawPlots() 
 
 To see a list of the available plots and operators when you use the Python scripting interface, use the Operator Plugins and Plot Plugins functions.
-Each of those functions returns a tuple of strings that contain the names of the currently loaded plot or operator plug-ins.
-Each plot and operator plug-in provides a function for creating an attributes object to set the plot or operator attributes.
-The name of the function is the name of the plug-in in the tuple returned by the OperatorPlugins or PlotPlugins functions plus the word "Attributes".
+Each of those functions returns a tuple of strings that contain the names of the currently loaded plot or operator plugins.
+Each plot and operator plugin provides a function for creating an attributes object to set the plot or operator attributes.
+The name of the function is the name of the plugin in the tuple returned by the OperatorPlugins or PlotPlugins functions plus the word "Attributes".
 For example, the "Pseudocolor" plot provides a function called PseudocolorAttributes.
 To set the plot attributes or the operator attributes, first use the attributes creation function to create an attributes object.
 Assign the newly created object to a variable name and set the fields in the object.

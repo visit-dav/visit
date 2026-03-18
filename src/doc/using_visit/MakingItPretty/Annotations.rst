@@ -163,7 +163,7 @@ The axis titles are the names that are drawn along each axis, indicating
 the meaning of the values shown along the axis. Normally, the names used
 for the axis titles come from the database being plotted so the axis titles
 are relevant for the displayed plots. Many of VisIt_'s database readers
-plug-ins read file formats that have no support for storing axis titles
+plugins read file formats that have no support for storing axis titles
 so VisIt_ uses default values such as: "X-Axis", "Y-Axis". VisIt_ provides
 options that allow you to override the defaults or the axis titles that
 come from the file. You can control the display of the axis titles by
@@ -272,7 +272,7 @@ The axis titles are the names that are drawn along each axis, indicating
 the meaning of the values shown along the axis. Normally, the names used
 for the axis titles come from the database being plotted so the axis titles
 are relevant for the displayed plots. Many of VisIt_'s database readers
-plug-ins read file formats that have no support for storing axis titles
+plugins read file formats that have no support for storing axis titles
 so VisIt_ uses default values such as: "X-Axis", "Y-Axis" and "Z-Axis".
 VisIt_ provides options that allow you to override the defaults or the axis
 titles that come from the file. You can control the display of the axis
@@ -560,10 +560,10 @@ The list of named values currently supported along with their *default* formats 
     +--------------------+----------+-------------------------------------+
 
 In addition, the following ``$<T>tafile<I>`` named values permit arbitrary text annotation content to be taken from a ``txt`` file with name of the form ``<T>tafile<I>.txt`` where ``<T>`` is either ``s`` (for files of string values), ``i`` (for files of integer values) or ``f`` (for files of floating point values) and ``<I>`` is either ``1``, ``2`` or ``3`` to provide 3 separate options for storing files of values used for different annotation purposes.
-Each line of such a file corresponds to a time step in a time series.
+Each line of such a file corresponds to a timestep in a time series.
 If a ``$$<T>tafile<I>`` named annotation is used, VisIt_ will search for the associated file first in the same directory containing the database, then in the directory ``/$TMPDIR/$USER`` or (``/var/tmp/$USER``) and finally in :ref:`vuser_home`.
 
-A common use case for ``$<T>tafile<I>`` named values is for animations to display the numerical values from a query over time and have those values update as the time step being displayed changes.
+A common use case for ``$<T>tafile<I>`` named values is for animations to display the numerical values from a query over time and have those values update as the timestep being displayed changes.
 
     +--------------------+----------+-------------------------------------+
     |   **Value name**   | **Fmt**  |       **Meaning**                   |

@@ -4,7 +4,7 @@ The Xdmf file format
 ====================
 
 Xdmf (eXtensible Data Model and Format) files can represent a variety of meshes including the basic simple mesh types, such as point, regular, rectilinear, curvilinear and unstructured.
-They also support multi-block meshes.
+They also support multiblock meshes.
 Xdmf files consist of an XML (eXensible Markup Language) file containing metadata that references binary data in separate files.
 The binary files can either be raw binary files or HDF5 files.
 Xdmf also supports embedding the bulk data in the XML file, but this is usually for illustrative uses or small files.
@@ -297,7 +297,7 @@ Here is the resultant Xdmf file.
 An example of a curvilinear mesh
 --------------------------------
 
-A curvilinear mesh consists of a structured mesh where the coordinates are specified as multi-dimensional arrays of values.
+A curvilinear mesh consists of a structured mesh where the coordinates are specified as multidimensional arrays of values.
 The mesh can be 2D or 3D.
 It is defined by a ``2DSMesh`` or ``3DSMesh`` topology.
 

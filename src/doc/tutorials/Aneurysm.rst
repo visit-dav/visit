@@ -16,7 +16,7 @@ This tutorial uses the `aneurysm <https://visit-dav.github.io/largedata/datarchi
 
 1. Download `the aneurysm dataset <https://visit-dav.github.io/largedata/datarchives/aneurysm>`_.
 2. Click on the *Open* icon to bring up the File open window.
-3. Navigate your file system to the folder containing "aneurysm.visit".
+3. Navigate your filesystem to the folder containing "aneurysm.visit".
 4. Highlight the file "aneurysm.visit" and then click *OK*.
 
 Plotting the mesh topology
@@ -122,14 +122,14 @@ Experiment with:
 * Setting the Pseudocolor plot limits.
 * Hiding and showing the Mesh plot.
 
-When you are done experimenting, stop animating over time steps using the
+When you are done experimenting, stop animating over timesteps using the
 *Stop* button.
 
 Query the maximum pressure over time
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can use the "pressure" field to extract the heart beat signal. We want to
-find the maximum pressure value across the mesh elements at each time step
+find the maximum pressure value across the mesh elements at each timestep
 of our dataset. VisIt_ provides a *Query over time* mechanism that allows us
 to extract this data.
 
@@ -144,7 +144,7 @@ variable for our query.
 
    The QueryOverTime attributes window.
 
-Now we can execute the *Max* query on all of our time steps and collect the
+Now we can execute the *Max* query on all of our timesteps and collect the
 results into a curve.
 
 1. Click on the Pseudocolor plot to make sure it is active.
@@ -259,7 +259,7 @@ to visualize the velocity vector field from the simulation.
 Plotting the vector field directly with glyphs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-VisIt_'s Vector plot renders a vector field at each time step as a collection
+VisIt_'s Vector plot renders a vector field at each timestep as a collection
 of arrow glyphs. This allows us to see the direction of the vectors as well
 as their magnitude. We will create a vector plot to directly view the
 simulated "velocity" vector field. 
@@ -373,7 +373,7 @@ Plotting streamlines of velocity
 
 23. Click *Apply* and *Dismiss*.
 24. Click *Draw*.
-25. Use the time slider controls to view a few time steps.
+25. Use the time slider controls to view a few timesteps.
 
 .. figure:: images/Aneurysm-Streamlines.png
 

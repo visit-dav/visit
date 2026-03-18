@@ -3,7 +3,7 @@
 Movie tools
 -----------
 
-VisIt provides a command line utility based on VisIt's Command Line Interface
+VisIt provides a command-line utility based on VisIt's Command-line Interface
 that is called ``visit -movie`` . The ``visit -movie`` movie generation utility
 is installed with all versions of VisIt and can be used to generate movies
 using session files or Python scripts as input. If you want to design movies
@@ -11,7 +11,7 @@ based on visualizations that you have created while using VisIt's GUI then you
 might also want to read about the **Save movie wizard** . If the visit command
 is in your path then typing ``visit -movie`` at the command prompt, regardless
 of the platform that you are using, will launch the ``visit -movie``
-utility. The following list provides ``visit -movie`` command line arguments:
+utility. The following list provides ``visit -movie`` command-line arguments:
 
 ``-format fmt``
     The format option allows you to set the output format for your movie. The
@@ -75,7 +75,7 @@ frames into a single movie file.
    
    Movie generation options for session files on Windows platform
 
-If you browse the Windows file system and come across a VisIt session file,
+If you browse the Windows filesystem and come across a VisIt session file,
 which ends with a ``.session`` extension, you can right click on the file and 
 choose from several movie generation options. The movie generation options make 
 one-click movie generation possible so you don't have to master the arguments 

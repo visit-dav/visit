@@ -152,24 +152,24 @@ Controlling major components being built
 """"""""""""""""""""""""""""""""""""""""
 
 VISIT_DBIO_ONLY : BOOL : OFF
-    Toggles building of only visitconvert and engine plug-ins.
+    Toggles building of only visitconvert and engine plugins.
 
 VISIT_ENGINE_ONLY : BOOL : OFF
-    Toggles building of only the compute engine and its plug-ins.
+    Toggles building of only the compute engine and its plugins.
 
 VISIT_SERVER_COMPONENTS_ONLY : BOOL : OFF
-    Build only vcl, mdserver, engine and their plug-ins.
+    Build only vcl, mdserver, engine and their plugins.
 
 VISIT_ENABLE_LIBSIM : BOOL : ON
     Toggles building of libsim.
 
 
-Controlling plug-ins being built
-""""""""""""""""""""""""""""""""
+Controlling plugins being built
+"""""""""""""""""""""""""""""""
 
 VISIT_BUILD_ALL_PLUGINS : BOOL : OFF
-    Toggles the building of all plug-ins.
-    When turned on the following optional plug-ins will be added to the build:
+    Toggles the building of all plugins.
+    When turned on the following optional plugins will be added to the build:
 
     Database: PICS_Tester, Rect
 
@@ -177,11 +177,11 @@ VISIT_BUILD_ALL_PLUGINS : BOOL : OFF
 
     Plot: Topology
 
-    Note: the list of optional plug-ins is subject to change.
+    Note: the list of optional plugins is subject to change.
 
 VISIT_BUILD_MINIMAL_PLUGINS : BOOL : OFF
-    Toggles the building of a minimal set of database, operator, and plot plug-ins.
-    When turned on, only the following plug-ins will be built:
+    Toggles the building of a minimal set of database, operator, and plot plugins.
+    When turned on, only the following plugins will be built:
 
     Database: Curve2D, RAW, VTK, PICS_Tester
 
@@ -189,22 +189,22 @@ VISIT_BUILD_MINIMAL_PLUGINS : BOOL : OFF
 
     Plot: Curve, Mesh, Pseudocolor
 
-    Note: the list of minimal plug-ins is subject to change.
+    Note: the list of minimal plugins is subject to change.
 
 VISIT_SELECTED_DATABASE_PLUGINS : STRING
-    ';' separated list of database plug-ins to build, eg: VTK;Silo
+    ';' separated list of database plugins to build, eg: VTK;Silo
 
-     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for database plug-ins.
+     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for database plugins.
 
 VISIT_SELECTED_OPERATOR_PLUGINS : STRING
-    ';' separated list of operator plug-ins to build, eg: Slice;Lineout;Transform
+    ';' separated list of operator plugins to build, eg: Slice;Lineout;Transform
 
-     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for operator plug-ins.
+     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for operator plugins.
 
 VISIT_SELECTED_PLOT_PLUGINS : STRING
-    ';' separated list of plot plug-ins to build, eg: Mesh;Pseudocolor
+    ';' separated list of plot plugins to build, eg: Mesh;Pseudocolor
 
-     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for plot plug-ins.
+     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for plot plugins.
 
 
 Controlling extra tools being built
@@ -262,7 +262,7 @@ CMAKE_INSTALL_PREFIX : PATH : *default is system dependent*
     Specifies the location for files installed with *make install.*
 
 IGNORE_THIRD_PARTY_LIB_PROBLEMS : BOOL : OFF
-    Ignore problems finding requested third party libraries.
+    Ignore problems finding requested third-party libraries.
 
 VISIT_CONFIG_SITE : FILEPATH : ${VISIT_SOURCE_DIR}/config-site/<localhost>.cmake
     Location of a config-site cmake file that has settings to control the build, including locations of third-party libraries.
@@ -285,7 +285,7 @@ VISIT_FORTRAN : BOOL : OFF
     Toggles building of Fortran example programs.
 
 VISIT_INSTALL_THIRD_PARTY : BOOL : OFF
-    Install VisIt_'s 3rd part I/O libraries and includes to permit plug-in development.
+    Install VisIt_'s 3rd part I/O libraries and includes to permit plugin development.
 
 VISIT_JAVA : BOOL : OFF
     Build VisIt_'s Java client interface.
@@ -332,5 +332,5 @@ VISIT_WINDOWS_APPLICATION : BOOL : ON
     Toggles creation of Windows-style applications with no console.
 
 VISIT_WINDOWS_DIR : PATH : 
-    Specifies the location of the pre-built third party library binaries.
+    Specifies the location of the prebuilt third-party library binaries.
     See :ref:`Location of windowsbuild directory<Location of windowsbuild Directory>` for default locations.

@@ -25,8 +25,8 @@ The official VTK file format descriptions can be found at the `VTK website <http
 
     Reading VTK files into VisIt_ requires *strict* file extension matching.
     For example, if you have a pvtu file, it must have the ``.pvtu`` extension or VisIt_ will not be able to open and read the file.
-    This is true even when using VisIt_'s feature to explicitly specify the plug-in to use to open the file.
-    For example, if you know ``file.foo`` is a VTK file and try to open it using VisIt_'s VTK plug-in, it will fail because the extension does not match a known extension for VTK files.
+    This is true even when using VisIt_'s feature to explicitly specify the plugin to use to open the file.
+    For example, if you know ``file.foo`` is a VTK file and try to open it using VisIt_'s VTK plugin, it will fail because the extension does not match a known extension for VTK files.
     For VisIt_ to read VTK files, the files *must have* the correct VTK extensions.
 
 .. _data_into_visit_vtk_structure:
@@ -44,7 +44,7 @@ Binary files
 ------------
 
 Binary files contain binary coordinates and fields.
-This is any data where a length and data type are specified.
+This is any data where a length and datatype are specified.
 The binary data follows immediately after the newline character of the previous ASCII keyword and parameter sequence.
 Binary data must be written in *big endian* format.
 If you are on a *little endian* system, you will need to byte swap the data before writing it.
@@ -116,7 +116,7 @@ The structured grid section has the following structure. ::
 `nx`, `ny`, `nz` are the number of dimensions in the X- Y- and Z-directions.
 `nPoints` is the number of points.
 `nPoints` must be consistent with the dimensions.
-Supported data types in VisIt_ are `float` and `double`.
+Supported datatypes in VisIt_ are `float` and `double`.
 
 Rectilinear grid
 """"""""""""""""
@@ -134,7 +134,7 @@ The rectilinear grid section has the following structure. ::
 
 `nx`, `ny`, `nz` are the number of dimensions in the X- Y- and Z-directions.
 `nx`, `ny`, `nz` in the dimensions statement must be constient with the ones in the coordinates statement.
-Supported data types in VisIt_ are `float` and `double`.
+Supported datatypes in VisIt_ are `float` and `double`.
 
 Polydata
 """"""""
@@ -172,7 +172,7 @@ The polydata grid section has the following structure. ::
     ...
     nn in1 in2 ... innn
 
-Supported data types in VisIt_ are `float` and `double`.
+Supported datatypes in VisIt_ are `float` and `double`.
 The vertices, lines, polygons and triangle_strips sections may or may not be present.
 The vertices, lines, polygons and triangle_strips sections may be in any order.
 `xn`, `yn` and `zn` are the coordinates of the nth point.
@@ -203,7 +203,7 @@ The unstructured grid section has the following structure. ::
     ...
     tn
 
-Supported data types in VisIt_ are `float` and `double`.
+Supported datatypes in VisIt_ are `float` and `double`.
 The cells and cell_types sections may be in any order.
 `xn`, `yn` and `zn` are the coordinates of the nth point.
 `n1`, `n2` and `nm` are the number of indices for each cell.
@@ -261,7 +261,7 @@ The scalar field section has the following structure. ::
     LOOKUP_TABLE default
     s1 s2 ... sN
 
-The scalar field section starts with a single line with the keyword `SCALARS` followed by the name of the field followed by the data type followed by the number of values per scalar.
+The scalar field section starts with a single line with the keyword `SCALARS` followed by the name of the field followed by the datatype followed by the number of values per scalar.
 The number of values per scalar is optional, and if present, must be `1`.
 Next comes the lookup table information.
 The lookup table information consists of a single line with the keyword `LOOKUP_TABLE` followed by the keyword `default`.
@@ -281,7 +281,7 @@ The vector field section has the following structure. ::
     ...
     vn1 vn2 vn3
 
-The vector field section starts with a single line with the keyword `VECTORS` followed by the name of the field followed by the data type.
+The vector field section starts with a single line with the keyword `VECTORS` followed by the name of the field followed by the datatype.
 Next come the vector values.
 The vector values consist of three values per point, regardless of whether it is for a 2D or 3D mesh.
 The vector values can be split up into lines in an arbitrary manner.
@@ -303,7 +303,7 @@ The tensor field section has the following structure. ::
     tn21 tn22 tn23
     tn31 tn32 tn33
 
-The tensor field section starts with a single line with the keyword `TENSORS` followed by the name of the field followed by the data type.
+The tensor field section starts with a single line with the keyword `TENSORS` followed by the name of the field followed by the datatype.
 Next come the tensor values.
 The tensor values consist of nine values per point, regardless of whether it is for a 2D or 3D mesh.
 The tensor values can be split up into lines in an arbitrary manner.
@@ -331,7 +331,7 @@ Field data has the following general format. ::
 
 The field data section begins with a single line that starts with the keywords `FIELD` and `FieldData` followed by the number of fields.
 Next come the fields.
-Each field starts with a single line with the field name, the number of components, the number of tuples and the data type.
+Each field starts with a single line with the field name, the number of components, the number of tuples and the datatype.
 
 .. _data_into_visit_vtk_conventions:
 
@@ -430,7 +430,7 @@ The line below contains the title.
 .. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 2-2
 
-The line below contains the data type, which in this case is ASCII.
+The line below contains the datatype, which in this case is ASCII.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 3-3

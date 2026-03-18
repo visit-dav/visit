@@ -4,7 +4,7 @@ File Open Window
 ---------------------
 
 The **File Open Window** allows you to select files and simulations by browsing 
-file system either on your local computer or the remote computer of your 
+filesystem either on your local computer or the remote computer of your 
 choice. You can open the **File Open Window** by choosing the **Open** option 
 from the **Sources** section of the main GUI panel (shown in 
 :numref:`Figure %s<sources_image>`), or by Choosing the **Open File** option 
@@ -43,7 +43,7 @@ able to access files. Also note that VisIt may prompt you for a password to
 authenticate your access to the remote computer. To set up password-less 
 access to remote computers, refer to :ref:`SettingUpPasswordlessSSH`.
 
-Once a database server is running on the remote computer, its file system 
+Once a database server is running on the remote computer, its filesystem 
 appears in the directory and file lists. The host name for each computer you 
 access is added to the list of recently visited computers so that you may 
 switch easily to computers you have recently accessed. If you installed VisIt 
@@ -106,7 +106,7 @@ Virtual databases
 ~~~~~~~~~~~~~~~~~
 
 A virtual database is a time-varying database that VisIt artificially creates 
-out of smaller, single time step databases that have related filenames. 
+out of smaller, single timestep databases that have related filenames. 
 Virtual databases allow you to access time-varying data without having to 
 first create a ``.visit`` ``:ref:`Need a reference to .visit files`` file. The 
 files that are grouped into a virtual database are determined by the file 
@@ -149,7 +149,7 @@ Scientific simulations often write out new data files as they run. The
 **Refresh** button makes VisIt re-read the current directory to pick up any 
 new files added by a running simulation. If the active source is a virtual 
 database whose definition was changed by refreshing the file list, then VisIt 
-will close and reopen the active source so information about new time states 
+will close and reopen the active source so information about new time-states 
 is made available.
 
 Clearing out recently visited paths

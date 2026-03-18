@@ -2,7 +2,7 @@ VisIt CLI Events
 ================
 
 This chapter shows a table with all events that the VisIt GUI could
-potentially generate. Different plug-ins create different events, so the
+potentially generate. Different plugins create different events, so the
 list will depend on the user configuration. The list in this section is
 generated from a call to the *GetCallbackNames()* function and will
 therefore list just the events that are applicable to the user that

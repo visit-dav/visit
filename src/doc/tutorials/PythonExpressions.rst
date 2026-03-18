@@ -90,7 +90,7 @@ Now you are ready to modify the script.
 Python Expression Example 1
 ---------------------------
 
-This example adds two cell centered variables.
+This example adds two cell-centered variables.
 It demonstrates accessing multiple variables and performing simple operations with them to generate a result.
 
 Here is the example script.

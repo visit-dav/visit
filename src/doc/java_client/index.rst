@@ -10,7 +10,7 @@ Disclaimers:
 
     VisIt_ will not draw its plots inside of your Java application.
     VisIt_'s separate viewer window will be activated and controlled from your application.
-    VisIt_ will not be able to plot data from your Java application without going through the file system.
+    VisIt_ will not be able to plot data from your Java application without going through the filesystem.
 
 The Java client for a particular version of VisIt_ is available as a separate tarball on our `downloads page <https://visit-dav.github.io/visit-website/releases-as-tables>`_.
 Look for ``jvisit<version>.tar.gz``, e.g. ``jvisit3.3.0.tar.gz``.
@@ -195,7 +195,7 @@ The ``OpenClient`` method takes 3 arguments: ``clientName``, ``clientProgram``, 
 The ``clientName`` is the internal name that will be used to identify the client inside of VisIt_.
 You can pass any name that you want for this.
 The ``clientProgram`` argument is a string that identifies the executable for your program.
-The ``clientArgs`` argument lets you pass command line arguments to your program when it is started.
+The ``clientArgs`` argument lets you pass command-line arguments to your program when it is started.
 When you call ``OpenClient()``, the VisIt_ viewer will attempt to launch the specified VisIt_ client and then the client will be attached to VisIt_ and can control the VisIt_ viewer.
 Any number of VisIt_ clients can be connected to the VisIt_ viewer.
 
@@ -218,7 +218,7 @@ When you open a file, you get a list of variables in the metadata object.
 You must match up the variable types supported by a plot and the variables from the metadata in order to determine which plots can accept which variables from the database.
 This example program demonstrates a method for doing this comparison.
 
-.. note:: The Java implementation does not offer a ``GetVariableTypes`` method in the plug-in interface as it should.
+.. note:: The Java implementation does not offer a ``GetVariableTypes`` method in the plugin interface as it should.
    This is an oversight that may be corrected in a future version of VisIt_.
    In the meantime, this program's ``GetVariableTypes`` method can be used to fulfill the same purpose.
 

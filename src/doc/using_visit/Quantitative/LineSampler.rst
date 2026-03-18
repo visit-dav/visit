@@ -231,10 +231,10 @@ Toroidal angle sampling
 
 Time sampling
 
-11. When sampling one can sample just the current time step or across
+11. When sampling one can sample just the current timestep or across
     multiple times steps which becomes the X axis.
 
-12. Time step - The start, stop, and stride for time sampling.
+12. Timestep - The start, stop, and stride for time sampling.
 
 .. _LineSampler_SamplingTab:
 

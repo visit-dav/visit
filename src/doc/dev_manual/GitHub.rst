@@ -24,7 +24,7 @@ The following top level directories exist in the visit repository.
 Setting Up Git LFS
 ------------------
 
-Git LFS (Large File Storage) is a mechanism to help revision control large files efficiently with git. Instead of storing large files in the repo, LFS provides an extension that stores small text files with metadata in the repo and the actual files on another server. These metadata files are called "pointer" files. We use LFS for binary data including our test data tar files, source code for third party libraries, and regression test baseline images.
+Git LFS (Large File Storage) is a mechanism to help revision control large files efficiently with git. Instead of storing large files in the repo, LFS provides an extension that stores small text files with metadata in the repo and the actual files on another server. These metadata files are called "pointer" files. We use LFS for binary data including our test data tar files, source code for third-party libraries, and regression test baseline images.
 
 Git LFS is not part of the standard git client. See https://git-lfs.github.com/ for how to obtain Git LFS.
 

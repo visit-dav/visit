@@ -6,12 +6,12 @@ Scripting
 .. toctree::
        :maxdepth: 2
 
-This section describes the VisIt_ Command Line Interface (CLI).
+This section describes the VisIt_ Command-line Interface (CLI).
 
-Command line interface overview
+Command-line interface overview
 -------------------------------
 
-VisIt_ includes a rich a command line interface that is based on Python 2.7.
+VisIt_ includes a rich a command-line interface that is based on Python 2.7.
 
 There are several ways to use the *CLI*:
 
@@ -139,7 +139,7 @@ This example extends the "Using all of VisIt_'s Building Blocks" example by
    :language: python
    :lines: 10-
 
-Rendering each time step of a dataset to a movie
+Rendering each timestep of a dataset to a movie
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example assumes the "aneurysm.visit" is already opened.

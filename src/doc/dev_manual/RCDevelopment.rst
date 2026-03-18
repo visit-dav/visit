@@ -56,7 +56,7 @@ protocol files are any XML files and their associated auto-generated header file
 *state* objects (any class derived from ``AttributeSubject``) passed between VisIt_
 components (e.g. ``viewer`` and ``engine_par``) such as all XML and header files in
 ``src/common/state`` and ``src/avt/DBAtts/MetaData``. Files impacting public APIs include
-any XML or header files used by database, plot or operator plug-ins as well as
+any XML or header files used by database, plot or operator plugins as well as
 ``src/avt/Database/Database`` and ``src/avt/Database/Formats``.
 
 The rest of the section will go through the steps of the most common case

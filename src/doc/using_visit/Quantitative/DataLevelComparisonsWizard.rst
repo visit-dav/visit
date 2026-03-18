@@ -35,7 +35,7 @@ relative locations (e.g. which database) of the donor variable and target
 mesh.
 
     #. Donor variable and target mesh are in the *same* database.
-    #. Donor variable and target mesh are from different time states of the
+    #. Donor variable and target mesh are from different time-states of the
        *same* database.
     #. Donor variable and target mesh are in wholly different databases.
 
@@ -76,7 +76,7 @@ databases with the currently *active* database in the list selected. If another
 database is desired, the user may either select it from among the pull-down list
 of currently open databases or, if the database is not yet open, press the
 ellipsis (3 dots) button next to the database selection list to open a file
-browser and navigate to the desired database in the file system as shown in
+browser and navigate to the desired database in the filesystem as shown in
 :numref:`Figure %s <dlc_3c>`
 
 .. _dlc_3c:

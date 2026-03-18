@@ -119,10 +119,10 @@ Here is an example of the contents of the generated ``run_visit_test_suite.sh`` 
 Once the test suite has run, the results can be found in the ``output/html`` directory.
 There, you will find an ``index.html`` file entry that you can use to browse all the results.
 
-If you want to restrict the amount of parallelism used in running the test suite you can do so with the ``-n`` command line option.
+If you want to restrict the amount of parallelism used in running the test suite you can do so with the ``-n`` command-line option.
 By default, the test suite will be run using all the cores on your system.
 We have found that on some systems, running more than one test at a time may result in failures.
-To work around this issue you can run one test at a time. ::
+To workaround this issue you can run one test at a time. ::
 
     ./run_visit_test_suite.sh -n 1
 
@@ -131,7 +131,7 @@ The list of tests must be the last entries on the command line. ::
 
     ./run_visit_test_suite.sh -n 1 tests/databases/silo.py tests/databases/xdmf.py
 
-There are a number of additional command line options to the test suite.
+There are a number of additional command-line options to the test suite.
 ``./run_visit_test_suite.sh -help`` will give you details about these options.
 
 Accessing nightly regression test results
@@ -154,7 +154,7 @@ For example, the difference between ``parallel`` and ``scalable,parallel,icet`` 
 In ``scalable,parallel,icet`` mode, it is done, in parallel, on the engine and images from each processor are composited with `IceT <https://icet.sandia.gov>`_.
 Typically, the entire test suite is run in each mode specified by the regression test policy.
 
-The mode is specified with the ``-m`` command line option.
+The mode is specified with the ``-m`` command-line option.
 For example, to run in ``scalable,parallel,icet`` mode use: ::
 
     ./run_visit_test_suite.sh -n 1 -m "scalable,parallel,icet"
@@ -182,7 +182,7 @@ c) optionally adding any necessary input data files to the top-level ``data`` di
 
 .. warning::
 
-   Steps b) and c) can almost never be avoided for tests involving new database plug-ins.
+   Steps b) and c) can almost never be avoided for tests involving new database plugins.
    However, in almost all other cases, steps b) and c) can and probably should be avoided.
    Instead, developers are encouraged to adopt new practices and use new testing features where tests *and* their expected outcomes are programmatically included in *just* the ``.py``, so there is no need for separate *baseline* files and/or new data files.
 
@@ -416,7 +416,7 @@ Avg. Diff (``avgdiff``) :
 
 Fuzzy Matching Thresholds
 """""""""""""""""""""""""
-There are some command line arguments to run tests that control *fuzzy* matching.
+There are some command-line arguments to run tests that control *fuzzy* matching.
 When computed results match bit-for-bit with the baseline, a **PASS** is reported and it is colored green in the HTML reports. 
 When a computed result fails the bit-for-bit match but passes the fuzzy match, a **PASS** is reported on the terminal and it is colored yellow in the HTML reports.
 
@@ -439,10 +439,10 @@ The command line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with
 Testing on Non-Baseline Configurations
 """"""""""""""""""""""""""""""""""""""
 
-When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command line options will be very useful.
+When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command-line options will be very useful.
 
-For numerical textual results, there is also a ``--numdiff`` command line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
-The command line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
+For numerical textual results, there is also a ``--numdiff`` command-line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
+The command-line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
 
 When specified on the command line to a test suite run, the above tolerances wind up being applied to *all* test results computed during a test suite run. 
 It is also possible to specify these tolerances in specific tests by passing them as arguments, for example ``Test(pixdiff=4.5)`` and ``TestText(numdiff=0.01)``, in the methods used to check test outputs.
@@ -476,7 +476,7 @@ Tips on writing regression tests
 +===================================+====================================================================+
 |tests/faulttolerant/savewindow.py  |  * uses python exceptions                                          |
 +-----------------------------------+--------------------------------------------------------------------+
-| tests/databases/itaps.py          |  * uses OpenDatabase with specific plug-in                         |
+| tests/databases/itaps.py          |  * uses OpenDatabase with specific plugin                          |
 |                                   |  * uses SIL restriction via names of sets                          |
 +-----------------------------------+--------------------------------------------------------------------+
 |tests/databases/silo.py            |  * uses OpenDatabase with virtual database and a specific timestep |
@@ -511,7 +511,7 @@ Here is an example workflow to rebaseline a set of results that were originally 
 
    .. figure:: images/rebase_cases.png
 
-#. To learn even more `specific details <Fuzzy Matching Thresholds>`__ about each failing case, click into them to find details which will appear something like what is shown below...
+#. To learn even more :ref:`specific details <Fuzzy Matching Thresholds>` about each failing case, click into them to find details which will appear something like what is shown below...
 
    .. figure:: images/rebase_details.png
 
@@ -546,7 +546,7 @@ Once ``rebase.py`` is used, don't forget to push the changes in a new PR back to
 
 Test data archives
 ------------------
-Testing VisIt_ requires input data sets.
+Testing VisIt_ requires input datasets.
 Because of the wide variety of data formats and readers VisIt_ supports, we have a wide variety of `test data archives <https://github.com/visit-dav/visit/tree/develop/data>`_.
 A tar-compatible archive format using the *highest* and *commonly* available compression are the two basic requirements for data archives in our development workflow.
 
@@ -625,12 +625,12 @@ For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesti
 Diagnosing pluginVsInstall failures
 -----------------------------------
 pluginsVsInstall test output is generated in the ``current/plugins`` subdirectory of the test results location.
-There will be a further subdirectory for each type of plug-in: databasesVsInstall, operatorsVsInstall and plotsVsInstall.
-The output consists of text files containing the name of each plug-in tested and either ``success`` or one of the following errors:
+There will be a further subdirectory for each type of plugin: databasesVsInstall, operatorsVsInstall and plotsVsInstall.
+The output consists of text files containing the name of each plugin tested and either ``success`` or one of the following errors:
 
 * ``No installed package.`` Indicates a failure in install of VisIt.
-* ``cmake configure failed`` Failure with cmake to configure the plug-in for build.
-* ``make failed`` Failure with the build of the plug-in.
+* ``cmake configure failed`` Failure with cmake to configure the plugin for build.
+* ``make failed`` Failure with the build of the plugin.
 * ``cmake executable could not be found``   (rare, just for completeness)
 * ``make executable could not be found``  (rare, just for completeness)
 
@@ -644,7 +644,7 @@ The most likely culprit for errors is missing information in one of the followin
 
 Regression testing on Windows
 -----------------------------
-Running the regression suite manually on Windows is a good way to detect Windows-specific run-time errors that may have been inadverently introduced.
+Running the regression suite manually on Windows is a good way to detect Windows-specific runtime errors that may have been inadverently introduced.
 
 A dos-batch script (``run_visit_test_suite.bat``) is generated in the ``<build>/test`` directory, and is similar to the shell script created on Linux.
 The generated script turns on ``--lessverbose`` mode so that output can be viewed while the test is running. 
@@ -739,7 +739,7 @@ When first running the test suite after new tests have been added, it is general
 ..
 .. [[Category: Developer documentation]]
 ..
-.. The ultimate aim of compiler warning testing is to improve the quality of the code by averting ''would-be'' problems. However, in the presence of an already robust, run-time test suite, compiler warnings more often than not alert us to ''potential'' problems and not necessarily any real bugs that manifest for users.
+.. The ultimate aim of compiler warning testing is to improve the quality of the code by averting ''would-be'' problems. However, in the presence of an already robust, runtime test suite, compiler warnings more often than not alert us to ''potential'' problems and not necessarily any real bugs that manifest for users.
 ..
 .. Totally eliminating compiler warnings is a good goal. But, it is important to keep in mind that that goal is really only ''indirectly'' related to improving code quality. It's also important to keep in mind that all warnings are not equal nor are all compilers equal to the task of detecting and reporting them. For example, an ''unused variable'' warning in a code block may be a potential code maintenance nuisance but will not in any way manifest as a bug for a user.
 ..

@@ -10,7 +10,7 @@ of different platforms that may serve as a starting point for your system.
 
 In each of the scenarios below, the result is a distribution file that can
 be used with ``visit-install`` to install VisIt_. Furthermore, in all these
-scenarios, ``build_visit`` was used to build the third party libraries and
+scenarios, ``build_visit`` was used to build the third-party libraries and
 the initial config site file. VisIt_ was then manually built as outlined
 by doing an out of source build. The advantage to building VisIt_ manually
 is that you have more control over the build and its easier to troubleshoot
@@ -20,7 +20,7 @@ restart the build simply by deleting the build directory.
 Kickit, a RedHat Enterprise Linux 7 system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``build_visit`` was run to generate the third party libraries. In this
+``build_visit`` was run to generate the third-party libraries. In this
 case all the required and optional libraries build without problem, so
 ``--required --optional`` could be used. Also, in this case there wasn't
 a system MPI installed so ``--mpich`` was specified to use MPICH. The
@@ -32,7 +32,7 @@ rendering.
    ./build_visit3_0_1 --required --optional --mpich --osmesa --no-visit \
    --thirdparty-path /usr/gapps/visit/thirdparty_shared/3.0.1 --makeflags -j4
 
-This built the third party libraries and generated a ``kickit.cmake``
+This built the third-party libraries and generated a ``kickit.cmake``
 config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
 was changed to
 
@@ -63,10 +63,10 @@ VisIt_ was then manually built with the following steps.
 Quartz, a Linux X86_64 TOSS3 cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``build_visit`` was run to generate the third party libraries. In this
+``build_visit`` was run to generate the third-party libraries. In this
 case the system MPI was used, so information about the system MPI had to
 be provided with environment variables and the ``--parallel`` flag had
-to be specified. In this case, all the required and optional third party
+to be specified. In this case, all the required and optional third-party
 libraries build without problem, so ``--required --optional`` could be
 used. Also, the system OpenGL implementation was outdated and ``--mesagl``
 had to be included to provide an OpenGL implementation suitable for
@@ -83,7 +83,7 @@ Uintah reader.
    --no-visit --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/toss3 \
    --makeflags -j16
 
-This built the third party libraries and generated a ``quartz386.cmake``
+This built the third-party libraries and generated a ``quartz386.cmake``
 config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
 was changed to
 
@@ -127,11 +127,11 @@ VisIt_ was then manually built with the following steps.
 Lassen, a Linux Power9 BlueOS cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``build_visit`` was run to generate the third party libraries. In this
+``build_visit`` was run to generate the third-party libraries. In this
 case the system MPI was used, so information about the system MPI had to
 be provided with environment variables and the ``--parallel`` flag had
-to be specified. In this case, a few of the optional third party libraries
-do not build on the system so all the desired optional third party libraries
+to be specified. In this case, a few of the optional third-party libraries
+do not build on the system so all the desired optional third-party libraries
 had to be explicitly listed. Also, the system OpenGL implementation was
 outdated and ``--mesagl`` had to be included to provide an OpenGL
 implementation suitable for VisIt_. Lastly, the Uintah library was built
@@ -153,7 +153,7 @@ to enable building the Uintah reader.
     --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos \
     --makeflags -j16
 
-This built the third party libraries and generated a ``lassen708.cmake``
+This built the third-party libraries and generated a ``lassen708.cmake``
 config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
 was changed to
 
@@ -244,10 +244,10 @@ were changed to
 
 to build VTK with the linker from binutils 2.32.
 
-``build_visit`` was run to generate the third party libraries. In this
+``build_visit`` was run to generate the third-party libraries. In this
 case the system MPI was used, so information about the system MPI had to
 be provided with environment variables and the ``--parallel`` flag had
-to be specified. In this case, all the required and optional third party
+to be specified. In this case, all the required and optional third-party
 libraries built without problem, so ``--required --optional`` could be
 used. Also, the system OpenGL implementation was outdated and ``--mesagl``
 had to be included to provide an OpenGL implementation suitable for
@@ -264,7 +264,7 @@ Uintah reader.
     --no-visit --thirdparty-path /project/projectdirs/visit/thirdparty_shared/3.0.1 \
     --makeflags -j8
 
-This built the third party libraries and generated a ``cori08.cmake``
+This built the third-party libraries and generated a ``cori08.cmake``
 config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
 was changed to
 
@@ -329,11 +329,11 @@ module loading CMake 3.9.2.
 
    module load cmake/3.9.2
 
-``build_visit`` was run to generate the third party libraries. In this
+``build_visit`` was run to generate the third-party libraries. In this
 case the system MPI was used, so information about the system MPI had to
 be provided with environment variables and the ``--parallel`` flag had
-to be specified. In this case, a few of the optional third party libraries
-do not build on the system so all the desired optional third party libraries
+to be specified. In this case, a few of the optional third-party libraries
+do not build on the system so all the desired optional third-party libraries
 had to be explicitly listed. Also, the system OpenGL implementation was
 outdated and ``--mesagl`` had to be included to provide an OpenGL
 implementation suitable for VisIt_. Lastly, the Uintah library was built
@@ -355,7 +355,7 @@ to enable building the Uintah reader.
        --thirdparty-path /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1 \
        --makeflags -j8
 
-This built the third party libraries and generated a ``login1.cmake``
+This built the third-party libraries and generated a ``login1.cmake``
 config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
 was changed to
 
@@ -431,10 +431,10 @@ link dynamically by setting a couple of environment variables.
    export XTPE_LINK_TYPE=dynamic
    export CRAYPE_LINK_TYPE=dynamic
 
-``build_visit`` was run to generate the third party libraries. In this
+``build_visit`` was run to generate the third-party libraries. In this
 case the system MPI was used, so information about the system MPI had to
 be provided with environment variables and the ``--parallel`` flag had
-to be specified. In this case, all the required and optional third party
+to be specified. In this case, all the required and optional third-party
 libraries built except for Sphinx and Mili, so ``--no-sphinx --no-mili``
 in addition to ``--required --optional`` could be used. Also, the system
 OpenGL implementation was outdated and ``--mesagl`` had to be included to
@@ -451,7 +451,7 @@ provide an OpenGL implementation suitable for VisIt_.
     --thirdparty-path /usr/projects/views/visit/thirdparty_shared/3.1.3 \
     --makeflags -j6
 
-This built the third party libraries and generated a ``tr-fe2.cmake``
+This built the third-party libraries and generated a ``tr-fe2.cmake``
 config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
 was changed to
 

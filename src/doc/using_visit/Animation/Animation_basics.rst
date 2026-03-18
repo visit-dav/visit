@@ -4,9 +4,9 @@ Animation basics
 ----------------
 
 Animation is used mainly for looking at how scientific databases evolve over
-time. Databases usually consist of many discrete time steps that contain the
+time. Databases usually consist of many discrete timesteps that contain the
 state of a simulation at a specific instant in time. Creating visualizations
-using just one time step from the database does not reveal time-varying
+using just one timestep from the database does not reveal time-varying
 behavior. To be most effective, visualizations must be created for all time
 steps in the database.
 
@@ -14,9 +14,9 @@ The .visit file
 ~~~~~~~~~~~~~~~
 
 Since scientific databases usually consist of dozens to thousands of time
-states. Those time states can reside in any number of actual files. Some
-database file formats support multiple time states in a single file while other
-formats require each time state to be located in its own file. When all time
+states. Those time-states can reside in any number of actual files. Some
+database file formats support multiple time-states in a single file while other
+formats require each time-state to be located in its own file. When all time
 states are in their own file, it is important for VisIt to know which files
 comprise the database. VisIt attempts to use automatic file grouping to
 determine which files are in a database but sometimes it is better if you
@@ -64,39 +64,39 @@ To view a flipbook animation, open a time-varying database, create plots as
 usual, and click the **Play** button in the **GUI** shown in :numref:`Figure %s<animation_buttons>`
 highlighted in red or
 in the visualization window's **Animation Toolbar** . A flipbook animation
-repeatedly cycles through all of the time states in the database displaying
-the plots for the current time state in the visualization window. The result
+repeatedly cycles through all of the time-states in the database displaying
+the plots for the current time-state in the visualization window. The result
 is an animation that allows you to see the database evolve over time. The 
 **VCR** buttons, shown in :numref:`Figure %s<animation_buttons>` , allow 
 you to control how a flipbook animation plays. The animation controls are 
 are also used for controlling keyframe animations. Clicking the **Play** 
 button causes VisIt to advance the database timestep until the **Stop**
-button is clicked. As the plots are generated for each database time state,
+button is clicked. As the plots are generated for each database time-state,
 the animation proceeds only as fast as the compute engine can generate plots.
 As described in the :ref:`animation_window_section` section, you have the option of caching 
-the geometry for each time state so animations will play smoothly according 
-to the animation playback speed once the plots for each database time state have 
+the geometry for each time-state so animations will play smoothly according 
+to the animation playback speed once the plots for each database time-state have 
 been generated.
 
-Setting the time state
+Setting the time-state
 """"""""""""""""""""""
 
-There are several ways that you can set the time state for an animation.
+There are several ways that you can set the time-state for an animation.
 You can use the **VCR** controls to play animations or step through them one
 state at a time. You can also use the **Time slider** to access a specific
-animation time state. To set the animation time state using the **Time slider**
-, click on the time slider and drag horizontally to a new time state. The
-time state to which you drag it will be displayed in the **Cycle/Time** text
+animation time-state. To set the animation time-state using the **Time slider**
+, click on the time slider and drag horizontally to a new time-state. The
+time-state to which you drag it will be displayed in the **Cycle/Time** text
 field as you drag the time slider so you will know when to let go of the
-**Time slider** . Once you release the mouse button at a new time state,
+**Time slider** . Once you release the mouse button at a new time-state,
 VisIt will calculate the visualized plots using the data at the specified
-time state.
+time-state.
 
-If you prefer more precise control over the time state, you can type a cycle
+If you prefer more precise control over the time-state, you can type a cycle
 or time into the **Cycle/Time** text field to make VisIt jump to the closest
-cycle or time for the active database. You can also highlight a new time state
+cycle or time for the active database. You can also highlight a new time-state
 for the active database in the **Selected files** list and then click the
-**Replace** button to make VisIt change the time state for the visualization.
+**Replace** button to make VisIt change the time-state for the visualization.
 
 .. _animation_window_section:
 
@@ -124,7 +124,7 @@ the database states that make up the animation. Rather than using states
 per second as a measurement for the playback speed, VisIt uses a simple
 scale of slower to faster. To set the animation playback speed, use the
 **Animation speed** slider. Moving the slider to the left and slower setting
-slows down animations so they change time states once every few seconds.
+slows down animations so they change time-states once every few seconds.
 Moving the slider to the right and faster setting will make VisIt play the
 animation as fast as the host graphics hardware allows.
 
@@ -133,7 +133,7 @@ Pipeline caching
 
 When pipeline caching is enabled, VisIt tries to retain all of the geometric
 primitives that are used to draw a plot. This greatly speeds up animations
-once the geometry for all time states is cached. The downside to pipeline
+once the geometry for all time-states is cached. The downside to pipeline
 caching is that it can consume large amounts of memory. Pipeline caching is
 enabled by default, but sometimes it makes sense to turn it off. The deciding
 factors are the size of the database, the number of animation frames, and the
@@ -144,7 +144,7 @@ the **Pipeline caching** check box in the **Animation Window** .
 Animation playback mode
 """""""""""""""""""""""
 
-The animation playback mode determines how VisIt gets to the next time state
+The animation playback mode determines how VisIt gets to the next time-state
 after playing until the end of the animation. There are three animation
 playback modes: looping, play once, and swing. VisIt loops animations by
 default so once the end of the animation is reached, it starts playing from the

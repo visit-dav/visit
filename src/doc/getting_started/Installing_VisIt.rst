@@ -3,7 +3,7 @@
 Installing and Starting VisIt_
 ------------------------------
 
-Pre-built binaries for VisIt_ are provided on the following platforms:
+Prebuilt binaries for VisIt_ are provided on the following platforms:
 
 * |fs*nix| (fully supported)
 * |ps*nix| (partially supported)
@@ -27,7 +27,7 @@ Installing VisIt_ on platforms other than those listed here requires :ref:`build
     This is normal.
     If it occurs, it should occur only on the *first* time a fresh installation is started.
     Thereafter, VisIt_ should start up fairly quickly (< 10 seconds).
-    Depending on the platform, the delays may involve some computational effort and network latency as a variety of integrity checks are performed on all of VisIt_'s libraries and plug-ins.
+    Depending on the platform, the delays may involve some computational effort and network latency as a variety of integrity checks are performed on all of VisIt_'s libraries and plugins.
 
 .. _macOS Installation Instructions:
 
@@ -52,7 +52,7 @@ Alternatively, VisIt_ can be run on macOS from the ``Terminal`` using a command 
 
 .. note::
 
-   Running from the ``Terminal`` may work around issues accessing some folders on local storage or code signing and notarization.
+   Running from the ``Terminal`` may workaround issues accessing some folders on local storage or code signing and notarization.
 
 The ``visit-install`` script can also be used to install tarball packaged macOS binaries.
 For this case follow the Linux installation instructions. 

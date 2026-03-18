@@ -13,7 +13,7 @@ A fifth kind of subset, *Enumerated*, is also supported and provides some
 additional generality but cannot be used in combination with the other four
 or even with other *Enumerated* subsets.
 
-Data producers as well as the database plug-ins that read data into VisIt
+Data producers as well as the database plugins that read data into VisIt
 often have flexibility in deciding how to utilize these various kinds
 of subsets in representing their data. We describe each of these kinds of
 subsets and constraints in their use below.

@@ -64,7 +64,7 @@ vector fields. Each operator provides the following options:
 
 .. warning::
 
-    Each option below besides "Default" requires the respective third party
+    Each option below besides "Default" requires the respective third-party
     library.
 
 Default
@@ -151,15 +151,15 @@ time-varying vector field producing streamlines or pathlines, respectively. A
 streamline is a path rendered by an integrator that uses the same vector field
 for the entire integration. A pathline uses the vector field that is in-step
 with the integrator, so that as the integrator steps through time, it uses data
-from the vector field at each new time step. Pathline options are:
+from the vector field at each new timestep. Pathline options are:
     
 Override starting time
-    Instead of starting with the current time step, utilize another time for
+    Instead of starting with the current timestep, utilize another time for
     the start time.
       
 Interpolation over time
     Interpolate the integral curve with a static mesh for all time or with a
-    varying mesh at each time step. The mesh is typically static, but this
+    varying mesh at each timestep. The mesh is typically static, but this
     cannot always be assumed and should be verified for each dataset before
     use.
 

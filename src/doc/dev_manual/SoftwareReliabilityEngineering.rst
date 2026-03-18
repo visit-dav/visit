@@ -16,12 +16,12 @@ itself such as
 
     * A botched *managed* VisIt_ installation.
     * An update to host profiles to address site access changes.
-    * A missing database reader plug-in.
+    * A missing database reader plugin.
 
 or, the underlying computing infrastructure upon which VisIt_ depends such as
 
     * An incompatible graphics driver.
-    * A downed file system or network.
+    * A downed filesystem or network.
     * A trip in the security environment.
 
 Typically, such inquiries originate from users in the midst of using VisIt_
@@ -389,7 +389,7 @@ following activities...
 
   * Answering a question or referring a user to documentation.
   * Diagnosing the issue.
-  * Developing a work-around for users.
+  * Developing a workaround for users.
   * Developing a reproducer for developers.
 
     * This may include any relevant user data files as well as approval, where
@@ -422,7 +422,7 @@ Serious Incidents and Postmortems
 
 Serious incidents are those that have significant productivity consequences for
 multiple users and/or require an inordinate amount of resources (either time or
-people or both) to diagnose, work-around and/or ultimately properly correct.
+people or both) to diagnose, workaround and/or ultimately properly correct.
 
 When such incidents occur, it is a best practice to spend some time considering
 adjustments in processes that can help to avoid repeating similar issues in
@@ -522,7 +522,7 @@ requiring classified computing, the **Primary** should
 Scheduling and Load Balancing
 -----------------------------
 
-To balance the work load of SRE, the responsibilities of the
+To balance the workload of SRE, the responsibilities of the
 **Primary** and **Backup** are rotated, round-robin among team members. For
 example, on a team of eight developers, each would serve as **Primary** only one
 week in eight or 12.5% of their time. However, a number of factors complicate

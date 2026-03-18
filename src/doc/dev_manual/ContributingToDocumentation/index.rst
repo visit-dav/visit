@@ -10,9 +10,12 @@ If your build is configured to build the manual, you can use the command ``make 
 Otherwise, if you have `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_, you can try manually building locally in the ``src`` directory using the command::
 
     cd src/doc
-    sphinx-build -b html . _build -a
+    sphinx-build -E -W --keep-going -b html . _build -a
 
-The ``-a`` forces a re-build of everything.
+The ``-E`` forces the current build to ignore any cached environment from a previous build.
+The ``-W`` turns all warnings into errors.
+The ``--keep-going`` forces it to continue past errors so that you can see all errors.
+The ``-a`` forces a rewrite of all output files.
 Remove it when you are constantly revising and rebuilding.
 You can then browse the root of the manual by pointing your browser to :file:`./_build/index.html`.
 
@@ -414,6 +417,32 @@ the above automatically. However, that involves implementing the above
 steps as a ``cmake`` program and involves more effort than available when
 this was implemented.
 
+Hyphenated phrases...or not
+---------------------------
+
+* Words we do not hyphenate:
+  * dataset, datatype, filesystem, metadata, multiblock, multidimensional, multiresolution, nonlinear, plugin, prebuilt, precompute, preinstalled, rebuild, redo, reopen, restart, rewrite, runtime, timestamp, timestep, workaround, workflow, workload.
+
+* Words we do hyphenate:
+  * command-line, when used as adjective as in *It is not a command-line option.* Otherwise, command line.
+  * block-structured, cell-centered, edge-centered, face-centered, high-level, low-level, multi-domain node-centered, patch-based, point-centered, problem-sized, third-party, time-state, vertex-centered, zone-centered.
+
+* Words we treat as separate words
+  * command line, when used as a noun as in *You can do this only via the VisIt_ command line.*
+  * staggered grid.
+
+There is a set of hyphenation rules and a script to apply them in ``src/doc/fix_rst_hyphenation.py``.
+These rules can be applied to all ``.rst`` files in the ``src/doc`` subtree to fix any hyphenation issues.
+Adding new words to these lists involves adding a rule to ``src/doc/fix_rst_hyphenation.py``.
+The ``sphinx-build`` process includes running this script as an extension to detect hyphenation errors.
+If there are any, you will see an error ::
+
+    Sphinx error:
+    Hyphenation consistency check failed.
+
+    Fix by running:
+    python3 fix_rst_hyphenation.py .
+
 .. _contributing_linkcheck:
 
 Link checking using Sphinx linkcheck builder
@@ -447,8 +476,8 @@ All of the above is automated with the ``linkcheck`` make target also.
 Things To Consider Going Forward
 --------------------------------
 
-* Decide what to do about compound words such as *timestep*, *time step* or
-  *time-step*. There are many instances to consider such as *keyframe*,
+* Decide what to do about compound words such as *timestep*, *timestep* or
+  *timestep*. There are many instances to consider such as *keyframe*,
   *checkbox*, *pulldown*, *submenu*, *sublauncher*, etc.
 * Need to populate glossary with more VisIt_ specific terms such as...
 

@@ -4,7 +4,7 @@ The Silo file format
 ====================
 
 If you are writing a conversion utility or if you have a simulation code written in C, C++, or Fortran then writing out Silo_ files is a good choice for getting your data into VisIt_.
-One reason for this is that among all of VisIt_'s plug-ins, the Silo_ plug-in is likely one of the most advanced in terms of the various data features it supports.
+One reason for this is that among all of VisIt_'s plugins, the Silo_ plugin is likely one of the most advanced in terms of the various data features it supports.
 This section will illustrate how to use the Silo_ library to write out various types of scientific data.
 Since the Silo_ library provides bindings for multiple languages, including C, Fortran, and Python, the source code examples that demonstrate a particular topic will be given in more than one programming language, when appropriate.
 One goal of this section is to provide examples that are complete enough so that they can be readily adapted into working source code.
@@ -81,7 +81,7 @@ Using Silo on Windows
 """""""""""""""""""""
 
 When you build an application using the Silo_ library on Windows, you can use the precompiled Silo_ DLL and import library that comes with the VisIt_ development distribution for Windows: ``visit_windowsdev_x.y.x.zip``, where ``x.y.z`` refers to the version, like ``3.3.3``.
-The development distribution for Windows includes pre-built binaries (``.dlls`` and import libraries) for the Third party libraries upon which VisIt_ depends, including Silo_.
+The development distribution for Windows includes prebuilt binaries (``.dlls`` and import libraries) for the Third-party libraries upon which VisIt_ depends, including Silo_.
 Simply unzip the distribution to whichever location best suits your needs.
 The binaries are located in the ``windowsbuild/MSVC<VERSION>`` folder, with ``<VERSION>`` being the version of Visual Studio they were built with (eg ``MSVC2017``).
 
@@ -96,7 +96,7 @@ Note that you must configure your program to use a Multithreaded DLL version of 
 Inspecting Silo files
 ~~~~~~~~~~~~~~~~~~~~~
 
-Unless it was explicitly *disabled* in the configuration, Silo_ includes a command line utility called *browser* that can be used to textually browse the contents of Silo_ files much like the Linux shell enables browsing a the Linux file system.
+Unless it was explicitly *disabled* in the configuration, Silo_ includes a command-line utility called *browser* that can be used to textually browse the contents of Silo_ files much like the Linux shell enables browsing a the Linux filesystem.
 To run the browser, type ``browser`` into a terminal window followed by the name of a Silo_ file that you want to inspect.
 Once the browser application opens the Silo_ file, type ``ls`` to see the contents of the Silo_ file, ``cd`` to move between Silo_ directories within the file, etc.
 From there, typing the name of any of the objects shown in the object listing will print information about that object to the console.
@@ -184,10 +184,10 @@ Dealing with time
 ~~~~~~~~~~~~~~~~~
 
 A Silo_ file is a flexible container for storing many types of data.
-Silo_'s ability to store data hierarchically in directories can allow you to store multiple time states of your simulation data within a single data file.
-However, Silo_ is most often used to store one time state per Silo_ file (or ensemble of files in a parallel context)
-VisIt_'s Silo_ plug-in is primarily designed and used to work with Silo_ files in this modality.
-Consequently, when writing data, programs that use Silo_ will write a new Silo_ file for each time step.
+Silo_'s ability to store data hierarchically in directories can allow you to store multiple time-states of your simulation data within a single data file.
+However, Silo_ is most often used to store one time-state per Silo_ file (or ensemble of files in a parallel context)
+VisIt_'s Silo_ plugin is primarily designed and used to work with Silo_ files in this modality.
+Consequently, when writing data, programs that use Silo_ will write a new Silo_ file for each timestep.
 By convention, the new file will contain an index indicating either the simulation cycle or a simple integer counter.
 
 .. code-block:: c
@@ -222,7 +222,7 @@ By convention, the new file will contain an index indicating either the simulati
   }
 
 The above code listing will write out Silo_ files with names such as: ``output0000.silo``, ``output0001.silo``, ``output0002.silo``, ...
-Each file contains the data from a particular simulation time state.
+Each file contains the data from a particular simulation time-state.
 It may seem like the data are less related because they are stored in different files but the fact that the files are related in time is subtly encoded in the name of each of the files.
 When VisIt_ recognizes a pattern in the names of the files such as ``output????.silo``, in this case, VisIt_ automatically recognizes the files as a time-varying database (e.g. a *virtual* database).
 If you choose names for your Silo_ files that cannot be grouped by recognizing a
@@ -1017,7 +1017,7 @@ Example for writing zone-centered variables:
 Both of the previous code examples produce a data file with 4 different scalar arrays.
 Note that in both of the previous code examples, the same ``DBPutQuadvar1`` function (or ``dbputqv1`` in Fortran) function was used to write out data arrays of differing types.
 
-The ``DBPutQuadvar1`` function can also be used to write out node centered variables.
+The ``DBPutQuadvar1`` function can also be used to write out node-centered variables.
 There are two differences that you must observe when writing a node-centered variable as opposed to writing a zone-centered variable.
 First, the data array that you pass to the ``DBPutQuadvar1`` function must be larger by 1 in each of its dimensions and you must pass ``DB_NODECENT`` instead of ``DB_ZONECENT``.
 
@@ -1072,7 +1072,7 @@ For zone-centered variables, you must have (NX- 1)*(NY-1)*(NZ-1) data values and
 .. figure:: images/var_quadvar3d.png
   :scale: 40%
 
-  Zone centered variable in 3D and a node-centered varaible in 3D (shown with a partially transparent plot)
+  Zone-centered variable in 3D and a node-centered varaible in 3D (shown with a partially transparent plot)
 
 Example for writing variables on a 3D mesh:
 
@@ -1312,7 +1312,7 @@ After having written some variables to a Silo_ file, you've no doubt learned tha
 When you pass data to a Silo_ function, you also must pass a flag that tells Silo_ how to interpret the data stored in your data array.
 For example, if you have single precision floating point data then you would tell Silo_ to traverse the data as such using the ``DB_FLOAT`` type flag in the function call to ``DBPutQuadvar1``.
 Many of the functions in the Silo_ library require a type flag to indicate the type of data being passed to Silo_.
-In fact, even the functions to write mesh coordinates can accept different data types.
+In fact, even the functions to write mesh coordinates can accept different datatypes.
 This means that you can use double-precision to specify your mesh coordinates, which can be immensely useful when dealing with very large or very small objects.
 
 
@@ -1429,9 +1429,9 @@ Remember that storing pieces of a single mesh is commonplace when parallel proce
 Plotting each of the smaller files individually in VisIt_ is not neccessary when a master file has been generated since plotting the multimesh object from the master file will cause VisIt_ to plot each of its constituent meshes.
 The code that will follow shows how to use Silo_'s ``DBPutMultimesh`` function to write out a multimesh object that reassembles meshes from many domain files into a whole mesh.
 
-The list of meshes or items in a multi-object generally take the form: ``<path>:<item>`` where ``<path>`` is the file system path to the Silo_ file containing the object and ``<item>`` is the path of the object in the Silo_ file. The colon character, ``:`` disambiguates these two parts of the object's name.
-Note that the path may be specified as a relative or absolute path using names valid for the file system containing the master file.
-However, we strongly recommend using only relative paths so the master file does not reference directories that exist only on one file system.
+The list of meshes or items in a multi-object generally take the form: ``<path>:<item>`` where ``<path>`` is the filesystem path to the Silo_ file containing the object and ``<item>`` is the path of the object in the Silo_ file. The colon character, ``:`` disambiguates these two parts of the object's name.
+Note that the path may be specified as a relative or absolute path using names valid for the filesystem containing the master file.
+However, we strongly recommend using only relative paths so the master file does not reference directories that exist only on one filesystem.
 Using relative paths makes the master files much more portable since they allow the data files to be moved.
 The path may also refer to subdirectories within the file being referenced since Silo_ files may contain directories that help to organize related data.
 The following examples assume that the domain files will exist in the same directory as the master file since the path includes only the names of the domain files.
@@ -1508,11 +1508,11 @@ Example for writing a multimesh:
         end
 
 Sometimes it can be advantageous to have each processor write its files to a unique subdirectory (e.g. proc-0, proc-1, proc-2, ...).
-You can also choose for each processor to write its files to a common directory so all files for a given time step are contained in a single place (e.g. cycle0000, cycle0001, cycle0002, ...).
-Generally, you will want to tailor your strategy to the strengths of your file system to spread the demands of writing files across as many I/O nodes as possible in order to increase throughput.
+You can also choose for each processor to write its files to a common directory so all files for a given timestep are contained in a single place (e.g. cycle0000, cycle0001, cycle0002, ...).
+Generally, you will want to tailor your strategy to the strengths of your filesystem to spread the demands of writing files across as many I/O nodes as possible in order to increase throughput.
 The organization strategies mentioned so far are only suggestions and you will have to determine the optimum method for storing domain files on your computer system.
-Moving your domain files to subdirectories can make it easier to navigate your file system and can provide benefits later such as VisIt_ not having to check permissions, etc on so many files.
-Code to create the list of mesh names where each processor writes its data to a different subdirectory that contains all files for a given time step might look like the following:
+Moving your domain files to subdirectories can make it easier to navigate your filesystem and can provide benefits later such as VisIt_ not having to check permissions, etc on so many files.
+Code to create the list of mesh names where each processor writes its data to a different subdirectory that contains all files for a given timestep might look like the following:
 
 .. code-block:: c
 
@@ -1624,6 +1624,6 @@ Note that if you use the ``"EMPTY"`` keyword in a multivar object then the same 
   DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, NULL);
 
 
-For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating file system paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multi-block objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multi-block objects.
+For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating filesystem paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multiblock objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multiblock objects.
 You can find many more examples of various features of Silo by browsing source code in either `VisIt's <https://github.com/visit-dav/visit/tree/develop/src/tools/data/datagen>`__ or `Silo's <https://github.com/LLNL/Silo/tree/main/tests>`__ test suites or the `test data files <https://github.com/search?q=repo%3Avisit-dav%2Fvisit%20path%3Asilo*.tar.xz&type=code>`__ used in VisIt_'s testing.
 

@@ -4,7 +4,7 @@ File Locations
 --------------
 VisIt_ manages various files associated with its operation.  In most cases where
 VisIt_ saves or loads data from files, the user is presented with a file browser
-dialog and can explicitly choose arbitrary locations on the file system to look
+dialog and can explicitly choose arbitrary locations on the filesystem to look
 for or store files. However, this is not universally true. The locations and
 names of some files are *prescribed*. In this section we provide some additional
 details about various file locations and names involved with the operation of
@@ -72,7 +72,7 @@ role in effecting behavior in client/server mode.
 * Purpose: Holds user settings from **Preferences Window**
   plus numerous other settings such as default attributes for operators and plots,
   default database read options, default color tables, as well as the
-  enabled/disabled state of various plot, operator and database plug-ins.
+  enabled/disabled state of various plot, operator and database plugins.
 * Written: When user :ref:`saves settings <How to Save Settings>`.
 * Read: On VisIt_ startup but this can be overridden by the ``-noconfig``
   command line :ref:`startup option <StartupOptions>`.
@@ -146,7 +146,7 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 `Custom Plugin <http://visitusers.org/index.php?title=Building_plugins_using_CMake>`_ Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): There are separate directories in ``VUSER_HOME``
-  for *private*, user-specific operator, database and plot plug-ins. On UNIX/macOS,
+  for *private*, user-specific operator, database and plot plugins. On UNIX/macOS,
   these are
 
   * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/operators/``
@@ -160,24 +160,24 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
   * ``VUSER_HOME/databases/``
   * ``VUSER_HOME/plots/``
 
-  If the ``-public`` command line option to ``xml2cmake`` is used when building
-  a plug-in and the user performing this operation has appropriate permissions,
-  the plug-in will instead be installed to the VisIt_ *public* installation
+  If the ``-public`` command-line option to ``xml2cmake`` is used when building
+  a plugin and the user performing this operation has appropriate permissions,
+  the plugin will instead be installed to the VisIt_ *public* installation
   directory for *all* users of that installation. If a previous version of
-  this plug-in exists there, it will be overwritten by this operation.
+  this plugin exists there, it will be overwritten by this operation.
 
-  A single plug-in involves a set of related files for the mdserver, engine and
+  A single plugin involves a set of related files for the mdserver, engine and
   those common all VisIt_ components. For example, on UNIX the files for the
-  Silo_ database plug-in are ``libESiloDatabase_par.so``,
+  Silo_ database plugin are ``libESiloDatabase_par.so``,
   ``libESiloDatabase_ser.so``, ``libISiloDatabase.so``, and
   ``libMSiloDatabase.so``.
-* Purpose: Directories to hold custom plug-in shared library files.
+* Purpose: Directories to hold custom plugin shared library files.
 * Written: When the user makes and installs or copies the shared libraries for
-  a custom plug-in.
+  a custom plugin.
 * Read: On VisIt_ startup, all :ref:`enabled <Preferences_Enabling_Plugins>`
-  plug-in *info* files are read. The remaining plug-in files are read only when
-  the plug-in is actually used. In client/server mode, it is important to ensure
-  that the same plug-in files have been installed on *both* the client and the
+  plugin *info* files are read. The remaining plugin files are read only when
+  the plugin is actually used. In client/server mode, it is important to ensure
+  that the same plugin files have been installed on *both* the client and the
   server.
 * Format: Binary shared library files in the machine format of the host
   architecture.
@@ -233,7 +233,7 @@ other than ``VUSER_HOME``. These are briefly described in this section.
   select a database file to open at startup. VisIt_ uses the
   :ref:`file's extension <Supported File Types>` to decide what
   `type of database <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_
-  the file is and then select the appropriate plug-in to read it.
+  the file is and then select the appropriate plugin to read it.
 * Format: Varies by 
   `database type <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_.
 

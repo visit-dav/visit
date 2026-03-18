@@ -32,9 +32,9 @@ return type : CLI_return_t
     only works when you are using it to activate a database that you have
     previously opened. You do not need to use this function unless you
     frequently toggle between more than one database when making plots or
-    changing time states. While the OpenDatabase function can also be used
+    changing time-states. While the OpenDatabase function can also be used
     to set the active database, the ActivateDatabase function does not have any
-    side effects that would cause the time state for the new active database
+    side effects that would cause the time-state for the new active database
     to be changed.
 
 
@@ -67,12 +67,12 @@ AddArgument
 
 
 argument : string
-    A string object that is added to the viewer's command line argument list.
+    A string object that is added to the viewer's command-line argument list.
 
 
 **Description:**
 
-    The AddArgument function is used to add extra command line arguments to
+    The AddArgument function is used to add extra command-line arguments to
     VisIt's viewer. This is only useful when VisIt's Python interface is
     imported into a stand-alone Python interpreter because the AddArgument
     function must be called before the viewer is launched. The AddArgument
@@ -137,7 +137,7 @@ return type : CLI_return_t
     The AddOperator function adds a VisIt operator to the active plots. The
     operator argument is a string containing the name of the operator to be
     added to the active plots. The operatore name must be a valid operator
-    plug-in name that is a member of the tuple returned by the OperatorPlugins
+    plugin name that is a member of the tuple returned by the OperatorPlugins
     function. The all argument is an integer that determines
     whether or not the operator is applied to all plots. If the all argument is
     not provided, the operator is only added to active plots. Once the
@@ -173,7 +173,7 @@ AddPlot
 
 
 plotType : string
-    The name of a valid plot plug-in type.
+    The name of a valid plot plugin type.
 
 variableName : string
     A valid variable name for the open database.
@@ -199,7 +199,7 @@ return type : CLI_return_t
 
     The AddPlot function creates a new plot of the specified type using a
     variable from the open database. The plotType argument is a string that
-    contains the name of a valid plot plug-in type which must be a member of the
+    contains the name of a valid plot plugin type which must be a member of the
     string tuple that is returned by the PlotPlugins function.
     The variableName argument is a string that contains the name of a variable
     in the open database. After the AddPlot function is called, a new plot is
@@ -283,7 +283,7 @@ return type : CLI_return_t
 
     The AlterDatabaseCorrelation method alters an existing database
     correlation. A database correlation is a VisIt construct that relates the
-    time states for two or more databases in some way. You would use the
+    time-states for two or more databases in some way. You would use the
     AlterDatabaseCorrelation function if you wanted to change the list of
     databases used in a database correlation or if you wanted to change how the
     databases are related - the correlation method. The name argument is a
@@ -417,8 +417,8 @@ return type : CLI_return_t
 
     Calculations are often run at the same time as some of the preliminary
     visualization work is being performed. That said, you might be visualizing
-    the leading time states of a database that is still being created. If you
-    want to force VisIt to add any new time states that were added since you
+    the leading time-states of a database that is still being created. If you
+    want to force VisIt to add any new time-states that were added since you
     opened the database, you can use the CheckForNewStates function. The name
     argument must contain the name of a database that has been opened before.
 
@@ -1023,7 +1023,7 @@ return type : CLI_return_t
 **Description:**
 
     The ConstructDataBinning function creates a data binning function for the active
-    plot. Data Binnings place data from a data set into bins and reduce that data.
+    plot. Data Binnings place data from a dataset into bins and reduce that data.
     They are used to either be incorporated with expressions to make new derived
     quantities or to be directly visualized.
 
@@ -1342,7 +1342,7 @@ return type : CLI_return_t
 **Description:**
 
     The CreateDatabaseCorrelation function creates a database correlation,
-    which is a VisIt construct that relates the time states for two or more
+    which is a VisIt construct that relates the time-states for two or more
     databases in some way. You would use the CreateDatabaseCorrelation function
     if you wanted to put plots from more than one time-varying database in the
     same vis window and then move them both through time in some synchronized
@@ -1354,7 +1354,7 @@ return type : CLI_return_t
     to be involved in the database query. The method argument allows you to
     specify a database correlation method.
     Each database correlation has its own time slider that can be used to set
-    the time state of databases that are part of a database correlation.
+    the time-state of databases that are part of a database correlation.
     Individual time-varying databases have their own trivial database
     correlation, consisting of only 1 database. When you call the
     CreateDatabaseCorrelation function, VisIt creates a new time slider with
@@ -1451,7 +1451,7 @@ DatabasePlugins
 
 
 host : string
-    The name of the host for which we want database plug-ins.
+    The name of the host for which we want database plugins.
 
 return type : dictionary
     The DatabasePlugins functions returns a dictionary.
@@ -1460,7 +1460,7 @@ return type : dictionary
 **Description:**
 
     The DatabasePlugins function returns a dictionary containing the names of
-    the database plug-ins for the specified host. If no host is given, localhost
+    the database plugins for the specified host. If no host is given, localhost
     is assumed. The dictionary contains two keys: "host" and "plugins".
 
 
@@ -2279,7 +2279,7 @@ frame : integer
 **Description:**
 
     The DeletePlotDatabaseKeyframe function removes a database keyframe from a
-    specific plot. A database keyframe represents the database time state that
+    specific plot. A database keyframe represents the database time-state that
     will be used at a given animation frame when VisIt's keyframing mode is
     enabled. The plotIndex argument is a zero-based integer that is used to
     identify a plot in the plot list. The frame argument is a zero-based
@@ -2977,9 +2977,9 @@ Flatten
 
 return type : dictionary
     Flatten returns a dictionary that contains different keys depending
-    on the data. If the output contains node centered data then there
+    on the data. If the output contains node-centered data then there
     will be 'nodeColumnNames' and 'nodeTable' entries. If the output contains
-    zone centered data then there will be 'zoneColumnNames' and 'zoneTable'
+    zone-centered data then there will be 'zoneColumnNames' and 'zoneTable'
     entries. If the query results in no output data, then an empty dictionary
     is returned. The 'Table' entries are compatible with numpy via the
     'numpy.asarray()' function.
@@ -3064,8 +3064,8 @@ return type : string
 
     VisIt can support having multiple time sliders when you have opened more
     than one time-varying database. You can then use each time slider to
-    independently change time states for each database or you can use a
-    database correlation to change time states for all databases
+    independently change time-states for each database or you can use a
+    database correlation to change time-states for all databases
     simultaneously. Every time-varying database has a database correlation and
     every database correlation has its own time slider. If you want to query to
     determine which time slider is currently the active time slider, you can
@@ -3329,17 +3329,17 @@ GetDatabaseNStates
   GetDatabaseNStates() -> integer
 
 return type : CLI_return_t
-    Returns the number of time states in the active database or 0 if there is
+    Returns the number of time-states in the active database or 0 if there is
     no active database.
 
 
 **Description:**
 
-    GetDatabaseNStates returns the number of time states in the active
+    GetDatabaseNStates returns the number of time-states in the active
     database, which is not the same as the number of states in the active time
     slider. Time sliders can have different lengths due to database
     correlations and keyframing. Use this function when you need the actual
-    number of time states in the active database.
+    number of time-states in the active database.
 
 
 **Example:**
@@ -3473,7 +3473,7 @@ GetDefaultFileOpenOptions
 
 
 pluginName : string
-    The name of a plug-in.
+    The name of a plugin.
 
 return type : dictionary
     Returns a dictionary containing the options.
@@ -3482,7 +3482,7 @@ return type : dictionary
 **Description:**
 
     GetDefaultFileOpenOptions returns the current options used to open new
-    files when a specific plug-in is triggered.
+    files when a specific plugin is triggered.
 
 
 **Example:**
@@ -3635,7 +3635,7 @@ GetExportOptions
 
 
 pluginName : string
-    The name of a plug-in.
+    The name of a plugin.
 
 return type : dictionary
     Returns a dictionary containing the options.
@@ -3644,7 +3644,7 @@ return type : dictionary
 **Description:**
 
     GetExportOptions returns the current export options used to export
-    files when a specific plug-in is triggered.
+    files when a specific plugin is triggered.
 
 
 **Example:**
@@ -4191,7 +4191,7 @@ db : string
     The name of the database for which to return metadata.
 
 ts : integer
-    An optional integer indicating the time state at which to open the database.
+    An optional integer indicating the time-state at which to open the database.
 
 return type : avtDatabaseMetaData object
     The GetMetaData function returns an avtDatabaseMetaData object.
@@ -4548,13 +4548,13 @@ GetPreferredFileFormats
   GetPreferredFileFormats() -> tuple of strings
 
 return type : tuple of strings
-    The GetPreferredFileFormats returns the current list of preferred plug-ins.
+    The GetPreferredFileFormats returns the current list of preferred plugins.
 
 
 **Description:**
 
     The GetPreferredFileFormats method is a way to get the list of
-    file format reader plug-ins which are tried before any others.
+    file format reader plugins which are tried before any others.
     These IDs are full IDs, not just names, and are tried in order.
 
 
@@ -5705,7 +5705,7 @@ LocalNameSpace
 
 **Description:**
 
-    The LocalNameSpace function tells the VisIt module to add plug-in functions
+    The LocalNameSpace function tells the VisIt module to add plugin functions
     to the global namespace when the VisIt module is imported into a
     stand-alone Python interpreter. This is the default behavior when using
     VisIt's cli program.
@@ -5747,7 +5747,7 @@ return type : string
     the covers. Sometimes filenames are given to VisIt in the traditional 8.3
     format and must be expanded to long format before it is possible to open
     them. If you ever find that you need to do this conversion, such as when
-    you process command line arguments, then you can use the LongFileName
+    you process command-line arguments, then you can use the LongFileName
     function to return the longer filename.
 
 
@@ -5877,7 +5877,7 @@ newFrame : integer
 **Description:**
 
     MovePlotDatabaseKeyframe moves a database keyframe for a specified plot to
-    a new animation frame, which changes the list of database time states that
+    a new animation frame, which changes the list of database time-states that
     are used for each animation frame when VisIt is in keyframing mode.
 
 
@@ -6240,7 +6240,7 @@ return type : CLI_return_t
 **Description:**
 
     The NumOperatorPlugins function returns the number of available operator
-    plug-ins.
+    plugins.
 
 
 **Example:**
@@ -6267,7 +6267,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The NumPlotPlugins function returns the number of available plot plug-ins.
+    The NumPlotPlugins function returns the number of available plot plugins.
 
 
 **Example:**
@@ -6326,7 +6326,7 @@ hostName : string
     The name of the computer on which to start the engine.
 
 args : tuple
-    Optional tuple of command line arguments for the engine.
+    Optional tuple of command-line arguments for the engine.
     Alternative arguments - MachineProfile object to load with
     OpenComputeEngine call
 
@@ -6385,12 +6385,12 @@ timeIndex : integer
     assumed.
 
 dbPluginIndex : string
-    An optional string containing the name of the plug-in to use. Note that
-    this string must also include the plug-in's version number (with few
-    exceptions, almost all plug-ins' version numbers are 1.0). Note also
-    that you must capitalize the spelling identically to what the plug-in's
+    An optional string containing the name of the plugin to use. Note that
+    this string must also include the plugin's version number (with few
+    exceptions, almost all plugins' version numbers are 1.0). Note also
+    that you must capitalize the spelling identically to what the plugin's
     GetName() method returns. For example, "XYZ_1.0" is the string you would
-    use for the XYZ plug-in.
+    use for the XYZ plugin.
 
 return type : CLI_return_t
     The OpenDatabase function returns an integer value of 1 for success and 0
@@ -6467,7 +6467,7 @@ host : string
     is assumed.
 
 args : tuple
-    A tuple of strings containing command line flags for the metadata server.
+    A tuple of strings containing command-line flags for the metadata server.
     
     =============  ========================================================
     **Argument**   Description
@@ -6486,7 +6486,7 @@ return type : CLI_return_t
 **Description:**
 
     The OpenMDServer explicitly launches a metadata server on a specified
-    host. This allows you to provide command line options that influence how
+    host. This allows you to provide command-line options that influence how
     the metadata server will run.
     range [1,5] that VisIt uses to write debug logs to disk.
     located on a remote computer. This allows you to successfully
@@ -6494,12 +6494,12 @@ return type : CLI_return_t
     It also allows you to debug VisIt in distributed mode.
     -fallback_format <format>
     The -fallback_format argument allows you to specify the
-    database plug-in that will be used to open files if all
+    database plugin that will be used to open files if all
     other guessing failed. This is useful when the files
     that you want to open do not have file extensions.
     -assume_format <format>
     The -assume_format argument allows you to specify the
-    database plug-in that will be used FIRST when attempting
+    database plugin that will be used FIRST when attempting
     to open files. This is useful when the files that you
     want to open have a file extension which may match
     multiple file format readers.
@@ -6536,9 +6536,9 @@ return type : tuple of strings
 **Description:**
 
     The OperatorPlugins function returns a tuple of strings that contain the
-    names of the loaded operator plug-ins. This can be useful for the creation
+    names of the loaded operator plugins. This can be useful for the creation
     of scripts that alter their behavior based on the available operator
-    plug-ins.
+    plugins.
 
 
 **Example:**
@@ -6565,7 +6565,7 @@ databaseName : string
     The name of the new plot database.
 
 state : integer
-    The time state at which to open the database.
+    The time-state at which to open the database.
 
 return type : CLI_return_t
     The OverlayDatabase function returns an integer value of 1 for success and
@@ -6790,7 +6790,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     PickByNode returns a python dictionary of the pick results,
     unless do_time is specified, then a time curve is created in a
-    new window. If the picked variable is zone centered, the variable
+    new window. If the picked variable is zone-centered, the variable
     values are grouped according to incident zone ids.
 
 
@@ -6870,7 +6870,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     PickByNodeLabel returns a python dictionary of the pick results,
     unless do_time is specified, then a time curve is created in a
-    new window. If the picked variable is node centered, the variable
+    new window. If the picked variable is node-centered, the variable
     values are grouped according to incident node ids.
 
 
@@ -6958,7 +6958,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     PickByZone returns a python dictionary of the pick results,
     unless do_time is specified, then a time curve is created in a
-    new window. If the picked variable is node centered, the variable
+    new window. If the picked variable is node-centered, the variable
     values are grouped according to incident node ids.
 
 
@@ -7038,7 +7038,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     PickByZoneLabel returns a python dictionary of the pick results,
     unless do_time is specified, then a time curve is created in a
-    new window. If the picked variable is node centered, the variable
+    new window. If the picked variable is node-centered, the variable
     values are grouped according to incident node ids.
 
 
@@ -7094,8 +7094,8 @@ return type : tuple of strings
 **Description:**
 
     The PlotPlugins function returns a tuple of strings that contain the names
-    of the loaded plot plug-ins. This can be useful for the creation of scripts
-    that alter their behavior based on the available plot plug-ins.
+    of the loaded plot plugins. This can be useful for the creation of scripts
+    that alter their behavior based on the available plot plugins.
 
 
 **Example:**
@@ -7511,7 +7511,7 @@ return type : CLI_return_t
     states that have been added since the database was opened using the
     OpenDatabase function. Note that ReOpenDatabase is expensive since it
     causes all plots that use the specified database to be regenerated. If you
-    want to ensure that a time-varying database has all of its time states as
+    want to ensure that a time-varying database has all of its time-states as
     they are being created by a simulation, try the CheckForNewStates function
     instead.
     The databaseName argument is a string containing the full name of the
@@ -7994,8 +7994,8 @@ ReplaceDatabase
 databaseName : string
     The name of the new database.
 
-timeState : integer
-    A zero-based integer containing the time state that should be made active
+time-state : integer
+    A zero-based integer containing the time-state that should be made active
     once the database has been replaced.
 
 return type : CLI_return_t
@@ -8707,7 +8707,7 @@ return type : CLI_return_t
 **Description:**
 
     Sets the active time slider, which is the time slider that is used to
-    change time states.
+    change time-states.
 
 
 **Example:**
@@ -9289,10 +9289,10 @@ SetDefaultFileOpenOptions
 
 
 pluginName : string
-    The name of a plug-in.
+    The name of a plugin.
 
 options : dictionary
-    A dictionary containing the new default options for that plug-in.
+    A dictionary containing the new default options for that plugin.
 
 return type : CLI_return_t
     The SetDefaultFileOpenOptions function returns 1 on success and 0 on
@@ -9302,7 +9302,7 @@ return type : CLI_return_t
 **Description:**
 
     SetDefaultFileOpenOptions sets the current options used to open new
-    files when a specific plug-in is triggered.
+    files when a specific plugin is triggered.
 
 
 **Example:**
@@ -10082,7 +10082,7 @@ frame : integer
     going to add a database keyframe.
 
 state : integer
-    A zero-based integer index representing the database time state that we're
+    A zero-based integer index representing the database time-state that we're
     going to use at the specified animation frame.
 
 
@@ -10450,7 +10450,7 @@ SetPreferredFileFormats
 
 
 pluginIDs : tuple
-    A tuple of plug-in IDs to be attempted first when opening files.
+    A tuple of plugin IDs to be attempted first when opening files.
 
 return type : CLI_return_t
     The SetPreferredFileFormats method does not return a value.
@@ -10459,7 +10459,7 @@ return type : CLI_return_t
 **Description:**
 
     The SetPreferredFileFormats method is a way to set the list of
-    file format reader plug-ins which are tried before any others.
+    file format reader plugins which are tried before any others.
     These IDs must be full IDs, not just names, and are tried in order.
 
 
@@ -10844,7 +10844,7 @@ SetTimeSliderState
 
 
 state : integer
-    A zero-based integer containing the time state that we want to make active.
+    A zero-based integer containing the time-state that we want to make active.
 
 return type : CLI_return_t
     The SetTimeSliderState function returns 1 on success and 0 on failure.
@@ -10852,7 +10852,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The SetTimeSliderState function sets the time state for the active time
+    The SetTimeSliderState function sets the time-state for the active time
     slider. This is the function to use if you want to animate through time or
     change the current keyframe frame.
 
@@ -10900,7 +10900,7 @@ return type : CLI_return_t
     indicating if all databases should be treated as time varying or not. Ordinarily,
     VisIt tries to minimize file I/O and database interaction by avoiding re-reading
     metadata that is 'time-invariant' and, therefore, assumed to be the same in a
-    database from one time step to the next. However, sometimes, portions of the
+    database from one timestep to the next. However, sometimes, portions of the
     metadata, such as the list of variable names and/or number of domains, does in
     fact vary. In this case, VisIt can actually fail to acknowledge the existence of
     new variables in the file. Turning this feature on forces VisIt to re-read metadata
@@ -10928,7 +10928,7 @@ SetTryHarderCyclesTimes
 
 val : integer
     Either a zero (false) or non-zero (true) integer value to indicate if
-    VisIt read cycle/time information for all timestates when opening a
+    VisIt read cycle/time information for all time-states when opening a
     database.
 
 return type : CLI_return_t
@@ -10939,11 +10939,11 @@ return type : CLI_return_t
 
     For certain classes of databases, obtaining cycle/time information for all time
     states in the database is an expensive operation, requiring each file to be opened
-    and queried. The cost of the operation gets worse the more time states there are
-    in the database. Ordinarily, VisIt does not bother to query each time state for
+    and queried. The cost of the operation gets worse the more time-states there are
+    in the database. Ordinarily, VisIt does not bother to query each time-state for
     precise cycle/time information. In fact, often VisIt can guess this information
     from the filename(s) comprising the database. However, turning this feature on
-    will force VisIt to obtain accurate cycle/time information for all time states
+    will force VisIt to obtain accurate cycle/time information for all time-states
     by opening and querying all file(s) in the database.
 
 
@@ -11410,7 +11410,7 @@ return type : CLI_return_t
 **Description:**
 
     The ShowAllWindows function tells VisIt's viewer to show all of its
-    visualization windows. The command line interface calls ShowAllWindows
+    visualization windows. The command-line interface calls ShowAllWindows
     before giving control to any user-supplied script to ensure that the
     visualization windows appear as expected. Call the ShowAllWindows function
     when using the VisIt module inside another Python interpreter so the
@@ -11620,15 +11620,15 @@ TimeSliderGetNStates
   TimeSliderGetNStates() -> integer
 
 return type : CLI_return_t
-    Returns an integer containing the number of time states for the current
+    Returns an integer containing the number of time-states for the current
     time slider.
 
 
 **Description:**
 
-    The TimeSliderGetNStates function returns the number of time states for
+    The TimeSliderGetNStates function returns the number of time-states for
     the active time slider. Remember that the length of the time slider does
-    not have to be equal to the number of time states in a time-varying
+    not have to be equal to the number of time-states in a time-varying
     database because of database correlations and keyframing. If you want to
     iterate through time, use this function to determine the number of
     iterations that are required to reach the end of the active time slider.
@@ -11726,7 +11726,7 @@ TimeSliderSetState
 
 
 state : integer
-    A zero-based integer containing the time state that we want to make active.
+    A zero-based integer containing the time-state that we want to make active.
 
 return type : CLI_return_t
     The TimeSliderSetState function returns 1 on success and 0 on failure.
@@ -11734,7 +11734,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The TimeSliderSetState function sets the time state for the active time
+    The TimeSliderSetState function sets the time-state for the active time
     slider. This is the function to use if you want to animate through time or
     change the current keyframe frame.
 
@@ -11900,7 +11900,7 @@ return type : CLI_return_t
     The ToggleLockTime function turns time locking on and off in a
     visualization window. When time locking is on in a visualization window,
     VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
+    visualization windows that are time-locked. When you change the time-state
     using the time slider for the afore-mentioned database correlation, it
     has the effect of updating time in all time-locked visualization windows.
 
@@ -11961,7 +11961,7 @@ return type : CLI_return_t
     The ToggleLockTime function turns time locking on and off in a
     visualization window. When time locking is on in a visualization window,
     VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
+    visualization windows that are time-locked. When you change the time-state
     using the time slider for the afore-mentioned database correlation, it
     has the effect of updating time in all time-locked visualization windows.
     The ToggleLockViewMode function turns lock view mode on and off. When
@@ -11969,7 +11969,7 @@ return type : CLI_return_t
     windows that are also in lock view mode. This allows windows containing
     similar plots to be compared easily.
     The ToggleMaintainViewMode function forces the view, that was in effect
-    when the mode was toggled to be used for all subsequent time states.
+    when the mode was toggled to be used for all subsequent time-states.
     The ToggleSpinMode function turns spin mode on and off. When the
     visualization window is in spin mode, it continues to spin along the axis
     of rotation when the view is changed interactively.
@@ -12050,7 +12050,7 @@ return type : CLI_return_t
     the VisIt Python Interface provides a few functions to toggle some of those
     modes.
     The ToggleMaintainViewMode functions forces the view that was in effect
-    when the mode was toggled to be used for all subsequent time states.
+    when the mode was toggled to be used for all subsequent time-states.
 
 
 **Example:**
@@ -12570,7 +12570,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     ZonePick returns a python dictionary of the pick results, unless
     do_time is specified, then a time curve is created in a new window.
-    If the picked variable is node centered, the variable values are
+    If the picked variable is node-centered, the variable values are
     grouped according to incident node ids.
 
 

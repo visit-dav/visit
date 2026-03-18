@@ -138,14 +138,14 @@ Frame settings
 
 The second tab in the **Save Cinema** wizard 
 (see :numref:`Figure %s<save_cinema_wizard_2>`) contains controls that select the
-range and stride of time states that will be included in the Cinema database. Use
-the **Frame start** controls to select the beginning time state for the Cinema 
-database. A value of zero corresponds to the first time state. Use the 
-**Frame end** controls to set the last time state that will be included in the
+range and stride of time-states that will be included in the Cinema database. Use
+the **Frame start** controls to select the beginning time-state for the Cinema 
+database. A value of zero corresponds to the first time-state. Use the 
+**Frame end** controls to set the last time-state that will be included in the
 Cinema database. Finally, use the **Frame stride** controls to set the stride
-that will be used between the start and end time states, which is useful when
+that will be used between the start and end time-states, which is useful when
 making shorter preview databases that vary over time but do not include all 
-time states.
+time-states.
 
 .. _save_cinema_wizard_2:
 
@@ -165,7 +165,7 @@ that describe the Cinema database format and returns a handle to a Cinema object
 Next, the simulation must call ``VisItSaveCinema`` to make Libsim generate and
 add the appropriate images to the Cinema database, taking into account the type
 of camera being used. The ``VisItSaveCinema`` function can be called repeatedly
-to add new time states to the Cinema database. It is the simulation's responsibility
+to add new time-states to the Cinema database. It is the simulation's responsibility
 to make Libsim calls that set up VisIt plots or restore a session so there are
 plots when ``VisItSaveCinema`` is called. Finally, the simulation must call
 ``VisItEndCinema`` to close out the Cinema database context and free associated

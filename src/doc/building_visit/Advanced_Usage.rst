@@ -55,7 +55,7 @@ The difference between ``--mesagl`` and ``--osmesa``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When you specify ``--mesagl`` VTK will be built against Mesa 3D.
-When you specify ``--osmesa`` VTK is built against the system OpenGL and the Mesa 3D library is substituted at run time for OpenGL when running the parallel engine to enable scalable rendering.
+When you specify ``--osmesa`` VTK is built against the system OpenGL and the Mesa 3D library is substituted at runtime for OpenGL when running the parallel engine to enable scalable rendering.
 If you specify ``--mesagl`` then ``--osmesa`` is unnecessary and ignored if specified.
 
 
@@ -82,7 +82,7 @@ Can a user just use those pre-installed libraries to build VisIt_?
 **Please don't!**
 In all likelihood this will not work at all or, worse, it will only partially work and fail in subtle ways that are nearly impossible to diagnose.
 In the unlikely chance it appears to work upon reporting any issues our first question will be, how was VisIt_ configured/built?
-If VisIt_ is built in a way that is not consistent with how developers routinely build, run and test it, we will not be able to reproduce the issue, debug it, identify work-arounds or otherwise provide sufficient support.
+If VisIt_ is built in a way that is not consistent with how developers routinely build, run and test it, we will not be able to reproduce the issue, debug it, identify workarounds or otherwise provide sufficient support.
 
 Apart from the general issues of reproducibility and support, there are many reasons building VisIt_ with pre-installed libraries will likely not work.
 Below, we briefly summarize various compatibility issues with trying to use pre-installed libraries.
@@ -95,7 +95,7 @@ Version Compatibility : Pre-installed libraries are not the version VisIt_ requi
     Incorrect library versions may cause VisIt_ to either fail to build or fail to run properly.
 
 Patch Compatibility : Pre-installed libraries are missing patches VisIt_ requires
-    In some cases, the libraries VisIt_ needs are patched to work around various issues building or running VisIt_.
+    In some cases, the libraries VisIt_ needs are patched to workaround various issues building or running VisIt_.
     Such patches are almost certainly not in any pre-installed version of the library.
     Missing patches may cause VisIt_ to either fail to build or fail to run properly.
 
@@ -113,9 +113,9 @@ Dependency Compatibility : Pre-installed libraries are not built with dependenci
     Incorrect dependencies may cause VisIt_ to either fail to build or fail to run properly.
     Such dependencies complicate things significantly because it means all of the aforementioned compatibility issues apply, recursively, to any libraries a pre-installed library depends on.
 
-Compiler (Run-Time) Compatibility : Pre-installed libraries are not built with a compiler (run-time) VisIt_ requires
+Compiler (Runtime) Compatibility : Pre-installed libraries are not built with a compiler (runtime) VisIt_ requires
     For some situations, building VisIt_ and its dependencies requires a specific compiler.
-    The compiler (run-time) used for pre-installed libraries may not be compatible with the compiler (run-time) VisIt_ requires.
+    The compiler (runtime) used for pre-installed libraries may not be compatible with the compiler (runtime) VisIt_ requires.
 
 There are likely other subtle compatibility issues that can arise which we have neglected to mention here.
 A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenGL, MPI to name a few) on any particular platform.
@@ -125,7 +125,7 @@ For this reason, we discourage users from attempting to build VisIt_ using pre-i
 Building on a system without internet access
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When you want to build visit on a system without internet access, you can use ``build_visit`` to download the third party libraries and source code to a system that has internet access and then move those files to your machine without access.
+When you want to build visit on a system without internet access, you can use ``build_visit`` to download the third-party libraries and source code to a system that has internet access and then move those files to your machine without access.
 The following example downloads the optional libraries, mpich and osmesa.
 
 .. code:: bash
@@ -157,6 +157,6 @@ As much as we might like to believe it, large, complex libraries like Qt, Python
 Furthermore, for large libraries like these, there are often many, many different installation options for a given platform.
 It is highly unlikely that a given installation of VTK for example, is not only of a version compatible with a given release of VisIt_ but also configured and installed on your system in exactly the way VisIt_ needs it.
 In addition, VisIt_ gets developed and thoroughly tested on specific versions and configurations of various libraries meaning that when users encounter issues in other configurations, we are not always able to reproduce them.
-In some cases, VisIt_ developers have had to work-around a bug in a library or, worse, had to patch the actual library itself to address an issue that might be specific to just one platform.
+In some cases, VisIt_ developers have had to workaround a bug in a library or, worse, had to patch the actual library itself to address an issue that might be specific to just one platform.
 Together, these issues result in a situation where VisIt_ often must be compiled with precisely the libraries it is released on and rarely, if ever, can take advantage of an installation that came as part of the system VisIt_ is being built on.
 Lastly, it becomes almost impossible to duplicate and diagnose issues reported by users when users are running VisIt_ in configurations substantially different from that which is being developed and routinely tested.

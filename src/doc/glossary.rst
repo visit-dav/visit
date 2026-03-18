@@ -26,7 +26,7 @@ Glossary
    Pathlines
        A path rendered by an integrator that uses the vector field that is
        *in-step* with the integrator, so that as the integrator steps through
-       time, it uses data from the vector field at each new time step.
+       time, it uses data from the vector field at each new timestep.
 
    Node-centered
    Point-centered

@@ -6,7 +6,7 @@ The Main Window
 VisIt_'s **Main** window, shown in :numref:`Figure %s <Intro-MainWindow>`,
 contains three main areas: the file area, the plot area and the notepad area.
 The file area contains controls for working with sources and selecting the
-current time state. The plot area contains controls for creating and modifying
+current time-state. The plot area contains controls for creating and modifying
 plots and operators. The notepad area is a region where frequently used
 windows may be posted for quick and convenient access.
 
@@ -54,7 +54,7 @@ windows. The **File** menu contains options that deal with files and
 simulations. The **Controls** menu contains options that open VisIt_ windows
 that, for the most part, set the look and feel of VisIt_'s visualization
 windows. The **Options** menu contains options that allow you to set the
-appearance of the GUI, manage host profiles, manage VisIt_ plug-ins, set
+appearance of the GUI, manage host profiles, manage VisIt_ plugins, set
 various preferences and save VisIt_'s settings to a configuration file.
 The **Windows** menu contains controls that manage visualization windows.
 The **PlotAtts** and **OpAtts** menus allow access for setting the attributes

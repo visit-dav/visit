@@ -10,7 +10,7 @@ cells around the mesh that usually correspond to real cells in an adjacent
 mesh when the whole mesh has been decomposed into smaller domains. Ghost
 cells are frequently used to ensure continuity between domains for operations
 like contouring. The InverseGhostZone operator is useful for debugging ghost
-cell placement in simulation data and for database reader plug-ins under
+cell placement in simulation data and for database reader plugins under
 development.
 
 .. _inverseghostzone:

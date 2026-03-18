@@ -46,7 +46,7 @@ Limits
 
 Setting limits for the plot imposes artificial minima and maxima on the plotted variable.
 This effectively restricts the range of data used to color the **Pseudocolor** plot.
-You might set limits when you are interested in only a small range of the data or when data limits need to be maintained for multiple time steps, as when playing an animation.
+You might set limits when you are interested in only a small range of the data or when data limits need to be maintained for multiple timesteps, as when playing an animation.
 In fact, we recommend setting the limits when producing an animation so the colors will correspond to the same values instead of varying over time with the range of the plotted variable.
 Setting limits often highlights a certain range in the data by assigning more colors to that data range.
 

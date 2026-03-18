@@ -10,10 +10,10 @@ steps, it is often best to use scripting via VisIt_'s
 :ref:`Python command line interface <PythonManual>`. VisIt provides Python and
 Java language interfaces that allow you to program animation and save image
 files that get converted into a movie. The flipbook approach is strictly for
-static animations in which only the database time step changes. This method
+static animations in which only the database timestep changes. This method
 allows database behavior over time to be quickly inspected without the added
 complexity of scripting or keyframing. Keyframed animation can exhibit complex
-behavior of the view, plot attributes, and database time states over time. 
+behavior of the view, plot attributes, and database time-states over time. 
 This chapter emphasizes the flipbook and keyframe approaches and explains how
 to create animations both ways.
 

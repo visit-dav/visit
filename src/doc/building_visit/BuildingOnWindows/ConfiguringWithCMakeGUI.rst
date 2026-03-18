@@ -38,7 +38,7 @@ If you are building from a clone of the github repository, it is recommended to 
 Location of windowsbuild Directory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For a released version of  VisIt_'s source code, the *windowsbuild* directory containing the pre-built thirdparty binaries is located peer to *src*.  
+For a released version of  VisIt_'s source code, the *windowsbuild* directory containing the prebuilt third-party binaries is located peer to *src*.  
 CMake generation should locate this directory automatically.
 :numref:`Figure %s<visit_dirs_from_released_source_image>`
 
@@ -70,24 +70,24 @@ If neither of the above is true for your situation, use the CMake gui to set *VI
 Limiting Plugins
 ~~~~~~~~~~~~~~~~
 
-By default, most of the supported database reader plug-ins are built, which can slow down loading of the solution in the Visual Studio IDE, and slow down the build.  
-If you want to reduce the number of plug-ins built, add a CMake var using the **Add Entry** Button. 
-If you are producing a version of VisIt_ that you plan to distribute, you should skip this step so all database reader plug-ins are built.
+By default, most of the supported database reader plugins are built, which can slow down loading of the solution in the Visual Studio IDE, and slow down the build.  
+If you want to reduce the number of plugins built, add a CMake var using the **Add Entry** Button. 
+If you are producing a version of VisIt_ that you plan to distribute, you should skip this step so all database reader plugins are built.
 :numref:`Figure %s<selected_databases_image>`
 
 .. _selected_databases_image:
 
 .. figure:: images/selected_databases.png
 
-   Selecting a limited number of database plug-ins
+   Selecting a limited number of database plugins
 
-To limit the database plug-ins to a specific set of plug-ins, set the **Name:**  to *VISIT_SELECTED_DATABASE_PLUGINS*. 
+To limit the database plugins to a specific set of plugins, set the **Name:**  to *VISIT_SELECTED_DATABASE_PLUGINS*. 
 The **Type:** should be *STRING*. 
-The **Value:** should be a ';' separated list of database plug-ins names. 
+The **Value:** should be a ';' separated list of database plugin names. 
 Case must match the name of the folder in */src/databases*.
 
 The same procedure applies to plots and operators. 
-The VisIt_ CMake variables to limit plots and operator plug-ins are *VISIT_SELECTED_PLOT_PLUGINS* and *VISIT_SELECTED_OPERATOR_PLUGINS*, respectively.
+The VisIt_ CMake variables to limit plots and operator plugins are *VISIT_SELECTED_PLOT_PLUGINS* and *VISIT_SELECTED_OPERATOR_PLUGINS*, respectively.
 
 Click **OK** when finished.
 
@@ -112,7 +112,7 @@ If the build directory does not exist, you will be prompted to allow its creatio
 You will also be prompted to choose a *generator*. 
 On Windows, this corresponds to the version of Visual Studio for which you plan to generate a solution and projects.
 
-Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt thirdparty libraries.
+Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt third-party libraries.
 Choose *Visual Studio 15 2017 Win64* from the generator dropdown.
 Choose *x64* from the dropdown for the *Optional platform*.
 Then enter *host=x64* in the *Optional toolset* to use the full 64-bit toolset.

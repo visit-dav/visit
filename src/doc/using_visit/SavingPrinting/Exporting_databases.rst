@@ -47,9 +47,9 @@ menu, VisIt will append it to the list of variables to be exported.
 Choosing an export file format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The **Export Database Window** lists the names of the database reader plug-ins
+The **Export Database Window** lists the names of the database reader plugins
 that can also write data back into their native file formats. A small handful
-of the total number of database plug-ins currently support this feature but in
+of the total number of database plugins currently support this feature but in
 the future most formats will support this capability more fully, making VisIt
 not only a powerful visualization tool but a powerful database conversion tool.
 
@@ -58,7 +58,7 @@ some of the file formats may not be able to accept certain types of data. The
 Silo_ file format can safely export any type of data that you may want to export.
 If you want to export data to other applications and the data must be stored in
 an ASCII file that contains columns of data, you might want to choose the Xmdv
-file format. If you want to choose a specific database plug-in to export your
+file format. If you want to choose a specific database plugin to export your
 data files, make a selection from the **Export to** menu shown in
 :numref:`Figure %s<export_db_3>` .
 

@@ -100,5 +100,5 @@ buttons and by selecting an appropriate variable using the
 When used in parallel, the resampled data is distributed across all processors.
 This can be changed by unselecting the checkbox.
 
-You can also force the output data to be cell centered by selecting the
-**Make output cell centered** checkbox.
+You can also force the output data to be cell-centered by selecting the
+**Make output cell-centered** checkbox.

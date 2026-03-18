@@ -3,7 +3,7 @@
 Saving movies
 -------------
 
-In addition to allowing you to save images of your visualization window for the current time state, VisIt_ also allows you to save movies and sets of images for your visualizations that vary over time.
+In addition to allowing you to save images of your visualization window for the current time-state, VisIt_ also allows you to save movies and sets of images for your visualizations that vary over time.
 There are multiple methods for saving movies with VisIt_.
 This section introduces the Save movie wizard and explains how to use it to create movies from within VisIt_'s GUI.
 The :ref:`Animation` chapter explains some auxiliary methods that can be used to create movies.
@@ -77,8 +77,8 @@ Choosing movie length
 
    Save movie wizard (screen 3)
 
-It is possible to specify the range of time states to use for the movie, as well as specify a stride if you have too many time states saved (see :numref:`Figure %s<save_movie_wizard_3>`).
-The wizard will automatically set the range of time states.
+It is possible to specify the range of time-states to use for the movie, as well as specify a stride if you have too many time-states saved (see :numref:`Figure %s<save_movie_wizard_3>`).
+The wizard will automatically set the range of time-states.
 
 Choosing the movie name
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,7 +125,7 @@ You can change how VisIt_ creates your movie by clicking a different movie gener
 
 The default option for movie creation allows VisIt_ to use your current VisIt_ session to make your movies.
 This has the advantage that it uses your current compute engine and allocated processors, which makes movie generation start immediately.
-When you use this movie generation method, VisIt_ will launch its command line interface (CLI) and execute Python movie-making scripts in order to generate your movie.
+When you use this movie generation method, VisIt_ will launch its command-line interface (CLI) and execute Python movie-making scripts in order to generate your movie.
 This means that you have both the VisIt_ GUI and CLI controlling the viewer.
 If you use this movie generation method, you will be able to watch your movie as it is generated.
 You can track the movie's progress using the **Movie progress dialog** , shown in :numref:`Figure %s<save_movie_progress>`.
