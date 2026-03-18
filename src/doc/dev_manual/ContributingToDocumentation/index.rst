@@ -421,13 +421,16 @@ Hyphenated phrases...or not
 ---------------------------
 
 * Words we do not hyphenate:
+
   * dataset, datatype, filesystem, metadata, multiblock, multidimensional, multiresolution, nonlinear, plugin, prebuilt, precompute, preinstalled, rebuild, redo, reopen, restart, rewrite, runtime, timestamp, timestep, workaround, workflow, workload.
 
 * Words we do hyphenate:
+
   * command line, when used as adjective as in *It is not a command-line option.* Otherwise, command line.
   * block-structured, cell-centered, edge-centered, face-centered, high-level, low-level, multi-domain node-centered, patch-based, point-centered, problem-sized, third-party, time-state, vertex-centered, zone-centered.
 
 * Words we treat as separate words
+
   * command line, when used as a noun as in *You can do this only via the VisIt_ command line.*
   * staggered grid.
 
@@ -440,7 +443,7 @@ If there are any, you will see an error ::
     Sphinx error:
     Hyphenation consistency check failed.
 
-    Fix by running:
+    Fix by running the following command in src/doc:
     python3 fix_rst_hyphenation.py .
 
 .. _contributing_linkcheck:
