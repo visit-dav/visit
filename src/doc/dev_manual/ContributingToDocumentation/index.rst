@@ -424,7 +424,7 @@ Hyphenated phrases...or not
   * dataset, datatype, filesystem, metadata, multiblock, multidimensional, multiresolution, nonlinear, plugin, prebuilt, precompute, preinstalled, rebuild, redo, reopen, restart, rewrite, runtime, timestamp, timestep, workaround, workflow, workload.
 
 * Words we do hyphenate:
-  * command-line, when used as adjective as in *It is not a command-line option.* Otherwise, command line.
+  * command line, when used as adjective as in *It is not a command-line option.* Otherwise, command line.
   * block-structured, cell-centered, edge-centered, face-centered, high-level, low-level, multi-domain node-centered, patch-based, point-centered, problem-sized, third-party, time-state, vertex-centered, zone-centered.
 
 * Words we treat as separate words
