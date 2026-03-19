@@ -11,6 +11,7 @@
 #    Valid machine names:
 #       dane       (LC, Linux, x86_64, toss4),
 #       rzwhippet  (LC, Linux, x86_64, toss4),
+#       magma      (LC, Linux, x86_64, toss4),
 #       rzvernal   (LC, Linux, x86_64, toss4-cray),
 #       crossroads (LANL, x86_64),
 #       tuolumne   (LC, Linux, x86_64, toss4-cray),
@@ -115,6 +116,10 @@
 #
 #    Cyrus Harrison, Mon Dec  1 14:40:14 PST 2025
 #    Added support for building on dane.
+# 
+#    Justin Privitera, Thu Mar 19 13:51:40 PDT 2026
+#    Re-added magma case (secretly dane case). Combined rzwhippet and
+#    dane case.
 #
 #-----------------------------------------------------------------------
 
@@ -123,7 +128,6 @@
 #
 
 dane=false
-rzwhippet=false
 rzvernal=false
 crossroads=false
 tuolumne=false
@@ -149,8 +153,13 @@ do
          shift
          ;;
       -rzwhippet)
-         rzwhippet=true
+         dane=true
          machine_name="rzwhippet"
+         shift
+         ;;
+      -magma)
+         dane=true
+         machine_name="magma"
          shift
          ;;
       -rzvernal)
@@ -196,13 +205,14 @@ if [ "$build_visit_script" = "undefined" ] || [ "$version" = "undefined" ]
 then
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    dane       (LC, Linux, x86_64, toss4),"
-   echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
-   echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
+   echo "    dane       (LC,   Linux, x86_64, toss4),"
+   echo "    rzwhippet  (LC,   Linux, x86_64, toss4),"
+   echo "    magma      (LC,   Linux, x86_64, toss4),"
+   echo "    tuolumne   (LC,   Linux, x86_64, toss4-cray),"
+   echo "    rzvernal   (LC,   Linux, x86_64, toss4-cray),"
+   echo "    rzadams    (LC,   Linux, x86_64, toss4-cray),"
+   echo "    elcap      (LC,   Linux, x86_64, toss4-cray)"
    echo "    crossroads (LANL, Linux, x86_64),"
-   echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
-   echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
-   echo "    elcap      (LC, Linux, x86_64, toss4-cray)"
    exit
 fi
 
@@ -222,7 +232,7 @@ fi
 #
 # Info and set ran_build_visit
 #
-if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || \
    [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    echo "Building on $machine_name"
@@ -235,7 +245,7 @@ fi
 #
 # Set destination directory
 #
-if [ "$dane" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$dane" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
 elif [ "$rzvernal" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx90a
@@ -251,7 +261,7 @@ fi
 #
 # Set destination group
 #
-if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || \
    [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    dest_group=visit
 elif [ "$crossroads" = true ]; then
@@ -264,7 +274,7 @@ fi
 #
 # housekeeping
 #
-if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || \
    [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    if [ -f ${build_visit_script}_log.${machine_name} ]; then
@@ -281,7 +291,7 @@ fi
 #
 # Call build_visit
 #
-if [ "$dane" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$dane" = true ]; then
    ml gcc
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
@@ -321,7 +331,7 @@ fi
 #
 # Final housekeeping and permissions
 #
-if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || \
    [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    mv ${build_visit_script}_log ${build_visit_script}_log.${machine_name}
@@ -342,12 +352,13 @@ then
    echo "Invalid or missing machine name."
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    dane       (LC, Linux, x86_64, toss4),"
-   echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
-   echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
+   echo "    dane       (LC,   Linux, x86_64, toss4),"
+   echo "    rzwhippet  (LC,   Linux, x86_64, toss4),"
+   echo "    magma      (LC,   Linux, x86_64, toss4),"
+   echo "    tuolumne   (LC,   Linux, x86_64, toss4-cray),"
+   echo "    rzvernal   (LC,   Linux, x86_64, toss4-cray),"
+   echo "    rzadams    (LC,   Linux, x86_64, toss4-cray),"
+   echo "    elcap      (LC,   Linux, x86_64, toss4-cray)"
    echo "    crossroads (LANL, Linux, x86_64),"
-   echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
-   echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
-   echo "    elcap      (LC, Linux, x86_64, toss4-cray)"
    exit
 fi
