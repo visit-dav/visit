@@ -281,6 +281,9 @@
 //    Cyrus Harrison, Thu Feb 19 09:13:09 PST 2026
 //    Update spack screen version logic, change spash screen to Feb
 //
+//    Cyrus Harrison, Thu Mar  5 14:58:16 PST 2026
+//    Changed the date on the splash screen to March 2026.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -387,7 +390,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 2;
+    int currentMonth = 3;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2026", this));
 

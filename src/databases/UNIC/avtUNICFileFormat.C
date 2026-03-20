@@ -130,7 +130,7 @@ avtUNICFileFormat::avtUNICFileFormat(const char *filename)
     {
         H5Fclose(file_handle);
         EXCEPTION1(InvalidDBTypeException, "Cannot be a UNIC data file, since "
-                                  "it is not contain the dataset \"control\".");    
+                                  "it is not contain the dataset \"CONTROL\".");    
     }
     H5Dclose(control);
 

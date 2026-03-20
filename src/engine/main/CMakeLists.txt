@@ -169,6 +169,11 @@ endif()
 add_executable(engine_ser_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_SER_RESOURCE_FILE})
 set_target_properties(engine_ser_exe PROPERTIES OUTPUT_NAME engine_ser)
 
+if(APPLE)
+    # use custom plist to avoid engine exes from appearing in the macOS dock
+    target_link_options(engine_ser_exe PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${VISIT_SOURCE_DIR}/include/EngineInfo.plist)
+endif()
+
 if(WIN32 AND MSVC)
     set_target_properties(engine_ser_exe PROPERTIES LINK_FLAGS "/STACK:4000000")
 endif()
@@ -271,6 +276,11 @@ if(VISIT_PARALLEL)
     endif(ICET_FOUND AND VISIT_STATIC)
 
     ADD_PARALLEL_EXECUTABLE(engine_par_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_PAR_RESOURCE_FILE})
+
+    if(APPLE)
+        # use custom plist to avoid engine exes from appearing in the macOS dock
+        target_link_options(engine_par_exe PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${VISIT_SOURCE_DIR}/include/EngineInfo.plist)
+    endif()
 
     if(ICET_FOUND AND VISIT_STATIC)
         set(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})

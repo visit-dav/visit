@@ -68,6 +68,7 @@ static bool readStringAttr(hid_t dataset,
         }        
     }
 
+    H5Tclose(attrType);
     H5Aclose(attrId);
     H5Sclose(attrSpace);
     
@@ -175,6 +176,8 @@ avtDenovoFileFormat::LoadFile()
     int numDims = H5Sget_simple_extent_ndims(matIdS);
     hsize_t dims[12];
     H5Sget_simple_extent_dims(matIdS, dims, NULL);
+    H5Dclose(matId);
+    H5Sclose(matIdS);
 
     //Mix table.
     hid_t mixId = H5Dopen2(fileId, "/denovo/mixtable", H5P_DEFAULT);
@@ -186,6 +189,7 @@ avtDenovoFileFormat::LoadFile()
     H5S_class_t classType = H5Sget_simple_extent_type(mixIdS);
     H5Sget_simple_extent_dims(mixIdS, dims, NULL);
     int mixTableSize = dims[0];
+    H5Sclose(mixIdS);
 
     mixTable.resize(mixTableSize);
     hid_t mtType = H5Tcreate(H5T_COMPOUND, sizeof(mixTableEntry));
@@ -193,6 +197,8 @@ avtDenovoFileFormat::LoadFile()
     H5Tinsert(mtType, "col", sizeof(int), H5T_NATIVE_INT);
     H5Tinsert(mtType, "val", 2*sizeof(int), H5T_NATIVE_DOUBLE);
     H5Dread(mixId, mtType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &mixTable[0]);
+    H5Tclose(mtType);
+    H5Dclose(mixId);
 
     readStringAttr(mixId, "names", materialNames);
     readStringAttr(mixId, "colors", materialColors);    
@@ -313,7 +319,7 @@ avtDenovoFileFormat::GetMesh(int domain, const char *meshname)
         dims[i] = coordMetaData[i].dims[0];
         xyz[i]->SetNumberOfTuples(dims[i]);
         H5Dread(coordMetaData[i].varId, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, xyz[i]->GetVoidPointer(0));
-        H5Dclose(coordMetaData[i].varId);
+        /*H5Dclose(coordMetaData[i].varId);*/
     }
     
     vtkRectilinearGrid *grid = vtkRectilinearGrid::New();

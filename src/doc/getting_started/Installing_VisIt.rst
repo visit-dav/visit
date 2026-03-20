@@ -21,6 +21,14 @@ If you are installing VisIt_ on Linux, you will also need to download and use th
 
 Installing VisIt_ on platforms other than those listed here requires :ref:`building VisIt from sources <Building>`.
 
+.. warning::
+
+    When running a *fresh* installation of VisIt_ for the first time, there may be long delays (maybe >1 min) as it starts up.
+    This is normal.
+    If it occurs, it should occur only on the *first* time a fresh installation is started.
+    Thereafter, VisIt_ should start up fairly quickly (< 10 seconds).
+    Depending on the platform, the delays may involve some computational effort and network latency as a variety of integrity checks are performed on all of VisIt_'s libraries and plugins.
+
 .. _MacOSX Installation Instructions:
 
 Installing on macOS

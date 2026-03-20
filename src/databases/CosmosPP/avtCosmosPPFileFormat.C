@@ -417,15 +417,15 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
          break;
     }
 
-    int c_handle = H5Dopen(file_handle, "Cosmos++", H5P_DEFAULT);
-    int space_id = H5Dget_space(c_handle);
+    hid_t c_handle = H5Dopen(file_handle, "Cosmos++", H5P_DEFAULT);
+    hid_t space_id = H5Dget_space(c_handle);
 
     int pdims = 0;
     int numParticleTypes = 0;
     vector<int> numParticles, numParticleScalars, numParticleVectors;
     if (nParticleTypes > 0)
     {
-        int attr1  = H5Aopen_name(c_handle, "Number of Particle Types");
+        hid_t attr1  = H5Aopen_name(c_handle, "Number of Particle Types");
         H5Aread(attr1, H5T_NATIVE_INT, &numParticleTypes);
         H5Aclose(attr1);
         numParticles.resize(numParticleTypes, 0);
@@ -434,7 +434,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         for (i = 0; i < numParticleTypes; i++)
         {
             particleDataset[i][ts][dom] = vtkUnstructuredGrid::New();
-            int attr1  = H5Aopen_name(c_handle, particleTypeNames[i].data());
+            hid_t attr1  = H5Aopen_name(c_handle, particleTypeNames[i].data());
             H5Aread(attr1, H5T_NATIVE_INT, &numParticles[i]);
             H5Aclose(attr1);
             numParticleScalars[i] = particleScalarVarNames[i].size();
@@ -730,7 +730,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
 
     // retrieve internal zone size attribute
     int numInternalZones;
-    int attr1  = H5Aopen_name(c_handle, "Number of Internal Zones");
+    hid_t attr1  = H5Aopen_name(c_handle, "Number of Internal Zones");
     H5Aread(attr1, H5T_NATIVE_INT, &numInternalZones);
     
     vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::New();

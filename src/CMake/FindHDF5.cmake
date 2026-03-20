@@ -20,30 +20,48 @@
 
 # Use the HDF5_DIR hint from the config-site .cmake file
 
+if(EXISTS ${VISIT_HDF5_DIR}/cmake)
+  set(HDF5_DIR ${VISIT_HDF5_DIR}/cmake)
+endif()
 
-OPTION(HDF5_LIBNAMES_AFFIX_DLL "Whether HDF5 library base names end with dll" ON)
-IF(WIN32)
-  if(HDF5_LIB_NAME)
-    SET_UP_THIRD_PARTY(HDF5 LIBS ${HDF5_LIB_NAME})
-    IF(VISIT_PARALLEL)
-        SET_UP_THIRD_PARTY(HDF5_MPI LIBS ${HDF5_LIB_NAME})
-    ENDIF(VISIT_PARALLEL)
-  else()
-    if(HDF5_LIBNAMES_AFFIX_DLL)
-      SET_UP_THIRD_PARTY(HDF5 LIBS hdf5dll hdf5_hldll)
-      IF(VISIT_PARALLEL)
-          SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpidll hdf5_mpi_hldll)
-      ENDIF(VISIT_PARALLEL)
+find_package(HDF5 CONFIG PATHS ${HDF5_DIR} NO_DEFAULT_PATH)
+
+if(TARGET hdf5-shared)
+    set(HDF5_LIB hdf5-shared)
+    set(HAVE_LIBHDF5 TRUE CACHE BOOL "Have HDF5 libraries")
+    if(WIN32)
+        get_target_property(hdf5_locr hdf5-shared IMPORTED_IMPLIB_RELEASE)
     else()
-      SET_UP_THIRD_PARTY(HDF5 LIBS hdf5 hdf5_hl)
-      IF(VISIT_PARALLEL)
-          SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpi hdf5_mpi_hl)
-      ENDIF(VISIT_PARALLEL)
+        get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
     endif()
-  endif()
-ELSE()
-  SET_UP_THIRD_PARTY(HDF5 LIBS hdf5 hdf5_hl)
-  IF(VISIT_PARALLEL)
-      SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpi hdf5_mpi_hl)
-  ENDIF(VISIT_PARALLEL)
-ENDIF()
+
+    THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
+
+    if(TARGET hdf5_hl-shared)
+        set(HDF5_HL_LIB hdf5_hl-shared)
+        set(HAVE_LIBHDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
+        if(WIN32)
+            get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_IMPLIB_RELEASE)
+        else()
+            get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_LOCATION_RELEASE)
+        endif()
+        THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
+    endif()
+
+    THIRD_PARTY_INSTALL_INCLUDE(hdf5 ${HDF5_INCLUDE_DIR})
+
+    # for plugin vs install
+    # write SetupHDF5.cmake for our export sets.
+    include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
+    create_lib_setup_cmake(KIT "HDF5"
+                           NAMESPACE "hdf5"
+                           INCBASE "hdf5/include"
+                           ITEMS ${HDF5_LIB} ${HDF5_HL_LIB}
+                           SIMPLE_INCLUDE true)
+
+    # need a few extras in the Setup file.
+    set(fname ${VISIT_BINARY_DIR}/SetupHDF5.cmake)
+    file(APPEND ${fname} "\nset(HDF5_LIB ${HDF5_LIB})\n")
+    file(APPEND ${fname} "\nset(HDF5_HL_LIB ${HDF5_HL_LIB})\n")
+endif()
+

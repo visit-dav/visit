@@ -356,9 +356,9 @@ set(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 
 # Set up placeholders for package vars: XXX_DIR
-foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO ANARI BLOSC2 BOOST BOXLIB CFITSIO CGNS
-            CONDUIT DAMARIS EMBREE FMS GDAL GFORTRAN HDF5 HDF5_MPI H5PART ICET
-            ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB MOAB_MPI NEKTAR++ NETCDF
+foreach(pkg ADIOS ADIOS2 ADVIO ANARI BLOSC2 BOOST BOXLIB CFITSIO CGNS
+            CONDUIT DAMARIS EMBREE FMS GDAL GFORTRAN HDF5 H5PART ICET
+            ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB NEKTAR++ NETCDF
             OPENGL OPENEXR OSPRAY PIDX PYTHON QT QWT SILO SZIP TBB
             TIFF UINTAH VTK VTKM XDMF XSD ZLIB)
     VISIT_3RDPARTY_DIR(${pkg})
@@ -370,7 +370,7 @@ if(NOT WIN32)
 endif()
 
 # Set up placeholders for package vars: XXX_LIBDEP
-foreach(pkg CGNS CONDUIT FMS HDF5 HDF5_MPI H5PART MFEM NEKTAR++ NETCDF
+foreach(pkg CGNS CONDUIT FMS HDF5 H5PART MFEM NEKTAR++ NETCDF
             SILO XDMF)
     VISIT_3RDPARTY_LIBDEP(${pkg})
 endforeach()
@@ -539,6 +539,9 @@ else()
     message(STATUS "Serial version of VisIt")
 endif()
 
+# macros/defines also needed by PluginVsInstall.cmake.in
+include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
+
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 if(VISIT_XCB_DIR)
@@ -658,8 +661,6 @@ if(NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
     set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
 endif()
 
-# macros/defines also needed by PluginVsInstall.cmake.in
-include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 # Mac-specific function
 function(MAC_NIB_INSTALL exename)

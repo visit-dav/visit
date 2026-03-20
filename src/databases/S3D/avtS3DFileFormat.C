@@ -24,7 +24,7 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-#include <netcdfcpp.h>
+#include <netcdf.h>
 #define INVALID_FILE_HANDLE -1
 
 #include <DebugStream.h>
@@ -118,6 +118,25 @@ CreateStringFromDouble(double ts)
     return tempStr;
 }
 
+#define NC_CHECK(call, path_or_name)                                  \
+    do {                                                              \
+        int _st = (call);                                             \
+        if (_st != NC_NOERR)                                          \
+        {                                                             \
+            debug1 << "netCDF error: " << nc_strerror(_st) << endl;   \
+            EXCEPTION1(InvalidFilesException, (path_or_name));        \
+        }                                                             \
+    } while (0)
+
+#define NC_CHECK_VAR(call, varname)                                   \
+    do {                                                              \
+        int _st = (call);                                             \
+        if (_st != NC_NOERR)                                          \
+        {                                                             \
+            debug1 << "netCDF error: " << nc_strerror(_st) << endl;   \
+            EXCEPTION1(InvalidVariableException, (varname));          \
+        }                                                             \
+    } while (0)
 
 // ****************************************************************************
 //  Method: avtS3D constructor
@@ -349,83 +368,93 @@ avtS3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     char path[256];
     snprintf(path,256,"%s%s%s%sfield.00000",dir.c_str(),VISIT_SLASH_STRING, timestepDir.c_str(), VISIT_SLASH_STRING);
 
-    NcError err(NcError::verbose_nonfatal);
- 
-    NcFile nf(path);
-    if (!nf.is_valid())
+    int ncid = INVALID_FILE_HANDLE;
+    int st = nc_open(path, NC_NOWRITE, &ncid);
+    if (st != NC_NOERR)
     {
+        debug1 << nc_strerror(st) << endl;
         EXCEPTION1(InvalidFilesException, path);
     }
     debug5 << "avtS3DFileFormat::PopulateDatabaseMetaData: Got valid file" << endl;
 
-    int nvars = nf.num_vars();
-    debug5 << "avtS3DFileFormat::PopulateDatabaseMetaData: Found " << nvars << " variables" << endl;
-    for (int i=0 ; i<nvars; i++)
-    {
-        NcVar *v = nf.get_var(i);
-        if (!v)
-            continue;
-        debug4 << "Found variable " << v->name() << endl;
+    int nvars = 0;
+    NC_CHECK(nc_inq_nvars(ncid, &nvars), path);
 
-        // Check dimensionality
-        int nvals = v->num_vals();
-        if (nvals != 1) // Single scalars are useless.
+    debug5 << "avtS3DFileFormat::PopulateDatabaseMetaData: Found " << nvars << " variables" << endl;
+
+    for (int varid = 0; varid < nvars; varid++)
+    {
+        char vname[NC_MAX_NAME + 1];
+        nc_type vtype;
+        int ndims = 0;
+        int dimids[NC_MAX_DIMS];
+        int natts = 0;
+
+        st = nc_inq_var(ncid, varid, vname, &vtype, &ndims, dimids, &natts);
+        if (st != NC_NOERR)
+            continue; // keep behavior similar to "if (!v) continue;"
+
+        debug4 << "Found variable " << vname << endl;
+
+        // Determine total number of values (like NcVar::num_vals()).
+        // For scalars: ndims==0 => treat as 1 value.
+        size_t nvals = 1;
+        for (int d = 0; d < ndims; d++)
+        {
+            size_t dimlen = 0;
+            NC_CHECK(nc_inq_dimlen(ncid, dimids[d], &dimlen), path);
+            nvals *= dimlen;
+        }
+
+        if (nvals != 1) // keep your original behavior: skip single scalars
         {
             avtScalarMetaData *scalar = new avtScalarMetaData();
-            scalar->name = v->name();
+            scalar->name = vname;
             scalar->meshName = "mesh";
             scalar->centering = AVT_NODECENT;
             scalar->hasDataExtents = false;
             scalar->treatAsASCII = false;
 
-            NcAtt *units = v->get_att(NcToken("units"));
-            if (units)
+            // Read "units" attribute if present.
+            // In C API: check with nc_inq_att / nc_get_att_text.
+            nc_type atype;
+            size_t alen = 0;
+            st = nc_inq_att(ncid, varid, "units", &atype, &alen);
+            if (st == NC_NOERR && alen > 0)
             {
-                long nv = units->num_vals();
-                if (nv == 0)
+                // units is usually NC_CHAR, but be tolerant:
+                if (atype == NC_CHAR)
                 {
-                    scalar->hasUnits = false;
-                } else {
-                    char *unitString = units->as_string(0);
-                    scalar->units = unitString;
+                    std::string units;
+                    units.resize(alen);
+                    NC_CHECK(nc_get_att_text(ncid, varid, "units", units.data()), path);
+
+                    // Attribute text from netCDF is not required to be NUL-terminated.
+                    scalar->units = units;
                     scalar->hasUnits = true;
                 }
-            } else
+                else
+                {
+                    // If it's not text, treat as "no units" (or you could convert).
+                    scalar->hasUnits = false;
+                }
+            }
+            else
+            {
                 scalar->hasUnits = false;
+            }
 
             md->Add(scalar);
-        } else {
-            debug4 << "Unable to process variable " << v->name() <<
-                      " since it is a single scalar" << endl;
-
+        }
+        else
+        {
+            debug4 << "Unable to process variable " << vname
+                   << " since it is a single scalar" << endl;
         }
     }
 
-#if 0
-    // Expressions
-    Expression tempGradient_expr;
-    tempGradient_expr.SetName("Temperature_gradient");
-    tempGradient_expr.SetDefinition("gradient(Temperature)");
-    tempGradient_expr.SetType(Expression::VectorMeshVar);
-    tempGradient_expr.SetHidden(true);
-    md->AddExpression(&tempGradient_expr);
+    nc_close(ncid);
 
-    Expression tempUnit_expr;
-    tempUnit_expr.SetName("Temperature_grad_unit");
-    //tempUnit_expr.SetDefinition("(Temperature_gradient + {1e-6,0,0})/(magnitude(Temperature_gradient) + 1e-6)");
-    //tempUnit_expr.SetDefinition("Temperature_gradient/(magnitude(Temperature_gradient) + 1e-6)");
-    tempUnit_expr.SetDefinition("normalize(Temperature_gradient)");
-    tempUnit_expr.SetType(Expression::VectorMeshVar);
-    tempUnit_expr.SetHidden(true);
-    md->AddExpression(&tempUnit_expr);
-
-    Expression tempCurv_expr;
-    tempCurv_expr.SetName("Temperature_curvature");
-    tempCurv_expr.SetDefinition("divergence(Temperature_grad_unit)");
-    tempCurv_expr.SetType(Expression::ScalarMeshVar);
-    tempUnit_expr.SetHidden(false);
-    md->AddExpression(&tempCurv_expr);
-#endif
 }
 
 
@@ -693,62 +722,138 @@ avtS3DFileFormat::GetVar(int timeState, int domain, const char *varname)
     char path[256];
     snprintf(path,256,"%s%s%s%sfield.%05d",dir.c_str(),VISIT_SLASH_STRING, timestepDir.c_str(), VISIT_SLASH_STRING, domain);
     debug5 << "avtS3DFileFormat::GetVar: Full path to data file is " << path << endl;
-
-    NcFile nf(path);
-    if (!nf.is_valid())
+    int ncid = INVALID_FILE_HANDLE;
+    int st = nc_open(path, NC_NOWRITE, &ncid);
+    if (st != NC_NOERR)
     {
-        debug1 << nc_strerror(NcError().get_err()) << endl;
+        debug1 << nc_strerror(st) << endl;
         EXCEPTION1(InvalidFilesException, path);
     }
     debug5 << "avtS3DFileFormat::GetVar: Got valid file." << endl;
 
-    // Pull out the appropriate variable.
-    NcVar *v = nf.get_var(varname);
-    if (!v)
+    int varid = -1;
+    st = nc_inq_varid(ncid, varname, &varid);
+    if (st != NC_NOERR)
     {
-        debug1 << nc_strerror(NcError().get_err()) << endl;
+        debug1 << nc_strerror(st) << endl;
+        nc_close(ncid);
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    // Check if it fits the size of the mesh.  Always node-centered, remember.
+    // Check that number of values matches the mesh piece.
     int ntuples = localDims[0] * localDims[1] * localDims[2];
     debug5 << "ntuples:" << ntuples << endl;
-    int nvals = v->num_vals();
-    if (ntuples != nvals)
+
+    char vname[NC_MAX_NAME + 1];
+    nc_type vtype;
+    int ndims = 0;
+    int dimids[NC_MAX_DIMS];
+    int natts = 0;
+
+    NC_CHECK_VAR(nc_inq_var(ncid, varid, vname, &vtype, &ndims, dimids, &natts), varname);
+
+    size_t nvals = 1;
+    for (int d = 0; d < ndims; d++)
     {
-        debug1 << "The variable " << v->name() <<
-                  " does not conform to its mesh (" << nvals << " != " << 
-                  ntuples << ")" << endl;
-        EXCEPTION1(InvalidVariableException, v->name());
+        size_t dimlen = 0;
+        NC_CHECK_VAR(nc_inq_dimlen(ncid, dimids[d], &dimlen), varname);
+        nvals *= dimlen;
+    }
+
+    if ((size_t)ntuples != nvals)
+    {
+        debug1 << "The variable " << vname
+               << " does not conform to its mesh (" << (long)nvals << " != "
+               << ntuples << ")" << endl;
+        nc_close(ncid);
+        EXCEPTION1(InvalidVariableException, vname);
     }
 
     // Set up the VTK dataset.
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfTuples(ntuples);
     float *p = (float*)rv->GetVoidPointer(0);
-    NcValues *input = v->values();
-    if (!input)
+
+    // Read scale_factor attribute (if present).
+    float scaling_factor = 1.0f;
+    nc_type atype;
+    size_t alen = 0;
+
+    st = nc_inq_att(ncid, varid, "scale_factor", &atype, &alen);
+    if (st == NC_NOERR && alen >= 1)
     {
-        debug1 << nc_strerror(NcError().get_err()) << endl;
-        EXCEPTION1(InvalidVariableException, v->name());
+        // netCDF convention: scale_factor usually float or double.
+        if (atype == NC_FLOAT)
+        {
+            NC_CHECK_VAR(nc_get_att_float(ncid, varid, "scale_factor", &scaling_factor), varname);
+        }
+        else if (atype == NC_DOUBLE)
+        {
+            double tmp = 1.0;
+            NC_CHECK_VAR(nc_get_att_double(ncid, varid, "scale_factor", &tmp), varname);
+            scaling_factor = (float)tmp;
+        }
+        else
+        {
+            // Ignore other types.
+        }
+        debug5 << "avtS3DFileFormat::GetVar: Set the scaling factor as "
+               << scaling_factor << endl;
     }
 
-    // Get the scaling factor.
-    NcAtt *scaling = v->get_att(NcToken("scale_factor"));
-    float scaling_factor = 1;
-    if (scaling)
+    // Read the variable data.
+    // The original code assumed float data (NcValues base -> float*).
+    // Here: handle common numeric types and convert to float.
+    if (vtype == NC_FLOAT)
     {
-        scaling_factor = scaling->as_float(0);
-        debug5 << "avtS3DFileFormat::GetVar: Set the scaling factor as " << scaling_factor << endl;
+        NC_CHECK_VAR(nc_get_var_float(ncid, varid, p), varname);
+        for (int i = 0; i < ntuples; i++)
+            p[i] *= scaling_factor;
+    }
+    else if (vtype == NC_DOUBLE)
+    {
+        std::vector<double> tmp(ntuples);
+        NC_CHECK_VAR(nc_get_var_double(ncid, varid, tmp.data()), varname);
+        for (int i = 0; i < ntuples; i++)
+            p[i] = (float)(tmp[i] * (double)scaling_factor);
+    }
+    else if (vtype == NC_INT)
+    {
+        std::vector<int> tmp(ntuples);
+        NC_CHECK_VAR(nc_get_var_int(ncid, varid, tmp.data()), varname);
+        for (int i = 0; i < ntuples; i++)
+            p[i] = (float)tmp[i] * scaling_factor;
+    }
+    else if (vtype == NC_SHORT)
+    {
+        std::vector<short> tmp(ntuples);
+        NC_CHECK_VAR(nc_get_var_short(ncid, varid, tmp.data()), varname);
+        for (int i = 0; i < ntuples; i++)
+            p[i] = (float)tmp[i] * scaling_factor;
+    }
+    else if (vtype == NC_BYTE || vtype == NC_UBYTE)
+    {
+        std::vector<unsigned char> tmp(ntuples);
+        NC_CHECK_VAR(nc_get_var_uchar(ncid, varid, tmp.data()), varname);
+        for (int i = 0; i < ntuples; i++)
+            p[i] = (float)tmp[i] * scaling_factor;
+    }
+    else
+    {
+        // Fallback: ask netCDF to convert to float if possible
+        st = nc_get_var_float(ncid, varid, p);
+        if (st != NC_NOERR)
+        {
+            debug1 << "Unsupported netCDF var type for " << varname
+                   << ": " << (int)vtype << " (" << nc_strerror(st) << ")" << endl;
+            nc_close(ncid);
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+        for (int i = 0; i < ntuples; i++)
+            p[i] *= scaling_factor;
     }
 
-    // Process the variable into the returned data.
-    float *base = (float*)input->base();
-    for(int i=0;i<ntuples;i++)
-    {
-        p[i] = *(base + i) * scaling_factor;
-    }
-
+    nc_close(ncid);
     return rv;
 }
 

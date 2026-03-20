@@ -59,6 +59,7 @@ avtPIConGPUFileFormat::Identify(const char *fname)
     
     ADIOSFileObject *f = new ADIOSFileObject(fname);
     f->Open();
+    if (!f->IsOpen()) return false;
 
     int attrCount = 0;
     std::map<std::string, int>::const_iterator ai;

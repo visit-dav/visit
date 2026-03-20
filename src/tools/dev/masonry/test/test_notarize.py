@@ -1,3 +1,40 @@
+#
+# This python script will do all the work of compiling and then codesigning and notarizing
+# a teeny, tiny, full fledged macOS, Mach-O binary application and then packaging it
+# up in a mountable .dmg file.
+#
+# To run it, be sure your are NOT on an LLNL network or VPN'd into LLNL...
+#
+#     python3 ./test_notarize.py
+#
+# The purpose of this script is to exercise all the processes involved in creating,
+# codesigning and notarizing a macOS, Mach-O binary application to confirm all the required
+# certificates are in place and working.
+#
+# Because it is small, it is easier to iterate through processes to debug issues than it
+# is with the > 1/2 Gigabyte VisIt application.
+#
+# The final step in the test involves making TestDmgNotarization.dmg file available for
+# someone to download through a browser on the internet. For example, copy it to someplace
+# in drive.google.com and set permissions so that anyone with a link can read it. Then,
+# have someone with a macOS system download, mount and/or install it and run it by double
+# clicking on the app icon.
+#
+# The application intentionally involves a shared .dylib library to ensure that piece of
+# things is also working. When it runs correctly it should display a dialog box saying
+# "Hello World" and provide the version number of the zlib compression library that is
+# embedded in the app, "1.2.13".
+#
+# Running and re-running this script should be fine. It will just repeatedly overwrite
+# all the pieces. The --force option in several of the commands below helps with that.
+#
+# From time to time, the contents of test.entitlements and/or
+# TestDmgNotarization.app/Contents/Info.plist may need to be adjusted to address changes
+# in Apple's security policies. For example, macOS apps may need to be explicitly given
+# entitlements to access files in a user's Documents or Downloads directory.
+#
+# Finally, you may need to adjust some of the global params (e.g. username or password key)
+#
 import os
 import subprocess
 import json
@@ -14,7 +51,7 @@ params = {
     "asc_provider":"A827VH86QR"
 } 
 if os.uname().machine == "arm64":
-    params["password"]:"VisIt-arm64"
+    params["password"] = "VisIt-arm64"
 
 temp_dmg = "TestDmgNotarization.dmg"
 temp_app = "TestDmgNotarization.app"
@@ -46,6 +83,15 @@ def shexe(cmd,ret_output=False,echo=False,env=None,redirect=None):
                     return subprocess.call(cmd,**kwargs),""
             else:   
                 return subprocess.call(cmd,**kwargs),""
+
+#
+# Step 0: Compile the application
+#
+cmd = ["clang", "testdmgnot.c", "-o", "TestDmgNotarization.app/Contents/MacOS/testdmgnot"]
+rcode, rout = shexe(" ".join(cmd), ret_output=True, echo=True, env=env)
+if rcode != 0:
+    print("Compiling the Mach-O application failed with rcode = ", rcode)
+    exit(rcode)
 
 #
 # Step 1: Codesign the .dylib in the app

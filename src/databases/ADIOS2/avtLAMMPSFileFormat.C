@@ -34,6 +34,7 @@ avtLAMMPSFileFormat::Identify(const char *fname)
     adios2::IO io = adios2::IO(adios->DeclareIO("ReadBPLAMMPS"));
     io.SetEngine("BP");
     adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
+    if (!reader) return false;
     auto attributes = io.AvailableAttributes();
     auto variables = io.AvailableVariables();
 
@@ -145,7 +146,8 @@ avtLAMMPSFileFormat::avtLAMMPSFileFormat(const char *filename)
     variables = io.AvailableVariables();
     attributes = io.AvailableAttributes();
 
-    if (variables.find("atoms") == variables.end() ||
+    if (!reader ||
+        variables.find("atoms") == variables.end() ||
         variables.find("natoms") == variables.end() ||
         variables.find("ntimestep") == variables.end() ||
         attributes.find("columns") == attributes.end())

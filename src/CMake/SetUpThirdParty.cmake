@@ -251,6 +251,11 @@ function(SET_UP_THIRD_PARTY pkg)
             else()
                 set(X_VALUE ${X})
             endif()
+            if(TARGET ${X_VALUE})
+                set(is_lib_path 0)
+                list(APPEND "${lib_var}" ${X_VALUE})
+                continue()
+            endif()
             if(is_lib_path)
                 set(is_lib_path 0)
                 list(APPEND "${lib_dir_var}" ${X_VALUE})
@@ -415,19 +420,9 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 string(REPLACE ${inptNAME} "" curEXT ${realNAME})
                 # We will have a "." at the end of the string, remove it
                 string(REGEX REPLACE "\\.$" "" inptNAME ${inptNAME})
-                string(REPLACE "." ";" extList ${curEXT})
-                set(curNAME "${curPATH}/${inptNAME}")
-                # Come up with all of the possible library and symlink names
-                set(allNAMES "${curNAME}${LIBEXT}")
-                set(allNAMES ${allNAMES} "${curNAME}${LIBEXT}.1") # seems to be a standard linux-ism that isn't always covered by the foreach-loop on ${extList}
-                set(allNAMES ${allNAMES} "${curNAME}.a")
-                foreach(X ${extList})
-                    set(curNAME "${curNAME}.${X}")
-                    set(allNAMES ${allNAMES} "${curNAME}")           # Linux way
-                    set(allNAMES ${allNAMES} "${curNAME}${LIBEXT}")  # Mac way
-                endforeach()
 
-                list(REMOVE_DUPLICATES allNAMES)
+                # get all files that begin with 'inptNAME.'
+                file(GLOB allNAMES "${curPATH}/${inptNAME}.*")
 
                 # Add the names that exist to the install.
                 foreach(curNAMEWithExt ${allNAMES})
@@ -601,6 +596,8 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
 
+    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
+
     include(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
@@ -619,7 +616,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
 
-    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
 

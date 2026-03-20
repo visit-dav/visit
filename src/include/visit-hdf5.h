@@ -30,7 +30,19 @@
 #ifndef VISIT_DONT_REDEFINE_H5FOPENCLOSE
 #ifdef H5_VERS_MAJOR
 #include <avtCallback.h>
-static void VisIt_IssueH5Warning(int phase)
+static char const *ShortenPath(char const *path, int components = 3)
+{
+    size_t i = strlen(path);
+    if (i < 4) return path;
+    while (i > 0 && components > 0)
+    {
+        if (path[i] == '/') components--;
+        i--;
+    }
+    return &path[i?i+2:0];
+}
+
+static void VisIt_IssueH5Warning(int phase, char const *_file_)
 {
     static bool haveIssuedOpenWarning = false;
     static bool haveIssuedCloseWarning = false;
@@ -38,8 +50,8 @@ static void VisIt_IssueH5Warning(int phase)
     if (phase == 0 && !haveIssuedOpenWarning)
     {
 #ifndef NDEBUG
-        snprintf(msg, sizeof(msg), "Detected attempt to open an HDF5 file without H5F_CLOSE_SEMI.\n"
-            "Please contact VisIt developers to have this issue fixed.");
+        snprintf(msg, sizeof(msg), "Correcting open of HDF5 file without H5F_CLOSE_SEMI in \"%s\".\n"
+            "Please contact VisIt developers to have this issue fixed.", ShortenPath(_file_));
         haveIssuedOpenWarning = true;
         if (!avtCallback::IssueWarning(msg))
            cerr << msg << endl;
@@ -55,14 +67,14 @@ static void VisIt_IssueH5Warning(int phase)
     }
 
 }
-static hid_t VisIt_H5Fopen(const char *name, int flags, hid_t fapl)
+static hid_t VisIt_H5Fopen(const char *name, int flags, hid_t fapl, char const *_file_)
 {
     bool created_fapl = false;
 
     if (fapl == H5P_DEFAULT)
     {
         // Issue error message indicating plugin is using default open
-        VisIt_IssueH5Warning(0);
+        VisIt_IssueH5Warning(0, _file_);
 
         fapl = H5Pcreate(H5P_FILE_ACCESS);
         created_fapl = true;
@@ -77,7 +89,7 @@ static hid_t VisIt_H5Fopen(const char *name, int flags, hid_t fapl)
         if (cd != H5F_CLOSE_SEMI)
         {
             // Issue message if not
-            VisIt_IssueH5Warning(0);
+            VisIt_IssueH5Warning(0, _file_);
 
             // copy the fapl
             fapl = H5Pcopy(fapl);
@@ -95,7 +107,7 @@ static hid_t VisIt_H5Fopen(const char *name, int flags, hid_t fapl)
     return retval;
 }
 
-static herr_t VisIt_H5Fclose(hid_t fid)
+static herr_t VisIt_H5Fclose(hid_t fid, char const *_file_)
 {
 #ifndef VISIT_DONT_CHECK_H5OPENOBJECTS
     static bool haveIssuedOpenObjectsWarning = false;
@@ -137,12 +149,12 @@ static herr_t VisIt_H5Fclose(hid_t fid)
 #endif
     herr_t err = H5Fclose(fid);
     if (err < 0)
-        VisIt_IssueH5Warning(1);
+        VisIt_IssueH5Warning(1, _file_);
     return err;
 }
 
-#define H5Fopen(NAME, FLAGS, FAPL) VisIt_H5Fopen(NAME, FLAGS, FAPL)
-#define H5Fclose(FID) VisIt_H5Fclose(FID)
+#define H5Fopen(NAME, FLAGS, FAPL) VisIt_H5Fopen(NAME, FLAGS, FAPL, __FILE__)
+#define H5Fclose(FID) VisIt_H5Fclose(FID, __FILE__)
 #endif
 #endif
 

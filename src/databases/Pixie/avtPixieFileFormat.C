@@ -1967,7 +1967,7 @@ avtPixieFileFormat::VisitLinks(hid_t locId, const char* name,
       H5O_info_t objinfo;
 
       /* Stat the object */
-      if(H5Oget_info_by_name(locId, name, &objinfo, H5P_DEFAULT) < 0) {
+      if(H5Oget_info_by_name(locId, name, &objinfo, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
         debug5 << "visitLinks() - unable to open object with name " <<name <<std::endl;
         debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
         return 0;
@@ -2026,7 +2026,7 @@ avtPixieFileFormat::VisitLinks(hid_t locId, const char* name,
       }
 
       //Test-open the linked object
-      if (H5Oget_info (obj_id, &objinfo) < 0) {
+      if (H5Oget_info (obj_id, &objinfo, H5O_INFO_ALL) < 0) {
         debug5 << "visitLinks() - unable to open external object " <<name <<std::endl;
         debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
         return 0;

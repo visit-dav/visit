@@ -11,6 +11,7 @@
 
 #include <avtMTSDFileFormat.h>
 
+#define H5_USE_18_API
 #include <hdf5.h>
 
 #include <vector>

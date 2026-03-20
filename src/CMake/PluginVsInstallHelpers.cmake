@@ -286,17 +286,17 @@ if(VISIT_MPICH_INSTALL)
                     "${f0_VISIT_PARALLEL_INCLUDE}")
 
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
-                    f0_VISIT_PARALLEL_DEFS
-                    "${VISIT_PARALLEL_DEFS}")
+                    f0_VISIT_PARALLEL_DEFINES
+                    "${VISIT_PARALLEL_DEFINES}")
     string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
-                    filtered_VISIT_PARALLEL_DEFS
-                    "${f0_VISIT_PARALLEL_DEFS}")
+                    filtered_VISIT_PARALLEL_DEFINES
+                    "${f0_VISIT_PARALLEL_DEFINES}")
 else(VISIT_MPICH_INSTALL)
     set(filtered_VISIT_PARALLEL_CXXFLAGS     "${VISIT_PARALLEL_CXXFLAGS}")
     set(filtered_VISIT_PARALLEL_LINKER_FLAGS "${VISIT_PARALLEL_LINKER_FLAGS}")
     set(filtered_VISIT_PARALLEL_LIBS         "${VISIT_PARALLEL_LIBS}")
     set(filtered_VISIT_PARALLEL_INCLUDE      "${VISIT_PARALLEL_INCLUDE}")
-    set(filtered_VISIT_PARALLEL_DEFS         "${VISIT_PARALLEL_DEFS}")
+    set(filtered_VISIT_PARALLEL_DEFINES      "${VISIT_PARALLEL_DEFINES}")
 endif(VISIT_MPICH_INSTALL)
 
 # Fix some third-party include paths that are different on windows than unix.
