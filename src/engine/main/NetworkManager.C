@@ -3008,7 +3008,7 @@ NetworkManager::RenderInternal()
 
     int w, h; 
     viswin->GetSize(w,h);
-    cerr << "w=" << w << ",h=" << h << endl;
+    cerr << "NetworkManager::RenderInternal: viswin=" << (void*)viswin << ",w=" << w << ",h=" << h << endl;
     const int numPix = w*h;
     unsigned char *pixels = new unsigned char[numPix*3];
 
@@ -3176,6 +3176,17 @@ NetworkManager::RenderInternal()
         view3DTile.imagePan[1] -= yPanDelta;
         foregroundPan[1] -= yPanDelta2;
     }
+
+    // Restore the size, the view3d, and the foreground camera.
+    viswin->SetSize(w,h);
+    viswin->SetView3D(view3D);
+    vtkCamera *cam = viswin->GetForeground()->GetActiveCamera();
+    cam->SetFocalPoint(0.5, 0.5, 0.);
+    cam->SetPosition(0.5, 0.5, 1.);
+    cam->SetViewUp(0., 1., 0.);
+    cam->SetParallelProjection(1);
+    cam->SetParallelScale(0.5);
+    viswin->GetForeground()->SetActiveCamera(cam);
 
     avtDataObject_p output;
     CopyTo(output, pass2);
