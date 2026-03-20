@@ -32,6 +32,10 @@ class vtkVisItTextActor;
 //    Brad Whitlock, Mon Sep 19 15:44:40 PDT 2011
 //    Switch to vtkVisItTextActor.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtText2DColleague : public avtAnnotationWithTextColleague
@@ -63,6 +67,8 @@ protected:
     bool               useForegroundForTextColor;
     bool               addedToRenderer;
     ColorAttribute     textColor;
+    double             textPosition[2];
+    double             textHeight;
 };
 
 #endif
