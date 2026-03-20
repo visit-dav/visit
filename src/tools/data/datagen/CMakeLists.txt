@@ -151,8 +151,14 @@ function(BUILD_DATA_TARGET_IMPL target_name do_parallel)
 
     target_compile_definitions(${tname} PRIVATE ${target_DEFS})
     target_link_libraries(${tname} PRIVATE ${target_LIBS})
-    set_target_properties(${tname} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    if(WIN32)
+        # prevent creating a Debug/Release subdir for the data example executable
+        set_target_properties(${tname} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "$<1:${CMAKE_CURRENT_BINARY_DIR}/bin>")
+    else()
+        set_target_properties(${tname} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
 endfunction()
 
 function(BUILD_VISIT_DIST_DATA)
@@ -344,7 +350,7 @@ if(USE_VISIT_DIST_DATA_TARBALL)
     set(DIST_UNTAR_CMD "${TAR_CMD} ${UNTAR_ARGS} ${VISIT_DIST_DATA_TARBALL}")
     install(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})")
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
-        DESTINATION ${VISIT_INSTALLED_VERSION}/data
+        DESTINATION $<IF:$<PLATFORM_ID:Windows>,${VISIT_INSTALLED_VERSION}/data,data>
         DIRECTORY_PERMISSIONS
             OWNER_READ OWNER_WRITE OWNER_EXECUTE
             GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -353,102 +359,90 @@ if(USE_VISIT_DIST_DATA_TARBALL)
 else()
     if(SILO_FOUND)
         if(WIN32)
-            set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
+            set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
         else()
             set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
         endif()
 
-        set(testall_output  curv2d.silo
-                            curv2d_colmajor.silo
-                            curv3d.silo
-                            curv3d_colmajor.silo
-                            poly3d.silo
-                            rect2d.silo
-                            rect3d.silo
-                            ucd2d.silo
-                            ucd3d.silo
-                            ucd_lines2d.silo
-                            ucd_lines3d.silo)
+        set(testall_output  ${DATA_OUT_DIR}/curv2d.silo
+                            ${DATA_OUT_DIR}/curv2d_colmajor.silo
+                            ${DATA_OUT_DIR}/curv3d.silo
+                            ${DATA_OUT_DIR}/curv3d_colmajor.silo
+                            ${DATA_OUT_DIR}/poly3d.silo
+                            ${DATA_OUT_DIR}/rect2d.silo
+                            ${DATA_OUT_DIR}/rect3d.silo
+                            ${DATA_OUT_DIR}/ucd2d.silo
+                            ${DATA_OUT_DIR}/ucd3d.silo
+                            ${DATA_OUT_DIR}/ucd_lines2d.silo
+                            ${DATA_OUT_DIR}/ucd_lines3d.silo)
         add_custom_command(OUTPUT  ${testall_output}
                            COMMAND "$<TARGET_FILE:testall>" ${SDA}
                            DEPENDS testall
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running testall")
-        set(globe_output globe.silo globe_mat0.silo globe_matcolors.silo)
+        set(globe_output ${DATA_OUT_DIR}/globe.silo
+                         ${DATA_OUT_DIR}/globe_mat0.silo
+                         ${DATA_OUT_DIR}/globe_matcolors.silo)
         add_custom_command(OUTPUT  ${globe_output}
                            COMMAND "$<TARGET_FILE:globe>" ${SDA}
                            DEPENDS globe
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running globe")
-        set(correlationtest_output dbA00.pdb dbB00.pdb dbC00.pdb)
+        set(correlationtest_output ${DATA_OUT_DIR}/dbA00.pdb
+                                   ${DATA_OUT_DIR}/dbB00.pdb
+                                   ${DATA_OUT_DIR}/dbC00.pdb)
         add_custom_command(OUTPUT  ${correlationtest_output}
                            COMMAND "$<TARGET_FILE:correlationtest>" ${SDA}
                            DEPENDS correlationtest
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running correlationtest")
-        set(multi_test_output  multi_curv2d.silo
-                               multi_curv3d.silo
-                               multi_point2d.silo
-                               multi_rect2d.silo
-                               multi_rect3d.silo
-                               multi_ucd3d.silo)
+        set(multi_test_output  ${DATA_OUT_DIR}/multi_curv2d.silo
+                               ${DATA_OUT_DIR}/multi_curv3d.silo
+                               ${DATA_OUT_DIR}/multi_point2d.silo
+                               ${DATA_OUT_DIR}/multi_rect2d.silo
+                               ${DATA_OUT_DIR}/multi_rect3d.silo
+                               ${DATA_OUT_DIR}/multi_ucd3d.silo)
         add_custom_command(OUTPUT  ${multi_test_output}
                            COMMAND "$<TARGET_FILE:multi_test>" -noCycles -noTimeInvariantMultimesh ${SDA}
                            DEPENDS multi_test
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running multi_test")
-        add_custom_command(OUTPUT  noise.silo
+        add_custom_command(OUTPUT  ${DATA_OUT_DIR}/noise.silo
                            COMMAND "$<TARGET_FILE:noise>" ${SDA}
                            DEPENDS noise
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running noise")
-        add_custom_command(OUTPUT  tire.silo
+        add_custom_command(OUTPUT  ${DATA_OUT_DIR}/tire.silo
                            COMMAND "$<TARGET_FILE:tire>" ${SDA}
                            DEPENDS tire
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running tire")
         set(all_example_output
-            noise.silo tire.silo
+            ${DATA_OUT_DIR}/noise.silo ${DATA_OUT_DIR}/tire.silo
             ${testall_output}
             ${globe_output}
             ${correlationtest_output}
             ${multi_test_output})
         add_custom_target(create_data_examples ALL DEPENDS ${all_example_output})
         if(WIN32)
-            # copy silo and dependencies so that the data generators will run
-            foreach(SD ${SILO_LIBRARY_DIR})
-                foreach(SL ${SILO_LIB})
-                    get_filename_component(SL ${SL} NAME)
-                    if(EXISTS ${SD}/${SL})
-                        get_filename_component(SL_WE ${SL} NAME_WE)
-                        set(dllName "${SD}/${SL_WE}.dll")
-                        if(NOT EXISTS ${dllName})
-                            set(dllName "${SD}/../bin/${SL_WE}.dll")
-                            file(REAL_PATH ${dllName} dllName)
-                        endif()
-                        if(EXISTS ${dllName})
-                            list(APPEND SILO_LIBS ${dllName})
-                        endif()
-                    endif()
-                endforeach()
-            endforeach()
-            add_custom_command(TARGET create_data_examples PRE_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                ${SILO_LIBS} ${DATA_OUT_DIR})
-        endif()
+            # Silo's dependent dlls are installed alongside it, so just
+            # copy the dll's to the necessary directory
+            if(NOT EXISTS ${DATA_OUT_DIR})
+                file(MAKE_DIRECTORY ${DATA_OUT_DIR})
+            endif()
 
-        # Create data install target
-        if(NOT WIN32)
-            string(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${DATA_OUT_DIR}/\\1\\2" install_files "${all_example_output}")
-        else()
-            string(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/\\1\\2" install_files "${all_example_output}")
+            file(COPY ${VISIT_SILO_DIR}/bin/
+                 DESTINATION ${DATA_OUT_DIR}
+                 FILES_MATCHING PATTERN "*.dll")
 
             visit_add_to_util_builds(create_data_examples)
         endif()
-        install(FILES ${install_files}
-                DESTINATION ${VISIT_INSTALLED_VERSION}/data
+
+        # Create data install target
+        install(FILES ${all_example_output}
+                DESTINATION $<IF:$<PLATFORM_ID:Windows>,${VISIT_INSTALLED_VERSION}/data,data>
                 PERMISSIONS OWNER_READ OWNER_WRITE
-                            GROUP_READ GROUP_WRITE 
+                            GROUP_READ GROUP_WRITE
                             WORLD_READ)
 
         # Create a target to build visit_dist_data.tar.xz
