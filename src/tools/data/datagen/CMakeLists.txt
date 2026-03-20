@@ -329,6 +329,14 @@ endif()
 #   Normalize path to visit_dist_data.tar.xz.
 #   Change install path for generated data files to:
 #       ${VISIT_INSTALLED_VERSION}/data
+#
+#   Kathleen Biagas, Fri Mar 20, 2026
+#   Set DESTINATION for visit_dist_data or installed data files based on
+#   PLATFORM_ID.
+#   Add DATA_OUT_DIR to all example data output files. Fixes CMake warning
+#   on Windows.
+#   On Windows, simplify how Silo's library dependencies are copied.
+#
 #-----------------------------------------------------------------------------
 
 set(USE_VISIT_DIST_DATA_TARBALL false)
@@ -418,7 +426,8 @@ else()
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running tire")
         set(all_example_output
-            ${DATA_OUT_DIR}/noise.silo ${DATA_OUT_DIR}/tire.silo
+            ${DATA_OUT_DIR}/noise.silo
+            ${DATA_OUT_DIR}/tire.silo
             ${testall_output}
             ${globe_output}
             ${correlationtest_output}
