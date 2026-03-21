@@ -20,8 +20,8 @@ the data producer can organize data within VisIt's GUI or that users can employ
 VisIt's :ref:`Expressions <Expressions>` and :ref:`Operators <Operators>` to
 create and manage subsets. However, using these other approaches for the sole
 purpose of subsetting is often cumbersome through VisIt's GUI. To understand
-why as well as read about other issues related to subsetting, please see
-`these developer notes <https://www.visitusers.org/index.php?title=Generalized_Subsetting>`_.
+why as well as read about other issues related to subsetting, please see these
+developer notes on generalized subsetting.
 
 .. toctree::
     :maxdepth: 2

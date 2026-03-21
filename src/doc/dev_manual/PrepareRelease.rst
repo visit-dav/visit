@@ -52,7 +52,7 @@ the current splashscreen images but in the event of a major or minor release
 images should be redesigned to showcase new features.
 
 There are two image files associated with the splashscreen, both of which
-are `XCF <https://xcf.berkeley.edu>`_. XCF files are the native image format
+are `XCF <https://en.wikipedia.org/wiki/XCF_(file_format)>`_. XCF files are the native image format
 of the `GIMP <https://www.gimp.org>`_ image-editing program. One is for the
 splashscreen and the second is for the icon on macOS. They are both used
 as the first step in the process to create the splashscreen and icon.

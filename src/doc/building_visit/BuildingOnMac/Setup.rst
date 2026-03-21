@@ -199,7 +199,7 @@ New way using ``xcrun notarytool``... ::
         xcrun notarytool submit --apple-id APPLE_ID --keychain-profile APP_PASSOWRD --team-id TEAM_ID /path/to/VisIt.dmg
 
 Where ``APPLE_ID`` is your Apple Id login with Apple, ``APP_PASSWORD`` is the clear-text name for the `app-specific password <https://support.apple.com/en-us/102654>`__ you created (once probably in the distant past and you can no longer remember the steps involved) in your keychain and ``TEAM_ID`` is the Apple Developer ID for LLNL.
-For the ``APP_PASSWORD`` to work correctly with ``notarytool``, you will need to `copy over <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool#Save-credentials-in-the-keychain>`__ the app-specific password you were using for ``altool`` so that it can also be used for ``notarytool``.
+For the ``APP_PASSWORD`` to work correctly with ``notarytool``, you will need to `copy over <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool>`__ the app-specific password you were using for ``altool`` so that it can also be used for ``notarytool``.
 
 The submission process can take a while because it is uploading the (very large) ``.dmg`` file to Apple's servers and then processing it there.
 When the *submission* completes, you will see a message such as ::
@@ -354,7 +354,7 @@ Read more about `Apple's Code Signing documentation. <https://developer.apple.co
 
 App-Specific Password
 ~~~~~~~~~~~~~~~~~~~~~
-To create an app-specific password go to: `https://appleid.apple.com/account/manage <https://appleid.apple.com/account/manage>`_ . Generate the app-specific password by navigating to: *Security->App-Specific Password*.
+To create an app-specific password, follow Apple's instructions: `App-specific passwords <https://support.apple.com/en-us/102654>`_. Generate the app-specific password by navigating to: *Security->App-Specific Password*.
 
 To avoid having a plain-text password in your config file, you can add the app-specific password to your macOS keychain. To do this, run the following command:
 

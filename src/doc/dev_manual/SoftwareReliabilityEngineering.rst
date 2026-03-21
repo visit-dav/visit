@@ -92,7 +92,7 @@ dedicated to SRE activity, coverage is 24/7 and response time is measured in
 place at Lawrence Livermore National Lab, coverage is during normal West Coast
 *business* hours, 8am-12pm and 1-5pm (GMT-8, San Francisco time zone), Monday
 through Friday excluding
-`LLNL holidays <https://supplychain.llnl.gov/poattach/pdf/llnl_holidays.pdf>`_
+LLNL holidays
 and response time may be as much as four hours due to team members having to
 multi-task among many responsibilities.
 
@@ -124,9 +124,9 @@ developers. In addition, any :ref:`active SRE discussions <sre_active_discussion
 unresolved at the end of the week are formally :ref:`handed off <sre_handoffs>` to
 the next **Primary**.
 
-:ref:`Active SRE discussions <sre_active_discussions>` will be logged and tracked in a separate GitHub,
-`issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
-within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
+:ref:`Active SRE discussions <sre_active_discussions>` will be logged and tracked in
+`GitHub Discussions <https://github.com/visit-dav/visit/discussions>`_ within the
+`visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of :ref:`serious incidents <sre_serious>`, the **Primary** will prepare a brief
 *postmortem* to inform a discussion at the next project meeting of possible changes
 in practices to avoid repeating such major incidents.
@@ -245,9 +245,9 @@ within a half-day's (4 hours) worth of effort. When there are many such tasks in
 the system to work on, the **Primary** is free to use his/her judgment to decide
 which s/he can most productively address.
 
-Part of the acknowledgment of this new category of work is the new
-`issue tracker <https://github.com/visit-dav/live-customer-response/issues>`_
-for tracking it. *New* SRE activity will start with an issue being added there.
+Part of the acknowledgment of this new category of work is the use of
+`GitHub Discussions <https://github.com/visit-dav/visit/discussions>`_
+for tracking it. *New* SRE activity will start with a discussion being added there.
 As an SRE incident unfolds it may result in either the same issue being moved to the
 `product development <https://github.com/visit-dav/visit/issues>`_ issue tracker
 and/or new issue(s) being added to the 
@@ -330,7 +330,7 @@ engage the *whole team* instead of singling out a specific member. This
 includes...
 
   * Creation of a `GitHub discussion <https://github.com/visit-dav/visit/discussions>`_.
-  * Creation of a `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_.
+  * Creation of a `GitHub issue <https://github.com/visit-dav/visit/issues>`_.
   * Telephone call to the `VisIt hotline <tel:42847>`_.
 
 Whenever users attempt a first contact through something other than the supported

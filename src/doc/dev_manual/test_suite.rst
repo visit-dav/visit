@@ -619,7 +619,7 @@ Finally, make sure to tag the test in a comment block with a space separated lis
 Using VisIt_'s test routines in other applications
 --------------------------------------------------
 VisIt_'s testing infrastructure can also be used from any VisIt_ installation by other applications that want to write their own Visit-based tests.
-For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_.
+For more details about this, see: Leveraging VisIt in Sim Code Regression Testing.
 
 
 Diagnosing pluginVsInstall failures

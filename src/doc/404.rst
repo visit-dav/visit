@@ -30,4 +30,4 @@ If none of the above helps, here are some other potentially useful places to go 
 * `Project Testing Dashboard <https://visit-dav.github.io/dashboard/>`_
 
 .. _discussion: https://github.com/visit-dav/visit/discussions
-.. _issue: https://github.com/visit-dav/visit/issues/new?assignees=&labels=docs&template=documentation-request.md&title=Bad%20Link
+.. _issue: https://github.com/visit-dav/visit/issues

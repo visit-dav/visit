@@ -74,7 +74,7 @@ The first new argument is an integer indicating the number of components contain
 The next difference is that you must pass an array of pointers to character
 strings that represent the names of each individual component.
 Finally, the argument that was used to pass the data to the **DBPutQuadvar1** function, now in the **DBPutQuadvar** function, accepts an array of pointers to the various arrays that contain the variable components.
-For more complete information on each of the arguments to the functions that Silo_ uses to write multi-component data, refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_.
+For more complete information on each of the arguments to the functions that Silo_ uses to write multi-component data, refer to the `Silo Manual <https://silo.readthedocs.io/latest/>`_.
 
 Silo_'s Fortran interface does not provide functions to write out multi-component data such as vectors.
 If you use the Fortran interface to Silo, you will have to write out the vector components as separate scalar variables and then write an expression to your Silo_ file that composes the components into a single vector variable.
@@ -344,12 +344,12 @@ See :numref:`Figure %s <ghostzoneproblem>` for examples of the problems that gho
 Ghost zones can be stored into the database so VisIt_ can read them when the data is visualized.
 Ghost zones can also be created on-the-fly for structured (rectilinear and curvilinear) meshes if multimesh adjacency information is provided.
 This section will show how to write ghost zones to the file.
-If you are interested in providing multimesh adjacency information so you can write smaller files and so VisIt_ can automatically create ghost zones then refer to the documentation for the **DBPutMultimeshadj** function in the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_.
+If you are interested in providing multimesh adjacency information so you can write smaller files and so VisIt_ can automatically create ghost zones then refer to the documentation for the **DBPutMultimeshadj** function in the `Silo Manual <https://silo.readthedocs.io/latest/>`_.
 
 Writing ghost zones to your files
 """""""""""""""""""""""""""""""""
 
-You can write ghost zones to your files using the Silo_ library or you can instead write a multimesh adjacency object, covered in the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ that VisIt_ can use to automatically create ghost zones.
+You can write ghost zones to your files using the Silo_ library or you can instead write a multimesh adjacency object, covered in the `Silo Manual <https://silo.readthedocs.io/latest/>`_ that VisIt_ can use to automatically create ghost zones.
 This section will cover how to use the Silo_ library to store ghost zones explicitly in your files.
 The first step in creating ghost zones is to add a layer of zones around the mesh in each domain of your database where a domain boundary exists.
 Each zone in the layer of added ghost zones must match the location and have the same data value as the zone in the domain that it is meant to mirror in order for VisIt_ to be able to successfully use ghost zones to remove domain decomposition artifacts.
@@ -640,7 +640,7 @@ This means that the information for one zone's mixed materials could be scattere
 The **mix_next** array contains the next index to use within the mixed material arrays or it contains a zero to indicate that no more information for the zone is available.
 
 To write materials to a Silo_ file, you use the **DBPutMaterial** function.
-The **DBPutMaterial** function is covered in the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ but it is worth noting here that it can be called to write either mixed materials or clean materials.
+The **DBPutMaterial** function is covered in the `Silo Manual <https://silo.readthedocs.io/latest/>`_ but it is worth noting here that it can be called to write either mixed materials or clean materials.
 The examples so far have illustrated the more complex case of writing out mixed materials.
 You can pass the **matlist** array and the mixed material arrays to the **DBPutMaterial** function or, in the case of writing clean materials, you can pass only the **matlist** array and **NULL** for all of the mixed material arrays.
 Note that when you write clean materials, your **matlist** array will contain only the numbers of valid materials.
@@ -732,4 +732,3 @@ That is, the **matlist** array does not contain any negative mixed material arra
           .              matlist, mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf,
           .              mixlen, DB_FLOAT, DB_F77NULL, ierr)
           end
-

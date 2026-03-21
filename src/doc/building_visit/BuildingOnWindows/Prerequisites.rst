@@ -34,11 +34,10 @@ Other Software
 
    * Needed if you want to use our prebuilt third-party libraries.
 
-3. `NSIS <http://www.nsis.sourceforge.net>`_ *Optional*
+3. `NSIS <https://nsis.sourceforge.io/>`_ *Optional*
 
    * For creating an installer for VisIt. NSIS 2 or 3 should work.
 
 4. `Microsoft MPI <https://www.microsoft.com/en-us/download/details.aspx?id=57467>`_. *Optional*
 
    * For building VisIt's parallel engine.  Redistributable binaries and SDK's are needed, so download and install both msmpisdk.msi and msmpisetup.exe.
-

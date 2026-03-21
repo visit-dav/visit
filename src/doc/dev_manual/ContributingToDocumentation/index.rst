@@ -159,10 +159,10 @@ use of Sphinx as we move forward. These are discussed at the
     Link to anchors *within* this documentation like :ref:`this one <my_anchor>`
 
 * Link to other documents elsewhere online like
-  `visitusers.org <https://www.visitusers.org/>`_::
+  `visit.llnl.gov <https://visit.llnl.gov>`_::
 
     Link to other documents elsewhere online like
-    `visitusers.org <https://www.visitusers.org/>`_
+    `visit.llnl.gov <https://visit.llnl.gov>`_
 
 * Link to *numbered* figures or tables *within* this documentation like
   :numref:`Fig. %s <my_figure2>`::
@@ -197,7 +197,7 @@ About Line Length
 When we originally converted from OpenOffice to Sphinx, we decided to restrict line lengths to 80 columns.
 More recently, we've decided that we should not impose any absolute character count on line length and instead adopt the practice of `a single sentence per line <https://asciidoctor.org/docs/asciidoc-recommended-practices/#one-sentence-per-line>`_.
 Some lines will be very short.
-Other lines can be very long, especially if they include long URLs like `this one <https://chart.apis.google.com/chart?chs=500x500&chma=0,0,100,100&cht=p&chco=FF0000%2CFFFF00%7CFF8000%2C00FF00%7C00FF00%2C0000FF&chd=t%3A122%2C42%2C17%2C10%2C8%2C7%2C7%2C7%2C7%2C6%2C6%2C6%2C6%2C5%2C5&chl=122%7C42%7C17%7C10%7C8%7C7%7C7%7C7%7C7%7C6%7C6%7C6%7C6%7C5%7C5&chdl=android%7Cjava%7Cstack-trace%7Cbroadcastreceiver%7Candroid-ndk%7Cuser-agent%7Candroid-webview%7Cwebview%7Cbackground%7Cmultithreading%7Candroid-source%7Csms%7Cadb%7Csollections%7Cactivity>`_.
+Other lines can be very long, especially if they include long URLs like ``https://example.com/a/really/long/path/with/a/query?that=keeps&going=andgoing=forever``.
 There are many advantages to using a single sentence per line mostly having to do with the way diffing tools compute and display diffs.
 
 This practice, of course, does not apply to source code.

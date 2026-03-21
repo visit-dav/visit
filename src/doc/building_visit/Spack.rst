@@ -284,7 +284,7 @@ Spack uses two files to control the environment on a system. They are the ``comp
 The ``compilers.yaml`` file is used to specify information about compilers on a system.
 The ``spack compilers`` command, as mentioned earlier, will create one for you with all the compilers on the system.
 You can then customize it.
-The complete documentation on the ``compilers.yaml`` file can be found `here <https://spack.readthedocs.io/en/latest/getting_started.html#compiler-configuration>`__.
+The complete documentation on the ``compilers.yaml`` file can be found `here <https://spack.readthedocs.io/en/latest/getting_started.html>`__.
 
 The ``packages.yaml`` file is used to specify information about external packages on a system.
 By default, spack will want to build everything from scratch for your system.

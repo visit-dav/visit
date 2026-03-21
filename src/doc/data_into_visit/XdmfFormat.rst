@@ -17,7 +17,7 @@ In fact, if you write out raw binary files, you will have zero external dependen
 
 The remainder of this Xdmf documentation consists of a description of the file format, a simple example, and then more complex examples of the different mesh types.
 
-The official Xdmf file format specification and description can be found `at xdmf.org <https://xdmf.org/index.php/Main_Page>`_.
+The official Xdmf file format specification and description can be found in the `XDMF project repository <https://www.xdmf.org/>`_.
 
 Basic structure of an Xdmf file
 -------------------------------

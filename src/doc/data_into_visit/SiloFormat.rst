@@ -9,7 +9,7 @@ This section will illustrate how to use the Silo_ library to write out various t
 Since the Silo_ library provides bindings for multiple languages, including C, Fortran, and Python, the source code examples that demonstrate a particular topic will be given in more than one programming language, when appropriate.
 One goal of this section is to provide examples that are complete enough so that they can be readily adapted into working source code.
 This section will not necessarily explain all of the various arguments to function calls in the Silo_ library.
-You can refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ for more information.
+You can refer to the `Silo Manual <https://silo.readthedocs.io/latest/>`_ for more information.
 
 Using the Silo library
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -234,7 +234,7 @@ Option lists
 
 Many of Silo_'s more complex functions accept an auxiliary argument called an option list.
 An option list is a list of option/value pairs and it is used to specify additional metadata about the data being stored.
-Each Silo_ function that accepts an option list has its options enumerated in the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_.
+Each Silo_ function that accepts an option list has its options enumerated in the `Silo Manual <https://silo.readthedocs.io/latest/>`_.
 We cover only a subset of available options here.
 Option lists need not be passed to the Silo_ functions that do support them.
 In fact, most of the source code examples in this manual will pass NULL instead of passing a pointer to an option list.
@@ -724,7 +724,7 @@ Silo_ also supports fully arbitrary polyhedral zones but that will not be covere
 The procedure for creating the node coordinates is the same with the exception that 3D meshes also require a Z-coordinate.
 The procedure for creating the zone list (connectivity information) is the same except that you specify cells using a larger number of nodes because they are 3D.
 The order in which the nodes are specified is also more important for 3D shapes because if the nodes are not given in the right order, the zones can become tangled.
-The proper zone ordering for each of the four supported 3D zone shapes is shown in `the Silo_'s user manual <https://silo.readthedocs.io/objects.html#silo-standard-hex>`__.
+The proper zone ordering for each of the four supported 3D zone shapes is shown in `the Silo_'s user manual <https://silo.readthedocs.io/latest/objects.html#silo-standard-hex>`__.
 
 :numref:`Figure %s <silo_meshucd3d>` shows an example of a simple 3D unstructured mesh consisting of 2 hexahedrons, 1 pyramid, 1 prism, and 1 tetrahedron.
 
@@ -827,7 +827,7 @@ You can override the default labels using an option list.
 Option lists are created with the ``DBMakeOptlist`` function and freed with the ``DBFreeOptlist`` function.
 All of the Silo_ functions for writing meshes that we've demonstrated so far can
 accept option lists that contain custom axis labels and units.
-Refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ for more information on additional options that can be passed via option lists.
+Refer to the `Silo Manual <https://silo.readthedocs.io/latest/>`_ for more information on additional options that can be passed via option lists.
 
 Adding customized labels and units for a mesh by using option lists ensures that VisIt_ uses your customized labels and units instead of the default values.
 :numref:`Figure %s <silo_meshlabel>` shows how the labels and units in the previous examples show up in VisIt_'s visualization window.
@@ -866,7 +866,7 @@ Example for associating new axis labels and units with a mesh:
     c Free the option list
         err = dbfreeoptlist(optlistid)
 
-Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <https://silo.readthedocs.io/globals.html#dbsetcompression>`__ for more information.
+Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <https://silo.readthedocs.io/latest/globals.html#dbsetcompression>`__ for more information.
 
 Writing a scalar variable
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1263,7 +1263,7 @@ Adding variable units
 All of the examples for writing scalar variables presented so far have focused on the basics of writing a variable array to a Silo_ file.
 Silo_'s option list mechanism allows a variable object to be annotated with various extra information.
 In the case of scalar variables, the option list passed to ``DBPutQuadvar1`` and ``DBPutUcdvar1`` can contain the units that describe the variable being stored.
-Refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`__ for a complete list of the options accepted by the ``DBPutQuadvar1`` and ``DBPutUcdvar1`` functions.
+Refer to the `Silo Manual <https://silo.readthedocs.io/latest/>`__ for a complete list of the options accepted by the ``DBPutQuadvar1`` and ``DBPutUcdvar1`` functions.
 When a scalar variable has associated units, the units appear in the variable legend in VisIt_'s visualization window (see :numref:`Figure %s <silo_varunits>`).
 
 .. _silo_varunits:
@@ -1624,6 +1624,5 @@ Note that if you use the ``"EMPTY"`` keyword in a multivar object then the same 
   DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, NULL);
 
 
-For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating filesystem paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multiblock objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multiblock objects.
+For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating filesystem paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multiblock objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/latest/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multiblock objects.
 You can find many more examples of various features of Silo by browsing source code in either `VisIt's <https://github.com/visit-dav/visit/tree/develop/src/tools/data/datagen>`__ or `Silo's <https://github.com/LLNL/Silo/tree/main/tests>`__ test suites or the `test data files <https://github.com/search?q=repo%3Avisit-dav%2Fvisit%20path%3Asilo*.tar.xz&type=code>`__ used in VisIt_'s testing.
-

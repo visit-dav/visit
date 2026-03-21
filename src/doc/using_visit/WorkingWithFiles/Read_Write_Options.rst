@@ -36,9 +36,9 @@ produce the names of the scalar variables holding material-specific values for a
 associated non-material-specific variable.
 
 The
-`nameschemes <./using_visit/WorkingWithFiles/Read_Write_Options.rst>`__
+nameschemes
 used here are identical to those described in the
-`Silo user's manual <https://silo.readthedocs.io/index.html>`__
+`Silo user's manual <https://silo.readthedocs.io/latest/>`__
 with one extension. The conversion specifier ``%V`` is used to denote the basename
 (non-material-specific) name of a set of scalar variables holding material
 specific values.
@@ -310,7 +310,7 @@ very old versions of these options.
 Force Single
 """"""""""""
 The ``Force Single`` check box enables the Silo_ library's
-`DBForceSingle() <https://silo.readthedocs.io/globals.html#dbforcesingle>`__
+`DBForceSingle() <https://silo.readthedocs.io/latest/globals.html#dbforcesingle>`__
 method. This can potentially be useful when reading double precision data and
 running out of memory.
 
@@ -318,7 +318,7 @@ Search for ANNOTATION_INT (and friends)
 """""""""""""""""""""""""""""""""""""""
 The ``ANNOTATION_INT`` (and friends) objects are generic containers sometimes
 used to store mesh-specific data using Silo_'s
-`compound array <https://silo.readthedocs.io/generic.html#dbputcompoundarray>`__.
+`compound array <https://silo.readthedocs.io/latest/generic.html>`__.
 However, because there is no multiblock analog for Silo_ compound arrays, in
 order to handle them VisIt_ needs to be forced to go searching for their
 existance in all the files comprising a multiblock database. Thus, enabling

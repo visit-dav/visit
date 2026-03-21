@@ -334,7 +334,7 @@ VisIt_ has a variety of expression functions that operate on a Mesh including
 *area* (for 2D meshes), *volume* (for 3D meshes, *revolved_volume* (for
 2D cylindrically symmetric meshes), *zonetype*, and more. In addition,
 VisIt_ includes the entire suite of *Mesh quality* expressions from the
-`Verdict Library <http://cubit.sandia.gov/public/verdict.html>`_.
+`Verdict Library <https://github.com/sandialabs/verdict>`_.
 
 Creating vector and tensor valued variables from scalars
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

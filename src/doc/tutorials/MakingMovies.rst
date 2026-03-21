@@ -33,8 +33,7 @@ over time. There are several steps to making such a movie.
 Creating a good image from a single time-state
 ----------------------------------------------
 
-This tutorial uses the **dbreak3d** dataset -- available at
-http://www.visitusers.org/index.php?title=Tutorial_Data
+This tutorial uses the **dbreak3d** dataset from the VisIt tutorial data package.
 
 The dataset simulates the evolution of water and air in a water tank after
 an interface holding a column of water is instantaneously removed.
@@ -431,4 +430,3 @@ For example, to install on Ubuntu::
 
     apt-get update
     apt-get install -y ffmpeg
-

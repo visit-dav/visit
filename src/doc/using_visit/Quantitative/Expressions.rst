@@ -863,7 +863,7 @@ Inverse Function: ``inverse()`` : ``inverse(expr0)``
 
 Principal Deviatoric Tensor Function: ``principal_deviatoric_tensor()`` : ``principal_deviatoric_tensor(expr0)``
     Deviatoric stress is the stress tensor which results after subtracting the
-    `hydrostatic stress tensor <http://www.continuummechanics.org/hydrodeviatoricstress.html>`_.
+    `hydrostatic stress tensor <https://en.wikipedia.org/wiki/Deviatoric_stress>`_.
     Hydrostatic stress is a *scalar* quantity also often referred to as
     *average pressure* or just *pressure*. However, it is often characterized in
     *tensor* form by multiplying it through a 3x3 identity matrix.
@@ -900,7 +900,7 @@ Principal Tensor Function: ``principal_tensor()`` : ``principal_tensor(expr0)``
     Creates a new *vector* expression which is everywhere the 
     principal stress components of the input argument, which must a *symmetric*
     tensor. The principal stress components are the
-    `eigenvalues of the stress tensor. <https://uclageo.com/SoilMechanicsNotes/Section2.3.php>`_
+    `eigenvalues of the stress tensor. <https://en.wikipedia.org/wiki/Principal_stress>`_
     So, the vector expression computed here is the same as 
     :ref:`eigenvalue() <Eigenvalue_Expression_Function>`.
 

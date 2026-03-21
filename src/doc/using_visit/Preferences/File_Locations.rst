@@ -143,7 +143,7 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_ specifying the
   :ref:`colors and color control points <Color_tables>` for the color table.
 
-`Custom Plugin <http://visitusers.org/index.php?title=Building_plugins_using_CMake>`_ Files
+Custom Plugin Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): There are separate directories in ``VUSER_HOME``
   for *private*, user-specific operator, database and plot plugins. On UNIX/macOS,
@@ -181,6 +181,8 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
   server.
 * Format: Binary shared library files in the machine format of the host
   architecture.
+
+See :ref:`Creating a database plugin <Data_Into_VisIt_plugin>` for an overview of building plugins from source.
 
 Usage Tracking Files
 """"""""""""""""""""
@@ -232,12 +234,11 @@ other than ``VUSER_HOME``. These are briefly described in this section.
   ``-o`` command line :ref:`startup option <StartupOptions>` can be used to
   select a database file to open at startup. VisIt_ uses the
   :ref:`file's extension <Supported File Types>` to decide what
-  `type of database <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_
-  the file is and then select the appropriate plugin to read it.
+  kind of database (file format) the file is and then select the appropriate plugin to read it.
 * Format: Varies by 
-  `database type <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_.
+  :ref:`database type <Supported File Types>`.
 
-`VisIt Debug Log <http://visitusers.org/index.php?title=Debug_logs>`_ (``.vlog``) Files
+VisIt Debug Log (``.vlog``) Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): The location of these files depends on whether
   VisIt_ is being run in :ref:`client/server mode <Client-Server Mode>`.
@@ -330,14 +331,12 @@ Plot and Operator Attribute Files
   more convenient database to load back into VisIt_ for further analysis.
 * Written: On demand when user selects
   :menuselection:`File --> Export database...`.
-  While VisIt_ *reads* over 130 different
-  `types of databases <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_,
+  While VisIt_ *reads* over 130 different :ref:`types of databases <Supported File Types>`,
   only about 20 of those types does it *write*. And some of those output types
   support only limited kinds of data. In client/server mode, keep in mind that
   the files are saved only on the server.
 * Read: On demand when user selects :menuselection:`File --> Open...`
-* Format: Varies by
-  `database type <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_.
+* Format: Varies by :ref:`database type <Supported File Types>`.
 
 Save Window vs. Export Database Files
 """""""""""""""""""""""""""""""""""""

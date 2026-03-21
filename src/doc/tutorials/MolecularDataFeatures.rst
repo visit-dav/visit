@@ -292,7 +292,7 @@ For example, "visit -assume_format CTRL" will try the LMTO CTRL reader before re
 VASP (CHGCAR, POSCAR, OUTCAR) File Formats
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `VASP code <http://cms.mpi.univie.ac.at/vasp/>`_, as described in the link, is "a package for performing ab-initio quantum-mechanical molecular dynamics (MD) using pseudopotentials and a plane wave basis set."
+The `VASP code <https://www.vasp.at/>`_, as described in the link, is "a package for performing ab-initio quantum-mechanical molecular dynamics (MD) using pseudopotentials and a plane wave basis set."
 Its output is ASCII text in several files, and the VASP reader in VisIt_ supports "OUTCAR" and "POSCAR" for varieties of atomic positions and variables, and "CHGCAR" for charge density grids.
 
 Since the charge density grids can get very large, the VisIt_ CHGCAR reader is actually parallelized to help speed the ASCII-binary conversion process on multi-node machines when using the MPI-enabled version of VisIt_'s computation engine.

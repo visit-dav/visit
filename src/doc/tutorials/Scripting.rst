@@ -223,7 +223,7 @@ Here are some tips to help you quickly learn how to use VisIt_'s *CLI*:
 
 4) Use ''WriteScript()'' function, which will create a python script that describes all of your current plots.
 
-  * For more details, see `WriteScript <http://visitusers.org/index.php?title=WriteScript>`_.
+  * For more details, see the ``WriteScript`` entry in :doc:`Python scripting functions <../python_scripting/functions>`.
 
 .. highlight:: python
 
@@ -256,4 +256,4 @@ Advanced features
 -----------------
 
 1) You can set up your own buttons in the VisIt_ gui using the *CLI*. See :ref:`visitrc_file`.
-2) You can set up callbacks in the *CLI* that get called whenever events happen in VisIt_. See `Python callbacks <http://visitusers.org/index.php?title=Python_callbacks>`_.
+2) You can set up callbacks in the *CLI* that get called whenever events happen in VisIt_. See :doc:`VisIt CLI Events <../python_scripting/events>`.

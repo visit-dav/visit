@@ -6,9 +6,7 @@ Supported File Types
 VisIt_ can create visualizations from databases that are stored in many types 
 of underlying file formats. VisIt_ has a database reader for each supported 
 file format and the database reader is a plugin that reads the data from the 
-input file and imports it into VisIt_. If your data format is not listed in 
-`File formats supported by VisIt 
-<http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_
+input file and imports it into VisIt_. If your data format is not listed below
 then you can first translate your data into a format that VisIt_ can read 
 (e.g. Silo_, VTK, etc.) or you can create a new database reader plugin for 
 VisIt_. For more information on developing a database reader plugin, refer to 
@@ -191,9 +189,7 @@ Likewise, for a collection of points in just *one dimension*, we would have
     1 1.01
     2 2.02
 
-There are some
-`additional examples <https://www.visitusers.org/index.php?title=Reading_point_data#Using_Point3D_files>`_
-of Point3D files on the VisIt_ wiki pages.
+There are some additional examples of Point3D files on the VisIt_ wiki pages.
 
 Degenerate Hexahedra
 ~~~~~~~~~~~~~~~~~~~~
