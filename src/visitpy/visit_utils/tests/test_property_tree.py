@@ -36,7 +36,7 @@ class TestPropertyTree(unittest.TestCase):
 
     def test_03_add_remove_property(self):
         p = PropertyTree()
-        self.assert_(p.has_property("testing/string_value") == False)
+        self.assertFalse(p.has_property("testing/string_value"))
         p.add_property("testing/string_value",None)
         p.add_property("testing/float_value",0.0)
         p["testing/float_value"] = 10.0
@@ -44,7 +44,7 @@ class TestPropertyTree(unittest.TestCase):
         p["testing/string_value"] = sval
         self.assertEqual(p["testing/string_value"], sval)
         p.remove_property("testing/string_value")
-        self.assert_(p.has_property("testing/string_value") == False)
+        self.assertFalse(p.has_property("testing/string_value"))
 
     def test_05_freeform_add(self):
         p = PropertyTree()

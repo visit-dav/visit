@@ -27,7 +27,6 @@ def visit_test(fn):
         return None
     return run_fn
 
-
 def pyside_test(fn):
     """
     Decorator that skips tests that require visit if
@@ -35,6 +34,8 @@ def pyside_test(fn):
     """
     def run_fn(*args):
         if "PySide2.QtCore" in list(sys.modules.keys()):
+            return fn(*args)
+        elif "PySide6.QtCore" in list(sys.modules.keys()):
             return fn(*args)
         else:
             print("[PySide not found, skipping test that requires PySide]")
