@@ -71,8 +71,13 @@ if(TARGET silo)
         THIRD_PARTY_INSTALL_LIBRARY(${silo_loc})
     else()
         get_target_property(silo_loc silo IMPORTED_LOCATION_RELEASE)
-        get_target_property(silo_soname silo IMPORTED_SONAME_RELEASE)
         cmake_path(GET silo_loc PARENT_PATH silo_libdir)
+
+        get_target_property(silo_soname silo IMPORTED_SONAME_RELEASE)
+        # SONAME may have '@rpath/' or '@loader_path/' (or similar)
+        # prepended, so get just the filename
+        cmake_path(GET silo_soname FILENAME silo_soname)
+
         THIRD_PARTY_INSTALL_LIBRARY(${silo_libdir}/${silo_soname})
     endif()
 

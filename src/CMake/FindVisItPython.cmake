@@ -104,6 +104,9 @@
 #   Change python install logic, use explicit include list for modules in
 #   site-packages to limit modules installed.
 #
+#   Kathleen Biagas, Tue Mar 24, 2026
+#   Fix DESTINATION for install of python's site-packages.
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -420,7 +423,7 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
             # that are not needed by users -- some of which may be flagged by security
             # scans over time, causing visit to get blocked.
             install(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}/site-packages
-                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib/site-packages/
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib/python${PYTHON_VERSION}/
                     FILE_PERMISSIONS ${filePerms}
                     DIRECTORY_PERMISSIONS ${dirPerms}
                     # basic build tools we allow

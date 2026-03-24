@@ -39,8 +39,13 @@ if(TARGET hdf5-shared)
         THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
     else()
         get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
-        get_target_property(hdf5_soname hdf5-shared IMPORTED_SONAME_RELEASE)
         cmake_path(GET hdf5_locr PARENT_PATH hdf5_libdir)
+
+        get_target_property(hdf5_soname hdf5-shared IMPORTED_SONAME_RELEASE)
+        # SONAME may have '@rpath/' or '@loader_path/' (or similar) prepended,
+        # so get just the filename
+        cmake_path(GET hdf5_soname FILENAME hdf5_soname)
+
         THIRD_PARTY_INSTALL_LIBRARY(${hdf5_libdir}/${hdf5_soname})
     endif()
 
@@ -52,8 +57,13 @@ if(TARGET hdf5-shared)
             THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
         else()
             get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_LOCATION_RELEASE)
-            get_target_property(hdf5_hl_soname hdf5_hl-shared IMPORTED_SONAME_RELEASE)
             cmake_path(GET hdf5_hl_locr PARENT_PATH hdf5_hl_libdir)
+
+            get_target_property(hdf5_hl_soname hdf5_hl-shared IMPORTED_SONAME_RELEASE)
+            # SONAME may have '@rpath/' or '@loader_path/' (or similar)
+            # prepended, so get just the filename
+            cmake_path(GET hdf5_hl_soname FILENAME hdf5_hl_soname)
+
             THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_libdir}/${hdf5_hl_soname})
         endif()
     endif()
