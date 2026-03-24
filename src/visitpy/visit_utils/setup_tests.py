@@ -83,7 +83,9 @@ class ExecuteTests(Command):
         """
         if not self.tests_dir in sys.path:
             sys.path.append(self.tests_dir)
-        for f in glob.glob(os.path.join(self.tests_dir,"*.py")):
+        test_scripts = glob.glob(os.path.join(self.tests_dir,"*.py"))
+        test_scripts.sort()
+        for f in test_scripts:
             if not f.endswith('__init__.py'):
                 test = os.path.splitext(os.path.basename(f))[0]
                 test = '.'.join(['tests',test])
