@@ -23,7 +23,7 @@ Building VisIt_ for Valgrind and vtkDebugLeaks
 The following steps were from building and running VisIt_ 3.1 on Quartz, a
 Linux cluster.
 
-Building the third party Libraries
+Building the Third Party Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to use vtkDebugLeaks you will need to enable it when you build
