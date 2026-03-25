@@ -22,7 +22,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
-        python-version: '3.9'
+        python-version: '3.13.9'
   
     - name: Checkout code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -55,7 +55,11 @@ jobs:
          cp src/visitpy/common/MethodDoc.C src/visitpy/common/MethodDoc.C.orig
          pushd src/doc
          ./functions_to_plain_py.py
-         2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py
+         python -m py_compile PY_RST_FUNCTIONS_TO_PYTHON.py
+         if [ $? -ne 0 ]; then
+             echo "functions.rst appears to contain an example code instance that is not valid python"
+             exit 1
+         fi
          ./functions_to_method_doc.py
          popd
          diff src/visitpy/common/MethodDoc.C src/visitpy/common/MethodDoc.C.orig

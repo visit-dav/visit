@@ -56,7 +56,6 @@ Since performance is critical in 3D rendering, there is a way for OpenGL renderi
 
 * `Documentation on GLX <https://www.khronos.org/registry/OpenGL/specs/gl/glx1.4.pdf>`_.
   * GLX functions all start with "glX" and GLX constants all start with "GLX".
-* `Documentation on creating an OpenGL 3.0 context <https://www.khronos.org/opengl/wiki/Tutorial:_OpenGL_3.0_Context_Creation_(GLX)>`_.
+* `Documentation on creating an OpenGL context (GLX_ARB_create_context) <https://registry.khronos.org/OpenGL/extensions/ARB/GLX_ARB_create_context.txt>`_.
   * It is the source of the test in build_visit to determine if the OpenGL on a system supports creating a 3.2 context.
-* `Documentation on the history of the changes to OpenGL <https://www.khronos.org/opengl/wiki/History_of_OpenGL>`_.
-
+* `Documentation on the history of OpenGL <https://en.wikipedia.org/wiki/OpenGL#History>`_.

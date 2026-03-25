@@ -263,7 +263,7 @@ Working around recurring download failures
 
 Depending on context, recurring issues downloading a particular *dependent* package may arise.
 When this happens, SSL certificate handling may be the cause.
-A quick work-around is to disable this `security checking feature <https://spack.readthedocs.io/en/latest/config_yaml.html?highlight=ssl%20certificates#verify-ssl>`_ in Spack by adding the ``--insecure`` command-line option as the second option *just* after ``spack``.
+A quick workaround is to disable this `security checking feature <https://spack.readthedocs.io/en/latest/config_yaml.html?highlight=ssl%20certificates#verify-ssl>`_ in Spack by adding the ``--insecure`` command line option as the second option *just* after ``spack``.
 Alternatively, you may be able to manually download the needed files and place them in a directory for Spack to use as a `mirror <https://spack.readthedocs.io/en/latest/mirrors.html?highlight=mirror#mirrors-mirrors-yaml>`_.
 For example, starting from the point of having successfully downloaded the ``Python-3.7.13.tgz`` file somewhere, here are the Spack steps... ::
 
@@ -284,7 +284,7 @@ Spack uses two files to control the environment on a system. They are the ``comp
 The ``compilers.yaml`` file is used to specify information about compilers on a system.
 The ``spack compilers`` command, as mentioned earlier, will create one for you with all the compilers on the system.
 You can then customize it.
-The complete documentation on the ``compilers.yaml`` file can be found `here <https://spack.readthedocs.io/en/latest/getting_started.html#compiler-configuration>`__.
+The complete documentation on the ``compilers.yaml`` file can be found `here <https://spack.readthedocs.io/en/latest/getting_started.html>`__.
 
 The ``packages.yaml`` file is used to specify information about external packages on a system.
 By default, spack will want to build everything from scratch for your system.

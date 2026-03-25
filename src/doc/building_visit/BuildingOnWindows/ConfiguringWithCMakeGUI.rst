@@ -38,7 +38,7 @@ If you are building from a clone of the github repository, it is recommended to 
 Location of windowsbuild Directory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For a released version of  VisIt_'s source code, the *windowsbuild* directory containing the pre-built thirdparty binaries is located peer to *src*.  
+For a released version of  VisIt_'s source code, the *windowsbuild* directory containing the prebuilt third party binaries is located peer to *src*.  
 CMake generation should locate this directory automatically.
 :numref:`Figure %s<visit_dirs_from_released_source_image>`
 
@@ -83,7 +83,7 @@ If you are producing a version of VisIt_ that you plan to distribute, you should
 
 To limit the database plugins to a specific set of plugins, set the **Name:**  to *VISIT_SELECTED_DATABASE_PLUGINS*. 
 The **Type:** should be *STRING*. 
-The **Value:** should be a ';' separated list of database plugins names. 
+The **Value:** should be a ';' separated list of database plugin names. 
 Case must match the name of the folder in */src/databases*.
 
 The same procedure applies to plots and operators. 
@@ -112,7 +112,7 @@ If the build directory does not exist, you will be prompted to allow its creatio
 You will also be prompted to choose a *generator*. 
 On Windows, this corresponds to the version of Visual Studio for which you plan to generate a solution and projects.
 
-Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt thirdparty libraries.
+Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt third party libraries.
 Choose *Visual Studio 15 2017 Win64* from the generator dropdown.
 Choose *x64* from the dropdown for the *Optional platform*.
 Then enter *host=x64* in the *Optional toolset* to use the full 64-bit toolset.
@@ -183,6 +183,6 @@ Open the generated *VisIt.sln* file with Visual Studio (it may take awhile to
 load all the project files). 
 Select the desired Configuration and Build the solution.
 
-**Note:** if VISIT_CREATE_XMLTOOLS_GEN_TARGETS is ON, choose the *ALL_BUILD* project to build instead of the *Solution* .
+**Note:** if VISIT_CREATE_XMLTOOLS_GEN_TARGETS is ON, choose the *ALL_BUILD* project to build instead of the *Solution*.
 More information on this variable can found in the :ref:`CMake Variables<CMake Variables>` section.
 

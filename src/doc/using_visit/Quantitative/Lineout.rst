@@ -411,14 +411,14 @@ Synchronous lineout
 """""""""""""""""""
 
 Normally when you perform a lineout operation, the Curve plot that results from the lineout operation is in no way connected to the plots in the window that originated the Curve plot.
-If you want variable or time state changes made to the originating plots to also affect the Curve plots that were created via lineout, click the **Synchronize with originating plot** check box in the **Lineout Options Window** 
+If you want variable or timestate changes made to the originating plots to also affect the Curve plots that were created via lineout, click the **Synchronize with originating plot** check box in the **Lineout Options Window** 
 (see :numref:`Figure %s<lineoutoptionswindow>`).
 
 With this option selected, any change to the variable in the plot that originated the lineout, will update the lineout to reflect the new variable's data.
-When you change time states for the plot that originated the lineout, the lineout will update to reflect the data at the new time state.  
+When you change timestates for the plot that originated the lineout, the lineout will update to reflect the data at the new timestate.  
 
-To make VisIt create a new Curve plot for the lineout instead of updating when you change time states in the originating plot, change the **Time change** behavior in the **Lineout Options Window** from **updates curve** to **creates new curve**.
-VisIt will then put a new curve in the lineout destination window each time you advance to a new time state, resulting in many Curve plots (see :numref:`Figure %s <dynamiclineout>`).
+To make VisIt create a new Curve plot for the lineout instead of updating when you change timestates in the originating plot, change the **Time change** behavior in the **Lineout Options Window** from **updates curve** to **creates new curve**.
+VisIt will then put a new curve in the lineout destination window each time you advance to a new timestate, resulting in many Curve plots (see :numref:`Figure %s <dynamiclineout>`).
 By default, VisIt will make all of the related Curve plots be the same color.
 You can override this behavior by selecting **creates new color** instead of **repeats color** from the **New curve** combo box.
 
@@ -429,7 +429,7 @@ variable menu, as this type of lineout does not have an originating plot.*
 
 .. figure:: images/dynamiclineout.png
 
-   Dynamic lineout can be used to create curves for multiple time states
+   Dynamic lineout can be used to create curves for multiple timestates
 
 Sampling and Refline labels
 """""""""""""""""""""""""""

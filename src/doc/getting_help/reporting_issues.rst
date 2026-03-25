@@ -6,13 +6,13 @@ Reporting Issues
 When reporting issues, we ask users to please make every effort to collect and provide as much of the information identified below as possible.
 We understand that thorough issue reporting can be onerous.
 At the same time, being as thorough as possible in issue reporting is a key way users can reciprocate for the free and open source software projects they benefit from.
-In addition, the more information that is included in an issue report, the more likely the issue can be diagnoseed quickly and a work-around or resolution developed.
+In addition, the more information that is included in an issue report, the more likely the issue can be diagnoseed quickly and a workaround or resolution developed.
 
 For these reasons, we urge users to please provide as much of the following information as practical...
 
 * Operating system name and version (e.g. ``macOS 12.7 Monterey``).
 * Version number of VisIt_.
-* The specific release asset (e.g. ``visit3_3_3.linux-x86_64-rhel7-wmesa.tar.gz``) installed or if VisIt_ was built from sources, the ``build_visit`` command-line used (often available in the ``build_visit_log`` file where VisIt_ was built).
+* The specific release asset (e.g. ``visit3_3_3.linux-x86_64-rhel7-wmesa.tar.gz``) installed or if VisIt_ was built from sources, the ``build_visit`` command line used (often available in the ``build_visit_log`` file where VisIt_ was built).
 * If you are running `client/server <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/ClientServer/index.html?highlight=client>`__, then provide the above 3 items of information for both the client and the server machines.
 * If reporting issues involving the CLI and you are not running the Python installed with VisIt_, then please provide the python version information.
 * The plot(s) and operator(s), if any, being used.

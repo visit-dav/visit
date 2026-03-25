@@ -10,7 +10,7 @@ The source core for these tools is kept in ``src/tools/dev/xml/`` and ``src/tool
 
 Types Managed by XML Tools
 --------------------------
-These XML tools are designed to be aware of a number of basic data types. 
+These XML tools are designed to be aware of a number of basic datatypes. 
 These include...
 
 * ``Bool``

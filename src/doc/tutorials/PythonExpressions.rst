@@ -34,7 +34,7 @@ We will now go through the steps required to create a Python expression using th
 Let us start by opening a file and creating a plot.
 
 1. Open the file ``curv2d.silo``.
-2. Create a Psuedocolor plot of ``d``.
+2. Create a Pseudocolor plot of ``d``.
 
 Now let us go ahead and create the Python expression.
 
@@ -45,7 +45,7 @@ Now let us go ahead and create the Python expression.
 7. Click on the *Python expression editor* tab in the *Definition* section.
 8. Select *Insert variable...->Scalars->d* to add ``d`` to the *Arguments* text field.
 9. Select *Insert variable...->Scalars->p* to add ``p`` to the *Arguments* text field.
-   Note that the variable names are seperated by a comma.
+   Note that the variable names are separated by a comma.
    If the variable names are not separated by commas you will get a cryptic error message when you try to plot the expression.
 10. Click *Load script->Template->Simple filter* to add a template of a Python expression in the *Python expression script* editor. 
 
@@ -56,7 +56,7 @@ Now let us go ahead and create the Python expression.
 At this point you modify the template to create your expression.
 A common practice is to make modifications to the script and test it using the Pseudocolor plot.
 Changes to the script can be made either by modifying the script in the *Python expression script* editor or modifying it in an external text editor and then reloading the script.
-Generaly speaking, modifying the script in the *Python expression script* editor is easier than doing it in an external text editor except that it is difficult to tell how many spaces are at the beginning of the line since the editor does not use a fixed width font.
+Generally speaking, modifying the script in the *Python expression script* editor is easier than doing it in an external text editor except that it is difficult to tell how many spaces are at the beginning of the line since the editor does not use a fixed width font.
 
 Developing the script in the *Python expression script* editor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,7 +90,7 @@ Now you are ready to modify the script.
 Python Expression Example 1
 ---------------------------
 
-This example adds two cell centered variables.
+This example adds two cell-centered variables.
 It demonstrates accessing multiple variables and performing simple operations with them to generate a result.
 
 Here is the example script.

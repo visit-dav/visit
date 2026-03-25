@@ -10,7 +10,7 @@ that print out the values of variables in the database at points or along
 lines. In addition to point and line queries, VisIt provides database
 queries that return values that are based on all of the data in a database.
 
-Some queries can even be executed for all of the time states in a database
+Some queries can even be executed for all of the timestates in a database
 to yield a Curve plot of the query's behavior over time. This feature will
 be covered in more detail a little later.
 
@@ -181,7 +181,7 @@ Grid Information
     *get_ghosttype* parameter that causes the ghost zone information for each
     domain to be obtained. Both the numerical value and list of or'd values for
     ghost values are obtained. All query outputs are printed to the
-    **Queryresults**.
+    **Query results**.
 
 Integrate
     The Integrate query calculates the area under the Curve plot that is
@@ -369,7 +369,7 @@ Pick
     While each of these choices will produce very different results, it's worth
     keeping in mind that preserving the picked *element* will be substantially
     faster than preserving the picked *coordinate* when working with datasets
-    with large numbers of time steps.
+    with large numbers of timesteps.
 
 TrajectoryByNode and TrajectoryByZone
     The TrajectoryByNode and TrajectoryByZone queries first perform a Pick
@@ -413,12 +413,12 @@ are displayed in the **Query results** at the bottom of the **Query Window**.
 Querying over time
 ~~~~~~~~~~~~~~~~~~
 
-Many of VisIt's queries can be executed for every time state in the database
+Many of VisIt's queries can be executed for every timestate in the database
 used by the queried plot. The results from a query over time is a Curve plot
 that plots the query results with respect to time. The **Query parameters**
 area contains a **Time Curve** button when the selected query can be plotted
 over time. Clicking the **Time Curve** button executes the selected query
-for each time state in the database used by the plot highlighted in the
+for each timestate in the database used by the plot highlighted in the
 **Plot list**. VisIt then creates a new Curve plot in a new vis window and
 uses the query results versus time as the curve data.
 
@@ -429,8 +429,8 @@ uses the query results versus time as the curve data.
    Query Over Time Window
 
 By default, querying over time will force VisIt to execute the selected
-query on every time state in the relevant database. If you want to restrict
-the number of time states used when querying over time or if you want to
+query on every timestate in the relevant database. If you want to restrict
+the number of timestates used when querying over time or if you want to
 set some general options that also affect how time curves are created, you
 can set additional options in the **Query Over Time Window** (see
 :numref:`Figure %s <queryovertimewindow>`). If you want to open the
@@ -440,14 +440,14 @@ can set additional options in the **Query Over Time Window** (see
 Querying over a time range
 """"""""""""""""""""""""""
 
-You can restrict the range of time states that are considered when VisIt
-is performing a query over time if you specify a start or end time state
-in the **Query Over Time Window**. To set a starting time state, click the
-**Starting timestep** check box and enter a new time state into the adjacent
-text field. To set an ending time state, click the **Ending timestep**
-check box and enter a new ending time state into the adjacent text field.
+You can restrict the range of timestates that are considered when VisIt
+is performing a query over time if you specify a start or end timestate
+in the **Query Over Time Window**. To set a starting timestate, click the
+**Starting timestep** check box and enter a new timestate into the adjacent
+text field. To set an ending timestate, click the **Ending timestep**
+check box and enter a new ending timestate into the adjacent text field.
 
-In addition to setting the starting and ending time states, you can also
+In addition to setting the starting and ending timestates, you can also
 specify a stride so VisIt can skip frames in the middle and consider every
 Nth frame instead of every frame. If you want to specify a stride, enter
 a new stride into the **Stride** text field in the **Query Over Time Window**
@@ -458,7 +458,7 @@ Setting the axis title
 
 When VisIt creates a new Curve plot, after having calculated a query over
 time, the horizontal axis label is labeled with the database cycles. If you
-prefer to think about time in terms of time state or simulation time then
+prefer to think about time in terms of timestate or simulation time then
 you can change the axis label by clicking one of the following radio buttons
 in the **Query Over Time Window** : **Cycle**, **Time**, **Timestep**.
 
@@ -569,7 +569,6 @@ this is the name VisIt_ uses to connect your Python script to the
 Python Filter Runtime in the engine.
 
 When you run your Python Query, results are presented like any other Query: Displayed in the Query window and can be accessed via VisIt_'s Query output CLI functions.
-
 
 
 

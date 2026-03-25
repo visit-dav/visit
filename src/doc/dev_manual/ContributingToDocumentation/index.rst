@@ -10,9 +10,12 @@ If your build is configured to build the manual, you can use the command ``make 
 Otherwise, if you have `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_, you can try manually building locally in the ``src`` directory using the command::
 
     cd src/doc
-    sphinx-build -b html . _build -a
+    sphinx-build -E -W --keep-going -b html . _build -a
 
-The ``-a`` forces a re-build of everything.
+The ``-E`` forces the current build to ignore any cached environment from a previous build.
+The ``-W`` turns all warnings into errors.
+The ``--keep-going`` forces it to continue past errors so that you can see all errors.
+The ``-a`` forces a rewrite of all output files.
 Remove it when you are constantly revising and rebuilding.
 You can then browse the root of the manual by pointing your browser to :file:`./_build/index.html`.
 
@@ -156,10 +159,10 @@ use of Sphinx as we move forward. These are discussed at the
     Link to anchors *within* this documentation like :ref:`this one <my_anchor>`
 
 * Link to other documents elsewhere online like
-  `visitusers.org <https://www.visitusers.org/>`_::
+  `visit.llnl.gov <https://visit.llnl.gov>`_::
 
     Link to other documents elsewhere online like
-    `visitusers.org <https://www.visitusers.org/>`_
+    `visit.llnl.gov <https://visit.llnl.gov>`_
 
 * Link to *numbered* figures or tables *within* this documentation like
   :numref:`Fig. %s <my_figure2>`::
@@ -194,7 +197,7 @@ About Line Length
 When we originally converted from OpenOffice to Sphinx, we decided to restrict line lengths to 80 columns.
 More recently, we've decided that we should not impose any absolute character count on line length and instead adopt the practice of `a single sentence per line <https://asciidoctor.org/docs/asciidoc-recommended-practices/#one-sentence-per-line>`_.
 Some lines will be very short.
-Other lines can be very long, especially if they include long URLs like `this one <https://chart.apis.google.com/chart?chs=500x500&chma=0,0,100,100&cht=p&chco=FF0000%2CFFFF00%7CFF8000%2C00FF00%7C00FF00%2C0000FF&chd=t%3A122%2C42%2C17%2C10%2C8%2C7%2C7%2C7%2C7%2C6%2C6%2C6%2C6%2C5%2C5&chl=122%7C42%7C17%7C10%7C8%7C7%7C7%7C7%7C7%7C6%7C6%7C6%7C6%7C5%7C5&chdl=android%7Cjava%7Cstack-trace%7Cbroadcastreceiver%7Candroid-ndk%7Cuser-agent%7Candroid-webview%7Cwebview%7Cbackground%7Cmultithreading%7Candroid-source%7Csms%7Cadb%7Csollections%7Cactivity>`_.
+Other lines can be very long, especially if they include long URLs like ``https://example.com/a/really/long/path/with/a/query?that=keeps&going=andgoing=forever``.
 There are many advantages to using a single sentence per line mostly having to do with the way diffing tools compute and display diffs.
 
 This practice, of course, does not apply to source code.
@@ -414,6 +417,21 @@ the above automatically. However, that involves implementing the above
 steps as a ``cmake`` program and involves more effort than available when
 this was implemented.
 
+Hyphenated phrases...or not
+---------------------------
+
+Generally, we try not to hyphenate very many terms.
+Most terms somewhat special to VisIt_ are treated as `compound nouns <https://en.wikipedia.org/wiki/English_compound#Compound_nouns>`__
+That means there is no space or hyphen used.
+Examples are *dataset, datatype, metadata, nonlinear, plugin, runtime, timestamp, timestep, workaround, workflow, workload.*
+When in doubt, don't hyphenate.
+
+However, there are  some terms we do hyphenate.
+Examples are *pre-built, pre-compiled, zero-based (or zero-origin), multi-block, multi-dimensional, multi-resolution, block-structured, cell-centered, edge-centered, face-centered, high-level, low-level, multi-domain node-centered, patch-based, point-centered, problem-sized, vertex-centered, zone-centered.*
+
+Finally, there are some terms we use as multi-word phrases.
+Examples are *third party, command line, file system*, and *staggered grid.*
+
 .. _contributing_linkcheck:
 
 Link checking using Sphinx linkcheck builder
@@ -447,8 +465,8 @@ All of the above is automated with the ``linkcheck`` make target also.
 Things To Consider Going Forward
 --------------------------------
 
-* Decide what to do about compound words such as *timestep*, *time step* or
-  *time-step*. There are many instances to consider such as *keyframe*,
+* Decide what to do about compound words such as *timestep*, *timestep* or
+  *timestep*. There are many instances to consider such as *keyframe*,
   *checkbox*, *pulldown*, *submenu*, *sublauncher*, etc.
 * Need to populate glossary with more VisIt_ specific terms such as...
 

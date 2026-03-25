@@ -106,7 +106,7 @@ Virtual databases
 ~~~~~~~~~~~~~~~~~
 
 A virtual database is a time-varying database that VisIt artificially creates 
-out of smaller, single time step databases that have related filenames. 
+out of smaller, single timestep databases that have related filenames. 
 Virtual databases allow you to access time-varying data without having to 
 first create a ``.visit`` ``:ref:`Need a reference to .visit files`` file. The 
 files that are grouped into a virtual database are determined by the file 
@@ -149,7 +149,7 @@ Scientific simulations often write out new data files as they run. The
 **Refresh** button makes VisIt re-read the current directory to pick up any 
 new files added by a running simulation. If the active source is a virtual 
 database whose definition was changed by refreshing the file list, then VisIt 
-will close and reopen the active source so information about new time states 
+will close and reopen the active source so information about new timestates 
 is made available.
 
 Clearing out recently visited paths

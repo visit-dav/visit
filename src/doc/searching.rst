@@ -17,43 +17,42 @@ the following operators:
   preceding backslash (``\``).
 * A space between search terms implies the *default* operator of OR.
 * When upper case is used, the search is case-sensitive. Otherwise it
-  is case-insenstive.
+  is case-insensitive.
 
 Examples
 --------
 
-Searching : ``annot*``
+Searching: ``annot*``
     returns pages with ``Annotation``, ``Annotations``,
     ``annotate``, ``annotated``, etc.
 
-Searching : ``Annot*``
+Searching: ``Annot*``
     is case-sensitive and returns pages with ``Annotations``,
     ``Annotation`` but not ``annotate``.
 
-Searching : ``annot* +object``
+Searching: ``annot* +object``
     returns pages with ``Annotation``, ``Annotations``,
     ``Annotated`` AND ``object``.
 
-Searching : ``getannotationobject\(\)``
+Searching: ``getannotationobject\(\)``
     returns pages with ``GetAnnotationObject()``
 
-Searching : ``annot* | object``
+Searching: ``annot* | object``
     returns pages with ``Annotation``, ``Annotations``, ``Annotated``
     and also returns pages with ``object``.
 
-Searching : ``load~4``
+Searching: ``load~4``
     returns pages including ``load``, ``lead``, ``head``, ``goal``
 
-Searching : ``"load balance"``
+Searching: ``"load balance"``
     returns pages with the whole quoted phrase as opposed to
     pages that contain both ``load`` AND ``balance`` somewhere on
     the page.
 
-Searching : ``load -balance``
-    returns pages with contain ``load`` AND **not** do not also contain
-    ``balance``.
+Searching: ``load -balance``
+    returns pages that contain ``load`` but do not contain ``balance``.
 
-Searching : ``foo bar -baz``
+Searching: ``foo bar -baz``
     returns pages containing ``foo`` or ``bar`` as well as any pages
     that do not contain ``baz`` (which probably *expands* the results 
     well beyond those containing just ``foo`` or ``bar``). This is probably

@@ -6,7 +6,7 @@ The Main Window
 VisIt_'s **Main** window, shown in :numref:`Figure %s <Intro-MainWindow>`,
 contains three main areas: the file area, the plot area and the notepad area.
 The file area contains controls for working with sources and selecting the
-current time state. The plot area contains controls for creating and modifying
+current timestate. The plot area contains controls for creating and modifying
 plots and operators. The notepad area is a region where frequently used
 windows may be posted for quick and convenient access.
 

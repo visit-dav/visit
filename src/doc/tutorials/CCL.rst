@@ -31,7 +31,7 @@ interesting pattern to explore. In practice, volume fractions or density
 values are also useful fields to use.
 
 
-We compare using two operators, Theshold and Isovolume, to cut the mesh according to a scalar field. These methods produce different mesh topologies which influence the Connected Components Labeling result.
+We compare using two operators, Threshold and Isovolume, to cut the mesh according to a scalar field. These methods produce different mesh topologies which influence the Connected Components Labeling result.
 
 
 Threshold

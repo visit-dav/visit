@@ -52,7 +52,7 @@ polygons per sphere, *Medium* is several dozen, *High* a couple hundred, and
 *Super* is about a thousand.
 
 **Radius based on** determines how the atoms are sized. *Scalar variable* uses 
-a nodal variable on the data set to determine radius.  *Covalent radius* and 
+a nodal variable on the dataset to determine radius.  *Covalent radius* and 
 *Atomic radius* are the atomic properties, and they are calculated using a 
 built-in lookup table in VisIt_. *Fixed value* simply uses the value in the 
 text field below as the radius. Note that *Covalent radius* and *Atomic radius* 
