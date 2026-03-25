@@ -420,31 +420,17 @@ this was implemented.
 Hyphenated phrases...or not
 ---------------------------
 
-* Words we do not hyphenate:
+Generally, we try not to hyphenate very many terms.
+Most terms somewhat special to VisIt_ are treated as `compound nouns <https://en.wikipedia.org/wiki/English_compound#Compound_nouns>`__
+That means there is no space or hyphen used.
+Examples are *dataset, datatype, metadata, nonlinear, plugin, runtime, timestamp, timestep, workaround, workflow, workload.*
+When in doubt, don't hyphenate.
 
-  * dataset, datatype, filesystem, metadata, multiblock, multidimensional, multiresolution, nonlinear, plugin, prebuilt, precompute, preinstalled, rebuild, redo, reopen, restart, rewrite, runtime, timestamp, timestep, workaround, workflow, workload.
+However, there are  some terms we do hyphenate.
+Examples are *pre-built, pre-compiled, zero-based (or zero-origin), multi-block, multi-dimensional, multi-resolution, block-structured, cell-centered, edge-centered, face-centered, high-level, low-level, multi-domain node-centered, patch-based, point-centered, problem-sized, third-party, time-state, vertex-centered, zone-centered.*
 
-* Words we do hyphenate:
-
-  * command line, when used as adjective as in *It is not a command line option.* Otherwise, command line.
-  * block-structured, cell-centered, edge-centered, face-centered, high-level, low-level, multi-domain node-centered, patch-based, point-centered, problem-sized, third-party, time-state, vertex-centered, zone-centered.
-
-* Words we treat as separate words
-
-  * command line, when used as a noun as in *You can do this only via the VisIt_ command line.*
-  * staggered grid.
-
-There is a set of hyphenation rules and a script to apply them in ``src/doc/fix_rst_hyphenation.py``.
-These rules can be applied to all ``.rst`` files in the ``src/doc`` subtree to fix any hyphenation issues.
-Adding new words to these lists involves adding a rule to ``src/doc/fix_rst_hyphenation.py``.
-The ``sphinx-build`` process includes running this script as an extension to detect hyphenation errors.
-If there are any, you will see an error ::
-
-    Sphinx error:
-    Hyphenation consistency check failed.
-
-    Fix by running the following command in src/doc:
-    python3 fix_rst_hyphenation.py .
+Finally, there are some terms we use as multi-word phrases.
+Examples are *third party, command line, file system*, and *staggered grid.*
 
 .. _contributing_linkcheck:
 
