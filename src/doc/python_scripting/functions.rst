@@ -7995,7 +7995,7 @@ databaseName : string
     The name of the new database.
 
 timeState : integer
-    A zero-based integer containing the timeState that should be made active
+    A zero-based integer containing the timestate that should be made active
     once the database has been replaced.
 
 return type : CLI_return_t
