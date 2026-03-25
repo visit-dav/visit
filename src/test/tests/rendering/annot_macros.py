@@ -69,11 +69,11 @@ def dbcmacro():
     text2d = create_text2d_annot()
     text3d = CreateAnnotationObject("Text3D")
     text3d.heightMode = text3d.Relative
-    text3d.relativeHeight = 0.03
-    text3d.position=(2.0, 1.0, 7.0)
+    text3d.relativeHeight = 0.02
+    text3d.position=(-15.0, 1.0, 7.0)
     textts = CreateAnnotationObject("TimeSlider")
-    textts.height = 0.15
-    textts.position = (0.05, 0.1)
+    textts.height = 0.1
+    textts.position = (0.05, 0.025)
     text2d.text = "dbcomment $dbcomment"
     text3d.text = "dbcomment $dbcomment"
     textts.text = "dbcomment $dbcomment"
@@ -213,6 +213,7 @@ def tsprintf():
     text.text="Time=$time"
     text.timeFormatString = "%A"
     TestAutoName()
+    text.Delete()
 
 def init():
     """Initialization for all tests"""
