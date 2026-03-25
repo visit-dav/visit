@@ -49,7 +49,7 @@ The Sequence of Actions that Occur when Creating the Processes Shown Above
 
 This launches the *Viewer* process and causes it to connect back to the *GUI* on port 5600.
 
-3. The the *Viewer* launches the *Meta Data Server* with the following command.
+3. The the *Viewer* launches the *Metadata Server* with the following command.
 
 ::
 
@@ -68,10 +68,10 @@ This launches the *Viewer* process and causes it to connect back to the *GUI* on
   -key
   b5fb29c487dd7811e14f
 
-This launches the *Meta Data Server* and causes it to connect back to the *Viewer* on port 5601.
+This launches the *Metadata Server* and causes it to connect back to the *Viewer* on port 5601.
 
 4. The user now goes to the *File open* window and specifies a remote host.
-5. The *Viewer* then launches a *Meta Data Server* on the server login node with the following command.
+5. The *Viewer* then launches a *Metadata Server* on the server login node with the following command.
 
 ::
 
@@ -137,7 +137,7 @@ This launches the *Meta Data Server* and causes it to connect back to the *Viewe
 
 The ``-R`` options to ``ssh`` set up port forwards from the server login node to the client system.
 
-7. Once the *VCL* is launched the *Viewer* then tells the *VCL* to launch the *Meta Data Server* on the server login node.
+7. Once the *VCL* is launched the *Viewer* then tells the *VCL* to launch the *Metadata Server* on the server login node.
 
 The *VCL* translates the ``5601`` to ``21623``, which is the port that ``ssh`` forwards to ``5601`` on the client system.
 

@@ -29,17 +29,17 @@ For a node-centered treatment, the mesh is the same size as the array.
 For these two cases to be compatible, the node-centered mesh needs to be offset a half-step in each dimension from the zone-centered mesh.
 In other words, the nodes of the node-centered case should coincide with the geometric centers of the zones in the zone-centered mesh.
 
-When there are many related arrays, it may be desireable to treat some as node-centered and some as zone-centered.
+When there are many related arrays, it may be desirable to treat some as node-centered and some as zone-centered.
 Sometimes, one of the dimensions of a multidimension array may represent a *time* dimension.
 This can happen with *basic* NETCDF data, for example.
 However, VisIt_ may properly recognize the time dimension or may treat it as an additional spatial dimension.
 Sometimes the user may prefer one or the other of these choices.
 
 What if VisIt_ opens a NETCDF file with 4D array data?
-In theory, it maybe should be possible to apply a **Slice** operator and display a subset of its dimensions.
+In theory, it may be possible to apply a **Slice** operator and display a subset of its dimensions.
 In practice, this may not be possible.
 
-Whether VisIt_ handles bare array data in a desireable way depends on the database plugin used to read it.
+Whether VisIt_ handles bare array data in a desirable way depends on the database plugin used to read it.
 The **Image** plugin, for example, presents both zone-centered and node-centered options allowing the user to choose and even switch between treatments.
 But, the **Image** plugin will treat a stack of images as a 3D *volume* and not a 2D array of images over time.
 Whether this is the correct thing to do depends on information unknown to VisIt_.
@@ -74,7 +74,7 @@ The first new argument is an integer indicating the number of components contain
 The next difference is that you must pass an array of pointers to character
 strings that represent the names of each individual component.
 Finally, the argument that was used to pass the data to the **DBPutQuadvar1** function, now in the **DBPutQuadvar** function, accepts an array of pointers to the various arrays that contain the variable components.
-For more complete information on each of the arguments to the functions that Silo_ uses to write multi-component data, refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_.
+For more complete information on each of the arguments to the functions that Silo_ uses to write multi-component data, refer to the `Silo Manual <https://silo.readthedocs.io/latest/>`_.
 
 Silo_'s Fortran interface does not provide functions to write out multi-component data such as vectors.
 If you use the Fortran interface to Silo, you will have to write out the vector components as separate scalar variables and then write an expression to your Silo_ file that composes the components into a single vector variable.
@@ -329,7 +329,7 @@ Ghost zones
 ~~~~~~~~~~~
 
 Ghost zones are zones external to a domain, which correspond to zones in an adjacent domain.
-Ghost zones allow VisIt_ to ensure continuity between domains containing zonecentered data, making surfaces such as :ref:`Contour plot <contour_plot_head>` continuous across domain boundaries instead of creating surfaces with ugly gaps at the domain boundaries.
+Ghost zones allow VisIt_ to ensure continuity between domains containing zone-centered data, making surfaces such as :ref:`Contour plot <contour_plot_head>` continuous across domain boundaries instead of creating surfaces with ugly gaps at the domain boundaries.
 Ghost zones also allow VisIt_ to remove internal surfaces from the visualized data for plots such as :ref:`Pseudocolor plot <pseudocolor_plot_head>`, which only wants to keep the surfaces that are external to the model.
 Removing internal surfaces results in fewer primitives that must be rendered on the graphics card and that increases interactivity with plots.
 See :numref:`Figure %s <ghostzoneproblem>` for examples of the problems that ghost zones allow VisIt_ to fix.
@@ -344,12 +344,12 @@ See :numref:`Figure %s <ghostzoneproblem>` for examples of the problems that gho
 Ghost zones can be stored into the database so VisIt_ can read them when the data is visualized.
 Ghost zones can also be created on-the-fly for structured (rectilinear and curvilinear) meshes if multimesh adjacency information is provided.
 This section will show how to write ghost zones to the file.
-If you are interested in providing multimesh adjacency information so you can write smaller files and so VisIt_ can automatically create ghost zones then refer to the documentation for the **DBPutMultimeshadj** function in the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_.
+If you are interested in providing multimesh adjacency information so you can write smaller files and so VisIt_ can automatically create ghost zones then refer to the documentation for the **DBPutMultimeshadj** function in the `Silo Manual <https://silo.readthedocs.io/latest/>`_.
 
 Writing ghost zones to your files
 """""""""""""""""""""""""""""""""
 
-You can write ghost zones to your files using the Silo_ library or you can instead write a multimesh adjacency object, covered in the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ that VisIt_ can use to automatically create ghost zones.
+You can write ghost zones to your files using the Silo_ library or you can instead write a multimesh adjacency object, covered in the `Silo Manual <https://silo.readthedocs.io/latest/>`_ that VisIt_ can use to automatically create ghost zones.
 This section will cover how to use the Silo_ library to store ghost zones explicitly in your files.
 The first step in creating ghost zones is to add a layer of zones around the mesh in each domain of your database where a domain boundary exists.
 Each zone in the layer of added ghost zones must match the location and have the same data value as the zone in the domain that it is meant to mirror in order for VisIt_ to be able to successfully use ghost zones to remove domain decomposition artifacts.
@@ -625,7 +625,7 @@ That is, if you examine element 14 in the **mix_zone array**, you will know that
 The **mix_mat** array contains the material numbers of the materials that occupy a zone.
 Material numbers correspond to the names of materials (e.g. 1 = Water) and should begin at 1 and increment from there.
 The range of material numbers used may contain gaps without causing any problems in VisIt_.
-However, if you create databases that have many domains that vary over time, you will want to make sure that each domain has the same list of materials at every time step.
+However, if you create databases that have many domains that vary over time, you will want to make sure that each domain has the same list of materials at every timestep.
 It is not necessary to use a material number in the **matlist** array or in the mixed material arrays in order to include it in a material object.
 Look at element 11 in the **mix_mat** array in :numref:`Figure %s <mixedmaterialexample>`.
 Element 11 contains material 1, element 12 contains material 2, and element 13 contains material 3.
@@ -640,7 +640,7 @@ This means that the information for one zone's mixed materials could be scattere
 The **mix_next** array contains the next index to use within the mixed material arrays or it contains a zero to indicate that no more information for the zone is available.
 
 To write materials to a Silo_ file, you use the **DBPutMaterial** function.
-The **DBPutMaterial** function is covered in the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ but it is worth noting here that it can be called to write either mixed materials or clean materials.
+The **DBPutMaterial** function is covered in the `Silo Manual <https://silo.readthedocs.io/latest/>`_ but it is worth noting here that it can be called to write either mixed materials or clean materials.
 The examples so far have illustrated the more complex case of writing out mixed materials.
 You can pass the **matlist** array and the mixed material arrays to the **DBPutMaterial** function or, in the case of writing clean materials, you can pass only the **matlist** array and **NULL** for all of the mixed material arrays.
 Note that when you write clean materials, your **matlist** array will contain only the numbers of valid materials.
@@ -732,5 +732,3 @@ That is, the **matlist** array does not contain any negative mixed material arra
           .              matlist, mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf,
           .              mixlen, DB_FLOAT, DB_F77NULL, ierr)
           end
-
-

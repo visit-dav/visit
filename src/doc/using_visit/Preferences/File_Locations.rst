@@ -46,7 +46,7 @@ On Windows and macOS it is most common to start VisIt_ by clicking an icon. In t
 cases, VisIt_ uses the user's ``$HOME`` or login directory as the current working
 directory.
 
-However, when VisIt_ is started by typing a command-line at a shell terminal
+However, when VisIt_ is started by typing a command line at a shell terminal
 prompt, then VisIt_ uses whatever that shell's ``CWD`` is at the time of
 launch.
 
@@ -75,7 +75,7 @@ role in effecting behavior in client/server mode.
   enabled/disabled state of various plot, operator and database plugins.
 * Written: When user :ref:`saves settings <How to Save Settings>`.
 * Read: On VisIt_ startup but this can be overridden by the ``-noconfig``
-  command-line :ref:`startup option <StartupOptions>`.
+  command line :ref:`startup option <StartupOptions>`.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_
 
 GUI Configuration File
@@ -143,7 +143,7 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_ specifying the
   :ref:`colors and color control points <Color_tables>` for the color table.
 
-`Custom Plugin <http://visitusers.org/index.php?title=Building_plugins_using_CMake>`_ Files
+Custom Plugin Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): There are separate directories in ``VUSER_HOME``
   for *private*, user-specific operator, database and plot plugins. On UNIX/macOS,
@@ -160,7 +160,7 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
   * ``VUSER_HOME/databases/``
   * ``VUSER_HOME/plots/``
 
-  If the ``-public`` command-line option to ``xml2cmake`` is used when building
+  If the ``-public`` command line option to ``xml2cmake`` is used when building
   a plugin and the user performing this operation has appropriate permissions,
   the plugin will instead be installed to the VisIt_ *public* installation
   directory for *all* users of that installation. If a previous version of
@@ -181,6 +181,8 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
   server.
 * Format: Binary shared library files in the machine format of the host
   architecture.
+
+See :ref:`Creating a database plugin <Data_Into_VisIt_plugin>` for an overview of building plugins from source.
 
 Usage Tracking Files
 """"""""""""""""""""
@@ -209,7 +211,7 @@ Crash Recovery Files
 * Read: When user starts VisIt_ and answers ``yes`` when queried whether to
   start up from the most recent crash recovery file or when user explicitly
   specifies the crash recovery file as an argument to the ``-sessionfile``
-  command-line :ref:`startup option <StartupOptions>`.
+  command line :ref:`startup option <StartupOptions>`.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_, same as any
   other VisIt_ :ref:`session files <Session files>`.
 
@@ -217,7 +219,7 @@ Files In Other Locations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are several other kinds of files VisIt_ reads and writes to locations
-other than ``VUSER_HOME``. These are breifly described in this section.
+other than ``VUSER_HOME``. These are briefly described in this section.
 
 :ref:`Database Files <Supported File Types>`
 """"""""""""""""""""""""""""""""""""""""""""
@@ -229,15 +231,14 @@ other than ``VUSER_HOME``. These are breifly described in this section.
 * Written: By data producers, simulation codes or instruments, upstream of
   VisIt_ in the scientific analysis workflow.
 * Read: On demand when user selects :menuselection:`File --> Open...`. The
-  ``-o`` command-line :ref:`startup option <StartupOptions>` can be used to
+  ``-o`` command line :ref:`startup option <StartupOptions>` can be used to
   select a database file to open at startup. VisIt_ uses the
   :ref:`file's extension <Supported File Types>` to decide what
-  `type of database <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_
-  the file is and then select the appropriate plugin to read it.
+  kind of database (file format) the file is and then select the appropriate plugin to read it.
 * Format: Varies by 
-  `database type <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_.
+  :ref:`database type <Supported File Types>`.
 
-`VisIt Debug Log <http://visitusers.org/index.php?title=Debug_logs>`_ (``.vlog``) Files
+VisIt Debug Log (``.vlog``) Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): The location of these files depends on whether
   VisIt_ is being run in :ref:`client/server mode <Client-Server Mode>`.
@@ -246,8 +247,8 @@ other than ``VUSER_HOME``. These are breifly described in this section.
   ``VUSER_HOME`` but on UNIX/macOS the logs on the client are written to whatever
   the ``CWD`` was when VisIt_ was started. If started by
   clicking on an icon, this is most
-  likely the the user's login directory. If started from a command-line, it is
-  whatever the shell's ``CWD`` for that command-line was. On
+  likely the user's login directory. If started from a command line, it is
+  whatever the shell's ``CWD`` for that command line was. On
   the server, the logs are written to the user's login (home) directory. In a
   typical client/server scenario, the user gets gui and viewer logs locally in
   the ``CWD`` and mdserver and engine logs on the remote
@@ -259,21 +260,21 @@ other than ``VUSER_HOME``. These are breifly described in this section.
   ``<letter>`` is one of ``A`` through ``E``, ``<component-name>`` is one of
   ``gui``, ``mdserver``, ``viewer``, ``engine_ser``, ``engine_par``,
   ``<mpi-rank-or-$pid>`` is the MPI rank for a parallel engine (``engine_par``)
-  or, optionally if ``-pid`` is given as a command-line
+  or, optionally if ``-pid`` is given as a command line
   :ref:`startup option <StartupOptions>`) the component's process id,
   and ``<debug-level>`` is the integer argument for the ``-debug``
-  command-line :ref:`startup option <StartupOptions>`. For example the file
+  command line :ref:`startup option <StartupOptions>`. For example the file
   names are ``A.mdserver.5.vlog`` or ``C.engine_par.123.2.vlog``.
 
   On Windows, the names of the log files are slightly different and are of the
   form ``<component-name>.exe.<$pid>.<debug-level>.vlog`` or
   ``<component-name>.exe.<mpi-rank>.<$pid>.<debug-level>.vlog`` for a parellel
-  engine. On Windows, the ``-pid`` command-line 
+  engine. On Windows, the ``-pid`` command line 
   :ref:`startup option <StartupOptions>`) is ignored and ``<$pid>`` is always
   included in the file names.
 * Purpose: Capture streaming debugging messages from various VisIt_ components.
 * Written: Continuously by VisIt if ``-debug L`` where ``L`` is the debug *level*
-  and is an integer in the range ``[1...5]`` is given on the command-line that
+  and is an integer in the range ``[1...5]`` is given on the command line that
   starts VisIt_ or buffered if a ``b`` is given immediately afte the debug level
   integer. In addition, on UNIX/macOS VisIt_ maintains the 5 most recently written
   logs from the 5 most recent component executions each beginning with the letters
@@ -301,7 +302,7 @@ Plot and Operator Attribute Files
 * Written: On demand when user selects :menuselection:`File --> Save session...`
 * Read: On demand when user selects :menuselection:`File --> Restor session...`
   or when the ``-sessionfile`` 
-  command-line :ref:`startup option <StartupOptions>` is used to specify
+  command line :ref:`startup option <StartupOptions>` is used to specify
   a session file to open at startup.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_.
 
@@ -330,14 +331,12 @@ Plot and Operator Attribute Files
   more convenient database to load back into VisIt_ for further analysis.
 * Written: On demand when user selects
   :menuselection:`File --> Export database...`.
-  While VisIt_ *reads* over 130 different
-  `types of databases <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_,
+  While VisIt_ *reads* over 130 different :ref:`types of databases <Supported File Types>`,
   only about 20 of those types does it *write*. And some of those output types
   support only limited kinds of data. In client/server mode, keep in mind that
   the files are saved only on the server.
 * Read: On demand when user selects :menuselection:`File --> Open...`
-* Format: Varies by
-  `database type <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_.
+* Format: Varies by :ref:`database type <Supported File Types>`.
 
 Save Window vs. Export Database Files
 """""""""""""""""""""""""""""""""""""

@@ -3,7 +3,7 @@
 Saving movies
 -------------
 
-In addition to allowing you to save images of your visualization window for the current time state, VisIt_ also allows you to save movies and sets of images for your visualizations that vary over time.
+In addition to allowing you to save images of your visualization window for the current timestate, VisIt_ also allows you to save movies and sets of images for your visualizations that vary over time.
 There are multiple methods for saving movies with VisIt_.
 This section introduces the Save movie wizard and explains how to use it to create movies from within VisIt_'s GUI.
 The :ref:`Animation` chapter explains some auxiliary methods that can be used to create movies.
@@ -77,8 +77,8 @@ Choosing movie length
 
    Save movie wizard (screen 3)
 
-It is possible to specify the range of time states to use for the movie, as well as specify a stride if you have too many time states saved (see :numref:`Figure %s<save_movie_wizard_3>`).
-The wizard will automatically set the range of time states.
+It is possible to specify the range of timestates to use for the movie, as well as specify a stride if you have too many timestates saved (see :numref:`Figure %s<save_movie_wizard_3>`).
+The wizard will automatically set the range of timestates.
 
 Choosing the movie name
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -97,8 +97,8 @@ The base filename for the movie is the name that is prepended to all of the movi
 When generating multiple movies with differing resolutions, the movie resolution is often encoded into the filename.
 VisIt_ may generate many different movies with different names but they will all share the same base filename that you provided by typing into the **Base filename** text field.
 
-Choosing e-mail notification
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Choosing email notification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _save_movie_wizard_5:
 
@@ -106,8 +106,8 @@ Choosing e-mail notification
    
    Save movie wizard (screen 5)
 
-If you want to be notified by e-mail when the movie creation is complete, then select the **Yes** option and enter the appropriate e-mail address (see :numref:`Figure %s<save_movie_wizard_5>`).
-By default, no e-mail notification is sent once the movie creation is complete. 
+If you want to be notified by email when the movie creation is complete, then select the **Yes** option and enter the appropriate email address (see :numref:`Figure %s<save_movie_wizard_5>`).
+By default, no email notification is sent once the movie creation is complete. 
 
 Choosing movie generation method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

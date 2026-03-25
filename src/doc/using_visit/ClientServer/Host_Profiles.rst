@@ -207,7 +207,7 @@ connection until you click the **Cancel** button in the
 By default, VisIt_ tunnels data connections through SSH. If you don't want to
 tunnel, or SSH tunneling is not working you can turn it off by unchecking
 **Tunnel data connections through SSH** in the **Connection** section. If you 
-want VisIt_ to rely on the the name obtained from the local computer, click on 
+want VisIt_ to rely on the name obtained from the local computer, click on 
 **Use local machine name**. If you choose the 
 **Parse from SSH_CLIENT environment variable** option then VisIt_ will not pass 
 a host name for the local computer but will instead tell the remote computer 

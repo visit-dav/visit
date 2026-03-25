@@ -89,8 +89,8 @@ USAGE: visit [options]::
 
     Other resources for help
     ---------------------------------------------------------------------------
-        run-time:            While running VisIt, look under the "Help" menu.
-        on-line:             https://visit-help.llnl.gov
+        runtime:             While running VisIt, look under the "Help" menu.
+        online:              https://visit-help.llnl.gov
 
 
     ***************************************************************************
@@ -119,7 +119,7 @@ USAGE: visit [options]::
         -p    <part>         Partition to run in.
         -n    <name>         The parallel job name.
         -b    <bank>         Bank from which to draw resources.
-        -t    <time>         Maximum job run time.
+        -t    <time>         Maximum job runtime.
         -machinefile <file>  Machine file.
         -expedite            Makes DPCS give priority scheduling.
 
@@ -217,14 +217,14 @@ USAGE: visit [options]::
                              differencing mode and specify the two databases
                              to difference.
 
-                             Note: All options occurring on the command-line
+                             Note: All options occurring on the command line
                              *after* the '-diff' option are treated as options
                              to the differencing script while all options
                              occurring *before* the '-diff' option are treated
                              as options to VisIt.
 
         -diffsum <ldb> <rdb> Run only the difference summary method of the
-                             'visit -diff' script, in nowin mode so its fast,
+                             'visit -diff' script, in nowin mode so it's fast,
                              print the results, and immediately exit.
 
         -force_pos_cmfe      Force use of position-based CMFE expressions.
@@ -428,7 +428,7 @@ USAGE: visit [options]::
 
         -debug-malloc <args> <comp>
                              Run the component with the libMallocDebug library
-                             on MacOS X systems. The libMallocDebug library
+                             on macOS systems. The libMallocDebug library
                              lets the MallocDebug application attach to the
                              instrumented application and retrieve memory
                              allocation statistics. The -debug-malloc flag

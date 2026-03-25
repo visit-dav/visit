@@ -24,7 +24,7 @@ The following top level directories exist in the visit repository.
 Setting Up Git LFS
 ------------------
 
-Git LFS (Large File Storage) is a mechanism to help revison control large files efficiently with git. Instead of storing large files in the repo, LFS provides an extension that stores small text files with meta data in the repo and the actual files on another server. These meta data files are called "pointer" files. We use LFS for binary data including our test data tar files, source code for third party libraries, and regression test baseline images.
+Git LFS (Large File Storage) is a mechanism to help revision control large files efficiently with git. Instead of storing large files in the repo, LFS provides an extension that stores small text files with metadata in the repo and the actual files on another server. These metadata files are called "pointer" files. We use LFS for binary data including our test data tar files, source code for third party libraries, and regression test baseline images.
 
 Git LFS is not part of the standard git client. See https://git-lfs.github.com/ for how to obtain Git LFS.
 
@@ -32,7 +32,7 @@ When installing, use the following option::
 
     git lfs install --force --skip-smudge
 
-The "skip smudge" command sets up LFS in a way that skips automatically pulling our large files on clone. We do this to conserve bandwith.
+The "skip smudge" command sets up LFS in a way that skips automatically pulling our large files on clone. We do this to conserve bandwidth.
 
 To obtain these files you will need to do some extra incantations followed by an explicit::
 
@@ -175,8 +175,8 @@ Branch development with git submodules can lead to unintended submodule commits.
 To avoid this, we have an CI check that ensures the active submodule commits match
 a version explicitly listed in a `hashes.txt` file at the root of the git repo.
 
-GitHub Adminstration
---------------------
+GitHub Administration
+---------------------
 
 The VisIt_ project uses some additional, paid, services on GitHub.
 For example, we use additional *data packs*, for higher storage and bandwidth thresholds than the free tier.
@@ -184,7 +184,7 @@ These are handled under the VisIt_ organization's **Billing and Plans** section 
 These are currently billed annually and renew in mid-January (January 19th).
 In the past, someone in LLNL's SD IT department would feed GitHub a credit card number to fund the services for another year.
 More recently, LLNL requires a more formal *paper trail* for anything billed in this manner.
-So, to ensure somone in LLNL'S SD IT department actually takes care of it, a **ServiceNow** ticket needs to get generated and it needs to be one that specifically goes to the SD IT *procurement* team.
-As of this writing, **SD IT Procurement** can be found in **Service Now** by going to `Home->Business Applications Catalog-> Strategic Deturrence (SD)->SD Procurement <https://llnl.servicenowservices.com/ess?id=sc_cat_item&sys_id=34ad842fdb8e3f801a9efd0e0f961942&u_service=ceb29f25dbe622001a9ebd0e0f9619f1&request_type=0224a769dbe622001a9ebd0e0f96191a&sysparm_category=3e260246db98b70027d2f81d0f9619d1>`__.
+So, to ensure someone in LLNL'S SD IT department actually takes care of it, a **ServiceNow** ticket needs to get generated and it needs to be one that specifically goes to the SD IT *procurement* team.
+As of this writing, **SD IT Procurement** can be found in **Service Now** by going to `Home->Business Applications Catalog-> Strategic Deterrence (SD)->SD Procurement <https://llnl.servicenowservices.com/ess?id=sc_cat_item&sys_id=34ad842fdb8e3f801a9efd0e0f961942&u_service=ceb29f25dbe622001a9ebd0e0f9619f1&request_type=0224a769dbe622001a9ebd0e0f96191a&sysparm_category=3e260246db98b70027d2f81d0f9619d1>`__.
 Be sure to set **Urgency** to ``1-High``, provide VisIt_'s project/task number and then indicate in the description it is... *"For the yearly renewal of '5 Git LFS data packs', additional storage and bandwidth needed by our project on GitHub (github.com)*.
-Tifanny Taylor (taylor253) has been the SD IT department member to take care of it.
+Tiffany Taylor (taylor253) has been the SD IT department member to take care of it.

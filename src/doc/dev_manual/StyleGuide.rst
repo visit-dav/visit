@@ -115,7 +115,7 @@ CMakeLists.txt, and Python sources. ::
 Includes
 ~~~~~~~~
 
-* Include files should use angle brackes. For example: #include <vtkRectilinearGrid.h>
+* Include files should use angle brackets. For example: #include <vtkRectilinearGrid.h>
 * Class.C should include Class.h first. This is to make sure that Class.h is not using any previously declared headers. Class.C file may use quotes instead of angle brackets to include Class.h.
 * Include files should be grouped from wider scope to narrower scope. This leads to grouping the include files in the following order:
 
@@ -633,7 +633,7 @@ Example: ::
 
     const int nPoints = dataset->GetNumberOfPoints();
 
-    // Since value of nPoints can only be determined at run-time,
+    // Since value of nPoints can only be determined at runtime,
 
     // this will not compile with Visual Studio
     int myarray[nPoints];
@@ -663,4 +663,3 @@ Here's an example from src/avt/DBAtts and src/avt/DBAtts/SIL:
 .. literalinclude:: ../../avt/DBAtts/SIL/CMakeLists.txt
     :language: CMake
     :start-at: target_sources(avtdbatts PRIVATE
-

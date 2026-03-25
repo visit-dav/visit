@@ -12,7 +12,7 @@ Replicate and CreateBonds Examples
 .. figure:: images/Molecule-replicate-norep.png
    :scale: 75%
 
-   This image shows the original data set, with the original data set's unit cell drawn.
+   This image shows the original dataset, with the original dataset's unit cell drawn.
    (The unit cell happens to be orthogonal, but is not actually axis-aligned).
    No replications and no bond creation have yet been applied.
 
@@ -85,7 +85,7 @@ Volume Plot of the 3D Grid
 .. figure:: images/Mol_plot_and_vol_charge.png
    :scale: 60%
 
-   This shows a :ref:`volume_plot_head` of charge density. Note that the :ref:`volume_plot_head` has a continuously adjustable opacity and by nature allows farther parts of the data to show through to the front, allowing the whole data set to be involved in the final picture. 
+   This shows a :ref:`volume_plot_head` of charge density. Note that the :ref:`volume_plot_head` has a continuously adjustable opacity and by nature allows farther parts of the data to show through to the front, allowing the whole dataset to be involved in the final picture. 
 
 
 Isocontour Lines on a Slice
@@ -116,7 +116,7 @@ Analysis Capabilities
 Subset Selection
 ''''''''''''''''
 The screenshot in :numref:`Figure %s <molecule_subset_enumeration>` shows the same plot in two windows, but with different subset selection.
-The top image shows the standard Molecule plot of a data set.
+The top image shows the standard Molecule plot of a dataset.
 The bottom shows the :ref:`molecule_plot_head`, but with the "Subset" set to de-select Oxygen atoms.
 
 .. _molecule_subset_enumeration:
@@ -161,7 +161,7 @@ Expressions
 Basic Expression Support
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Numeric expressions, created in VisIt_'s Expressions window, are compatible with molecular data types.
+Numeric expressions, created in VisIt_'s Expressions window, are compatible with molecular datatypes.
 For example, if one created the variable "zcoord" as a Scalar, defined as "coords(mesh)[2]" (where "mesh" is the name of the mesh in your data file containing the atomic data), then it will create a new value, centered at the atoms, of the value of the Z coordinate of the atoms. 
 
 .. _Mol_expr_degree:
@@ -256,7 +256,7 @@ File Export
 ^^^^^^^^^^^
 
 VisIt_ has the ability to save windows, not just as image formats like PNG and JPEG, but as data files which can be imported into other tools.
-Some of these data types can be imported back into VisIt_ or other visualization and rendering tools which might have different rendering features of interest for making renderings. 
+Some of these datatypes can be imported back into VisIt_ or other visualization and rendering tools which might have different rendering features of interest for making renderings. 
 
 POV-Ray
 ^^^^^^^
@@ -292,7 +292,7 @@ For example, "visit -assume_format CTRL" will try the LMTO CTRL reader before re
 VASP (CHGCAR, POSCAR, OUTCAR) File Formats
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `VASP code <http://cms.mpi.univie.ac.at/vasp/>`_, as described in the link, is "a package for performing ab-initio quantum-mechanical molecular dynamics (MD) using pseudopotentials and a plane wave basis set."
+The `VASP code <https://www.vasp.at/>`_, as described in the link, is "a package for performing ab-initio quantum-mechanical molecular dynamics (MD) using pseudopotentials and a plane wave basis set."
 Its output is ASCII text in several files, and the VASP reader in VisIt_ supports "OUTCAR" and "POSCAR" for varieties of atomic positions and variables, and "CHGCAR" for charge density grids.
 
 Since the charge density grids can get very large, the VisIt_ CHGCAR reader is actually parallelized to help speed the ASCII-binary conversion process on multi-node machines when using the MPI-enabled version of VisIt_'s computation engine.
@@ -380,7 +380,7 @@ This is a simple example of a 2-compound, 4-element type data file with a single
 The XYZ File Format
 ^^^^^^^^^^^^^^^^^^^
 
-The .xyz file format is a simple ASCII format used for describing atom positions, species, possibly variables, and possibly with multiple time steps.
+The .xyz file format is a simple ASCII format used for describing atom positions, species, possibly variables, and possibly with multiple timesteps.
 Here's a simple example file:
 
 ::
@@ -422,7 +422,7 @@ This CTRL reader supports the STRUC, CLASS, SITE, ALAT, and PLAT file categories
 Using the VTK File Format for Molecular Data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The VTK file format is well-understood by VisIt, as it is the underlying low-level data model for many of its internal data types.
+The VTK file format is well-understood by VisIt, as it is the underlying low-level data model for many of its internal datatypes.
 The VTK structure best used for molecular data is that of a "vtkPolyData" type, where the vertices are the atoms, lines are the bonds (if desired), and fields on the atoms are point data fields.
 An example of an approximate of a water molecule in the ASCII VTK file format is shown below:
 

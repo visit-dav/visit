@@ -95,7 +95,7 @@ while the parallel servers run on some remote high performance compute
 platform. This is shown in :numref:`Figure %s <Intro-Architecture>`. This
 is the most general case, but the components can also all run on a single
 system, either on the desktop or on a remote high performance compute
-platform. The server can also run in serial and for small data sets is
+platform. The server can also run in serial and for small datasets is
 completely sufficient.
 
 .. _Intro-Architecture:
@@ -116,8 +116,8 @@ The server is responsible for reading the data from disk and performing
 all the manipulations on the data. The server reads and does all of its
 processing in parallel when running in parallel. The server can either
 render the data to be displayed in parallel or send the data to be rendered
-by the viewer. For small data sets, rendering in the viewer is faster
-and has less latency. For large data sets it is better to render the data
+by the viewer. For small datasets, rendering in the viewer is faster
+and has less latency. For large datasets it is better to render the data
 in parallel (using scalable rendering) and then send the rendered image to
 the viewer for display. The implementation of scalable rendering is shown
 in :numref:`Figure %s <Intro-ScalableRendering>`. VisIt_ is by default

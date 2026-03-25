@@ -33,10 +33,10 @@ Reopening a database
 ~~~~~~~~~~~~~~~~~~~~
 
 Sometimes it is useful to begin visualizing simulation data before the 
-simulation has finished writing out data files for all time steps. When you 
+simulation has finished writing out data files for all timesteps. When you 
 open a database in VisIt and create plots and later want to visualize new time 
 steps that have been generated since you first opened the database, you can 
-reopen the database to force VisIt to get the data for the new time steps. To 
+reopen the database to force VisIt to get the data for the new timesteps. To 
 reopen a database, click the **ReOpen** button in the **Sources pane**. When 
 VisIt reopens a database, it clears the geometry for all plots that used that 
 database and cached information about the database is erased so that when VisIt
