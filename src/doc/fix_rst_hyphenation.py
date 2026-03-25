@@ -110,7 +110,7 @@ _RULES: list[Rule] = [
     ),
     Rule(
         re.compile(r"\bmulti[- ]dimensional\b", re.IGNORECASE),
-        lambda m: _apply_case("multidimensional", m.group(0)),
+        lambda m: _apply_case("multi-dimensional", m.group(0)),
         "multidimensional",
     ),
     Rule(
@@ -145,8 +145,8 @@ _RULES: list[Rule] = [
     ),
     Rule(
         re.compile(r"\btime[ -]?state(s)?\b", re.IGNORECASE),
-        lambda m: _apply_case(f"time-state{m.group(1) or ''}", m.group(0)),
-        "time-state",
+        lambda m: _apply_case(f"timestate{m.group(1) or ''}", m.group(0)),
+        "timestate",
     ),
     Rule(
         re.compile(r"\bhigh[ -]?level\b", re.IGNORECASE),

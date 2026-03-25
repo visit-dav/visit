@@ -297,7 +297,7 @@ Here is the resultant Xdmf file.
 An example of a curvilinear mesh
 --------------------------------
 
-A curvilinear mesh consists of a structured mesh where the coordinates are specified as multidimensional arrays of values.
+A curvilinear mesh consists of a structured mesh where the coordinates are specified as multi-dimensional arrays of values.
 The mesh can be 2D or 3D.
 It is defined by a ``2DSMesh`` or ``3DSMesh`` topology.
 

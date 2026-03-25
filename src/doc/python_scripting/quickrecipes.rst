@@ -214,7 +214,7 @@ Here are the most common options for launching a compute engine.
     -nn   <# nodes>      The number of nodes to allocate.
     -p    <part>         Partition to run in.
     -b    <bank>         Bank from which to draw resources.
-    -t    <time>         Maximum job run time.
+    -t    <time>         Maximum job runtime.
     -machinefile <file>  Machine file.
 
 

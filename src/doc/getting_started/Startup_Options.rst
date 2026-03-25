@@ -119,7 +119,7 @@ USAGE: visit [options]::
         -p    <part>         Partition to run in.
         -n    <name>         The parallel job name.
         -b    <bank>         Bank from which to draw resources.
-        -t    <time>         Maximum job run time.
+        -t    <time>         Maximum job runtime.
         -machinefile <file>  Machine file.
         -expedite            Makes DPCS give priority scheduling.
 
