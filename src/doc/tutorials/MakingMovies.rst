@@ -26,12 +26,12 @@ Creating a movie of a simulation evolving over time
 The simplest type of movie to create is a movie of a simulation evolving
 over time. There are several steps to making such a movie.
 
-1. Create a good image for a single time-state. This is typically the first or last time-state.
+1. Create a good image for a single timestate. This is typically the first or last timestate.
 2. Animate the movie to make sure the entire movie looks good and change things if they don't.
 3. Create the images and encode the movie.
 
-Creating a good image from a single time-state
-----------------------------------------------
+Creating a good image from a single timestate
+---------------------------------------------
 
 This tutorial uses the **dbreak3d** dataset from the VisIt tutorial data package.
 
@@ -183,7 +183,7 @@ the background color, the lighting and add a time slider.
 
    Setting the light source position.
 
-28. Move the time slider in the main control window to a later time-state where the water is splashing up.
+28. Move the time slider in the main control window to a later timestate where the water is splashing up.
 
 .. figure:: images/MakingMovies-Annotations6.png
 
@@ -209,7 +209,7 @@ Encoding the movie with the movie wizard
 
    Setting the movie format and resolution.
 
-8. It is possible to specify the range of time-states to use for the movie, as well as specify a stride if you have too many time-states saved. The wizard will automatically set the range of time-states. We will use all the time-states and a stride of one, so we can use the default values.
+8. It is possible to specify the range of timestates to use for the movie, as well as specify a stride if you have too many timestates saved. The wizard will automatically set the range of timestates. We will use all the timestates and a stride of one, so we can use the default values.
 9. Click *Next*.
 
 .. figure:: images/MakingMovies-Encoding3.png
@@ -239,7 +239,7 @@ Encoding the movie with the movie wizard
 
 16. This may take a few minutes depending on how fast your computer is. You may want to go get a cup of coffee.
 17. A command window will appear while the movie is being generated. When the movie is finished the command window will disappear.
-18. On Windows, you may get a window indicating that the VisIt Python Command-line interface has stopped working. If this happens, click on *Close program*. Your movie will have been generated properly.
+18. On Windows, you may get a window indicating that the VisIt Python command line interface has stopped working. If this happens, click on *Close program*. Your movie will have been generated properly.
 
 Playing the movie
 ~~~~~~~~~~~~~~~~~
@@ -335,11 +335,11 @@ Ensure that limits are appropriate and consistent across the entire movie
 
 The objects in simulations typically change in size or move in position.
 Because of this the view that may be appropriate at the first timestep
-isn't appropriate at later time-states. For example, suppose a simulation
+isn't appropriate at later timestates. For example, suppose a simulation
 were modeling the explosion of a supernova. As the simulation progresses
 the supernova grows in size and at some point most of the supernova may
 be outside the view. One possible solution would be to set the size based
-on the supernova at the last time-state. If this isn't acceptable it may
+on the supernova at the last timestate. If this isn't acceptable it may
 be necessary to zoom out at a few key points in the simulation to ensure 
 that the supernova is still within the view.
 
@@ -373,7 +373,7 @@ Rendering images gives the most flexibility
 If you want to create a movie to show to many people or will be using it
 in multiple situations it is best to save images and then manually
 encode them using the movie encoding tools in VisIt_, or if you want a
-really high quality movie with sound then you can use a third-party
+really high quality movie with sound then you can use a third party
 movie encoding tool.
 
 If you anticipate using your movie in multiple situations you should

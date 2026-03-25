@@ -231,7 +231,7 @@ The query returns the following details of each component:
 Next, we use the Connected Components Summary via python on one of our plots to obtain this info.
 
 
-#. Launch VisIt's Command-line Interface (CLI) (*Controls Menu->Launch CLI*)
+#. Launch VisIt's Command Line Interface (CLI) (*Controls Menu->Launch CLI*)
 
    .. figure:: images/ccl_launch_cli.png
 

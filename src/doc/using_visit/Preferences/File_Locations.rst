@@ -149,9 +149,9 @@ Custom Plugin Files
   for *private*, user-specific operator, database and plot plugins. On UNIX/macOS,
   these are
 
-  * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/operators/``
-  * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/databases/``
-  * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/plots/``
+  * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/operators/``
+  * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/databases/``
+  * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/plots/``
 
   where ``<visit-version>`` and  ``<visit-arch>`` are the VisIt_ version number
   and VisIt_ architecture moniker. On Windows, these diretories are
@@ -160,7 +160,7 @@ Custom Plugin Files
   * ``VUSER_HOME/databases/``
   * ``VUSER_HOME/plots/``
 
-  If the ``-public`` command-line option to ``xml2cmake`` is used when building
+  If the ``-public`` command line option to ``xml2cmake`` is used when building
   a plugin and the user performing this operation has appropriate permissions,
   the plugin will instead be installed to the VisIt_ *public* installation
   directory for *all* users of that installation. If a previous version of

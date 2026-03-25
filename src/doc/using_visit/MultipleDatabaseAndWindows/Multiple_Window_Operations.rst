@@ -66,9 +66,9 @@ Locking Windows
 ~~~~~~~~~~~~~~~
 
 When you visualize databases using multiple visualization windows, it is often 
-convenient to keep the time-state and view in sync between windows so you can 
+convenient to keep the timestate and view in sync between windows so you can 
 concentrate on comparing plots instead of dealing with the intricacies of 
-setting the view or time-state for each visualization window. VisIt's 
+setting the view or timestate for each visualization window. VisIt's 
 visualization windows can be locked with respect to time, view, or interactive 
 tools. To lock visualization windows, use the **Popup menu**, **Toolbar**, or 
 the **Lock** options from the **Main Window's Windows** menu as shown in 
@@ -112,11 +112,11 @@ would not cause other visualization windows to update. Once VisIt creates
 a suitable database correlation for all windows, the active time slider is
 set to that database correlation in all visualization windows that are
 locked in time. If you alter a database correlation at this point, it will
-cause the time-state in each locked visualization window to change. Since
+cause the timestate in each locked visualization window to change. Since
 the same database correlation is used in all locked visualization windows,
-changing the time-state for the database correlation changes the time-state
+changing the timestate for the database correlation changes the timestate
 in all of the locked windows. This frees you to examine time-varying
-database behavior without having to set the time-state independently in each 
+database behavior without having to set the timestate independently in each 
 visualization window.  See :ref:`Database correlations` for more information.
 
 Locking tools

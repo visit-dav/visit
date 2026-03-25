@@ -16,7 +16,7 @@ If the package being built has a decent CMake build system, please use that in t
 Here is a list of all the functions that will be defined (listed in order of appearance in the file):
 
 bv_foo_initialize
-    Initialize any variables controlled by command-line options.
+    Initialize any variables controlled by command line options.
     Only libraries in the ``required`` category should have `DO_FOO` set to `yes` in this function.
 
 bv_foo_enable
@@ -65,7 +65,7 @@ Most of the above referenced functions will suit fine as originally written by t
 
 If your module has dependencies on other build_visit modules, then also modify ``bv_foo_depends_on``.
 
-If you want to allow use of a system version of your module, then ``bv_foo_initialize`` needs work to ensure extra command-line arguments are added.
+If you want to allow use of a system version of your module, then ``bv_foo_initialize`` needs work to ensure extra command line arguments are added.
 See ``bv_qt.sh`` as an example of allowing system or also an alternate (already installed but not system) qt.
 ``bv_qt_system_qt`` and ``bv_alt_qt_dir`` were added and other functions were modified to support this for qt.
 

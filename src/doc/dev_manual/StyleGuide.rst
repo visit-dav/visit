@@ -633,7 +633,7 @@ Example: ::
 
     const int nPoints = dataset->GetNumberOfPoints();
 
-    // Since value of nPoints can only be determined at run-time,
+    // Since value of nPoints can only be determined at runtime,
 
     // this will not compile with Visual Studio
     int myarray[nPoints];

@@ -35,7 +35,7 @@ relative locations (e.g. which database) of the donor variable and target
 mesh.
 
     #. Donor variable and target mesh are in the *same* database.
-    #. Donor variable and target mesh are from different time-states of the
+    #. Donor variable and target mesh are from different timestates of the
        *same* database.
     #. Donor variable and target mesh are in wholly different databases.
 

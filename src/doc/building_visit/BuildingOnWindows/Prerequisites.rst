@@ -14,13 +14,13 @@ Look for the *Win 10/8/7 development*  link for the particular version you want.
 The file will be named *visitdev3.2.1.exe* (or similar, based on version chosen).
 
 For building a released version of VisIt version 3.2.2 or newer, download the *Source* tgz file as well as the *Win 10 development* file which will be named *visit_windowsdev_3.2.2.zip* (or similar, based on version chosen).
-The .zip file contains all the prebuilt third-party binaries needed for building VisIt on Windows.
+The .zip file contains all the prebuilt third party binaries needed for building VisIt on Windows.
 It is best to extract these files to the same folder so that *src* from the source tarball is peer to *windowsbuild* from the windows-dev zip file.
 
 For the latest development version
 """"""""""""""""""""""""""""""""""
 
-If you want to build the latest development version from our repository, you need to obtain source from the `visit repo <https://github.com/visit-dav/visit>`_, and the prebuilt third-party dependencies from the `visit-deps repo <https://github.com/visit-dav/visit-deps>`_ on GitHub.
+If you want to build the latest development version from our repository, you need to obtain source from the `visit repo <https://github.com/visit-dav/visit>`_, and the prebuilt third party dependencies from the `visit-deps repo <https://github.com/visit-dav/visit-deps>`_ on GitHub.
 
 
 Other Software
@@ -28,11 +28,11 @@ Other Software
 
 1. `CMake <https://cmake.org/download>`_ version 3.24 or greater.
 
-   * Don't use the CMake included with cygwin if you plan on using the prebuilt third-party libraries.
+   * Don't use the CMake included with cygwin if you plan on using the prebuilt third party libraries.
 
 2. Visual Studio 2022 (VisIt 3.4.0 and newer) or Visual Studio 2017
 
-   * Needed if you want to use our prebuilt third-party libraries.
+   * Needed if you want to use our prebuilt third party libraries.
 
 3. `NSIS <https://nsis.sourceforge.io/>`_ *Optional*
 

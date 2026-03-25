@@ -101,7 +101,7 @@ https://hub.docker.com/_/ubuntu
 
 In this example the Dockerfile is set up to use Ubuntu 16. The Dockerfile
 installs all the packages needed to build VisIt_ and then uses build_visit
-to create all the third-party libraries as well as the config site file.
+to create all the third party libraries as well as the config site file.
 The build will take several hours. Sometimes I have had it stop sending
 text to the Command window, so if it looks like it is hung, it may
 actually be happily progressing along. ::
@@ -166,7 +166,7 @@ as root with the base operating system image. You can start by installing
 packages that your are certain you will need. At that point you can run
 build_visit until it fails, determining what missing package caused the
 failure, installing the missing package and repeating until you have gotten
-build_visit to complete with the third-party libraries you want to build.
+build_visit to complete with the third party libraries you want to build.
 From that experience you can create your Dockerfile.
 
 Useful Docker Commands

@@ -326,16 +326,16 @@ set by typing in the desired number of threads in the
 arrows next to the text field.
 
 
-Providing additional command-line options
+Providing additional command line options
 """""""""""""""""""""""""""""""""""""""""
 
 The **Launch Profiles** tab allows you to provide additional command line
 options to the compute engine and metadata server through the
 **Additional arguments** text field. When you provide additional command line
 options, you should type them, separated by spaces, into the
-**Additional arguments** text field. Command-line options influence how the
+**Additional arguments** text field. Command line options influence how the
 compute engine and metadata server are executed. For more information on
-VisIt_'s command-line options, see :ref:`StartupOptions`. 
+VisIt_'s command line options, see :ref:`StartupOptions`. 
 
 .. _setting_parallel_options:
 
@@ -526,15 +526,15 @@ Setting launcher arguments
 """"""""""""""""""""""""""
 
 In addition to choosing a launch program, you can also elect to give it
-additional command-line options to influence how it launches your compute
-engine. To give additional command-line options to the launch program, click
-the **Launcher arguments** check box and type command-line options
+additional command line options to influence how it launches your compute
+engine. To give additional command line options to the launch program, click
+the **Launcher arguments** check box and type command line options
 into the text field to the right of that check box.
 
 Setting sublauncher options 
 """""""""""""""""""""""""""
 
-To give additional command-line options to the sublauncher program, click
+To give additional command line options to the sublauncher program, click
 the **Sublauncher arguments**, **Sublauncher pre-mpi command** or
 **Sublauncher post-mpi command** check box and type options into the text 
 field to the right of that check box.

@@ -43,7 +43,7 @@ Configuration
 
    ``args``: **optional** - arguments for ``build_visits``
 
-   ``libs``: **optional** - third-party libraries to build
+   ``libs``: **optional** - third party libraries to build
 
    ``make_flags``: **optional** - Make flags
 
@@ -142,7 +142,7 @@ The second will buffer the output to the file.
 What Can Go Wrong?
 ~~~~~~~~~~~~~~~~~~
 
-Apart from commonly encountered issues building each third-party library built by a ``bv_xxx.sh`` script, there are many other ways getting the macOS release ready can fail.
+Apart from commonly encountered issues building each third party library built by a ``bv_xxx.sh`` script, there are many other ways getting the macOS release ready can fail.
 
 * There are at least 3 levels of *certifications* (from your macOS keychain) involved.
 

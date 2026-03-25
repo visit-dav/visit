@@ -105,7 +105,7 @@ completely sufficient.
    VisIt_'s architecture
 
 VisIt_ supports a number of different clients including a Graphical User
-Interface (GUI), a Python based Command-line Interface (CLI), and a Java
+Interface (GUI), a Python based Command Line Interface (CLI), and a Java
 programming interface. More than one client can be active at a time and
 VisIt_ coordinates the state between them so that they are consistent.
 

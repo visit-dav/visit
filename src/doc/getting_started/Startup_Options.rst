@@ -89,8 +89,8 @@ USAGE: visit [options]::
 
     Other resources for help
     ---------------------------------------------------------------------------
-        run-time:            While running VisIt, look under the "Help" menu.
-        on-line:             https://visit-help.llnl.gov
+        runtime:             While running VisIt, look under the "Help" menu.
+        online:              https://visit-help.llnl.gov
 
 
     ***************************************************************************
@@ -253,7 +253,7 @@ USAGE: visit [options]::
                              /bin is automatically appended to this path.
         -forceversion <ver>  Force the given version.  Overrides all
                              intelligent version selection logic.
-        -publicpluginsonly   Disable all plug-ins but the default ones.
+        -publicpluginsonly   Disable all plugins but the default ones.
         -compiler <cc>       Require version built with the specified compiler.
         -objectmode <mode>   Require a specific object file mode.
         -forceinteractivecli Force the CLI to behave interactively, even if run
@@ -331,8 +331,8 @@ USAGE: visit [options]::
 
     Developer options (most for xml2... tools)
     ---------------------------------------------------------------------------
-        -public              xml2cmake: force install plug-ins publicly
-        -private             xml2cmake: force install plug-ins privately
+        -public              xml2cmake: force install plugins publicly
+        -private             xml2cmake: force install plugins privately
         -clobber             Permit xml2... tools to overwrite old files
         -noprint             Silence debugging output from xml2... tools
         -outputtoinputdir    Force xml2... tools to write output files to

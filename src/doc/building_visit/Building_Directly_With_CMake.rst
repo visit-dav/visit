@@ -10,7 +10,7 @@ These files are called *config-site* files.
 They offer a simple, short-hand for specifying a slew of CMake variables when building VisIt_.
 
 In this section, we explain how a config-site file is organized and what various of the different types of variables used there mean.
-One key thing to understand is that VisIt_'s CMake build logic pre-dates many of the more modern and useful features of CMake as well as the adoption of CMake support by a number of third-party library (TPL) providers VisIt_ relies upon.
+One key thing to understand is that VisIt_'s CMake build logic pre-dates many of the more modern and useful features of CMake as well as the adoption of CMake support by a number of third party library (TPL) providers VisIt_ relies upon.
 
 The first lines of a config-site file are a set of comments capturing some high-level information about the build the file supports.
 
@@ -262,10 +262,10 @@ CMAKE_INSTALL_PREFIX : PATH : *default is system dependent*
     Specifies the location for files installed with *make install.*
 
 IGNORE_THIRD_PARTY_LIB_PROBLEMS : BOOL : OFF
-    Ignore problems finding requested third-party libraries.
+    Ignore problems finding requested third party libraries.
 
 VISIT_CONFIG_SITE : FILEPATH : ${VISIT_SOURCE_DIR}/config-site/<localhost>.cmake
-    Location of a config-site cmake file that has settings to control the build, including locations of third-party libraries.
+    Location of a config-site cmake file that has settings to control the build, including locations of third party libraries.
     Created automatically by build_visit script.
 
 VISIT_DDT : BOOL : OFF
@@ -332,5 +332,5 @@ VISIT_WINDOWS_APPLICATION : BOOL : ON
     Toggles creation of Windows-style applications with no console.
 
 VISIT_WINDOWS_DIR : PATH : 
-    Specifies the location of the prebuilt third-party library binaries.
+    Specifies the location of the prebuilt third party library binaries.
     See :ref:`Location of windowsbuild directory<Location of windowsbuild Directory>` for default locations.

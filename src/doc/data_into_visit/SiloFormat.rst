@@ -81,7 +81,7 @@ Using Silo on Windows
 """""""""""""""""""""
 
 When you build an application using the Silo_ library on Windows, you can use the precompiled Silo_ DLL and import library that comes with the VisIt_ development distribution for Windows: ``visit_windowsdev_x.y.x.zip``, where ``x.y.z`` refers to the version, like ``3.3.3``.
-The development distribution for Windows includes prebuilt binaries (``.dlls`` and import libraries) for the Third-party libraries upon which VisIt_ depends, including Silo_.
+The development distribution for Windows includes prebuilt binaries (``.dlls`` and import libraries) for the third party libraries upon which VisIt_ depends, including Silo_.
 Simply unzip the distribution to whichever location best suits your needs.
 The binaries are located in the ``windowsbuild/MSVC<VERSION>`` folder, with ``<VERSION>`` being the version of Visual Studio they were built with (eg ``MSVC2017``).
 
@@ -96,7 +96,7 @@ Note that you must configure your program to use a Multithreaded DLL version of 
 Inspecting Silo files
 ~~~~~~~~~~~~~~~~~~~~~
 
-Unless it was explicitly *disabled* in the configuration, Silo_ includes a command-line utility called *browser* that can be used to textually browse the contents of Silo_ files much like the Linux shell enables browsing a the Linux file system.
+Unless it was explicitly *disabled* in the configuration, Silo_ includes a command line utility called *browser* that can be used to textually browse the contents of Silo_ files much like the Linux shell enables browsing a the Linux file system.
 To run the browser, type ``browser`` into a terminal window followed by the name of a Silo_ file that you want to inspect.
 Once the browser application opens the Silo_ file, type ``ls`` to see the contents of the Silo_ file, ``cd`` to move between Silo_ directories within the file, etc.
 From there, typing the name of any of the objects shown in the object listing will print information about that object to the console.
@@ -184,8 +184,8 @@ Dealing with time
 ~~~~~~~~~~~~~~~~~
 
 A Silo_ file is a flexible container for storing many types of data.
-Silo_'s ability to store data hierarchically in directories can allow you to store multiple time-states of your simulation data within a single data file.
-However, Silo_ is most often used to store one time-state per Silo_ file (or ensemble of files in a parallel context)
+Silo_'s ability to store data hierarchically in directories can allow you to store multiple timestates of your simulation data within a single data file.
+However, Silo_ is most often used to store one timestate per Silo_ file (or ensemble of files in a parallel context)
 VisIt_'s Silo_ plugin is primarily designed and used to work with Silo_ files in this modality.
 Consequently, when writing data, programs that use Silo_ will write a new Silo_ file for each timestep.
 By convention, the new file will contain an index indicating either the simulation cycle or a simple integer counter.
@@ -222,7 +222,7 @@ By convention, the new file will contain an index indicating either the simulati
   }
 
 The above code listing will write out Silo_ files with names such as: ``output0000.silo``, ``output0001.silo``, ``output0002.silo``, ...
-Each file contains the data from a particular simulation time-state.
+Each file contains the data from a particular simulation timestate.
 It may seem like the data are less related because they are stored in different files but the fact that the files are related in time is subtly encoded in the name of each of the files.
 When VisIt_ recognizes a pattern in the names of the files such as ``output????.silo``, in this case, VisIt_ automatically recognizes the files as a time-varying database (e.g. a *virtual* database).
 If you choose names for your Silo_ files that cannot be grouped by recognizing a
