@@ -11,7 +11,7 @@ This section describes the VisIt_ Command Line Interface (CLI).
 Command Line interface overview
 -------------------------------
 
-VisIt_ includes a rich a command line interface that is based on Python 2.7.
+VisIt_ includes a rich a command line interface that is based on Python 3.13.
 
 There are several ways to use the *CLI*:
 
