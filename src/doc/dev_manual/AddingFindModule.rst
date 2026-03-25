@@ -1,6 +1,6 @@
 .. _dev_adding_find_module:
 
-Adding a Find Module for third party Libraries
+Adding a Find Module for Third Party Libraries
 ==============================================
 
 VisIt_ uses custom `Find` modules for most of its dependent third party libraries.
