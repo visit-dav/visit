@@ -15,21 +15,20 @@ import sys
 import time
 from math import *
 
-try:
-    from PySide2.QtCore import *
-    from PySide2.QtGui import *
-except:
-    pass
-
-from visit_utils.common import require_pyside
+from visit_utils.common import require_pyside, qt_api
 from visit_utils.property_tree import PropertyTree
 
 
-def py2to3_compat_unichr(c):
-    if (sys.version_info > (3, 0)):
-        return chr(c)
-    else:
-        return unichr(c)
+try:
+    if qt_api() == "PySide2":
+        from PySide2.QtCore import *
+        from PySide2.QtGui import *
+    elif qt_api() == "PySide6":
+        from PySide6.QtCore import *
+        from PySide6.QtGui import *
+except:
+    pass
+
 
 @require_pyside
 def process_encoded_text(val):
@@ -41,7 +40,7 @@ def process_encoded_text(val):
     while curr != -1:
         res += val[prev:curr]
         cval = int(rexp.cap(1)[1:],base=16)
-        res +=  py2to3_compat_unichr(cval)
+        res +=  chr(cval)
         prev = curr + rexp.matchedLength()
         curr = prev
         curr = rexp.indexIn(val,curr)
