@@ -78,6 +78,8 @@ if(TARGET silo)
         # prepended, so get just the filename
         cmake_path(GET silo_soname FILENAME silo_soname)
 
+        # also install silo_loc b/c silo symlink pattern confounds globing.
+        THIRD_PARTY_INSTALL_LIBRARY(${silo_loc})
         THIRD_PARTY_INSTALL_LIBRARY(${silo_libdir}/${silo_soname})
     endif()
 
