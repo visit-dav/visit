@@ -477,7 +477,6 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                     PATTERN "scikit*" EXCLUDE
                     PATTERN "snowball*" EXCLUDE
                     PATTERN "sphinx*" EXCLUDE
-                    PATTERN "toml*" EXCLUDE
                     PATTERN "trove*" EXCLUDE
                     PATTERN "urllib*" EXCLUDE
                     PATTERN "zipp*" EXCLUDE
