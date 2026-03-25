@@ -149,9 +149,9 @@ Custom Plugin Files
   for *private*, user-specific operator, database and plot plugins. On UNIX/macOS,
   these are
 
-  * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/operators/``
-  * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/databases/``
-  * ``VUSER_HOME/<visit-version>/<visit-arch>/plug-ins/plots/``
+  * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/operators/``
+  * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/databases/``
+  * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/plots/``
 
   where ``<visit-version>`` and  ``<visit-arch>`` are the VisIt_ version number
   and VisIt_ architecture moniker. On Windows, these diretories are

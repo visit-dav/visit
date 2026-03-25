@@ -44,7 +44,7 @@ Keep in mind that level 1 debug log files are less populated than level 5, and m
     {
         // Write messages to different levels of the debug logs.
         debug1 << "Hi from avtXXXXFileFormat::GetMesh" << endl;
-        debug4 << "Many database plug-ins prefer debug4" << endl;
+        debug4 << "Many database plugins prefer debug4" << endl;
         debug5 << "Lots of detail from avtXXXXFileFormat::GetMesh" << endl;
         return 0;
     }

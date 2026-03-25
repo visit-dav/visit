@@ -634,7 +634,7 @@ The output consists of text files containing the name of each plugin tested and 
 * ``cmake executable could not be found``   (rare, just for completeness)
 * ``make executable could not be found``  (rare, just for completeness)
 
-When a failure occurs, another output file is generated in ``logs/plug-ins`` subdirectory in the form  ``<PluginName>_build_res.txt`` which should contain sufficient information for fixing the error.
+When a failure occurs, another output file is generated in ``logs/plugins`` subdirectory in the form  ``<PluginName>_build_res.txt`` which should contain sufficient information for fixing the error.
 
 The most likely culprit for errors is missing information in one of the following files:
 

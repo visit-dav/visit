@@ -137,8 +137,8 @@ Available options are as follows::
                            (eg Silo, FLASH, etc).
                            Default: None
  
-     -DEV                  Install plug-in development tools.
-                           Default: no plug-in dev tools
+     -DEV                  Install plugin development tools.
+                           Default: no plugin dev tools
  
      -LIBSIM               Install libsim tools.
                            Default: no libsim tools

@@ -525,7 +525,7 @@ Once all attributes are set to your satisfaction, you must add the *avtMeshMetaD
     {
         // Add a point mesh to the metadata. Note that this example will
         // always expose a mesh called "particles" to VisIt. A real
-        // plug-in may want to read a list of meshes from the data
+        // plugin may want to read a list of meshes from the data
         // file.
         avtMeshMetaData *mmd = new avtMeshMetaData;
         mmd->name = "particles";
@@ -567,9 +567,9 @@ If you want to indicate units that are associated with the scalar variable, set 
     avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         // Add a mesh called "mesh" to the metadata object.
-        // Add a scalar to the metadata. Note that this plug-in will
+        // Add a scalar to the metadata. Note that this plugin will
         // always expose a scalar called "temperature" to VisIt. A real
-        // plug-in may want to read a list of scalars from the data
+        // plugin may want to read a list of scalars from the data
         // file.
         avtScalarMetaData *smd = new avtScalarMetaData;
         smd->name = "temperature";
@@ -603,9 +603,9 @@ After you set the basic vector metadata attributes, you must set the *varDim* me
     avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         // Add a mesh called "mesh" to the metadata object.
-        // Add a vector to the metadata. Note that this plug-in will
+        // Add a vector to the metadata. Note that this plugin will
         // always expose a vector called "velocity" to VisIt. A real
-        // plug-in may want to read a list of vectors from the data
+        // plugin may want to read a list of vectors from the data
         // file.
         avtVectorMetaData *vmd = new avtVectorMetaData;
         vmd->name = "velocity";
@@ -642,9 +642,9 @@ composed of: "Steel", "Wood", "Glue", and "Air" then the metadata object needed 
     avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         // Add a mesh called "mesh" to the metadata object.
-        // Add a material to the metadata. Note that this plug-in will
+        // Add a material to the metadata. Note that this plugin will
         // always expose a material called "mat1" to VisIt. A real
-        // plug-in may want to use from the data file to construct
+        // plugin may want to use from the data file to construct
         // a material.
         avtMaterialMetaData *matmd = new avtMaterialMetaData;
         matmd->name = "mat1";

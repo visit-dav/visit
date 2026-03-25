@@ -6248,8 +6248,8 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  print("The number of operator plug-ins is: ", NumOperatorPlugins())
-  print("The names of the plug-ins are: ", OperatorPlugins())
+  print("The number of operator plugins is: ", NumOperatorPlugins())
+  print("The names of the plugins are: ", OperatorPlugins())
 
 
 NumPlotPlugins
@@ -6275,8 +6275,8 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  print("The number of plot plug-ins is: ", NumPlotPlugins())
-  print("The names of the plug-ins are: ", PlotPlugins())
+  print("The number of plot plugins is: ", NumPlotPlugins())
+  print("The names of the plugins are: ", PlotPlugins())
 
 
 OpenCLI
@@ -6547,7 +6547,7 @@ return type : tuple of strings
 
   #% visit -cli
   for plugin in OperatorPlugins():
-      print("The %s operator plug-in is loaded." % plugin)
+      print("The %s operator plugin is loaded." % plugin)
 
 
 OverlayDatabase
@@ -7104,7 +7104,7 @@ return type : tuple of strings
 
   #% visit -cli
   for plugin in PlotPlugins():
-      print("The %s plot plug-in is loaded." % plugin)
+      print("The %s plot plugin is loaded." % plugin)
 
 
 PointPick
