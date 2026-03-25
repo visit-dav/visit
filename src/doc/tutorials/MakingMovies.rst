@@ -239,7 +239,7 @@ Encoding the movie with the movie wizard
 
 16. This may take a few minutes depending on how fast your computer is. You may want to go get a cup of coffee.
 17. A command window will appear while the movie is being generated. When the movie is finished the command window will disappear.
-18. On Windows, you may get a window indicating that the VisIt Python Command-line interface has stopped working. If this happens, click on *Close program*. Your movie will have been generated properly.
+18. On Windows, you may get a window indicating that the VisIt Python command line interface has stopped working. If this happens, click on *Close program*. Your movie will have been generated properly.
 
 Playing the movie
 ~~~~~~~~~~~~~~~~~

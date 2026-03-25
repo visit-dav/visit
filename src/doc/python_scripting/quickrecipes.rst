@@ -80,10 +80,10 @@ In this example VisIt_ is imported into the system Python and used to save an im
     visit.SaveWindow()
 
 
-Handling Command-line arguments
+Handling command line arguments
 -------------------------------
 
-In some cases, a VisIt_ python script also needs to handle its own command-line arguments.
+In some cases, a VisIt_ python script also needs to handle its own command line arguments.
 This is handled using the ``Argv()`` method.
 For example, to run the python script, ``myscript.py`` with two arguments like so ::
 
@@ -104,7 +104,7 @@ Setting the output image characteristics
 VisIt provides a number of options for saving files, including: format, fileName, and image width and height, to name a few. 
 These attributes are grouped into the SaveWindowAttributes object. 
 To set the options that VisIt uses to save files, you must create a SaveWindowAttributes object, change the necessary attributes, and call the SetSaveWindowAttributes function. 
-Note that if you want to create images using a specific image resolution, the best way is to use the *-geometry* command-line argument with VisIt_'s Command-line Interface and tell VisIt to use screen capture. 
+Note that if you want to create images using a specific image resolution, the best way is to use the *-geometry* command line argument with VisIt_'s Command Line Interface and tell VisIt to use screen capture. 
 If you instead require your script to be capable of saving several different image sizes then you can turn off screen capture and set the image resolution in the SaveWindowAttributes object.
 
 .. literalinclude:: ../../test/tests/quickrecipes/saving_images.py

@@ -6,12 +6,12 @@ Scripting
 .. toctree::
        :maxdepth: 2
 
-This section describes the VisIt_ Command-line Interface (CLI).
+This section describes the VisIt_ Command Line Interface (CLI).
 
-Command-line interface overview
+Command Line interface overview
 -------------------------------
 
-VisIt_ includes a rich a command-line interface that is based on Python 2.7.
+VisIt_ includes a rich a command line interface that is based on Python 2.7.
 
 There are several ways to use the *CLI*:
 

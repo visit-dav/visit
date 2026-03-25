@@ -19,7 +19,7 @@ Subsequent runs of VisIt_ will rename existing logs with the initial letter adva
 For example A.mdserver.5.vlog will be renamed to B.mdserver.5.vlog.
 At most five sets of debugging logs will be kept.
 The logs from the most current run will always begin with *A*.
-If you don't want that behavior, you may add ``-clobber_vlogs`` to VisIt_'s command-line arguments.
+If you don't want that behavior, you may add ``-clobber_vlogs`` to VisIt_'s command line arguments.
 The A.mdserver*.vlog and A.engine*.vlog files are useful when debugging a database reader plugin.
 The A.viewer*.vlog and A.engine*.vlog files are useful when debugging a plot plugin.
 
@@ -103,7 +103,7 @@ Attaching a debugger
 VisIt_ has various options for attaching debuggers on Linux machines, including ``gdb``, ``totalview``, and ``valgrind`` to name a few.
 The full list is available in the :ref:`Startup options<StartupOptions>` section under ``Debugging options``.
 
-Typically, when starting up VisIt_ and attaching a debugger, the launcher logic starts the debugger and loads the VisIt_ component executable and sets the command-line arguments but does not actually start the executable.
+Typically, when starting up VisIt_ and attaching a debugger, the launcher logic starts the debugger and loads the VisIt_ component executable and sets the command line arguments but does not actually start the executable.
 Instead, it opens with the debugger's interactive prompt where the user must enter ``run`` to actually start the component.
 This allows the user to set breakpoints even before starting the component.
 

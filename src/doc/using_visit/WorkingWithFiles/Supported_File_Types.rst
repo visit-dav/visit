@@ -33,12 +33,12 @@ Select the plugin from the list on the left and then hit the **Add to preferred 
 Be sure to go to **Options --> Save settings...** if you want your selections to persist across VisIt_ sessions.
 If VisIt_ finds it is unable to open a file either because there are no plugins matching the extension or all the matching plugins failed to open the file, it will begin trying preferred plugins in the order from *top* to *bottom* of the list.
 
-VisIt_ also supports the ``-fallback_format`` command-line option.
+VisIt_ also supports the ``-fallback_format`` command line option.
 This option adds the specified plugin to the list of preferred plugins.
 For example, ``-fallback_format VTK`` adds the VTK plugin to the list of preferred plugins.
 More than one ``-fallback_format`` option can be specified on the command line and earlier encountered options take precedence over later ones.
 
-Finally, you can also specify the plugin to use to open a file as part of the ``-o`` command-line option.
+Finally, you can also specify the plugin to use to open a file as part of the ``-o`` command line option.
 For example, to open the file ``foobar.gorfo`` as a Silo file, you can specify ``-o foobar.gorfo,Silo_1.0`` on the command line when starting VisIt_.
 Note this feature of the ``-o`` option *requires* the plugin name (in correct case) followed by an underscore (``_``) and then its version number which is almost always ``1.0``. 
 If you want to see the plugin name options as well as their version numbers, go to **Options --> Plugin Manager...** and then the **Databases** tab. 

@@ -125,7 +125,7 @@ You can change how VisIt_ creates your movie by clicking a different movie gener
 
 The default option for movie creation allows VisIt_ to use your current VisIt_ session to make your movies.
 This has the advantage that it uses your current compute engine and allocated processors, which makes movie generation start immediately.
-When you use this movie generation method, VisIt_ will launch its command-line interface (CLI) and execute Python movie-making scripts in order to generate your movie.
+When you use this movie generation method, VisIt_ will launch its command line interface (CLI) and execute Python movie-making scripts in order to generate your movie.
 This means that you have both the VisIt_ GUI and CLI controlling the viewer.
 If you use this movie generation method, you will be able to watch your movie as it is generated.
 You can track the movie's progress using the **Movie progress dialog** , shown in :numref:`Figure %s<save_movie_progress>`.

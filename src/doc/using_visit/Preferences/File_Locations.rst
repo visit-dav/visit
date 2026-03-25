@@ -160,7 +160,7 @@ Custom Plugin Files
   * ``VUSER_HOME/databases/``
   * ``VUSER_HOME/plots/``
 
-  If the ``-public`` command-line option to ``xml2cmake`` is used when building
+  If the ``-public`` command line option to ``xml2cmake`` is used when building
   a plugin and the user performing this operation has appropriate permissions,
   the plugin will instead be installed to the VisIt_ *public* installation
   directory for *all* users of that installation. If a previous version of

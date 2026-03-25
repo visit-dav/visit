@@ -119,7 +119,7 @@ Here is an example of the contents of the generated ``run_visit_test_suite.sh`` 
 Once the test suite has run, the results can be found in the ``output/html`` directory.
 There, you will find an ``index.html`` file entry that you can use to browse all the results.
 
-If you want to restrict the amount of parallelism used in running the test suite you can do so with the ``-n`` command-line option.
+If you want to restrict the amount of parallelism used in running the test suite you can do so with the ``-n`` command line option.
 By default, the test suite will be run using all the cores on your system.
 We have found that on some systems, running more than one test at a time may result in failures.
 To workaround this issue you can run one test at a time. ::
@@ -131,7 +131,7 @@ The list of tests must be the last entries on the command line. ::
 
     ./run_visit_test_suite.sh -n 1 tests/databases/silo.py tests/databases/xdmf.py
 
-There are a number of additional command-line options to the test suite.
+There are a number of additional command line options to the test suite.
 ``./run_visit_test_suite.sh -help`` will give you details about these options.
 
 Accessing nightly regression test results
@@ -154,7 +154,7 @@ For example, the difference between ``parallel`` and ``scalable,parallel,icet`` 
 In ``scalable,parallel,icet`` mode, it is done, in parallel, on the engine and images from each processor are composited with `IceT <https://icet.sandia.gov>`_.
 Typically, the entire test suite is run in each mode specified by the regression test policy.
 
-The mode is specified with the ``-m`` command-line option.
+The mode is specified with the ``-m`` command line option.
 For example, to run in ``scalable,parallel,icet`` mode use: ::
 
     ./run_visit_test_suite.sh -n 1 -m "scalable,parallel,icet"
@@ -416,7 +416,7 @@ Avg. Diff (``avgdiff``) :
 
 Fuzzy Matching Thresholds
 """""""""""""""""""""""""
-There are some command-line arguments to run tests that control *fuzzy* matching.
+There are some command line arguments to run tests that control *fuzzy* matching.
 When computed results match bit-for-bit with the baseline, a **PASS** is reported and it is colored green in the HTML reports. 
 When a computed result fails the bit-for-bit match but passes the fuzzy match, a **PASS** is reported on the terminal and it is colored yellow in the HTML reports.
 
@@ -439,10 +439,10 @@ The command line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with
 Testing on Non-Baseline Configurations
 """"""""""""""""""""""""""""""""""""""
 
-When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command-line options will be very useful.
+When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command line options will be very useful.
 
-For numerical textual results, there is also a ``--numdiff`` command-line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
-The command-line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
+For numerical textual results, there is also a ``--numdiff`` command line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
+The command line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
 
 When specified on the command line to a test suite run, the above tolerances wind up being applied to *all* test results computed during a test suite run. 
 It is also possible to specify these tolerances in specific tests by passing them as arguments, for example ``Test(pixdiff=4.5)`` and ``TestText(numdiff=0.01)``, in the methods used to check test outputs.
@@ -619,8 +619,6 @@ Finally, make sure to tag the test in a comment block with a space separated lis
 Using VisIt_'s test routines in other applications
 --------------------------------------------------
 VisIt_'s testing infrastructure can also be used from any VisIt_ installation by other applications that want to write their own Visit-based tests.
-For more details about this, see: Leveraging VisIt in Sim Code Regression Testing.
-
 
 Diagnosing pluginVsInstall failures
 -----------------------------------

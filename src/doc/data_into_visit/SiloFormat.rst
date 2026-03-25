@@ -96,7 +96,7 @@ Note that you must configure your program to use a Multithreaded DLL version of 
 Inspecting Silo files
 ~~~~~~~~~~~~~~~~~~~~~
 
-Unless it was explicitly *disabled* in the configuration, Silo_ includes a command-line utility called *browser* that can be used to textually browse the contents of Silo_ files much like the Linux shell enables browsing a the Linux filesystem.
+Unless it was explicitly *disabled* in the configuration, Silo_ includes a command line utility called *browser* that can be used to textually browse the contents of Silo_ files much like the Linux shell enables browsing a the Linux filesystem.
 To run the browser, type ``browser`` into a terminal window followed by the name of a Silo_ file that you want to inspect.
 Once the browser application opens the Silo_ file, type ``ls`` to see the contents of the Silo_ file, ``cd`` to move between Silo_ directories within the file, etc.
 From there, typing the name of any of the objects shown in the object listing will print information about that object to the console.

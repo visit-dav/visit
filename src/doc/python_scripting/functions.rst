@@ -67,12 +67,12 @@ AddArgument
 
 
 argument : string
-    A string object that is added to the viewer's command-line argument list.
+    A string object that is added to the viewer's command line argument list.
 
 
 **Description:**
 
-    The AddArgument function is used to add extra command-line arguments to
+    The AddArgument function is used to add extra command line arguments to
     VisIt's viewer. This is only useful when VisIt's Python interface is
     imported into a stand-alone Python interpreter because the AddArgument
     function must be called before the viewer is launched. The AddArgument
@@ -5747,7 +5747,7 @@ return type : string
     the covers. Sometimes filenames are given to VisIt in the traditional 8.3
     format and must be expanded to long format before it is possible to open
     them. If you ever find that you need to do this conversion, such as when
-    you process command-line arguments, then you can use the LongFileName
+    you process command line arguments, then you can use the LongFileName
     function to return the longer filename.
 
 
@@ -6326,7 +6326,7 @@ hostName : string
     The name of the computer on which to start the engine.
 
 args : tuple
-    Optional tuple of command-line arguments for the engine.
+    Optional tuple of command line arguments for the engine.
     Alternative arguments - MachineProfile object to load with
     OpenComputeEngine call
 
@@ -6467,7 +6467,7 @@ host : string
     is assumed.
 
 args : tuple
-    A tuple of strings containing command-line flags for the metadata server.
+    A tuple of strings containing command line flags for the metadata server.
     
     =============  ========================================================
     **Argument**   Description
@@ -6486,7 +6486,7 @@ return type : CLI_return_t
 **Description:**
 
     The OpenMDServer explicitly launches a metadata server on a specified
-    host. This allows you to provide command-line options that influence how
+    host. This allows you to provide command line options that influence how
     the metadata server will run.
     range [1,5] that VisIt uses to write debug logs to disk.
     located on a remote computer. This allows you to successfully
@@ -11410,7 +11410,7 @@ return type : CLI_return_t
 **Description:**
 
     The ShowAllWindows function tells VisIt's viewer to show all of its
-    visualization windows. The command-line interface calls ShowAllWindows
+    visualization windows. The command line interface calls ShowAllWindows
     before giving control to any user-supplied script to ensure that the
     visualization windows appear as expected. Call the ShowAllWindows function
     when using the VisIt module inside another Python interpreter so the
