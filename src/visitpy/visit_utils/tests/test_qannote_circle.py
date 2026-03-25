@@ -9,19 +9,12 @@
 
 """
 
-
 import unittest
 import os
 from os.path import join as pjoin
 
 from visit_test import *
 from visit_utils.qannote import *
-
-try:
-    import PySide2.QtCore
-except:
-    pass
-
 
 output_dir  = pjoin(os.path.split(__file__)[0],"_output")
 data_dir    = pjoin(os.path.split(__file__)[0],"_data")
