@@ -4,7 +4,7 @@ File Open Window
 ---------------------
 
 The **File Open Window** allows you to select files and simulations by browsing 
-filesystem either on your local computer or the remote computer of your 
+file system either on your local computer or the remote computer of your 
 choice. You can open the **File Open Window** by choosing the **Open** option 
 from the **Sources** section of the main GUI panel (shown in 
 :numref:`Figure %s<sources_image>`), or by Choosing the **Open File** option 
@@ -43,7 +43,7 @@ able to access files. Also note that VisIt may prompt you for a password to
 authenticate your access to the remote computer. To set up password-less 
 access to remote computers, refer to :ref:`SettingUpPasswordlessSSH`.
 
-Once a database server is running on the remote computer, its filesystem 
+Once a database server is running on the remote computer, its file system 
 appears in the directory and file lists. The host name for each computer you 
 access is added to the list of recently visited computers so that you may 
 switch easily to computers you have recently accessed. If you installed VisIt 

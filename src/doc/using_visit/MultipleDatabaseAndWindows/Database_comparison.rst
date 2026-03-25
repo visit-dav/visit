@@ -43,7 +43,7 @@ update as the time slider is changed.
 In the above expression, the first argument to `conn_cmfe()` serves as the *donor*
 field and the second argument is the *target* mesh. This expression is a simple
 difference operation of database A minus database B. Note the special `[0]id`
-*time specification syntax* before the colon but after the filesystem path in
+*time specification syntax* before the colon but after the file system path in
 the first argument `conn_cmfe()`. The `i` means to interpret the number in
 brackets, `[0]` as a time-state *index*. The `d` means to further interpret that
 number as an index *difference* from the *current* time slider index. This

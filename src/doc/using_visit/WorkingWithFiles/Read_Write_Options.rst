@@ -126,7 +126,7 @@ file it should read is:
 - Binary or ASCII
 - Fortran-style (record based or not) or C-style
 - Has Iblanking or not
-- Single block or multiblock
+- Single block or multi-block
 
 To get VisIt_ to read your file, you need to give it hints. You do this with a
 text file with extension `.vp3d`, which describes the variant of Plot3D being
@@ -294,7 +294,7 @@ Ignore Extents
 """"""""""""""
 
 The Silo_ database plugin has the ability to load spatial and data extents for
-Silo_ multiblock (e.g. multiple domain) objects. This feature is an optional
+Silo_ multi-block (e.g. multiple domain) objects. This feature is an optional
 *acceleration* feature that enables VisIt to cull domains based on knowledge
 of downstream operations. For example, it can avoid reading domains known not
 to intersect a slice plane. However, if the data producer creates buggy extents
@@ -319,9 +319,9 @@ Search for ANNOTATION_INT (and friends)
 The ``ANNOTATION_INT`` (and friends) objects are generic containers sometimes
 used to store mesh-specific data using Silo_'s
 `compound array <https://silo.readthedocs.io/latest/generic.html#dbputcompoundarray>`__.
-However, because there is no multiblock analog for Silo_ compound arrays, in
+However, because there is no multi-block analog for Silo_ compound arrays, in
 order to handle them VisIt_ needs to be forced to go searching for their
-existance in all the files comprising a multiblock database. Thus, enabling
+existance in all the files comprising a multi-block database. Thus, enabling
 this option can result in much slower database *open* times.
 
 ZipWrapper

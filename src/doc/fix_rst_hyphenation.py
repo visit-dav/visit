@@ -95,8 +95,8 @@ _RULES: list[Rule] = [
     ),
     Rule(
         re.compile(r"\bfile[- ]system(s)?\b", re.IGNORECASE),
-        lambda m: _apply_case(f"filesystem{m.group(1) or ''}", m.group(0)),
-        "filesystem",
+        lambda m: _apply_case(f"file system{m.group(1) or ''}", m.group(0)),
+        "file system",
     ),
     Rule(
         re.compile(r"\bwork[- ]load(s)?\b", re.IGNORECASE),
@@ -142,11 +142,6 @@ _RULES: list[Rule] = [
         re.compile(r"\bmulti[ -]?resolution(s)?\b", re.IGNORECASE),
         lambda m: _apply_case(f"multiresolution{m.group(1) or ''}", m.group(0)),
         "multiresolution",
-    ),
-    Rule(
-        re.compile(r"\bmulti[ -]?block(s)?\b", re.IGNORECASE),
-        lambda m: _apply_case(f"multiblock{m.group(1) or ''}", m.group(0)),
-        "multiblock",
     ),
     Rule(
         re.compile(r"\btime[ -]?state(s)?\b", re.IGNORECASE),

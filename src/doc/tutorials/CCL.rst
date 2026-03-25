@@ -18,7 +18,7 @@ This tutorial uses the "example.silo" dataset from our `tutorial_data <https://v
 
 1. Download the `tutorial_data <https://visit-dav.github.io/largedata/datarchives/visit_tutorial>`_ and extract the example files.
 2. Start VisIt_ and click the *Open* icon to bring up the File open window.
-3. Navigate your filesystem to the folder containing "example.silo".
+3. Navigate your file system to the folder containing "example.silo".
 4. Highlight the file "example.silo" and then click *OK*.
 
 Use a scalar field to cut our mesh

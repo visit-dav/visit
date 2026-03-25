@@ -284,7 +284,7 @@ Saving an image
 
 1. With a current plot, go to *File->Save window*.
 
-* This saves an image to the filesystem.
+* This saves an image to the file system.
 
 On Windows, the default location for saved images is in *Documents/VisIt/My images*.
 
@@ -311,7 +311,7 @@ VisIt_ can be part of a larger tool chain.
 
 9. Click *Ok*.
 
-  * A file named "visit_ex_db.vtk" has been saved to the filesystem.
+  * A file named "visit_ex_db.vtk" has been saved to the file system.
 
 Subsetting
 ----------

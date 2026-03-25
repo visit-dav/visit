@@ -10,7 +10,7 @@ Disclaimers:
 
     VisIt_ will not draw its plots inside of your Java application.
     VisIt_'s separate viewer window will be activated and controlled from your application.
-    VisIt_ will not be able to plot data from your Java application without going through the filesystem.
+    VisIt_ will not be able to plot data from your Java application without going through the file system.
 
 The Java client for a particular version of VisIt_ is available as a separate tarball on our `downloads page <https://visit-dav.github.io/visit-website/releases-as-tables>`_.
 Look for ``jvisit<version>.tar.gz``, e.g. ``jvisit3.3.0.tar.gz``.

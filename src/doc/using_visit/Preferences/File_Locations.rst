@@ -4,7 +4,7 @@ File Locations
 --------------
 VisIt_ manages various files associated with its operation.  In most cases where
 VisIt_ saves or loads data from files, the user is presented with a file browser
-dialog and can explicitly choose arbitrary locations on the filesystem to look
+dialog and can explicitly choose arbitrary locations on the file system to look
 for or store files. However, this is not universally true. The locations and
 names of some files are *prescribed*. In this section we provide some additional
 details about various file locations and names involved with the operation of

@@ -21,7 +21,7 @@ itself such as
 or, the underlying computing infrastructure upon which VisIt_ depends such as
 
     * An incompatible graphics driver.
-    * A downed filesystem or network.
+    * A downed file system or network.
     * A trip in the security environment.
 
 Typically, such inquiries originate from users in the midst of using VisIt_

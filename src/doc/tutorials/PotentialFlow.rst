@@ -17,7 +17,7 @@ This tutorial uses the `potential flow <https://visit-dav.github.io/largedata/da
 
 1. `Download <https://visit-dav.github.io/largedata/datarchives/potential_flow>`_ the potential flow dataset.
 2. Click on the *Open* icon to bring up the File open window.
-3. Navigate your filesystem to the folder containing "potential_flow_ang_sweep.visit".
+3. Navigate your file system to the folder containing "potential_flow_ang_sweep.visit".
 4. Highlight the file "potential_flow_ang_sweep.visit" and then click *OK*.
 
 Plotting the mesh topology

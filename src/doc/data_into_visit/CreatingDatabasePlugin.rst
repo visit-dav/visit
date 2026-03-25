@@ -19,7 +19,7 @@ VisIt_ is a parallel, distributed application that consists of four component pr
 The two components that you may already be familiar with are the client and the viewer.
 VisIt_ has GUI, Python interface, and Java clients that control the visualization operations performed by the viewer, which is the central state repository and graphics rendering component.
 The other components, which are not immediately visible, are the database server and the compute engine.
-The database server (sometimes called the metadata server) is responsible for browsing the filesystem and letting you know which files can be opened.
+The database server (sometimes called the metadata server) is responsible for browsing the file system and letting you know which files can be opened.
 Once you decide on a file to open, the database server attempts to open that file, loading an appropriate database reader plugin to do so.
 Once the database server has opened a file, it sends file metadata such as the list of available variables to the client and the viewer.
 The compute engine comes into play when you want to create a plot to process your data into a form that can be rendered on the screen.

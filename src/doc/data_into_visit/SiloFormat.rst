@@ -96,7 +96,7 @@ Note that you must configure your program to use a Multithreaded DLL version of 
 Inspecting Silo files
 ~~~~~~~~~~~~~~~~~~~~~
 
-Unless it was explicitly *disabled* in the configuration, Silo_ includes a command-line utility called *browser* that can be used to textually browse the contents of Silo_ files much like the Linux shell enables browsing a the Linux filesystem.
+Unless it was explicitly *disabled* in the configuration, Silo_ includes a command-line utility called *browser* that can be used to textually browse the contents of Silo_ files much like the Linux shell enables browsing a the Linux file system.
 To run the browser, type ``browser`` into a terminal window followed by the name of a Silo_ file that you want to inspect.
 Once the browser application opens the Silo_ file, type ``ls`` to see the contents of the Silo_ file, ``cd`` to move between Silo_ directories within the file, etc.
 From there, typing the name of any of the objects shown in the object listing will print information about that object to the console.
@@ -1429,9 +1429,9 @@ Remember that storing pieces of a single mesh is commonplace when parallel proce
 Plotting each of the smaller files individually in VisIt_ is not neccessary when a master file has been generated since plotting the multimesh object from the master file will cause VisIt_ to plot each of its constituent meshes.
 The code that will follow shows how to use Silo_'s ``DBPutMultimesh`` function to write out a multimesh object that reassembles meshes from many domain files into a whole mesh.
 
-The list of meshes or items in a multi-object generally take the form: ``<path>:<item>`` where ``<path>`` is the filesystem path to the Silo_ file containing the object and ``<item>`` is the path of the object in the Silo_ file. The colon character, ``:`` disambiguates these two parts of the object's name.
-Note that the path may be specified as a relative or absolute path using names valid for the filesystem containing the master file.
-However, we strongly recommend using only relative paths so the master file does not reference directories that exist only on one filesystem.
+The list of meshes or items in a multi-object generally take the form: ``<path>:<item>`` where ``<path>`` is the file system path to the Silo_ file containing the object and ``<item>`` is the path of the object in the Silo_ file. The colon character, ``:`` disambiguates these two parts of the object's name.
+Note that the path may be specified as a relative or absolute path using names valid for the file system containing the master file.
+However, we strongly recommend using only relative paths so the master file does not reference directories that exist only on one file system.
 Using relative paths makes the master files much more portable since they allow the data files to be moved.
 The path may also refer to subdirectories within the file being referenced since Silo_ files may contain directories that help to organize related data.
 The following examples assume that the domain files will exist in the same directory as the master file since the path includes only the names of the domain files.
@@ -1509,9 +1509,9 @@ Example for writing a multimesh:
 
 Sometimes it can be advantageous to have each processor write its files to a unique subdirectory (e.g. proc-0, proc-1, proc-2, ...).
 You can also choose for each processor to write its files to a common directory so all files for a given timestep are contained in a single place (e.g. cycle0000, cycle0001, cycle0002, ...).
-Generally, you will want to tailor your strategy to the strengths of your filesystem to spread the demands of writing files across as many I/O nodes as possible in order to increase throughput.
+Generally, you will want to tailor your strategy to the strengths of your file system to spread the demands of writing files across as many I/O nodes as possible in order to increase throughput.
 The organization strategies mentioned so far are only suggestions and you will have to determine the optimum method for storing domain files on your computer system.
-Moving your domain files to subdirectories can make it easier to navigate your filesystem and can provide benefits later such as VisIt_ not having to check permissions, etc on so many files.
+Moving your domain files to subdirectories can make it easier to navigate your file system and can provide benefits later such as VisIt_ not having to check permissions, etc on so many files.
 Code to create the list of mesh names where each processor writes its data to a different subdirectory that contains all files for a given timestep might look like the following:
 
 .. code-block:: c
@@ -1624,5 +1624,5 @@ Note that if you use the ``"EMPTY"`` keyword in a multivar object then the same 
   DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, NULL);
 
 
-For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating filesystem paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multiblock objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/latest/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multiblock objects.
+For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating file system paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multi-block objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/latest/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multi-block objects.
 You can find many more examples of various features of Silo by browsing source code in either `VisIt's <https://github.com/visit-dav/visit/tree/develop/src/tools/data/datagen>`__ or `Silo's <https://github.com/LLNL/Silo/tree/main/tests>`__ test suites or the `test data files <https://github.com/search?q=repo%3Avisit-dav%2Fvisit%20path%3Asilo*.tar.xz&type=code>`__ used in VisIt_'s testing.

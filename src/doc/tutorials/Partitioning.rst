@@ -57,7 +57,7 @@ If it is not possible, it will convert them to an unstructured mesh and merge ma
 An example of using the built-in partitioning algorithm
 -------------------------------------------------------
 
-Here we will go through an example of partitioning a 3-dimensional multiblock unstructured mesh.
+Here we will go through an example of partitioning a 3-dimensional multi-block unstructured mesh.
 
 Let us start by opening a file and creating a plot.
 

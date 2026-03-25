@@ -16,7 +16,7 @@ This tutorial uses the `aneurysm <https://visit-dav.github.io/largedata/datarchi
 
 1. Download `the aneurysm dataset <https://visit-dav.github.io/largedata/datarchives/aneurysm>`_.
 2. Click on the *Open* icon to bring up the File open window.
-3. Navigate your filesystem to the folder containing "aneurysm.visit".
+3. Navigate your file system to the folder containing "aneurysm.visit".
 4. Highlight the file "aneurysm.visit" and then click *OK*.
 
 Plotting the mesh topology

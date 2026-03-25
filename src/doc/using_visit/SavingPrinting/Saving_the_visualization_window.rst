@@ -77,7 +77,7 @@ Windows platform, VisIt saves images to the
 a special output directory for your output files, you can turn off the
 **Output files to current directory** check box and type in the path to the
 directory where you want VisIt to save your files in the **Output directory**
-text field. If you want to browse the filesystem to find a suitable directory
+text field. If you want to browse the file system to find a suitable directory
 in which to save your images, click on the *"..."* button to the right of the
 **Output directory** text field to bring up a **Directory chooser** dialog.
 Once you select a suitable directory using the **Directory chooser** dialog,

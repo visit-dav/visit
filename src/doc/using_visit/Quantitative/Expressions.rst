@@ -1550,7 +1550,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
 
    When the donor variable is in a different database **and** the databases
    do not have multiple time-states, then only sub-string 1, above, is
-   needed to specify the path to the database in the filesystem. The path
+   needed to specify the path to the database in the file system. The path
    to the database can be specified using either *absolute* or *relative*
    paths. *Relative* paths are interpreted relative to the current working
    directory in which the VisIt_ session was started. See cases B and C
@@ -1740,7 +1740,7 @@ Evaluate Transform Function: ``eval_transform()`` : ``eval_transform(expr0,<Fill
 Image Processing Expressions
 """"""""""""""""""""""""""""
 
-The image processing expressions defined here are not suitable for multiblock
+The image processing expressions defined here are not suitable for multi-block
 data. They do not handle domain boundaries properly even if the input database
 properly defines suitable layers of *ghost* zones. They do, however, operate
 on 2 and 3D data.

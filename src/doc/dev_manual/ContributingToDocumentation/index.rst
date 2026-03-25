@@ -422,7 +422,7 @@ Hyphenated phrases...or not
 
 * Words we do not hyphenate:
 
-  * dataset, datatype, filesystem, metadata, multiblock, multidimensional, multiresolution, nonlinear, plugin, prebuilt, precompute, preinstalled, rebuild, redo, reopen, restart, rewrite, runtime, timestamp, timestep, workaround, workflow, workload.
+  * dataset, datatype, file system, metadata, multi-block, multidimensional, multiresolution, nonlinear, plugin, prebuilt, precompute, preinstalled, rebuild, redo, reopen, restart, rewrite, runtime, timestamp, timestep, workaround, workflow, workload.
 
 * Words we do hyphenate:
 

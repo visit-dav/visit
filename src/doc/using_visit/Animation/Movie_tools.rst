@@ -75,7 +75,7 @@ frames into a single movie file.
    
    Movie generation options for session files on Windows platform
 
-If you browse the Windows filesystem and come across a VisIt session file,
+If you browse the Windows file system and come across a VisIt session file,
 which ends with a ``.session`` extension, you can right click on the file and 
 choose from several movie generation options. The movie generation options make 
 one-click movie generation possible so you don't have to master the arguments 
