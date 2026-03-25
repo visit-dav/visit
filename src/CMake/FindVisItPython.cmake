@@ -433,7 +433,7 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
             # 'PATTERN EXCLUDE' is effective, if onerous due to the excessive
             # numer of packages
             
-            install(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}/site-packages)
+            install(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}/site-packages
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib/python${PYTHON_VERSION}/
                     FILE_PERMISSIONS ${filePerms}
                     DIRECTORY_PERMISSIONS ${dirPerms}
