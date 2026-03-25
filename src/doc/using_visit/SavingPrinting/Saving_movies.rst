@@ -3,7 +3,7 @@
 Saving movies
 -------------
 
-In addition to allowing you to save images of your visualization window for the current time-state, VisIt_ also allows you to save movies and sets of images for your visualizations that vary over time.
+In addition to allowing you to save images of your visualization window for the current timestate, VisIt_ also allows you to save movies and sets of images for your visualizations that vary over time.
 There are multiple methods for saving movies with VisIt_.
 This section introduces the Save movie wizard and explains how to use it to create movies from within VisIt_'s GUI.
 The :ref:`Animation` chapter explains some auxiliary methods that can be used to create movies.
@@ -77,8 +77,8 @@ Choosing movie length
 
    Save movie wizard (screen 3)
 
-It is possible to specify the range of time-states to use for the movie, as well as specify a stride if you have too many time-states saved (see :numref:`Figure %s<save_movie_wizard_3>`).
-The wizard will automatically set the range of time-states.
+It is possible to specify the range of timestates to use for the movie, as well as specify a stride if you have too many timestates saved (see :numref:`Figure %s<save_movie_wizard_3>`).
+The wizard will automatically set the range of timestates.
 
 Choosing the movie name
 ~~~~~~~~~~~~~~~~~~~~~~~

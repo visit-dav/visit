@@ -184,8 +184,8 @@ Dealing with time
 ~~~~~~~~~~~~~~~~~
 
 A Silo_ file is a flexible container for storing many types of data.
-Silo_'s ability to store data hierarchically in directories can allow you to store multiple time-states of your simulation data within a single data file.
-However, Silo_ is most often used to store one time-state per Silo_ file (or ensemble of files in a parallel context)
+Silo_'s ability to store data hierarchically in directories can allow you to store multiple timestates of your simulation data within a single data file.
+However, Silo_ is most often used to store one timestate per Silo_ file (or ensemble of files in a parallel context)
 VisIt_'s Silo_ plugin is primarily designed and used to work with Silo_ files in this modality.
 Consequently, when writing data, programs that use Silo_ will write a new Silo_ file for each timestep.
 By convention, the new file will contain an index indicating either the simulation cycle or a simple integer counter.
@@ -222,7 +222,7 @@ By convention, the new file will contain an index indicating either the simulati
   }
 
 The above code listing will write out Silo_ files with names such as: ``output0000.silo``, ``output0001.silo``, ``output0002.silo``, ...
-Each file contains the data from a particular simulation time-state.
+Each file contains the data from a particular simulation timestate.
 It may seem like the data are less related because they are stored in different files but the fact that the files are related in time is subtly encoded in the name of each of the files.
 When VisIt_ recognizes a pattern in the names of the files such as ``output????.silo``, in this case, VisIt_ automatically recognizes the files as a time-varying database (e.g. a *virtual* database).
 If you choose names for your Silo_ files that cannot be grouped by recognizing a

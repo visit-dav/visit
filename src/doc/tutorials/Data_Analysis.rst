@@ -142,7 +142,7 @@ Weighted Variable Sum
 4. Find and Highlight *Weighted Variable Sum* and click *Do Time Query*.
 5. Options for changing the *Starting timestep*, *Ending timestep* and *Stride* will be available.
 
-  * Note that these are 0-origin time-state indices and not cycles or times.
+  * Note that these are 0-origin timestate indices and not cycles or times.
 
 6. Click *Query*.
 
@@ -629,7 +629,7 @@ VisIt_ defines several types of expressions automatically. For all vector
 variables from a database, VisIt_ will automatically define the associated
 magnitude expressions. For unstructured meshes, VisIt_ will automatically
 define *mesh quality* expressions. For any databases consisting of
-multiple time-states, VisIt_ will define *time derivative* expressions.
+multiple timestates, VisIt_ will define *time derivative* expressions.
 This behavior can be controlled by going to VisIt_'s *Preferences* dialog
 and enabling or disabling various kinds of *automatic* expressions.
 

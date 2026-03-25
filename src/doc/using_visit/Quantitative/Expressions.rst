@@ -1549,7 +1549,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    See case A in the examples below.
 
    When the donor variable is in a different database **and** the databases
-   do not have multiple time-states, then only sub-string 1, above, is
+   do not have multiple timestates, then only sub-string 1, above, is
    needed to specify the path to the database in the filesystem. The path
    to the database can be specified using either *absolute* or *relative*
    paths. *Relative* paths are interpreted relative to the current working

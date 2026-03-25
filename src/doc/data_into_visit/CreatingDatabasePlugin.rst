@@ -71,18 +71,18 @@ The 4 possible interfaces are shown in the table below:
 +----+---------------------------------------+------------------------------------------+
 |    | SD                                    | MD                                       |
 +====+=======================================+==========================================+
-| ST | STSD - Single time-state per file     | STMD - Single time-state per file but    |
+| ST | STSD - Single timestate per file      | STMD - Single timestate per file but     |
 |    |                                       |                                          |
 |    | and it contains just 1 domain.        | each file contains multiple domains.     |
 +----+---------------------------------------+------------------------------------------+
-| MT | MTSD - Multiple time-states per file  | MTMD - Multiple time-states per file     |
+| MT | MTSD - Multiple timestates per file   | MTMD - Multiple timestates per file      |
 |    |                                       |                                          |
 |    | and each file contains just 1 domain. | and each file contains multiple domains. |
 +----+---------------------------------------+------------------------------------------+
 
 
 In order to pick which plugin interface is most appropriate for your particular file format, you must consider how your file format treats time and domains.
-If your file format contains multiple time-states in each file then you have an *MT* file format; otherwise you have an *ST* file format.
+If your file format contains multiple timestates in each file then you have an *MT* file format; otherwise you have an *ST* file format.
 If your file format comes from a parallel simulation then you will often have some type of domain decomposition, which breaks up the entire simulation into smaller pieces called domains that are divided among processors.
 If your simulation has domains and the domains are written to a single file then you have an *MD* file format; otherwise, if your simulation processors wrote out their own files then you have an *SD* file format.
 When you consider both how your file format deals with time and how it deals with domains, you should be able to select which plugin interface you will need when you write your database reader plugin.
@@ -444,7 +444,7 @@ Returning file metadata
 
 Once your you have decided how your plugin will manage access to the file that it must read, the next step in writing your database reader plugin is to implement the *PopulateDatabaseMetaData*  method.
 The *PopulateDatabaseMetaData* method is called by VisIt_'s database infrastructure when information about a file's meshes and variables must be obtained.
-The *PopulateDatabaseMetaData*  method is usually called only the first time that a file format's metadata is being read, though some time-varying formats can have time-varying metadata, which requires that *PopulateDatabaseMetaData*  is called each time VisIt_ requests data for a new time-state.
+The *PopulateDatabaseMetaData*  method is usually called only the first time that a file format's metadata is being read, though some time-varying formats can have time-varying metadata, which requires that *PopulateDatabaseMetaData*  is called each time VisIt_ requests data for a new timestate.
 However, most file formats call *PopulateDatabaseMetaData*  once.
 
 The *PopulateDatabaseMetaData* method arguments can vary, depending on whether your file format is *STSD*, *STMD*, *MTSD*, or *MTMD* but in all cases the first argument is an *avtDatabaseMetaData* object.
@@ -710,7 +710,7 @@ Returning a mesh
 
 Once your database reader plugin can successfully return metadata about one or more meshes, you can proceed to implementing your plugin's *GetMesh* method.
 When you make a plot in VisIt_, the plot is set up using the file metadata returned by your plugin.
-When you click the **Draw** button in the VisIt_ GUI, it causes a series of requests that make the compute engine load your *libE* plugin and call its *GetMesh* method with the name of the mesh being used by the plot as well as the time-state and domain numbers (*MT* or *MD* formats only).
+When you click the **Draw** button in the VisIt_ GUI, it causes a series of requests that make the compute engine load your *libE* plugin and call its *GetMesh* method with the name of the mesh being used by the plot as well as the timestate and domain numbers (*MT* or *MD* formats only).
 A database reader plugin's job is to read relevant data from a file format and translate the data into a VTK object that VisIt_ can process.
 The *GetMesh* method's job is to read the mesh information from the file and create a VTK object that describes the mesh in the data file.
 VisIt_ can process many different mesh types (See :numref:`Figure %s <avtmeshtypes>`) and you can return different types of VTK objects that best describe your mesh type.
@@ -759,9 +759,9 @@ However, if your file format can contain more than one mesh then you should chec
     }
 
 
-If your database reader plugin is derived from one of the *MT* or *MD* file format interfaces then the *GetMesh* method will have, in addition to the *meshname* argument, either a *time-state* argument, *domain* argument, or both.
-These extra arguments are both integers that VisIt_ passes to your plugin so your plugin can select the right mesh for the specified time-state or domain.
-If your *GetMesh* method accepts a *time-state* argument then you can use it to return the mesh for the specified time-state, which is in the range [0, NTS - 1], where NTS is the number of time-states that your plugin returned from its *GetNTimesteps* method.
+If your database reader plugin is derived from one of the *MT* or *MD* file format interfaces then the *GetMesh* method will have, in addition to the *meshname* argument, either a *timestate* argument, *domain* argument, or both.
+These extra arguments are both integers that VisIt_ passes to your plugin so your plugin can select the right mesh for the specified timestate or domain.
+If your *GetMesh* method accepts a *timestate* argument then you can use it to return the mesh for the specified timestate, which is in the range [0, NTS - 1], where NTS is the number of timestates that your plugin returned from its *GetNTimesteps* method.
 The range for the *domain* argument, if it is present, is [0,NDOMS - 1] where NDOMS is the number of domains that your file format added to the *numBlocks* member in the *avtMeshMetaData* object corresponding to the mesh named by the *meshname* argument.
 
 
@@ -1404,7 +1404,7 @@ Generally, each simulation cycle has an associated cycle number and time value.
 Many file formats save this information so it can be made available later to post-processing tools such as VisIt_.
 VisIt_ uses cycles and times to help you navigate through time in your database by providing the same time frame of reference that your simulation used.
 VisIt_'s can show the current time value as you scroll through time using the time slider.
-Cycle and time values for the current time-state are often displayed in the visualization window.
+Cycle and time values for the current timestate are often displayed in the visualization window.
 Returning cycle and time values from your plugin is completely optional.
 In fact, returning cycle and time values for data such as CAD drawings does not make sense.
 Since returning cycles and times is optional in a VisIt_ database reader plugin, you can choose to not implement the methods that return cycles and times.
@@ -1475,8 +1475,8 @@ If you want VisIt_ to successfully guess the cycle number from the filename then
 Returning cycles and times in an MT plugin
 """"""""""""""""""""""""""""""""""""""""""
 
-An *MT* database reader plugin may return cycles and times for multiple time-states so the programming interface for *MT* plugins allows you to return vectors of cycles and times.
-In addition, an *MT* database reader plugin prefers to know upfront how many time-states will be returned from the file format so in addition to *GetCycles* and *GetTimes* methods, there is a *GetNTimesteps* method that is among the first methods called from your database reader plugin.
+An *MT* database reader plugin may return cycles and times for multiple timestates so the programming interface for *MT* plugins allows you to return vectors of cycles and times.
+In addition, an *MT* database reader plugin prefers to know upfront how many timestates will be returned from the file format so in addition to *GetCycles* and *GetTimes* methods, there is a *GetNTimesteps* method that is among the first methods called from your database reader plugin.
 
 .. code-block:: c
 
@@ -1487,7 +1487,7 @@ In addition, an *MT* database reader plugin prefers to know upfront how many tim
 As with *ST* plugins, there is no requirement that an *MT* plugin must provide a list of cycles or times.
 However, an *MT* plugin must provide a *GetNTimesteps* method.
 If you are enhancing your database reader plugin to return cycles and times then it is convenient to implement your *GetNTimesteps* method such that it just calls your *GetCycles* or *GetTimes* method and returns the length of the vector returned by those methods.
-This simplifies the implementation and ensures that the number of time-states reported by your database reader plugin matches the length of the cycle and time vectors returned from *GetCycles* and *GetTimes*.
+This simplifies the implementation and ensures that the number of timestates reported by your database reader plugin matches the length of the cycle and time vectors returned from *GetCycles* and *GetTimes*.
 Replace the capitalized sections of code in the listing with code to read the correct cycles and times from your file format.
 
 
@@ -1546,7 +1546,7 @@ Note however that if your plugin is *MTMD* then you will have to cache your spat
 This subtle difference in how certain metadata is accessed by VisIt_ must be observed by an *MTMD* plugin in order for it to return spatial and data extents.
 
 The method arguments for the *GetAuxiliaryData* method may vary somewhat depending on whether your database reader plugin is based on the *STSD*, *STMD*, *MTSD*, *MTMD* interfaces.
-There is an extra integer argument for the time-state if your plugin is *MT* and there is another integer argument for the domain if your plugin is *MD*.
+There is an extra integer argument for the timestate if your plugin is *MT* and there is another integer argument for the domain if your plugin is *MD*.
 Those differences aside, the *GetAuxiliaryData* method always accepts the name of a variable, a string indicating the type of data being requested, a pointer to optional data required by the type of auxiliary data being requested, and a return reference for a destructor function that will be responsible for freeing resources for the returned data.
 The variable name that VisIt_ passes to the *GetAuxiliaryData* method is the name of a variable such as those passed to the *GetVar* method when VisIt_ wants to read a variable's data.
 

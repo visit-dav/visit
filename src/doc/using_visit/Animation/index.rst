@@ -13,7 +13,7 @@ files that get converted into a movie. The flipbook approach is strictly for
 static animations in which only the database timestep changes. This method
 allows database behavior over time to be quickly inspected without the added
 complexity of scripting or keyframing. Keyframed animation can exhibit complex
-behavior of the view, plot attributes, and database time-states over time. 
+behavior of the view, plot attributes, and database timestates over time. 
 This chapter emphasizes the flipbook and keyframe approaches and explains how
 to create animations both ways.
 
