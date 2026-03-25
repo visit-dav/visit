@@ -378,7 +378,7 @@ At that time, mode-specific baselines are added.
 Changing Baseline Configuration
 """""""""""""""""""""""""""""""
 One weakness with this approach to testing is revealed when it becomes necessary to change the configuration used to compute the baselines. 
-For example, moving VisIt_'s testing system to a different hardware platform or updating to a newer compiler or third-party library such as VTK, may result in a slew of minor variations in the results. 
+For example, moving VisIt_'s testing system to a different hardware platform or updating to a newer compiler or third party library such as VTK, may result in a slew of minor variations in the results. 
 Under these circumstances, we are confronted with having to individually assess possibly thousands of *minor* image differences to rigorously determine whether the new result is in fact *good* or whether some kind of issue or bug is being revealed.
 
 In practice, we use fuzzy matching (see below) to filter out *minor* variations from *major* ones and then focus our efforts only on fully understanding the *major* cases. 
@@ -637,8 +637,8 @@ When a failure occurs, another output file is generated in ``logs/plugins`` subd
 The most likely culprit for errors is missing information in one of the following files:
 
 * ``src/include/visit-cmake.h.in`` --  Holds all the #defines needed for a build (HAVE_LIBXXX, etc).
-* ``src/CMake/PluginVsInstall.cmake.in`` -- Ensures third-party include/library locations are correct for an install.
-* ``src/CMake/FilterDependnecies.cmake.in`` -- Filters library dependency paths to account for differences between locations of third-party libraries used in a build vs. where they are located within an installed version of VisIt.
+* ``src/CMake/PluginVsInstall.cmake.in`` -- Ensures third party include/library locations are correct for an install.
+* ``src/CMake/FilterDependnecies.cmake.in`` -- Filters library dependency paths to account for differences between locations of third party libraries used in a build vs. where they are located within an installed version of VisIt.
 
 Regression testing on Windows
 -----------------------------

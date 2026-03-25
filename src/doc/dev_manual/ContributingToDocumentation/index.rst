@@ -427,7 +427,7 @@ Examples are *dataset, datatype, metadata, nonlinear, plugin, runtime, timestamp
 When in doubt, don't hyphenate.
 
 However, there are  some terms we do hyphenate.
-Examples are *pre-built, pre-compiled, zero-based (or zero-origin), multi-block, multi-dimensional, multi-resolution, block-structured, cell-centered, edge-centered, face-centered, high-level, low-level, multi-domain node-centered, patch-based, point-centered, problem-sized, third-party, time-state, vertex-centered, zone-centered.*
+Examples are *pre-built, pre-compiled, zero-based (or zero-origin), multi-block, multi-dimensional, multi-resolution, block-structured, cell-centered, edge-centered, face-centered, high-level, low-level, multi-domain node-centered, patch-based, point-centered, problem-sized, vertex-centered, zone-centered.*
 
 Finally, there are some terms we use as multi-word phrases.
 Examples are *third party, command line, file system*, and *staggered grid.*

@@ -81,7 +81,7 @@ Using Silo on Windows
 """""""""""""""""""""
 
 When you build an application using the Silo_ library on Windows, you can use the precompiled Silo_ DLL and import library that comes with the VisIt_ development distribution for Windows: ``visit_windowsdev_x.y.x.zip``, where ``x.y.z`` refers to the version, like ``3.3.3``.
-The development distribution for Windows includes prebuilt binaries (``.dlls`` and import libraries) for the Third-party libraries upon which VisIt_ depends, including Silo_.
+The development distribution for Windows includes prebuilt binaries (``.dlls`` and import libraries) for the third party libraries upon which VisIt_ depends, including Silo_.
 Simply unzip the distribution to whichever location best suits your needs.
 The binaries are located in the ``windowsbuild/MSVC<VERSION>`` folder, with ``<VERSION>`` being the version of Visual Studio they were built with (eg ``MSVC2017``).
 

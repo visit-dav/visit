@@ -125,7 +125,7 @@ For this reason, we discourage users from attempting to build VisIt_ using pre-i
 Building on a system without internet access
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When you want to build visit on a system without internet access, you can use ``build_visit`` to download the third-party libraries and source code to a system that has internet access and then move those files to your machine without access.
+When you want to build visit on a system without internet access, you can use ``build_visit`` to download the third party libraries and source code to a system that has internet access and then move those files to your machine without access.
 The following example downloads the optional libraries, mpich and osmesa.
 
 .. code:: bash

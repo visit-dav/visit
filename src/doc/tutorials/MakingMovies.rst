@@ -373,7 +373,7 @@ Rendering images gives the most flexibility
 If you want to create a movie to show to many people or will be using it
 in multiple situations it is best to save images and then manually
 encode them using the movie encoding tools in VisIt_, or if you want a
-really high quality movie with sound then you can use a third-party
+really high quality movie with sound then you can use a third party
 movie encoding tool.
 
 If you anticipate using your movie in multiple situations you should

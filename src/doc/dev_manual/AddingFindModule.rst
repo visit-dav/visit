@@ -1,9 +1,9 @@
 .. _dev_adding_find_module:
 
-Adding a Find Module for Third-party Libraries
+Adding a Find Module for third party Libraries
 ==============================================
 
-VisIt_ uses custom `Find` modules for most of its dependent third-party libraries.
+VisIt_ uses custom `Find` modules for most of its dependent third party libraries.
 The `Find` modules live in ``src/CMake`` and most of them utilize special functions that live in ``src/CMake/SetUpThirdParty.cmake``.
 The most important of these is ``SET_UP_THIRD_PARTY``, as it does the bulk of the work in determining platform-specific extensions, handles ``.so`` versioning and Windows dll's and import libraries.
 

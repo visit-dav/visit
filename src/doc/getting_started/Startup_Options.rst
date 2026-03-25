@@ -89,8 +89,8 @@ USAGE: visit [options]::
 
     Other resources for help
     ---------------------------------------------------------------------------
-        run-time:            While running VisIt, look under the "Help" menu.
-        on-line:             https://visit-help.llnl.gov
+        runtime:             While running VisIt, look under the "Help" menu.
+        online:              https://visit-help.llnl.gov
 
 
     ***************************************************************************

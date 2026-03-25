@@ -23,7 +23,7 @@ Building VisIt_ for Valgrind and vtkDebugLeaks
 The following steps were from building and running VisIt_ 3.1 on Quartz, a
 Linux cluster.
 
-Building the Third-party Libraries
+Building the third party Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to use vtkDebugLeaks you will need to enable it when you build
@@ -36,7 +36,7 @@ and change it to: ::
     vtk_debug_leaks="true"
 
 In order for the stack traces from Valgrid to be the most useful, you should
-build the third-party libraries with debug support. In our case we are
+build the third party libraries with debug support. In our case we are
 going to do a minimal build with just the Silo_ and HDF5 I/O libraries. ::
 
     ./build_visit3_1_0 --required --mesagl --llvm --silo --hdf5 --build-mode Debug --no-visit \
@@ -46,7 +46,7 @@ going to do a minimal build with just the Silo_ and HDF5 I/O libraries. ::
 Building VisIt_
 ~~~~~~~~~~~~~~~
 
-Just like the third-party libraries, VisIt_ needs to be built with debug
+Just like the third party libraries, VisIt_ needs to be built with debug
 support in order for Valgrind to produce useful stack traces. Furthermore,
 VisIt_ contains conditional code that does additional cleanup at exit to
 eliminate spurious memory leaks. The additional cleanup is enabled with

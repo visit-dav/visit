@@ -6,7 +6,7 @@ Basic Usage
 Doing a minimal build
 ~~~~~~~~~~~~~~~~~~~~~
 
-When using ``build_visit`` without any arguments it will do a minimal build of VisIt_ downloading the VisIt_ source code by making an anonymous git clone from GitHub and downloading the source code for the third-party libraries from VisIt_'s third-party GitHub repo.
+When using ``build_visit`` without any arguments it will do a minimal build of VisIt_ downloading the VisIt_ source code by making an anonymous git clone from GitHub and downloading the source code for the third party libraries from VisIt_'s third party GitHub repo.
 It will build a serial version of the code without any of the optional I/O libraries.
 This will result in only the file readers that require no external dependencies to be built.
 Building VisIt_ in this fashion will give you the highest probability of success.
@@ -29,12 +29,12 @@ The following example specifies using 4 cores.
 
   ./build_visit3_0_1 --makeflags -j4
 
-Specifying the third-party library install location
+Specifying the third party library install location
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When ``build_visit`` is run by default it will install the third-party libraries in the directory ``third_party`` in the current directory.
+When ``build_visit`` is run by default it will install the third party libraries in the directory ``third_party`` in the current directory.
 If you would like to install the libraries in another directory for the purposes of sharing them with other users of the system, you can have ``build_visit`` install them in a different directory.
-The following example specifies installing the third-party libraries in a another location.
+The following example specifies installing the third party libraries in a another location.
 
 .. code:: bash
 
