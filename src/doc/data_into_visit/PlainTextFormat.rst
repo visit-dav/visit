@@ -120,7 +120,7 @@ and the resulting data plotted in VisIt_
 Defining a single variable on a 2D uniform grid
 -----------------------------------------------
 
-The data is interpreted as a node centered variable on a uniform mesh where the row and column indices define the X and Y coordinates.
+The data is interpreted as a node-centered variable on a uniform mesh where the row and column indices define the X and Y coordinates.
 The rows represent values along the X direction and the rows get *stacked* in the Y direction.
 Each row further *down* in the file gets stacked *up*, one upon the other in the visualized result in VisIt_.
 This means that the row-by-row *downward* direction in the file listing is the same as the *upward* (positive Y) direction in the visualized result in VisIt_.

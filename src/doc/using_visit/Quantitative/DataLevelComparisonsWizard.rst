@@ -29,13 +29,13 @@ in :numref:`Figure %s <dlc_1>`.
 
    Starting the Data-Level Comparisons Wizard
 
-This will open the the initial window where the user is asked to choose
+This will open the initial window where the user is asked to choose
 between a few basic varieties of CMFE expressions. These differ in the
 relative locations (e.g. which database) of the donor variable and target
 mesh.
 
     #. Donor variable and target mesh are in the *same* database.
-    #. Donor variable and target mesh are from different time states of the
+    #. Donor variable and target mesh are from different timestates of the
        *same* database.
     #. Donor variable and target mesh are in wholly different databases.
 

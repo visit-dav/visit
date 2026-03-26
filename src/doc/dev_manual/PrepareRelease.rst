@@ -52,9 +52,9 @@ the current splashscreen images but in the event of a major or minor release
 images should be redesigned to showcase new features.
 
 There are two image files associated with the splashscreen, both of which
-are `XCF <https://xcf.berkeley.edu>`_. XCF files are the native image format
+are `XCF <https://en.wikipedia.org/wiki/XCF_(file_format)>`_. XCF files are the native image format
 of the `GIMP <https://www.gimp.org>`_ image-editing program. One is for the
-splashscreen and the second is for the icon on MacOS X. They are both used
+splashscreen and the second is for the icon on macOS. They are both used
 as the first step in the process to create the splashscreen and icon.
 
 The rest of this section will be focused on updating the version number.
@@ -76,7 +76,7 @@ Follow these steps to update the version on the splashscreen.
    The splashscreen in GIMP.
 
 You'll see that the file has several layers to it. There are six layers for
-each of the six splash screen images that get randomly choosen from when
+each of the six splash screen images that get randomly chosen from when
 starting VisIt_ or are cycled through when you select *About* in the *Help*
 menu.
 
@@ -117,7 +117,7 @@ modify the images so that the warning message disappears do the following. ::
 11. Copy the files to ``src/resources/images``.
 
 Changing the version on the macOS and Windows icons
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""
 
 On macOS and Windows systems we provide VisIt application icons.
 

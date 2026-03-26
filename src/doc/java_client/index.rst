@@ -12,11 +12,11 @@ Disclaimers:
     VisIt_'s separate viewer window will be activated and controlled from your application.
     VisIt_ will not be able to plot data from your Java application without going through the file system.
 
-The Java client for a particular version of VisIt_ is available as separate tarball on our `downloads page <https://visit-dav.github.io/visit-website/releases-as-tables>`_.
+The Java client for a particular version of VisIt_ is available as a separate tarball on our `downloads page <https://visit-dav.github.io/visit-website/releases-as-tables>`_.
 Look for ``jvisit<version>.tar.gz``, e.g. ``jvisit3.3.0.tar.gz``.
 Simply untar to the directory of your choosing to use it.
 Note that the tarball untars its contents to ``.`` and not its own directory.
-Its best to make a directory (e.g. ``mkdir visit_java``), copy the tarball into that directory and untar it there.
+It's best to make a directory (e.g. ``mkdir visit_java``), copy the tarball into that directory and untar it there.
 
 Java Client API Docs
 --------------------
@@ -29,7 +29,7 @@ Building from source
 To build the java client from a source build of VisIt_, you must set the ``VISIT_JAVA`` CMake bool variable to ``true`` when configuring VisIt_ with CMake.
 Once the CMake configure step is complete, cd to the java subdirectory of the build directory and type ``make``.
 This will compile the core parts of the Java interface.
-There are two other targets that can be built from the java directory: ``main`` and ``pack``. 
+There are two other targets that can be built from the java directory: ``main`` and ``pack``.
 The ``main`` target will build the class files for all the examples.
 The ``pack`` target causes a JAR file to be created and then packaged up with the Java source code, docs and example programs into a TAR file that can be shared.
 The created ``visit.jar`` file will be present in the build directory.
@@ -266,7 +266,7 @@ Changing plot attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example program shows how to set plot attributes.
-It changes a Pseudoocolor plot to be semi-transparent.
+It changes a Pseudocolor plot to be semi-transparent.
 
 .. container:: collapsible
 
@@ -313,4 +313,3 @@ Acknowledgements
 
 This document is primarily based on visitusers.org wiki pages written by Brad Whitlock.
 The Java client itself and most of the examples were also initially created by Brad in 2002.
-

@@ -8,10 +8,10 @@ Scripting
 
 This section describes the VisIt_ Command Line Interface (CLI).
 
-Command line interface overview
+Command Line interface overview
 -------------------------------
 
-VisIt_ includes a rich a command line interface that is based on Python 2.7.
+VisIt_ includes a rich a command line interface that is based on Python 3.13.
 
 There are several ways to use the *CLI*:
 
@@ -139,7 +139,7 @@ This example extends the "Using all of VisIt_'s Building Blocks" example by
    :language: python
    :lines: 10-
 
-Rendering each time step of a dataset to a movie
+Rendering each timestep of a dataset to a movie
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example assumes the "aneurysm.visit" is already opened.
@@ -223,7 +223,7 @@ Here are some tips to help you quickly learn how to use VisIt_'s *CLI*:
 
 4) Use ''WriteScript()'' function, which will create a python script that describes all of your current plots.
 
-  * For more details, see `WriteScript <http://visitusers.org/index.php?title=WriteScript>`_.
+  * For more details, see the ``WriteScript`` entry in :doc:`Python scripting functions <../python_scripting/functions>`.
 
 .. highlight:: python
 
@@ -256,4 +256,4 @@ Advanced features
 -----------------
 
 1) You can set up your own buttons in the VisIt_ gui using the *CLI*. See :ref:`visitrc_file`.
-2) You can set up callbacks in the *CLI* that get called whenever events happen in VisIt_. See `Python callbacks <http://visitusers.org/index.php?title=Python_callbacks>`_.
+2) You can set up callbacks in the *CLI* that get called whenever events happen in VisIt_. See :doc:`VisIt CLI Events <../python_scripting/events>`.

@@ -14,7 +14,7 @@ Keyframe animation overview
 ---------------------------
 
 Keyframing is an advanced form of animation that allows you create animations where certain animation attributes such as view or plot attributes can change as the animation progresses.
-You can design an entire complex animation upfront by specifying a number of animation frames to be created and then you can tell VisIt which plots exist over the animation frames and how their time states map to the frames.
+You can design an entire complex animation upfront by specifying a number of animation frames to be created and then you can tell VisIt which plots exist over the animation frames and how their timestates map to the frames.
 You can also specify the plot attributes so they remain fixed over time or you can make individual plot and operator attributes evolve over time.
 With keyframing, you can make a plot fade out as the animation progresses, you can make a slice plane move, you can make the view slowly change, etc.
 
@@ -103,5 +103,5 @@ We can also save the animation as a jpeg movie.
 5. Click the *Next>* button to move to the next wizard pane.
 6. Click the *Next>* button to save all the frames.
 7. Click the *Next>* button to save the movie with the basename ``movie``.
-8. Click the *Next>* button to skip sending an e-mail when the movie is completed.
+8. Click the *Next>* button to skip sending an email when the movie is completed.
 9. Click the *Finish* button to create the movie.

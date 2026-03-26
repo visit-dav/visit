@@ -57,16 +57,16 @@ For example, expanding a data archive can fail ::
     % make ANAME=zipwrapper_test_data.tar.xz expand
     [100%] Generating _archive_expand
     CMake Error: Problem with archive_read_open_file(): Unrecognized archive format
-    CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xzor as another example using ImageMagick's ``display`` command on an lfs'd ``.png`` file still in its *pointer* state ::
+    CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xz
 
-Or, trying to display a baseline image can fail ::
+Or, as another example, using ImageMagick's ``display`` command on an lfs'd ``.png`` file still in its *pointer* state can fail ::
 
-    % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
-    display: improper image header '../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
-    
-When this happens, its likely because a ``git lfs pull`` operation is again needed.
+    % display ../test/baseline/databases/silo/silo_curvilinear_3d_surface_6.png
+    display: improper image header '../test/baseline/databases/silo/silo_curvilinear_3d_surface_6.png'
 
-There are other tell tale signs to help recognize whether an lfs'd file is in its pointer/proxy state or actua/real state.
+When this happens, it's likely because a ``git lfs pull`` operation is again needed.
+
+There are other telltale signs to help recognize whether an lfs'd file is in its pointer/proxy state or actual/real state.
 In the examples below, ``xolotl_test_data.tar.xz`` and ``xyz_test_data.tar.xz`` are in their actual/real state while ``zipwrapper_test_data.tar.xz`` is in its pointer/proxy state.
 First, in their pointer/proxy state, the files are very small text files, usually less than 150 bytes ::
 
@@ -122,7 +122,7 @@ There, you will find an ``index.html`` file entry that you can use to browse all
 If you want to restrict the amount of parallelism used in running the test suite you can do so with the ``-n`` command line option.
 By default, the test suite will be run using all the cores on your system.
 We have found that on some systems, running more than one test at a time may result in failures.
-To work around this issue you can run one test at a time. ::
+To workaround this issue you can run one test at a time. ::
 
     ./run_visit_test_suite.sh -n 1
 
@@ -131,7 +131,7 @@ The list of tests must be the last entries on the command line. ::
 
     ./run_visit_test_suite.sh -n 1 tests/databases/silo.py tests/databases/xdmf.py
 
-There are a number of additional command-line options to the test suite.
+There are a number of additional command line options to the test suite.
 ``./run_visit_test_suite.sh -help`` will give you details about these options.
 
 Accessing nightly regression test results
@@ -345,7 +345,7 @@ There are many alternative ways for both compiling and even running VisIt_ to pr
 Nonetheless, we expect results to be nearly if not perfectly identical. 
 For example, we expect VisIt_ running on two different implementations of the GL library to produce by and large the same images. 
 We expect VisIt_ running in serial or parallel to produce the same images. 
-We expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on Mac macOS. 
+We expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on macOS. 
 We expect VisIt_ running in client-server mode to produce the same images as VisIt_ running entirely remotely.
 
 In many cases, we expect outputs produced by these alternative approaches to be nearly the same but not always bit-for-bit identical. 
@@ -378,7 +378,7 @@ At that time, mode-specific baselines are added.
 Changing Baseline Configuration
 """""""""""""""""""""""""""""""
 One weakness with this approach to testing is revealed when it becomes necessary to change the configuration used to compute the baselines. 
-For example, moving VisIt_'s testing system to a different hardware platform or updating to a newer compiler or third-party library such as VTK, may result in a slew of minor variations in the results. 
+For example, moving VisIt_'s testing system to a different hardware platform or updating to a newer compiler or third party library such as VTK, may result in a slew of minor variations in the results. 
 Under these circumstances, we are confronted with having to individually assess possibly thousands of *minor* image differences to rigorously determine whether the new result is in fact *good* or whether some kind of issue or bug is being revealed.
 
 In practice, we use fuzzy matching (see below) to filter out *minor* variations from *major* ones and then focus our efforts only on fully understanding the *major* cases. 
@@ -416,7 +416,7 @@ Avg. Diff (``avgdiff``) :
 
 Fuzzy Matching Thresholds
 """""""""""""""""""""""""
-There are some command-line arguments to run tests that control *fuzzy* matching.
+There are some command line arguments to run tests that control *fuzzy* matching.
 When computed results match bit-for-bit with the baseline, a **PASS** is reported and it is colored green in the HTML reports. 
 When a computed result fails the bit-for-bit match but passes the fuzzy match, a **PASS** is reported on the terminal and it is colored yellow in the HTML reports.
 
@@ -434,17 +434,17 @@ Numerical (textual) Difference Threshold (``--numdiff``) :
     Specifies the acceptable *relative* numerical difference threshold in computed, non-zero numerical results. 
     The relative difference is computed as the ratio of the magnitude of the difference between the current and baseline results and the minimum magnitude value of the two results.
 
-The command-line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with *fewer* than 0.5% of pixels that are different is a **PASS** and anything with more than 0.5% of pixels different but where the average pixel gray-scale difference is less than .1 is still a **PASS**.
+The command line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with *fewer* than 0.5% of pixels that are different is a **PASS** and anything with more than 0.5% of pixels different but where the average pixel gray-scale difference is less than .1 is still a **PASS**.
 
 Testing on Non-Baseline Configurations
 """"""""""""""""""""""""""""""""""""""
 
-When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command-line options will be very useful.
+When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command line options will be very useful.
 
-For numerical textual results, there is also a ``--numdiff`` command-line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
-The command-line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
+For numerical textual results, there is also a ``--numdiff`` command line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
+The command line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
 
-When specified on the command-line to a test suite run, the above tolerances wind up being applied to *all* test results computed during a test suite run. 
+When specified on the command line to a test suite run, the above tolerances wind up being applied to *all* test results computed during a test suite run. 
 It is also possible to specify these tolerances in specific tests by passing them as arguments, for example ``Test(pixdiff=4.5)`` and ``TestText(numdiff=0.01)``, in the methods used to check test outputs.
 
 Finally, it may make sense for developers to generate (though not ever commit) a complete and validated set of baselines on their target development platform and then use those (uncommitted) baselines to enable them to run tests and track code changes using an exact match methodology.
@@ -511,7 +511,7 @@ Here is an example workflow to rebaseline a set of results that were originally 
 
    .. figure:: images/rebase_cases.png
 
-#. To learn even more `specific details <Fuzzy Matching Thresholds>`__ about each failing case, click into them to find details which will appear something like what is shown below...
+#. To learn even more :ref:`specific details <Fuzzy Matching Thresholds>` about each failing case, click into them to find details which will appear something like what is shown below...
 
    .. figure:: images/rebase_details.png
 
@@ -546,7 +546,7 @@ Once ``rebase.py`` is used, don't forget to push the changes in a new PR back to
 
 Test data archives
 ------------------
-Testing VisIt_ requires input data sets.
+Testing VisIt_ requires input datasets.
 Because of the wide variety of data formats and readers VisIt_ supports, we have a wide variety of `test data archives <https://github.com/visit-dav/visit/tree/develop/data>`_.
 A tar-compatible archive format using the *highest* and *commonly* available compression are the two basic requirements for data archives in our development workflow.
 
@@ -562,7 +562,7 @@ On some platforms, that operation may fail.
 If it does, an error message is reported informing the user to use the ``fbarchive`` target instead.
 
 The ``fbarchive`` target is a fall-back if the ``archive`` target fails.
-It uses CMake's `run a command-line tool <https://cmake.org/cmake/help/v3.23/manual/cmake.1.html#run-a-command-line-tool>`_ feature to run ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
+It uses CMake's `run a command line tool <https://cmake.org/cmake/help/v3.23/manual/cmake.1.html#run-a-command-line-tool>`_ feature to run ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
 Users are not *required* to use these targets but they are highly recommended to ensure optimal compression and portability of the resulting data archives.
 
 Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
@@ -619,8 +619,6 @@ Finally, make sure to tag the test in a comment block with a space separated lis
 Using VisIt_'s test routines in other applications
 --------------------------------------------------
 VisIt_'s testing infrastructure can also be used from any VisIt_ installation by other applications that want to write their own Visit-based tests.
-For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_.
-
 
 Diagnosing pluginVsInstall failures
 -----------------------------------
@@ -639,12 +637,12 @@ When a failure occurs, another output file is generated in ``logs/plugins`` subd
 The most likely culprit for errors is missing information in one of the following files:
 
 * ``src/include/visit-cmake.h.in`` --  Holds all the #defines needed for a build (HAVE_LIBXXX, etc).
-* ``src/CMake/PluginVsInstall.cmake.in`` -- Ensures third-party include/library locations are correct for an install.
-* ``src/CMake/FilterDependnecies.cmake.in`` -- Filters library dependency paths to account for differences between locations of third-party libraries used in a build vs. where they are located within an installed version of VisIt.
+* ``src/CMake/PluginVsInstall.cmake.in`` -- Ensures third party include/library locations are correct for an install.
+* ``src/CMake/FilterDependnecies.cmake.in`` -- Filters library dependency paths to account for differences between locations of third party libraries used in a build vs. where they are located within an installed version of VisIt.
 
 Regression testing on Windows
 -----------------------------
-Running the regression suite manually on Windows is a good way to detect Windows-specific run-time errors that may have been inadverently introduced.
+Running the regression suite manually on Windows is a good way to detect Windows-specific runtime errors that may have been inadverently introduced.
 
 A dos-batch script (``run_visit_test_suite.bat``) is generated in the ``<build>/test`` directory, and is similar to the shell script created on Linux.
 The generated script turns on ``--lessverbose`` mode so that output can be viewed while the test is running. 
@@ -695,7 +693,7 @@ When first running the test suite after new tests have been added, it is general
 ..
 .. If VisIt_ complains about an empty window, you do *not* have a Mesa stub issue and you *can* run regression tests.  If it complain about Mesa stubs, then you *do* have the issue and you *can't* run regression tests.
 ..
-.. === PIL on MacOS X ===
+.. === PIL on macOS ===
 .. If you attempt to execute runtest and it gives errors indicating that it assumed the test crashed then you might have problems with your PIL installation. These manifest as an error with text like ''"The _imaging C module is not installed"'', which can be obtained if you add the '''-v''' argument to ''runtest''.
 ..
 .. PIL, as installed by build_visit, can pick up an invalid jpeg library on certain systems. If you run ''python -v'' and then try to ''import _imaging'' then Python will print out the reason that the library failed to import. This can often be due to missing jpeg library symbols. It is also possible to observe this situation even when libjpeg is available in /sw/lib but is compiled for a different target architecture (e.g. not x86_64) that what build_visit is using. The effect of this is that when _imaging.so library is linked, there is an error message saying saying something like...
@@ -739,15 +737,15 @@ When first running the test suite after new tests have been added, it is general
 ..
 .. [[Category: Developer documentation]]
 ..
-.. The ultimate aim of compiler warning testing is to improve the quality of the code by averting ''would-be'' problems. However, in the presence of an already robust, run-time test suite, compiler warnings more often than not alert us to ''potential'' problems and not necessarily any real bugs that manifest for users.
+.. The ultimate aim of compiler warning testing is to improve the quality of the code by averting ''would-be'' problems. However, in the presence of an already robust, runtime test suite, compiler warnings more often than not alert us to ''potential'' problems and not necessarily any real bugs that manifest for users.
 ..
-.. Totally eliminating compiler warnings is a good goal. But, it is important to keep in mind that that goal is really only ''indirectly'' related to improving code quality. Its also important to keep in mind that all warnings are not equal nor are all compilers equal to the task of detecting and reporting them. For example, an ''unused variable'' warning in a code block may be a potential code maintenance nuisance but will not in any way manifest as a bug for a user.
+.. Totally eliminating compiler warnings is a good goal. But, it is important to keep in mind that that goal is really only ''indirectly'' related to improving code quality. It's also important to keep in mind that all warnings are not equal nor are all compilers equal to the task of detecting and reporting them. For example, an ''unused variable'' warning in a code block may be a potential code maintenance nuisance but will not in any way manifest as a bug for a user.
 ..
-.. As developers, when we ''fix'' warnings we typically take action by adjusting code. But, we are doing so in response to one compiler's (often myopic) view of the code and typically not to any real bug encountered by a user. We need to take care the the adjustments we make lead to improved quality. In particular, adjusting code for no other purpose except to silence a given compiler warning seems an unproductive exercise. Besides, there are many other options for managing unhelpful compiler warnings apart from adjusting actual code.
+.. As developers, when we ''fix'' warnings we typically take action by adjusting code. But, we are doing so in response to one compiler's (often myopic) view of the code and typically not to any real bug encountered by a user. We need to take care that the adjustments we make lead to improved quality. In particular, adjusting code for no other purpose except to silence a given compiler warning seems an unproductive exercise. Besides, there are many other options for managing unhelpful compiler warnings apart from adjusting actual code.
 ..
-.. Finally, we're introducing compiler warning checking into a code that has been developed for many years by many developers without having payed significant attention to this issue. As of this writing, the existing code generates thousands of warnings. To make matters worse, we are dialing up compiler options to report as many warnings as possible. This leads to two somewhat distinct problems. One is to resolve warning issues in the existing code. The other, and the more important long term goal, is to prevent further warning issues from being introduced into the code.
+.. Finally, we're introducing compiler warning checking into a code that has been developed for many years by many developers without having paid significant attention to this issue. As of this writing, the existing code generates thousands of warnings. To make matters worse, we are dialing up compiler options to report as many warnings as possible. This leads to two somewhat distinct problems. One is to resolve warning issues in the existing code. The other, and the more important long term goal, is to prevent further warning issues from being introduced into the code.
 ..
-.. If we take the appraoch that we must achieve the first '''before''' we can start on the second, we wind up holding our long term goal hostage to the laborious and resource intensive task of addressing existing warning issues. Or, we hold a gun to everyone's head to drop whatever they are doing and spend time addressing existing warnings to eliminate ''noise'' from useful warnings.
+.. If we take the approach that we must achieve the first '''before''' we can start on the second, we wind up holding our long term goal hostage to the laborious and resource intensive task of addressing existing warning issues. Or, we hold a gun to everyone's head to drop whatever they are doing and spend time addressing existing warnings to eliminate ''noise'' from useful warnings.
 ..
 .. But, we don't have to do either of these. Instead, we can add logic to our regression testing framework to detect the introduction of ''new'' warning issues apart from existing warnings and then only fail the test when ''new'' warnings are introduced.
 ..

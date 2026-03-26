@@ -8,7 +8,7 @@ Potential Flow
 
 This tutorial demonstrates VisIt's features while exploring results from simple simulations of `potential based flow <https://en.wikipedia.org/wiki/Potential_flow>`_ around an obstruction, specifically an airfoil. Potential flow assumes irrotational flow. That is, there is no rotational motion in the flow, no vortices or eddies. This assumption is valid for low velocities and certain types of gases/fluids and obstructions. When the flow does involve rotation, a more complex solution involving Navier-Stokes equations is required.
 
-The potential flow solver is a mini-app developed using the `MFEM <http://www.mfem.org/>`_ finite element library. The example is available for this tutorial thanks to Aaron Fischer and Mark Miller of `LLNL <http://www.llnl.gov>`_. The data set includes VTK output files for a set of solutions where the angle of attack of the velocity varies from -5 degrees to 25 degrees.
+The potential flow solver is a mini-app developed using the `MFEM <http://www.mfem.org/>`_ finite element library. The example is available for this tutorial thanks to Aaron Fischer and Mark Miller of `LLNL <http://www.llnl.gov>`_. The dataset includes VTK output files for a set of solutions where the angle of attack of the velocity varies from -5 degrees to 25 degrees.
 
 Open the dataset
 ----------------
@@ -131,7 +131,7 @@ to visualize the velocity vector field from the simulation.
 Plotting the vector field directly with glyphs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-VisIt_'s Vector plot renders a vector field at each time step as a collection
+VisIt_'s Vector plot renders a vector field at each timestep as a collection
 of arrow glyphs. This allows us to see the direction of the vectors as well
 as their magnitude. We will create a vector plot to directly view the
 simulated "v" vector field. 
@@ -146,7 +146,7 @@ simulated "v" vector field.
    *Vectors* tab settings for example vector plot of velocity
 
 
-5. Go the the *Data* tab.
+5. Go to the *Data* tab.
 6. In the *Limits* section, enable the *Maximum* checkbox and set the value to "1".
 7. In the *Color* section, change the *Magnitude* to *viridis*
 

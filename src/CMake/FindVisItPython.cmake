@@ -104,6 +104,14 @@
 #   Change python install logic, use explicit include list for modules in
 #   site-packages to limit modules installed.
 #
+#   Kathleen Biagas, Tue Mar 24, 2026
+#   Fix DESTINATION for install of python's site-packages.
+#
+#   Kathleen Biagas, Wed Mar 25, 2026
+#   For install of python's site-packages, use PATTERN EXCLUDE to eliminate
+#   what we don't want instead of PATTERN to include what we do want, since
+#   the latter always seems to include everything, not just the PATTERNs.
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -414,27 +422,64 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                     DIRECTORY_PERMISSIONS ${dirPerms}
                     PATTERN "site-packages" EXCLUDE
             )
-            # Use a separate install for general site packages, with an include list for
-            # modules thats users of visit will want.
-            # This filters out several packages related to building and creating our docs
-            # that are not needed by users -- some of which may be flagged by security
-            # scans over time, causing visit to get blocked.
+            # Use a separate install for general site packages, with an
+            # include list for modules thats users of visit will want.
+            # This filters out several packages related to building and
+            # creating our docs that are not needed by users -- some of
+            # which may be flagged by security scans over time, causing
+            # visit to get blocked.
+            # Using 'PATTERN' for the items we want to include does not seem
+            # to work, everything is always included.
+            # 'PATTERN EXCLUDE' is effective, if onerous due to the excessive
+            # numer of packages
+            
             install(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}/site-packages
-                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib/site-packages/
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib/python${PYTHON_VERSION}/
                     FILE_PERMISSIONS ${filePerms}
                     DIRECTORY_PERMISSIONS ${dirPerms}
-                    # basic build tools we allow
-                    PATTERN "*distutils*"
-                    PATTERN "pip*"
-                    PATTERN "setuptools*"
-                    PATTERN "wheel*"
-                    # modules users may want
-                    PATTERN "pillow*"
-                    PATTERN "PIL*"
-                    PATTERN "numpy*"
-                    PATTERN "Cython*"
-                    PATTERN "cython*"
-                    PATTERN "mpi4py*"
+                    ## basic build tools we allow
+                    #PATTERN "distutils"
+                    #PATTERN "pip"
+                    #PATTERN "setuptools"
+                    #PATTERN "wheel"
+                    ## modules users may want
+                    #PATTERN "pillow"
+                    #PATTERN "PIL"
+                    #PATTERN "numpy"
+                    #PATTERN "Cython"
+                    #PATTERN "cython"
+                    #PATTERN "mpi4py"
+                    # what we don't want
+                    PATTERN "alabaster*" EXCLUDE
+                    PATTERN "babel*" EXCLUDE
+                    PATTERN "calver*" EXCLUDE
+                    PATTERN "certifi*" EXCLUDE
+                    PATTERN "charset*" EXCLUDE
+                    PATTERN "colorama*" EXCLUDE
+                    PATTERN "docutils*" EXCLUDE
+                    PATTERN "editables*" EXCLUDE
+                    PATTERN "flit*" EXCLUDE
+                    PATTERN "hatch*" EXCLUDE
+                    PATTERN "idna*" EXCLUDE
+                    PATTERN "image*" EXCLUDE
+                    PATTERN "importlib*" EXCLUDE
+                    PATTERN "jinja*" EXCLUDE
+                    PATTERN "markup*" EXCLUDE
+                    PATTERN "meson*" EXCLUDE
+                    PATTERN "packaging*" EXCLUDE
+                    PATTERN "pathspec*" EXCLUDE
+                    PATTERN "pluggy*" EXCLUDE
+                    PATTERN "pybind11*" EXCLUDE
+                    PATTERN "pygments*" EXCLUDE
+                    PATTERN "pyproject*" EXCLUDE
+                    PATTERN "requests*" EXCLUDE
+                    PATTERN "roman*" EXCLUDE
+                    PATTERN "scikit*" EXCLUDE
+                    PATTERN "snowball*" EXCLUDE
+                    PATTERN "sphinx*" EXCLUDE
+                    PATTERN "trove*" EXCLUDE
+                    PATTERN "urllib*" EXCLUDE
+                    PATTERN "zipp*" EXCLUDE
             )
 
         endif()

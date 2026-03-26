@@ -10,7 +10,7 @@ These files are called *config-site* files.
 They offer a simple, short-hand for specifying a slew of CMake variables when building VisIt_.
 
 In this section, we explain how a config-site file is organized and what various of the different types of variables used there mean.
-One key thing to understand is that VisIt_'s CMake build logic pre-dates many of the more modern and useful features of CMake as well as the adoption of CMake support by a number of third-party library (TPL) providers VisIt_ relies upon.
+One key thing to understand is that VisIt_'s CMake build logic pre-dates many of the more modern and useful features of CMake as well as the adoption of CMake support by a number of third party library (TPL) providers VisIt_ relies upon.
 
 The first lines of a config-site file are a set of comments capturing some high-level information about the build the file supports.
 
@@ -94,8 +94,8 @@ The first kind is a *pair* of space separated entries as is seen in ``VISIT_GORF
 The first entry in the pair is the path to a directory holding library such as would be used in a ``-L</path/to/lib/dir>`` linker flag.
 The second entry in the pair is the name of the library such as would be used in a ``-l<libname>`` linker flag.
 
-The second kind is a CMake variable representing a bonified CMake *imported target*.
-For all TPLs VisIt supports, only a few (HDF5, Silo, ZLIB) are currently handled as bonified CMake imported targets.
+The second kind is a CMake variable representing a bona fide CMake *imported target*.
+For all TPLs VisIt supports, only a few (HDF5, Silo, ZLIB) are currently handled as bona fide CMake imported targets.
 This situation will improve to include many more TPLs as imported targets but currently (as of version 3.5.0), only a handful of TPLs are handled this way.
 The variable, ``HDF5_LIB`` is the variable which holds the imported target name for the HDF5 library (typically ``hdf5-shared``).
 
@@ -128,7 +128,7 @@ Examples of *config site* files for a variety of machines VisIt_ developers dire
   make -j
 
 For cases where a *config-site* file will not be used, this must be explicitly indicated by passing ``-DVISIT_CONFIG_SITE=NONE``.
-This is useful in cases where ``-C CMakeCache.txt`` is used, or where all the relevant CMake variables are specified on the command-line to CMake itself instead of a *config-site* file.
+This is useful in cases where ``-C CMakeCache.txt`` is used, or where all the relevant CMake variables are specified on the command line to CMake itself instead of a *config-site* file.
 
 .. code:: bash
 
@@ -142,7 +142,7 @@ CMake Variables
 
 The following CMake vars can be modified to suit your build needs.
 
-When specified via a command-line invocation of CMake, they should be specified as: VARNAME:TYPE=value, eg 'VISIT_BUILD_ALL_PLUGINS:BOOL=ON'.
+When specified via a command line invocation of CMake, they should be specified as: VARNAME:TYPE=value, eg 'VISIT_BUILD_ALL_PLUGINS:BOOL=ON'.
 
 The defaults listed are the settings used if the Variable has not been set in a *config-site* file.
 
@@ -265,7 +265,7 @@ IGNORE_THIRD_PARTY_LIB_PROBLEMS : BOOL : OFF
     Ignore problems finding requested third party libraries.
 
 VISIT_CONFIG_SITE : FILEPATH : ${VISIT_SOURCE_DIR}/config-site/<localhost>.cmake
-    Location of a config-site cmake file that has settings to control the build, including locations of third-party libraries.
+    Location of a config-site cmake file that has settings to control the build, including locations of third party libraries.
     Created automatically by build_visit script.
 
 VISIT_DDT : BOOL : OFF
@@ -285,7 +285,7 @@ VISIT_FORTRAN : BOOL : OFF
     Toggles building of Fortran example programs.
 
 VISIT_INSTALL_THIRD_PARTY : BOOL : OFF
-    Intall VisIt_'s 3rd part I/O libraries and includes to permit plugin development.
+    Install VisIt_'s 3rd part I/O libraries and includes to permit plugin development.
 
 VISIT_JAVA : BOOL : OFF
     Build VisIt_'s Java client interface.
@@ -308,8 +308,8 @@ VISIT_SLIVR : BOOL : ON
 VISIT_STATIC : BOOL : OFF
     Build VisIt_ statically.
 
-Mac OS only
-"""""""""""
+macOS only
+""""""""""
 
 VISIT_CREATE_APPBUNDLE_PACKAGE : BOOL : OFF
     Toggles creation of DMG file with Mac App bundle with make package.
@@ -332,6 +332,5 @@ VISIT_WINDOWS_APPLICATION : BOOL : ON
     Toggles creation of Windows-style applications with no console.
 
 VISIT_WINDOWS_DIR : PATH : 
-    Specifies the location of the pre-built third party library binaries.
+    Specifies the location of the prebuilt third party library binaries.
     See :ref:`Location of windowsbuild directory<Location of windowsbuild Directory>` for default locations.
-

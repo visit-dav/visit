@@ -217,6 +217,11 @@
 //    Kathleen Biagas, Thu Dec 4, 2025
 //    Set CMake minimum version to 3.24 when building plugins against install.
 //
+//    Kathleen Biagas, Wed Mar 12, 2026
+//    When building plugin against install: add CXX C languages to 'project'
+//    command.  Ensure necessary QT automoc and C++ std17 are set for viewer
+//    libraries when the plugin uses custom qt widgets.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -764,8 +769,6 @@ class CMakeGeneratorPlugin : public Plugin
     {
         bool useFortran = false;
 
-        out << "PROJECT(" << name<< "_" << type << ")" << Endl;
-        out << Endl;
         if (using_dev)
         {
             out << "ADD_" << type.toUpper() << "_CODE_GEN_TARGETS(" << name << ")" << Endl;
@@ -928,8 +931,6 @@ class CMakeGeneratorPlugin : public Plugin
         }
         out << "    ADD_LIBRARY(G"<<name<<ptype<<" ${LIBG_SOURCES})" << Endl;
         out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC ON)" << Endl;
-        if (!using_dev)
-            out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC_EXECUTABLE \${QT_MOC_EXECUTABLE})" << Endl;
 
         out << "    TARGET_LINK_LIBRARIES(G" << name << ptype <<" visitcommon "
             << guilibname << " " << ToString(libs) << ToString(glibs);
@@ -938,8 +939,10 @@ class CMakeGeneratorPlugin : public Plugin
         if (!vtk9_glibs.empty())
             out << "${vtk_glibs} ";
         out << ")" << Endl;
+
         if (!using_dev)
         {
+            out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC_EXECUTABLE \${QT_MOC_EXECUTABLE})" << Endl;
             out << "    # Qt 6 requires CXX 17 (Visit proper currently doesn't)." << Endl;
             out << "    # We don't get the flags for free when building against" << Endl;
             out << "    # an install, so need to set them for the G target here." << Endl;
@@ -952,6 +955,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << "    endif()" << Endl;
             out << Endl;
         }
+
         WriteCMake_ConditionalTargetLinks(out, name, "G", ptype, "    ");
         out << Endl;
 
@@ -964,6 +968,21 @@ class CMakeGeneratorPlugin : public Plugin
         if (customvwfiles)
         {
             out << "    set_target_properties(V" << name << ptype << " PROPERTIES AUTOMOC ON)" << Endl;
+            if (!using_dev)
+            {
+                out << "    set_target_properties(V"<<name<<ptype<<" PROPERTIES AUTOMOC_EXECUTABLE \${QT_MOC_EXECUTABLE})" << Endl;
+                out << "    # Qt 6 requires CXX 17 (Visit proper currently doesn't)." << Endl;
+                out << "    # We don't get the flags for free when building against" << Endl;
+                out << "    # an install, so need to set them for the V target here." << Endl;
+                out << "    set_target_properties(V" << name << ptype << Endl;
+                out << "           PROPERTIES CXX_STANDARD 17)" << Endl;
+                out << "    if(MSVC AND MSVC_VERSION GREATER_EQUAL 1913)" << Endl;
+                out << "        set_target_properties(V" << name << ptype << Endl;
+                out << "            PROPERTIES " << Endl;
+                out << "                COMPILE_OPTIONS \"-Zc:__cplusplus;-permissive-\")" << Endl;
+                out << "    endif()" << Endl;
+                out << Endl;
+            }
         }
         out << "    TARGET_LINK_LIBRARIES(V" << name << ptype << " visitcommon "
             << viewerlibname << " " << ToString(libs) << ToString(vlibs);
@@ -1047,8 +1066,6 @@ class CMakeGeneratorPlugin : public Plugin
     {
         bool useFortran = false;
 
-        out << "PROJECT("<<name<<"_database)" << Endl;
-        out << Endl;
         if (using_dev)
         {
         out << "ADD_DATABASE_CODE_GEN_TARGETS(" << name ;
@@ -1325,6 +1342,9 @@ class CMakeGeneratorPlugin : public Plugin
         {
             // use same CMake minimum as visit (src/CMakeLists.tx).
             out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.24 FATAL_ERROR)" << Endl;
+            out << Endl;
+            out << "PROJECT(" << name<< "_" << type << " CXX C)" << Endl;
+            out << Endl;
             if(installpublic)
             {
                 out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub
@@ -1344,6 +1364,8 @@ class CMakeGeneratorPlugin : public Plugin
         }
         else
         {
+            out << "PROJECT(" << name<< "_" << type << ")" << Endl;
+            out << Endl;
             // We're using a development version but we're installing public
             // or private.
             if(installpublic)

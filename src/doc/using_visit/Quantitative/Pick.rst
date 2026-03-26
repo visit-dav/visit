@@ -105,7 +105,7 @@ smaller area, click the **Concise output** check box. Sometimes, not all of
 the information is relevant for your analysis so VisIt provides options to
 hide certain items in the pick output. If you don't want VisIt to display
 the name of the picked mesh, turn off the **Show Mesh Name** check box.
-If you don't want VisIt to show the time state, turn of the **Show timestep**
+If you don't want VisIt to show the timestate, turn of the **Show timestep**
 check box.
 
 Turning off incident nodes and cells in pick output
@@ -143,7 +143,7 @@ check box.
 Displaying distance to previous
 """""""""""""""""""""""""""""""
 
-The **Pick Window** contains a **Distance to previous** checkbox in the **Output display** tab. If checked, the **Pick** output will contain the Euclidean distance bewteen the current and previous **Pick** points. Note that, when picking zones, the picked point corresponds to the exact point that your mouse lands on the surface of the mesh, which exists within a zone. However, when picking nodes, the picked point is the closest node to where your mouse lands. Therefore, if you're calculating the distance between two node picks, the results will represent the exact distance between the coordinates of those chosen nodes. When calculating the distance between zone picks, the results will represent the distance between your picked points within the zones. You can also calculate the distance between a picked node and a picked zone by performing one after the other.
+The **Pick Window** contains a **Distance to previous** checkbox in the **Output display** tab. If checked, the **Pick** output will contain the Euclidean distance between the current and previous **Pick** points. Note that, when picking zones, the picked point corresponds to the exact point that your mouse lands on the surface of the mesh, which exists within a zone. However, when picking nodes, the picked point is the closest node to where your mouse lands. Therefore, if you're calculating the distance between two node picks, the results will represent the exact distance between the coordinates of those chosen nodes. When calculating the distance between zone picks, the results will represent the distance between your picked points within the zones. You can also calculate the distance between a picked node and a picked zone by performing one after the other.
 
 Returning node information
 """"""""""""""""""""""""""
@@ -192,4 +192,4 @@ time.
 the picked *coordinates* or the picked *element* through time. While each
 of these options generates very different results, it's worth keeping in
 mind that following the picked *element* will be substantially faster when
-working with datasets with large numbers of time steps.
+working with datasets with large numbers of timesteps.

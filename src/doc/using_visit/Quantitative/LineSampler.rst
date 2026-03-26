@@ -231,10 +231,10 @@ Toroidal angle sampling
 
 Time sampling
 
-11. When sampling one can sample just the current time step or across
+11. When sampling one can sample just the current timestep or across
     multiple times steps which becomes the X axis.
 
-12. Time step - The start, stop, and stride for time sampling.
+12. Timestep - The start, stop, and stride for time sampling.
 
 .. _LineSampler_SamplingTab:
 
@@ -275,7 +275,7 @@ parameters can be set.
 
 7. The "View geometry" can be restricted to being Points, Lines, or
    Surfaces. Normally each channel is drawn as a line. By setting the
-   "View geometry" to "Points," the the actual sample points will be
+   "View geometry" to "Points," the actual sample points will be
    drawn.
 
    Future work includes cylindrical and cone sampling geometries. For

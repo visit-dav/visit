@@ -43,7 +43,7 @@ Configuration
 
    ``args``: **optional** - arguments for ``build_visits``
 
-   ``libs``: **optional** - third-party libraries to build
+   ``libs``: **optional** - third party libraries to build
 
    ``make_flags``: **optional** - Make flags
 
@@ -154,10 +154,10 @@ Apart from commonly encountered issues building each third party library built b
 * Sometimes Apple expires its certificates and you may need to go get `updated certificates. <https://www.apple.com/certificateauthority/>`__
 * Sometimes your own certificate can expire.
   Currently, Charles Heizer is the LLNL point of contact for adding developers and updating their expired certificates.
-* You might need to *evaluate* the validity of your certificate using `Apple KeyChain Certificate Assistant <https://support.apple.com/guide/keychain-access/determine-if-a-certificate-is-valid-kyca2794/mac>`__ to confirm its all working.
-* If you are VPN'd into LLNL, codesigning and notorizing a release may fail.
+* You might need to *evaluate* the validity of your certificate using `Apple KeyChain Certificate Assistant <https://support.apple.com/guide/keychain-access/determine-if-a-certificate-is-valid-kyca2794/mac>`__ to confirm it's all working.
+* If you are VPN'd into LLNL, codesigning and notarizing a release may fail.
 * If you have MacPorts, Homebrew, Fink or other macOS package managers, python package builds may wind up enabling (and then creating a release that is dependent upon) libraries that are available only to users with similar package managers installed.
-  Worse, you won't have any idea this has happend until you give the release to another developer who has a mac that is not using said package managers and they try to use it and it doesn't work due to missing libraries.
+  Worse, you won't have any idea this has happened until you give the release to another developer who has a mac that is not using said package managers and they try to use it and it doesn't work due to missing libraries.
   You can use ``otool`` combined with ``find`` to try to find any cases where the release has such dependences.
   For example, the command ::
 
@@ -169,7 +169,7 @@ Apart from commonly encountered issues building each third party library built b
   Just removing associated stuff from your ``$PATH`` will not prevent these build dependencies.
   Fixing them likely means finding some of the individual packages in ``bv_python.sh`` and adding ``site.cfg`` files or otherwise finding build switches that explicitly disable the features creating the need for these dependencies.
 * Sometimes, a python package winds up using the python interpreter in ``Xcode`` instead of the one built for the release of VisIt you are preparing.
-  For example, Sphinx can wind up getting installed with all command-line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter.
+  For example, Sphinx can wind up getting installed with all command line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter.
   We've added patching code to ``bv_python.sh`` to help correct for this.
 
 Codesigning, Notarizing and Stapling macOS Builds
@@ -178,7 +178,7 @@ Codesigning, Notarizing and Stapling macOS Builds
 There are several aspects to producing a ``.dmg`` application bundle for macOS.
 The most involved of these steps is *codesigning*.
 Codesigning involves iterating over all the libraries and executables in the bundle and doing so in a bottom-up or inside-out fashion such that the leaves of any dependency chains are codesigned first.
-Its not a manual process and the masonry scripts involve quite a bit of logic (thanks Kevin Griffin) to get it right.
+It's not a manual process and the masonry scripts involve quite a bit of logic (thanks Kevin Griffin) to get it right.
 However, the remaining steps involving notarizing and stapling the notarization ticket to the ``.dmg`` bundle can easily be handled manually.
 The masonry scripts are designed to do these steps automatically as well but they can also be handled manually if necessary.
 Because Apple seems to change these processes frequently, we capture here some of the key steps.
@@ -199,7 +199,7 @@ New way using ``xcrun notarytool``... ::
         xcrun notarytool submit --apple-id APPLE_ID --keychain-profile APP_PASSOWRD --team-id TEAM_ID /path/to/VisIt.dmg
 
 Where ``APPLE_ID`` is your Apple Id login with Apple, ``APP_PASSWORD`` is the clear-text name for the `app-specific password <https://support.apple.com/en-us/102654>`__ you created (once probably in the distant past and you can no longer remember the steps involved) in your keychain and ``TEAM_ID`` is the Apple Developer ID for LLNL.
-For the ``APP_PASSWORD`` to work correctly with ``notarytool``, you will need to `copy over <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool#Save-credentials-in-the-keychain>`__ the app-specific password you were using for ``altool`` so that it can also be used for ``notarytool``.
+For the ``APP_PASSWORD`` to work correctly with ``notarytool``, you will need to `copy over <https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool>`__ the app-specific password you were using for ``altool`` so that it can also be used for ``notarytool``.
 
 The submission process can take a while because it is uploading the (very large) ``.dmg`` file to Apple's servers and then processing it there.
 When the *submission* completes, you will see a message such as ::
@@ -262,7 +262,7 @@ Confirming
         source=Notarized Developer ID
         origin=Developer ID Application: Lawrence Livermore National Laboratory (A827VH86QR)
 
-* You can get more details about why a notorization failed using the command ::
+* You can get more details about why a notarization failed using the command ::
 
         xcrun notarytool log --apple-id APPLE_ID --keychain-profile APP_PASSWORD --team-id TEAM_ID SUBMISSION_ID 
 
@@ -354,7 +354,7 @@ Read more about `Apple's Code Signing documentation. <https://developer.apple.co
 
 App-Specific Password
 ~~~~~~~~~~~~~~~~~~~~~
-To create an app-specific password go to: `https://appleid.apple.com/account/manage <https://appleid.apple.com/account/manage>`_ . Generate the app-specific password by navigating to: *Security->App-Specific Password*.
+To create an app-specific password, follow Apple's instructions: `App-specific passwords <https://support.apple.com/en-us/102654>`_. Generate the app-specific password by navigating to: *Security->App-Specific Password*.
 
 To avoid having a plain-text password in your config file, you can add the app-specific password to your macOS keychain. To do this, run the following command:
 

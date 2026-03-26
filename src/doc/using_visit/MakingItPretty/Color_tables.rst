@@ -499,7 +499,7 @@ Users can select tags from the tag list to see only color tables that have those
 So, for example, checking the box for the ``Viridis`` tag will cause the color table name box to show color tables that have the ``Viridis`` tag.
 However, this does not just affect the color table name box.
 All buttons allowing you to choose color tables will now only show color tables that match the current tag filtering selection.
-An exception to this is the default continuous and default discrete color table buttons, which will further restrict the set of chooseable color tables to continuous and discrete color tables respectively.
+An exception to this is the default continuous and default discrete color table buttons, which will further restrict the set of choosable color tables to continuous and discrete color tables respectively.
 
 Users can also control how tags are combined: the dropdown button above the list of color table names gives users the option to have color tables match ALL of the selected tags or ANY of the selected tags.
 For example, if only the ``Color Blind Safe`` and ``Continuous`` tags are selected and the dropdown is set so color tables match ANY of the selected tags, then all color tables that have *either* the ``Color Blind Safe`` tag or the ``Continuous`` tag will appear. 

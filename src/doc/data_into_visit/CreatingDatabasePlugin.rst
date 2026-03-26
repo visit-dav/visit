@@ -1,16 +1,16 @@
 .. _Data_Into_VisIt_plugin:
 
-Creating a Database reader plug-in
-==================================
+Creating a Database reader plugin
+=================================
 
-This section shows how to extend VisIt_ by writing a new database reader plug-in so you can use VisIt_ to access data files that you have already generated.
-Writing a database reader plug-in has several advantages over other approaches to importing data into VisIt_ such as writing a conversion program.
+This section shows how to extend VisIt_ by writing a new database reader plugin so you can use VisIt_ to access data files that you have already generated.
+Writing a database reader plugin has several advantages over other approaches to importing data into VisIt_ such as writing a conversion program.
 First of all, if VisIt_ can natively read your file format then there is no need to convert files and consume extra disk space.
 Converting files may not even be possible if the data files are prohibitively large.
-Secondly, plug-ins offer the advantage of not having to alter a complex simulation code to write out data that VisIt_ can read.
-New plug-ins are free to read the simulation code's native file format.
-While many approaches to importing data into VisIt_ require new specialized code, when you write a database plug-in, the code that you write is external to your simulation and it is not a converter that you have to maintain.
-There is no doubt that there is some maintenance involved in writing a database reader plug-in for VisIt_ but there is always the option of contributing your plug-in back into the VisIt_ source code tree where the code maintenance
+Secondly, plugins offer the advantage of not having to alter a complex simulation code to write out data that VisIt_ can read.
+New plugins are free to read the simulation code's native file format.
+While many approaches to importing data into VisIt_ require new specialized code, when you write a database plugin, the code that you write is external to your simulation and it is not a converter that you have to maintain.
+There is no doubt that there is some maintenance involved in writing a database reader plugin for VisIt_ but there is always the option of contributing your plugin back into the VisIt_ source code tree where the code maintenance
 burden is shared among the developer community.
 
 Structure of VisIt
@@ -19,11 +19,11 @@ VisIt_ is a parallel, distributed application that consists of four component pr
 The two components that you may already be familiar with are the client and the viewer.
 VisIt_ has GUI, Python interface, and Java clients that control the visualization operations performed by the viewer, which is the central state repository and graphics rendering component.
 The other components, which are not immediately visible, are the database server and the compute engine.
-The database server (sometimes called the meta-data server) is responsible for browsing the file system and letting you know which files can be opened.
-Once you decide on a file to open, the database server attempts to open that file, loading an appropriate database reader plug-in to do so.
+The database server (sometimes called the metadata server) is responsible for browsing the file system and letting you know which files can be opened.
+Once you decide on a file to open, the database server attempts to open that file, loading an appropriate database reader plugin to do so.
 Once the database server has opened a file, it sends file metadata such as the list of available variables to the client and the viewer.
 The compute engine comes into play when you want to create a plot to process your data into a form that can be rendered on the screen.
-The compute engine, like the database server, loads a plug-in to read a data file and does the actual work of reading the problem-sized data from the file and translating it into Visualization Toolkit (VTK) objects that VisIt_ can process.
+The compute engine, like the database server, loads a plugin to read a data file and does the actual work of reading the problem-sized data from the file and translating it into Visualization Toolkit (VTK) objects that VisIt_ can process.
 Once the data has been read, it is fed through the visualization pipeline and returned to the viewer component where it can be displayed.
 
 .. _visitarchitecture:
@@ -33,72 +33,72 @@ Once the data has been read, it is fed through the visualization pipeline and re
 
   VisIt's architecture
 
-Plug-ins
-~~~~~~~~
+Plugins
+~~~~~~~
 
-VisIt_ supports three types of plug-ins: plot plug-ins, operator plug-ins, and database reader plug-ins.
-This chapter explores database reader plug-ins as a method of importing data from new file formats into VisIt_.
-A database reader plug-in is made of three shared libraries, which are dynamically loaded by the appropriate VisIt_ components when data from a file must be read.
+VisIt_ supports three types of plugins: plot plugins, operator plugins, and database reader plugins.
+This chapter explores database reader plugins as a method of importing data from new file formats into VisIt_.
+A database reader plugin is made of three shared libraries, which are dynamically loaded by the appropriate VisIt_ components when data from a file must be read.
 The VisIt_ components involved in reading data from a file are the database server and the compute engine.
-Each database reader plug-in has a database server component, a compute engine component, and an independent component, for a total of three shared libraries (*libM*, *libE*, *libI*).
+Each database reader plugin has a database server component, a compute engine component, and an independent component, for a total of three shared libraries (*libM*, *libE*, *libI*).
 
-The independent plug-in component, or *libI* plug-in component, is a very lightweight shared library containing little more than the name and version of a plug-in as well as the file extensions that should be associated with it.
-When the database server and compute engine initialize at runtime, one of their first actions is to scan VisIt_'s plug-in directories for available *libI* plug-ins and then load all of the *libI* plug-ins to assemble an internal list of known plug-ins along with the table of file extensions for each file.
+The independent plugin component, or *libI* plugin component, is a very lightweight shared library containing little more than the name and version of a plugin as well as the file extensions that should be associated with it.
+When the database server and compute engine initialize at runtime, one of their first actions is to scan VisIt_'s plugin directories for available *libI* plugins and then load all of the *libI* plugins to assemble an internal list of known plugins along with the table of file extensions for each file.
 
-When VisIt_ needs to open a file, the filename is first passed to the database server, which tries to extract a file extension from the end of the filename so an appropriate plug-in can be selected from the list of available plug-ins.
-Once one or more matches are made, the database factory object in the database server loads the *libM* plug-in component for the first plug-in in the list of matching plug-ins.
-The *libM* plug-in component is the piece of the plug-in used by the database server and it is used to read the metadata from the file in question.
-If the plug-in cannot open the file then it should throw an exception to make the database factory attempt to open the file using the next matching plug-in.
-If there are no plug-ins that match the file's file extension then a default database plug-in is used.
-If that plug-in cannot open the file then VisIt_ issues an error message.
-Once the *libM* plug-in has read the metadata from the file, that information is sent to the VisIt_ clients where it can be used to populate variable menus, etc.
+When VisIt_ needs to open a file, the filename is first passed to the database server, which tries to extract a file extension from the end of the filename so an appropriate plugin can be selected from the list of available plugins.
+Once one or more matches are made, the database factory object in the database server loads the *libM* plugin component for the first plugin in the list of matching plugins.
+The *libM* plugin component is the piece of the plugin used by the database server and it is used to read the metadata from the file in question.
+If the plugin cannot open the file then it should throw an exception to make the database factory attempt to open the file using the next matching plugin.
+If there are no plugins that match the file's file extension then a default database plugin is used.
+If that plugin cannot open the file then VisIt_ issues an error message.
+Once the *libM* plugin has read the metadata from the file, that information is sent to the VisIt_ clients where it can be used to populate variable menus, etc.
 
 When you add a plot in VisIt_ and click the **Draw** button, the first step that the compute engine takes to process your request is to open the file that contains the data.
 The procedure for opening the file that contains the data in the compute engine is the same as that for the database server.
 In fact, the same database factory code is used internally.
-However, the database factory in the compute engine loads the *libE* plug-in component.
-The *libE* and *libM* plug-in components are essentially the same except that, when possible, database server plug-in components do less work.
-Both the *libE* and *libM* plug-in components contain code to read a file's metadata and both contain code to read variables and create meshes.
-The difference between the two plug-in types is that the code to read the variables and create meshes is only called from the *libE* plug-in component.
+However, the database factory in the compute engine loads the *libE* plugin component.
+The *libE* and *libM* plugin components are essentially the same except that, when possible, database server plugin components do less work.
+Both the *libE* and *libM* plugin components contain code to read a file's metadata and both contain code to read variables and create meshes.
+The difference between the two plugin types is that the code to read the variables and create meshes is only called from the *libE* plugin component.
 
 
-Picking a database reader plug-in interface
--------------------------------------------
+Picking a database reader plugin interface
+------------------------------------------
 
-Database reader plug-ins have 4 possible interfaces, which affect how files are mapped to plug-in file format objects.
+Database reader plugins have 4 possible interfaces, which affect how files are mapped to plugin file format objects.
 The 4 possible interfaces are shown in the table below:
 
 +----+---------------------------------------+------------------------------------------+
 |    | SD                                    | MD                                       |
 +====+=======================================+==========================================+
-| ST | STSD - Single time state per file     | STMD - Single time state per file but    |
+| ST | STSD - Single timestate per file      | STMD - Single timestate per file but     |
 |    |                                       |                                          |
 |    | and it contains just 1 domain.        | each file contains multiple domains.     |
 +----+---------------------------------------+------------------------------------------+
-| MT | MTSD - Multiple time states per file  | MTMD - Multiple time states per file     |
+| MT | MTSD - Multiple timestates per file   | MTMD - Multiple timestates per file      |
 |    |                                       |                                          |
 |    | and each file contains just 1 domain. | and each file contains multiple domains. |
 +----+---------------------------------------+------------------------------------------+
 
 
-In order to pick which plug-in interface is most appropriate for your particular file format, you must consider how your file format treats time and domains.
-If your file format contains multiple time states in each file then you have an *MT* file format; otherwise you have an *ST* file format.
+In order to pick which plugin interface is most appropriate for your particular file format, you must consider how your file format treats time and domains.
+If your file format contains multiple timestates in each file then you have an *MT* file format; otherwise you have an *ST* file format.
 If your file format comes from a parallel simulation then you will often have some type of domain decomposition, which breaks up the entire simulation into smaller pieces called domains that are divided among processors.
 If your simulation has domains and the domains are written to a single file then you have an *MD* file format; otherwise, if your simulation processors wrote out their own files then you have an *SD* file format.
-When you consider both how your file format deals with time and how it deals with domains, you should be able to select which plug-in interface you will need when you write your database reader plug-in.
+When you consider both how your file format deals with time and how it deals with domains, you should be able to select which plugin interface you will need when you write your database reader plugin.
 
 Using XMLEdit
 -------------
 
-Once you pick which database interface you will use to write your database plug-in, the next step is to use VisIt_'s XMLEdit tool to get started with some interface definitions.
-XMLEdit is a graphical application that lets you create an XML file that describes some of the basic attributes for your database reader plug-in.
-The XML file contains information such as the name of the plug-in, its version, which interface is used, the plug-in's list of file extensions, and any additional libraries or source code files that need to be included in the plug-in in order to build it.
+Once you pick which database interface you will use to write your database plugin, the next step is to use VisIt_'s XMLEdit tool to get started with some interface definitions.
+XMLEdit is a graphical application that lets you create an XML file that describes some of the basic attributes for your database reader plugin.
+The XML file contains information such as the name of the plugin, its version, which interface is used, the plugin's list of file extensions, and any additional libraries or source code files that need to be included in the plugin in order to build it.
 
-To get started with building your plug-in, the first step is to create a source code directory to contain all of the files that will be created to generate your plug-in.
+To get started with building your plugin, the first step is to create a source code directory to contain all of the files that will be created to generate your plugin.
 It is best that the directory name be the name of your file format or the name of your simulation.
-Once you have created a directory for your plug-in files, you can run VisIt_'s XMLEdit program.
+Once you have created a directory for your plugin files, you can run VisIt_'s XMLEdit program.
 To start XMLEdit on UNIX systems where VisIt_ is installed, open a command window and type ``xmledit``.
-On Windows systems, XMLEdit should be available in the **Start** menu under VisIt_'s plug-in development options.
+On Windows systems, XMLEdit should be available in the **Start** menu under VisIt_'s plugin development options.
 Or, run from a command prompt: ``C:\path\to\visit\xmledit``, substituting the correct path to the location where VisIt_ is installed.
 
 .. _xmledit_plugintab:
@@ -106,19 +106,19 @@ Or, run from a command prompt: ``C:\path\to\visit\xmledit``, substituting the co
 .. figure:: images/XMLEdit_PluginTab.png
   :scale: 75%
 
-  XMLEdit plug-in tab
+  XMLEdit plugin tab
 
-Once XMLEdit is active you can see that it has a number of tabs that are devoted to various aspects of plug-in development.
-Most of the tabs are used for developing plot and operator plug-ins only so this section will focus on the actions that you need to take to create your database reader plug-in.
-First of all, you must type the name of your plug-in into the **Name** text field.
-The name should match the name of the source code directory that you created - be sure that you pick a name that can be used inside of C++ class names since the name is used to help generate the plug-in code skeleton that will form the basis of your database reader plug-in.
+Once XMLEdit is active you can see that it has a number of tabs that are devoted to various aspects of plugin development.
+Most of the tabs are used for developing plot and operator plugins only so this section will focus on the actions that you need to take to create your database reader plugin.
+First of all, you must type the name of your plugin into the **Name** text field.
+The name should match the name of the source code directory that you created - be sure that you pick a name that can be used inside of C++ class names since the name is used to help generate the plugin code skeleton that will form the basis of your database reader plugin.
 Next, type in a label into the **Label** text field.
-The label for a database plug-in can contain a longer identifier that will be displayed when VisIt_ uses your plug-in to read files.
+The label for a database plugin can contain a longer identifier that will be displayed when VisIt_ uses your plugin to read files.
 The label may contain spaces and punctuation.
-Next, enter the version of your plug-in into the **Version** text field.
+Next, enter the version of your plugin into the **Version** text field.
 The version for initial development should be *1.0*.
-Now, choose *Database* from the **Plugin type** combo box to tell XMLEdit that you want to build a database reader plug-in.
-Once you choose *Database* for your plug-in type, some additional options will become enabled.
+Now, choose *Database* from the **Plugin type** combo box to tell XMLEdit that you want to build a database reader plugin.
+Once you choose *Database* for your plugin type, some additional options will become enabled.
 You can ignore these options for now since they contain reasonable default values.
 
 .. _xmledit_plugintab2:
@@ -126,12 +126,12 @@ You can ignore these options for now since they contain reasonable default value
 .. figure:: images/XMLEdit_PluginTab2.png
   :scale: 50%
 
-  XMLEdit plug-in tab after filling in **General Plugin Attributes**
+  XMLEdit plugin tab after filling in **General Plugin Attributes**
 
 
-The next step in creating your database plug-in using XMLEdit is to set the database type to either *STSD*, *STMD*, *MTSD*, or *MTMD* by selecting one of those options from the **Database type** combo box.
+The next step in creating your database plugin using XMLEdit is to set the database type to either *STSD*, *STMD*, *MTSD*, or *MTMD* by selecting one of those options from the **Database type** combo box.
 Note that it is possible to instead choose to create a fully custom database type but do not choose that option since most formats do not need that level of customizability.
-Once you have selected a database type for your plug-in, type in the list of file formats that you want to associate with your plug-in.
+Once you have selected a database type for your plugin, type in the list of file formats that you want to associate with your plugin.
 You can enter as many space-delimited file extensions as you want.
 
 .. _xmledit_plugintab3:
@@ -139,34 +139,34 @@ You can enter as many space-delimited file extensions as you want.
 .. figure:: images/XMLEdit_PluginTab3.png
   :scale: 50%
 
-  XMLEdit plug-in tab after choosing **Database Type** and filling in **Default file name patterns**
+  XMLEdit plugin tab after choosing **Database Type** and filling in **Default file name patterns**
 
-The information that you entered is the minimum amount of information required to create your database reader plug-in.
+The information that you entered is the minimum amount of information required to create your database reader plugin.
 Save your XMLEdit session to an XML file by selecting **Save** from the **File** menu.
-Be sure to use the same name as you used for the directory name that will contain your plug-in files and also be sure to save your XML file to that directory.
-At this point, you can skip ahead to generating your plug-in code skeleton or you can continue adding options to your XML file.
+Be sure to use the same name as you used for the directory name that will contain your plugin files and also be sure to save your XML file to that directory.
+At this point, you can skip ahead to generating your plugin code skeleton or you can continue adding options to your XML file.
 
 
 CMake options
 ~~~~~~~~~~~~~
 
 VisIt_ uses CMake for its build system and for the build systems of its plugins.
-XMLEdit contains controls on its CMake tab that allow you to add options to your XML file that will influence how your plug-in code is built when you go to compile it.
+XMLEdit contains controls on its CMake tab that allow you to add options to your XML file that will influence how your plugin code is built when you go to compile it.
 For example, the **CMake** tab includes options that allow you to specify compiler options such as **CXXFLAGS**, **LDFLAGS** and **LIBS**.
 
-Adding options to these fields can be particularly useful if your plug-in uses an external library such as NetCDF or HDF5.
+Adding options to these fields can be particularly useful if your plugin uses an external library such as NetCDF or HDF5.
 If you are using a library that VisIt_ provides (NetCDF, HDF5, CGNS, Silo, etc.) then you can use special predefined CMake variables that VisIt_'s build defines to locate those libraries.
 For example, you could use ${NETCDF_INCLUDE_DIR}, ${NETCDF_LIBRARY_DIR}, ${NETCDF_LIB} to reference the include directory, library directory, and library name for the NetCDF library.
 Just substitute another capitalized library name for NetCDF to use variables for other I/O libraries.
 It is better to use these CMake variables for libraries that VisIt_ provides to ensure that your plugin is linked against the right libraries.
 
-If you are using a library that VisIt_ does not support, you can add the include file and library file locations to ensure that the compiler will know where to look for your external library when your plug-in is built.
+If you are using a library that VisIt_ does not support, you can add the include file and library file locations to ensure that the compiler will know where to look for your external library when your plugin is built.
 Be sure to use ``-I/path/to/include`` in the **CXXFLAGS** when you want to add include directories for your plugin.
 Use ``-L/path/to/lib`` in the **LDFLAGS** when you want to add link directories for your plugin.
 Finally, add the name of the library (e.g. ``netcdf`` instead of ``-lnetcdf``) in the **LIBS** when you need to link against additional libraries.
 **LIBS** may contain the full-path to a library, in which case use of **LDFLAGS** to locate the library is unnecessary.
 
-You can also add extra files to the *libE* and *libM* plug-ins by adding a list of files to the **Engine files** and **MDServer files** text fields, respectively.
+You can also add extra files to the *libE* and *libM* plugins by adding a list of files to the **Engine files** and **MDServer files** text fields, respectively.
 There are also rarely needed MDServer-specific or Engine-specific *defines*, *cxxflags*, or *ldflags*.
 The engine options are further broken down into serial and parallel versions.
 
@@ -180,14 +180,14 @@ If you change any of these options, shown in :numref:`Figure %s <xmledit_cmaketa
   XMLEdit CMake tab
 
 
-Generating a plug-in code skeleton
-----------------------------------
+Generating a plugin code skeleton
+---------------------------------
 
-Once you save your work from XMLEdit, you will find an XML file containing the options that you provided in the directory where you store your plug-in files.
-VisIt_ provides more XML tools to generate the necessary code skeleton for your plug-in.
-The important tools when building a database plug-in are: ``xml2cmake``, ``xml2info`` and ``xml2plugin``.
+Once you save your work from XMLEdit, you will find an XML file containing the options that you provided in the directory where you store your plugin files.
+VisIt_ provides more XML tools to generate the necessary code skeleton for your plugin.
+The important tools when building a database plugin are: ``xml2cmake``, ``xml2info`` and ``xml2plugin``.
 The ``xml2plugin`` program is actually a script that automates calling the required xml2* programs.
-In order to generate your plug-in code skeleton, open a command window, go to the directory containing your XML file, and run ``xml2plugin``.
+In order to generate your plugin code skeleton, open a command window, go to the directory containing your XML file, and run ``xml2plugin``.
 The command that you will run is:
 
 .. code:: bash
@@ -212,25 +212,25 @@ You can check all the options, the ones that don't apply to database plugins (C+
 
   Listing of files after running xml2plugin.
 
-For database reader plug-ins, there are essentially three classes of files that ``xml2plugin`` creates.
-First of all, ``xml2plugin`` creates the plug-in code skeleton, which includes the plug-in entry points that are used to load the plug-in dynamically at runtime.
+For database reader plugins, there are essentially three classes of files that ``xml2plugin`` creates.
+First of all, ``xml2plugin`` creates the plugin code skeleton, which includes the plugin entry points that are used to load the plugin dynamically at runtime.
 These files have `Info` in their name and they are generated by the ``xml2info`` program.
-If you change the name, version, or file extensions that your plug-in uses then you should re-run ``xml2info`` instead of running ``xml2plugin``.
+If you change the name, version, or file extensions that your plugin uses then you should re-run ``xml2info`` instead of running ``xml2plugin``.
 The next set of files are the AVT file format source and header files.
 The AVT file format source code files are C++ source code files that you will complete using new code to read your file format.
-Finally, ``xml2cmake`` created *CMakeLists.txt* file that CMake can use to generate a build system for your plug-in.
-If you run ``cmake .`` at the command prompt and you are on a UNIX system such as Linux or MacOS X, CMake will generate a Makefile for your plug-in.
-In that case, all you have to do in order to build your plug-in is type: ``make`` at the command prompt.
+Finally, ``xml2cmake`` created a *CMakeLists.txt* file that CMake can use to generate a build system for your plugin.
+If you run ``cmake .`` at the command prompt and you are on a UNIX system such as Linux or macOS, CMake will generate a Makefile for your plugin.
+In that case, all you have to do in order to build your plugin is type: ``make`` at the command prompt.
 
-Building your plug-in
----------------------
+Building your plugin
+--------------------
 
-So far, we have created an XML file using the XMLEdit program and then used the XML file with VisIt_'s XML tools to generate plug-in source code.
-The static portions of the generated source code is complete but there are still some pieces that you need to write yourself in order to make VisIt_ read your data files.
-The automatically generated files that are called *avtXXXXFileFormat.C* and *avtXXXXFileFormat.h*, where XXXX is the name of your plug-in, are incomplete.
+So far, we have created an XML file using the XMLEdit program and then used the XML file with VisIt_'s XML tools to generate plugin source code.
+The static portions of the generated source code are complete but there are still some pieces that you need to write yourself in order to make VisIt_ read your data files.
+The automatically generated files that are called *avtXXXXFileFormat.C* and *avtXXXXFileFormat.h*, where XXXX is the name of your plugin, are incomplete.
 These two AVT files contain a derived class of one of the *STSD*, *STMD*, *MTSD*, *MTMD* file format classes that VisIt_ provides for reading different file types.
 Your job is to fill in the missing code in the methods for the AVT classes so they can read data from your file format and translate that data into VTK objects.
-By default, the AVT files contain some messages in the source code like *YOU MUST IMPLEMENT THIS* , which are meant to prevent the source code from compiling and to call attention to areas of the plug-in that you need to implement.
+By default, the AVT files contain some messages in the source code like *YOU MUST IMPLEMENT THIS*, which are meant to prevent the source code from compiling and to call attention to areas of the plugin that you need to implement.
 An example of this message is shown in :numref:`Figure %s<dbplugin_implementthis1>`.
 
 .. _dbplugin_implementthis1:
@@ -239,11 +239,11 @@ An example of this message is shown in :numref:`Figure %s<dbplugin_implementthis
 
   IMPLEMENT THIS message
 
-The first step in building a plug-in is to make sure that the automatically generated source code compiles.
+The first step in building a plugin is to make sure that the automatically generated source code compiles.
 Open the AVT files and look for instances of the *YOU MUST IMPLEMENT THIS* message and, when you find them, write down a note of where they appear.
 Comment out each of the messages in the C++ source code and add ``return 0;`` statements (See :numref:`Figure %s <dbplugin_implementthis2>`).
-By commenting out the offending messages, the automatically generated source code will compile when you attempt to compile the plug-in.
-You will also have a list of some of the plug-in methods that you will have to write later when you really begin developing your plug-in.
+By commenting out the offending messages, the automatically generated source code will compile when you attempt to compile the plugin.
+You will also have a list of some of the plugin methods that you will have to write later when you really begin developing your plugin.
 
 .. _dbplugin_implementthis2:
 
@@ -251,9 +251,9 @@ You will also have a list of some of the plug-in methods that you will have to w
 
   Commented-out *IMPLEMENT THIS* message
 
-Once you have changed the AVT files so there are no stray messages about implementing a plug-in feature, go back to your command terminal and type ``cmake -DCMAKE_BUILD_TYPE:STRING=Debug`` so CMake will generate a build system for your plug-in.
+Once you have changed the AVT files so there are no stray messages about implementing a plugin feature, go back to your command terminal and type ``cmake -DCMAKE_BUILD_TYPE:STRING=Debug`` so CMake will generate a build system for your plugin.
 The generated build system is most commonly a Makefile, allowing you to use the ``make`` command for your system.
-The ``make`` command takes the automatically generated Makefile that was generated by CMake and starts building your plug-in against the installed version of VisIt_.
+The ``make`` command takes the automatically generated Makefile that was generated by CMake and starts building your plugin against the installed version of VisIt_.
 
 For Windows OS and Visual Studio, you will need to tell CMake which generator and toolset to use, and should be the same as that used to compile VisIt_ itself.
 The cmake-gui makes this easy.
@@ -261,20 +261,20 @@ See :ref:`ConfiguringWithCMakeGUI` for more information.
 Your entry for **Where is the source code** will be the same directory as your .xml file.
 You entry for **Where to build the binaries** can be the same as source, but choosing a separate build folder is the better option, as it won't clutter your source folder with build files.
 
-If you encounter compilation errors, such as syntax errors, then you most likely need to make further changes to your AVT files before trying to build your plug-in.
+If you encounter compilation errors, such as syntax errors, then you most likely need to make further changes to your AVT files before trying to build your plugin.
 A good C++ language reference can help you understand the types of errors that may be printed to your command window in the event that you have not successfully changed the AVT files.
 If your source code seems to compile but fails due to missing libraries such as NetCDF or HDF5 then you can edit your XML file so it points to the right library installation locations.
 Note that if you edit your XML file, you will need to regenerate the *CMakeLists.txt* file using ``xml2cmake``.
 It is also a good idea that you remove the CMakeCache.txt file before rerunning cmake if you have changed the path to any libraries in your XML file.
 
-Once your plug-in is built, it will be stored in a platform-specific subdirectory of the *.visit*  directory in your home directory (``~/.visit``).
-If you type: ``find ~/.visit -name "*.so"`` into your command window, you will be able to locate the *libE*, *libI*, and *libM* files that make up your compiled plug-in (see :numref:`Figure %s <pluginbuildresults>`).
+Once your plugin is built, it will be stored in a platform-specific subdirectory of the *.visit*  directory in your home directory (``~/.visit``).
+If you type: ``find ~/.visit -name "*.so"`` into your command window, you will be able to locate the *libE*, *libI*, and *libM* files that make up your compiled plugin (see :numref:`Figure %s <pluginbuildresults>`).
 
-If you develop for MacOS X, you should substitute ``*.dylib`` for ``*.so`` in the previous command because shared libraries on MacOS X have a *.dylib* file extension instead of a *.so* file extension.
+If you develop for macOS, you should substitute ``*.dylib`` for ``*.so`` in the previous command because shared libraries on macOS have a *.dylib* file extension instead of a *.so* file extension.
 
 If you develop on Windows, the files will be in your profile directory (generally ``C:\users\<yourname>``) in a ``VisIt`` folder. The file extension is ``.dll``.
 
-Note that when a parallel compute engine is available in the installed version of VisIt_, you will get two *libE* plug-ins; one with a *_ser*  suffix and one with a *_par* suffix.
+Note that when a parallel compute engine is available in the installed version of VisIt_, you will get two *libE* plugins; one with a *_ser*  suffix and one with a *_par* suffix.
 The *libE* files that have a *_ser*  suffix are loaded by the serial compute engine and the *_par* *libE* file is loaded by the parallel compute engine and may contain parallel function calls, such as calls to the MPI library.
 
 .. _pluginbuildresults:
@@ -283,34 +283,34 @@ The *libE* files that have a *_ser*  suffix are loaded by the serial compute eng
 
   Plugin build results
 
-When VisIt_'s database server and compute engine execute, they look in your *~/.visit*  directory for available plug-ins and load any that are available.
-This means that even if you build plug-ins against the installed version of VisIt_, it will still be able to find your private plug-ins.
+When VisIt_'s database server and compute engine execute, they look in your *~/.visit*  directory for available plugins and load any that are available.
+This means that even if you build plugins against the installed version of VisIt_, it will still be able to find your private plugins.
 
-It is recommended that while you develop your plug-ins, you only install them in your *~/.visit*  directory so other VisIt_ users will not be affected.
-However, if you develop your plug-in on MacOS X, you will have to make sure that your plug-ins are installed publicly so that they can be loaded at runtime.
-You can also choose to install your plug-ins publicly once you have completed development.
-To install plug-ins publicly, first remove the files that were installed to your *~/.visit*  directory by typing the ``make clean`` command in your command window.
+It is recommended that while you develop your plugins, you only install them in your *~/.visit*  directory so other VisIt_ users will not be affected.
+However, if you develop your plugin on macOS, you will have to make sure that your plugins are installed publicly so that they can be loaded at runtime.
+You can also choose to install your plugins publicly once you have completed development.
+To install plugins publicly, first remove the files that were installed to your *~/.visit*  directory by typing the ``make clean`` command in your command window.
 Next, re-run the ``xml2cmake`` program like this:
 
 .. code:: bash
 
   xml2cmake -public -clobber FILE.xml
 
-Adding the ``-public`` argument on the command line causes make to install your plug-in files publicly so all VisIt_ users can access them.
+Adding the ``-public`` argument on the command line causes make to install your plugin files publicly so all VisIt_ users can access them.
 Don't forget to rerun ``cmake`` and ``make`` after running ``xml2cmake``.
 
 
-Calling your plug-in for the first time
----------------------------------------
+Calling your plugin for the first time
+--------------------------------------
 
-Once you have completed building your plug-in for the first time, all that you need to do is run VisIt_ and try to open one of your files.
-When you open one of your files, the database server should match the file extension of the file that you tried to open with the list of file extensions that your plug-in accepts, causing your plug-in to be loaded and used for opening the file.
-You can verify that VisIt_ used your plug-in by opening the **File Information** window (see :numref:`Figure %s <fileinformationwin>`) in the VisIt_ GUI and looking for the name of your plug-in in the listed information.
+Once you have completed building your plugin for the first time, all that you need to do is run VisIt_ and try to open one of your files.
+When you open one of your files, the database server should match the file extension of the file that you tried to open with the list of file extensions that your plugin accepts, causing your plugin to be loaded and used for opening the file.
+You can verify that VisIt_ used your plugin by opening the **File Information** window (see :numref:`Figure %s <fileinformationwin>`) in the VisIt_ GUI and looking for the name of your plugin in the listed information.
 
-If your plug-in wasn't used by VisIt_, it may mean that other formats can read the same extensions as your plugin.
+If your plugin wasn't used by VisIt_, it may mean that other formats can read the same extensions as your plugin.
 In that case, you would need to select your plugin from the **Open file as type:** dropdown option in the **File open** window to make VisIt_ choose your plugin.
 
-Note that at this stage, the database server should be properly loading your database reader plug-in but since no code to actually read your files has yet been added to the AVT source code files, no plottable meshes or variables will be available.
+Note that at this stage, the database server should be properly loading your database reader plugin but since no code to actually read your files has yet been added to the AVT source code files, no plottable meshes or variables will be available.
 
 .. _fileinformationwin:
 
@@ -318,18 +318,18 @@ Note that at this stage, the database server should be properly loading your dat
 
   File information window
 
-Implementing your plug-in
--------------------------
+Implementing your plugin
+------------------------
 
-Now that you have built a working plug-in framework, you are ready to begin adding code to your plug-in that will make it capable of opening your file format, reading data, and translating that data into VTK objects.
-This section explores the details of writing the AVT code for your database reader plug-in, providing necessary background and then diving into specific topics such as how to return data for a particular mesh type.
-Before starting, remember that building a plug-in is an incremental process and you should proceed in small steps, saving your work, building, and testing your plug-in each step of the way.
+Now that you have built a working plugin framework, you are ready to begin adding code to your plugin that will make it capable of opening your file format, reading data, and translating that data into VTK objects.
+This section explores the details of writing the AVT code for your database reader plugin, providing necessary background and then diving into specific topics such as how to return data for a particular mesh type.
+Before starting, remember that building a plugin is an incremental process and you should proceed in small steps, saving your work, building, and testing your plugin each step of the way.
 
-Required plug-in methods
-~~~~~~~~~~~~~~~~~~~~~~~~
-Most of the code in a VisIt_ database plug-in is automatically generated and, for the most part, the only code that you need to modify is the AVT code.
-The AVT code contains a class definition and implementation for a derived type of the *STSD*, *STMD*, *MTSD*, or *MTMD* file format classes and your job as a plug-in developer is to write the required methods for your derived file format class so that VisIt_ can read your file.
-There are many methods in the file format class interface that you can override to make your plug-in perform specialized operations.
+Required plugin methods
+~~~~~~~~~~~~~~~~~~~~~~~
+Most of the code in a VisIt_ database plugin is automatically generated and, for the most part, the only code that you need to modify is the AVT code.
+The AVT code contains a class definition and implementation for a derived type of the *STSD*, *STMD*, *MTSD*, or *MTMD* file format classes and your job as a plugin developer is to write the required methods for your derived file format class so that VisIt_ can read your file.
+There are many methods in the file format class interface that you can override to make your plugin perform specialized operations.
 The only methods that you absolutely must implement are:
 
 **PopulateDatabaseMetaData**
@@ -341,37 +341,37 @@ The only methods that you absolutely must implement are:
   The *PopulateDatabaseMetaData* method is called by both the *libM* and *libE* plugins.
 
 **GetMesh**
-  VisIt_ calls the *GetMesh* method in a *libE* plug-in when it needs to plot a mesh.
+  VisIt_ calls the *GetMesh* method in a *libE* plugin when it needs to plot a mesh.
   This method is the first method to return "problem-sized" data, meaning that
   the mesh data can be as large as the data in your file.
   The *GetMesh* method must return a mesh object in the form of one of the VTK dataset objects (*vtkRectilinearGrid*, *vtkStructuredGrid*, *vtkUnstructuredGrid*, *vtkPolyData*).
 
 **GetVar**
-  VisIt_ calls the *GetVar* method in a *libE* plug-in when it needs to read a scalar variable.
+  VisIt_ calls the *GetVar* method in a *libE* plugin when it needs to read a scalar variable.
   Like the *GetMesh* method, this method returns "problem-sized" data.
   *GetVar* reads data values from the file format, possibly performing calculations to alter the data, and stores the data into a derived type *vtkDataArray* object such as *vtkFloatArray* or *vtkDoubleArray*.
-  If your file format does not need to return scalar data then you can leave the ``return 0;`` implementation that you added in order to get your plug-in to build.
+  If your file format does not need to return scalar data then you can leave the ``return 0;`` implementation that you added in order to get your plugin to build.
 
 **GetVectorVar**
-  VisIt_ calls the *GetVectorVar* method in a *libE* plug-in when it needs to read a vector or tensor variable.
+  VisIt_ calls the *GetVectorVar* method in a *libE* plugin when it needs to read a vector or tensor variable.
   *GetVectorVar* performs the same function as *GetVar* but returns *vtkFloatArray* or *vtkDoubleArray* objects that have more than one value per tuple.
   A tuple is the equivalent of a value associated with a zone or node but it can store more than one value.
-  If your file format does not need to return vector data then you can leave the ``return 0;`` implementation that you added in order to get your plug-in to build.
+  If your file format does not need to return vector data then you can leave the ``return 0;`` implementation that you added in order to get your plugin to build.
 
 
-Debugging your plug-in
-~~~~~~~~~~~~~~~~~~~~~~
+Debugging your plugin
+~~~~~~~~~~~~~~~~~~~~~
 
-Before beginning to write code for your plug-in, you should know a few techniques for debugging your plug-in since debugging VisIt_ can be tricky because of its distributed architecture.
+Before beginning to write code for your plugin, you should know a few techniques for debugging your plugin since debugging VisIt_ can be tricky because of its distributed architecture.
 See :ref:`Debugging Tips <Debugging Tips>` for detailed information.
 
 
 Opening your file
 ~~~~~~~~~~~~~~~~~
 
-When VisIt_ receives a list of files to open, it tries to determine which plug-in should be loaded to access the data in those files.
-The match is performed by comparing the file extension of the files against the known file extensions or patterns for all database reader plug-ins.
-Each plug-in in the list of matches is loaded and VisIt_ creates instances of the plug-in's AVT file format classes that are then used to access the data in the files.
+When VisIt_ receives a list of files to open, it tries to determine which plugin should be loaded to access the data in those files.
+The match is performed by comparing the file extension of the files against the known file extensions or patterns for all database reader plugins.
+Each plugin in the list of matches is loaded and VisIt_ creates instances of the plugin's AVT file format classes that are then used to access the data in the files.
 If the plugin's file format classes can be successfully constructed then VisIt_ tries to get the file's metadata.
 It is very important that your file format's constructor do as little work as possible, and try at all costs to avoid opening the files.
 Remember, VisIt_ could be creating a long list of your file format objects and opening the file in the constructor will really slow down the process of opening a file.
@@ -380,8 +380,8 @@ Then override the *ActivateTimestep* method for your file format class and call 
 We make *Initialize* its own method so we can call it from other methods such as *GetMesh* or *GetVar* just in case.
 
 In the event that your Initialize method cannot open the file if the file is not the right type, or if it contains errors, or if it cannot be accessed for some other reason, the constructor must throw an *InvalidDBTypeException* exception.
-When the *InvalidDBTypeException* exception is thrown, VisIt_'s database factory catches the exception and then tries to open the file with the next matching plug-in.
-This procedure ccontinues until the file is opened by a suitable plug-in or the file cannot be opened at all.
+When the *InvalidDBTypeException* exception is thrown, VisIt_'s database factory catches the exception and then tries to open the file with the next matching plugin.
+This procedure ccontinues until the file is opened by a suitable plugin or the file cannot be opened at all.
 
 
 .. container:: collapsible
@@ -430,40 +430,40 @@ This procedure ccontinues until the file is opened by a suitable plug-in or the 
     }
 
 
-If your database reader plug-in uses a unique file extension then you have the option of deferring any file opens until later when metadata is required.
+If your database reader plugin uses a unique file extension then you have the option of deferring any file opens until later when metadata is required.
 This is the preferred approach because VisIt_ may create many instances of your file format class and doing less work in the constructor makes opening files faster.
 
 Once you decide whether your file format can defer opening a file or whether it must open the file in the constructor, you can begin adding code to your AVT class.
 Since opening files can be a costly operation, you might want to open a file and keep it open if you have a random access file format.
-If you open a file in one method and want to keep the file open so it is available to multiple plug-in methods, you will need to add a new class member to your AVT class to contain the handle to your open file.
+If you open a file in one method and want to keep the file open so it is available to multiple plugin methods, you will need to add a new class member to your AVT class to contain the handle to your open file.
 If your file format consists of sequential text then you might consider reading the file once and keeping the data in memory in a format that you can conveniently translate into VTK objects.
 Both approaches require the addition of a new class member - either a handle to the file or a pointer to data that was read from the file.
 
 Returning file metadata
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Once your you have decided how your plug-in will manage access to the file that it must read, the next step in writing your database reader plug-in is to implement the *PopulateDatabaseMetaData*  method.
+Once your you have decided how your plugin will manage access to the file that it must read, the next step in writing your database reader plugin is to implement the *PopulateDatabaseMetaData*  method.
 The *PopulateDatabaseMetaData* method is called by VisIt_'s database infrastructure when information about a file's meshes and variables must be obtained.
-The *PopulateDatabaseMetaData*  method is usually called only the first time that a file format's metadata is being read, though some time-varying formats can have time-varying metadata, which requires that *PopulateDatabaseMetaData*  is called each time VisIt_ requests data for a new time state.
+The *PopulateDatabaseMetaData*  method is usually called only the first time that a file format's metadata is being read, though some time-varying formats can have time-varying metadata, which requires that *PopulateDatabaseMetaData*  is called each time VisIt_ requests data for a new timestate.
 However, most file formats call *PopulateDatabaseMetaData*  once.
 
 The *PopulateDatabaseMetaData* method arguments can vary, depending on whether your file format is *STSD*, *STMD*, *MTSD*, or *MTMD* but in all cases the first argument is an *avtDatabaseMetaData* object.
 The *avtDatabaseMetaData* object is a class that is pervasively used in VisIt_; it contains information about the files that you plot such as the number of domains, times, meshes, and variables that the files can provide.
-When you implement your plug-in's *PopulateDatabaseMetaData* method, you must populate the *avtDatabaseMetaData* object with the list of meshes and variables, etc. that you want VisIt_ to be able to plot.
+When you implement your plugin's *PopulateDatabaseMetaData* method, you must populate the *avtDatabaseMetaData* object with the list of meshes and variables, etc. that you want VisIt_ to be able to plot.
 You can hard-code a fixed list of meshes and variables if your file format always contains the same entities or you can open your file and provide a dynamic list of meshes and variables.
 This section covers how to add meshes and various variable types to the *avtDatabaseMetaData* object so your file format's data will be exposed in VisIt_.
 For a complete listing of the *avtDatabaseMetaData* object's methods, see the *avtDatabaseMetaData.h* header file.
 It is worth noting that the following code examples create metadata objects and
 manually add them to the metadata object instead of using convenience functions.
-This is done because the convenience functions used in automatically generated plug-in code do not provide support for less often used metadata settings such as units and labels.
+This is done because the convenience functions used in automatically generated plugin code do not provide support for less often used metadata settings such as units and labels.
 
 Returning mesh metadata
 """""""""""""""""""""""
 
-In order for you to be able to plot any data from your file format, your database reader plug-in must add at least one mesh to the *avtDatabaseMetaData* object that is passed into the *PopulateDatabaseMetaData* method.
+In order for you to be able to plot any data from your file format, your database reader plugin must add at least one mesh to the *avtDatabaseMetaData* object that is passed into the *PopulateDatabaseMetaData* method.
 Adding information about a mesh to the *avtDatabaseMetaData* object is done by creating an *avtMeshMetaData* object, populating its important members, and adding it to the *avtDatabaseMetaData*.
 At a minimum, each mesh must have a name, spatial dimension, topological dimension, and a mesh type.
-The mesh's name is the identifier that will be displayed in VisIt_'s plot menus and it is also the name that will be passed later on into the plug-in's *GetMesh* method.
+The mesh's name is the identifier that will be displayed in VisIt_'s plot menus and it is also the name that will be passed later on into the plugin's *GetMesh* method.
 
 The spatial dimension attribute corresponds to how many dimensions are needed to
 specify the coordinates for the points that make up your mesh.
@@ -492,7 +492,7 @@ If you have a mesh that adaptively refines then choose *AVT_AMR_MESH*.
 Finally, if your mesh is specified using shapes such as cones and spheres that are unioned or differenced using boolean operations then you have a constructive solid geometry mesh and you should choose *AVT_CSG_MESH* for your mesh's mesh type.
 
 If your mesh consists of multiple domains then you will need to set the number of domains into the *numBlocks* member of the *avtMeshMetaData* object.
-Remember that the number of domains tells VisIt_ how many pieces make up your mesh and it is especially important to specify this number if your plug-in is derived from an *MD* file format interface.
+Remember that the number of domains tells VisIt_ how many pieces make up your mesh and it is especially important to specify this number if your plugin is derived from an *MD* file format interface.
 You may also choose to tell VisIt_ what the domains are called for your file
 format.
 Some file formats use the word: "domains" while others use "brick" or "block".
@@ -525,7 +525,7 @@ Once all attributes are set to your satisfaction, you must add the *avtMeshMetaD
     {
         // Add a point mesh to the metadata. Note that this example will
         // always expose a mesh called "particles" to VisIt. A real
-        // plug-in may want to read a list of meshes from the data
+        // plugin may want to read a list of meshes from the data
         // file.
         avtMeshMetaData *mmd = new avtMeshMetaData;
         mmd->name = "particles";
@@ -544,10 +544,10 @@ Returning scalar metadata
 Once you have exposed a mesh to VisIt_ by adding mesh metadata to the *avtDatabaseMetaData* object, you can add scalar field metadata.
 A scalar field is a set of floating point values defined for all cells or nodes of a mesh.
 You can expose as many scalar variables as you want on any number of meshes.
-The list of scalar fields that a plug-in exposes is often determined by the data file being processed.
+The list of scalar fields that a plugin exposes is often determined by the data file being processed.
 Like mesh metadata, scalar metadata requires a name so the scalar can be added to VisIt_'s menus.
 The name that you choose is the same name that later is passed to the *GetVar*
-plug-in method.
+plugin method.
 Once you select a name for your scalar variable, you must indicate the name of the mesh on which the variable is defined by setting the *meshName* member of
 the *avtScalarMetaData* object.
 Once you have set the *name* and *meshName* members, you can set the *centering* member.
@@ -567,9 +567,9 @@ If you want to indicate units that are associated with the scalar variable, set 
     avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         // Add a mesh called "mesh" to the metadata object.
-        // Add a scalar to the metadata. Note that this plug-in will
+        // Add a scalar to the metadata. Note that this plugin will
         // always expose a scalar called "temperature" to VisIt. A real
-        // plug-in may want to read a list of scalars from the data
+        // plugin may want to read a list of scalars from the data
         // file.
         avtScalarMetaData *smd = new avtScalarMetaData;
         smd->name = "temperature";
@@ -603,9 +603,9 @@ After you set the basic vector metadata attributes, you must set the *varDim* me
     avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         // Add a mesh called "mesh" to the metadata object.
-        // Add a vector to the metadata. Note that this plug-in will
+        // Add a vector to the metadata. Note that this plugin will
         // always expose a vector called "velocity" to VisIt. A real
-        // plug-in may want to read a list of vectors from the data
+        // plugin may want to read a list of vectors from the data
         // file.
         avtVectorMetaData *vmd = new avtVectorMetaData;
         vmd->name = "velocity";
@@ -642,9 +642,9 @@ composed of: "Steel", "Wood", "Glue", and "Air" then the metadata object needed 
     avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         // Add a mesh called "mesh" to the metadata object.
-        // Add a material to the metadata. Note that this plug-in will
+        // Add a material to the metadata. Note that this plugin will
         // always expose a material called "mat1" to VisIt. A real
-        // plug-in may want to use from the data file to construct
+        // plugin may want to use from the data file to construct
         // a material.
         avtMaterialMetaData *matmd = new avtMaterialMetaData;
         matmd->name = "mat1";
@@ -667,7 +667,7 @@ VisIt_ provides the **Expression** window in the GUI for managing expression
 definitions.
 It can be convenient for users in certain fields, where custom expressions are used frequently, to store the expression definitions directly in the file format or to encode the custom expressions directly in the file metadata so they are always available when a given file is visualized.
 VisIt_'s *avtDatabaseMetaData* object can contain custom expressions.
-Thus you can add custom expressions to the *avtDatabaseMetaData* object inside of your database reader plug-in.
+Thus you can add custom expressions to the *avtDatabaseMetaData* object inside of your database reader plugin.
 Custom expressions are added to the *avtDatabaseMetaData* object by creating *Expression* (defined in Expression.h) objects and adding them by calling the *avtDatabaseMetaData::AddExpression* method.
 The *Expression* object lets you provide the name and definition of an expression as well as the expression's expected return type (scalar, vector, tensor, etc.) and whether the expression should be hidden from the user.
 Hidden expressions can be useful if you build a complex expression that makes use of smaller sub-expressions that do not need to be exposed in the VisIt_ user interface.
@@ -708,10 +708,10 @@ Hidden expressions can be useful if you build a complex expression that makes us
 Returning a mesh
 ~~~~~~~~~~~~~~~~
 
-Once your database reader plug-in can successfully return metadata about one or more meshes, you can proceed to implementing your plug-in's *GetMesh* method.
-When you make a plot in VisIt_, the plot is set up using the file metadata returned by your plug-in.
-When you click the **Draw** button in the VisIt_ GUI, it causes a series of requests that make the compute engine load your *libE* plug-in and call its *GetMesh* method with the name of the mesh being used by the plot as well as the time state and domain numbers (*MT* or *MD* formats only).
-A database reader plug-in's job is to read relevant data from a file format and translate the data into a VTK object that VisIt_ can process.
+Once your database reader plugin can successfully return metadata about one or more meshes, you can proceed to implementing your plugin's *GetMesh* method.
+When you make a plot in VisIt_, the plot is set up using the file metadata returned by your plugin.
+When you click the **Draw** button in the VisIt_ GUI, it causes a series of requests that make the compute engine load your *libE* plugin and call its *GetMesh* method with the name of the mesh being used by the plot as well as the timestate and domain numbers (*MT* or *MD* formats only).
+A database reader plugin's job is to read relevant data from a file format and translate the data into a VTK object that VisIt_ can process.
 The *GetMesh* method's job is to read the mesh information from the file and create a VTK object that describes the mesh in the data file.
 VisIt_ can process many different mesh types (See :numref:`Figure %s <avtmeshtypes>`) and you can return different types of VTK objects that best describe your mesh type.
 This section gives example code to show how you would take data read from your file format and turn it into VTK objects that describe your mesh.
@@ -719,10 +719,10 @@ The details of reading data from your file format are omitted from the example c
 The central message in this section is how to use data from a file format to
 construct different mesh types.
 
-Determing which mesh to return
-""""""""""""""""""""""""""""""
+Determining which mesh to return
+""""""""""""""""""""""""""""""""
 
-The *GetMesh* method is always passed a string containing the name of the mesh that should be returned from the plug-in.
+The *GetMesh* method is always passed a string containing the name of the mesh that should be returned from the plugin.
 If your file format only ever has one mesh then you can ignore the meshname argument.
 However, if your file format can contain more than one mesh then you should check the name of the requested mesh before returning a VTK object so you create and return the correct mesh.
 
@@ -759,9 +759,9 @@ However, if your file format can contain more than one mesh then you should chec
     }
 
 
-If your database reader plug-in is derived from one of the *MT* or *MD* file format interfaces then the *GetMesh* method will have, in addition to the *meshname* argument, either a *timestate* argument, *domain* argument, or both.
-These extra arguments are both integers that VisIt_ passes to your plug-in so your plug-in can select the right mesh for the specified time state or domain.
-If your *GetMesh* method accepts a *timestate* argument then you can use it to return the mesh for the specified time state, which is in the range [0, NTS - 1], where NTS is the number of time states that your plug-in returned from its *GetNTimesteps* method.
+If your database reader plugin is derived from one of the *MT* or *MD* file format interfaces then the *GetMesh* method will have, in addition to the *meshname* argument, either a *timestate* argument, *domain* argument, or both.
+These extra arguments are both integers that VisIt_ passes to your plugin so your plugin can select the right mesh for the specified timestate or domain.
+If your *GetMesh* method accepts a *timestate* argument then you can use it to return the mesh for the specified timestate, which is in the range [0, NTS - 1], where NTS is the number of timestates that your plugin returned from its *GetNTimesteps* method.
 The range for the *domain* argument, if it is present, is [0,NDOMS - 1] where NDOMS is the number of domains that your file format added to the *numBlocks* member in the *avtMeshMetaData* object corresponding to the mesh named by the *meshname* argument.
 
 
@@ -788,7 +788,7 @@ must replace with code to read values from your file format.
 The first such piece requires you to read the number of dimensions for your mesh from the file format and store the value into the *ndims* variable.
 Once you have done that, read the number of nodes in each of the X,Y,Z dimensions and store those values in the dims array.
 Finally, fill in the code for reading the X coordinate values into the xarray array and do the same for the Y and Z coordinate arrays.
-Once you have replaced the capitalized code portions with code that reads values from your file format, your plug-in should be able to return a valid
+Once you have replaced the capitalized code portions with code that reads values from your file format, your plugin should be able to return a valid
 *vtkRectilinearGrid* object once you rebuild it.
 
 .. container:: collapsible
@@ -876,7 +876,7 @@ The capitalized portions of the code listing indicate incomplete code that you w
 First, read the number of dimensions for your mesh from the file format and store the value into the *ndims* variable.
 Once you have done that, read the number of nodes in each of the X,Y,Z dimensions and store those values in the *dims* array.
 Finally, fill in the code for reading the X coordinate values into the *xarray* array and do the same for the Y and Z coordinate arrays.
-Once you have replaced the capitalized code portions with code that reads values from your file format, your plug-in should be able to return a valid *vtkStructuredGrid* object once you rebuild it.
+Once you have replaced the capitalized code portions with code that reads values from your file format, your plugin should be able to return a valid *vtkStructuredGrid* object once you rebuild it.
 
 .. container:: collapsible
 
@@ -975,7 +975,7 @@ The capitalized portions of the code listing indicate incomplete code that you w
 First, read the number of dimensions for your mesh from the file format and store the value into the *ndims* variable.
 Next, read the number of points that make up the point mesh into the *nnodes* variable.
 Finally, fill in the code for reading the X coordinate values into the *xarray* array and do the same for the Y and Z coordinate arrays.
-Once you have replaced the capitalized code portions with code that reads values from your file format, your plug-in should be able to return a valid *vtkUnstructuredGrid* object once you rebuild it.
+Once you have replaced the capitalized code portions with code that reads values from your file format, your plugin should be able to return a valid *vtkUnstructuredGrid* object once you rebuild it.
 
 
 .. container:: collapsible
@@ -1231,15 +1231,15 @@ After reading in the coordinate values from your file format, unstructured meshe
 The next change requires you to allocate memory for a connectivity array, which stores the type of cells and the nodes indices of the nodes that are used in the cells.
 The final change that you must make to the source code in the listing is located further down in the loop that adds cells to the *vtkUnstructuredGrid* object.
 The cell type read from your file format will most likely not use the same enumerated type values that VTK uses for its cell types (*VTK_VERTEX*, *VTK_LINE*, ...) so you will need to add code to translate from your cell type designation to VTK cell type numbers.
-After making the necessary changes and rebuilding your plug-in, your plug-in's *GetMesh* method should be capable of returning a valid *vtkUnstructuredGrid* object for VisIt_ to plot.
+After making the necessary changes and rebuilding your plugin, your plugin's *GetMesh* method should be capable of returning a valid *vtkUnstructuredGrid* object for VisIt_ to plot.
 
 
 Returning a scalar variable
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now that you can successfully create a **Mesh** plot of the meshes from your file format, you can focus on other types of data such as scalars.
-If you exposed scalar variables in your plug-in's *PopulateDatabaseMetaData* method then those variable names will appear in the plot menus for plots that can use scalar variables (e.g. the **Pseudocolor** plot).
-When you create a plot of a scalar variable and click the **Draw** button in the GUI, VisIt_ will tell your database reader plug-in to open your file, read the mesh, and then your plug-in's *GetVar* method will be called with the name of the variable that you want to plot.
+If you exposed scalar variables in your plugin's *PopulateDatabaseMetaData* method then those variable names will appear in the plot menus for plots that can use scalar variables (e.g. the **Pseudocolor** plot).
+When you create a plot of a scalar variable and click the **Draw** button in the GUI, VisIt_ will tell your database reader plugin to open your file, read the mesh, and then your plugin's *GetVar* method will be called with the name of the variable that you want to plot.
 The *GetVar* method, like the *GetMesh* method, takes a variable name as an argument.
 When you receive the variable name in the *GetVar* method you should access your file and read out the desired variable and return it in a VTK data array such as a *vtkFloatArray* or a *vtkDoubleArray*.
 A *vtkFloatArray* is a VTK object that encapsulates a dynamically allocated array of a given length.
@@ -1282,14 +1282,14 @@ In the previous code listing, there are two capitalized areas that need to have 
 The first change that you must make is to add code to read the size of the array to be created into the *nvals* variable.
 The value that is read into the *nvals* variable must be either the number of cells in the mesh on which the variable is defined if you have a cell-centered variable or it must be the number of nodes in the mesh.
 Once you have successfully set the proper value into the *nvals* variable, you can proceed to read values from your file format into the data array, which points to storage owned by the *vtkFloatArray* object that will be returned from the *GetVar* method.
-Once you have made these changes, you can rebuild your plug-in and begin plotting scalar variables.
+Once you have made these changes, you can rebuild your plugin and begin plotting scalar variables.
 
 
 Returning a vector variable
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The mechanism for returning a vector variable the same as  returning a scalar variable, except in the number of components in each tuple of the *vtkFloatArray* or *vtkDoubleArray*.
-If you exposed vector variables in your plug-in's *PopulateDatabaseMetaData* method then those variable names will appear in the plot menus for plots that can use vector variables (e.g. the **Vector** plot).
+If you exposed vector variables in your plugin's *PopulateDatabaseMetaData* method then those variable names will appear in the plot menus for plots that can use vector variables (e.g. the **Vector** plot).
 The length of the array that you allocate to contain your variable must match either the number of cells in your mesh or the number of nodes in your mesh.
 The length is determined by the vector variable's centering (cell-centered, node-centered).
 In addition to setting the length, which like a scalar variable is tied to the number of cells or nodes, you must also set the number of vector components.
@@ -1382,18 +1382,18 @@ As with the code listing for *GetVar*, this code listing requires you to replace
 Using a VTK reader class
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The implementations so far for the *GetMesh*, *GetVar*, and *GetVectorVar* plug-in methods have assumed that the database plug-in would do the work of interacting with the file format to read data into VTK form.
+The implementations so far for the *GetMesh*, *GetVar*, and *GetVectorVar* plugin methods have assumed that the database plugin would do the work of interacting with the file format to read data into VTK form.
 Most of the work of reading a file and creating VTK objects from it can be handled at the VTK level if you wish.
-This means that it is possible to use an existing VTK reader class to read data into VisIt_ if you are willing to implement your plug-in methods so that they in turn call the VTK reader object's methods.
-See VisIt_'s VTK database reader plug-in for an example of how to call VTK reader objects from inside a VisIt_ database reader plug-in.
+This means that it is possible to use an existing VTK reader class to read data into VisIt_ if you are willing to implement your plugin methods so that they in turn call the VTK reader object's methods.
+See VisIt_'s VTK database reader plugin for an example of how to call VTK reader objects from inside a VisIt_ database reader plugin.
 
 
 Advanced topics
 ---------------
 
-If you've implemented your database reader plug-in using only the techniques outlined in this chapter so far then you likely have a database reader plug-in that works and correctly serves up its data to VisIt_ in VTK form.
-This part of the chapter explains some of the more advanced, though not necessarily required, techniques that you can use to enhance your plug-in.
-For instance, you can enhance your plug-in so it returns the correct simulation times from the data files.
+If you've implemented your database reader plugin using only the techniques outlined in this chapter so far then you likely have a database reader plugin that works and correctly serves up its data to VisIt_ in VTK form.
+This part of the chapter explains some of the more advanced, though not necessarily required, techniques that you can use to enhance your plugin.
+For instance, you can enhance your plugin so it returns the correct simulation times from the data files.
 You can also add code to return data and spatial extents for your data, enabling VisIt_ to make more optimization decisions when processing files with multiple domains.
 
 Returning cycles and times
@@ -1404,22 +1404,22 @@ Generally, each simulation cycle has an associated cycle number and time value.
 Many file formats save this information so it can be made available later to post-processing tools such as VisIt_.
 VisIt_ uses cycles and times to help you navigate through time in your database by providing the same time frame of reference that your simulation used.
 VisIt_'s can show the current time value as you scroll through time using the time slider.
-Cycle and time values for the current time state are often displayed in the visualization window.
-Returning cycle and time values from your plug-in is completely optional.
+Cycle and time values for the current timestate are often displayed in the visualization window.
+Returning cycle and time values from your plugin is completely optional.
 In fact, returning cycle and time values for data such as CAD drawings does not make sense.
-Since returning cycles and times is optional in a VisIt_ database reader plug-in, you can choose to not implement the methods that return cycles and times.
+Since returning cycles and times is optional in a VisIt_ database reader plugin, you can choose to not implement the methods that return cycles and times.
 You can also implement code to return time but not cycles or vice-versa.
-The mechanics of returning cycles and times are a little different depending on whether you have written an *ST* or an *MT* database reader plug-in.
-In any case, if your plug-in implements the methods to return cycles or times then those methods will be some of the first methods called when VisIt_ accesses your database reader plug-in.
+The mechanics of returning cycles and times are a little different depending on whether you have written an *ST* or an *MT* database reader plugin.
+In any case, if your plugin implements the methods to return cycles or times then those methods will be some of the first methods called when VisIt_ accesses your database reader plugin.
 VisIt_ calls the methods to get cycles and times and if the returned values appear to be valid then they are added to the metadata for your file so they can be returned to the VisIt_ clients and used to populate windows such as the **File Information** window.
 
 
-Returning cycles and times in an ST plug-in
-"""""""""""""""""""""""""""""""""""""""""""
+Returning cycles and times in an ST plugin
+""""""""""""""""""""""""""""""""""""""""""
 
-When VisIt_ creates plug-in objects to handle a list of files using an *ST* plug-in, there is one plug-in object per file in the list of files.
-Since each plug-in object can only ever be associated with one file, the programming interface for returning cycles and times for an *ST* plug-in provides methods that return a single value.
-The methods for returning cycles and times for an *ST* plug-in are:
+When VisIt_ creates plugin objects to handle a list of files using an *ST* plugin, there is one plugin object per file in the list of files.
+Since each plugin object can only ever be associated with one file, the programming interface for returning cycles and times for an *ST* plugin provides methods that return a single value.
+The methods for returning cycles and times for an *ST* plugin are:
 
 
 .. code-block:: c
@@ -1430,7 +1430,7 @@ The methods for returning cycles and times for an *ST* plug-in are:
     virtual double GetTime(void);
 
 Implementing valid cycles and times can be done independently of one another and there is no requirement that you have to implement both or either of them, for that matter.
-The *ReturnsValidCycle* method is a simple method that you should expose if you plan to provide a custom *GetCycle* method in your database reader plug-in.
+The *ReturnsValidCycle* method is a simple method that you should expose if you plan to provide a custom *GetCycle* method in your database reader plugin.
 If you provide *GetCycle* then the *ReturnsValidCycle* method should return *true*.
 The same pattern applies if you implement *GetTime* - except that you would also implement the *ReturnsValidTime* method.
 Replace the capitalized sections of code in the listing with code to read the correct cycle and time values from your file format.
@@ -1439,7 +1439,7 @@ Replace the capitalized sections of code in the listing with code to read the co
 
   .. container:: header
 
-    Example for returning cyles, times from ST plug-in.
+    Example for returning cycles, times from ST plugin.
 
   .. code-block:: c
 
@@ -1461,7 +1461,7 @@ Replace the capitalized sections of code in the listing with code to read the co
     }
 
 
-In the event that you implement the *GetCycle* method but no cycle value is available in the file, you can return the *INVALID_CYCLE* value to make VisIt_ discard your plug-in's cycle number and guess the cycle number from the filename.
+In the event that you implement the *GetCycle* method but no cycle value is available in the file, you can return the *INVALID_CYCLE* value to make VisIt_ discard your plugin's cycle number and guess the cycle number from the filename.
 If you want VisIt_ to successfully guess the cycle number from the filename then you must implement the *GetCycleFromFilename* method.
 
 .. code-block:: c
@@ -1472,11 +1472,11 @@ If you want VisIt_ to successfully guess the cycle number from the filename then
       return GuessCycle(f);
   }
 
-Returning cycles and times in an MT plug-in
-"""""""""""""""""""""""""""""""""""""""""""
+Returning cycles and times in an MT plugin
+""""""""""""""""""""""""""""""""""""""""""
 
-An *MT* database reader plug-in may return cycles and times for multiple time states so the programming interface for *MT* plug-ins allows you to return vectors of cycles and times.
-In addition, an *MT* database reader plug-in prefers to know upfront how many time states will be returned from the file format so in addition to *GetCycles* and *GetTimes* methods, there is a *GetNTimesteps* method that is among the first methods called from your database reader plug-in.
+An *MT* database reader plugin may return cycles and times for multiple timestates so the programming interface for *MT* plugins allows you to return vectors of cycles and times.
+In addition, an *MT* database reader plugin prefers to know upfront how many timestates will be returned from the file format so in addition to *GetCycles* and *GetTimes* methods, there is a *GetNTimesteps* method that is among the first methods called from your database reader plugin.
 
 .. code-block:: c
 
@@ -1484,10 +1484,10 @@ In addition, an *MT* database reader plug-in prefers to know upfront how many ti
   virtual void GetTimes(std::vector<double> &);
   virtual int GetNTimesteps(void);
 
-As with *ST* plug-ins, there is no requirement that an *MT* plug-in must provide a list of cycles or times.
-However, an *MT* plug-in must provide a *GetNTimesteps* method.
-If you are enhancing your database reader plug-in to return cycles and times then it is convenient to implement your *GetNTimesteps* method such that it just calls your *GetCycles* or *GetTimes* method and returns the length of the vector returned by those methods.
-This simplifies the implementation and ensures that the number of time states reported by your database reader plug-in matches the length of the cycle and time vectors returned from *GetCycles* and *GetTimes*.
+As with *ST* plugins, there is no requirement that an *MT* plugin must provide a list of cycles or times.
+However, an *MT* plugin must provide a *GetNTimesteps* method.
+If you are enhancing your database reader plugin to return cycles and times then it is convenient to implement your *GetNTimesteps* method such that it just calls your *GetCycles* or *GetTimes* method and returns the length of the vector returned by those methods.
+This simplifies the implementation and ensures that the number of timestates reported by your database reader plugin matches the length of the cycle and time vectors returned from *GetCycles* and *GetTimes*.
 Replace the capitalized sections of code in the listing with code to read the correct cycles and times from your file format.
 
 
@@ -1495,7 +1495,7 @@ Replace the capitalized sections of code in the listing with code to read the co
 
   .. container:: header
 
-    Example for returning cycles, times from MT plug-in.
+    Example for returning cycles, times from MT plugin.
 
   .. code-block:: c
 
@@ -1539,31 +1539,31 @@ Replace the capitalized sections of code in the listing with code to read the co
 Auxiliary data
 ~~~~~~~~~~~~~~
 
-This section describes how to enable your *MD* database reader plug-in so it can provide auxiliary data such as data extents, spatial extents, and materials to VisIt_ if they are available in your file format.
+This section describes how to enable your *MD* database reader plugin so it can provide auxiliary data such as data extents, spatial extents, and materials to VisIt_ if they are available in your file format.
 "Auxiliary data" is the generic term for many types of data that VisIt_'s pipeline can use to perform specific tasks such as I/O reduction or material selection.
-VisIt_'s database reader plug-in interfaces provide a method called *GetAuxiliaryData* that you can implement if you want your plug-in to be capable of returning auxiliary data.
-Note however that if your plug-in is *MTMD* then you will have to cache your spatial and data extents in the plug-in's variable cache in the *PopulateDatabaseMetaData* method instead of returning that information from the *GetAuxiliaryData* method.
-This subtle difference in how certain metadata is accessed by VisIt_ must be observed by an *MTMD* plug-in in order for it to return spatial and data extents.
+VisIt_'s database reader plugin interfaces provide a method called *GetAuxiliaryData* that you can implement if you want your plugin to be capable of returning auxiliary data.
+Note however that if your plugin is *MTMD* then you will have to cache your spatial and data extents in the plugin's variable cache in the *PopulateDatabaseMetaData* method instead of returning that information from the *GetAuxiliaryData* method.
+This subtle difference in how certain metadata is accessed by VisIt_ must be observed by an *MTMD* plugin in order for it to return spatial and data extents.
 
-The method arguments for the *GetAuxiliaryData* method may vary somewhat depending on whether your database reader plug-in is based on the *STSD*, *STMD*, *MTSD*, *MTMD* interfaces.
-There is an extra integer argument for the time state if your plug-in is *MT* and there is another integer argument for the domain if your plug-in is *MD*.
+The method arguments for the *GetAuxiliaryData* method may vary somewhat depending on whether your database reader plugin is based on the *STSD*, *STMD*, *MTSD*, *MTMD* interfaces.
+There is an extra integer argument for the timestate if your plugin is *MT* and there is another integer argument for the domain if your plugin is *MD*.
 Those differences aside, the *GetAuxiliaryData* method always accepts the name of a variable, a string indicating the type of data being requested, a pointer to optional data required by the type of auxiliary data being requested, and a return reference for a destructor function that will be responsible for freeing resources for the returned data.
 The variable name that VisIt_ passes to the *GetAuxiliaryData* method is the name of a variable such as those passed to the *GetVar* method when VisIt_ wants to read a variable's data.
 
 Returning data extents
 """"""""""""""""""""""
 
-When an *MD* database reader plug-in provides data extents for each of its domains, VisIt_ has enough information to make important optimization decisions in filters that support data extents.
+When an *MD* database reader plugin provides data extents for each of its domains, VisIt_ has enough information to make important optimization decisions in filters that support data extents.
 For example, if you create a **Contour** plot using a specific contour value, VisIt_ can check the data extents for each domain before any domains are read from disk and determine the list of domains that contain the desired contour value.
 After determining which subset of the domains will contribute to the final image, VisIt_'s compute engine then reads and processes only those domains, saving work and accelerating VisIt_'s computations.
 For a more complete explanation of data extents, see :ref:`Writing data extents <Data_Into_VisIt_Writing_data_extents>`.
 
-In the context of returning data extents, VisIt_ first checks a plug-in's variable cache for extents.
-If the desired extents are not available then VisIt_ calls the plug-in's *GetAuxiliaryData* method with the name of the scalar variable for which data extents are required and also passes *AUXILIARY_DATA_DATA_EXTENTS* as the type argument, indicating that the *GetAuxiliaryData* method is being called to obtain the data extents for the specified scalar variable.
+In the context of returning data extents, VisIt_ first checks a plugin's variable cache for extents.
+If the desired extents are not available then VisIt_ calls the plugin's *GetAuxiliaryData* method with the name of the scalar variable for which data extents are required and also passes *AUXILIARY_DATA_DATA_EXTENTS* as the type argument, indicating that the *GetAuxiliaryData* method is being called to obtain the data extents for the specified scalar variable.
 If the data extents for the specified variable are not available then the *GetAuxiliaryData* method should return 0.
 If the data extents are available then the list of minimum and maximum values for the specified variable are assembled into an interval tree structure that VisIt_ uses for fast comparisons of different data ranges.
 Once the interval tree is constructed, as shown in the code listing, the *GetAuxiliaryData* method must return the interval tree object and set the destructor function argument to a function that can be called to later destroy the interval tree.
-To add support for data extents to your database reader plug-in, copy the *GetAuxiliaryData* method in the code listing and replace the capitalized lines of code with code that reads the required information from your file format.
+To add support for data extents to your database reader plugin, copy the *GetAuxiliaryData* method in the code listing and replace the capitalized lines of code with code that reads the required information from your file format.
 
 .. container:: collapsible
 
@@ -1627,12 +1627,12 @@ Another type of auxiliary data that VisIt_ supports for *MD* file formats are sp
 When VisIt_ knows the spatial extents for all of the domains that comprise a mesh, VisIt_ can optimize operations such as the **Slice** operator by first determining whether the slice will intersect a given domain.
 The **Slice** operator is thus able to use spatial extents to determine which set of domains must be read from disk and processed in order to produce the correct visualization.
 Spatial extents are used in this way by many filters to reduce the set of domains that must be processed.
-When VisIt_ asks the database reader plug-in for spatial extents, the *GetAuxiliaryData* method is called with its type argument set to *AUXILIARY_DATA_SPATIAL_EXTENTS*.
+When VisIt_ asks the database reader plugin for spatial extents, the *GetAuxiliaryData* method is called with its type argument set to *AUXILIARY_DATA_SPATIAL_EXTENTS*.
 When VisIt_ creates spatial extents, they are stored in an interval tree structure as they are with data extents.
 The main difference is the input into the interval tree.
 When adding information about a specific domain to the interval tree, you must provide the minimum and maximum spatial values for the domain's X, Y, and Z dimensions.
 The spatial extents for one domain are expected to be provided in the following order: xmin, xmax, ymin, ymax, zmin, zmax.
-To add support for spatial extents to your database reader plug-in, copy the *GetAuxiliaryData* method in the code listing and replace the capitalized lines of code with code that reads the required information from your file format.
+To add support for spatial extents to your database reader plugin, copy the *GetAuxiliaryData* method in the code listing and replace the capitalized lines of code with code that reads the required information from your file format.
 
 .. container:: collapsible
 
@@ -1691,14 +1691,14 @@ To add support for spatial extents to your database reader plug-in, copy the *Ge
 Returning materials
 """""""""""""""""""
 
-Materials are another type of auxiliary data that database plug-ins can provide.
+Materials are another type of auxiliary data that database plugins can provide.
 A material classifies different pieces of the mesh into different named subsets that can be turned on and off using VisIt_'s **Subset** window.
 In the simplest case, you can think of a material as a cell-centered variable, or matlist, defined on your mesh where each cell contains an integer that identifies a particular material such as "Steel" or "Air".
 VisIt_'s *avtMaterial* object is used to encapsulate knowledge about materials.
 The *avtMaterial* object contains the *matlist* array and a list of names corresponding to each unique material number in the matlist array.
 Materials can also be structured so that instead of providing just one material number for each cell in the mesh, you can provide multiple materials per cell with volume fractions occupied by each.
 So-called "mixed materials" are created using additional arrays, described in :ref:`Materials <Data_Into_VisIt_Materials>`.
-To add support for materials in your database reader plug-in's *GetAuxiliaryData* method, replace the capitalized lines in the code example with code that read the necessary values from your file format.
+To add support for materials in your database reader plugin's *GetAuxiliaryData* method, replace the capitalized lines in the code example with code that read the necessary values from your file format.
 
 .. container:: collapsible
 
@@ -1793,13 +1793,13 @@ Returning ghost zones
 
 Ghost zones are mesh zones that should not be visible in the visualization but may provide additional information such as values along domain boundaries.
 VisIt_ uses ghost zones for ensuring variable continuity across domain boundaries, for removing internal domain boundary faces, and for blanking out specific zones.
-This section covers the code that must be added to make your database reader plug-in order for it to return ghost zones to VisIt_.
+This section covers the code that must be added to make your database reader plugin order for it to return ghost zones to VisIt_.
 
 Blanking out zones
 """"""""""""""""""
 
 Blanking out specific zones so they do not appear in a visualization is a common practice for creating holes in structured meshes so cells zones that overlap or tangle on top of one another can be removed from the mesh.
-If you want to create a mesh that contains voids where zones have been removed then you can add a special cell-centered array to your mesh before you return it from your plug-in's *GetMesh* method.
+If you want to create a mesh that contains voids where zones have been removed then you can add a special cell-centered array to your mesh before you return it from your plugin's *GetMesh* method.
 The code in the listing can be used to remove zones from any mesh type and works by looking through a mesh-sized array containing on/off values for each zone and sets the appropriate values into the ghost zone array that gets added to the mesh object.
 Replace any capitalized code with code that can read the necessary values from your file format.
 
@@ -1865,15 +1865,15 @@ Parallelizing your reader
 
 VisIt_ is a distributed program made up of multiple software processes that act as a whole.
 The software process that reads in data and processes it is the compute engine, which comes in serial and parallel versions.
-All of the *libE* plug-ins in VisIt_ also have both serial and parallel versions.
-The parallel *libE* plug-ins can contain specialized MPI communication to support the communication patterns needed by the algorithms used.
-If you want to parallelize your database reader plug-in then, in most cases, you will have to use the *MD* interface or convert from *SD* to *MD*.
-There are some *SD* formats that can adaptively decompose their data so each processor has work (see the DDCMD plug-in) but most database plug-ins that benefit from parallelism instead are implemented as *MD* plugins.
-*MD* plug-ins are a natural fit for the parallel compute engine because they serve data that is already decomposed into domains.
-Some database reader plug-ins, such as the BOV plug-in, take single domain meshes and automatically decompose them into multiple domains for faster processing on multiple processors.
+All of the *libE* plugins in VisIt_ also have both serial and parallel versions.
+The parallel *libE* plugins can contain specialized MPI communication to support the communication patterns needed by the algorithms used.
+If you want to parallelize your database reader plugin then, in most cases, you will have to use the *MD* interface or convert from *SD* to *MD*.
+There are some *SD* formats that can adaptively decompose their data so each processor has work (see the DDCMD plugin) but most database plugins that benefit from parallelism instead are implemented as *MD* plugins.
+*MD* plugins are a natural fit for the parallel compute engine because they serve data that is already decomposed into domains.
+Some database reader plugins, such as the BOV plugin, take single domain meshes and automatically decompose them into multiple domains for faster processing on multiple processors.
 
-Deriving your plug-in from an *MD* interface is useful since it naturally tells VisIt_ to expect data from more than one domain when reading your file format.
-There are a number of parallel optimizations that can be made inside of your *MD* database reader plug-in.
+Deriving your plugin from an *MD* interface is useful since it naturally tells VisIt_ to expect data from more than one domain when reading your file format.
+There are a number of parallel optimizations that can be made inside of your *MD* database reader plugin.
 For example, you might have one processor read the metadata and broadcast it to all other processors so when you visualize your data with a large number of processors, they are not all trying to read the file that contains the metadata.
 VisIt_'s parallel compute engine can use one of two different load balancing schemes: static or dynamic.
 In static load balancing, each processor is assigned a fixed list of domains and each of those domains is processed one at a time in parallel visualization pipelines until the result is computed.
@@ -1885,7 +1885,7 @@ In dynamic load balancing, each processor can be working on very different opera
 VisIt_ attempts to do dynamic load balancing unless any one of the filters in its visualization pipeline requires global communication, in which case static load balancing must be used.
 This means that the places where global communication can occur are few.
 
-VisIt_'s database plug-in interfaces provide the *ActivateTimestep* method as a location where global, parallel communication can be performed safely.
+VisIt_'s database plugin interfaces provide the *ActivateTimestep* method as a location where global, parallel communication can be performed safely.
 If your parallel database reader needs to do parallel communication such as broadcasting metadata to all processors, or figuring out data extents in parallel then that code must be added in the *ActivateTimestep* method.
 
 Third party library support

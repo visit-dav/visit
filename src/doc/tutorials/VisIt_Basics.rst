@@ -190,17 +190,17 @@ Using navigate mode
 
 You always start in Navigate mode. Navigate mode is indicated by the Navigate
 icon, represented by a compass, being indented. It allows you to pan and
-rotate the data set.
+rotate the dataset.
 
 1. Put the cursor in the visualization window.
 2. Left click (or single click if you do not have a 3 button mouse) and move the mouse.
-3. The data set will pan with the mouse.
+3. The dataset will pan with the mouse.
 
-  * In 3D, the data set rotates.
+  * In 3D, the dataset rotates.
 
-4. Middle click and move the mouse up and down. The data set will zoom in and out.
+4. Middle click and move the mouse up and down. The dataset will zoom in and out.
 
-  * In 3D, the data set will also zoom in and out.
+  * In 3D, the dataset will also zoom in and out.
 
 Using zoom mode
 ~~~~~~~~~~~~~~~
@@ -249,7 +249,7 @@ a "+" with a small Z or a "+" with a small N, being indented. It allows the
 user to query a variable associated with a zone or node.
 
 1. Click on the Zone pick icon.
-2. Put the cursor over the data set and left click (single click).
+2. Put the cursor over the dataset and left click (single click).
 3. This brings up the Pick window.
 
   * The Pick window contains information about the zone (i.e. cell or element) that you just picked in.
@@ -284,7 +284,7 @@ Saving an image
 
 1. With a current plot, go to *File->Save window*.
 
-* This saves an image to the filesystem.
+* This saves an image to the file system.
 
 On Windows, the default location for saved images is in *Documents/VisIt/My images*.
 

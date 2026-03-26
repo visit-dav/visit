@@ -12,12 +12,12 @@ We are going to focus on the legacy files, since they are a little bit simpler.
 
 * VTK files can be text or binary
 
-  * Both text and binary files have text meta data.
-  * Binary files have binary fields and coordinates imbedded in the text.
+  * Both text and binary files have text metadata.
+  * Binary files have binary fields and coordinates embedded in the text.
 
-* VisIt_ has conventions for additional meta data that fits within the VTK specification.
+* VisIt_ has conventions for additional metadata that fits within the VTK specification.
 
-The remainder of this VTK documentation consistes of a description of the file format, a simple example, and then more complex examples of the different mesh types.
+The remainder of this VTK documentation consists of a description of the file format, a simple example, and then more complex examples of the different mesh types.
 
 The official VTK file format descriptions can be found at the `VTK website <https://kitware.github.io/vtk-examples/site/VTKFileFormats/>`_.
 
@@ -38,13 +38,13 @@ The ``visit_writer.c`` and ``visit_writer.h`` files contain C source code with s
 The library can write either text or binary files.
 The library can output point, unstructured, rectilinear, regular and curvilinear meshes.
 
-The `header <https:github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.h>`_ and `source <https:github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.c>`_ files can be found in the VisIt_ repository on GitHub.
+The `header <https://github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.h>`_ and `source <https://github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.c>`_ files can be found in the VisIt_ repository on GitHub.
 
 Binary files
 ------------
 
 Binary files contain binary coordinates and fields.
-This is any data where a length and data type are specified.
+This is any data where a length and datatype are specified.
 The binary data follows immediately after the newline character of the previous ASCII keyword and parameter sequence.
 Binary data must be written in *big endian* format.
 If you are on a *little endian* system, you will need to byte swap the data before writing it.
@@ -116,7 +116,7 @@ The structured grid section has the following structure. ::
 `nx`, `ny`, `nz` are the number of dimensions in the X- Y- and Z-directions.
 `nPoints` is the number of points.
 `nPoints` must be consistent with the dimensions.
-Supported data types in VisIt_ are `float` and `double`.
+Supported datatypes in VisIt_ are `float` and `double`.
 
 Rectilinear grid
 """"""""""""""""
@@ -134,7 +134,7 @@ The rectilinear grid section has the following structure. ::
 
 `nx`, `ny`, `nz` are the number of dimensions in the X- Y- and Z-directions.
 `nx`, `ny`, `nz` in the dimensions statement must be constient with the ones in the coordinates statement.
-Supported data types in VisIt_ are `float` and `double`.
+Supported datatypes in VisIt_ are `float` and `double`.
 
 Polydata
 """"""""
@@ -172,7 +172,7 @@ The polydata grid section has the following structure. ::
     ...
     nn in1 in2 ... innn
 
-Supported data types in VisIt_ are `float` and `double`.
+Supported datatypes in VisIt_ are `float` and `double`.
 The vertices, lines, polygons and triangle_strips sections may or may not be present.
 The vertices, lines, polygons and triangle_strips sections may be in any order.
 `xn`, `yn` and `zn` are the coordinates of the nth point.
@@ -203,7 +203,7 @@ The unstructured grid section has the following structure. ::
     ...
     tn
 
-Supported data types in VisIt_ are `float` and `double`.
+Supported datatypes in VisIt_ are `float` and `double`.
 The cells and cell_types sections may be in any order.
 `xn`, `yn` and `zn` are the coordinates of the nth point.
 `n1`, `n2` and `nm` are the number of indices for each cell.
@@ -261,7 +261,7 @@ The scalar field section has the following structure. ::
     LOOKUP_TABLE default
     s1 s2 ... sN
 
-The scalar field section starts with a single line with the keyword `SCALARS` followed by the name of the field followed by the data type followed by the number of values per scalar.
+The scalar field section starts with a single line with the keyword `SCALARS` followed by the name of the field followed by the datatype followed by the number of values per scalar.
 The number of values per scalar is optional, and if present, must be `1`.
 Next comes the lookup table information.
 The lookup table information consists of a single line with the keyword `LOOKUP_TABLE` followed by the keyword `default`.
@@ -281,7 +281,7 @@ The vector field section has the following structure. ::
     ...
     vn1 vn2 vn3
 
-The vector field section starts with a single line with the keyword `VECTORS` followed by the name of the field followed by the data type.
+The vector field section starts with a single line with the keyword `VECTORS` followed by the name of the field followed by the datatype.
 Next come the vector values.
 The vector values consist of three values per point, regardless of whether it is for a 2D or 3D mesh.
 The vector values can be split up into lines in an arbitrary manner.
@@ -303,7 +303,7 @@ The tensor field section has the following structure. ::
     tn21 tn22 tn23
     tn31 tn32 tn33
 
-The tensor field section starts with a single line with the keyword `TENSORS` followed by the name of the field followed by the data type.
+The tensor field section starts with a single line with the keyword `TENSORS` followed by the name of the field followed by the datatype.
 Next come the tensor values.
 The tensor values consist of nine values per point, regardless of whether it is for a 2D or 3D mesh.
 The tensor values can be split up into lines in an arbitrary manner.
@@ -329,18 +329,18 @@ Field data has the following general format. ::
     ...
     tn1 tn2 ... tncn
 
-The field data section begines with a single line that starts with the keywords `FIELD` and `FieldData` followed by the number of fields.
+The field data section begins with a single line that starts with the keywords `FIELD` and `FieldData` followed by the number of fields.
 Next come the fields.
-Each field starts with a single line with the field name, the number of components, the number of tuples and the data type.
+Each field starts with a single line with the field name, the number of components, the number of tuples and the datatype.
 
 .. _data_into_visit_vtk_conventions:
 
-VisIt_ meta data conventions for VTK files
+VisIt_ metadata conventions for VTK files
 ------------------------------------------
 
 VisIt_ supports a number of conventions for storing additional data. This data is stored as FIELD data as additional information in the DATASET, CELL_DATA or POINT_DATA.
 
-The Following meta data is stored as DATASET FIELD data.
+The following metadata is stored as DATASET FIELD data.
 
 MeshCoordType
 ~~~~~~~~~~~~~
@@ -389,7 +389,7 @@ VisItExpressions
 
 Each string represents a single expression.
 The string contains the expression name, the expression type and the expression.
-The three properties are seperated by semicolons.
+The three properties are separated by semicolons.
 The expression type consists of one of `curve`, `scalar`, `vector`, `tensor`, `array`, `material` or `species`.
 
 Here is an example of specifying the expressions.
@@ -403,7 +403,7 @@ avtGhostZones
 The ghost zones specify a flag indicating if the zone is a ghost zone or a real zone.
 A one indicates a ghost zone.
 A zero indicates a real zone.
-The ghost zone meta data is stored as CELL_DATA FIELD data.
+The ghost zone metadata is stored as CELL_DATA FIELD data.
 
 Here is an example of specifying ghost zones.
 
@@ -430,7 +430,7 @@ The line below contains the title.
 .. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 2-2
 
-The line below contains the data type, which in this case is ASCII.
+The line below contains the datatype, which in this case is ASCII.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 3-3
@@ -466,7 +466,7 @@ The information tells us that there are 12 values for the point data, that it is
 An example of a VTK file with extra metadata
 --------------------------------------------
 
-A VTK file with extra meta data is shown here.
+A VTK file with extra metadata is shown here.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
    :lines: 1-45

@@ -16,6 +16,11 @@
 #   Kathleen Biagas, Wed July 31, 2024
 #   Add hdf5_hl to search on Linux.
 #
+#   Kathleen Biagas, Mon Mar 3, 2026
+#   On *nix, use the library specified by IMPORTED_SONAME_RELEASE for
+#   installation so that all the proper symlinks will be installed
+#   alongside VisIt.
+#
 #****************************************************************************/
 
 # Use the HDF5_DIR hint from the config-site .cmake file
@@ -27,23 +32,56 @@ endif()
 find_package(HDF5 CONFIG PATHS ${HDF5_DIR} NO_DEFAULT_PATH)
 
 if(TARGET hdf5-shared)
-   set(HDF5_LIB hdf5-shared)
-   set(HAVE_LIBHDF5 TRUE CACHE BOOL "Have HDF5 libraries")
-   get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
-   THIRD_PARTY_INSTALL_INCLUDE(hdf5 ${HDF5_INCLUDE_DIR})
-   THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
+    set(HDF5_LIB hdf5-shared)
+    set(HAVE_LIBHDF5 TRUE CACHE BOOL "Have HDF5 libraries")
+    if(WIN32)
+        get_target_property(hdf5_locr hdf5-shared IMPORTED_IMPLIB_RELEASE)
+        THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
+    else()
+        get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
+        cmake_path(GET hdf5_locr PARENT_PATH hdf5_libdir)
 
-   if(TARGET hdf5_hl-shared)
-       set(HDF5_HL_LIB hdf5_hl-shared)
-       set(HAVE_LIBHDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
-       get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_LOCATION_RELEASE)
-       THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
-   endif()
+        get_target_property(hdf5_soname hdf5-shared IMPORTED_SONAME_RELEASE)
+        # SONAME may have '@rpath/' or '@loader_path/' (or similar) prepended,
+        # so get just the filename
+        cmake_path(GET hdf5_soname FILENAME hdf5_soname)
 
-   if(HDF5_PROVIDES_ZLIB_SUPPORT)
-      # hdf5 targets don't have 'zlib' listed as an interface-link-library
-      # but it should be.
-      set_property(TARGET hdf5-shared APPEND PROPERTY LINK_LIBRARIES "${ZLIB_LIBRARY}")
-   endif()
+        THIRD_PARTY_INSTALL_LIBRARY(${hdf5_libdir}/${hdf5_soname})
+    endif()
 
+    if(TARGET hdf5_hl-shared)
+        set(HDF5_HL_LIB hdf5_hl-shared)
+        set(HAVE_LIBHDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
+        if(WIN32)
+            get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_IMPLIB_RELEASE)
+            THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
+        else()
+            get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_LOCATION_RELEASE)
+            cmake_path(GET hdf5_hl_locr PARENT_PATH hdf5_hl_libdir)
+
+            get_target_property(hdf5_hl_soname hdf5_hl-shared IMPORTED_SONAME_RELEASE)
+            # SONAME may have '@rpath/' or '@loader_path/' (or similar)
+            # prepended, so get just the filename
+            cmake_path(GET hdf5_hl_soname FILENAME hdf5_hl_soname)
+
+            THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_libdir}/${hdf5_hl_soname})
+        endif()
+    endif()
+
+    THIRD_PARTY_INSTALL_INCLUDE(hdf5 ${HDF5_INCLUDE_DIR})
+
+    # for plugin vs install
+    # write SetupHDF5.cmake for our export sets.
+    include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
+    create_lib_setup_cmake(KIT "HDF5"
+                           NAMESPACE "hdf5"
+                           INCBASE "hdf5/include"
+                           ITEMS ${HDF5_LIB} ${HDF5_HL_LIB}
+                           SIMPLE_INCLUDE true)
+
+    # need a few extras in the Setup file.
+    set(fname ${VISIT_BINARY_DIR}/SetupHDF5.cmake)
+    file(APPEND ${fname} "\nset(HDF5_LIB ${HDF5_LIB})\n")
+    file(APPEND ${fname} "\nset(HDF5_HL_LIB ${HDF5_HL_LIB})\n")
 endif()
+

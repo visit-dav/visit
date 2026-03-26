@@ -32,9 +32,9 @@ return type : CLI_return_t
     only works when you are using it to activate a database that you have
     previously opened. You do not need to use this function unless you
     frequently toggle between more than one database when making plots or
-    changing time states. While the OpenDatabase function can also be used
+    changing timestates. While the OpenDatabase function can also be used
     to set the active database, the ActivateDatabase function does not have any
-    side effects that would cause the time state for the new active database
+    side effects that would cause the timestate for the new active database
     to be changed.
 
 
@@ -283,7 +283,7 @@ return type : CLI_return_t
 
     The AlterDatabaseCorrelation method alters an existing database
     correlation. A database correlation is a VisIt construct that relates the
-    time states for two or more databases in some way. You would use the
+    timestates for two or more databases in some way. You would use the
     AlterDatabaseCorrelation function if you wanted to change the list of
     databases used in a database correlation or if you wanted to change how the
     databases are related - the correlation method. The name argument is a
@@ -417,8 +417,8 @@ return type : CLI_return_t
 
     Calculations are often run at the same time as some of the preliminary
     visualization work is being performed. That said, you might be visualizing
-    the leading time states of a database that is still being created. If you
-    want to force VisIt to add any new time states that were added since you
+    the leading timestates of a database that is still being created. If you
+    want to force VisIt to add any new timestates that were added since you
     opened the database, you can use the CheckForNewStates function. The name
     argument must contain the name of a database that has been opened before.
 
@@ -861,7 +861,7 @@ Close
 **Description:**
 
     The Close function terminates VisIt's viewer. This is useful for Python
-    scripts that only need access to VisIt's capabilties for a short time
+    scripts that only need access to VisIt's capabilities for a short time
     before closing VisIt.
 
 
@@ -1023,7 +1023,7 @@ return type : CLI_return_t
 **Description:**
 
     The ConstructDataBinning function creates a data binning function for the active
-    plot. Data Binnings place data from a data set into bins and reduce that data.
+    plot. Data Binnings place data from a dataset into bins and reduce that data.
     They are used to either be incorporated with expressions to make new derived
     quantities or to be directly visualized.
 
@@ -1342,7 +1342,7 @@ return type : CLI_return_t
 **Description:**
 
     The CreateDatabaseCorrelation function creates a database correlation,
-    which is a VisIt construct that relates the time states for two or more
+    which is a VisIt construct that relates the timestates for two or more
     databases in some way. You would use the CreateDatabaseCorrelation function
     if you wanted to put plots from more than one time-varying database in the
     same vis window and then move them both through time in some synchronized
@@ -1354,7 +1354,7 @@ return type : CLI_return_t
     to be involved in the database query. The method argument allows you to
     specify a database correlation method.
     Each database correlation has its own time slider that can be used to set
-    the time state of databases that are part of a database correlation.
+    the timestate of databases that are part of a database correlation.
     Individual time-varying databases have their own trivial database
     correlation, consisting of only 1 database. When you call the
     CreateDatabaseCorrelation function, VisIt creates a new time slider with
@@ -1737,7 +1737,7 @@ file : string
 type : string
     An optional string defining the output type of the expression.
     Default type - 'scalar'
-    Avalaible types - 'scalar','vector','tensor','array','curve'
+    Available types - 'scalar','vector','tensor','array','curve'
     Note - Use only one of the 'source' or 'file' arguments.
     If both are used the 'source' argument overrides 'file'.
 
@@ -2279,7 +2279,7 @@ frame : integer
 **Description:**
 
     The DeletePlotDatabaseKeyframe function removes a database keyframe from a
-    specific plot. A database keyframe represents the database time state that
+    specific plot. A database keyframe represents the database timestate that
     will be used at a given animation frame when VisIt's keyframing mode is
     enabled. The plotIndex argument is a zero-based integer that is used to
     identify a plot in the plot list. The frame argument is a zero-based
@@ -2977,9 +2977,9 @@ Flatten
 
 return type : dictionary
     Flatten returns a dictionary that contains different keys depending
-    on the data. If the output contains node centered data then there
+    on the data. If the output contains node-centered data then there
     will be 'nodeColumnNames' and 'nodeTable' entries. If the output contains
-    zone centered data then there will be 'zoneColumnNames' and 'zoneTable'
+    zone-centered data then there will be 'zoneColumnNames' and 'zoneTable'
     entries. If the query results in no output data, then an empty dictionary
     is returned. The 'Table' entries are compatible with numpy via the
     'numpy.asarray()' function.
@@ -3064,8 +3064,8 @@ return type : string
 
     VisIt can support having multiple time sliders when you have opened more
     than one time-varying database. You can then use each time slider to
-    independently change time states for each database or you can use a
-    database correlation to change time states for all databases
+    independently change timestates for each database or you can use a
+    database correlation to change timestates for all databases
     simultaneously. Every time-varying database has a database correlation and
     every database correlation has its own time slider. If you want to query to
     determine which time slider is currently the active time slider, you can
@@ -3329,17 +3329,17 @@ GetDatabaseNStates
   GetDatabaseNStates() -> integer
 
 return type : CLI_return_t
-    Returns the number of time states in the active database or 0 if there is
+    Returns the number of timestates in the active database or 0 if there is
     no active database.
 
 
 **Description:**
 
-    GetDatabaseNStates returns the number of time states in the active
+    GetDatabaseNStates returns the number of timestates in the active
     database, which is not the same as the number of states in the active time
     slider. Time sliders can have different lengths due to database
     correlations and keyframing. Use this function when you need the actual
-    number of time states in the active database.
+    number of timestates in the active database.
 
 
 **Example:**
@@ -4191,7 +4191,7 @@ db : string
     The name of the database for which to return metadata.
 
 ts : integer
-    An optional integer indicating the time state at which to open the database.
+    An optional integer indicating the timestate at which to open the database.
 
 return type : avtDatabaseMetaData object
     The GetMetaData function returns an avtDatabaseMetaData object.
@@ -4951,7 +4951,7 @@ return type : SelectionSummary object
 **Description:**
 
     Named selections have both properties, which describe how the selection is
-    defined, and a summary that desribes the data that was processed while creating
+    defined, and a summary that describes the data that was processed while creating
     the selection. The selection summary object contains some statistics about
     the selection such as how many cells it contains and histograms of the various
     variables that were used in creating the selection.
@@ -5877,7 +5877,7 @@ newFrame : integer
 **Description:**
 
     MovePlotDatabaseKeyframe moves a database keyframe for a specified plot to
-    a new animation frame, which changes the list of database time states that
+    a new animation frame, which changes the list of database timestates that
     are used for each animation frame when VisIt is in keyframing mode.
 
 
@@ -6565,7 +6565,7 @@ databaseName : string
     The name of the new plot database.
 
 state : integer
-    The time state at which to open the database.
+    The timestate at which to open the database.
 
 return type : CLI_return_t
     The OverlayDatabase function returns an integer value of 1 for success and
@@ -6790,7 +6790,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     PickByNode returns a python dictionary of the pick results,
     unless do_time is specified, then a time curve is created in a
-    new window. If the picked variable is zone centered, the variable
+    new window. If the picked variable is zone-centered, the variable
     values are grouped according to incident zone ids.
 
 
@@ -6870,7 +6870,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     PickByNodeLabel returns a python dictionary of the pick results,
     unless do_time is specified, then a time curve is created in a
-    new window. If the picked variable is node centered, the variable
+    new window. If the picked variable is node-centered, the variable
     values are grouped according to incident node ids.
 
 
@@ -6958,7 +6958,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     PickByZone returns a python dictionary of the pick results,
     unless do_time is specified, then a time curve is created in a
-    new window. If the picked variable is node centered, the variable
+    new window. If the picked variable is node-centered, the variable
     values are grouped according to incident node ids.
 
 
@@ -7038,7 +7038,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     PickByZoneLabel returns a python dictionary of the pick results,
     unless do_time is specified, then a time curve is created in a
-    new window. If the picked variable is node centered, the variable
+    new window. If the picked variable is node-centered, the variable
     values are grouped according to incident node ids.
 
 
@@ -7103,7 +7103,7 @@ return type : tuple of strings
 ::
 
   #% visit -cli
-  for plugin in PluginPlugins():
+  for plugin in PlotPlugins():
       print("The %s plot plugin is loaded." % plugin)
 
 
@@ -7511,7 +7511,7 @@ return type : CLI_return_t
     states that have been added since the database was opened using the
     OpenDatabase function. Note that ReOpenDatabase is expensive since it
     causes all plots that use the specified database to be regenerated. If you
-    want to ensure that a time-varying database has all of its time states as
+    want to ensure that a time-varying database has all of its timestates as
     they are being created by a simulation, try the CheckForNewStates function
     instead.
     The databaseName argument is a string containing the full name of the
@@ -7995,7 +7995,7 @@ databaseName : string
     The name of the new database.
 
 timeState : integer
-    A zero-based integer containing the time state that should be made active
+    A zero-based integer containing the timestate that should be made active
     once the database has been replaced.
 
 return type : CLI_return_t
@@ -8707,7 +8707,7 @@ return type : CLI_return_t
 **Description:**
 
     Sets the active time slider, which is the time slider that is used to
-    change time states.
+    change timestates.
 
 
 **Example:**
@@ -10082,7 +10082,7 @@ frame : integer
     going to add a database keyframe.
 
 state : integer
-    A zero-based integer index representing the database time state that we're
+    A zero-based integer index representing the database timestate that we're
     going to use at the specified animation frame.
 
 
@@ -10844,7 +10844,7 @@ SetTimeSliderState
 
 
 state : integer
-    A zero-based integer containing the time state that we want to make active.
+    A zero-based integer containing the timestate that we want to make active.
 
 return type : CLI_return_t
     The SetTimeSliderState function returns 1 on success and 0 on failure.
@@ -10852,7 +10852,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The SetTimeSliderState function sets the time state for the active time
+    The SetTimeSliderState function sets the timestate for the active time
     slider. This is the function to use if you want to animate through time or
     change the current keyframe frame.
 
@@ -10900,11 +10900,11 @@ return type : CLI_return_t
     indicating if all databases should be treated as time varying or not. Ordinarily,
     VisIt tries to minimize file I/O and database interaction by avoiding re-reading
     metadata that is 'time-invariant' and, therefore, assumed to be the same in a
-    database from one time step to the next. However, sometimes, portions of the
+    database from one timestep to the next. However, sometimes, portions of the
     metadata, such as the list of variable names and/or number of domains, does in
     fact vary. In this case, VisIt can actually fail to acknowledge the existence of
     new variables in the file. Turning this feature on forces VisIt to re-read metadata
-    each time the time-state is changed.
+    each time the timestate is changed.
 
 
 **Example:**
@@ -10939,11 +10939,11 @@ return type : CLI_return_t
 
     For certain classes of databases, obtaining cycle/time information for all time
     states in the database is an expensive operation, requiring each file to be opened
-    and queried. The cost of the operation gets worse the more time states there are
-    in the database. Ordinarily, VisIt does not bother to query each time state for
+    and queried. The cost of the operation gets worse the more timestates there are
+    in the database. Ordinarily, VisIt does not bother to query each timestate for
     precise cycle/time information. In fact, often VisIt can guess this information
-    from the filename(s) comprising the databse. However, turning this feature on
-    will force VisIt to obtain accurate cycle/time information for all time states
+    from the filename(s) comprising the database. However, turning this feature on
+    will force VisIt to obtain accurate cycle/time information for all timestates
     by opening and querying all file(s) in the database.
 
 
@@ -11620,15 +11620,15 @@ TimeSliderGetNStates
   TimeSliderGetNStates() -> integer
 
 return type : CLI_return_t
-    Returns an integer containing the number of time states for the current
+    Returns an integer containing the number of timestates for the current
     time slider.
 
 
 **Description:**
 
-    The TimeSliderGetNStates function returns the number of time states for
+    The TimeSliderGetNStates function returns the number of timestates for
     the active time slider. Remember that the length of the time slider does
-    not have to be equal to the number of time states in a time-varying
+    not have to be equal to the number of timestates in a time-varying
     database because of database correlations and keyframing. If you want to
     iterate through time, use this function to determine the number of
     iterations that are required to reach the end of the active time slider.
@@ -11726,7 +11726,7 @@ TimeSliderSetState
 
 
 state : integer
-    A zero-based integer containing the time state that we want to make active.
+    A zero-based integer containing the timestate that we want to make active.
 
 return type : CLI_return_t
     The TimeSliderSetState function returns 1 on success and 0 on failure.
@@ -11734,7 +11734,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The TimeSliderSetState function sets the time state for the active time
+    The TimeSliderSetState function sets the timestate for the active time
     slider. This is the function to use if you want to animate through time or
     change the current keyframe frame.
 
@@ -11900,8 +11900,8 @@ return type : CLI_return_t
     The ToggleLockTime function turns time locking on and off in a
     visualization window. When time locking is on in a visualization window,
     VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
+    visualization windows that are time-locked. When you change the timestate
+    using the time slider for the afore-mentioned database correlation, it
     has the effect of updating time in all time-locked visualization windows.
 
 
@@ -11961,15 +11961,15 @@ return type : CLI_return_t
     The ToggleLockTime function turns time locking on and off in a
     visualization window. When time locking is on in a visualization window,
     VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
+    visualization windows that are time-locked. When you change the timestate
+    using the time slider for the afore-mentioned database correlation, it
     has the effect of updating time in all time-locked visualization windows.
     The ToggleLockViewMode function turns lock view mode on and off. When
     windows are in lock view mode, each view change is broadcast to other
     windows that are also in lock view mode. This allows windows containing
     similar plots to be compared easily.
     The ToggleMaintainViewMode function forces the view, that was in effect
-    when the mode was toggled to be used for all subsequent time states.
+    when the mode was toggled to be used for all subsequent timestates.
     The ToggleSpinMode function turns spin mode on and off. When the
     visualization window is in spin mode, it continues to spin along the axis
     of rotation when the view is changed interactively.
@@ -12050,7 +12050,7 @@ return type : CLI_return_t
     the VisIt Python Interface provides a few functions to toggle some of those
     modes.
     The ToggleMaintainViewMode functions forces the view that was in effect
-    when the mode was toggled to be used for all subsequent time states.
+    when the mode was toggled to be used for all subsequent timestates.
 
 
 **Example:**
@@ -12570,7 +12570,7 @@ curve_plot_type (optional) : integer
 return type : dictionary
     ZonePick returns a python dictionary of the pick results, unless
     do_time is specified, then a time curve is created in a new window.
-    If the picked variable is node centered, the variable values are
+    If the picked variable is node-centered, the variable values are
     grouped according to incident node ids.
 
 
