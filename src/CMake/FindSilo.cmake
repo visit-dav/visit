@@ -44,6 +44,11 @@
 #    Kathleen Biagas, Tue Nov 25, 2025
 #    silex/browser now stored in bin dir.
 #
+#    Kathleen Biagas, Mon Mar 3, 2026
+#    On *nix, use the library specified by IMPORTED_SONAME_RELEASE for
+#    installation so that all the proper symlinks will be installed
+#    alongside VisIt.
+#
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file
@@ -63,12 +68,23 @@ if(TARGET silo)
     set(SILO_LIB silo)
     if(WIN32)
         get_target_property(silo_loc silo IMPORTED_IMPLIB_RELEASE)
+        THIRD_PARTY_INSTALL_LIBRARY(${silo_loc})
     else()
         get_target_property(silo_loc silo IMPORTED_LOCATION_RELEASE)
+        cmake_path(GET silo_loc PARENT_PATH silo_libdir)
+
+        get_target_property(silo_soname silo IMPORTED_SONAME_RELEASE)
+        # SONAME may have '@rpath/' or '@loader_path/' (or similar)
+        # prepended, so get just the filename
+        cmake_path(GET silo_soname FILENAME silo_soname)
+
+        # also install silo_loc b/c silo symlink pattern confounds globing.
+        THIRD_PARTY_INSTALL_LIBRARY(${silo_loc})
+        THIRD_PARTY_INSTALL_LIBRARY(${silo_libdir}/${silo_soname})
     endif()
+
     # include dirs aren't attached to the library in the export set
     target_include_directories(silo INTERFACE ${SILO_INCLUDE_DIR})
-    THIRD_PARTY_INSTALL_LIBRARY(${silo_loc})
     THIRD_PARTY_INSTALL_INCLUDE(silo ${SILO_INCLUDE_DIR})
 endif()
 
