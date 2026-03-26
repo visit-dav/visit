@@ -254,6 +254,96 @@ EOF
     fi
 }
 
+function apply_silo_4120_mismatched_hdf5_version_checks
+{
+    info "Patching Silo 4.12.0 for mismatched hdf5 version checks"
+    patch -p0 << \EOF
+--- Silo-4.12.0/src/hdf5_drv/silo_hdf5.c.orig	2026-03-02 13:08:24.000000000 -0700
++++ Silo-4.12.0/src/hdf5_drv/silo_hdf5.c	2026-03-26 14:30:42.000000000 -0700
+@@ -930,17 +930,18 @@
+     }                                                                         \
+ }
+ 
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
+ #define MEMBER_3(TYPE,NAME) {                                                 \
+     _tmp_m = T_##TYPE; /*possible function call*/                             \
+     if (_tmp_m>=0) {                                                          \
++        hsize_t _ary_dims[1];                                                 \
+         hid_t _m_ary;                                                         \
+-        _size = 3;                                                            \
+-        _m_ary = H5Tarray_create(_tmp_m, 1, &_size);                          \
++        _ary_dims[0] = 3;                                                     \
++        _m_ary = H5Tarray_create(_tmp_m, 1, _ary_dims);                       \
+         db_hdf5_put_cmemb(_mt, #NAME, OFFSET(_m, NAME), 0, NULL, _m_ary);     \
+         H5Tclose(_m_ary);                                                     \
+         if (_f && (_tmp_f=_f->T_##TYPE)>=0) {                                 \
+-            hid_t _f_ary = H5Tarray_create(_tmp_f, 1, &_size);                \
++            hid_t _f_ary = H5Tarray_create(_tmp_f, 1, _ary_dims);             \
+             db_hdf5_put_cmemb(_ft, #NAME, _f_off, 0, NULL, _f_ary);           \
+             _f_off += H5Tget_size(_f_ary);                                    \
+             H5Tclose(_f_ary);                                                 \
+@@ -7409,7 +7410,7 @@
+                             hsize_t _size = 3;
+                             hid_t _f_ary;
+                             msize = ALIGN(msize, sizeof(dummy)) + sizeof(dummy);
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
+                             _f_ary = H5Tarray_create(dbfile->T_int, 1, &_size);
+                             fsize += H5Tget_size(_f_ary);
+                             H5Tclose(_f_ary);
+@@ -7424,7 +7425,7 @@
+                             hsize_t _size = 3;
+                             hid_t _f_ary;
+                             msize = ALIGN(msize, sizeof(dummy)) + sizeof(dummy);
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
+                             _f_ary = H5Tarray_create(dbfile->T_float, 1, &_size);
+                             fsize += H5Tget_size(_f_ary);
+                             H5Tclose(_f_ary);
+@@ -7439,7 +7440,7 @@
+                             hsize_t _size = 3;
+                             hid_t _f_ary;
+                             msize = ALIGN(msize, sizeof(dummy)) + sizeof(dummy);
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
+                             _f_ary = H5Tarray_create(dbfile->T_double, 1, &_size);
+                             fsize += H5Tget_size(_f_ary);
+                             H5Tclose(_f_ary);
+@@ -7574,7 +7575,7 @@
+                             hid_t _m_ary, _f_ary;
+                             hsize_t _size = 3;
+                             moffset = ALIGN(moffset, sizeof(dummy));
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
+                             _m_ary = H5Tarray_create(H5T_NATIVE_INT, 1, &_size);
+                             _f_ary = H5Tarray_create(dbfile->T_int, 1, &_size);
+                             if (H5Tinsert(mtype, obj->comp_names[i], moffset, _m_ary)<0 ||
+@@ -7603,7 +7604,7 @@
+                             hid_t _m_ary, _f_ary;
+                             hsize_t _size = 3;
+                             moffset = ALIGN(moffset, sizeof(dummy));
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
+                             _m_ary = H5Tarray_create(H5T_NATIVE_FLOAT, 1, &_size);
+                             _f_ary = H5Tarray_create(dbfile->T_float, 1, &_size);
+                             if (H5Tinsert(mtype, obj->comp_names[i], moffset, _m_ary)<0 ||
+@@ -7632,7 +7633,7 @@
+                             hid_t _m_ary, _f_ary;
+                             hsize_t _size = 3;
+                             moffset = ALIGN(moffset, sizeof(dummy));
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
+                             _m_ary = H5Tarray_create(H5T_NATIVE_DOUBLE, 1, &_size);
+                             _f_ary = H5Tarray_create(dbfile->T_double, 1, &_size);
+                             if (H5Tinsert(mtype, obj->comp_names[i], moffset, _m_ary)<0 ||
+
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
 function apply_silo_patch
 {
     info "Patching silo . . ."
@@ -276,6 +366,11 @@ function apply_silo_patch
             return 1
         fi
         apply_silo_4120_hzip_needs_zlib_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_mismatched_hdf5_version_checks
         if [[ $? != 0 ]] ; then
             warn "Giving up on Silo build because the patch failed."
             return 1
