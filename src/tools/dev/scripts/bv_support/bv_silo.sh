@@ -265,13 +265,13 @@ Subject: [PATCH 33/33] Fix extents calc
 
 Fix include_point used in extents calc to condition index tests on ndims
 ---
- src/silo/silo.c | 12 ++++++------
+ Silo-4.12.0/src/silo/silo.c | 12 ++++++------
  1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/src/silo/silo.c b/src/silo/silo.c
+diff --git a/Silo-4.12.0/src/silo/silo.c b/Silo-4.12.0/src/silo/silo.c
 index bc963bd7..e828de08 100644
---- a/src/silo/silo.c
-+++ b/src/silo/silo.c
+--- a/Silo-4.12.0/src/silo/silo.c
++++ b/Silo-4.12.0/src/silo/silo.c
 @@ -11385,12 +11385,12 @@ include_point(int ptidx, int ndims, int const *dims,
      int j = ndims>1 ? (ptidx/dims[0])           % dims[1] : 0;
      int k = ndims>2 ? (ptidx/(dims[1]*dims[0])) % dims[2] : 0;
