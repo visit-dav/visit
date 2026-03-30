@@ -254,6 +254,51 @@ EOF
     fi
 }
 
+function apply_silo_4120_extents_calc
+{
+    info "Patching Silo 4.12.0 for extents calc fix"
+    patch -p1 << \EOF
+From c00c27c3052cae0283a834f5346877bb961bb3ee Mon Sep 17 00:00:00 2001
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Mon, 30 Mar 2026 08:51:03 -0700
+Subject: [PATCH 33/33] Fix extents calc
+
+Fix include_point used in extents calc to condition index tests on ndims
+---
+ src/silo/silo.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/silo/silo.c b/src/silo/silo.c
+index bc963bd7..e828de08 100644
+--- a/src/silo/silo.c
++++ b/src/silo/silo.c
+@@ -11385,12 +11385,12 @@ include_point(int ptidx, int ndims, int const *dims,
+     int j = ndims>1 ? (ptidx/dims[0])           % dims[1] : 0;
+     int k = ndims>2 ? (ptidx/(dims[1]*dims[0])) % dims[2] : 0;
+
+-    if (i < minidx[0]) return 0;
+-    if (i > maxidx[0]) return 0;
+-    if (j < minidx[1]) return 0;
+-    if (j > maxidx[1]) return 0;
+-    if (k < minidx[2]) return 0;
+-    if (k > maxidx[2]) return 0;
++    if (ndims > 0 && i < minidx[0]) return 0;
++    if (ndims > 0 && i > maxidx[0]) return 0;
++    if (ndims > 1 && j < minidx[1]) return 0;
++    if (ndims > 1 && j > maxidx[1]) return 0;
++    if (ndims > 2 && k < minidx[2]) return 0;
++    if (ndims > 2 && k > maxidx[2]) return 0;
+
+     return 1;
+ }
+--
+2.50.1 (Apple Git-155)
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
 function apply_silo_patch
 {
     info "Patching silo . . ."
@@ -276,6 +321,11 @@ function apply_silo_patch
             return 1
         fi
         apply_silo_4120_hzip_needs_zlib_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_extents_calc
         if [[ $? != 0 ]] ; then
             warn "Giving up on Silo build because the patch failed."
             return 1
