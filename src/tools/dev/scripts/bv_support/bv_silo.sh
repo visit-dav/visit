@@ -258,7 +258,6 @@ function apply_silo_4120_extents_calc
 {
     info "Patching Silo 4.12.0 for extents calc fix"
     patch -p1 << \EOF
-From c00c27c3052cae0283a834f5346877bb961bb3ee Mon Sep 17 00:00:00 2001
 From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
 Date: Mon, 30 Mar 2026 08:51:03 -0700
 Subject: [PATCH 33/33] Fix extents calc
