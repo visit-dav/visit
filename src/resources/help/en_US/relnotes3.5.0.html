@@ -195,6 +195,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a patch to bv_vtk.sh that exposes the vtkAnariPass in the ANARI volume mapper and adds panning and zooming capabilities to the ANARI camera.</li>
   <li>Added command line options <code>--print-files</code> and <code>--print-files-html</code>. Both options list all the files that <code>build_visit</code> may download grouped by "Required", "Optional" and "Explicit". The first lists the files as text and the second lists the files as an HTML table.</li>
   <li>Added a patch to bv_vtk.sh that brings in critical updates from <a href="https://gitlab.kitware.com/vtk/vtk/-/merge_requests/12759">https://gitlab.kitware.com/vtk/vtk/-/merge_requests/12759</a> that fixes texture issues and crashes when switching between ANARI back-ends.</li>
+  <li>Added patches to <code>bv_silo.sh</code> for delimiter bracketing of constant nameschemes, mpio virtual file driver enablement in HDF5, confusion of lib/lib64 install paths, correct cmake handling of zlib dependence, and erroneous extents calculations when writing meshes.</li>
 </ul>
 
 <a name="Dev_changes"></a>
