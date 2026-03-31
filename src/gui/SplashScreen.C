@@ -284,6 +284,9 @@
 //    Cyrus Harrison, Thu Mar  5 14:58:16 PST 2026
 //    Changed the date on the splash screen to March 2026.
 //
+//    Cyrus Harrison, Mon Mar 30 17:03:12 PDT 2026
+//    Changed the date on the splash screen to April 2026.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -390,7 +393,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 3;
+    int currentMonth = 4;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2026", this));
 
