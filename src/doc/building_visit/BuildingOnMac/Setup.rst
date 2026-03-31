@@ -312,8 +312,9 @@ Confirming
 A simple test application
 """""""""""""""""""""""""
 In ``src/tools/dev/masnory/test``, there is a very simple (and very small in size so easy to run through all the notarization steps) test macOS app bundle there, ``TestDmgNotarization.app`` and a python script ``test_notarize.py``.
-The test app is a combination of a python script that turns around and uses a function in a ``.dylib``.
+The test app is a combination of a simple C++ application that turns around and uses a function in a ``.dylib``.
 The ``.dylib`` is a universal binary so should work on Intel or Apple CPU macs.
+Running the application creates a simple dialog-box window with a button and displays the version number of the zlib library in the ``.dylib``.
 
 To try it, use the command ``python3 test_notarize.py`` (or maybe with tracing enabled ``python3 -m trace --trace test_notarize.py``) and then take the resulting ``.dmg`` file to a different macOS system and install it and try running it.
 New developers should workout all the issues first using this test application.
