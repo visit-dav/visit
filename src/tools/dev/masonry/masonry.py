@@ -500,7 +500,7 @@ class NotarizeAction(Action):
 
                 # Create new DMG with stapled containing notarized app
                 dmg_stapled = pjoin(notarize_dir, "VisIt.stpl.dmg")
-                cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, dmg_stapled)
+                cmd = "hdiutil create -ov -srcFolder %s -o %s" % (src_folder, dmg_stapled)
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 print('[hdiutil result: "%s"]' % rout)
                 if rcode != 0:
@@ -508,7 +508,7 @@ class NotarizeAction(Action):
 
                 final_dmg_name = "visit%s.darwin%s-%s.dmg" % (self.params["build_version"].replace('.','_'),os.uname().release[0:2],os.uname().machine)
                 dmg_release = pjoin(notarize_dir, final_dmg_name)
-                cmd = "hdiutil convert %s -format ULMO -o %s" % (dmg_stapled, dmg_release)
+                cmd = "hdiutil convert -ov %s -format ULMO -o %s" % (dmg_stapled, dmg_release)
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 print('[hdiutil convert result: "%s"]' % rout)
                 if rcode != 0:
