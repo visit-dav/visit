@@ -251,7 +251,7 @@ def steps_package(opts,build_type,ctx):
     build_dir  = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
     a_make_pkg = "package_" + build_type.lower()
     ctx.actions[a_make_pkg] = make(description="building visit package",
-                                   nthreads=1,
+                                   nthreads=opts["make_nthreads"],
                                    working_dir=build_dir,
                                    target="package")
     ctx.triggers["build"].append(a_make_pkg)
@@ -265,7 +265,7 @@ def steps_package(opts,build_type,ctx):
                                             working_dir=build_dir,
                                             description="configuring visit (osx bundle)")
         ctx.actions[a_make_bundle] = make(description="packaging visit (osx bundle)",
-                                          nthreads=1,
+                                          nthreads=opts["make_nthreads"],
                                           working_dir=build_dir,
                                           target="package")
         ctx.triggers["build"].extend([a_cmake_bundle,
