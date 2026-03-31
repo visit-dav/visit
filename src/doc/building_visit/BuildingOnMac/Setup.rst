@@ -171,6 +171,9 @@ Apart from commonly encountered issues building each third party library built b
 * Sometimes, a python package winds up using the python interpreter in ``Xcode`` instead of the one built for the release of VisIt you are preparing.
   For example, Sphinx can wind up getting installed with all command line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter.
   We've added patching code to ``bv_python.sh`` to help correct for this.
+* Sometimes, the macOS finder can wind up getting in the way when using ``hdiutil`` to create the ``.dmg`` bundle by attempting to mount the ``.dmg`` file when it is created.
+  We think this can result in ``hdiutil`` failing with a ``Resource busy`` error message.
+  To address this, it may be useful to adjust default finder behavior using ``defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool false`` before running masonry.
 
 Codesigning, Notarizing and Stapling macOS Builds
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
