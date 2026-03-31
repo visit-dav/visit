@@ -237,16 +237,6 @@ def steps_install(opts,build_type,ctx):
                                    target="install")
     ctx.triggers["build"].append(a_make_install)
 
-########################################################################
-# NOTE: Mark C. Miller, Fri Dec 13 19:13:32 PST 2024
-# I believe CMake's `make package` target tries to also use hdiutil.
-# When make is invoked with a lot of parallelism (e.g. -j8 or more),
-# I believe a race condition occurs in CMake sometimes causing the
-# `make package` operation to fail during `hdiutil` command with
-# "Resource busy" error. So, here we override nthreads to force use
-# of just a single thread.
-########################################################################
-
 def steps_package(opts,build_type,ctx):
     build_dir  = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
     a_make_pkg = "package_" + build_type.lower()
