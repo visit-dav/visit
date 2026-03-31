@@ -1,10 +1,10 @@
 {"bootstrap_visit":
- {"version": "develop",
+ {"version": "3.5.0",
  "build_types": ["release"],
  "branch": "develop",
  "arch":   "darwin-arm64",
  "cert":   "Developer ID Application: Lawrence Livermore National Laboratory (A827VH86QR)",
- "entitlements": "/Users/miller86/visit/3.4RC/src/tools/dev/masonry/opts/visit.entitlements",
+ "entitlements": "/Users/miller86/visit/develop/src/tools/dev/masonry/opts/visit.entitlements",
  "notarize": {"username":"miller86@llnl.gov",
               "password":"VisIt-arm64",
               "asc_provider":"A827VH86QR",
