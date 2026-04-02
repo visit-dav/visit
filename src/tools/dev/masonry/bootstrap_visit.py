@@ -239,27 +239,39 @@ def steps_install(opts,build_type,ctx):
 
 def steps_package(opts,build_type,ctx):
     build_dir  = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
-    a_make_pkg = "package_" + build_type.lower()
-    ctx.actions[a_make_pkg] = make(description="building visit package",
+    a_make_dflt = "make_default_" + build_type.lower()
+    a_make_pkg = "make_package_" + build_type.lower()
+    ctx.actions[a_make_dflt] = make(description="building visit package",
                                    nthreads=opts["make_nthreads"],
                                    working_dir=build_dir,
+                                   target="")
+    ctx.actions[a_make_pkg] = make(description="packaging visit package",
+                                   nthreads=1,
+                                   working_dir=build_dir,
                                    target="package")
+    ctx.triggers["build"].append(a_make_dflt)
     ctx.triggers["build"].append(a_make_pkg)
     if opts["platform"] == "osx":
         cmake_opts = " -DVISIT_CREATE_APPBUNDLE_PACKAGE:BOOL=ON"
         a_cmake_bundle = "cmake_cfg_bundle_" + build_type
-        a_make_bundle  = "package_osx_bundle." + build_type
+        a_make_bundle  = "make_osx_bundle_default_" + build_type
+        a_pkg_bundle  = "make_osx_bundle_package_" + build_type
         ctx.actions[a_cmake_bundle] = cmake(src_dir=pjoin(opts["build_dir"],"visit/src"),
                                             cmake_bin=cmake_bin(opts),
                                             cmake_opts=cmake_opts,
                                             working_dir=build_dir,
                                             description="configuring visit (osx bundle)")
-        ctx.actions[a_make_bundle] = make(description="packaging visit (osx bundle)",
+        ctx.actions[a_make_bundle] = make(description="making visit (osx bundle)",
                                           nthreads=opts["make_nthreads"],
+                                          working_dir=build_dir,
+                                          target="")
+        ctx.actions[a_pkg_bundle] = make(description="packaging visit (osx bundle)",
+                                          nthreads=1,
                                           working_dir=build_dir,
                                           target="package")
         ctx.triggers["build"].extend([a_cmake_bundle,
-                                      a_make_bundle])
+                                      a_make_bundle,
+                                      a_pkg_bundle])
 
 def steps_notarize(opts,build_type,ctx):
     if opts["platform"] == "osx":
