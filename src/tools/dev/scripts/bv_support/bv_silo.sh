@@ -265,7 +265,7 @@ function apply_silo_4120_mismatched_hdf5_version_checks
  }
  
 -#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
-+#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
++#if HDF5_VERSION_GE(1,4,0)
  #define MEMBER_3(TYPE,NAME) {                                                 \
      _tmp_m = T_##TYPE; /*possible function call*/                             \
      if (_tmp_m>=0) {                                                          \
@@ -288,7 +288,7 @@ function apply_silo_4120_mismatched_hdf5_version_checks
                              hid_t _f_ary;
                              msize = ALIGN(msize, sizeof(dummy)) + sizeof(dummy);
 -#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
-+#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
++#if HDF5_VERSION_GE(1,4,0)
                              _f_ary = H5Tarray_create(dbfile->T_int, 1, &_size);
                              fsize += H5Tget_size(_f_ary);
                              H5Tclose(_f_ary);
@@ -297,7 +297,7 @@ function apply_silo_4120_mismatched_hdf5_version_checks
                              hid_t _f_ary;
                              msize = ALIGN(msize, sizeof(dummy)) + sizeof(dummy);
 -#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
-+#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
++#if HDF5_VERSION_GE(1,4,0)
                              _f_ary = H5Tarray_create(dbfile->T_float, 1, &_size);
                              fsize += H5Tget_size(_f_ary);
                              H5Tclose(_f_ary);
@@ -306,7 +306,7 @@ function apply_silo_4120_mismatched_hdf5_version_checks
                              hid_t _f_ary;
                              msize = ALIGN(msize, sizeof(dummy)) + sizeof(dummy);
 -#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
-+#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
++#if HDF5_VERSION_GE(1,4,0)
                              _f_ary = H5Tarray_create(dbfile->T_double, 1, &_size);
                              fsize += H5Tget_size(_f_ary);
                              H5Tclose(_f_ary);
@@ -315,7 +315,7 @@ function apply_silo_4120_mismatched_hdf5_version_checks
                              hsize_t _size = 3;
                              moffset = ALIGN(moffset, sizeof(dummy));
 -#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
-+#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
++#if HDF5_VERSION_GE(1,4,0)
                              _m_ary = H5Tarray_create(H5T_NATIVE_INT, 1, &_size);
                              _f_ary = H5Tarray_create(dbfile->T_int, 1, &_size);
                              if (H5Tinsert(mtype, obj->comp_names[i], moffset, _m_ary)<0 ||
@@ -324,7 +324,7 @@ function apply_silo_4120_mismatched_hdf5_version_checks
                              hsize_t _size = 3;
                              moffset = ALIGN(moffset, sizeof(dummy));
 -#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
-+#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
++#if HDF5_VERSION_GE(1,4,0)
                              _m_ary = H5Tarray_create(H5T_NATIVE_FLOAT, 1, &_size);
                              _f_ary = H5Tarray_create(dbfile->T_float, 1, &_size);
                              if (H5Tinsert(mtype, obj->comp_names[i], moffset, _m_ary)<0 ||
@@ -333,7 +333,7 @@ function apply_silo_4120_mismatched_hdf5_version_checks
                              hsize_t _size = 3;
                              moffset = ALIGN(moffset, sizeof(dummy));
 -#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
-+#if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
++#if HDF5_VERSION_GE(1,4,0)
                              _m_ary = H5Tarray_create(H5T_NATIVE_DOUBLE, 1, &_size);
                              _f_ary = H5Tarray_create(dbfile->T_double, 1, &_size);
                              if (H5Tinsert(mtype, obj->comp_names[i], moffset, _m_ary)<0 ||
