@@ -130,11 +130,11 @@ Sometimes, it is useful to get tracing information from the masonry scripts.
 Python has a built in `tracing feature <https://docs.python.org/3/library/trace.html>`__.
 To use it, invoke the python interpreter with the tracing module like so... ::
 
-    env PATH=$STD_PATH python3 -m trace --trace src/tools/dev/masonry/bootstrap_visit.py src/tools/dev/masonry/opts/mb-3.3.0-darwin-10.14-x86_64-release.json | tee trace.out
+    env PATH=$STD_PATH python3 -m trace --trace --ignore-module=contextlib,subprocess,glob,posixpath,os,encoder,fnmatch,codecs src/tools/dev/masonry/bootstrap_visit.py src/tools/dev/masonry/opts/mb-3.3.0-darwin-10.14-x86_64-release.json | tee trace.out
 
 or ::
 
-    env PATH=$STD_PATH python3 -m trace --trace src/tools/dev/masonry/bootstrap_visit.py src/tools/dev/masonry/opts/mb-3.3.0-darwin-10.14-x86_64-release.json >& trace.out
+    env PATH=$STD_PATH python3 -m trace --trace --ignore-module=contextlib,subprocess,glob,posixpath,os,encoder,fnmatch,codecs src/tools/dev/masonry/bootstrap_visit.py src/tools/dev/masonry/opts/mb-3.3.0-darwin-10.14-x86_64-release.json >& trace.out
 
 The first command will result in unbuffered output to the screen and file.
 The second will buffer the output to the file.
@@ -171,6 +171,41 @@ Apart from commonly encountered issues building each third party library built b
 * Sometimes, a python package winds up using the python interpreter in ``Xcode`` instead of the one built for the release of VisIt you are preparing.
   For example, Sphinx can wind up getting installed with all command line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter.
   We've added patching code to ``bv_python.sh`` to help correct for this.
+* Several of the steps in the build, codesigning and notarization process involve the use of macOS` ``hdiutil`` command to create virtual disk images.
+  In addition, macOS has a lot of automation in the form of various applications that sit in the background and constantly try to pay attention to newly mounted disk drives.
+  This includes the **Finder**, **Code42**, **TimeMachine**, **Spotlight**, etc.
+  There is a strong suspicion these applications can inadvertently get in the way of the ``hdiutil`` steps causing a ``Resource busy`` condition.
+  It may be useful to temporarily adjust behavior of applications such as these during a build before even starting masonry.
+
+    * **Code42** has a menu option to pause for 4 hours.
+    * **Finder**'s service to automatically open a window for any newly mounted drive can be disabled using the command ::
+ 
+          defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool false
+
+    * From the **Terminal** app **Spotlight** can be disabled using ::
+
+          sudo mdutil -a -i off 
+
+      and then re-enabled using ::
+
+          sudo mdutil -a -i on
+
+    * Temporarily disabling **TimeMachine** may require visiting the **TimeMachine** menu and cancelling any *currently active* backup and then also going to **System Settings**, **General** tab and unchecking ``Backup Automatically``.
+      Of course, remember to go and re-enable it after you are done using masonry.
+
+   As other macOS applications that may have the same effect on ``hdiutil`` behavior are discovered, methods for disabling and re-enabling them should be included here.
+* Both masonry and CMake utilize ``hdiutil`` commands to do their work.
+  CMake uses ``hdiutil`` commands as part of a ``make package`` operation when the package target is a macOS *bundle*.
+  Because ``hdiutil`` can be so problematic when completing macOS builds, in both masonry and CMake we essentially *wrap* it with some extra logic.
+  With CMake, we set ``CPACK_COMMAND_HDIUTIL`` to a wrapper script, ``hdiutil-wrapper.sh``.
+  This script does several things.
+  First, it does a lot of work to capture useful logging information to help debug causes of failures.
+  These logs are captured to a file with name of the form ``hdiutil-<date>-<timestamp>-<pid>.log``.
+  Examining these files can be useful if the build is constantly plauged by ``hdiutil`` failures.
+  Next, it uses a temporary name as the ``.dmg`` target for any ``create`` commands and *moves* the temporary named file to the final target only after ``hdiutil`` succeeds.
+  Finally, it loops doing sleeps and retries as ``hdiutil`` fails.
+  In masonry, something similar is done with the function ``def hdiutil(cmd,env)`` in ``masonry.py``.
+  However, that masonry method does not currently implement the temporary target rename that is done with the CMake wrapper shell script.
 
 Codesigning, Notarizing and Stapling macOS Builds
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -309,8 +344,9 @@ Confirming
 A simple test application
 """""""""""""""""""""""""
 In ``src/tools/dev/masnory/test``, there is a very simple (and very small in size so easy to run through all the notarization steps) test macOS app bundle there, ``TestDmgNotarization.app`` and a python script ``test_notarize.py``.
-The test app is a combination of a python script that turns around and uses a function in a ``.dylib``.
+The test app is a combination of a simple C++ application that turns around and uses a function in a ``.dylib``.
 The ``.dylib`` is a universal binary so should work on Intel or Apple CPU macs.
+Running the application creates a simple dialog-box window with a button and displays the version number of the zlib library in the ``.dylib``.
 
 To try it, use the command ``python3 test_notarize.py`` (or maybe with tracing enabled ``python3 -m trace --trace test_notarize.py``) and then take the resulting ``.dmg`` file to a different macOS system and install it and try running it.
 New developers should workout all the issues first using this test application.
