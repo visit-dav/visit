@@ -194,6 +194,18 @@ Apart from commonly encountered issues building each third party library built b
       Of course, remember to go and re-enable it after you are done using masonry.
 
    As other macOS applications that may have the same effect on ``hdiutil`` behavior are discovered, methods for disabling and re-enabling them should be included here.
+* Both masonry and CMake utilize ``hdiutil`` commands to do their work.
+  CMake uses ``hdiutil`` commands as part of a ``make package`` operation when the package target is a macOS *bundle*.
+  Because ``hdiutil`` can be so problematic when completing macOS builds, in both masonry and CMake we essentially *wrap* it with some extra logic.
+  With CMake, we set ``CPACK_COMMAND_HDIUTIL`` to a wrapper script, ``hdiutil-wrapper.sh``.
+  This script does several things.
+  First, it does a lot of work to capture useful logging information to help debug causes of failures.
+  These logs are captured to a file with name of the form ``hdiutil-<date>-<timestamp>-<pid>.log``.
+  Examining these files can be useful if the build is constantly plauged by ``hdiutil`` failures.
+  Next, it uses a temporary name as the ``.dmg`` target for any ``create`` commands and *moves* the temporary named file to the final target only after ``hdiutil`` succeeds.
+  Finally, it loops doing sleeps and retries as ``hdiutil`` fails.
+  In masonry, something similar is done with the function ``def hdiutil(cmd,env)`` in ``masonry.py``.
+  However, that masonry method does not currently implement the temporary target rename that is done with the CMake wrapper shell script.
 
 Codesigning, Notarizing and Stapling macOS Builds
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
