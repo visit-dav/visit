@@ -351,7 +351,7 @@ def steps_osx_dmg_sanity_checks(opts,build_type,ctx):
     # check for code sign
     test_cmd += 'codesign --test-requirement="=notarized" --verify --verbose mount/VisIt.app/\n'
     # check for any bad symlinks
-    test_cmd += 'find . -type l ! -exec test -e {} \; -print | wc -l\n'
+    test_cmd += r'find . -type l ! -exec test -e {} \; -print | wc -l\n'
     # verify the app
     test_cmd += "spctl -a -t exec -vv mount/VisIt.app\n"
     test_cmd += "hdiutil detach mount\n"
@@ -400,7 +400,6 @@ def main(opts_json):
     print(res["trigger"]["results"][-1]["action"]["output"])
     # forward return code 
     return res["trigger"]["results"][-1]["action"]["return_code"]
-
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1]))

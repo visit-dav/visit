@@ -222,23 +222,23 @@ def shexe(cmd,ret_output=False,echo=False,env=None,redirect=None):
 # NOTE (cyrush) 2021-05-27
 # the hdiutil commands are unreliable. They can often fail with:
 #   hdiutil: Resource busy 
-# but then works fine on subsequent tries, so we try here multiple times
+# but then work fine on subsequent tries, so we try here multiple times.
 ##########################################################################
 
-def hdiutil(arg_str):
+def hdiutil(arg_str,env):
     success = False
-    max_attempts = 5
+    max_attempts = 7
     attempts = 0
     output = ""
-    while not created and attempts < max_attempts:
+    while (not success) and (attempts < max_attempts):
         rcode, rout = shexe("hdiutil " + arg_str, ret_output=True, echo=True, env=env)
-        print("[res: %s]" % rout)
+        print("[res: %s, rcode: %d]" % (rout,rcode))
         output = rout
         if rcode == 0:
-            succsss = True
+            success = True
         else:
             attempts += 1
-
+            time.sleep(1.5**attempts)
     if not success:
         msg = "[error in \"hdiutil {0}\" ({1} attempts)]".format(args_str, attempts)
         raise RuntimeError(msg, cmd, output)
@@ -443,8 +443,8 @@ class NotarizeAction(Action):
                 print("[removing existing temporary dmg file: {0}]".format(temp_dmg))
                 os.remove(temp_dmg)
 
-            cmd = "create -srcFolder %s -o %s" % (src_folder, temp_dmg)
-            hdiutil(cmd)
+            cmd = "create -ov -srcFolder %s -o %s" % (src_folder, temp_dmg)
+            hdiutil(cmd,env)
 
             ######################################
             # Submit to Apple Notary Service 
@@ -496,12 +496,12 @@ class NotarizeAction(Action):
                 # Create new DMG with stapled containing notarized app
                 dmg_stapled = pjoin(notarize_dir, "VisIt.stpl.dmg")
                 cmd = "create -ov -srcFolder %s -o %s" % (src_folder, dmg_stapled)
-                hdiutil(cmd)
+                hdiutil(cmd,env)
 
                 final_dmg_name = "visit%s.darwin%s-%s.dmg" % (self.params["build_version"].replace('.','_'),os.uname().release[0:2],os.uname().machine)
                 dmg_release = pjoin(notarize_dir, final_dmg_name)
-                cmd = "hdiutil convert -ov %s -format ULMO -o %s" % (dmg_stapled, dmg_release)
-                hdiutil(cmd)
+                cmd = "convert -ov %s -format ULMO -o %s" % (dmg_stapled, dmg_release)
+                hdiutil(cmd,env)
             else:
                 raise RuntimeError("Notarization Failed!")
         except KeyboardInterrupt as e:
