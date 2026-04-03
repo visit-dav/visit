@@ -171,14 +171,29 @@ Apart from commonly encountered issues building each third party library built b
 * Sometimes, a python package winds up using the python interpreter in ``Xcode`` instead of the one built for the release of VisIt you are preparing.
   For example, Sphinx can wind up getting installed with all command line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter.
   We've added patching code to ``bv_python.sh`` to help correct for this.
-* Sometimes, the macOS finder can wind up getting in the way when using ``hdiutil`` to create the ``.dmg`` bundle by attempting to mount the ``.dmg`` file when it is created.
-  We think this can result in ``hdiutil`` failing with a ``Resource busy`` error message.
-  To address this, it may be useful to adjust default finder behavior using ``defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool false`` before running masonry.
-* Some applications like Spotlight, Code42 or TimeMachine sit in the background but constantly try to pay attention to newly mounted drives.
-  There is a possibility these applications can inadvertently get in the way of the ``hdiutil`` steps causing a ``Resource busy`` condition.
-  It may be useful to disable them during a build.
-  Code42 has an option to pause for 4 hours.
-  Spotlight can be disabled from terminal using ``sudo mdutil -a -i off`` and then re-enabled using ``sudo mdutil -a -i on``.
+* Several of the steps in the build, codesigning and notarization process involve the use of macOS` ``hdiutil`` command to create virtual disk images.
+  In addition, macOS has a lot of automation in the form of various applications that sit in the background and constantly try to pay attention to newly mounted disk drives.
+  This includes the **Finder**, **Code42**, **TimeMachine**, **Spotlight**, etc.
+  There is a strong suspicion these applications can inadvertently get in the way of the ``hdiutil`` steps causing a ``Resource busy`` condition.
+  It may be useful to temporarily adjust behavior of applications such as these during a build before even starting masonry.
+
+    * **Code42** has a menu option to pause for 4 hours.
+    * **Finder**'s service to automatically open a window for any newly mounted drive can be disabled using the command ::
+ 
+          defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool false
+
+    * From the **Terminal** app **Spotlight** can be disabled using ::
+
+          sudo mdutil -a -i off 
+
+      and then re-enabled using ::
+
+          sudo mdutil -a -i on
+
+    * Temporarily disabling **TimeMachine** may require visiting the **TimeMachine** menu and cancelling any *currently active* backup and then also going to **System Settings**, **General** tab and unchecking ``Backup Automatically``.
+      Of course, remember to go and re-enable it after you are done using masonry.
+
+   As other macOS applications that may have the same effect on ``hdiutil`` behavior are discovered, methods for disabling and re-enabling them should be included here.
 
 Codesigning, Notarizing and Stapling macOS Builds
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
