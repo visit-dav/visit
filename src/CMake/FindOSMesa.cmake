@@ -55,7 +55,7 @@
 #   Remove support for VTK versions < 9.5.
 #
 #   Kathleen Biagas, Fri Apr 3, 2026
-#   Readd install of lib/osmesa if VISIT_MESAGL_DIR set.
+#   Re-add install of lib/osmesa if VISIT_MESAGL_DIR set.
 #
 #****************************************************************************/
 
