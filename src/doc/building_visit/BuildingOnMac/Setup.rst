@@ -174,6 +174,11 @@ Apart from commonly encountered issues building each third party library built b
 * Sometimes, the macOS finder can wind up getting in the way when using ``hdiutil`` to create the ``.dmg`` bundle by attempting to mount the ``.dmg`` file when it is created.
   We think this can result in ``hdiutil`` failing with a ``Resource busy`` error message.
   To address this, it may be useful to adjust default finder behavior using ``defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool false`` before running masonry.
+* Some applications like Spotlight, Code42 or TimeMachine sit in the background but constantly try to pay attention to newly mounted drives.
+  There is a possibility these applications can inadvertently get in the way of the ``hdiutil`` steps causing a ``Resource busy`` condition.
+  It may be useful to disable them during a build.
+  Code42 has an option to pause for 4 hours.
+  Spotlight can be disabled from terminal using ``sudo mdutil -a -i off`` and then re-enabled using ``sudo mdutil -a -i on``.
 
 Codesigning, Notarizing and Stapling macOS Builds
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
