@@ -4529,6 +4529,11 @@ ViewerWindowManager::UpdateColorTable(const std::string &ctName)
 //
 //    Mark C. Miller, Fri Mar 17 15:14:30 PDT 2023
 //    Add APPLE-specific logic to address blank viewer windows (#18090)
+//
+//    Cyrus Harrison, Mon Mar 30 16:58:43 PDT 2026
+//    Add APPLE-specific `raise` call to force redraw of existing windows
+//    and avoids blankn windows after a window layout change.
+//
 // ****************************************************************************
 
 void
@@ -4593,6 +4598,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
         GetActiveWindow()->DeIconify();
         GetActiveWindow()->SetSize(width, height);
         GetActiveWindow()->SetLocation(x, y);
+#if defined(__APPLE__) // on apple we need raise to force redraw
+        GetActiveWindow()->Raise();
+#endif
     }
     else
     {
@@ -4624,6 +4632,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
                     height = windowLimits[layoutIndex][nWindowsProcessed].height;
                     windows[iWindow]->SetSize(width, height);
                     windows[iWindow]->SetLocation(x, y);
+#if defined(__APPLE__) // on apple we need raise to force redraw
+                    windows[iWindow]->Raise();
+#endif
                 }
                 else
                 {
