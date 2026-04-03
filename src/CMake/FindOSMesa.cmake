@@ -54,6 +54,9 @@
 #   Kathleen Biagas, Thu Jun 19, 2025
 #   Remove support for VTK versions < 9.5.
 #
+#   Kathleen Biagas, Fri Apr 3, 2026
+#   Readd install of lib/osmesa if VISIT_MESAGL_DIR set.
+#
 #****************************************************************************/
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
@@ -110,5 +113,36 @@ if (VISIT_OSMESA_DIR)
                          WORLD_READ             WORLD_EXECUTE)
 
     message(STATUS "OSMESA_LIBRARIES: ${OSMESA_LIBRARIES}")
+
+
+    # if VisIt was built with mesagl support, need to install osmesa-as-gl
+    # for nowin mode runtime resolution of libGL, libglapi, etc
+    if(VISIT_MESAGL_DIR)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
+                        ${VISIT_BINARY_DIR}/lib/osmesa
+                        RESULT_VARIABLE GEN_OSMESA_DIR)
+
+        if(NOT "${GEN_OSMESA_DIR}" STREQUAL "0")
+            message(WARNING "Failed to create lib/osmesa/")
+        endif()
+
+        # for LD_LIB_PATH swap to work, libOSMesa needs to be
+        # called libGL.so.1
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                ${OSMESA_LIBRARY}
+                                ${VISIT_BINARY_DIR}/lib/osmesa/libGL.so.1)
+
+        find_install_support_libs(${VISIT_OSMESA_DIR} osmesa)
+
+        install(DIRECTORY ${VISIT_BINARY_DIR}/lib/osmesa
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                      GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                      WORLD_READ             WORLD_EXECUTE
+                FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                      WORLD_READ             WORLD_EXECUTE)
+
+    endif()
 endif()
 
