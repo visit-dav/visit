@@ -223,6 +223,27 @@ properly with VNC.
 
    VisIt_ running on the VNC Viewer
 
+VNC Rendering Performance
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+VisIt uses a heuristic to switch between direct rendering in the viewer
+and scalable rendering via the engine. For smaller mesh sizes, datasets are
+sent to viewer for rendering with OpenGL. Scalable rendering uses VisIt's
+engine, which can leverage many MPI tasks to render, composite the result,
+and then only send an image back to the viewer for display.
+
+Direct rendering can cause contention in a shared VNC environment with many
+users. If rendering seems slow, we recommend configuring VisIt to always use
+scalable rendering.
+
+1. Select *Options Menu -> Rendering*
+2. In the *Advanced* tab, set *Use scalable rendering* to *Always*
+3. Click *Apply*
+4. Select *Options Menu->Save Settings* to save for future sessions
+
+For more details about Scalable rendering see the
+:ref:`Scalable rendering documentation. <ScalableRendering>`
+
+
 Troubleshooting VNC issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

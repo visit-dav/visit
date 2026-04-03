@@ -36,36 +36,21 @@ if(TARGET hdf5-shared)
     set(HAVE_LIBHDF5 TRUE CACHE BOOL "Have HDF5 libraries")
     if(WIN32)
         get_target_property(hdf5_locr hdf5-shared IMPORTED_IMPLIB_RELEASE)
-        THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
     else()
         get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
-        cmake_path(GET hdf5_locr PARENT_PATH hdf5_libdir)
-
-        get_target_property(hdf5_soname hdf5-shared IMPORTED_SONAME_RELEASE)
-        # SONAME may have '@rpath/' or '@loader_path/' (or similar) prepended,
-        # so get just the filename
-        cmake_path(GET hdf5_soname FILENAME hdf5_soname)
-
-        THIRD_PARTY_INSTALL_LIBRARY(${hdf5_libdir}/${hdf5_soname})
     endif()
+
+    THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
 
     if(TARGET hdf5_hl-shared)
         set(HDF5_HL_LIB hdf5_hl-shared)
         set(HAVE_LIBHDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
         if(WIN32)
             get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_IMPLIB_RELEASE)
-            THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
         else()
             get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_LOCATION_RELEASE)
-            cmake_path(GET hdf5_hl_locr PARENT_PATH hdf5_hl_libdir)
-
-            get_target_property(hdf5_hl_soname hdf5_hl-shared IMPORTED_SONAME_RELEASE)
-            # SONAME may have '@rpath/' or '@loader_path/' (or similar)
-            # prepended, so get just the filename
-            cmake_path(GET hdf5_hl_soname FILENAME hdf5_hl_soname)
-
-            THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_libdir}/${hdf5_hl_soname})
         endif()
+        THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
     endif()
 
     THIRD_PARTY_INSTALL_INCLUDE(hdf5 ${HDF5_INCLUDE_DIR})

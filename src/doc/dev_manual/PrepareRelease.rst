@@ -30,6 +30,14 @@ Preparing for a minor release consists of performing all the steps involved
 in preparing for a patch release, along with some additional ones, such as
 creating the release candidate branch and updating the splash screen.
 
+Audit and update Host Profiles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Remove host profiles for any retired HPC platforms and check
+platform lists such as `hpc.llnl.gov <https://hpc.llnl.gov>`_ and
+the LC Ramblings Confluence page to see if any new host
+profiles are needed.
+
+
 Creating the Release Candidate Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
