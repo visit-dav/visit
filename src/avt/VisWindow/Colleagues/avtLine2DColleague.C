@@ -9,14 +9,16 @@
 
 #include <math.h>
 
-#include <vtkActor2D.h>
+#include <vtkActor.h>
 #include <vtkAppendPolyData.h>
+#include <vtkCamera.h>
 #include <vtkCellArray.h>
+#include <vtkCoordinate.h>
 #include <vtkFloatArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
-#include <vtkPolyDataMapper2D.h>
-#include <vtkProperty2D.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkRenderer.h>
 
 #include <AnnotationObject.h>
@@ -48,6 +50,10 @@
 //   Kathleen Biagas, Mon Jul 13 09:41:56 PDT 2015
 //   Add useForegroundForLineColor.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     avtAnnotationColleague(m),
@@ -60,7 +66,9 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     beginArrowLine(NULL),
     endArrowLine(NULL),
     beginArrowStyle(0),
-    endArrowStyle(0)
+    endArrowStyle(0),
+    linePosition{0.25, 0.25, 0.},
+    linePosition2{0.75, 0.75, 0.}
 {
     addedToRenderer = false;
     useForegroundForLineColor = true;
@@ -72,9 +80,8 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     pcoords->SetNumberOfComponents(3);
     pcoords->SetNumberOfTuples(2);
 
-    double pts[2][3] = { {0.25, 0.25, 0.0}, {0.75, 0.75, 0.0} };
-    for(int i = 0; i < 2; i++)
-        pcoords->SetTuple(i, pts[i]);
+    pcoords->SetTuple(0, linePosition);
+    pcoords->SetTuple(1, linePosition2);
 
     // Create vtkPoints and assign pcoords as the internal data array.
     vtkPoints* points = vtkPoints::New();
@@ -107,24 +114,14 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     makeArrows(beginArrowLine, endArrowLine, true);
 
     // Create the mapper.
-    mapper = vtkPolyDataMapper2D::New();
+    mapper = vtkPolyDataMapper::New();
     mapper->SetInputData(lineData);
 
     //
-    // Create and position the actor.
+    // Create the actor.
     //
-    actor = vtkActor2D::New();
+    actor = vtkActor::New();
     actor->SetMapper(mapper);
-
-    vtkCoordinate *pos = actor->GetPositionCoordinate();
-    pos->SetCoordinateSystemToNormalizedViewport();
-    actor->SetPosition(0., 0.);
-
-    pos = actor->GetPosition2Coordinate();
-    pos->SetCoordinateSystemToNormalizedViewport();
-    actor->SetPosition2(1., 1.);
-
-    mapper->SetTransformCoordinate(pos);
 
     // Set a default color.
     double fgColor[3];
@@ -292,6 +289,10 @@ avtLine2DColleague::makeArrows(vtkPolyData *a0, vtkPolyData *a1, bool makeLines)
 //   Brad Whitlock, Tue Jun 28 14:49:58 PST 2005
 //   Rewrote using avtVector to make a pointier arrow.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -314,6 +315,8 @@ avtLine2DColleague::updateArrows(vtkPolyData *a0, vtkPolyData *a1,
         a0->GetPoints()->SetPoint(1, p0[0], p0[1], 0.);
         a0->GetPoints()->SetPoint(0, point0.x, point0.y, 0);
         a0->GetPoints()->SetPoint(2, point2.x, point2.y, 0);
+	a0->GetPoints()->Modified();
+	a0->Modified();
     }
 
     if(endArrowStyle > 0)
@@ -332,6 +335,8 @@ avtLine2DColleague::updateArrows(vtkPolyData *a0, vtkPolyData *a1,
         a1->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
         a1->GetPoints()->SetPoint(0, point0.x, point0.y, 0);
         a1->GetPoints()->SetPoint(2, point2.x, point2.y, 0);
+	a0->GetPoints()->Modified();
+	a0->Modified();
     }
 }
 
@@ -345,6 +350,9 @@ avtLine2DColleague::updateArrows(vtkPolyData *a0, vtkPolyData *a1,
 // Creation:   Thu Nov 6 15:52:19 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 void 
@@ -352,7 +360,7 @@ avtLine2DColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor2D(actor);
+        mediator.GetForeground()->AddActor(actor);
         addedToRenderer = true;
     }
 }
@@ -367,6 +375,9 @@ avtLine2DColleague::AddToRenderer()
 // Creation:   Thu Nov 6 15:52:38 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 void
@@ -374,7 +385,7 @@ avtLine2DColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor2D(actor);
+        mediator.GetForeground()->RemoveActor(actor);
         addedToRenderer = false;
     }
 }
@@ -444,6 +455,10 @@ avtLine2DColleague::ShouldBeAddedToRenderer() const
 //    Call update on allData, fixes bug where applying arrow causes line to
 //    disappear.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//   
 // ****************************************************************************
 
 void
@@ -453,11 +468,14 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     AnnotationObject currentOptions;
     GetOptions(currentOptions);
 
-    double *p0 = (double *) annot.GetPosition();
-    double *p1 = (double *) annot.GetPosition2();
-
-    lineData->GetPoints()->SetPoint(0, p0[0], p0[1], 0.);
-    lineData->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
+    linePosition[0] = annot.GetPosition()[0];
+    linePosition[1] = annot.GetPosition()[1];
+    linePosition2[0] = annot.GetPosition2()[0];
+    linePosition2[1] = annot.GetPosition2()[1];
+    lineData->GetPoints()->SetPoint(0, linePosition[0], linePosition[1], 0.);
+    lineData->GetPoints()->SetPoint(1, linePosition2[0], linePosition2[1], 0.);
+    lineData->GetPoints()->Modified();
+    lineData->Modified();
 
     if (annot.GetOptions().HasEntry("width"))
     {
@@ -506,8 +524,8 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     if (annot.GetOptions().HasEntry("endArrow"))
         endArrowStyle = annot.GetOptions().GetEntry("endArrow")->AsInt();
 
-    updateArrows(beginArrowLine, endArrowLine, p0, p1);
-    updateArrows(beginArrowSolid, endArrowSolid, p0, p1);
+    updateArrows(beginArrowLine, endArrowLine, linePosition, linePosition2);
+    updateArrows(beginArrowSolid, endArrowSolid, linePosition, linePosition2);
 
     //
     // Aggregate the data if need be.
@@ -574,6 +592,9 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
 // Creation:   Fri Sep 03 09:03:39 PDT 2004
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 void
@@ -583,8 +604,8 @@ avtLine2DColleague::GetOptions(AnnotationObject &annot)
     annot.SetVisible(GetVisible());
     annot.SetActive(GetActive());
 
-    annot.SetPosition(lineData->GetPoints()->GetPoint(0));
-    annot.SetPosition2(lineData->GetPoints()->GetPoint(1));
+    annot.SetPosition(linePosition);
+    annot.SetPosition2(linePosition2);
 
     annot.SetColor1(lineColor);
     annot.SetUseForegroundForTextColor(useForegroundForLineColor);
@@ -634,6 +655,56 @@ avtLine2DColleague::NoPlots(void)
     RemoveFromRenderer();
 }
 
+// ****************************************************************************
+// Method: avtLine2DColleague::UpdatePlotList
+//
+// Purpose:
+//   This method is called when the plot list changes. Its job is to make sure
+//   that the time slider always shows the right time.
+//
+// Arguments:
+//   lst : The plot list.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtLine2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
+{
+    if (lst.size() > 0)
+    {
+        // The zoomTile calculation assumes that the parallel scale for the
+        // foreground renderer is 0.5.
+        double zoomTile =
+            0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
+        // Get the width and height of the tile to determine the amount
+        // to scale the width by.
+        int w, h;
+        mediator.GetSize(w, h);
+        double windowScale = double(w) / double(h);
+
+	double p0[2], p1[2];
+        p0[0] = 0.5 - windowScale / 2. + linePosition[0] * windowScale;
+        p0[1] = linePosition[1];
+        p1[0] = 0.5 - windowScale / 2. + linePosition2[0] * windowScale;
+        p1[1] = linePosition2[1];
+
+        lineData->GetPoints()->SetPoint(0, p0[0], p0[1], 0.);
+        lineData->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
+	lineData->GetPoints()->Modified();
+	lineData->Modified();
+
+        updateArrows(beginArrowLine, endArrowLine, p0, p1);
+        updateArrows(beginArrowSolid, endArrowSolid, p0, p1);
+
+        if(allData)
+            allData->Update();
+    }
+}
 
 // ****************************************************************************
 // Method: avtLine2DColleague::SetForegroundColor
@@ -657,5 +728,3 @@ avtLine2DColleague::SetForegroundColor(double r, double g, double b)
     if(useForegroundForLineColor)
         actor->GetProperty()->SetColor(r, g, b);
 }
-
-
