@@ -413,7 +413,7 @@ then
    echo "Valid machine names:"
    echo "    dane rzwhippet magma tuolumne rzadams"
    echo "    elcap crossroads"
-   echo "version should just be the version number (e.g. 3.4.9)"
+   echo "version should just be the version number (e.g. 3.5.0)"
    echo "result_dir is optional and defaults based on the selected machine"
    exit
 fi
