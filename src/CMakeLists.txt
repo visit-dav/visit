@@ -942,6 +942,7 @@ if(NOT WIN32)
         set(CPACK_BUNDLE_ICON "${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns")
         set(CPACK_BUNDLE_PLIST "${VISIT_BINARY_DIR}/tools/dev/scripts/Info.plist")
         set(CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_BINARY_DIR}/exe/visit_macos_launcher")
+        set(CPACK_COMMAND_HDIUTIL ${CMAKE_SOURCE_DIR}/tools/dev/scripts/hdiutil-wrapper.sh)
     else()
         set(CPACK_GENERATOR "TGZ")
 
