@@ -2,6 +2,104 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
+#****************************************************************************
+# Modifications:
+#   Kathleen Biagas, Fri Apr 3, 2026
+#   Added function to find and install the gl support libraries, if found.
+#   Logic copied from FindMesaGL.cmake and modified for generality.
+#
+#****************************************************************************
+
+
+function(find_install_support_libs glpath glname)
+   # intended for Mesa/OSMesa built by VisIt
+   # glpath should be one of VISIT_MESAGL_DIR or VISIT_OSMESA_DIR
+   # glname should be one of mesagl or osmesa.
+
+    if(NOT EXISTS ${glpath})
+        message(FATAL_ERROR "Invalid path to Mesa/OSMesa: ${glpath}")
+    endif()
+
+    #
+    # GLAPI
+    #
+    find_library(${glname}_API_LIBRARY glapi  PATH ${glpath}/lib NO_DEFAULT_PATH)
+
+    if (${glname}_API_LIBRARY)
+        get_filename_component(${glname}_API_LIB ${${glname}_API_LIBRARY} NAME)
+
+        execute_process(COMMAND objdump -p ${${glname}_API_LIBRARY}
+                        COMMAND grep SONAME
+                        RESULT_VARIABLE ${glname}_API_SONAME_RESULT
+                        OUTPUT_VARIABLE ${glname}_API_SONAME
+                        ERROR_VARIABLE ${glname}_API_SONAME_ERROR)
+
+        if(${glname}_API_SONAME)
+            string(REPLACE "SONAME" "" ${glname}_API_SONAME ${${glname}_API_SONAME})
+            string(STRIP ${${glname}_API_SONAME} ${glname}_API_SONAME)
+            set(${glname}_API_LIBRARY ${glpath}/lib/${${glname}_API_SONAME})
+        endif()
+
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                        ${${glname}_API_LIBRARY}
+                        ${VISIT_BINARY_DIR}/lib/${glname}/)
+    endif()
+
+    #
+    # GLU
+    #
+    find_library(${glname}_GLU_LIBRARY GLU  PATH ${glpath}/lib NO_DEFAULT_PATH)
+
+    if (${glname}_GLU_LIBRARY)
+        get_filename_component(${glname}_GLU_LIB ${${glname}_GLU_LIBRARY} NAME)
+        execute_process(COMMAND objdump -p ${${glname}_GLU_LIBRARY}
+                        COMMAND grep SONAME
+                        RESULT_VARIABLE ${glname}_GLU_SONAME_RESULT
+                        OUTPUT_VARIABLE ${glname}_GLU_SONAME
+                        ERROR_VARIABLE ${glname}_GLU_SONAME_ERROR)
+
+        if(${glname}_GLU_SONAME)
+            string(REPLACE "SONAME" "" ${glname}_GLU_SONAME ${${glname}_GLU_SONAME})
+            string(STRIP ${${glname}_GLU_SONAME} ${glname}_GLU_SONAME)
+            set(MESAGLU_LIBRARY ${glpath}/lib/${${glname}_GLU_SONAME})
+        endif()
+
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                        ${${glname}_GLU_LIBRARY}
+                        ${VISIT_BINARY_DIR}/lib/${glname}/)
+    endif()
+
+    #
+    # LLVM
+    #
+    if (VISIT_LLVM_DIR)
+        find_library(${glname}_LLVM_LIBRARY LLVM  PATH ${VISIT_LLVM_DIR}/lib NO_DEFAULT_PATH)
+
+        if (${glname}_LLVM_LIBRARY)
+            get_filename_component(${glname}_LLVM_LIB ${${glname}_LLVM_LIBRARY} NAME)
+            execute_process(COMMAND objdump -p ${${glname}_LLVM_LIBRARY}
+                            COMMAND grep SONAME
+                            RESULT_VARIABLE ${glname}_LLVM_SONAME_RESULT
+                            OUTPUT_VARIABLE ${glname}_LLVM_SONAME
+                            ERROR_VARIABLE ${glname}_LLVM_SONAME_ERROR)
+
+            if(${glname}_LLVM_SONAME)
+                string(REPLACE "SONAME" "" ${glname}_LLVM_SONAME ${${glname}_LLVM_SONAME})
+                string(STRIP ${${glname}_LLVM_SONAME} ${glname}_LLVM_SONAME)
+                set(${glname}_LLVM_LIBRARY ${VISIT_LLVM_DIR}/lib/${${glname}_LLVM_SONAME})
+            endif()
+
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                            ${${glname}_LLVM_LIBRARY}
+                            ${VISIT_BINARY_DIR}/lib/${glname}/)
+
+        endif()
+    endif()
+
+endfunction()
+
+
+
 if(VISIT_MESAGL_DIR)
     # MesaGL, GLU, LLVM libs
     include(${VISIT_SOURCE_DIR}/CMake/FindMesaGL.cmake)

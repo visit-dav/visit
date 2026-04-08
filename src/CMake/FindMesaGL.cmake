@@ -21,6 +21,11 @@
 #   by VTK 9, otherwise it will say it needs system GLVND OpenGL version.
 #   Also, don't clutter OPENGL_gl_LIBRARY with anything other than GL.
 #
+#   Kathleen Biagas, Friday Apr 3, 2024
+#   Put finding of support libs (glapi, glu, llvm) into a function so that
+#   FindOSMesa can use the same logic, and code duplication is reduced.
+#   The new function lives in VisItOpenGL.cmake.
+#
 #****************************************************************************/
 
 #
@@ -46,7 +51,6 @@ if(WIN32 AND VISIT_MESA_REPLACE_OPENGL AND VISIT_MESAGL_DIR)
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
                             WORLD_READ WORLD_EXECUTE
-                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                 )
     endif()
     return()
@@ -90,76 +94,20 @@ if (VISIT_MESAGL_DIR)
       message(FATAL_ERROR "VISIT_MESAGL_DIR provided, but it doesn't contain GL library")
   endif()
 
-  find_library(MESAGL_API_LIBRARY glapi  PATH ${VISIT_MESAGL_DIR}/lib NO_DEFAULT_PATH)
-  if (MESAGL_API_LIBRARY)
-      get_filename_component(MESAGL_API_LIB ${MESAGL_API_LIBRARY} NAME)
-      execute_process(COMMAND objdump -p ${MESAGL_API_LIBRARY}
-                      COMMAND grep SONAME
-                      RESULT_VARIABLE MESAGL_API_SONAME_RESULT
-                      OUTPUT_VARIABLE MESAGL_API_SONAME
-                      ERROR_VARIABLE MESAGL_API_SONAME_ERROR)
-      if(MESAGL_API_SONAME)
-          string(REPLACE "SONAME" "" MESAGL_API_SONAME ${MESAGL_API_SONAME})
-          string(STRIP ${MESAGL_API_SONAME} MESAGL_API_SONAME)
-          set(MESAGL_API_LIBRARY ${VISIT_MESAGL_DIR}/lib/${MESAGL_API_SONAME})
-      endif()
+  find_install_support_libs(${VISIT_MESAGL_DIR} mesagl)
 
-      execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                              ${MESAGL_API_LIBRARY}
-                              ${VISIT_BINARY_DIR}/lib/mesagl/)
-
-        list(APPEND OPENGL_LIBRARIES ${MESAGL_API_LIBRARY})
-
+  if (mesagl_API_LIBRARY)
+      list(APPEND OPENGL_LIBRARIES mesagl_API_LIBRARY})
   endif()
 
-
-  find_library(MESAGLU_LIBRARY GLU  PATH ${VISIT_MESAGL_DIR}/lib NO_DEFAULT_PATH)
-  if (MESAGLU_LIBRARY)
-      get_filename_component(MESAGLU_LIB ${MESAGLU_LIBRARY} NAME)
-      execute_process(COMMAND objdump -p ${MESAGLU_LIBRARY}
-                      COMMAND grep SONAME
-                      RESULT_VARIABLE MESAGLU_SONAME_RESULT
-                      OUTPUT_VARIABLE MESAGLU_SONAME
-                      ERROR_VARIABLE MESAGLU_SONAME_ERROR)
-      if(MESAGLU_SONAME)
-          string(REPLACE "SONAME" "" MESAGLU_SONAME ${MESAGLU_SONAME})
-          string(STRIP ${MESAGLU_SONAME} MESAGLU_SONAME)
-          set(MESAGLU_LIBRARY ${VISIT_MESAGL_DIR}/lib/${MESAGLU_SONAME})
-      endif()
-
-      execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                              ${MESAGLU_LIBRARY}
-                              ${VISIT_BINARY_DIR}/lib/mesagl/)
-
-      set(OPENGL_glu_LIBRARY ${MESAGLU_LIBRARY} CACHE STRING "OpenGL glu library")
-
+  if (mesagl_GLU_LIBRARY)
+      set(OPENGL_glu_LIBRARY ${mesagl_GLU_LIBRARY} CACHE STRING "OpenGL glu library")
   endif()
 
-  if (VISIT_LLVM_DIR)
-    find_library(MESAGL_LLVM_LIBRARY LLVM  PATH ${VISIT_LLVM_DIR}/lib NO_DEFAULT_PATH)
-    if (MESAGL_LLVM_LIBRARY)
-        get_filename_component(MESAGL_LLVM_LIB ${MESAGL_LLVM_LIBRARY} NAME)
-
-        execute_process(COMMAND objdump -p ${MESAGL_LLVM_LIBRARY}
-                        COMMAND grep SONAME
-                        RESULT_VARIABLE MESAGL_LLVM_SONAME_RESULT
-                        OUTPUT_VARIABLE MESAGL_LLVM_SONAME
-                        ERROR_VARIABLE MESAGL_LLVM_SONAME_ERROR)
-
-        if(MESAGL_LLVM_SONAME)
-            string(REPLACE "SONAME" "" MESAGL_LLVM_SONAME ${MESAGL_LLVM_SONAME})
-            string(STRIP ${MESAGL_LLVM_SONAME} MESAGL_LLVM_SONAME)
-            set(MESAGL_LLVM_LIBRARY ${VISIT_LLVM_DIR}/lib/${MESAGL_LLVM_SONAME})
-        endif()
-
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                              ${MESAGL_LLVM_LIBRARY}
-                              ${VISIT_BINARY_DIR}/lib/mesagl/)
-
-        list(APPEND OPENGL_LIBRARIES ${MESAGL_LLVM_LIBRARY})
-        set(OPENGL_LIBRARIES ${OPENGL_LIBRARIES} CACHE STRING "OpenGL libraries" FORCE)
-    endif()
-  endif(VISIT_LLVM_DIR)
+  if (mesagl_LLVM_LIBRARY)
+      list(APPEND OPENGL_LIBRARIES ${mesagl_LLVM_LIBRARY})
+      set(OPENGL_LIBRARIES ${OPENGL_LIBRARIES} CACHE STRING "OpenGL libraries" FORCE)
+  endif()
 
 
   install(DIRECTORY ${VISIT_BINARY_DIR}/lib/mesagl
@@ -169,8 +117,7 @@ if (VISIT_MESAGL_DIR)
                                 WORLD_READ             WORLD_EXECUTE
           FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                 GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                WORLD_READ             WORLD_EXECUTE
-          CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
+                                WORLD_READ             WORLD_EXECUTE)
 
   if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
       THIRD_PARTY_INSTALL_INCLUDE(mesagl ${VISIT_MESAGL_DIR}/include)
