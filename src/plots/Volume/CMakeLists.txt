@@ -154,7 +154,10 @@ set(vtkmods VTK::RenderingVolumeOpenGL2)
 if(TARGET VTK::RenderingRayTracing)
     list(APPEND vtkmods VTK::RenderingRayTracing)
 endif()
+
+if (TARGET VVolumePlot)
 vtk_module_autoinit(TARGETS VVolumePlot EVolumePlot_ser MODULES ${vtkmods})
+endif()
 
 if(PARALLEL)
     vtk_module_autoinit(TARGETS EVolumePlot_par MODULES ${vtkmods})
