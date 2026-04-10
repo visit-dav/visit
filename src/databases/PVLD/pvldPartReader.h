@@ -65,7 +65,8 @@ public:
 
 protected:
     void ReadSolidBlockMesh( hid_t file_id, int blkInd,
-                             std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
+                             std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt, 
+                             std::vector<int>& elmto2 );
     void ReadSolidBlockData( hid_t file_id, int varInd, int blkInd,
                              std::vector<int>& dims, std::vector<float>& edat );
     void ReadSolidBlockData( hid_t file_id, int varInd, int blkInd,

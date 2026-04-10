@@ -2222,12 +2222,13 @@ ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
         // Dataset exists, safe to read
         len[1] = 6;
         hsize_t nd = len[0]*len[1];
-        elmto2.resize( nd );
+        elmto2.assign( nd, -1 );
         ReadGroupDataSet( fid, solid_name.c_str(), "HigherOrderNodes",
                         H5T_NATIVE_INT, elmto2.data(), 2, sft, len );
         read_elmto2 = true;
     } else {
         read_elmto2 = false;
+        elmto2.clear();
     }
 
     vector<int> loc( nnode_ );
