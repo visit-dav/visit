@@ -221,6 +221,10 @@ VisWindow::VisWindow(bool callInit)
 //    mode, and the ability to set/get the multi resolution cell size to
 //    support adding a multi resolution display capability for AMR data.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added TiledRenderingWidth and TiledRenderingHeight to support
+//    tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -256,6 +260,8 @@ VisWindow::Initialize(VisWinRendering *ren)
     SetViewport(0., 0., 1., 1.);
     multiresolutionMode = false;
     multiresolutionCellSize = 0.002;
+    tiledRenderingWidth = 8192;
+    tiledRenderingHeight = 8192;
     EnableUpdates();
     NoPlots();
     doAxisScaling = false;
@@ -6343,6 +6349,82 @@ double
 VisWindow::GetMultiresolutionCellSize() const
 {
     return multiresolutionCellSize;
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetTiledRenderingWidth
+//
+// Purpose:
+//   Sets the tiled rendering width.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetTiledRenderingWidth(int width)
+{
+    tiledRenderingWidth = width;
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetTiledRenderingWidth
+//
+// Purpose:
+//   Returns the tiled rendering width.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+VisWindow::GetTiledRenderingWidth() const
+{
+    return tiledRenderingWidth;
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetTiledRenderingHeight
+//
+// Purpose:
+//   Sets the tiled rendering height.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetTiledRenderingHeight(int height)
+{
+    tiledRenderingHeight = height;
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetTiledRenderingHeight
+//
+// Purpose:
+//   Returns the tiled rendering height.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+VisWindow::GetTiledRenderingHeight() const
+{
+    return tiledRenderingHeight;
 }
 
 // ****************************************************************************

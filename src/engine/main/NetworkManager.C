@@ -3047,8 +3047,8 @@ NetworkManager::RenderInternal()
     //
     const int imageWidth = w;
     const int imageHeight = h;
-    const int xTileSize = 512;
-    const int yTileSize = 512;
+    const int xTileSize = std::min(viswin->GetTiledRenderingWidth(), 8192);
+    const int yTileSize = std::min(viswin->GetTiledRenderingHeight(), 8192);
     int tileWidth = 0;
     int tileHeight = 0;
     if (w > tileWidth || h > tileHeight)
@@ -3282,6 +3282,10 @@ NetworkManager::RenderInternal()
 //    Kathleen Biagas, Thu Aug 28 15:43:23 PDT 2025
 //    Remove SurfaceRepresentation, no longer used.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added TiledRenderingWidth and TiledRenderingHeight from
+//    RenderingAttributes to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -3494,6 +3498,12 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
 
         if (viswin->GetMultiresolutionCellSize() != renderAtts.GetMultiresolutionCellSize())
             viswin->SetMultiresolutionCellSize(renderAtts.GetMultiresolutionCellSize());
+
+        if (viswin->GetTiledRenderingWidth() != renderAtts.GetTiledRenderingWidth())
+            viswin->SetTiledRenderingWidth(renderAtts.GetTiledRenderingWidth());
+
+        if (viswin->GetTiledRenderingHeight() != renderAtts.GetTiledRenderingHeight())
+            viswin->SetTiledRenderingHeight(renderAtts.GetTiledRenderingHeight());
 
         // handle stereo rendering settings
         bool stereo = renderAtts.GetStereoRendering();
