@@ -104,6 +104,8 @@ public:
     void SetStereoRendering(bool stereoRendering_);
     void SetStereoType(StereoTypes stereoType_);
     void SetNotifyForEachRender(bool notifyForEachRender_);
+    void SetTiledRenderingWidth(int tiledRenderingWidth_);
+    void SetTiledRenderingHeight(int tiledRenderingHeight_);
     void SetScalableActivationMode(TriStateMode scalableActivationMode_);
     void SetScalableAutoThreshold(int scalableAutoThreshold_);
     void SetSpecularFlag(bool specularFlag_);
@@ -145,6 +147,8 @@ public:
     bool                  GetStereoRendering() const;
     StereoTypes           GetStereoType() const;
     bool                  GetNotifyForEachRender() const;
+    int                   GetTiledRenderingWidth() const;
+    int                   GetTiledRenderingHeight() const;
     TriStateMode          GetScalableActivationMode() const;
     int                   GetScalableAutoThreshold() const;
     bool                  GetSpecularFlag() const;
@@ -222,6 +226,8 @@ public:
         ID_stereoRendering,
         ID_stereoType,
         ID_notifyForEachRender,
+        ID_tiledRenderingWidth,
+        ID_tiledRenderingHeight,
         ID_scalableActivationMode,
         ID_scalableAutoThreshold,
         ID_specularFlag,
@@ -264,6 +270,8 @@ private:
     bool            stereoRendering;
     int             stereoType;
     bool            notifyForEachRender;
+    int             tiledRenderingWidth;
+    int             tiledRenderingHeight;
     int             scalableActivationMode;
     int             scalableAutoThreshold;
     bool            specularFlag;
@@ -290,6 +298,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfbibiibffabdbbDDibiibiiba"
+#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfbibiiiibffabdbbDDibiibiiba"
 
 #endif
