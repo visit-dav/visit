@@ -2218,18 +2218,15 @@ ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
                       H5T_NATIVE_INT, elmt.data(), 2, sft, len );
 
     bool read_elmto2 = false;
-    // this will only work if the group exists, otherwise we're dealing with a deatset with no higher order elements
-    try {
+    if (H5Lexists(fid, (solid_name + "/HigherOrderNodes").c_str(), H5P_DEFAULT) > 0) {
+        // Dataset exists, safe to read
         len[1] = 6;
         hsize_t nd = len[0]*len[1];
-
         elmto2.resize( nd );
         ReadGroupDataSet( fid, solid_name.c_str(), "HigherOrderNodes",
                         H5T_NATIVE_INT, elmto2.data(), 2, sft, len );
-
         read_elmto2 = true;
-
-    } catch(std::exception& e){
+    } else {
         read_elmto2 = false;
     }
 
@@ -2249,6 +2246,8 @@ ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
         for( vector<int>::iterator ie=elmto2.begin(); ie!=elmto2.end(); ie++ )
         {
             int& idx = *ie;
+            if (idx < 0) continue;
+
             int ind = node_map_[idx-node_idx_mn_];
             if( loc[ind]<0 ) loc[ind]=tnp++;
             idx = loc[ind];
