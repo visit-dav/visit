@@ -12,8 +12,12 @@ For these platforms, we are able to reproduce bugs, test bug-fixes, develop work
 These platforms are...
 
 * |fs*nix|
-* Windows 7, 8 and 10
-* macOS 10.15
+* Windows 11
+* macOS Sequoia (Apple M CPUs only)
+
+Sequoia binaries should run fine on Tahoe.
+We no longer have the resources to support Intel (`x86_64`) macOS.
+Although Apple's **Rosetta 2** translates `x86_64` so that it can run on `arm64`, the reverse translation is not available.
 
 We do make an effort to provide precompiled binaries as well as perform minimal testing for |ps*nix|.
 However, because we do not yet routinely develop or test on these platforms, we are not able to provide the same level of support as we do for |fs*nix|.
