@@ -69,11 +69,37 @@ def test2(datapath):
     Test("PVLD_SPH_density")
     DeleteAllPlots()
 
+def test3(datapath):
+    TestSection("Ten_Node_Tets")
+    db = pjoin(datapath,"velodyne_10node.vld")
+    OpenDatabase(db,0,"PVLD_5")
+
+    AddPlot("Pseudocolor", "Solid/von_Mises_Criterion_n")
+    DrawPlots()
+
+    ResetView()
+    v0 = View3DAttributes()
+    v0.viewNormal = (-0.3367339890644335, -0.8050564133701504, 0.488358876135515)
+    v0.focus = (0.09971436858177185, 8.940696716308594e-7, 0.005089759826660156)
+    v0.viewUp = (-0.9415532867870535, 0.2827330453709466, -0.1831377437771005)
+    v0.viewAngle = 30
+    v0.parallelScale = 5.06567
+    v0.nearPlane = -10.1313
+    v0.farPlane = 10.1313
+    v0.perspective = 1
+    v0.eyeAngle = 2
+    SetView3D(v0)
+
+    Test("PVLD_solid_10node")
+    DeleteAllPlots()
+    CloseDatabase(db)
+
 def main():
     datapath = data_path("PVLD_test_data")
     test0(datapath)
     test1(datapath)
     test2(datapath)
+    test3(datapath)
 
 main()
 Exit()
