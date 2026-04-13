@@ -15,9 +15,9 @@ These platforms are...
 * Windows 11
 * macOS Sequoia (Apple M CPUs only)
 
-We have dropped support for Intel (`x86_64`) macOS.
 Sequoia binaries should run fine on Tahoe.
-Also note that although Apple's **Rosetta 2** translates `x86_64` so that it can run on `arm64`, the reverse is not true.
+We no longer have the resources to support Intel (`x86_64`) macOS.
+Although Apple's **Rosetta 2** translates `x86_64` so that it can run on `arm64`, the reverse translation is not available.
 
 We do make an effort to provide precompiled binaries as well as perform minimal testing for |ps*nix|.
 However, because we do not yet routinely develop or test on these platforms, we are not able to provide the same level of support as we do for |fs*nix|.
