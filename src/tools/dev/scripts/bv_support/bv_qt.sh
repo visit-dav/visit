@@ -543,7 +543,7 @@ function build_qt_base
         qt_flags="${qt_flags} -debug"
     fi
 
-    qt_cmake_flags="$(qt_base_mesagl_cmake_flags)"
+    qt_cmake_flags="$(qt_mesagl_cmake_flags)"
     info "Configuring Qt base: . . . "
     set -x
     (echo "o"; echo "yes") | env PATH="${CMAKE_INSTALL}:$PATH" \
@@ -586,20 +586,6 @@ function build_qt_base
 }
 
 function qt_mesagl_cmake_flags
-{
-    local qt_module_cmake_flags=""
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        qt_module_cmake_flags=" -- -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-        qt_module_cmake_flags="${qt_module_cmake_flags} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
-        qt_module_cmake_flags="${qt_module_cmake_flags} -DOPENGL_opengl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
-        qt_module_cmake_flags="${qt_module_cmake_flags} -DOPENGL_glx_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
-        qt_module_cmake_flags="${qt_module_cmake_flags} -DOPENGL_glu_LIBRARY:STRING=${MESAGL_GLU_LIB}"
-        qt_module_cmake_flags="${qt_module_cmake_flags} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
-    fi
-    echo "${qt_module_cmake_flags}"
-}
-
-function qt_base_mesagl_cmake_flags
 {
     local qt_cmake_flags=""
     if [[ "$DO_MESAGL" == "yes" ]] ; then
