@@ -472,10 +472,6 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     linePosition[1] = annot.GetPosition()[1];
     linePosition2[0] = annot.GetPosition2()[0];
     linePosition2[1] = annot.GetPosition2()[1];
-    lineData->GetPoints()->SetPoint(0, linePosition[0], linePosition[1], 0.);
-    lineData->GetPoints()->SetPoint(1, linePosition2[0], linePosition2[1], 0.);
-    lineData->GetPoints()->Modified();
-    lineData->Modified();
 
     if (annot.GetOptions().HasEntry("width"))
     {
@@ -523,9 +519,6 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
         beginArrowStyle = annot.GetOptions().GetEntry("beginArrow")->AsInt();
     if (annot.GetOptions().HasEntry("endArrow"))
         endArrowStyle = annot.GetOptions().GetEntry("endArrow")->AsInt();
-
-    updateArrows(beginArrowLine, endArrowLine, linePosition, linePosition2);
-    updateArrows(beginArrowSolid, endArrowSolid, linePosition, linePosition2);
 
     //
     // Aggregate the data if need be.
