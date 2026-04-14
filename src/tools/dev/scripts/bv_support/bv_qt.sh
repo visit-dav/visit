@@ -543,15 +543,7 @@ function build_qt_base
         qt_flags="${qt_flags} -debug"
     fi
 
-    qt_cmake_flags=""
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        # '--' separates the qt-configure-style flags from the cmake flags
-        qt_cmake_flags=" -- -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-        qt_cmake_flags="${qt_cmake_flags} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
-        qt_cmake_flags="${qt_cmake_flags} -DOPENGL_opengl_LIBRARY:STRING="
-        qt_cmake_flags="${qt_cmake_flags} -DOPENGL_glu_LIBRARY:STRING=${MESAGL_GLU_LIB}"
-        qt_cmake_flags="${qt_cmake_flags} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
-    fi
+    qt_cmake_flags="$(qt_base_mesagl_cmake_flags)"
     info "Configuring Qt base: . . . "
     set -x
     (echo "o"; echo "yes") | env PATH="${CMAKE_INSTALL}:$PATH" \
@@ -593,6 +585,33 @@ function build_qt_base
     return 0
 }
 
+function qt_mesagl_cmake_flags
+{
+    local qt_module_cmake_flags=""
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        qt_module_cmake_flags=" -- -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+        qt_module_cmake_flags="${qt_module_cmake_flags} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
+        qt_module_cmake_flags="${qt_module_cmake_flags} -DOPENGL_opengl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
+        qt_module_cmake_flags="${qt_module_cmake_flags} -DOPENGL_glx_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
+        qt_module_cmake_flags="${qt_module_cmake_flags} -DOPENGL_glu_LIBRARY:STRING=${MESAGL_GLU_LIB}"
+        qt_module_cmake_flags="${qt_module_cmake_flags} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
+    fi
+    echo "${qt_module_cmake_flags}"
+}
+
+function qt_base_mesagl_cmake_flags
+{
+    local qt_cmake_flags=""
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        qt_cmake_flags=" -- -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+        qt_cmake_flags="${qt_cmake_flags} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
+        qt_cmake_flags="${qt_cmake_flags} -DOPENGL_opengl_LIBRARY:STRING="
+        qt_cmake_flags="${qt_cmake_flags} -DOPENGL_glu_LIBRARY:STRING=${MESAGL_GLU_LIB}"
+        qt_cmake_flags="${qt_cmake_flags} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
+    fi
+    echo "${qt_cmake_flags}"
+}
+
 
 function build_qt_tools
 {
@@ -625,9 +644,12 @@ function build_qt_tools
 
     cd ${QT_TOOLS_BUILD_DIR}
 
+    qt_module_cmake_flags="$(qt_mesagl_cmake_flags)"
+
     info "Configuring Qt tools . . . "
     env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-        ${QT_INSTALL_DIR}/bin/qt-configure-module  ../${QT_TOOLS_SOURCE_DIR}
+        ${QT_INSTALL_DIR}/bin/qt-configure-module  ../${QT_TOOLS_SOURCE_DIR} \
+        ${qt_module_cmake_flags}
 
     info "Building Qt6 tools . . . "
     ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
@@ -669,9 +691,12 @@ function build_qt_svg
 
     cd ${QT_SVG_BUILD_DIR}
 
+    qt_module_cmake_flags="$(qt_mesagl_cmake_flags)"
+
     info "Configuring Qt svg . . . "
     env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-        ${QT_INSTALL_DIR}/bin/qt-configure-module  ../${QT_SVG_SOURCE_DIR}
+        ${QT_INSTALL_DIR}/bin/qt-configure-module  ../${QT_SVG_SOURCE_DIR} \
+        ${qt_module_cmake_flags}
 
     info "Building Qt6 svg . . . "
     ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
