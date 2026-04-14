@@ -9,7 +9,7 @@
 
 #include <math.h>
 
-#include <vtkActor2D.h>
+#include <vtkActor.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
@@ -17,8 +17,8 @@
 #include <vtkFloatArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
-#include <vtkPolyDataMapper2D.h>
-#include <vtkProperty2D.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkRenderer.h>
 
 #include <AnnotationObject.h>
@@ -114,24 +114,14 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     makeArrows(beginArrowLine, endArrowLine, true);
 
     // Create the mapper.
-    mapper = vtkPolyDataMapper2D::New();
+    mapper = vtkPolyDataMapper::New();
     mapper->SetInputData(lineData);
 
     //
     // Create the actor.
     //
-    actor = vtkActor2D::New();
+    actor = vtkActor::New();
     actor->SetMapper(mapper);
-
-    vtkCoordinate *pos = actor->GetPositionCoordinate();
-    pos->SetCoordinateSystemToWorld();
-    actor->SetPosition(0., 0.);
-
-    pos = actor->GetPosition2Coordinate();
-    pos->SetCoordinateSystemToWorld();
-    actor->SetPosition2(1., 1.);
-
-    mapper->SetTransformCoordinate(pos);
 
     // Set a default color.
     double fgColor[3];
@@ -360,6 +350,9 @@ avtLine2DColleague::updateArrows(vtkPolyData *a0, vtkPolyData *a1,
 // Creation:   Thu Nov 6 15:52:19 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 void 
@@ -367,7 +360,7 @@ avtLine2DColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor2D(actor);
+        mediator.GetForeground()->AddActor(actor);
         addedToRenderer = true;
     }
 }
@@ -382,6 +375,9 @@ avtLine2DColleague::AddToRenderer()
 // Creation:   Thu Nov 6 15:52:38 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 void
@@ -389,7 +385,7 @@ avtLine2DColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor2D(actor);
+        mediator.GetForeground()->RemoveActor(actor);
         addedToRenderer = false;
     }
 }
@@ -687,13 +683,10 @@ avtLine2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
         mediator.GetSize(w, h);
         double windowScale = double(w) / double(h);
 
-        actor->SetPosition(0.5 - windowScale / 2., 0.);
-        actor->SetPosition2(windowScale, 1.);
-
         double p0[2], p1[2];
-        p0[0] = linePosition[0] * windowScale;
+        p0[0] = 0.5 - windowScale / 2. + linePosition[0] * windowScale;
         p0[1] = linePosition[1];
-        p1[0] = linePosition2[0] * windowScale;
+        p1[0] = 0.5 - windowScale / 2. + linePosition2[0] * windowScale;
         p1[1] = linePosition2[1];
 
         lineData->GetPoints()->SetPoint(0, p0[0], p0[1], 0.);

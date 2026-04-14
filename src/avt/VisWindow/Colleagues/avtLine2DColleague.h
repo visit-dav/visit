@@ -9,11 +9,11 @@
 #include <avtAnnotationColleague.h>
 #include <viswindow_exports.h>
 
-class vtkActor2D;
+class vtkActor;
 class vtkAppendPolyData;
 class vtkPoints;
 class vtkPolyData;
-class vtkPolyDataMapper2D;
+class vtkPolyDataMapper;
 
 // ****************************************************************************
 // Class: avtLine2DColleague
@@ -32,6 +32,10 @@ class vtkPolyDataMapper2D;
 //
 //   Kathleen Biagas, Mon Jul 13 09:39:46 PDT 2015
 //   Add SetForegroundColor.
+//
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //
 // ****************************************************************************
 
@@ -59,8 +63,8 @@ public:
 
 
 protected:
-    vtkActor2D          *actor;
-    vtkPolyDataMapper2D *mapper;
+    vtkActor            *actor;
+    vtkPolyDataMapper   *mapper;
     vtkAppendPolyData   *allData;
     vtkPolyData         *lineData;
     vtkPolyData         *beginArrowSolid;
