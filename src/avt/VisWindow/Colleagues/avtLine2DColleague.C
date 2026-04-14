@@ -9,7 +9,7 @@
 
 #include <math.h>
 
-#include <vtkActor.h>
+#include <vtkActor2D.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
@@ -17,8 +17,8 @@
 #include <vtkFloatArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkProperty.h>
+#include <vtkPolyDataMapper2D.h>
+#include <vtkProperty2D.h>
 #include <vtkRenderer.h>
 
 #include <AnnotationObject.h>
@@ -114,14 +114,24 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     makeArrows(beginArrowLine, endArrowLine, true);
 
     // Create the mapper.
-    mapper = vtkPolyDataMapper::New();
+    mapper = vtkPolyDataMapper2D::New();
     mapper->SetInputData(lineData);
 
     //
     // Create the actor.
     //
-    actor = vtkActor::New();
+    actor = vtkActor2D::New();
     actor->SetMapper(mapper);
+
+    vtkCoordinate *pos = actor->GetPositionCoordinate();
+    pos->SetCoordinateSystemToWorld();
+    actor->SetPosition(0., 0.);
+
+    pos = actor->GetPosition2Coordinate();
+    pos->SetCoordinateSystemToWorld();
+    actor->SetPosition2(1., 1.);
+
+    mapper->SetTransformCoordinate(pos);
 
     // Set a default color.
     double fgColor[3];
@@ -315,8 +325,8 @@ avtLine2DColleague::updateArrows(vtkPolyData *a0, vtkPolyData *a1,
         a0->GetPoints()->SetPoint(1, p0[0], p0[1], 0.);
         a0->GetPoints()->SetPoint(0, point0.x, point0.y, 0);
         a0->GetPoints()->SetPoint(2, point2.x, point2.y, 0);
-	a0->GetPoints()->Modified();
-	a0->Modified();
+        a0->GetPoints()->Modified();
+        a0->Modified();
     }
 
     if(endArrowStyle > 0)
@@ -335,8 +345,8 @@ avtLine2DColleague::updateArrows(vtkPolyData *a0, vtkPolyData *a1,
         a1->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
         a1->GetPoints()->SetPoint(0, point0.x, point0.y, 0);
         a1->GetPoints()->SetPoint(2, point2.x, point2.y, 0);
-	a0->GetPoints()->Modified();
-	a0->Modified();
+        a0->GetPoints()->Modified();
+        a0->Modified();
     }
 }
 
@@ -350,9 +360,6 @@ avtLine2DColleague::updateArrows(vtkPolyData *a0, vtkPolyData *a1,
 // Creation:   Thu Nov 6 15:52:19 PST 2003
 //
 // Modifications:
-//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//   I changed the routine to plot the data in world coordinates instead of
-//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 void 
@@ -360,7 +367,7 @@ avtLine2DColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor(actor);
+        mediator.GetForeground()->AddActor2D(actor);
         addedToRenderer = true;
     }
 }
@@ -375,9 +382,6 @@ avtLine2DColleague::AddToRenderer()
 // Creation:   Thu Nov 6 15:52:38 PST 2003
 //
 // Modifications:
-//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//   I changed the routine to plot the data in world coordinates instead of
-//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 void
@@ -385,7 +389,7 @@ avtLine2DColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor(actor);
+        mediator.GetForeground()->RemoveActor2D(actor);
         addedToRenderer = false;
     }
 }
@@ -677,26 +681,25 @@ avtLine2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
     if (lst.size() > 0)
     {
-        // The zoomTile calculation assumes that the parallel scale for the
-        // foreground renderer is 0.5.
-        double zoomTile =
-            0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
         // Get the width and height of the tile to determine the amount
         // to scale the width by.
         int w, h;
         mediator.GetSize(w, h);
         double windowScale = double(w) / double(h);
 
-	double p0[2], p1[2];
-        p0[0] = 0.5 - windowScale / 2. + linePosition[0] * windowScale;
+        actor->SetPosition(0.5 - windowScale / 2., 0.);
+        actor->SetPosition2(windowScale, 1.);
+
+        double p0[2], p1[2];
+        p0[0] = linePosition[0] * windowScale;
         p0[1] = linePosition[1];
-        p1[0] = 0.5 - windowScale / 2. + linePosition2[0] * windowScale;
+        p1[0] = linePosition2[0] * windowScale;
         p1[1] = linePosition2[1];
 
         lineData->GetPoints()->SetPoint(0, p0[0], p0[1], 0.);
         lineData->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
-	lineData->GetPoints()->Modified();
-	lineData->Modified();
+        lineData->GetPoints()->Modified();
+        lineData->Modified();
 
         updateArrows(beginArrowLine, endArrowLine, p0, p1);
         updateArrows(beginArrowSolid, endArrowSolid, p0, p1);
