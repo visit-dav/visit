@@ -67,7 +67,7 @@ protected:
     bool               useForegroundForTextColor;
     bool               addedToRenderer;
     ColorAttribute     textColor;
-    double             textPosition[2];
+    double             textPosition[3];
     double             textHeight;
 };
 

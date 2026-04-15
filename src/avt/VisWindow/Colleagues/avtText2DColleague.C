@@ -55,6 +55,7 @@ avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m)
     //
     textPosition[0] = 0.5;
     textPosition[1] = 0.5;
+    textPosition[2] = 0.;
     textHeight = 0.04;
     textActor = vtkVisItTextActor::New();
     textActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_VIEWPORT);
@@ -113,7 +114,7 @@ avtText2DColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor2D(textActor);
+        mediator.GetForeground()->AddViewProp(textActor);
         addedToRenderer = true;
     }
 }
@@ -136,7 +137,7 @@ avtText2DColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor2D(textActor);
+        mediator.GetForeground()->RemoveViewProp(textActor);
         addedToRenderer = false;
     }
 }
@@ -294,9 +295,10 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
     if(!currentOptions.FieldsEqual(4, &annot) ||
        !currentOptions.FieldsEqual(5, &annot) || textChanged)
     {
-	textPosition[0] = annot.GetPosition()[0];
-       	textPosition[1] = annot.GetPosition()[1];
-	textHeight = annot.GetPosition2()[0];
+        textPosition[0] = annot.GetPosition()[0];
+        textPosition[1] = annot.GetPosition()[1];
+        textPosition[2] = annot.GetPosition()[2];
+        textHeight = annot.GetPosition2()[0];
     }
 
     //
@@ -339,16 +341,13 @@ avtText2DColleague::GetOptions(AnnotationObject &annot)
     annot.SetVisible(GetVisible());
     annot.SetActive(GetActive());
 
-    double poswh[3];
-    poswh[0] = textPosition[0];
-    poswh[1] = textPosition[1];
-    poswh[2] = 0.;
-    annot.SetPosition(poswh);
-    // Store the width and height in position2.
-    poswh[0] = textHeight;
-    poswh[1] = 0.;
-    poswh[2] = 0.;
-    annot.SetPosition2(poswh);
+    annot.SetPosition(textPosition);
+    // Store the height in position2.
+    double posh[3];
+    posh[0] = textHeight;
+    posh[1] = 0.;
+    posh[2] = 0.;
+    annot.SetPosition2(posh);
 
     // Store the text color and opacity.
     annot.SetTextColor(textColor);
@@ -399,7 +398,7 @@ avtText2DColleague::SetForegroundColor(double r, double g, double b)
 {
     if(useForegroundForTextColor)
     {
-	textColor.SetRgb(int(r * 255.), int(g * 255.), int(b * 255.));  
+        textColor.SetRgb(int(r * 255.), int(g * 255.), int(b * 255.));  
         textActor->GetTextProperty()->SetColor(r, g, b);
     }
 }
@@ -488,11 +487,11 @@ avtText2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
         avtAnnotationWithTextColleague::UpdatePlotList(lst);
         SetText(textFormatString);
 
-	double x = 0.5 - windowScale / 2. + textPosition[0] * windowScale;
-	double y = textPosition[1];
-	vtkCoordinate *c = textActor->GetPositionCoordinate();
-	c->SetCoordinateSystemToWorld();
-	c->SetValue(x, y);
+        double x = 0.5 - windowScale / 2. + textPosition[0] * windowScale;
+        double y = textPosition[1];
+        vtkCoordinate *c = textActor->GetPositionCoordinate();
+        c->SetCoordinateSystemToWorld();
+        c->SetValue(x, y);
         textActor->SetTextHeight(textHeight * zoomTile);
     }
 }
