@@ -750,7 +750,7 @@ void
 avtLevelsLegend::ChangePosition(double x, double y)
 {
     sBar->GetPositionCoordinate()->SetCoordinateSystemToWorld();
-    sBar->GetPositionCoordinate()->SetValue(x, y);
+    sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
 
     // Set the position 2, incorporating the scale.
     double w, h;
