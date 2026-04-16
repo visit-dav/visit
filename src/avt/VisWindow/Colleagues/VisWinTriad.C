@@ -339,17 +339,17 @@ VisWinTriad::UpdatePlotList(std::vector<avtActor_p> &p)
         // foreground renderer is 0.5.
         double zoomTile =
             0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
-	// Get the width and height of the tile to determine the amount
+        // Get the width and height of the tile to determine the amount
         // to scale the width by.
         int w, h;
         mediator.GetSize(w, h);
         double windowScale = double(w) / double(h);
 
-	double x = 0.5 - windowScale / 2. + 0.1 * windowScale;
-	double y = 0.1;
+        double x = 0.5 - windowScale / 2. + 0.1 * windowScale;
+        double y = 0.1;
         triad->SetOrigin(x, y);
         triad->SetAxisLength(0.08);
-	triad->SetFontHeight(0.02 * zoomTile);
+        triad->SetFontHeight(0.02 * zoomTile);
     }
 }
 
