@@ -259,7 +259,7 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
                              { ProxiedDoNextExternalRenderAsVisualQueue(w,h,c); }
 
     void                GetSize(int &w, int &h)
-                                  { ProxiedGetSize(w, h); }
+                             { ProxiedGetSize(w, h); }
 #if defined(HAVE_OSPRAY)
     bool                GetOsprayRendering()
                              { return ProxiedGetOsprayRendering(); }
