@@ -353,10 +353,10 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
     if(!currentOptions.FieldsEqual(4, &annot) ||
        !currentOptions.FieldsEqual(5, &annot))
     {
-	sliderPosition[0] = annot.GetPosition()[0];
-	sliderPosition[1] = annot.GetPosition()[1];
-	sliderWidth = annot.GetPosition2()[0];
-	sliderHeight = annot.GetPosition2()[1];
+        sliderPosition[0] = annot.GetPosition()[0];
+        sliderPosition[1] = annot.GetPosition()[1];
+        sliderWidth = annot.GetPosition2()[0];
+        sliderHeight = annot.GetPosition2()[1];
     }
 
     //
