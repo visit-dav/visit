@@ -1,5 +1,4 @@
 FROM rockylinux:8.9
-MAINTAINER Kathleen Biagas<biagas2@llnl.gov>
 
 ENV TZ=America/Phoenix
 
@@ -17,24 +16,6 @@ RUN yum-config-manager --enable devel
 
 # fetch build env
 RUN yum install -y \
-    libxcb \
-    libxcb-devel \
-    xcb-util \
-    xcb-util-devel \
-    xcb-util-image \
-    xcb-util-image-devel \
-    xcb-util-keysyms \
-    xcb-util-keysyms-devel \
-    xcb-util-renderutil \
-    xcb-util-renderutil-devel \
-    xcb-util-wm \
-    xcb-util-wm-devel \
-    xcb-proto \
-    libxkbcommon \
-    libxkbcommon-devel \
-    libxkbcommon-x11 \
-    libxkbcommon-x11-devel \
-    mesa-libGL-devel \
     libX11 \
     libX11-devel \
     libX11-xcb \
@@ -49,8 +30,7 @@ RUN yum install -y \
     libXfixes \
     libXfixes-devel \
     libXcursor \
-    libXcursor-devel \
-    lapack-devel
+    libXcursor-devel
 
 
 ## Install other visit dependencies
@@ -71,35 +51,32 @@ RUN yum install -y \
     libxml2 \
     libxml2-devel \
     vim \
-    libffi-devel
+    libffi-devel \
+    bison \
+    flex
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
 RUN yum -y install  gcc-toolset-10
-# this command enables gcc-10, will need to be run each time you run
-# the container interactively
-# or can 'docker run -it <imagename> scl enable gcc-toolset-10 bash'
 
-RUN scl enable gcc-toolset-10 bash
 
-RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
-USER visit
 WORKDIR /home/visit
 
+SHELL ["/bin/bash", "-lc"]
 
 # Create the third-party directory
-RUN mkdir /home/visit/third-party
-# Copy build_visit and the script to run it
-COPY --chown=visit:visit build_visit3_4_2 /home/visit
-COPY --chown=visit:visit run_build_visit.sh /home/visit
-COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
+# Copy build_visit and the scripts to run it
+COPY build_visit3_5_0 /home/visit
+COPY run_build_visit.sh /home/visit
+COPY build_visit_docker_cleanup.py /home/visit
 # build thirdparty libraries
-RUN /bin/bash run_build_visit.sh
+RUN source /opt/rh/gcc-toolset-10/enable &&  ./run_build_visit.sh
+RUN python3 build_visit_docker_cleanup.py
 
 # build and test visit
-COPY --chown=visit:visit build_test_visit.sh /home/visit
-COPY --chown=visit:visit test_visit.py /home/visit
-COPY --chown=visit:visit visit3.4.2.tar.gz /home/visit
+COPY build_test_visit.sh /home/visit
+COPY test_visit.py /home/visit
+COPY visit3.5.0.tar.gz /home/visit
 # Build visit, package, install and test.
-RUN /bin/bash build_test_visit.sh -v 3.4.2
+RUN source /opt/rh/gcc-toolset-10/enable && ./build_test_visit.sh -v 3.5.0
 

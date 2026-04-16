@@ -14,7 +14,7 @@ def home_dir():
 
 def check_to_keep(path):
     res = False
-    if path.count("third-party") > 0:
+    if path.count("third_party") > 0:
         res = True
     elif path.count("build_visit") > 0:
         res = True
@@ -27,7 +27,7 @@ def check_to_keep(path):
     elif path.endswith(".cmake"):
         res = True
     return res
-    
+
 def cleanup_tpl_build_dirs():
     paths = glob.glob( pjoin(home_dir(),"*") )
     for path in paths:
