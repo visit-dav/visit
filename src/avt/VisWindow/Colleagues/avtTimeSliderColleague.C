@@ -150,6 +150,9 @@ avtTimeSliderColleague::~avtTimeSliderColleague()
 // Creation:   Thu Nov 6 14:26:55 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 
@@ -158,8 +161,8 @@ avtTimeSliderColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor2D(timeSlider);
-        mediator.GetForeground()->AddActor2D(textActor);
+        mediator.GetForeground()->AddViewProp(timeSlider);
+        mediator.GetForeground()->AddViewProp(textActor);
         addedToRenderer = true;
     }
 }
@@ -174,6 +177,9 @@ avtTimeSliderColleague::AddToRenderer()
 // Creation:   Thu Nov 6 14:27:22 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 
@@ -182,8 +188,8 @@ avtTimeSliderColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor2D(timeSlider);
-        mediator.GetForeground()->RemoveActor2D(textActor);
+        mediator.GetForeground()->RemoveViewProp(timeSlider);
+        mediator.GetForeground()->RemoveViewProp(textActor);
         addedToRenderer = false;
     }
 }

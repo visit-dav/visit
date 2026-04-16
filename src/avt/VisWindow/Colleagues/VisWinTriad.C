@@ -395,6 +395,10 @@ VisWinTriad::ShouldAddTriad()
 //    Hank Childs, Fri Aug  4 14:44:32 PDT 2000
 //    Put triad on foreground instead of background.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -416,7 +420,7 @@ VisWinTriad::AddTriadToWindow(void)
     // renderer's camera -- the canvas').
     //
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->AddActor2D(triad);
+    foreground->AddViewProp(triad);
 
     addedTriad = true;
 }
@@ -440,6 +444,10 @@ VisWinTriad::AddTriadToWindow(void)
 //    Hank Childs, Fri Aug  4 14:44:32 PDT 2000
 //    Put triad on foreground instead of background.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -451,7 +459,7 @@ VisWinTriad::RemoveTriadFromWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->RemoveActor2D(triad);
+    foreground->RemoveViewProp(triad);
 
     addedTriad = false;
 }

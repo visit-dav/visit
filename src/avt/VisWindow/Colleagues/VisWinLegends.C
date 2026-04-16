@@ -435,7 +435,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         c->SetValue(x, y);
         if (!dbInfoIsAdded)
         {
-            foreground->AddActor2D(dbInfoActor);
+            foreground->AddViewProp(dbInfoActor);
             dbInfoIsAdded = true;
         }
     }
@@ -443,7 +443,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
     {
         if (dbInfoIsAdded)
         {
-            foreground->RemoveActor2D(dbInfoActor);
+            foreground->RemoveViewProp(dbInfoActor);
             dbInfoIsAdded = false;
         }
     }

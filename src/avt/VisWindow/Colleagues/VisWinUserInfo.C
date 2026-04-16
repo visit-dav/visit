@@ -150,6 +150,10 @@ VisWinUserInfo::SetForegroundColor(double fr, double fg, double fb)
 //    Hank Childs, Thu Aug  9 14:01:02 PDT 2001
 //    Don't add the actor if we don't want annotation.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -160,7 +164,7 @@ VisWinUserInfo::AddToWindow(void)
     //
     vtkRenderer *foreground = mediator.GetForeground();
 #ifndef NO_ANNOTATIONS
-    foreground->AddActor2D(infoActor);
+    foreground->AddViewProp(infoActor);
 #endif
 
     addedUserInfo = true;
@@ -184,6 +188,10 @@ VisWinUserInfo::AddToWindow(void)
 //    Hank Childs, Thu Aug  9 14:01:02 PDT 2001
 //    Don't add the actor if we don't want annotation.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -194,7 +202,7 @@ VisWinUserInfo::RemoveFromWindow(void)
     //
     vtkRenderer *foreground = mediator.GetForeground();
 #ifndef NO_ANNOTATIONS
-    foreground->RemoveActor2D(infoActor);
+    foreground->RemoveViewProp(infoActor);
 #endif
 
     addedUserInfo = false;
