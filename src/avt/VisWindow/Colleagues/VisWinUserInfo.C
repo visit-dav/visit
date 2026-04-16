@@ -323,6 +323,9 @@ VisWinUserInfo::UpdateUserText()
         0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
     int w, h;
     mediator.GetSize(w, h);
+    // Get the width and height of the tile to determine the amount
+    // to scale the width by.
+    double windowScale = double(w) / double(h);
     if(w > 0 && h > 0 && infoActor)
     {
         //
@@ -363,7 +366,6 @@ VisWinUserInfo::UpdateUserText()
         float textScale = textAttributes.scale;
         vtkCoordinate *pos = infoActor->GetPositionCoordinate();
         pos->SetCoordinateSystemToWorld();
-        double windowScale = double(w) / double(h);
         double xc = 0.5 + windowScale / 2. - ((defaultUserInfoWidth * textScale) + 0.05) * windowScale;
         pos->SetValue(xc, 0.015, 0.);
         infoActor->SetWidth(defaultUserInfoWidth * textScale * zoomTile);
