@@ -393,11 +393,11 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         // foreground renderer is 0.5.
         double zoomTile =
             0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
-	// Get the width and height of the tile to determine the amount
-	// to scale the width by.
+        // Get the width and height of the tile to determine the amount
+        // to scale the width by.
         int w, h;
         mediator.GetSize(w, h);
-	double windowScale = double(w) / double(h);
+        double windowScale = double(w) / double(h);
 
         avtBehavior_p b = lst[0]->GetBehavior();
         avtDataAttributes &atts = b->GetInfo().GetAttributes();
