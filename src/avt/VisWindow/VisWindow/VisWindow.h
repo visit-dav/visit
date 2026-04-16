@@ -463,7 +463,7 @@ class VisitInteractor;
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //    Added Set/Get TiledRenderingWidth and TiledRenderingHeight to
-//    support tiled rendering.
+//    support tiled rendering. Remove GetExtents.
 //
 // ****************************************************************************
 
@@ -775,7 +775,7 @@ public:
     void                 ResumeTranslucentGeometry();
 
     bool                 TransparenciesExist(void);
-    avtTransparencyActor* GetTransparencyActor();
+    avtTransparencyActor *GetTransparencyActor();
     vtkCamera*           GetCamera();
 
     void                 GlyphPick(const double*, const double*, int&, int&,
@@ -783,14 +783,12 @@ public:
     void                 GlyphPick(const double*, const double*, int&, int&,
                                    bool&, double &, const bool = false);
 
-    virtual void UpdateMouseActions(std::string action,
+    virtual void         UpdateMouseActions(std::string action,
                             double start_dx, double start_dy,
                             double end_dx, double end_dy,
                             bool ctrl, bool shift);
 
-    VisWinAxes3D *GetAxes3D() const { return axes3D; }
-
-    void GetExtents(double ext[2]); // TODO: Remove with VTK8
+    VisWinAxes3D        *GetAxes3D() const { return axes3D; }
 
     vtkRenderer         *GetForeground(void);
 protected:

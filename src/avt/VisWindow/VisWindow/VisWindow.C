@@ -260,8 +260,8 @@ VisWindow::Initialize(VisWinRendering *ren)
     SetViewport(0., 0., 1., 1.);
     multiresolutionMode = false;
     multiresolutionCellSize = 0.002;
-    tiledRenderingWidth = 8192;
-    tiledRenderingHeight = 8192;
+    tiledRenderingWidth = 2048;
+    tiledRenderingHeight = 2048;
     EnableUpdates();
     NoPlots();
     doAxisScaling = false;
@@ -7998,10 +7998,4 @@ VisWindow::UpdateMouseActions(std::string action,
                                    double end_dx, double end_dy,
                                    bool ctrl, bool shift) {
     rendering->UpdateMouseActions(action, start_dx, start_dy, end_dx, end_dy, ctrl, shift);
-}
-
-void
-VisWindow::GetExtents(double ext[2]) // TODO: Remove with VTK8
-{
-    plots->GetDataRange(ext[0], ext[1]);
 }
