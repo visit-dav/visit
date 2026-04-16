@@ -141,6 +141,9 @@ avtImageColleague::CreateActorAndMapper()
 // Creation:   Thu Nov 6 15:52:19 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //
 // ****************************************************************************
 void
@@ -148,7 +151,7 @@ avtImageColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor2D(actor);
+        mediator.GetForeground()->AddViewProp(actor);
         addedToRenderer = true;
     }
 }
@@ -163,6 +166,9 @@ avtImageColleague::AddToRenderer()
 // Creation:   Thu Nov 6 15:52:38 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //
 // ****************************************************************************
 void
@@ -170,7 +176,7 @@ avtImageColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor2D(actor);
+        mediator.GetForeground()->RemoveViewProp(actor);
         addedToRenderer = false;
     }
 }
@@ -636,10 +642,6 @@ avtImageColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
     if(lst.size() > 0 && iData)
     {
-        // The zoomTile calculation assumes that the parallel scale for the
-        // foreground renderer is 0.5.
-        double zoomTile =
-            0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
         // Get the width and height of the tile to determine the amount
         // to scale the width by.
         int w, h;
