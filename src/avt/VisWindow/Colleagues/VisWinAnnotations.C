@@ -289,7 +289,7 @@ VisWinAnnotations::UpdateLegends()
                         yTop -= height;
 
                         legend->SetLegendPosition(xLeft, yTop);
-			legend->SetLegendScale(zoomTile, zoomTile);
+                        legend->SetLegendScale(zoomTile, zoomTile);
                         legend->Update();
 
                         yTop -= 0.02;
@@ -308,7 +308,7 @@ VisWinAnnotations::UpdateLegends()
                         yTop -= height;
 
                         legend->SetLegendPosition(xLeft, yTop);
-			legend->SetLegendScale(zoomTile, zoomTile);
+                        legend->SetLegendScale(zoomTile, zoomTile);
                         legend->Update();
 
                         yTop -= 0.02;
