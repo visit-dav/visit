@@ -7999,3 +7999,9 @@ VisWindow::UpdateMouseActions(std::string action,
                                    bool ctrl, bool shift) {
     rendering->UpdateMouseActions(action, start_dx, start_dy, end_dx, end_dy, ctrl, shift);
 }
+
+void
+VisWindow::GetExtents(double ext[2]) // TODO: Remove with VTK8
+{
+    plots->GetDataRange(ext[0], ext[1]);
+}

@@ -463,7 +463,7 @@ class VisitInteractor;
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //    Added Set/Get TiledRenderingWidth and TiledRenderingHeight to
-//    support tiled rendering. Remove GetExtents.
+//    support tiled rendering.
 //
 // ****************************************************************************
 
@@ -789,6 +789,8 @@ public:
                             bool ctrl, bool shift);
 
     VisWinAxes3D        *GetAxes3D() const { return axes3D; }
+
+    void                 GetExtents(double ext[2]); // TODO: Remove with VTK8
 
     vtkRenderer         *GetForeground(void);
 protected:
