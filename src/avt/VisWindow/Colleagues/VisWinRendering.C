@@ -2725,6 +2725,12 @@ VisWinRendering::SetMSAASamples(int numSamples)
 //   Kathleen Biagas, Thu Oct 16, 2025.
 //   Check of olgWin is valid, prevent possible crash.
 //
+//   OpenAI, Apr 17 2026
+//   Avoid querying GL_MAX_SAMPLES until VTK has a current OpenGL context.
+//   If the render window is not ready yet during startup, return false
+//   instead of crashing.  Once the context is current, keep using the real
+//   GL_MAX_SAMPLES query so MSAA remains available on supported systems.
+//
 // ****************************************************************************
 
 bool
@@ -2732,9 +2738,26 @@ VisWinRendering::MSAAAvailable()
 {
 #ifdef GL_MAX_SAMPLES
     vtkOpenGLRenderWindow* oglWin = vtkOpenGLRenderWindow::SafeDownCast(GetRenderWindow());
+    if (oglWin == NULL)
+        return false;
+
+    // Startup can query MSAA availability before Qt/VTK has finished creating
+    // and binding the widget's OpenGL context.  Do not issue GL calls until
+    // the context is current.
+    if (!oglWin->IsCurrent())
+        oglWin->MakeCurrent();
+
+    if (!oglWin->IsCurrent())
+        return false;
+
+    if (!oglWin->GetInitialized())
+        oglWin->OpenGLInit();
+
+    if (!oglWin->GetInitialized() || oglWin->GetState() == NULL)
+        return false;
+
     int msamples = 0;
-    if(oglWin)
-        oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
+    oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
     return (msamples > 1);
 #endif
     return false;
