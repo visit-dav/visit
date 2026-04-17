@@ -1893,9 +1893,9 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                     TR("The window was too large to save at the requested resolution.  "
                        "The resolution has been automatically reduced."));
             }
-	    // if the total image size is too large, reduce them
-	    // proportionally.
-	    if (w * h > 536756224)
+            // if the total image size is too large, reduce them
+            // proportionally.
+            if (w * h > 536756224)
             {
                 double image_size = (double)(w * h);
                 w = (int)((double)w * std::sqrt(536756224. / image_size));

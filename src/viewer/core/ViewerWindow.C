@@ -7845,7 +7845,7 @@ ViewerWindow::GetTiledRenderingWidth() const
 //   Sets the window's tiled rendering height.
 //
 // Arguments:
-//   width   : The tiled rendering height.
+//   height  : The tiled rendering height.
 //
 // Programmer: Eric Brugger
 // Creation:   Mon Feb  2 14:37:47 PST 2026
