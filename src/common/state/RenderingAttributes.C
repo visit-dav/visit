@@ -161,8 +161,8 @@ void RenderingAttributes::Init()
     stereoRendering = false;
     stereoType = CrystalEyes;
     notifyForEachRender = false;
-    tiledRenderingWidth = 8192;
-    tiledRenderingHeight = 8192;
+    tiledRenderingWidth = 2048;
+    tiledRenderingHeight = 2048;
     scalableActivationMode = Auto;
     scalableAutoThreshold = 2000000;
     specularFlag = false;

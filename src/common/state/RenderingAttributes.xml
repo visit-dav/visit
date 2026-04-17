@@ -67,10 +67,10 @@
       false
     </Field>
     <Field name="tiledRenderingWidth" label="tiledRenderingWidth" type="int">
-      8192
+      2048
     </Field>
     <Field name="tiledRenderingHeight" label="tiledRenderingHeight" type="int">
-      8192
+      2048
     </Field>
     <Field name="scalableActivationMode" label="scalableActivationMode" type="enum" subtype="TriStateMode">
       Auto
