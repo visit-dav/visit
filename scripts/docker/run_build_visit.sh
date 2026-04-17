@@ -1,1 +1,13 @@
-echo "yes" | ./build_visit3_4_2 --required --optional --mesagl --mpich --uintah --no-moab --no-visit --thirdparty-path /home/visit/third-party --makeflags -j4; python3 build_visit_docker_cleanup.py
+#!/bin/bash
+echo "yes" | ./build_visit3_5_0 \
+--makeflags -j4 \
+--skip-opengl-context-check \
+--no-visit \
+--parallel \
+--mpich \
+--optional \
+--llvm \
+--mesagl \
+--anari \
+--ospray \
+--no-moab
