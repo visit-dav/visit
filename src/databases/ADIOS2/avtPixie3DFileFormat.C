@@ -77,6 +77,7 @@ avtPixie3DFileFormat::Identify(const char *fname)
     adios2::IO io(adios.DeclareIO("ReadBP"));
     io.SetEngine(engineName);
     adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
+    if (!reader) return false;
     adios2::StepStatus status =
         reader.BeginStep(adios2::StepMode::Read, -1.0f);
     if (status == adios2::StepStatus::OK)
@@ -265,7 +266,7 @@ avtPixie3DFileFormat::Initialize()
 
     //Set up time and cycles.
     numTimeSteps = 1;
-    if (variables.find("time") != variables.end());
+    if (variables.find("time") != variables.end())
     {
         auto timeV = variables["time"];
         string nsteps = timeV["AvailableStepsCount"];

@@ -44,60 +44,50 @@
 #    Kathleen Biagas, Tue Nov 25, 2025
 #    silex/browser now stored in bin dir.
 #
+#    Kathleen Biagas, Mon Mar 3, 2026
+#    On *nix, use the library specified by IMPORTED_SONAME_RELEASE for
+#    installation so that all the proper symlinks will be installed
+#    alongside VisIt.
+#
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file
 #
 
-if(WIN32)
-  if(EXISTS ${SILO_DIR}/lib/silohdf5.lib)
-      SET_UP_THIRD_PARTY(SILO LIBS silohdf5)
-  else()
-      SET_UP_THIRD_PARTY(SILO LIBS siloh5)
-  endif()
-  if(EXISTS ${SILO_DIR}/bin/silex.exe)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-         ${SILO_DIR}/bin/silex.exe
-         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-    install(FILES ${SILO_DIR}/bin/silex.exe
-        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                    WORLD_READ WORLD_EXECUTE)
-  endif()
-  if(EXISTS ${SILO_DIR}/bin/browser.exe)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                    ${SILO_DIR}/bin/browser.exe
-                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-    install(FILES ${SILO_DIR}/bin/browser.exe
-            DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                        GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                        WORLD_READ WORLD_EXECUTE)
-  endif()
-else()
-    find_library(SILOH5_LIBRARY_EXISTS
-      NAME siloh5
-      PATHS ${SILO_DIR}/lib
-      NO_DEFAULT_PATH
-      NO_CMAKE_ENVIRONMENT_PATH
-      NO_CMAKE_PATH
-      NO_SYSTEM_ENVIRONMENT_PATH)
-    if(SILOH5_LIBRARY_EXISTS)
-        SET_UP_THIRD_PARTY(SILO LIBS siloh5)
-    else()
-        SET_UP_THIRD_PARTY(SILO LIBS silo)
-    endif()
+if(EXISTS ${VISIT_SILO_DIR}/lib64/cmake/Silo)
+    set(SILO_DIR ${VISIT_SILO_DIR}/lib64/cmake/Silo)
+elseif(EXISTS ${VISIT_SILO_DIR}/lib/cmake/Silo)
+    set(SILO_DIR ${VISIT_SILO_DIR}/lib/cmake/Silo)
 endif()
+
+
+find_package(Silo PATHS ${SILO_DIR} NO_DEFAULT_PATH)
+
+if(TARGET silo)
+    set(SILO_FOUND true)
+    set(SILO_LIB silo)
+    if(WIN32)
+        get_target_property(silo_loc silo IMPORTED_IMPLIB_RELEASE)
+    else()
+        get_target_property(silo_loc silo IMPORTED_LOCATION_RELEASE)
+
+    endif()
+
+    # include dirs aren't attached to the library in the export set
+    target_include_directories(silo INTERFACE ${SILO_INCLUDE_DIR})
+    THIRD_PARTY_INSTALL_LIBRARY(${silo_loc})
+    THIRD_PARTY_INSTALL_INCLUDE(silo ${SILO_INCLUDE_DIR})
+endif()
+
 
 # We use Silo for PDB most of the time so set up additional PDB variables.
 if(SILO_FOUND)
     message(STATUS "    Using PDB Lite built into Silo")
     set(PDB_FOUND 1 CACHE BOOL "PDB library found" FORCE)
-    set(PDB_INCLUDE_DIR ${SILO_INCLUDE_DIR} CACHE PATH "PDB include directory" FORCE)
-    set(PDB_LIBRARY_DIR ${SILO_LIBRARY_DIR} CACHE PATH "PDB library directory" FORCE)
-    set(PDB_LIB ${SILO_LIB} CACHE STRING "PDB library" FORCE)
-    mark_as_advanced(PDB_INCLUDE_DIR PDB_LIBRARY_DIR PDB_LIB)
+    set(PDB_LIB silo CACHE STRING "PDB library" FORCE)
+    mark_as_advanced(PDB_LIB)
 
+   # for plugin vs install:
+   cmake_path(GET silo_loc FILENAME SILO_IMPORT_LIB)
 endif()
 

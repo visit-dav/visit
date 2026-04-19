@@ -1,8 +1,6 @@
-FROM ubuntu:jammy
-MAINTAINER Kathleen Biagas <biagas2@llnl.gov>
+FROM ubuntu:22.04
 
 # fetch build env
-ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Los_Angeles
 RUN apt-get update && apt-get install -y \
     git \
@@ -72,10 +70,7 @@ RUN apt-get update && apt-get install -y \
     libxml2 \
     libxml2-dev \
     vim \
-    emacs \
     cpio \
-    libegl1 \
-    libegl1-mesa-dev \
     liblapack-dev \
  && rm -rf /var/lib/apt/lists/*
 
@@ -83,7 +78,7 @@ RUN apt-get update && apt-get install -y libffi-dev && rm -rf /var/lib/apt/lists
 
 RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-ENV LANG en_US.utf8
+ENV LANG=en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
@@ -91,19 +86,18 @@ RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
 USER visit
 WORKDIR /home/visit
 
-# Create the third-party directory
-RUN mkdir third-party
 # Copy build_visit and the script to run it
-COPY --chown=visit:visit build_visit3_4_2 /home/visit
-COPY --chown=visit:visit run_build_visit-ubuntu22.sh /home/visit
+COPY --chown=visit:visit build_visit3_5_0 /home/visit
+COPY --chown=visit:visit run_build_visit.sh /home/visit
 COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
 # build thirdparty libraries
-RUN /bin/bash run_build_visit-ubuntu22.sh
+RUN /bin/bash run_build_visit.sh
+RUN python3 build_visit_docker_cleanup.py
 
 # build and test visit
 COPY --chown=visit:visit build_test_visit.sh /home/visit
 COPY --chown=visit:visit test_visit.py /home/visit
-COPY --chown=visit:visit visit3.4.2.tar.gz /home/visit
+COPY --chown=visit:visit visit3.5.0.tar.gz /home/visit
 # Build visit, package, install and test.
-RUN /bin/bash build_test_visit.sh -v 3.4.2
+RUN /bin/bash build_test_visit.sh -v 3.5.0
 

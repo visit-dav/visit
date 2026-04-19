@@ -40,7 +40,7 @@ Here are the steps involved in *recording* a macro.
 
 #. Now, the **Macros** tab will contain a function for your recorded commands and
    it will call the RegisterMacro function from the VisIt Python Interface to
-   associate your Python function with the named  button. **Note:** Remembe that you
+   associate your Python function with the named  button. **Note:** Remember that you
    can edit the recorded Python code to suit your needs. You can generalize the code
    so it can, for example, operate on the active database instead of a specific
    database. The state information that you need to generalize can often be

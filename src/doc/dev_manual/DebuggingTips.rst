@@ -20,8 +20,8 @@ For example A.mdserver.5.vlog will be renamed to B.mdserver.5.vlog.
 At most five sets of debugging logs will be kept.
 The logs from the most current run will always begin with *A*.
 If you don't want that behavior, you may add ``-clobber_vlogs`` to VisIt_'s command line arguments.
-The A.mdserver*.vlog and A.engine*.vlog files are useful when debugging a database reader plug-in.
-The A.viewer*.vlog and A.engine*.vlog files are usefule when debugging a plot plugin.
+The A.mdserver*.vlog and A.engine*.vlog files are useful when debugging a database reader plugin.
+The A.viewer*.vlog and A.engine*.vlog files are useful when debugging a plot plugin.
 
 The debugging logs will contain information written to them by the debugging statements in VisIt_'s source code.
 If you want to add debugging statements to your AVT code then you can use the *debug1*, *debug2*, *debug3*, *debug4*, or *debug5* streams as shown in the following code listing.
@@ -44,7 +44,7 @@ Keep in mind that level 1 debug log files are less populated than level 5, and m
     {
         // Write messages to different levels of the debug logs.
         debug1 << "Hi from avtXXXXFileFormat::GetMesh" << endl;
-        debug4 << "Many database plug-ins prefer debug4" << endl;
+        debug4 << "Many database plugins prefer debug4" << endl;
         debug5 << "Lots of detail from avtXXXXFileFormat::GetMesh" << endl;
         return 0;
     }
@@ -103,7 +103,7 @@ Attaching a debugger
 VisIt_ has various options for attaching debuggers on Linux machines, including ``gdb``, ``totalview``, and ``valgrind`` to name a few.
 The full list is available in the :ref:`Startup options<StartupOptions>` section under ``Debugging options``.
 
-Typically, when starting up VisIt_ and attaching a debugger, the launcher logic starts the debugger and loads the VisIt_ component executable and sets the command-line arguments but does not actually start the executable.
+Typically, when starting up VisIt_ and attaching a debugger, the launcher logic starts the debugger and loads the VisIt_ component executable and sets the command line arguments but does not actually start the executable.
 Instead, it opens with the debugger's interactive prompt where the user must enter ``run`` to actually start the component.
 This allows the user to set breakpoints even before starting the component.
 
@@ -171,7 +171,7 @@ cli        src/visitpy/cli/cli.C      main
 raise(SIGSTOP)
 --------------
 
-Sometimes, its easiest to get a debugger to break exactly where you want by modifing the source code using the `raise() <https://man7.org/linux/man-pages/man3/raise.3.html>`__ function.
+Sometimes, it's easiest to get a debugger to break exactly where you want by modifying the source code using the `raise() <https://man7.org/linux/man-pages/man3/raise.3.html>`__ function.
 The following example shows how to use ``raise()`` to have the program break in ``factorial()``
 
 .. container:: collapsible

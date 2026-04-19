@@ -1,5 +1,4 @@
 FROM debian:bookworm
-MAINTAINER Kathleen Biagas <biagas2@llnl.gov>
 
 # fetch build env
 ENV TZ=America/Los_Angeles
@@ -80,26 +79,23 @@ RUN apt-get update && apt-get install -y libffi-dev && rm -rf /var/lib/apt/lists
 
 RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-ENV LANG en_US.utf8
+ENV LANG=en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
-RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
-USER visit
 WORKDIR /home/visit
 
-# Create the third-party directory
-RUN mkdir /home/visit/third-party
 # Copy build_visit and the script to run it
-COPY --chown=visit:visit build_visit3_4_2 /home/visit
-COPY --chown=visit:visit run_build_visit-debian12.sh /home/visit
-COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
+COPY build_visit3_5_0 /home/visit
+COPY run_build_visit.sh /home/visit
+COPY build_visit_docker_cleanup.py /home/visit
 # Build the third party libraries
-RUN /bin/bash run_build_visit-debian12.sh
+RUN /bin/bash run_build_visit.sh
+RUN python3 build_visit_docker_cleanup.py
 
 # Copy necesary files build visit install and test
-COPY --chown=visit:visit visit3.4.2.tar.gz /home/visit
-COPY --chown=visit:visit build_test_visit.sh /home/visit
-COPY --chown=visit:visit test_visit.py /home/visit
-RUN /bin/bash build_test_visit.sh -v 3.4.2
+COPY visit3.5.0.tar.gz /home/visit
+COPY build_test_visit.sh /home/visit
+COPY test_visit.py /home/visit
+RUN /bin/bash build_test_visit.sh -v 3.5.0
 

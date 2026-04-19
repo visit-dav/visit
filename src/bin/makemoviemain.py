@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 ###############################################################################
 # Function: main
@@ -9,6 +10,8 @@ import sys
 # Date:       Mon Jul 28 15:35:54 PST 2003
 #
 # Modifications:
+#   Kathleen Biagas, Tue Feb 10, 2026
+#   Use pathlib with Source command to prevent syntax warning on Windows.
 #
 ###############################################################################
 
@@ -25,7 +28,7 @@ def main():
     else:
         # Source the makemovie.py script, which contains all of the 
         # code for the MakeMovie class.
-        Source(makemovie)
+        Source(Path(makemovie).as_posix())
 
         movie = MakeMovie()
         movie.ProcessArguments()

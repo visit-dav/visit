@@ -36,7 +36,6 @@
             <lib name="pidx"/>
             <lib name="qwt"/>
             <lib name="silo"/>
-            <lib name="szip"/>
             <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>

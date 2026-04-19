@@ -25,7 +25,7 @@
 // ****************************************************************************
 // Method: VisitLineTool::VisitLineTool
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the line tool.
 //
 // Arguments:
@@ -35,7 +35,7 @@
 // Creation:   Tue Jun 18 15:38:59 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 VisitLineTool::VisitLineTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
@@ -91,14 +91,14 @@ VisitLineTool::VisitLineTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
 // ****************************************************************************
 // Method: VisitLineTool::~VisitLineTool
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the line tool class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jun 18 15:45:08 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 VisitLineTool::~VisitLineTool()
@@ -129,7 +129,7 @@ VisitLineTool::~VisitLineTool()
 
     // Delete the text mappers and actors
     DeleteTextActors();
- 
+
     // Delete the guide
     DeleteGuide();
 }
@@ -137,7 +137,7 @@ VisitLineTool::~VisitLineTool()
 // ****************************************************************************
 // Method: VisitLineTool::InitializePoints
 //
-// Purpose: 
+// Purpose:
 //   Uses the bounding box to determine good initial values for the line
 //   endpoints.
 //
@@ -145,7 +145,9 @@ VisitLineTool::~VisitLineTool()
 // Creation:   Wed Jun 19 15:15:03 PST 2002
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Tue Jan 27, 2026
+//    Fudge z coordinate in 2D so that line tool will appear on top of plots.
+//
 // ****************************************************************************
 
 void
@@ -158,9 +160,10 @@ VisitLineTool::InitializePoints()
     proxy.GetBounds(bounds);
     double dY = bounds[3] - bounds[2];
     double dZ = bounds[5] - bounds[4];
-    double Z = 0.;
+    double Z = 0.00001;
     if(window3D)
         Z = bounds[4] + 0.5 * dZ;
+
     avtVector p1(bounds[0], bounds[2] + 0.5 * dY, Z);
     avtVector p2(bounds[1], bounds[2] + 0.5 * dY, Z);
     Interface.SetPoint1(p1.x, p1.y, p1.z);
@@ -173,14 +176,16 @@ VisitLineTool::InitializePoints()
 // ****************************************************************************
 // Method: VistLineTool::SetVisibility
 //
-// Purpose: 
+// Purpose:
 //   Sets visibility of the tool. Use this if you need to temporarily
 //   take the tool out of the scene during transparent rendering.
 //
-// Programmer: Burlen Loring 
+// Programmer: Burlen Loring
 // Creation:   Mon Sep 28 16:06:19 PDT 2015
 //
 // Modifications:
+//   Kathleen Biags, Tue Jan 27, 2026
+//   Add third pointTextActor (middle hot point) to show length of line.
 //
 // ****************************************************************************
 
@@ -193,20 +198,21 @@ VisitLineTool::SetVisibility(int val)
         guideActor->SetVisibility(val);
         pointTextActor[0]->SetVisibility(val);
         pointTextActor[1]->SetVisibility(val);
+        pointTextActor[2]->SetVisibility(val);
     }
 }
 
 // ****************************************************************************
 // Method: VisitLineTool::Enable
 //
-// Purpose: 
+// Purpose:
 //   This method enables the tool.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jun 18 15:46:43 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Sat Jul 13 18:03:18 PDT 2002 
+//   Kathleen Bonnell, Sat Jul 13 18:03:18 PDT 2002
 //   Comment out call to InitializePoints so that this tool can be initialized
 //   from a plot's attributes.
 //
@@ -231,7 +237,7 @@ VisitLineTool::Enable()
 // ****************************************************************************
 // Method: VisitLineTool::Disable
 //
-// Purpose: 
+// Purpose:
 //   This method disables the tool.
 //
 // Programmer: Brad Whitlock
@@ -259,7 +265,7 @@ VisitLineTool::Disable()
 // ****************************************************************************
 // Method: VisitLineTool::IsAvailable
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the tool is available for use.
 //
 // Returns:    Whether or not the tool is available for use.
@@ -280,27 +286,32 @@ VisitLineTool::Disable()
 //    I added the ability to display the parallel axes either horizontally
 //    or vertically.
 //
+//    Kathleen Biagas, Wed Jan 28, 2026 
+//    Disabled for Curve window mode.
+//
 // ****************************************************************************
 
 bool
 VisitLineTool::IsAvailable() const
 {
     return proxy.GetMode() != WINMODE_AXISARRAY &&
+           proxy.GetMode() != WINMODE_CURVE &&
            proxy.GetMode() != WINMODE_PARALLELAXES &&
-           proxy.GetMode() != WINMODE_VERTPARALLELAXES && proxy.HasPlots();
+           proxy.GetMode() != WINMODE_VERTPARALLELAXES &&
+           proxy.HasPlots();
 }
 
 // ****************************************************************************
 // Method: VisitLineTool::Start2DMode
 //
-// Purpose: 
+// Purpose:
 //   This method switches the tool to 2D mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 8 11:46:54 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -318,14 +329,14 @@ VisitLineTool::Start2DMode()
 // ****************************************************************************
 // Method: VisitLineTool::Stop3DMode
 //
-// Purpose: 
+// Purpose:
 //   This method tells the tool that 3D mode is stopping.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 8 11:47:35 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -343,14 +354,14 @@ VisitLineTool::Stop3DMode()
 // ****************************************************************************
 // Method: VisitLineTool::Start3DMode
 //
-// Purpose: 
+// Purpose:
 //   Indicates that the window is switching to 3D.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun 19 15:00:13 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -362,7 +373,7 @@ VisitLineTool::Start3DMode()
 // ****************************************************************************
 // Method: VisitLineTool::SetForegroundColor
 //
-// Purpose: 
+// Purpose:
 //   This method sets the tool's foreground color.
 //
 // Arguments:
@@ -374,8 +385,11 @@ VisitLineTool::Start3DMode()
 // Creation:   Tue Jun 18 15:46:43 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
+//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   Use vtkTextProperty to set actor color instead of vtkProperty.
+//
+//   Kathleen Biags, Tue Jan 27, 2026
+//   Add third pointTextActor (middle hot point) to show length of line.
 //
 // ****************************************************************************
 
@@ -389,12 +403,13 @@ VisitLineTool::SetForegroundColor(double r, double g, double b)
     lineActor->GetProperty()->SetSpecular(1.);
     pointTextActor[0]->GetTextProperty()->SetColor(color);
     pointTextActor[1]->GetTextProperty()->SetColor(color);
+    pointTextActor[2]->GetTextProperty()->SetColor(color);
 }
 
 // ****************************************************************************
 // Method: VisitLineTool::UpdateView
 //
-// Purpose: 
+// Purpose:
 //   Updates the position of the text based on the camera position.
 //
 // Programmer: Brad Whitlock
@@ -416,16 +431,16 @@ VisitLineTool::UpdateView()
 // ****************************************************************************
 // Method: VisitLineTool::UpdateTool
 //
-// Purpose: 
+// Purpose:
 //   Repostions the tool using the attributes stored in the Interface.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jun 18 15:55:44 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Fri Jun  6 15:36:24 PDT 2003 
+//   Kathleen Bonnell, Fri Jun  6 15:36:24 PDT 2003
 //   Added support for full-frame mode.
-//   
+//
 //   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
@@ -441,10 +456,10 @@ VisitLineTool::UpdateTool()
 
     if (proxy.GetFullFrameMode())
     {
-        // 
+        //
         // Translate the hotPoints so they appear in the correct position
-        // in full-frame mode. 
-        // 
+        // in full-frame mode.
+        //
         double scale;
         int type;
         proxy.GetScaleFactorAndType(scale, type);
@@ -479,7 +494,7 @@ VisitLineTool::UpdateTool()
 // ****************************************************************************
 // Method: VisitLineTool::CreateLineActor
 //
-// Purpose: 
+// Purpose:
 //   Creates the plane actor.
 //
 // Programmer: Brad Whitlock
@@ -505,18 +520,22 @@ VisitLineTool::CreateLineActor()
 // ****************************************************************************
 // Method: VisitLineTool::UpdateLine
 //
-// Purpose: 
+// Purpose:
 //   Updates the position of the line.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jun 18 16:59:10 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Fri Jul 26 10:52:09 PDT 2002   
+//   Kathleen Bonnell, Fri Jul 26 10:52:09 PDT 2002
 //   Register lineData to avoid memory problems.
-//   
+//
 //   Brad Whitlock, Wed Feb  4 13:55:32 PST 2015
 //   Update the source so it has some geometry.
+//
+//   Kathleen Biagas, Tue Jan 27, 2026
+//   Fudged z coordinate in 2D that so line tool can appear on
+//   top of 2D plots.
 //
 // ****************************************************************************
 
@@ -525,6 +544,14 @@ VisitLineTool::UpdateLine()
 {
     avtVector p1(hotPoints[0].pt);
     avtVector p2(hotPoints[1].pt);
+
+    // in order to get the line tool to appear on top of the 2d plot
+    // fudge the z coordinate to be 0.00001
+    if(!window3D)
+    {
+      p1.z = 0.000001;
+      p2.z = 0.000001;
+    }
     lineSource->SetPoint1(p1.x, p1.y, p1.z);
     lineSource->SetPoint2(p2.x, p2.y, p2.z);
     lineSource->SetResolution(1);
@@ -538,7 +565,7 @@ VisitLineTool::UpdateLine()
 // ****************************************************************************
 // Method: VisitLineTool::CreateTextActors
 //
-// Purpose: 
+// Purpose:
 //   Create the text actors and mappers used to draw the point info.
 //
 // Programmer: Brad Whitlock
@@ -547,6 +574,9 @@ VisitLineTool::UpdateLine()
 // Modifications:
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   Replace vtkActor2d/vtkTextMapper pairs with vtkTextActor.
+//
+//   Kathleen Biags, Tue Jan 27, 2026
+//   Add third pointTextActor (middle hot point) to show length of line.
 //
 // ****************************************************************************
 
@@ -558,12 +588,15 @@ VisitLineTool::CreateTextActors()
 
     pointTextActor[1] = vtkTextActor::New();
     pointTextActor[1]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
+
+    pointTextActor[2] = vtkTextActor::New();
+    pointTextActor[2]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
 }
 
 // ****************************************************************************
 // Method: VisitLineTool::DeleteTextActors
 //
-// Purpose: 
+// Purpose:
 //   Deletes the text actors and mappers.
 //
 // Programmer: Brad Whitlock
@@ -573,12 +606,15 @@ VisitLineTool::CreateTextActors()
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   TextMappers no longer required.
 //
+//   Kathleen Biags, Tue Jan 27, 2026
+//   Add third pointTextActor (middle hot point) to show length of line.
+//
 // ****************************************************************************
 
 void
 VisitLineTool::DeleteTextActors()
 {
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(pointTextActor[i] != NULL)
         {
@@ -591,13 +627,15 @@ VisitLineTool::DeleteTextActors()
 // ****************************************************************************
 // Method: VisitLineTool::AddText
 //
-// Purpose: 
+// Purpose:
 //   Adds the text actors to the foreground canvas.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jun 18 16:07:34 PST 2002
 //
 // Modifications:
+//   Kathleen Biags, Tue Jan 27, 2026
+//   Add third pointTextActor (middle hot point) to show length of line.
 //
 // ****************************************************************************
 
@@ -607,19 +645,22 @@ VisitLineTool::AddText()
 #ifndef NO_ANNOTATIONS
     proxy.GetForeground()->AddActor2D(pointTextActor[0]);
     proxy.GetForeground()->AddActor2D(pointTextActor[1]);
+    proxy.GetForeground()->AddActor2D(pointTextActor[2]);
 #endif
 }
 
 // ****************************************************************************
 // Method: VisitLineTool::RemoveText
 //
-// Purpose: 
+// Purpose:
 //   Removes the text actors from the foreground canvas.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jun 18 16:07:53 PST 2002
 //
 // Modifications:
+//   Kathleen Biags, Tue Jan 27, 2026
+//   Add third pointTextActor (middle hot point) to show length of line.
 //
 // ****************************************************************************
 
@@ -629,13 +670,14 @@ VisitLineTool::RemoveText()
 #ifndef NO_ANNOTATIONS
     proxy.GetForeground()->RemoveActor2D(pointTextActor[0]);
     proxy.GetForeground()->RemoveActor2D(pointTextActor[1]);
+    proxy.GetForeground()->RemoveActor2D(pointTextActor[2]);
 #endif
 }
 
 // ****************************************************************************
 // Method: VisitLineTool::UpdateText
 //
-// Purpose: 
+// Purpose:
 //   Updates the info that the text actors display.
 //
 // Programmer: Brad Whitlock
@@ -652,12 +694,18 @@ VisitLineTool::RemoveText()
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //   Changed code slightly to be more legible.
 //
+//   Kathleen Biagas, Tue Jan 27, 2026
+//   Handle fudged z coordinate in 2D that enables line tool to appear on
+//   top of 2D plots.
+//   Compute length for third pointTextActor (middle hot point).
+//
 // ****************************************************************************
 
 void
 VisitLineTool::UpdateText()
 {
     const char *prefix[] = {"Start", "End"};
+    char str[100];
 
     for(int i = 0; i < 2; ++i)
     {
@@ -665,7 +713,6 @@ VisitLineTool::UpdateText()
         double py = hotPoints[i].pt.y;
         double pz = hotPoints[i].pt.z;
 
-        char str[100];
         if (proxy.GetFullFrameMode())
         {
             double scale;
@@ -683,7 +730,15 @@ VisitLineTool::UpdateText()
             py /= axisscale[1];
             pz /= axisscale[2];
         }
-        
+
+        // in order to get the line tool to appear on top of the 2d plot
+        // we fudge the z coordinate to be 0.00001, but it should show
+        // to user as '0.0'
+        if(!window3D)
+        {
+            pz = 0.0;
+        }
+
         sprintf(str, "%s <%1.3g %1.3g %1.3g>", prefix[i], px, py, pz);
 
         pointTextActor[i]->SetInput(str);
@@ -691,12 +746,28 @@ VisitLineTool::UpdateText()
         double pt[3] = {originScreen.x, originScreen.y, 0.};
         pointTextActor[i]->GetPositionCoordinate()->SetValue(pt);
     }
+
+    // compute length for middle hot-point text
+    double a1 = hotPoints[1].pt.x - hotPoints[0].pt.x; 
+    double a2 = hotPoints[1].pt.y - hotPoints[0].pt.y; 
+    double a3 = 0.;
+    if(window3D)
+    {
+        a3 = hotPoints[1].pt.z - hotPoints[0].pt.z; 
+    }
+    double length = sqrt(a1*a1 + a2*a2 + a3*a3);
+    sprintf(str, "Length: %1.3g", length);
+    pointTextActor[2]->SetInput(str);
+
+    avtVector originScreen = ComputeWorldToDisplay(hotPoints[2].pt);
+    double pt[3] = {originScreen.x, originScreen.y, 0.};
+    pointTextActor[2]->GetPositionCoordinate()->SetValue(pt);
 }
 
 // ****************************************************************************
 // Method: VisitLineTool::CreateGuide
 //
-// Purpose: 
+// Purpose:
 //   Creates the guide actor and mapper. The guide is the 3D crosshairs that
 //   show where line endpoints are relative to the bounding box.
 //
@@ -704,7 +775,7 @@ VisitLineTool::UpdateText()
 // Creation:   Wed Jun 19 10:46:43 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -721,14 +792,14 @@ VisitLineTool::CreateGuide()
 // ****************************************************************************
 // Method: VisitLineTool::DeleteGuide
 //
-// Purpose: 
+// Purpose:
 //   Deletes the guide.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun 19 10:47:59 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -756,14 +827,14 @@ VisitLineTool::DeleteGuide()
 // ****************************************************************************
 // Method: VisitPlaneTool::AddGuide
 //
-// Purpose: 
+// Purpose:
 //   Updates the guide and adds its actor to the renderer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun 19 10:50:28 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -784,14 +855,14 @@ VisitLineTool::AddGuide(int pointIndex)
 // ****************************************************************************
 // Method: VisitLineTool::RemoveGuide
 //
-// Purpose: 
+// Purpose:
 //   Removes the guide actor from the renderer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun 19 10:51:58 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -807,14 +878,14 @@ VisitLineTool::RemoveGuide()
 // ****************************************************************************
 // Method: VisitLineTool::UpdateGuide
 //
-// Purpose: 
+// Purpose:
 //   Recreates the points in the guide.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun 19 11:41:30 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -833,7 +904,7 @@ VisitLineTool::UpdateGuide(int pointIndex)
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(numPts);
     vtkCellArray *lines = vtkCellArray::New();
-    lines->Allocate(lines->EstimateSize(numCells, 2)); 
+    lines->Allocate(lines->EstimateSize(numCells, 2));
     vtkUnsignedCharArray *colors = vtkUnsignedCharArray::New();
     colors->SetNumberOfComponents(3);
     colors->SetNumberOfTuples(numCells);
@@ -874,7 +945,7 @@ VisitLineTool::UpdateGuide(int pointIndex)
     }
 
     for(i = 0, index = 0; i < numCells; ++i, index += 3)
-    {    
+    {
         // Store the color.
         unsigned char *rgb = colors->GetPointer(index);
         rgb[0] = r;
@@ -909,7 +980,7 @@ VisitLineTool::UpdateGuide(int pointIndex)
 // ****************************************************************************
 // Method: VisitLineTool::GetGuidePoints
 //
-// Purpose: 
+// Purpose:
 //   Returns which axis most faces the camera.
 //
 // Returns:    0 = X-axis, 1 = Y-axis, 2 = Z-axis
@@ -989,7 +1060,7 @@ VisitLineTool::GetGuidePoints(int pi, avtVector *pts)
 // ****************************************************************************
 // Method: VisitLineTool::CallCallback
 //
-// Purpose: 
+// Purpose:
 //   Lets the outside world know that the tool has a new slice plane.
 //
 // Programmer: Brad Whitlock
@@ -998,7 +1069,11 @@ VisitLineTool::GetGuidePoints(int pi, avtVector *pts)
 // Modifications:
 //   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
-//   
+//
+//   Kathleen Biagas, Tue Jan 27, 2026
+//   Handle fudged z coordinate in 2D that enables line tool to appear on
+//   top of 2D plots.
+//
 // ****************************************************************************
 
 void
@@ -1022,6 +1097,14 @@ VisitLineTool::CallCallback()
         pt2.z /= axisscale[2];
     }
 
+   // in order to get the line tool to appear on top of the 2D plot
+   // we fudge the z coordinate to be 0.00001
+    if(!window3D)
+    {
+        pt1.z = 0.00001;
+        pt2.z = 0.00001;
+    }
+
     Interface.SetPoint1(pt1.x, pt1.y, pt1.z);
     Interface.SetPoint2(pt2.x, pt2.y, pt2.z);
     Interface.ExecuteCallback();
@@ -1030,7 +1113,7 @@ VisitLineTool::CallCallback()
 // ****************************************************************************
 // Method: VisitLineTool::InitialActorSetup
 //
-// Purpose: 
+// Purpose:
 //   Makes the text actors active and starts bounding box mode.
 //
 // Arguments:
@@ -1065,16 +1148,16 @@ VisitLineTool::InitialActorSetup(int pointIndex)
 // ****************************************************************************
 // Method: VisitLineTool::FinalActorSetup
 //
-// Purpose: 
+// Purpose:
 //   Removes certain actors from the renderer and ends bounding box mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 12 14:38:06 PST 2001
 //
 // Modifications:
-//   Kathleen Bonnell, Wed Dec  3 17:03:34 PST 2003 
+//   Kathleen Bonnell, Wed Dec  3 17:03:34 PST 2003
 //   If transparencies exist, have the plots recalculate render order, so
-//   that this tool is rendered before the transparent actors. 
+//   that this tool is rendered before the transparent actors.
 //
 // ****************************************************************************
 
@@ -1113,7 +1196,7 @@ VisitLineTool::FinalActorSetup()
 //    Moved some code into the base class.
 //
 //    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
-//    Depending on the tool update mode, either call the callback 
+//    Depending on the tool update mode, either call the callback
 //    continuously, or don't even call it upon the mouse release.
 //
 // ****************************************************************************
@@ -1246,8 +1329,8 @@ VisitLineTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y,
 //    and re-add themselves back to the renderer, so that they will be rendered
 //    after plots.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    Wed May 28 16:09:47 PDT 2003 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    Wed May 28 16:09:47 PDT 2003
 //
 //  Modifications:
 //
@@ -1273,8 +1356,8 @@ VisitLineTool::ReAddToWindow()
 //    <unused>   The axis scale factor.
 //    <unused>   The axis scale type.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    June 6, 2003 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    June 6, 2003
 //
 //  Modifications:
 //
@@ -1295,8 +1378,8 @@ VisitLineTool::FullFrameOn(const double, const int)
 //
 //  Purpose: Updates the tool.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    June 6, 2003 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    June 6, 2003
 //
 //  Modifications:
 //

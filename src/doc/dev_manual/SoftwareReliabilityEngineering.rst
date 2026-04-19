@@ -92,7 +92,7 @@ dedicated to SRE activity, coverage is 24/7 and response time is measured in
 place at Lawrence Livermore National Lab, coverage is during normal West Coast
 *business* hours, 8am-12pm and 1-5pm (GMT-8, San Francisco time zone), Monday
 through Friday excluding
-`LLNL holidays <https://supplychain.llnl.gov/poattach/pdf/llnl_holidays.pdf>`_
+LLNL holidays
 and response time may be as much as four hours due to team members having to
 multi-task among many responsibilities.
 
@@ -120,13 +120,13 @@ within the response time goal, to each inquiry. Ideally, all SRE
 activity during the week is handled and :ref:`resolved <sre_response_vs_resolution>`
 solely by the **Primary**. However, :ref:`escalations <sre_escalation>`, which we
 hope are rare, will wind up engaging the **Backup** and may even engage other
-developers. In addition, any :ref:`active SRE dicussions <sre_active_discussions>` that remain
+developers. In addition, any :ref:`active SRE discussions <sre_active_discussions>` that remain
 unresolved at the end of the week are formally :ref:`handed off <sre_handoffs>` to
 the next **Primary**.
 
-:ref:`Active SRE discussions <sre_active_discussions>` will be logged and tracked in a separate GitHub,
-`issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
-within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
+:ref:`Active SRE discussions <sre_active_discussions>` will be logged and tracked in
+`GitHub Discussions <https://github.com/visit-dav/visit/discussions>`_ within the
+`visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of :ref:`serious incidents <sre_serious>`, the **Primary** will prepare a brief
 *postmortem* to inform a discussion at the next project meeting of possible changes
 in practices to avoid repeating such major incidents.
@@ -137,7 +137,7 @@ At these *idle* times, the **Primary** shall use their time to address general
 :ref:`housekeeping <sre_sre_vs_product_development>` or other *low-hanging fruit* type work. In
 particular, there shall be no expectation that a developer serving as **Primary**
 can get any other work done beyond their active or idle SRE obligations. In slow
-weeks, its conceivable they can. But, there can be no implied assumption or
+weeks, it's conceivable they can. But, there can be no implied assumption or
 expectation that this will be the case.
 
 A :ref:`schedule <sre_scheduling>` of the **Primary** and **Backup** assignments going
@@ -146,7 +146,7 @@ of a shared calendar. **Primary** and **Backup** responsibilities are rotated
 so as to balance the load among team members.
 
 The preceding paragraphs describe VisIt_'s SRE processes at a
-basic level and in the ideal. Nonetheless, several terms here (those that are 
+basic level and in the ideal. Nonetheless, several terms here (those that are
 links or in *italics* in the paragraphs above) require elaboration. In addition,
 there are also many practical matters which can serve to complicate the basic
 process. These details are addressed in the remaining sections.
@@ -245,9 +245,9 @@ within a half-day's (4 hours) worth of effort. When there are many such tasks in
 the system to work on, the **Primary** is free to use his/her judgment to decide
 which s/he can most productively address.
 
-Part of the acknowledgment of this new category of work is the new
-`issue tracker <https://github.com/visit-dav/live-customer-response/issues>`_
-for tracking it. *New* SRE activity will start with an issue being added there.
+Part of the acknowledgment of this new category of work is the use of
+`GitHub Discussions <https://github.com/visit-dav/visit/discussions>`_
+for tracking it. *New* SRE activity will start with a discussion being added there.
 As an SRE incident unfolds it may result in either the same issue being moved to the
 `product development <https://github.com/visit-dav/visit/issues>`_ issue tracker
 and/or new issue(s) being added to the 
@@ -330,7 +330,7 @@ engage the *whole team* instead of singling out a specific member. This
 includes...
 
   * Creation of a `GitHub discussion <https://github.com/visit-dav/visit/discussions>`_.
-  * Creation of a `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_.
+  * Creation of a `GitHub issue <https://github.com/visit-dav/visit/issues>`_.
   * Telephone call to the `VisIt hotline <tel:42847>`_.
 
 Whenever users attempt a first contact through something other than the supported
@@ -389,7 +389,7 @@ following activities...
 
   * Answering a question or referring a user to documentation.
   * Diagnosing the issue.
-  * Developing a work-around for users.
+  * Developing a workaround for users.
   * Developing a reproducer for developers.
 
     * This may include any relevant user data files as well as approval, where
@@ -422,7 +422,7 @@ Serious Incidents and Postmortems
 
 Serious incidents are those that have significant productivity consequences for
 multiple users and/or require an inordinate amount of resources (either time or
-people or both) to diagnose, work-around and/or ultimately properly correct.
+people or both) to diagnose, workaround and/or ultimately properly correct.
 
 When such incidents occur, it is a best practice to spend some time considering
 adjustments in processes that can help to avoid repeating similar issues in
@@ -511,7 +511,7 @@ Our current plan is to handle this on a case-by-case basis. If neither the
 requiring classified computing, the **Primary** should
 
   * First determine the customer's required response time. It may be hours
-    or it may be days. If it is days. Its conceivable the issue could be
+    or it may be days. If it is days, it's conceivable the issue could be
     handled in the following week by a new **Primary/Backup** pair.
   * If customer indicates immediate response is required, the **Primary**
     should query the whole team to arrange another developer who can
@@ -522,7 +522,7 @@ requiring classified computing, the **Primary** should
 Scheduling and Load Balancing
 -----------------------------
 
-To balance the work load of SRE, the responsibilities of the
+To balance the workload of SRE, the responsibilities of the
 **Primary** and **Backup** are rotated, round-robin among team members. For
 example, on a team of eight developers, each would serve as **Primary** only one
 week in eight or 12.5% of their time. However, a number of factors complicate

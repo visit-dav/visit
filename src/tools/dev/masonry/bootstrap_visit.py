@@ -237,39 +237,41 @@ def steps_install(opts,build_type,ctx):
                                    target="install")
     ctx.triggers["build"].append(a_make_install)
 
-########################################################################
-# NOTE: Mark C. Miller, Fri Dec 13 19:13:32 PST 2024
-# I believe CMake's `make package` target tries to also use hdiutil.
-# When make is invoked with a lot of parallelism (e.g. -j8 or more),
-# I believe a race condition occurs in CMake sometimes causing the
-# `make package` operation to fail during `hdiutil` command with
-# "Resource busy" error. So, here we override nthreads to force use
-# of just a single thread.
-########################################################################
-
 def steps_package(opts,build_type,ctx):
     build_dir  = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
-    a_make_pkg = "package_" + build_type.lower()
-    ctx.actions[a_make_pkg] = make(description="building visit package",
+    a_make_dflt = "make_default_" + build_type.lower()
+    a_make_pkg = "make_package_" + build_type.lower()
+    ctx.actions[a_make_dflt] = make(description="building visit package",
+                                   nthreads=opts["make_nthreads"],
+                                   working_dir=build_dir,
+                                   target="")
+    ctx.actions[a_make_pkg] = make(description="packaging visit package",
                                    nthreads=1,
                                    working_dir=build_dir,
                                    target="package")
+    ctx.triggers["build"].append(a_make_dflt)
     ctx.triggers["build"].append(a_make_pkg)
     if opts["platform"] == "osx":
         cmake_opts = " -DVISIT_CREATE_APPBUNDLE_PACKAGE:BOOL=ON"
         a_cmake_bundle = "cmake_cfg_bundle_" + build_type
-        a_make_bundle  = "package_osx_bundle." + build_type
+        a_make_bundle  = "make_osx_bundle_default_" + build_type
+        a_pkg_bundle  = "make_osx_bundle_package_" + build_type
         ctx.actions[a_cmake_bundle] = cmake(src_dir=pjoin(opts["build_dir"],"visit/src"),
                                             cmake_bin=cmake_bin(opts),
                                             cmake_opts=cmake_opts,
                                             working_dir=build_dir,
                                             description="configuring visit (osx bundle)")
-        ctx.actions[a_make_bundle] = make(description="packaging visit (osx bundle)",
+        ctx.actions[a_make_bundle] = make(description="making visit (osx bundle)",
+                                          nthreads=opts["make_nthreads"],
+                                          working_dir=build_dir,
+                                          target="")
+        ctx.actions[a_pkg_bundle] = make(description="packaging visit (osx bundle)",
                                           nthreads=1,
                                           working_dir=build_dir,
                                           target="package")
         ctx.triggers["build"].extend([a_cmake_bundle,
-                                      a_make_bundle])
+                                      a_make_bundle,
+                                      a_pkg_bundle])
 
 def steps_notarize(opts,build_type,ctx):
     if opts["platform"] == "osx":
@@ -349,7 +351,7 @@ def steps_osx_dmg_sanity_checks(opts,build_type,ctx):
     # check for code sign
     test_cmd += 'codesign --test-requirement="=notarized" --verify --verbose mount/VisIt.app/\n'
     # check for any bad symlinks
-    test_cmd += 'find . -type l ! -exec test -e {} \; -print | wc -l\n'
+    test_cmd += r'find . -type l ! -exec test -e {} \; -print | wc -l\n'
     # verify the app
     test_cmd += "spctl -a -t exec -vv mount/VisIt.app\n"
     test_cmd += "hdiutil detach mount\n"
@@ -398,7 +400,6 @@ def main(opts_json):
     print(res["trigger"]["results"][-1]["action"]["output"])
     # forward return code 
     return res["trigger"]["results"][-1]["action"]["return_code"]
-
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1]))

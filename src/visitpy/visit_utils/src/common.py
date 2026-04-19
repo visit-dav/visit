@@ -18,6 +18,8 @@ import socket
 import re
 import datetime
 import types
+import importlib
+
 
 from .property_tree import PropertyTree
 
@@ -27,31 +29,34 @@ try:
 except:
     __visit_imported = False
 
+#
+# Determine if PySide is avalaible, and if so which version
+#
+__qt_api = None
+
+if not importlib.util.find_spec("PySide2") is None:
+   __qt_api="PySide2"
+
+if not importlib.util.find_spec("PySide6") is None:
+   __qt_api="PySide6"
 
 try:
-    import PySide2.QtCore
-    __pyside_imported = True
+    if __qt_api == "PySide2":
+        import PySide2.QtCore
+        __pyside_imported = True
+    elif __qt_api == "PySide6":
+        import PySide6.QtCore
+        __pyside_imported = True
+    else:
+        __pyside_imported = False
 except:
     __pyside_imported = False
 
-
 #
-# Some functions wrap calls to the visit module, however not all require
-# it to exist.  Use @require_visit decorator to provide a friendly
-# exception if the visit module needed but not available.
-#
-
-def require_visit(fn):
-    """ Decorator for functions that require the visit module. """
-    def run_fn(*args,**kwargs):
-        # note: this check happens in the 'common' module but that should
-        # be sufficient - if we can't load it here we wont be able to in other
-        # namespaces.
-        if not __visit_imported:
-            raise VisItException("Could not import visit module")
-        return fn(*args,**kwargs)
-    return run_fn
-
+# Method to check if we have qt support and which pyside version is in use
+# returns: "PySide2", "PySide6", or None
+def qt_api():
+    return __qt_api
 
 #
 # Some functions use PySide modules, however not all require
@@ -69,6 +74,22 @@ def require_pyside(fn):
         return fn(*args,**kwargs)
     return run_fn
 
+#
+# Some functions wrap calls to the visit module, however not all require
+# it to exist.  Use @require_visit decorator to provide a friendly
+# exception if the visit module needed but not available.
+#
+
+def require_visit(fn):
+    """ Decorator for functions that require the visit module. """
+    def run_fn(*args,**kwargs):
+        # note: this check happens in the 'common' module but that should
+        # be sufficient - if we can't load it here we wont be able to in other
+        # namespaces.
+        if not __visit_imported:
+            raise VisItException("Could not import visit module")
+        return fn(*args,**kwargs)
+    return run_fn
 
 class VisItException(Exception):
     """ Generic exception class for VisIt errors. """
@@ -109,20 +130,23 @@ def lsearch(l,pattern):
             rvals.append(v)
     return rvals
 
-def sexe(cmd,ret_output=False,echo = False):
+def sexe(cmd, ret_output=False, echo = False, env=None):
     """ Helper for executing shell commands. """
+    if env is None:
+        env = os.environ.copy()
     if echo:
         print("[exe: %s]" % cmd)
     if ret_output:
         p = subprocess.Popen(cmd,
                              shell=True,
                              universal_newlines=True,
+                             env=env,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
-        res =p.communicate()[0]
+        res = p.communicate()[0]
         return p.returncode,res
     else:
-        return subprocess.call(cmd,shell=True)
+        return subprocess.call(cmd,shell=True,env=env)
 
 def define_module(module_name,module_script,parent_dict=None):
     """ Dynamically defines a python module. """

@@ -4,8 +4,10 @@
 
 #include <stdio.h>
 #include <QvisAnnotationWindow.h>
+
 #include <QButtonGroup>
 #include <QCheckBox>
+#include <QColorDialog>
 #include <QComboBox>
 #include <QGroupBox>
 #include <QInputDialog>
@@ -15,11 +17,11 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSpinBox>
+#include <QScrollArea>
 #include <QTabWidget>
 #include <QTimer>
 #include <QToolTip>
 #include <QWidget>
-#include <QColorDialog>
 
 #include <QNarrowLineEdit.h>
 #include <QvisAnnotationObjectInterface.h>
@@ -41,7 +43,7 @@
 // ****************************************************************************
 // Method: QvisAnnotationWindow::QvisAnnotationWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisAnnotationWindow class.
 //
 // Arguments:
@@ -100,7 +102,7 @@ QvisAnnotationWindow::QvisAnnotationWindow(const QString &caption,
 // ****************************************************************************
 // Method: QvisAnnotationWindow::~QvisAnnotationWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisAnnotationWindow class.
 //
 // Programmer: Brad Whitlock
@@ -109,7 +111,7 @@ QvisAnnotationWindow::QvisAnnotationWindow(const QString &caption,
 // Modifications:
 //   Brad Whitlock, Fri Feb 15 15:34:19 PST 2002
 //   Deleted parentless widgets.
-//   
+//
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Added more control over the axes tick marks and labels.
 //
@@ -141,14 +143,14 @@ QvisAnnotationWindow::~QvisAnnotationWindow()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::ConnectAnnotationAttributes
 //
-// Purpose: 
+// Purpose:
 //   Makes the window observe the annotation attributes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 31 14:29:36 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -161,14 +163,14 @@ QvisAnnotationWindow::ConnectAnnotationAttributes(AnnotationAttributes *a)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::ConnectAnnotationObjectList.
 //
-// Purpose: 
+// Purpose:
 //   Makes the window observe the annotation object list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 31 14:29:36 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -181,14 +183,14 @@ QvisAnnotationWindow::ConnectAnnotationObjectList(AnnotationObjectList *a)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::ConnectPlotList
 //
-// Purpose: 
+// Purpose:
 //   Makes the window observe the plot list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 21 21:09:45 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -201,7 +203,7 @@ QvisAnnotationWindow::ConnectPlotList(PlotList *pl)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   This method disconnects a subject from the window.
 //
 // Arguments:
@@ -232,7 +234,7 @@ QvisAnnotationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates all of the widgets for the window.
 //
 // Programmer: Brad Whitlock
@@ -245,7 +247,7 @@ QvisAnnotationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Brad Whitlock, Mon Aug 27 14:37:28 PST 2001
 //   Added color buttons to control the background and foreground colors.
 //
-//   Kathleen Bonnell, Fri Aug  3 15:04:32 PDT 2001 
+//   Kathleen Bonnell, Fri Aug  3 15:04:32 PDT 2001
 //   Enable gridlines for 3D.  Added static edges to 3d axes-type options.
 //
 //   Brad Whitlock, Fri Sep 21 15:53:34 PST 2001
@@ -253,7 +255,7 @@ QvisAnnotationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   page3d groupbox.
 //
 //   Kathleen Bonnell, Wed Nov  7 17:45:20 PST 2001
-//   Added another option to axes3DTypeComboBox. 
+//   Added another option to axes3DTypeComboBox.
 //
 //   Brad Whitlock, Wed Sep 19 15:40:50 PST 2001
 //   I removed an unused layout.
@@ -300,7 +302,7 @@ QvisAnnotationWindow::CreateWindowContents()
     connect(tabs, SIGNAL(currentChanged(int)),
             this, SLOT(tabSelected(int)));
 
-    topLayout->addWidget(tabs);    
+    topLayout->addWidget(tabs);
 
     //
     // Create the window's tabs.
@@ -322,7 +324,7 @@ QvisAnnotationWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateGeneralTab
 //
-// Purpose: 
+// Purpose:
 //   Creates the general options tab.
 //
 // Note:       I moved this code from CreateWindowContents.
@@ -393,7 +395,7 @@ QvisAnnotationWindow::CreateGeneralTab()
 
     connect(databasePathExpansionMode, SIGNAL(activated(int)),
             this, SLOT(databasePathExpansionModeChanged(int)));
-    databasePathExpansionModeLabel = new QLabel(tr("Path expansion"), 
+    databasePathExpansionModeLabel = new QLabel(tr("Path expansion"),
         databaseInfo);
     databasePathExpansionModeLabel->setBuddy(databasePathExpansionMode);
     dLayout->addWidget(databasePathExpansionModeLabel, 0, 0);
@@ -455,7 +457,7 @@ QvisAnnotationWindow::CreateGeneralTab()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::Create2DTab
 //
-// Purpose: 
+// Purpose:
 //   Creates the 2D options tab.
 //
 // Note:       I moved this code from CreateWindowContents.
@@ -526,15 +528,15 @@ QvisAnnotationWindow::Create2DTab()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateGeneralTab2D
 //
-// Purpose: 
+// Purpose:
 //   Creates the options for the general 2D tab.
 //
 // Arguments:
 //   parentWidget : The parent of the widgets we'll create.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 7 16:45:23 PST 2008
@@ -621,7 +623,7 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::Create3DTab
 //
-// Purpose: 
+// Purpose:
 //   Creates the 3D options tab.
 //
 // Note:       I moved this code from CreateWindowContents.
@@ -714,15 +716,15 @@ QvisAnnotationWindow::Create3DTab()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateGeneralTab3D
 //
-// Purpose: 
+// Purpose:
 //   Creates the general 3D options page.
 //
 // Arguments:
 //   parentWidget : The parent widget for the widgets that we're creating.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 7 17:07:22 PST 2008
@@ -741,22 +743,32 @@ QvisAnnotationWindow::Create3DTab()
 //   Added labels for Tick location, axis type and line width.
 //
 //   Alister Maguire, Thu Mar  1 16:08:42 PST 2018
-//   Added widgets for changing triad attributes. 
+//   Added widgets for changing triad attributes.
 //
 //   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
-//   Added checkbox for setting triad manually. 
+//   Added checkbox for setting triad manually.
 //
 //   Brad Whitlock, Wed Oct 24 16:05:26 PDT 2018
-//   Block some signals to prevent crash with autoupdate when opening 
+//   Block some signals to prevent crash with autoupdate when opening
 //   the window.
+//
+//   Kathleen Biagas, Wed Feb 4, 2026
+//   Add QScrollArea for easier use on smaller laptop displays.
 //
 // ****************************************************************************
 
 QWidget *
 QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 {
-    QWidget *top = new QWidget(parentWidget);
-    QVBoxLayout *vlayout = new QVBoxLayout(top);
+    QScrollArea *top = new QScrollArea(parentWidget);
+    top->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    top->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    top->setWidgetResizable(true);
+
+    QWidget *topContents = new QWidget();
+    top->setWidget(topContents);
+
+    QVBoxLayout *vlayout = new QVBoxLayout(topContents);
     vlayout->setContentsMargins(10,10,10,10);
     QGridLayout *rLayout = new QGridLayout(0);
     vlayout->addLayout(rLayout);
@@ -848,7 +860,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
             this, SLOT(setBBoxLocationChecked(bool)));
     bboxLayout->addWidget(setBBoxLocationToggle, bboxRow, 0, 1, 2);
     ++bboxRow;
-    
+
     std::vector<std::string> labels;
     labels.push_back("X minimum");
     labels.push_back("X maximum");
@@ -886,10 +898,10 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
             this, SLOT(triadSetManualChecked(bool)));
     triadLayout->addWidget(triadSetManual, triadRow, 0);
     ++triadRow;
-    
+
     // Create the triad color picker
     triadColorButton = new QPushButton(tr("Select color"), central);
-    connect(triadColorButton, SIGNAL(clicked()), 
+    connect(triadColorButton, SIGNAL(clicked()),
             this, SLOT(setTriadColor()));
 
     triadColorLabel = new QLabel(tr("Color"), top);
@@ -910,7 +922,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     triadLayout->addWidget(triadLineWidthLabel, triadRow, 0);
     triadLayout->addWidget(triadLineWidth, triadRow, 1);
     triadRow++;
-    
+
     // Create the triad font combo box
     triadFontComboBox = new QComboBox(top);
     triadFontComboBox->addItem(tr("Arial"));
@@ -955,7 +967,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateArrayTab
 //
-// Purpose: 
+// Purpose:
 //   Creates the AxisArray options tab.
 //
 // Programmer: Jeremy Meredith
@@ -1008,15 +1020,15 @@ QvisAnnotationWindow::CreateArrayTab()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateGeneralTabArray
 //
-// Purpose: 
+// Purpose:
 //   Creates the options for the general AxisArray tab.
 //
 // Arguments:
 //   parentWidget : The parent of the widgets we'll create.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Jeremy Meredith
 // Creation:   November 18, 2008
@@ -1079,7 +1091,7 @@ QvisAnnotationWindow::CreateGeneralTabArray(QWidget *parentWidget)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateColorTab
 //
-// Purpose: 
+// Purpose:
 //   Creates the color tab.
 //
 // Note:       This code used to be in CreateWindowContents.
@@ -1207,7 +1219,7 @@ QvisAnnotationWindow::CreateColorTab()
 
     QFrame *splitter2 = new QFrame(pageColor);
     splitter2->setFrameStyle(QFrame::HLine + QFrame::Raised);
-    cLayout->addWidget(splitter2, row, 0, 1, 5);  
+    cLayout->addWidget(splitter2, row, 0, 1, 5);
     ++row;
 
     // Add the image selection widget
@@ -1225,7 +1237,7 @@ QvisAnnotationWindow::CreateColorTab()
     backgroundImageLabel->setToolTip(disclaimer);
     ++row;
 
-    // Add the image repeat x,y widgets. 
+    // Add the image repeat x,y widgets.
     imageRepeatX = new QSpinBox(pageColor);
     imageRepeatX->setKeyboardTracking(false);
     imageRepeatX->setMinimum(1);
@@ -1258,7 +1270,7 @@ QvisAnnotationWindow::CreateColorTab()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateObjectsTab
 //
-// Purpose: 
+// Purpose:
 //   Creates the objects tab.
 //
 // Programmer: Brad Whitlock
@@ -1371,7 +1383,7 @@ QvisAnnotationWindow::CreateObjectsTab()
                     objButtonGroup->addButton(btn, i);
                     objButtonLayout->addWidget(btn);
                 }
-    
+
                 // Add the annotation interface to the top object layout.
                 objTopLayout->addWidget(objectInterfaces[i]);
 
@@ -1394,7 +1406,7 @@ QvisAnnotationWindow::CreateObjectsTab()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::Update
 //
-// Purpose: 
+// Purpose:
 //   This method is called when a Subject that this window observes it updated.
 //
 // Arguments:
@@ -1426,24 +1438,24 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::UpdateAxesArray
 //
-// Purpose: 
+// Purpose:
 //   Updates the 2D axis settings in the window.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Jeremy Meredith
 // Creation:   November 18, 2008
 //
 // Modifications:
 //
-//     Alister Maguire, Tue Mar  6 11:12:11 PST 2018 
+//     Alister Maguire, Tue Mar  6 11:12:11 PST 2018
 //     Changed the axes enabler to enable/disable the
-//     axesGroup. 
-//   
+//     axesGroup.
+//
 // ****************************************************************************
 
 void
@@ -1459,7 +1471,7 @@ QvisAnnotationWindow::UpdateAxesArray()
     ticksToggleArray->blockSignals(true);
     ticksToggleArray->setChecked(axes.GetTicksVisible());
     ticksToggleArray->blockSignals(false);
- 
+
     axesAutoSetTicksToggleArray->blockSignals(true);
     axesAutoSetTicksToggleArray->setChecked(axes.GetAutoSetTicks());
     axesAutoSetTicksToggleArray->blockSignals(false);
@@ -1471,7 +1483,7 @@ QvisAnnotationWindow::UpdateAxesArray()
     axesLineWidthArray->blockSignals(true);
     axesLineWidthArray->SetLineWidth(axes.GetLineWidth());
     axesLineWidthArray->blockSignals(false);
- 
+
     // Update the controls in the axes.
     axesArray[0]->setAutoScaling(axes.GetAutoSetScaling());
     axesArray[0]->setAutoTickMarks(axes.GetAutoSetTicks());
@@ -1481,14 +1493,14 @@ QvisAnnotationWindow::UpdateAxesArray()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::UpdateAxes2D
 //
-// Purpose: 
+// Purpose:
 //   Updates the 2D axis settings in the window.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 7 17:25:58 PST 2008
@@ -1498,7 +1510,7 @@ QvisAnnotationWindow::UpdateAxesArray()
 //   Update just the various 2D sub-tabs sensitivity, not the entire
 //   2D tab, when "show axes" is unchecked.  (If you set the whole
 //   tab, then you've even disabled "show axes" and can't re-check it.)
-//   
+//
 // ****************************************************************************
 
 void
@@ -1523,7 +1535,7 @@ QvisAnnotationWindow::UpdateAxes2D()
     axesLineWidth2D->blockSignals(true);
     axesLineWidth2D->SetLineWidth(axes.GetLineWidth());
     axesLineWidth2D->blockSignals(false);
- 
+
     axesTickLocationComboBox2D->blockSignals(true);
     axesTickLocationComboBox2D->setCurrentIndex(axes.GetTickLocation());
     axesTickLocationComboBox2D->blockSignals(false);
@@ -1544,14 +1556,14 @@ QvisAnnotationWindow::UpdateAxes2D()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::UpdateAxes3D
 //
-// Purpose: 
+// Purpose:
 //   Updates the 3D axis settings in the window.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 7 17:38:52 PST 2008
@@ -1561,7 +1573,7 @@ QvisAnnotationWindow::UpdateAxes2D()
 //   Update just the various 3D sub-tabs sensitivity, not the entire
 //   3D tab, when "show axes" is unchecked.  (If you set the whole
 //   tab, then you've even disabled "show axes" and can't re-check it.)
-//   
+//
 //   Hank Childs, Mon May 23 10:31:29 PDT 2011
 //   Add support for setting bounding box location.
 //
@@ -1571,12 +1583,12 @@ QvisAnnotationWindow::UpdateAxes2D()
 //   'Show bounding box' controls enabled state of bounding box controls.
 //   If either of these are true, the line width control is enabled.
 //
-//   Alister Maguire, Tue Mar  6 11:12:11 PST 2018 
-//   Changed the enablers to enable/disable by group. 
+//   Alister Maguire, Tue Mar  6 11:12:11 PST 2018
+//   Changed the enablers to enable/disable by group.
 //
 //   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
 //   Added enabling/disabling of triad options based on
-//   the TriadSetManually flag. 
+//   the TriadSetManually flag.
 //
 // ****************************************************************************
 
@@ -1588,7 +1600,7 @@ QvisAnnotationWindow::UpdateAxes3D()
     triadGroup->setEnabled(axes.GetTriadFlag());
     if (axes.GetTriadSetManually())
     {
-        triadColorButton->setEnabled(true); 
+        triadColorButton->setEnabled(true);
         triadColorLabel->setEnabled(true);
         triadLineWidth->setEnabled(true);
         triadLineWidthLabel->setEnabled(true);
@@ -1599,7 +1611,7 @@ QvisAnnotationWindow::UpdateAxes3D()
     }
     else
     {
-        triadColorButton->setEnabled(false); 
+        triadColorButton->setEnabled(false);
         triadColorLabel->setEnabled(false);
         triadLineWidth->setEnabled(false);
         triadLineWidthLabel->setEnabled(false);
@@ -1608,17 +1620,17 @@ QvisAnnotationWindow::UpdateAxes3D()
         triadBoldToggle->setEnabled(false);
         triadItalicToggle->setEnabled(false);
 
-        // 
-        // Return the triad atts to their original state. 
         //
-        int triadColor[3] = {0, 0, 0};  
+        // Return the triad atts to their original state.
+        //
+        int triadColor[3] = {0, 0, 0};
         annotationAtts->GetAxes3D().SetTriadColor(triadColor);
-              
+
         triadLineWidth->blockSignals(true);
         triadLineWidth->SetLineWidth(0);
         triadLineWidth->blockSignals(false);
         annotationAtts->GetAxes3D().SetTriadLineWidth(0.0);
- 
+
         triadFontComboBox->blockSignals(true);
         triadFontComboBox->setCurrentIndex(0);
         triadFontComboBox->blockSignals(false);
@@ -1707,7 +1719,7 @@ QvisAnnotationWindow::UpdateAxes3D()
         }
     }
     setBBoxLocationToggle->blockSignals(false);
-    
+
     const double *loc = axes.GetBboxLocation();
     for (int i = 0 ; i < 6 ; i++)
     {
@@ -1721,7 +1733,7 @@ QvisAnnotationWindow::UpdateAxes3D()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::UpdateAnnotationControls
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the annotation attributes object that the
 //   window observes is changed. It is this method's responsibility to set the
 //   state of the window's widgets to match the state of the annotation
@@ -1741,7 +1753,7 @@ QvisAnnotationWindow::UpdateAxes3D()
 //   Brad Whitlock, Mon Aug 27 16:19:59 PST 2001
 //   Added code to set the window colors.
 //
-//   Kathleen Bonnell, Fri Aug  3 15:04:32 PDT 2001 
+//   Kathleen Bonnell, Fri Aug  3 15:04:32 PDT 2001
 //   Enable gridlines for 3D.
 //
 //   Brad Whitlock, Thu Sep 20 15:46:33 PST 2001
@@ -1764,7 +1776,7 @@ QvisAnnotationWindow::UpdateAxes3D()
 //   2d font size setting with individual controls for setting the x label,
 //   y label, x title, and y title font heights.
 //
-//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003
 //   Added the ability to control the 2d & 3d label scaling exponents.
 //
 //   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
@@ -1938,7 +1950,7 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::UpdateAnnotationObjectControls
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the annotation object list from the viewer is
 //   modified.
 //
@@ -2158,7 +2170,7 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::SetButtonGroup
 //
-// Purpose: 
+// Purpose:
 //   Sets the toggle state for all checkboxes in a button group.
 //
 // Arguments:
@@ -2192,7 +2204,7 @@ QvisAnnotationWindow::SetButtonGroup(QButtonGroup *bg, bool *vals)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This method tells the annotation attributes to notify all observers of
 //   changes in the object.
 //
@@ -2230,7 +2242,7 @@ QvisAnnotationWindow::Apply(bool dontIgnore)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::ApplyObjectList
 //
-// Purpose: 
+// Purpose:
 //   This method is called when an annotation interface wants to tell the
 //   viewer about a change to the annotation attributes.
 //
@@ -2241,7 +2253,7 @@ QvisAnnotationWindow::Apply(bool dontIgnore)
 // Creation:   Tue Nov 4 12:27:38 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2262,7 +2274,7 @@ QvisAnnotationWindow::ApplyObjectList(bool dontIgnore)
 // ****************************************************************************
 // Method: QvisPostableWindow::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Writes the window's extra information to the config file.
 //
 // Arguments:
@@ -2298,7 +2310,7 @@ QvisAnnotationWindow::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Reads window attributes from the DataNode representation of the config
 //   file.
 //
@@ -2341,7 +2353,7 @@ QvisAnnotationWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that applies the annotation attributes
 //   unconditionally.
 //
@@ -2364,7 +2376,7 @@ QvisAnnotationWindow::apply()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::makeDefault
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "Make default" button
 //   is clicked.
 //
@@ -2392,7 +2404,7 @@ QvisAnnotationWindow::makeDefault()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::reset
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "Reset" button
 //   is clicked.
 //
@@ -2420,7 +2432,7 @@ QvisAnnotationWindow::reset()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::tabSelected
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the tabs are changed.
 //
 // Arguments:
@@ -2454,7 +2466,7 @@ QvisAnnotationWindow::tabSelected(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::userInfoChecked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the user info flag.
 //
 // Arguments:
@@ -2464,7 +2476,7 @@ QvisAnnotationWindow::tabSelected(int index)
 // Creation:   Thu Jan 10 08:43:37 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2478,20 +2490,20 @@ QvisAnnotationWindow::userInfoChecked(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::userInfoFontChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user font changes.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 8 11:29:48 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2539,7 +2551,7 @@ QvisAnnotationWindow::databaseInfoChecked(bool val)
 // Arguments:
 //   val : The new time info value.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   September 7, 2011
 //
 // Modifications:
@@ -2587,7 +2599,7 @@ QvisAnnotationWindow::databasePathExpansionModeChanged(int index)
     {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Smart);}
     else if (index == 4)
     {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::SmartDirectory);}
-    
+
     SetUpdate(false);
     Apply();
 }
@@ -2595,20 +2607,20 @@ QvisAnnotationWindow::databasePathExpansionModeChanged(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::databaseInfoFontChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the database font changes.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 8 11:29:48 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2622,14 +2634,14 @@ QvisAnnotationWindow::databaseInfoFontChanged(const FontAttributes &f)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::bboxLocationChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot that is called when the bbox location changes.
 //
 // Programmer: Hank Childs
 // Creation:   May 23, 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2644,10 +2656,10 @@ QvisAnnotationWindow::bboxLocationChanged()
 //
 // Purpose:
 //   This is a Qt slot function that is called when the triad set manual
-//   checkbox is toggled. 
+//   checkbox is toggled.
 //
 // Arguments:
-//   val:    Whether or not to enable manual override of the triad atts. 
+//   val:    Whether or not to enable manual override of the triad atts.
 //
 // Programmer: Alister Maguire
 // Creation:   Fri Mar  9 09:48:42 PST 2018
@@ -2655,7 +2667,7 @@ QvisAnnotationWindow::bboxLocationChanged()
 // Modifications:
 //
 // ****************************************************************************
- 
+
 void
 QvisAnnotationWindow::triadSetManualChecked(bool val)
 {
@@ -2668,7 +2680,7 @@ QvisAnnotationWindow::triadSetManualChecked(bool val)
 //  Method:  QvisAnnotationWindow::setTriadColor
 //
 //  Purpose:
-//   This is a Qt slot function that sets the triad color. 
+//   This is a Qt slot function that sets the triad color.
 //
 //  Arguments:
 //
@@ -2681,9 +2693,9 @@ QvisAnnotationWindow::setTriadColor()
 {
     QColor color = QColorDialog::getColor(Qt::black, this);
     int    iRGB[3];
-    iRGB[0] = color.red(); 
-    iRGB[1] = color.green(); 
-    iRGB[2] = color.blue(); 
+    iRGB[0] = color.red();
+    iRGB[1] = color.green();
+    iRGB[2] = color.blue();
 
     annotationAtts->GetAxes3D().SetTriadColor(iRGB);
     annotationAtts->SelectAxes3D();
@@ -2707,7 +2719,7 @@ QvisAnnotationWindow::setTriadColor()
 // Modifications:
 //
 // ****************************************************************************
- 
+
 void
 QvisAnnotationWindow::triadLineWidthChanged(int index)
 {
@@ -2733,7 +2745,7 @@ QvisAnnotationWindow::triadLineWidthChanged(int index)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 void
 QvisAnnotationWindow::triadFontChanged(int index)
 {
@@ -2748,10 +2760,10 @@ QvisAnnotationWindow::triadFontChanged(int index)
 //
 // Purpose:
 //   This is a Qt slot function that is called when the triad bold
-//   check box is toggled. 
+//   check box is toggled.
 //
 // Arguments:
-//   val:    Whether or not to enable bold font for the triad. 
+//   val:    Whether or not to enable bold font for the triad.
 //
 // Programmer: Alister Maguire
 // Creation:   Thu Mar  1 14:43:11 PST 2018
@@ -2759,7 +2771,7 @@ QvisAnnotationWindow::triadFontChanged(int index)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 void
 QvisAnnotationWindow::triadBoldToggleChecked(bool val)
 {
@@ -2774,10 +2786,10 @@ QvisAnnotationWindow::triadBoldToggleChecked(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that is called when the triad italic
-//   check box is toggled. 
+//   check box is toggled.
 //
 // Arguments:
-//   val:    Whether or not to enable italic font for the triad. 
+//   val:    Whether or not to enable italic font for the triad.
 //
 // Programmer: Alister Maguire
 // Creation:   Thu Mar  1 14:43:11 PST 2018
@@ -2785,7 +2797,7 @@ QvisAnnotationWindow::triadBoldToggleChecked(bool val)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 void
 QvisAnnotationWindow::triadItalicToggleChecked(bool val)
 {
@@ -2798,14 +2810,14 @@ QvisAnnotationWindow::triadItalicToggleChecked(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::databaseTimeScaleChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot that is called when the database time scale changes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar  2 14:39:48 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2818,14 +2830,14 @@ QvisAnnotationWindow::databaseTimeScaleChanged()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::databaseTimeOffsetChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot that is called when the database time offset changes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar  2 14:39:48 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2838,7 +2850,7 @@ QvisAnnotationWindow::databaseTimeOffsetChanged()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::legendChecked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the legend info flag.
 //
 // Arguments:
@@ -2848,7 +2860,7 @@ QvisAnnotationWindow::databaseTimeOffsetChanged()
 // Creation:   Thu Apr 11 11:49:52 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2862,7 +2874,7 @@ QvisAnnotationWindow::legendChecked(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::turnOffAllAnnotations
 //
-// Purpose: 
+// Purpose:
 //   Turns off all annotations.
 //
 // Programmer: Brad Whitlock
@@ -2898,7 +2910,7 @@ QvisAnnotationWindow::turnOffAllAnnotations()
     if(annotationObjectList->GetNumAnnotations() > 0)
     {
         for(int i = 0; i < annotationObjectList->GetNumAnnotations(); ++i)
-        {           
+        {
             AnnotationObject &annot = annotationObjectList->operator[](i);
             annot.SetVisible(false);
         }
@@ -2914,7 +2926,7 @@ QvisAnnotationWindow::turnOffAllAnnotations()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axesFlagChecked2D
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the 2D flag.
 //
 // Arguments:
@@ -2929,7 +2941,7 @@ QvisAnnotationWindow::turnOffAllAnnotations()
 // Modifications:
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Renamed the method and modified to match changes in annotationAtts.
-//   
+//
 //   Brad Whitlock, Fri Feb 8 10:56:51 PDT 2008
 //   Updated AnnotationAttributes.
 //
@@ -2946,7 +2958,7 @@ QvisAnnotationWindow::axesFlagChecked2D(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axesAutoSetTicksChecked2D
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the 2D auto set ticks flag.
 //
 // Arguments:
@@ -2961,7 +2973,7 @@ QvisAnnotationWindow::axesFlagChecked2D(bool val)
 // Modifications:
 //   Brad Whitlock, Fri Feb 8 10:56:51 PDT 2008
 //   Updated AnnotationAttributes.
-//   
+//
 // ****************************************************************************
 
 void
@@ -2976,7 +2988,7 @@ QvisAnnotationWindow::axesAutoSetTicksChecked2D(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::labelAutoSetScaling2D
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the 2D auto set label scaling flag.
 //
 // Arguments:
@@ -2985,13 +2997,13 @@ QvisAnnotationWindow::axesAutoSetTicksChecked2D(bool val)
 // Note:       SetUpdate(false) is not called because we want the widget
 //             sensitivity to update.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 11, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 11, 2003
 //
 // Modifications:
 //   Brad Whitlock, Fri Feb 8 10:56:51 PDT 2008
 //   Updated AnnotationAttributes.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3013,7 +3025,7 @@ QvisAnnotationWindow::labelAutoSetScalingChecked2D(bool val)
 // Creation:   May 13, 2011
 //
 // ****************************************************************************
- 
+
 void
 QvisAnnotationWindow::setBBoxLocationChecked(bool val)
 {
@@ -3041,7 +3053,7 @@ QvisAnnotationWindow::setBBoxLocationChecked(bool val)
 //   Updated AnnotationAttributes.
 //
 // ****************************************************************************
- 
+
 void
 QvisAnnotationWindow::axesLineWidthChanged2D(int index)
 {
@@ -3054,7 +3066,7 @@ QvisAnnotationWindow::axesLineWidthChanged2D(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axes2DTicksChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the attributes which set of 2d
 //   tick marks are to be used.
 //
@@ -3094,7 +3106,7 @@ QvisAnnotationWindow::axesTicksChanged2D(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axes2DTickLocationChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the attributes where the 2d tick
 //   marks will appear.
 //
@@ -3130,22 +3142,22 @@ QvisAnnotationWindow::axesTickLocationChanged2D(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::xAxisChanged2D
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when anything in the 2D X-axis
 //   page changes.
 //
 // Arguments:
 //   aa : The new axis attributes.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 8 11:13:19 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3159,22 +3171,22 @@ QvisAnnotationWindow::xAxisChanged2D(const AxisAttributes &aa)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::yAxisChanged2D
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when anything in the 2D Y-axis
 //   page changes.
 //
 // Arguments:
 //   aa : The new axis attributes.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 8 11:13:19 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3192,7 +3204,7 @@ QvisAnnotationWindow::yAxisChanged2D(const AxisAttributes &aa)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axes3DFlagChecked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the 3D flag.
 //
 // Arguments:
@@ -3224,7 +3236,7 @@ QvisAnnotationWindow::axes3DFlagChecked(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::labelAutoSetScaling
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the 3D auto set label scaling flag.
 //
 // Arguments:
@@ -3233,13 +3245,13 @@ QvisAnnotationWindow::axes3DFlagChecked(bool val)
 // Note:       SetUpdate(false) is not called because we want the widget
 //             sensitivity to update.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 11, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 11, 2003
 //
 // Modifications:
 //   Brad Whitlock, Fri Feb 8 11:04:27 PDT 2008
 //   Updated AnnotationAttributes.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3253,7 +3265,7 @@ QvisAnnotationWindow::labelAutoSetScalingChecked(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axesAutoSetTicksChecked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the 3D auto set ticks flag.
 //
 // Arguments:
@@ -3266,7 +3278,7 @@ QvisAnnotationWindow::labelAutoSetScalingChecked(bool val)
 // Creation:   Fri Feb 8 12:11:47 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3280,7 +3292,7 @@ QvisAnnotationWindow::axesAutoSetTicksChecked(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axes3DTickLocationChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the attributes where the 3d tick
 //   marks will appear.
 //
@@ -3313,7 +3325,7 @@ QvisAnnotationWindow::axes3DTickLocationChanged(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axes3DTypeChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the attributes how the axes will
 //   be drawn.
 //
@@ -3329,7 +3341,7 @@ QvisAnnotationWindow::axes3DTickLocationChanged(int index)
 //
 //   Brad Whitlock, Fri Jan 25 11:50:50 PST 2008
 //   Updated AnnotationAttributes.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3353,7 +3365,7 @@ QvisAnnotationWindow::axes3DTypeChanged(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::triadFlagChecked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the attributes whether or not the
 //   3D triad should be drawn.
 //
@@ -3369,8 +3381,8 @@ QvisAnnotationWindow::axes3DTypeChanged(int index)
 //
 //   Alister Maguire, Thu Mar  1 16:08:42 PST 2018
 //   Removed the SetUpdate so that the triad group
-//   will be enabled/disabled. 
-//   
+//   will be enabled/disabled.
+//
 // ****************************************************************************
 
 void
@@ -3384,7 +3396,7 @@ QvisAnnotationWindow::triadFlagChecked(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::bboxFlagChecked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the attributes whether or not to
 //   in bbox mode. Is this correct?
 //
@@ -3397,7 +3409,7 @@ QvisAnnotationWindow::triadFlagChecked(bool val)
 // Modifications:
 //   Brad Whitlock, Fri Jan 25 11:50:50 PST 2008
 //   Updated for new AnnotationAttributes.
-//   
+//
 //   Kathleen Biagas, Wed Apr  8 07:58:02 PDT 2015
 //   Allow this toggle to update the window.
 //
@@ -3427,7 +3439,7 @@ QvisAnnotationWindow::bboxFlagChecked(bool val)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 void
 QvisAnnotationWindow::axesLineWidthChanged(int index)
 {
@@ -3440,22 +3452,22 @@ QvisAnnotationWindow::axesLineWidthChanged(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::xAxisChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when anything in the 3D X-axis
 //   page changes.
 //
 // Arguments:
 //   aa : The new axis attributes.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 8 11:13:19 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3469,22 +3481,22 @@ QvisAnnotationWindow::xAxisChanged(const AxisAttributes &aa)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::yAxisChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when anything in the 3D Y-axis
 //   page changes.
 //
 // Arguments:
 //   aa : The new axis attributes.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 8 11:13:19 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3498,22 +3510,22 @@ QvisAnnotationWindow::yAxisChanged(const AxisAttributes &aa)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::zAxisChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when anything in the 3D Z-axis
 //   page changes.
 //
 // Arguments:
 //   aa : The new axis attributes.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 8 11:13:19 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3531,7 +3543,7 @@ QvisAnnotationWindow::zAxisChanged(const AxisAttributes &aa)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::backgroundColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the color is changed by
 //   using the background color button.
 //
@@ -3559,7 +3571,7 @@ QvisAnnotationWindow::backgroundColorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::foregroundColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the color is changed by
 //   using the foreground color button.
 //
@@ -3587,7 +3599,7 @@ QvisAnnotationWindow::foregroundColorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::gradientColor1Changed
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the first gradient color
 //   is changed.
 //
@@ -3600,7 +3612,7 @@ QvisAnnotationWindow::foregroundColorChanged(const QColor &c)
 // Modifications:
 //   Brad Whitlock, Thu Sep 20 15:49:12 PST 2001
 //   Changed the code to conform to the new state object.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3615,7 +3627,7 @@ QvisAnnotationWindow::gradientColor1Changed(const QColor &c)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::gradientColor2Changed
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the second gradient color
 //   is changed.
 //
@@ -3643,7 +3655,7 @@ QvisAnnotationWindow::gradientColor2Changed(const QColor &c)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::backgroundStyleChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user changes the
 //   background style radio buttons.
 //
@@ -3656,7 +3668,7 @@ QvisAnnotationWindow::gradientColor2Changed(const QColor &c)
 // Modifications:
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Modified to match changes in annotationAtts.
-//   
+//
 //   Brad Whitlock, Wed Nov 14 13:26:34 PST 2007
 //   Added support for image backgrounds.
 //
@@ -3679,7 +3691,7 @@ QvisAnnotationWindow::backgroundStyleChanged(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::gradientStyleChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user changes the
 //   gradient style radio buttons.
 //
@@ -3692,7 +3704,7 @@ QvisAnnotationWindow::backgroundStyleChanged(int index)
 // Modifications:
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Modified to match changes in annotationAtts.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3720,11 +3732,11 @@ QvisAnnotationWindow::gradientStyleChanged(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::backgroundImageChanged.
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the background image changes.
 //
 // Programmer: Brad Whitlock
-// Creation:   
+// Creation:
 //
 // Modifications:
 //
@@ -3740,22 +3752,22 @@ QvisAnnotationWindow::backgroundImageChanged()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::imageRepeatXChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the number of image repeats
 //   in X changes.
 //
 // Arguments:
 //   value : The new number of repeats.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 19 12:11:15 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3769,22 +3781,22 @@ QvisAnnotationWindow::imageRepeatXChanged(int value)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::imageRepeatYChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the number of image repeats
 //   in Y changes.
 //
 // Arguments:
 //   value : The new number of repeats.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 19 12:11:15 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3802,7 +3814,7 @@ QvisAnnotationWindow::imageRepeatYChanged(int value)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::setUpdateForWindow
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the window's update value, which
 //   determines whether or not the window updates when it gets a Notify.
 //
@@ -3813,7 +3825,7 @@ QvisAnnotationWindow::imageRepeatYChanged(int value)
 // Creation:   Tue Dec 2 15:11:27 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3825,7 +3837,7 @@ QvisAnnotationWindow::setUpdateForWindow(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::applyObjectListChanges
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that allows the annotation interfaces to
 //   force changes to the annotation object list to be sent to the viewer.
 //
@@ -3833,7 +3845,7 @@ QvisAnnotationWindow::setUpdateForWindow(bool val)
 // Creation:   Tue Dec 2 15:12:14 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3845,7 +3857,7 @@ QvisAnnotationWindow::applyObjectListChanges()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::addNewAnnotationObject
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to create an object of
 //   the specified type.
 //
@@ -3882,7 +3894,7 @@ QvisAnnotationWindow::addNewAnnotationObject(int annotType)
     // Prompt the user for a name for the new annotation object.
     bool ok = false;
     QString newName(GetViewerState()->GetAnnotationObjectList()->GetNewObjectName().c_str());
-    QString annotName = QInputDialog::getText(this, "VisIt", 
+    QString annotName = QInputDialog::getText(this, "VisIt",
         tr("Enter a name for the new annotation object."),
         QLineEdit::Normal, newName, &ok);
 
@@ -3900,7 +3912,7 @@ QvisAnnotationWindow::addNewAnnotationObject(int annotType)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::setActiveAnnotations
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the active annotations.
 //
 // Programmer: Brad Whitlock
@@ -3928,7 +3940,7 @@ QvisAnnotationWindow::setActiveAnnotations()
         AnnotationObject &annot = annotationObjectList->operator[](i);
         annot.SetActive(isSelected);
     }
- 
+
     // Apply the changes but make sure that we do it once we're back in
     // the main event loop because updating the annotation object list
     // can clear out and repopulate the annotation list box.
@@ -3938,7 +3950,7 @@ QvisAnnotationWindow::setActiveAnnotations()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::hideActiveAnnotations
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to hide the active
 //   annotations.
 //
@@ -3946,7 +3958,7 @@ QvisAnnotationWindow::setActiveAnnotations()
 // Creation:   Tue Dec 2 15:14:39 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3966,7 +3978,7 @@ QvisAnnotationWindow::hideActiveAnnotations()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::deleteActiveAnnotations
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to delete the active
 //   annotations.
 //
@@ -3974,7 +3986,7 @@ QvisAnnotationWindow::hideActiveAnnotations()
 // Creation:   Tue Dec 2 15:15:14 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4006,7 +4018,7 @@ QvisAnnotationWindow::deleteActiveAnnotations()
 // Modifications:
 //
 // ****************************************************************************
- 
+
 void
 QvisAnnotationWindow::axesLineWidthChangedArray(int index)
 {
@@ -4020,22 +4032,22 @@ QvisAnnotationWindow::axesLineWidthChangedArray(int index)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axisChangedArray
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when anything in the axisarray
 //   page changes.
 //
 // Arguments:
 //   aa : The new axis attributes.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Jeremy Meredith
 // Creation:   November 18, 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4049,7 +4061,7 @@ QvisAnnotationWindow::axisChangedArray(const AxisAttributes &aa)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axesFlagCheckedArray
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the axis array visibility
 //
 // Programmer: Jeremy Meredith
@@ -4074,7 +4086,7 @@ QvisAnnotationWindow::axesFlagCheckedArray(bool val)
 //    Callback when the axisarray tick visibility changes.
 //
 //  Arguments:
-//    
+//
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 18, 2008
@@ -4095,7 +4107,7 @@ QvisAnnotationWindow::axesTicksChangedArray(bool val)
 //    Callback when the axisarray label autoscaling changes.
 //
 //  Arguments:
-//    
+//
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 18, 2008
@@ -4116,7 +4128,6 @@ QvisAnnotationWindow::labelAutoSetScalingCheckedArray(bool val)
 //    Callback when the axisarray tick autosetting changes.
 //
 //  Arguments:
-//    
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 18, 2008

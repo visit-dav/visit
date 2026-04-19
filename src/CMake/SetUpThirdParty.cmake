@@ -51,6 +51,11 @@
 #   Kevin Griffin, Mon 24 Feb 2025
 #   Added Include for FindANARI.cmake
 #
+#   Kathleen Biagas, Wed Apr 1, 2026
+#   Simplify the logic a bit when installing third party shared library.
+#   Fetch the 'stem' of the library so that file globbing will pick up all
+#   extensions including symlinks.
+#
 #****************************************************************************/
 
 # ==============================================
@@ -251,6 +256,11 @@ function(SET_UP_THIRD_PARTY pkg)
             else()
                 set(X_VALUE ${X})
             endif()
+            if(TARGET ${X_VALUE})
+                set(is_lib_path 0)
+                list(APPEND "${lib_var}" ${X_VALUE})
+                continue()
+            endif()
             if(is_lib_path)
                 set(is_lib_path 0)
                 list(APPEND "${lib_dir_var}" ${X_VALUE})
@@ -399,81 +409,49 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
     endif()
 
     if(${isSHAREDLIBRARY} STREQUAL "YES")
-        file(REAL_PATH ${tmpLIBFILE} LIBREALPATH)
-        ## message("***tmpLIBFILE=${tmpLIBFILE}, LIBREALPATH=${LIBREALPATH}")
-        if(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
-            # We need to install a library and its symlinks
-            cmake_path(GET LIBREALPATH PARENT_PATH curPATH)
+        if(IS_DIRECTORY ${tmpLIBFILE})
+            # It is a framework, install as a directory.
+            install(DIRECTORY ${tmpLIBFILE}
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                    DIRECTORY_PERMISSIONS ${VISIT_TP_PERMS}
+                    FILE_PERMISSIONS ${VISIT_TP_PERMS}
+                    PATTERN "Qt*_debug" EXCLUDE # Exclude Qt*_debug libraries in framework.
+                   )
+        else()
+            # We need to install a library and possibly its symlinks
+            cmake_path(GET tmpLIBFILE PARENT_PATH curPATH)
             if((NOT ${curPATH} STREQUAL "/usr/lib") AND
                (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND
                (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND
                (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
-                # Extract proper base name by comparing the input lib path w/ the real path.
-                cmake_path(GET LIBREALPATH FILENAME realNAME)
-                cmake_path(GET tmpLIBFILE FILENAME inptNAME)
-                string(REPLACE ${LIBEXT} "" inptNAME ${inptNAME})
-                string(REPLACE ${inptNAME} "" curEXT ${realNAME})
-                # We will have a "." at the end of the string, remove it
-                string(REGEX REPLACE "\\.$" "" inptNAME ${inptNAME})
-                string(REPLACE "." ";" extList ${curEXT})
-                set(curNAME "${curPATH}/${inptNAME}")
-                # Come up with all of the possible library and symlink names
-                set(allNAMES "${curNAME}${LIBEXT}")
-                set(allNAMES ${allNAMES} "${curNAME}${LIBEXT}.1") # seems to be a standard linux-ism that isn't always covered by the foreach-loop on ${extList}
-                set(allNAMES ${allNAMES} "${curNAME}.a")
-                foreach(X ${extList})
-                    set(curNAME "${curNAME}.${X}")
-                    set(allNAMES ${allNAMES} "${curNAME}")           # Linux way
-                    set(allNAMES ${allNAMES} "${curNAME}${LIBEXT}")  # Mac way
-                endforeach()
+                # Extract base name
+                cmake_path(GET tmpLIBFILE STEM inptNAME)
 
-                list(REMOVE_DUPLICATES allNAMES)
+                # get all files that begin with 'inptNAME.'
+                file(GLOB allNAMES "${curPATH}/${inptNAME}.*")
 
                 # Add the names that exist to the install.
                 foreach(curNAMEWithExt ${allNAMES})
-                    ## message("** Checking ${curNAMEWithExt}")
+                    #message("** Checking ${curNAMEWithExt}")
                     if(EXISTS ${curNAMEWithExt})
                         ## message("** Need to install ${curNAMEWithExt}")
                         if(IS_DIRECTORY ${curNAMEWithExt})
                             # It is a framework, install as a directory
                             install(DIRECTORY ${curNAMEWithExt}
-                                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                                DIRECTORY_PERMISSIONS ${VISIT_TP_PERMS}
-                                FILE_PERMISSIONS ${VISIT_TP_PERMS}
-                            )
+                                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                                    DIRECTORY_PERMISSIONS ${VISIT_TP_PERMS}
+                                    FILE_PERMISSIONS ${VISIT_TP_PERMS}
+                                   )
                         else()
                             install(FILES ${curNAMEWithExt}
-                                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                                PERMISSIONS ${VISIT_TP_PERMS}
-                            )
+                                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                                    PERMISSIONS ${VISIT_TP_PERMS}
+                                   )
                         endif()
-                    endif(EXISTS ${curNAMEWithExt})
-                endforeach(curNAMEWithExt)
+                    endif()
+                endforeach()
             endif()
-        else(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
-            cmake_path(GET LIBREALPATH PARENT_PATH curPATH)
-            if((NOT ${curPATH} STREQUAL "/usr/lib") AND
-               (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND
-               (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND
-               (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
-                # We need to install just the library
-                if(IS_DIRECTORY ${tmpLIBFILE})
-                    # It is a framework, install as a directory.
-                    install(DIRECTORY ${tmpLIBFILE}
-                        DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                        DIRECTORY_PERMISSIONS ${VISIT_TP_PERMS}
-                        FILE_PERMISSIONS ${VISIT_TP_PERMS}
-                        PATTERN "Qt*_debug" EXCLUDE # Exclude Qt*_debug libraries in framework.
-                    )
-                else()
-                    # Create an install target for just the library file
-                    install(FILES ${tmpLIBFILE}
-                        DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                        PERMISSIONS ${VISIT_TP_PERMS})
-                endif()
-#            message("**We need to install lib ${tmpLIBFILE}")
-            endif()
-        endif(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
+        endif()
     else(${isSHAREDLIBRARY} STREQUAL "YES")
         # We have a .a that we need to install to archives.
         if(VISIT_INSTALL_THIRD_PARTY)
@@ -601,6 +579,8 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
 
+    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
+
     include(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
@@ -619,7 +599,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
 
-    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
 

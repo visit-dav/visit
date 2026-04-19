@@ -27,7 +27,7 @@ existing session file.
 
 VisIt_ saves two preference files, the first of which stores preferences
 for VisIt_'s GUI while the second file stores preferences for VisIt_'s
-state. When running VisIt_ on UNIX and MacOS X systems, the preference files
+state. When running VisIt_ on UNIX and macOS systems, the preference files
 are called: ``guiconfig`` and ``config`` and they are saved in the ``.visit``
 directory in the users home directory. The Windows version of the ``.visit`` 
 directory is ``%USERPROFILE%\Documents\VisIt``, which may be something like: 

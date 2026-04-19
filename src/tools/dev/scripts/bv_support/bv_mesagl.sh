@@ -400,6 +400,7 @@ function build_mesagl
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         MESAGL_STATIC_DYNAMIC="--disable-shared --disable-shared-glapi --enable-static --enable-static-glapi"
     fi
+    MESAGL_DEBUG_BUILD="--disable-debug"
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         MESAGL_DEBUG_BUILD="--enable-debug"
     fi

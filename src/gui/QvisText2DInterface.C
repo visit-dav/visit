@@ -10,6 +10,7 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QRadioButton>
+#include <QScrollArea>
 #include <QSpinBox>
 #include <QvisColorButton.h>
 #include <QvisOpacitySlider.h>
@@ -20,7 +21,7 @@
 // ****************************************************************************
 // Method: QvisText2DInterface::QvisText2DInterface
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisText2DInterface class.
 //
 // Arguments:
@@ -44,16 +45,28 @@
 //   Place 'useForeground' checkbox before text color button, added
 //   textColorLabel so it can be disabled when the button is disabled.
 //
+//   Kathleen Biagas, Wed Feb 4, 2026
+//   Add QScrollArea for easier use on smaller laptop displays.
+//
 // ****************************************************************************
 
-QvisText2DInterface::QvisText2DInterface(QWidget *parent) : 
+QvisText2DInterface::QvisText2DInterface(QWidget *parent) :
     QvisAnnotationObjectInterface(parent)
 {
     // Set the title of the group box.
     this->setTitle(GetName());
 
-    QGridLayout *cLayout = new QGridLayout(0);
-    topLayout->addLayout(cLayout);
+    // Add a scroll area
+    QScrollArea *scroll = new QScrollArea();
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setWidgetResizable(true);
+    topLayout->addWidget(scroll);
+
+    QWidget *scrollContents = new QWidget();
+    scroll->setWidget(scrollContents);
+
+    QGridLayout *cLayout = new QGridLayout(scrollContents);
     cLayout->setSpacing(10);
 
     // Add controls for the position
@@ -140,14 +153,14 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisText2DInterface::~QvisText2DInterface
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisText2DInterface class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 5 11:47:58 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisText2DInterface::~QvisText2DInterface()
@@ -157,7 +170,7 @@ QvisText2DInterface::~QvisText2DInterface()
 // ****************************************************************************
 // Method: QvisText2DInterface::GetMenuText
 //
-// Purpose: 
+// Purpose:
 //   Returns the text to use in the annotation list box.
 //
 // Arguments:
@@ -189,7 +202,7 @@ QvisText2DInterface::GetMenuText(const AnnotationObject &annot) const
 // ****************************************************************************
 // Method: QvisText2DInterface::UpdateControls
 //
-// Purpose: 
+// Purpose:
 //   Updates the controls in the interface using the data in the Annotation
 //   object pointed to by the annot pointer.
 //
@@ -225,7 +238,7 @@ QvisText2DInterface::UpdateControls()
 
     //
     // Set the text color. If we're using the foreground color for the text
-    // color then make the button be white and only let the user change the 
+    // color then make the button be white and only let the user change the
     // opacity.
     //
     textColorOpacity->blockSignals(true);
@@ -291,7 +304,7 @@ QvisText2DInterface::UpdateControls()
 // ****************************************************************************
 // Method: QvisText2DInterface::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for the text fields.
 //
 // Arguments:
@@ -343,15 +356,15 @@ QvisText2DInterface::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisText2DInterface::positionChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   position line edit.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -366,7 +379,7 @@ QvisText2DInterface::positionChanged(double x, double y)
 // ****************************************************************************
 // Method: QvisText2DInterface::heightChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the value of the height
 //   spin box changes.
 //
@@ -377,7 +390,7 @@ QvisText2DInterface::positionChanged(double x, double y)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -395,15 +408,15 @@ QvisText2DInterface::heightChanged(int h)
 // ****************************************************************************
 // Method: QvisText2DInterface::textChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   text line edit.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -416,7 +429,7 @@ QvisText2DInterface::textChanged()
 // ****************************************************************************
 // Method: QvisText2DInterface::textColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start color is
 //   selected.
 //
@@ -427,7 +440,7 @@ QvisText2DInterface::textChanged()
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -442,7 +455,7 @@ QvisText2DInterface::textColorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisText2DInterface::textOpacityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start opacity is
 //   selected.
 //
@@ -453,7 +466,7 @@ QvisText2DInterface::textColorChanged(const QColor &c)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -469,7 +482,7 @@ QvisText2DInterface::textOpacityChanged(int opacity)
 // ****************************************************************************
 // Method: QvisText2DInterface::fontFamilyChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the font family is changed.
 //
 // Arguments:
@@ -479,7 +492,7 @@ QvisText2DInterface::textOpacityChanged(int opacity)
 // Creation:   Thu Nov 6 16:00:28 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -493,7 +506,7 @@ QvisText2DInterface::fontFamilyChanged(int family)
 // ****************************************************************************
 // Method: QvisText2DInterface::boldToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the bold checkbox is toggled.
 //
 // Arguments:
@@ -503,7 +516,7 @@ QvisText2DInterface::fontFamilyChanged(int family)
 // Creation:   Thu Nov 6 16:01:03 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -517,7 +530,7 @@ QvisText2DInterface::boldToggled(bool val)
 // ****************************************************************************
 // Method: QvisText2DInterface::italicToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the italic checkbox is toggled.
 //
 // Arguments:
@@ -527,7 +540,7 @@ QvisText2DInterface::boldToggled(bool val)
 // Creation:   Thu Nov 6 16:01:44 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -541,7 +554,7 @@ QvisText2DInterface::italicToggled(bool val)
 // ****************************************************************************
 // Method: QvisText2DInterface::shadowToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the shadow checkbox is
 //   toggled.
 //
@@ -552,7 +565,7 @@ QvisText2DInterface::italicToggled(bool val)
 // Creation:   Thu Nov 6 16:02:22 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -566,7 +579,7 @@ QvisText2DInterface::shadowToggled(bool val)
 // ****************************************************************************
 // Method: QvisText2DInterface::visibilityToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the visibility toggle is
 //   changed.
 //
@@ -577,7 +590,7 @@ QvisText2DInterface::shadowToggled(bool val)
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -591,7 +604,7 @@ QvisText2DInterface::visibilityToggled(bool val)
 // ****************************************************************************
 // Method: QvisText2DInterface::useForegroundColorToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the useForegroundColor
 //   check box is clicked.
 //
@@ -602,7 +615,7 @@ QvisText2DInterface::visibilityToggled(bool val)
 // Creation:   Wed Nov 5 12:34:48 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

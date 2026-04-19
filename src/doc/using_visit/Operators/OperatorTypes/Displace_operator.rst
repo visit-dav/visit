@@ -5,8 +5,8 @@ Displace operator
 
 The Displace operator deforms a mesh variable using a vector field that is 
 defined on the nodes of that mesh. Many engineering simulation codes write a 
-mesh for the first time state of the simulation and then write vector 
-displacements for the mesh for subsequent time states. The Displace operator 
+mesh for the first timestate of the simulation and then write vector 
+displacements for the mesh for subsequent timestates. The Displace operator 
 makes it possible to use the mesh and the time-varying vector field to observe 
 the behavior of the mesh over time. The Displace operator provides a multiplier 
 that can amplify the effects of the vector field on the mesh so slight changes 

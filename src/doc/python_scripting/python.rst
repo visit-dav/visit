@@ -62,11 +62,11 @@ and cause problems that you might not expect. Identifiers can be used to
 refer to any type of object since Python is flexible in its treatment of
 types.
 
-Data types
+Datatypes
 ----------
 
-Python supports a wide variety of data types and allows you to define
-your own data types readily. Most types are created from a handful of
+Python supports a wide variety of datatypes and allows you to define
+your own datatypes readily. Most types are created from a handful of
 building-block types such as integers, floats, strings, tuples, lists,
 and dictionaries.
 

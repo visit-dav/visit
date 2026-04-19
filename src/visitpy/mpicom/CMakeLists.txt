@@ -47,30 +47,12 @@ IF(VISIT_PARALLEL)
 
     IF(UNIX)
         SET_TARGET_PROPERTIES(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
-        IF(VISIT_PARALLEL_CXXFLAGS)
-            SET(PAR_COMPILE_FLAGS "-fno-strict-aliasing")
-            FOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
-                SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-            ENDFOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
-            SET_TARGET_PROPERTIES(mpicom PROPERTIES
-                                  COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
-        ENDIF(VISIT_PARALLEL_CXXFLAGS)
-        IF(VISIT_PARALLEL_LINKER_FLAGS)
-            SET(PAR_LINK_FLAGS "")
-            FOREACH (X ${VISIT_PARALLEL_LINKER_FLAGS})
-                SET(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            ENDFOREACH (X ${VISIT_PARALLEL_LINKER_FLAGS})
-            SET_TARGET_PROPERTIES(mpicom PROPERTIES
-                              LINK_FLAGS ${PAR_LINK_FLAGS})
-        ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
-    ELSE(UNIX)
-        ADD_TARGET_INCLUDE(mpicom ${VISIT_PARALLEL_INCLUDE})
-        ADD_TARGET_DEFINITIONS(mpicom ${VISIT_PARALLEL_DEFS})
     ENDIF(UNIX)
 
+    target_compile_definitions(mpicom PUBLIC ${VISIT_PARALLEL_DEFINES})
     TARGET_LINK_LIBRARIES(mpicom PRIVATE
                           ${PYTHON_LIBRARY}
-                          ${VISIT_PARALLEL_LIBS})
+                          MPI::MPI_C)
 
 ELSE(VISIT_PARALLEL)
     # we still need to build the module w/ the mpi stub

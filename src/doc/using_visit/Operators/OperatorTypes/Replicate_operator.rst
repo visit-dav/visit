@@ -20,7 +20,7 @@ Some file formats specify the vectors for the unit cell (sometimes called "direc
 **Vector for X, Y, and Z** are controls for specifying the actual vectors describing the amount to displace for a replication in each of the three axes. (The X, Y, and Z labels are only for disambiguation; there is no requirement that the actual vectors specified be related to their name.)
 
 
-**Replications in X, Y, and Z** specifies the total number of instances of the data set to create. E.g. 1,1,1 specifies the original data set with no replications. 2,1,1 specifies a total of two instances -- one is the original, and the other is a new one created at a displacement of 1x along the "X" vector.
+**Replications in X, Y, and Z** specifies the total number of instances of the dataset to create. E.g. 1,1,1 specifies the original dataset with no replications. 2,1,1 specifies a total of two instances -- one is the original, and the other is a new one created at a displacement of 1x along the "X" vector.
 
 The **Merge into one block when possible** flag specifies that the output of this operator should be created in a single "chunk", and helps with correct operation of the :ref:`createbonds_operator_head`.  It is recommended to leave this enabled.
 

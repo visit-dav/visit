@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QSpinBox>
 #include <QStringList>
 #include <QTabWidget>
@@ -62,6 +63,9 @@
 //   Added controls that allow users to modifiy tick values and labels.
 //   Tabified the controls to keep the window from becoming too long.
 //
+//   Kathleen Biagas, Wed Feb 4, 2026
+//   Add QScrollAreas for easier use on smaller laptop displays.
+//
 // ****************************************************************************
 
 QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
@@ -76,7 +80,14 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     int row = 0;
 
     // Position tab
-    QWidget *position = new QWidget(tabs);
+    QScrollArea *positionTab = new QScrollArea(tabs);
+    positionTab->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    positionTab->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    positionTab->setWidgetResizable(true);
+    QWidget *position = new QWidget();
+    positionTab->setWidget(position);
+
+
     QVBoxLayout *vLayout = new QVBoxLayout(position);
     vLayout->setContentsMargins(10,10,10,10);
     QGridLayout *pLayout = new QGridLayout(0);
@@ -137,11 +148,17 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     pLayout->addWidget(orientationComboBox, row, 1, 1, 3);
     pLayout->addWidget(new QLabel(tr("Orientation"), this), row, 0);
 
-    tabs->addTab(position, tr("Position"));
+    tabs->addTab(positionTab, tr("Position"));
 
     row = 0;
     // Tick Marks tab
-    QWidget *tickMarks = new QWidget(tabs);
+    QScrollArea *tickMarksTab = new QScrollArea(tabs);
+    tickMarksTab->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    tickMarksTab->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    tickMarksTab->setWidgetResizable(true);
+    QWidget *tickMarks = new QWidget();
+    tickMarksTab->setWidget(tickMarks);
+
     QGridLayout *tLayout = new QGridLayout(tickMarks);
     //topLayout->addLayout(tLayout);
     tLayout->setSpacing(10);
@@ -218,11 +235,17 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
         SLOT(deleteSelectedRow()));
     suppliedLabelsLayout->addWidget(deleteRowButton, 1, 2);
 
-    tabs->addTab(tickMarks, tr("Tick marks"));
+    tabs->addTab(tickMarksTab, tr("Tick marks"));
 
     row = 0;
-    // Tick marks tab
-    QWidget *appearance = new QWidget(tabs);
+    // Apperance tab
+    QScrollArea *appearanceTab = new QScrollArea(tabs);
+    appearanceTab->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    appearanceTab->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    appearanceTab->setWidgetResizable(true);
+    QWidget *appearance = new QWidget();
+    appearanceTab->setWidget(appearance);
+
     QVBoxLayout *vLayout2 = new QVBoxLayout(appearance);
     vLayout2->setContentsMargins(10,10,10,10);
     QGridLayout *aLayout = new QGridLayout(0);
@@ -340,7 +363,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     shadowCheckBox->setEnabled(false); // Until this works in the legend.
     ++row;
 
-    tabs->addTab(appearance, tr("Appearance"));
+    tabs->addTab(appearanceTab, tr("Appearance"));
 }
 
 // ****************************************************************************
@@ -1148,14 +1171,14 @@ QvisLegendAttributesInterface::drawTitleToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::customTitleToggled
 //
-// Purpose: 
+// Purpose:
 //   Called when the custom title checkbox is toggled.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   Wednesday May 19, 2021
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1168,14 +1191,14 @@ QvisLegendAttributesInterface::customTitleToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::customTitleChanged
 //
-// Purpose: 
+// Purpose:
 //   Called when the custom title text is changed.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   Wednesday May 19, 2021
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

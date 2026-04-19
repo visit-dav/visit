@@ -113,6 +113,31 @@ function bv_uintah_dry_run
     fi
 }
 
+function apply_uintah_def_fix_patch
+{
+    info "Patching uintah for bug with debugging only member defs"
+    patch -p0 << \EOF
+diff --git a/src/Core/Containers/RangeTree.h b/src/Core/Containers/RangeTree.h
+index 9166e87..d80ae1d 100644
+--- Uintah-2.6.3/src/Core/Containers/RangeTree.h
++++ Uintah-2.6.3/src/Core/Containers/RangeTree.h
+@@ -1191,10 +1191,15 @@ dump()
+     std::cout << (*points_[i])[0] << " "; //(" << points_[i]->getId() << ") ";
+   }
+   std::cout << std::endl;
++
++#if SCI_ASSERTION_LEVEL >= 2
+   if (this->leftSubset_ != nullptr) {
+     this->leftSubset_->dump();
+     this->rightSubset_->dump();
+   }
++#endif
++
++
+ }
+EOF
+}
+
 
 # **************************************************************************** #
 #                          Function 8.1, build_uintah                          #
@@ -234,6 +259,12 @@ function build_uintah
         return 1
     fi
 
+    # source patches
+    apply_uintah_def_fix_patch
+    if [[ $? != 0 ]] ; then
+        warn "Failed to patch UINTAH"
+        return 1
+    fi
     # move back up to the start dir
     cd "$START_DIR"
 

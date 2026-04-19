@@ -230,7 +230,9 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             if (H5NIMROD_read_attrib (group_id, "Step number", &stepnumber) == H5NIMROD_ERR)
             {
               H5Gclose(group_id);
+              H5Gclose(grid_id);
               H5Fclose(file_id);
+              H5Gclose(root_id);
               EXCEPTION1( InvalidVariableException, "H5NIMROD Read Attribute - 'Step number' was not found or wrong type" );
             }
 
@@ -241,7 +243,9 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             if (H5NIMROD_read_attrib (group_id, "time", &time) == H5NIMROD_ERR)
             {
               H5Gclose(group_id);
+              H5Gclose(grid_id);
               H5Fclose(file_id);
+              H5Gclose(root_id);
               EXCEPTION1( InvalidVariableException, "H5NIMROD Read Attribute - 'time' was not found or wrong type" );
             }
 
@@ -620,12 +624,12 @@ avtH5NimrodFileFormat::GetVectorVar (int timestate, const char *varname)
     if (comp != NULL)
         free (comp);
 
-    return vector;
-
     H5Gclose (vector_id);
     H5Gclose (group_id);
     H5Gclose (root_id);
     H5Fclose (file);
+
+    return vector;
 }
 
 

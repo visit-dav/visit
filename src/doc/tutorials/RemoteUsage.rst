@@ -50,7 +50,7 @@ of the visualization windows suffers because VisIt_ can't leverage the
 graphics processing unit on the local system.
 
 When using X Display forwarding you need to have an X Server running on
-the display of your local system. In the case of Linux and MacOS, both
+the display of your local system. In the case of Linux and macOS, both
 will have X Servers running by default. In the case of Windows you will
 need to install a X Server on your system and enable it. Fortunately,
 most people will already have an X Server installed on their system if
@@ -113,7 +113,7 @@ Installing VNC
 ~~~~~~~~~~~~~~
 
 If your system is an LLNL managed system you can install it via the LLNL
-workstations catalog for MacOS or Windows. Alternatively, you can download
+workstations catalog for macOS or Windows. Alternatively, you can download
 the `RealVNC client <https://www.realvnc.com/download/viewer/>`_
 and install it on your desktop. VNC clients not supplied by RealVNC will
 not work at LLNL.
@@ -149,7 +149,7 @@ at Livermore Computing.
 
 At this point we will focus on running RealVNC on Windows. Other than
 starting the Viewer, everything should be pretty much the same for
-Windows, MacOS and Linux.
+Windows, macOS and Linux.
 
 1. Select *RealVNC->VNC Viewer* from the Start menu.
 2. This will bring up the VNC Viewer.
@@ -222,6 +222,27 @@ properly with VNC.
 .. figure:: images/Remote-VisItVNC.png
 
    VisIt_ running on the VNC Viewer
+
+VNC Rendering Performance
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+VisIt uses a heuristic to switch between direct rendering in the viewer
+and scalable rendering via the engine. For smaller mesh sizes, datasets are
+sent to viewer for rendering with OpenGL. Scalable rendering uses VisIt's
+engine, which can leverage many MPI tasks to render, composite the result,
+and then only send an image back to the viewer for display.
+
+Direct rendering can cause contention in a shared VNC environment with many
+users. If rendering seems slow, we recommend configuring VisIt to always use
+scalable rendering.
+
+1. Select *Options Menu -> Rendering*
+2. In the *Advanced* tab, set *Use scalable rendering* to *Always*
+3. Click *Apply*
+4. Select *Options Menu->Save Settings* to save for future sessions
+
+For more details about Scalable rendering see the
+:ref:`Scalable rendering documentation. <ScalableRendering>`
+
 
 Troubleshooting VNC issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

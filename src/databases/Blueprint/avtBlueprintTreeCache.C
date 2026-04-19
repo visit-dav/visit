@@ -34,6 +34,11 @@
 #include "mfem.hpp"
 
 //-----------------------------------------------------------------------------
+// hdf5 includes
+//-----------------------------------------------------------------------------
+#include <hdf5.h>
+
+//-----------------------------------------------------------------------------
 // bp visit plugin includes
 //-----------------------------------------------------------------------------
 #include "avtBlueprintLogging.h"
@@ -357,11 +362,6 @@ avtBlueprintTreeCache::IO::CreateSidreMetaViewPath(const std::string &tree_path)
     }
 
     return oss.str();
-
-   
-    std::string curr,next;
-    
-    
 }
 
 
@@ -506,6 +506,10 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
 //    Justin Privitera, Wed Jul 30 16:40:33 PDT 2025
 //    Fix buffer slab read conditional such that the successful read case
 //    does not trigger the failure result.
+//
+//    Cyrus Harrison, Mon Feb  2 16:37:28 PST 2026
+//    Added support for Sidre Tuples.
+//
 //----------------------------------------------------------------------------/
 // TODO CONST FOR INPUT 
 void
@@ -518,7 +522,7 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
                                          Node &out)
 {
     // view load cases:
-    //   the view is a scalar or string
+    //   the view is a scalar/tuple or string
     //     simply copy the "value" from the meta view
     //
     //   the view is attached to a buffer
@@ -542,6 +546,11 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
         BP_PLUGIN_INFO("loading " << view_path << " as sidre scalar view");
         out.set(sidre_meta_view["value"]);
     }
+    else if(view_state == "TUPLE")
+    {
+        BP_PLUGIN_INFO("loading " << view_path << " as sidre tuple view");
+        out.set(sidre_meta_view["value"]);
+    }
     else if( view_state == "BUFFER" )
     {
         BP_PLUGIN_INFO("loading " << view_path << " as sidre view linked to a buffer");
@@ -551,19 +560,19 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
         std::ostringstream buffer_fetch_path_oss;
         buffer_fetch_path_oss << tree_root  
                        << "sidre/buffers/buffer_id_" << buffer_id;
-               
+
         // buffer data path
         std::string buffer_data_fetch_path   = buffer_fetch_path_oss.str() + "/data";
         // we also need the buffer's schema 
         std::string buffer_schema_fetch_path = buffer_fetch_path_oss.str() + "/schema";
 
         Node n_buffer_schema_str;
-        
+
         // TODO: We aren't caching this, but the final result is cached, not sure
         // we need to cache.
-        
+
         tree_cache.Read(file_path,buffer_schema_fetch_path,n_buffer_schema_str);
-       
+
         string buffer_schema_str = n_buffer_schema_str.as_string();
         Schema buffer_schema(buffer_schema_str);
 
@@ -576,11 +585,11 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
         // it describes how the view relates to the buffer in the hdf5 file
         Schema view_schema(view_schema_str);
         BP_PLUGIN_INFO("sidre view schema: " << view_schema.to_json());
-        
+
         // if the schema isn't compact, or if we are reading 
         // less elements than the entire buffer, 
         // we need to read a subset of the hdf5 dataset
-      
+
         if(   !view_schema.is_compact() || 
             ( view_schema.dtype().number_of_elements() <
               buffer_schema.dtype().number_of_elements() )
@@ -635,7 +644,7 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
         }
         else
         {
-            
+
             tree_cache.Read(file_path,
                             buffer_data_fetch_path,
                             out);
@@ -651,7 +660,7 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
                        << "[domain " << tree_id << "] " 
                        << file_path  << ":"
                        << fetch_path);
-        
+
         tree_cache.Read(file_path,
                         fetch_path,
                         out);

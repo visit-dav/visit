@@ -47,6 +47,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added environment variable logging to VisIt's debug vlog files.</li>
   <li>Fix bug in PVLD reader that caused some files to not open.</li>
   <li>Updated Python to 3.13.9, support for Python 2 was removed.</li>
+  <li>Updated encoding recipe for mp4 to use the ubiquitous x264 codec.</li>
+  <li>Added encoding recipe for gif movie files.</li>
+  <li>Changed the preferred movie format encoding to default to mp4 if available.</li>
+  <li>Removed extraneous python modules from visit installs to avoid unnecessary security scan blocks.</li>
+  <li>Added support for Sidre Tuple Views to the Blueprint Database Reader.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -67,6 +72,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Save session file now takes existing session file names into account to avoid naming collisions.</li>
   <li>Fixed a bug where bottom of main GUI window would be hidden behind the Windows taskbar.</li>
   <li>Fixed bugs with viewer text annotation sizes and layout when moving viewer windows between displays with different DPIs.</li>
+  <li>Fixed Windows displaying as too tall on smaller laptop displays by adding Scroll bars where needed.  Some of the windows changed: Set Save options, Annotation, Integral Curve.</li>
+  <li>Fixed bug with interaction tools (line/plane, etc) so that they will be updated by an operators atts at first enablement.</li>
+  <li>Fixed a bug with the Line tool where it would hide behind 2D plots during interaction.</li>
+  <li>Ensure Line tool is disabled for Curve plots, because it shouldn't be enabled in this situation.</li>
+  <li>Fixed a bug where the line cue in Lineout mode would be drawn far from the mouse location when running on a laptop monitor.</li>
+  <li>Fixed a bug with layout changes causing existing viewer windows to be drawn blank until they were resized.</li>
 </ul>
 
 <a name="CLI_changes"></a>
@@ -77,6 +88,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>CLI objects and functions improved in various ways including fixing <code>dir()</code> for them.</li>
   <li><code>apropos()</code> help function is improved with additional arguments to control searches.</li>
   <li>Enhanced <code>DefineArrayExpression</code>, <code>DefineCurveExpression</code>, <code>DefineMaterialExpression</code>, <code>DefineMeshExpression</code>, <code>DefineScalarExpression</code>, <code>DefineSpeciesExpression</code>, <code>DefineTensorExpression</code> and <code>DefineVectorExpression</code> to take a list of expression names and expression definitions in addition to a single name of an expression and a single definition of an expression. Defining many expressions at once when the Graphical User Interface is active is much faster than defining them one at a time.</li>
+  <li>Added support for PySide6 to visit_utils annotation and curve renders.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -90,6 +102,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug in the Blueprint reader causing successful reading of Sidre data to trigger the failure case, leading to significantly degraded performance.</li>
   <li>The VisItXdmf reader has been removed, it hasn't been maintained. The Xdmf reader that utilizes the Xdmf library is still available.</li>
   <li>Added support for MFEM Quadrature Functions to the MFEM and Blueprint database plugins.</li>
+  <li>Fixed a bug in the Blueprint reader where converting Blueprint species sets to the internal representation was performing an unnecessary conversion of the associated material set as well.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -146,7 +159,15 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where RPATHs weren't stripped from distributions. This could lead to issues for users that didn't build the distribution. It could also cause issues when a distribution is installed on a machine different from where it was built.</li>
   <li>Fixed crash loading SILO files when compiled with version 4.11 of the SILO library.</li>
   <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
-  <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
+  <li>Eliminated many memory leaks. Here is a summary of the fixed leaks.
+    <ul>
+      <li>Fixed a leak in the operator that removes ghost zones and calculates external faces.</li>
+      <li>Fixed a leak in the Resample operator.</li>
+      <li>Fixed a leak with the zone_centers expression.</li>
+      <li>Fixed memory leaks in all the plots.</li>
+    <ul>
+  </li>
+  <li>Modified the SAMRAI reader to free most of its cached data when the timestep was changed.<li>
   <li>Fixed a crash with Curve plot when Curve contained more than 100000 points.</li>
   <li>Fixed a crash in the PVLD parallel test suite.</li>
   <li>Fixed a problem where the Silo plugin would not honor major_order setting for vector variables (e.g. more than one component) on 2 or 3D point- or quad- meshes.</li>
@@ -174,6 +195,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VTK-m updated to version 2.3.0.</li>
   <li>Added a patch to bv_vtk.sh that exposes the vtkAnariPass in the ANARI volume mapper and adds panning and zooming capabilities to the ANARI camera.</li>
   <li>Added command line options <code>--print-files</code> and <code>--print-files-html</code>. Both options list all the files that <code>build_visit</code> may download grouped by "Required", "Optional" and "Explicit". The first lists the files as text and the second lists the files as an HTML table.</li>
+  <li>Added a patch to bv_vtk.sh that brings in critical updates from <a href="https://gitlab.kitware.com/vtk/vtk/-/merge_requests/12759">https://gitlab.kitware.com/vtk/vtk/-/merge_requests/12759</a> that fixes texture issues and crashes when switching between ANARI back-ends.</li>
+  <li>Added patches to <code>bv_silo.sh</code> for delimiter bracketing of constant nameschemes, mpio virtual file driver enablement in HDF5, confusion of lib/lib64 install paths, correct cmake handling of zlib dependence, and erroneous extents calculations when writing meshes.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -189,55 +212,64 @@ enhancements and bug-fixes that were added to this release.</p>
 <tr><td><b>Required</b></td></tr>
 <tr><td>cmake-3.31.8.tar.gz</td></tr>
 <tr><td>zlib-1.3.1.tar.xz</td></tr>
-<tr><td>Python-3.9.18.tgz</td></tr>
-<tr><td>sphinxcontrib-qthelp-1.0.3.tar.gz</td></tr>
-<tr><td>mpi4py-3.1.4.tar.gz</td></tr>
-<tr><td>idna-3.4.tar.gz</td></tr>
+<tr><td>ninja-1.12.1.tar.gz</td></tr>
+<tr><td>meson_python-0.18.0.tar.gz</td></tr>
+<tr><td>Python-3.13.9.tgz</td></tr>
+<tr><td>scikit_build_core-0.11.6.tar.gz</td></tr>
+<tr><td>sphinxcontrib_qthelp-2.0.0.tar.gz</td></tr>
+<tr><td>mpi4py-4.1.1.tar.gz</td></tr>
+<tr><td>idna-3.11.tar.gz</td></tr>
 <tr><td>imagesize-1.4.1.tar.gz</td></tr>
-<tr><td>requests-2.31.0.tar.gz</td></tr>
-<tr><td>sphinx-tabs-3.4.1.tar.gz</td></tr>
+<tr><td>requests-2.32.5.tar.gz</td></tr>
+<tr><td>sphinx-tabs-3.4.7.tar.gz</td></tr>
 <tr><td>editables-0.5.tar.gz</td></tr>
-<tr><td>pluggy-1.2.0.tar.gz</td></tr>
-<tr><td>wheel-0.41.1.tar.gz</td></tr>
+<tr><td>roman_numerals-3.1.0.tar.gz</td></tr>
+<tr><td>pluggy-1.6.0.tar.gz</td></tr>
+<tr><td>wheel-0.45.1.tar.gz</td></tr>
 <tr><td>sphinxcontrib-jquery-4.1.tar.gz</td></tr>
-<tr><td>pathspec-0.11.2.tar.gz</td></tr>
-<tr><td>importlib_metadata-6.8.0.tar.gz</td></tr>
-<tr><td>MarkupSafe-2.1.3.tar.gz</td></tr>
-<tr><td>hatchling-1.18.0.tar.gz</td></tr>
-<tr><td>numpy-1.25.1.tar.gz</td></tr>
-<tr><td>urllib3-2.0.3.tar.gz</td></tr>
-<tr><td>Jinja2-3.1.2.tar.gz</td></tr>
-<tr><td>docutils-0.18.1.tar.gz</td></tr>
+<tr><td>hatch_vcs-0.5.0.tar.gz</td></tr>
+<tr><td>pathspec-0.12.1.tar.gz</td></tr>
+<tr><td>importlib_metadata-8.7.0.tar.gz</td></tr>
+<tr><td>markupsafe-3.0.3.tar.gz</td></tr>
+<tr><td>hatchling-1.27.0.tar.gz</td></tr>
+<tr><td>pyproject_metadata-0.9.1.tar.gz</td></tr>
+<tr><td>numpy-2.3.4.tar.gz</td></tr>
+<tr><td>urllib3-2.5.0.tar.gz</td></tr>
+<tr><td>jinja2-3.1.6.tar.gz</td></tr>
+<tr><td>docutils-0.21.2.tar.gz</td></tr>
 <tr><td>sphinxcontrib-jsmath-1.0.1.tar.gz</td></tr>
-<tr><td>alabaster-0.7.13.tar.gz</td></tr>
-<tr><td>charset-normalizer-3.2.0.tar.gz</td></tr>
-<tr><td>sphinxcontrib-serializinghtml-1.1.5.tar.gz</td></tr>
-<tr><td>setuptools-68.0.0.tar.gz</td></tr>
-<tr><td>Pygments-2.15.1.tar.gz</td></tr>
-<tr><td>sphinx_rtd_theme-1.2.2.tar.gz</td></tr>
-<tr><td>sphinxcontrib-htmlhelp-2.0.1.tar.gz</td></tr>
-<tr><td>packaging-23.1.tar.gz</td></tr>
-<tr><td>tomli-2.0.1.tar.gz</td></tr>
-<tr><td>sphinxcontrib-devhelp-1.0.2.tar.gz</td></tr>
-<tr><td>zipp-3.16.2.tar.gz</td></tr>
+<tr><td>alabaster-1.0.0.tar.gz</td></tr>
+<tr><td>charset_normalizer-3.4.4.tar.gz</td></tr>
+<tr><td>sphinxcontrib_serializinghtml-2.0.0.tar.gz</td></tr>
+<tr><td>setuptools-80.9.0.tar.gz</td></tr>
+<tr><td>pygments-2.19.1.tar.gz</td></tr>
+<tr><td>sphinx_rtd_theme-3.0.2.tar.gz</td></tr>
+<tr><td>sphinxcontrib_htmlhelp-2.1.0.tar.gz</td></tr>
+<tr><td>packaging-25.0.tar.gz</td></tr>
+<tr><td>tomli-2.3.0.tar.gz</td></tr>
+<tr><td>sphinxcontrib_devhelp-2.0.0.tar.gz</td></tr>
+<tr><td>zipp-3.23.0.tar.gz</td></tr>
 <tr><td>toml-0.10.2.tar.gz</td></tr>
-<tr><td>Babel-2.12.1.tar.gz</td></tr>
-<tr><td>sphinxcontrib-applehelp-1.0.4.tar.gz</td></tr>
-<tr><td>Pillow-10.0.0.tar.gz</td></tr>
-<tr><td>Cython-3.0.0.tar.gz</td></tr>
-<tr><td>calver-2022.6.26.tar.gz</td></tr>
-<tr><td>snowballstemmer-2.2.0.tar.gz</td></tr>
-<tr><td>python-certifi-2025.07.09.tar.gz</td></tr>
-<tr><td>flit_core-3.9.0.tar.gz</td></tr>
-<tr><td>Sphinx-7.0.1.tar.gz</td></tr>
-<tr><td>trove-classifiers-2023.8.7.tar.gz</td></tr>
-<tr><td>sphinxcontrib-qthelp-1.0.3.tar.gz</td></tr>
+<tr><td>babel-2.17.0.tar.gz</td></tr>
+<tr><td>sphinxcontrib_applehelp-2.0.0.tar.gz</td></tr>
+<tr><td>pillow-12.0.0.tar.gz</td></tr>
+<tr><td>cython-3.2.1.tar.gz</td></tr>
+<tr><td>calver-2025.10.20.tar.gz</td></tr>
+<tr><td>snowballstemmer-3.0.1.tar.gz</td></tr>
+<tr><td>certifi-2025.11.12.tar.gz</td></tr>
+<tr><td>colorama-0.4.6.tar.gz</td></tr>
+<tr><td>pybind11-3.0.1.tar.gz</td></tr>
+<tr><td>flit_core-3.12.0.tar.gz</td></tr>
+<tr><td>sphinx-8.2.3.tar.gz</td></tr>
+<tr><td>trove_classifiers-2025.9.11.17.tar.gz</td></tr>
+<tr><td>setuptools_scm-9.2.2.tar.gz</td></tr>
 <tr><td>qttools-everywhere-src-6.4.2.tar.xz</td></tr>
 <tr><td>qtbase-everywhere-src-6.4.2.tar.xz</td></tr>
 <tr><td>qtsvg-everywhere-src-6.4.2.tar.xz</td></tr>
 <tr><td>VTK-9.5.0.tar.gz</td></tr>
 <tr><td>vtk-m-v2.3.0.tar.gz</td></tr>
 <tr><td>mesa-17.3.9.tar.xz</td></tr>
+<tr><td>cfe-6.0.1.src.tar.xz</td></tr>
 <tr><td>llvm-6.0.1.src.tar.xz</td></tr>
 <tr><td><b>Optional</b></td></tr>
 <tr><td>adios2-2.10.0-rc1.tar.gz</td></tr>
@@ -247,35 +279,39 @@ enhancements and bug-fixes that were added to this release.</p>
 <tr><td>c-blosc2-2.11.3.tar.gz</td></tr>
 <tr><td>boost_1_67_0.tar.gz</td></tr>
 <tr><td>ccse-1.3.5.tar.gz</td></tr>
-<tr><td>cfitsio3006.tar.gz</td></tr>
+<tr><td>cfitsio-4.6.3.tar.gz</td></tr>
 <tr><td>CGNS-4.1.0.tar.gz</td></tr>
 <tr><td>conduit-v0.9.4-src-with-blt.tar.gz</td></tr>
 <tr><td>FMS-0.2.tar.gz</td></tr>
 <tr><td>gdal-2.2.4.tar.gz</td></tr>
 <tr><td>H5Part-1.6.6.tar.gz</td></tr>
-<tr><td>hdf5-1.8.14.tar.gz</td></tr>
+<tr><td>hdf5-2.0.0.tar.xz</td></tr>
 <tr><td>icet-master-77c708f9090236b576669b74c53e9f105eedbd7e.tar.gz</td></tr>
 <tr><td>mfem-4.8.tar.gz</td></tr>
 <tr><td>mili-23.02.tar.gz</td></tr>
 <tr><td>moab-5.5.0.tar.gz</td></tr>
-<tr><td>netcdf-4.1.1.tar.gz</td></tr>
+<tr><td>netcdf-c-4.9.3.tar.gz</td></tr>
+<tr><td>Imath-3.1.12.tar.gz</td></tr>
 <tr><td>openexr-3.3.4.tar.gz</td></tr>
+<tr><td>embree-3.2.0.x86_64.linux.tar.gz</td></tr>
+<tr><td>embree-3.2.0.x86_64.macosx.tar.gz</td></tr>
+<tr><td>ispc-v1.21.1-linux-oneapi.tar.gz</td></tr>
 <tr><td>ospray-libs-3.0.0.tar.gz</td></tr>
+<tr><td>ospray-3.2.0.arm64.macosx.zip</td></tr>
+<tr><td>ospray-3.2.0.x86_64.macosx.zip</td></tr>
 <tr><td>ospray-3.0.0.tar.gz</td></tr>
 <tr><td>PIDX-0.9.3.tar.gz</td></tr>
 <tr><td>qwt-git-d3706f6e7f0351d278be2d989a4caaf92b399bbd.tar.xz</td></tr>
-<tr><td>silo-4.10.2-w-unix-line-endings.tar.gz</td></tr>
-<tr><td>szip-2.1.tar.gz</td></tr>
+<tr><td>Silo-4.12.0.tar.xz</td></tr>
 <tr><td>Uintah-2.6.3.tar.gz</td></tr>
 <tr><td>vtk-m-v2.3.0.tar.gz</td></tr>
 <tr><td>Xdmf-2.1.1.tar.gz</td></tr>
 <tr><td><b>Explicit</b></td></tr>
-<tr><td>ANARI-SDK-0.14.1.tar.gz</td></tr>
+<tr><td>ANARI-SDK-0.15.0_with_deps.zip</td></tr>
 <tr><td>glu-9.0.0.tar.gz</td></tr>
 <tr><td>mesa-17.3.9.tar.xz</td></tr>
-<tr><td>meson-1.6.1.tar.gz</td></tr>
+<tr><td>meson-1.9.1.tar.gz</td></tr>
 <tr><td>mpich-3.3.1.tar.gz</td></tr>
-<tr><td>ninja-1.12.1.tar.gz</td></tr>
 <tr><td>libxcb-image-xcb-util-image-0.4.1.tar.gz</td></tr>
 <tr><td>libxcb-m4-xcb-util-m4-0.4.1.tar.gz</td></tr>
 <tr><td>libxcb-wm-xcb-util-wm-0.4.2.tar.gz</td></tr>
@@ -283,6 +319,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <tr><td>libxcb-render-util-xcb-util-renderutil-0.3.10.tar.gz</td></tr>
 <tr><td>libxcb-util-xcb-util-0.4.1.tar.gz</td></tr>
 <tr><td>libxkbcommon-1.7.0.tar.xz</td></tr>
+<tr><td>macros-util-macros-1.20.2.tar.gz</td></tr>
 </table>
 
 <p>Click the following link to view the release notes for the previous version

@@ -897,6 +897,10 @@ ViewerWindow::GetToolUpdateMode() const
 //   of the new "update tools when they close" setting; you must have
 //   the tool update its settings before you pass them to the query mgr.
 //
+//   Kathleen Biagas, Wed Jan 28, 2026
+//   When the given tool is being enabled, added calls similar to those in
+//   UpdateTools to ensure the tools gets sync'd with the operators atts.
+//
 // ****************************************************************************
 
 void
@@ -912,9 +916,15 @@ ViewerWindow::SetToolEnabled(int toolId, bool enabled)
 
         if(enabled)
         {
-            GetPlotList()->InitializeTool(visWindow->GetToolInterface(toolId));
-            ViewerQueryManager::Instance()->
-                InitializeTool(this, visWindow->GetToolInterface(toolId));
+            bool updateTool = GetPlotList()->InitializeTool(visWindow->GetToolInterface(toolId));
+            updateTool |= ViewerQueryManager::Instance()->
+               InitializeTool(this, visWindow->GetToolInterface(toolId));
+
+            if(updateTool)
+            {
+                // Update tool with 'redraw' set totrue
+                visWindow->UpdateTool(toolId, true);
+            }
         }
         else
         {
@@ -9176,7 +9186,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 #ifdef HAVE_ANARI
         AnariAttributes anariAtts(visWindow->GetAnariAttributes());
         anariAtts.CreateNode(windowNode, true, true);
-#endif   
+#endif
         //
         // View
         //

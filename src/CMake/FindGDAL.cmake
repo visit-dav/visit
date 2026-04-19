@@ -14,27 +14,30 @@
 #   Brad Whitlock, Fri Oct 14 10:56:28 PDT 2011
 #   GDAL changed again on Mac.
 #
+#   Kathleen Biagas, Wed Mar 4, 2026
+#   Reduce version check on Windows.
+#
 #****************************************************************************/
 
 # Use the GDAL_DIR hint from the config-site .cmake file
 
-IF (WIN32)
+if(WIN32)
     SET_UP_THIRD_PARTY(GDAL LIBS gdal_i)
     # normally handled in InstallThirdParty.cmake, but gdal has a weird
     # naming convention on windows
-    FOREACH(VER 17 19 110 111 222 224)
-        IF(EXISTS ${GDAL_LIBRARY_DIR}/gdal${VER}.dll)
-            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
-                ${GDAL_LIBRARY_DIR}/gdal${VER}.dll
+    if(EXISTS ${GDAL_LIBRARY_DIR}/gdal224.dll)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                ${GDAL_LIBRARY_DIR}/gdal224.dll
                 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-            INSTALL(FILES ${GDAL_LIBRARY_DIR}/gdal${VER}.dll
+        install(FILES ${GDAL_LIBRARY_DIR}/gdal224.dll
                 DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
-                )
-        ENDIF(EXISTS ${GDAL_LIBRARY_DIR}/gdal${VER}.dll)
-    ENDFOREACH(VER)
-ELSE (WIN32)
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ WORLD_EXECUTE)
+    else()
+        message(WARNING "Could not find gdal 224 dll")
+    endif()
+else()
     SET_UP_THIRD_PARTY(GDAL LIBS gdal)
-ENDIF (WIN32)
+endif()
 

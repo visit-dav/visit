@@ -301,7 +301,7 @@ void PMDFile::ScanIterations()
 
         // Get the type: group, dataset...
         err = H5Oget_info_by_name(groupId, iterationName , &objectInfo,
-                                  H5P_DEFAULT);
+                                  H5O_INFO_ALL, H5P_DEFAULT);
 
         // Check that it is a group, we ignore dataset in the data group...
         if (objectInfo.type == H5O_TYPE_GROUP)

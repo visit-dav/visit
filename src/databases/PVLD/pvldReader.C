@@ -143,7 +143,7 @@ extern "C"
 herr_t GetDataSetName( hid_t gid, const char* name, const H5L_info_t *info, void *op_data )
 {
     H5O_info_t io;
-    herr_t herr = H5Oget_info_by_name( gid, name, &io, H5P_DEFAULT );
+    herr_t herr = H5Oget_info_by_name( gid, name, &io, H5O_INFO_ALL, H5P_DEFAULT );
     if( herr<0 )  return herr;
 
     if( io.type == H5O_TYPE_DATASET )
@@ -159,7 +159,7 @@ extern "C"
 herr_t GetSubgroupName( hid_t gid, const char* name, const H5L_info_t *info, void *op_data )
 {
     H5O_info_t io;
-    herr_t herr = H5Oget_info_by_name( gid, name, &io, H5P_DEFAULT );
+    herr_t herr = H5Oget_info_by_name( gid, name, &io, H5O_INFO_ALL, H5P_DEFAULT );
     if( herr<0 )  return herr;
 
     if( io.type == H5O_TYPE_GROUP )

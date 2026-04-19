@@ -19,8 +19,12 @@ avtLineToolInterface::~avtLineToolInterface()
 
 // ****************************************************************************
 //  Modifications:
-//    Kathleen Bonnell, Fri Jun  6 15:47:14 PDT 2003 
+//    Kathleen Bonnell, Fri Jun  6 15:47:14 PDT 2003
 //    Added support for full-frame mode.
+//
+//    Kathleen Biagas, Tue Jan 27, 2026
+//    Handle fudged z coordinate in 2D that enables line tool to appear on
+//    top of 2D plots.
 //
 // ****************************************************************************
 
@@ -32,8 +36,8 @@ avtLineToolInterface::SetPoint1(double x, double y, double z)
     if (const_cast<VisWindow*>(visWindow)->GetFullFrameMode())
     {
         //
-        // If in full-frame mode, the point was computed in the scaled 
-        // full-frame space.  Reverse the scaling to get the correct point. 
+        // If in full-frame mode, the point was computed in the scaled
+        // full-frame space.  Reverse the scaling to get the correct point.
         //
         double scale;
         int type;
@@ -43,14 +47,27 @@ avtLineToolInterface::SetPoint1(double x, double y, double z)
         else if ( type == 1 && scale > 0.)
             d[1] /= scale;
     }
+
+    // in order to get the line tool to appear on top of the 2d plot
+    // we fudge the z coordinate to be 0.00001, but it should be set
+    // '0.0' for LineAtts.
+    if(GetVisWindow()->GetWindowMode() == WINMODE_2D)
+    {
+        d[2] = 0.;
+    }
+
     p->SetPoint1(d);
 }
 
 
 // ****************************************************************************
 //  Modifications:
-//    Kathleen Bonnell, Fri Jun  6 15:47:14 PDT 2003 
+//    Kathleen Bonnell, Fri Jun  6 15:47:14 PDT 2003
 //    Added support for full-frame mode.
+//
+//    Kathleen Biagas, Tue Jan 27, 2026
+//    Handle fudged z coordinate in 2D that enables line tool to appear on
+//    top of 2D plots.
 //
 // ****************************************************************************
 
@@ -62,8 +79,8 @@ avtLineToolInterface::SetPoint2(double x, double y, double z)
     if (const_cast<VisWindow*>(visWindow)->GetFullFrameMode())
     {
         //
-        // If in full-frame mode, the point was computed in the scaled 
-        // full-frame space.  Reverse the scaling to get the correct point. 
+        // If in full-frame mode, the point was computed in the scaled
+        // full-frame space.  Reverse the scaling to get the correct point.
         //
         double scale;
         int type;
@@ -73,6 +90,15 @@ avtLineToolInterface::SetPoint2(double x, double y, double z)
         else if ( type == 1 && scale > 0.)
             d[1] /= scale;
     }
+
+    // in order to get the line tool to appear on top of the 2d plot
+    // we fudge the z coordinate to be 0.00001, but it should be set
+    // '0.0' for LineAtts.
+    if(GetVisWindow()->GetWindowMode() == WINMODE_2D)
+    {
+        d[2] = 0.;
+    }
+
     p->SetPoint2(d);
 }
 

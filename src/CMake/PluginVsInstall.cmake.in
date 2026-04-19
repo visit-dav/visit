@@ -136,6 +136,15 @@
 #   Kathleen Biagas, Thu July 10, 2025
 #   Add support for OpenEXR 3.3.4.
 #
+#   Mark C. Miller, Tue Feb  3 16:37:12 PST 2026
+#   Removed NETCDF_CXX. I converted S3D plugin to use netcdf C api.
+#
+#   Kathleen Biagas, Wed Mar 4, 2024
+#   Setup ZLIB, Silo as targets, since that is how they are now used in
+#   VisIt. Include new SetupHDF5.cmake for HDF5 information.
+#   Add VISIT_CMAKE_DIR for location of SetupXXX.cmake files.
+#   Find threads.
+#
 #****************************************************************************/
 
 ##
@@ -146,7 +155,6 @@
 
 # Build shared libraries since we're building plugins.
 set(BUILD_SHARED_LIBS 1)
-
 
 # Warn if compilers might be incompatible.
 if(WIN32 AND MSVC)
@@ -183,6 +191,7 @@ get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
 # this should strip off the include
 get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 
+set(VISIT_CMAKE_DIR "${_IMPORT_PREFIX}/cmake")
 set(VISIT_ROOT_INCLUDE_DIR "${_IMPORT_PREFIX}/include")
 set(VISIT_INCLUDE_DIR "${VISIT_ROOT_INCLUDE_DIR}/visit")
 set(VISIT_LIBRARY_DIR "${_IMPORT_PREFIX}/lib")
@@ -196,9 +205,16 @@ endif()
 
 include(${VISIT_ROOT_INCLUDE_DIR}/CheckMinimumCompilerVersion.cmake)
 
-set(HAVE_LIBZ @HAVE_LIBZ@)
-if(HAVE_LIBZ)
-    set(ZLIB_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/zlib/include)
+# need conditionals on this for platform?
+find_package(Threads REQUIRED)
+
+
+if(@HAVE_LIBZ@)
+    add_library(zlib INTERFACE)
+    target_link_libraries(zlib INTERFACE ${VISIT_LIBRARY_DIR}/@ZLIB_IMPORT_LIB@)
+    target_include_directories(zlib INTERFACE ${VISIT_ROOT_INCLUDE_DIR}/zlib/include)
+    add_library(ZLIB::ZLIB ALIAS zlib)
+    set(ZLIB_LIBRARY ZLIB::ZLIB)
 endif()
 
 # VisIt options
@@ -212,6 +228,31 @@ set(VISIT_SLIVR                  @VISIT_SLIVR@)
 set(HAVE_LIBOSPRAY               @HAVE_LIBOSPRAY@)
 set(HAVE_OSPRAY                  @HAVE_OSPRAY@)
 set(HAVE_ANARI                   @HAVE_ANARI@)
+
+# Parallel settings
+if(VISIT_PARALLEL)
+    set(VISIT_PARALLEL_CXXFLAGS     @filtered_VISIT_PARALLEL_CXXFLAGS@)
+    set(VISIT_PARALLEL_LINKER_FLAGS @filtered_VISIT_PARALLEL_LINKER_FLAGS@)
+    set(VISIT_PARALLEL_LIBS         "@filtered_VISIT_PARALLEL_LIBS@")
+    set(VISIT_PARALLEL_INCLUDE      "@filtered_VISIT_PARALLEL_INCLUDE@")
+    set(VISIT_PARALLEL_DEFINES       @filtered_VISIT_PARALLEL_DEFINES@)
+    set(VISIT_NOLINK_MPI_WITH_LIBRARIES @VISIT_NOLINK_MPI_WITH_LIBRARIES@)
+
+    set(VISIT_MPI_COMPILER @VISIT_MPI_COMPILER@)
+    set(VISIT_MPI_HOME @VISIT_MPI_HOME@)
+
+    if(EXISTS ${VISIT_MPI_COMPILER})
+        set(MPI_COMPILER ${VISIT_MPI_COMPILER})
+    elseif(EXISTS ${VISIT_MPI_HOME})
+        set(MPI_HOME ${VISIT_MPI_HOME})
+    endif()
+
+    find_package(MPI COMPONENTS C)
+
+    if(NOT TARGET MPI::MPI_C)
+        message(FATAL_ERROR "VISIT_PARALLEL is turned on but MPI could not be found, try setting MPI_COMPILER or MPI_HOME from CMake command line (-DMPI_COMPILER:FILEPATH=/path/to/mpicc or -DMPI_HOME:PATH=/path/to/mpi-package")
+    endif()
+endif()
 
 # Set up VTK
 set(VTK_VERSION @VTK_VERSION@)
@@ -245,7 +286,6 @@ else()
     set(QT_QTWIDGETS_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/qt/include/QtWidgets)
     set(QT_QTXML_INCLUDE_DIR     ${VISIT_ROOT_INCLUDE_DIR}/qt/include/QtXml)
 endif()
-
 set(QT_LIBRARY_DIR           ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(QT_BIN                   ${VISIT_BINARY_DIR})
 if(WIN32)
@@ -264,6 +304,13 @@ include(${VISIT_ROOT_INCLUDE_DIR}/VisItIncludeVars.cmake)
 # plugin vs install needs visit's base include dir as well
 list(PREPEND ${VISIT_COMMON_INCLUDES} ${VISIT_INCLUDE_DIR})
 
+# hdf5
+set(HAVE_LIBHDF5 @HAVE_LIBHDF5@)
+
+if(HAVE_LIBHDF5)
+    include(${VISIT_CMAKE_DIR}/SetupHDF5.cmake)
+endif()
+
 # Set up 3rd party I/O libraries
 set(ADIOS_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/adios/include)
 set(ADIOS_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
@@ -272,10 +319,6 @@ set(ADIOS_LIB @ADIOS_LIB@)
 set(ADIOS2_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/adios2/include)
 set(ADIOS2_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(ADIOS2_LIB @ADIOS2_LIB@)
-
-set(ADIOS2_PAR_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/adios2/include)
-set(ADIOS2_PAR_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(ADIOS2_PAR_LIB @ADIOS2PAR__LIB@)
 
 
 set(ADVIO_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/advio/include)
@@ -303,14 +346,6 @@ set(GDAL_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/gdal/include)
 set(GDAL_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(GDAL_LIB @GDAL_LIB@)
 
-set(HDF5_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/hdf5/include)
-set(HDF5_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(HDF5_LIB @HDF5_LIB@)
-if(VISIT_PARALLEL)
-    set(HDF5_MPI_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/hdf5_mpi/include)
-    set(HDF5_MPI_LIBRARY_DIR ${VISIT_LIBRARY_DIR}/hdf5_mpi ${VISIT_ARCHIVE_DIR})
-    set(HDF5_MPI_LIB @HDF5_MPI_LIB@)
-endif()
 
 set(H5PART_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/h5part/include)
 set(H5PART_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
@@ -338,15 +373,18 @@ set(ACCELERATE_FRAMEWORK_LINK_FLAGS @ACCELERATE_FRAMEWORK_LINK_FLAGS@)
 set(NETCDF_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/netcdf/include)
 set(NETCDF_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(NETCDF_LIB @NETCDF_LIB@)
-set(NETCDF_CXX_LIB @NETCDF_CXX_LIB@)
 
-set(PDB_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/silo/include)
-set(PDB_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(PDB_LIB @SILO_LIB@)
-
-set(SILO_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/silo/include)
-set(SILO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(SILO_LIB @SILO_LIB@)
+#silo
+if(@SILO_FOUND@)
+    set(SILO_LIB @SILO_LIB@)
+    add_library(@SILO_LIB@ INTERFACE)
+    target_link_libraries(@SILO_LIB@ INTERFACE ${VISIT_LIBRARY_DIR}/@SILO_IMPORT_LIB@)
+    if(@SILO_ENABLE_HDF5@)
+        target_link_libraries(@SILO_LIB@ INTERFACE ${HDF5_LIB})
+    endif()
+    target_include_directories(@SILO_LIB@ INTERFACE ${VISIT_ROOT_INCLUDE_DIR}/silo/include)
+    set(PDB_LIB @PDB_LIB@)
+endif()
 
 set(XDMF_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/xdmf/include)
 set(XDMF_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
@@ -372,11 +410,7 @@ set(MFEM_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_D
 set(MFEM_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(MFEM_LIB @MFEM_LIB@)
 
-if(OPENEXR_VERSION AND OPENEXR_VERSION VERSION_EQUAL 3.3.4)
-    set(OPENEXR_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/openexr)
-else()
-set(OPENEXR_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/openexr/OpenEXR)
-endif()
+set(OPENEXR_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/openexr/include)
 set(OPENEXR_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(OPENEXR_LIB @OPENEXR_LIB@)
 
@@ -415,10 +449,3 @@ macro(VISIT_PLUGIN_TARGET_FOLDER type pname)
     message(STATUS "Skipping VISIT_PLUGIN_TARGET_FOLDER macro")
 endmacro()
 
-# Parallel settings
-set(VISIT_PARALLEL_CXXFLAGS     @filtered_VISIT_PARALLEL_CXXFLAGS@)
-set(VISIT_PARALLEL_LINKER_FLAGS @filtered_VISIT_PARALLEL_LINKER_FLAGS@)
-set(VISIT_PARALLEL_LIBS         "@filtered_VISIT_PARALLEL_LIBS@")
-set(VISIT_PARALLEL_INCLUDE      "@filtered_VISIT_PARALLEL_INCLUDE@")
-set(VISIT_PARALLEL_DEFS         @filtered_VISIT_PARALLEL_DEFS@)
-set(VISIT_NOLINK_MPI_WITH_LIBRARIES @VISIT_NOLINK_MPI_WITH_LIBRARIES@)

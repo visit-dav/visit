@@ -16,17 +16,24 @@ import os
 import platform
 from . import xinit
 
+from visit_utils.common import require_pyside, qt_api
+from visit_utils.qannote.items import Rect
+
 
 try:
-    from PySide2.QtCore import *
-    from PySide2.QtGui import *
-    from PySide2.QtWidgets import *
+    if qt_api() == "PySide2":
+        from PySide2.QtCore import *
+        from PySide2.QtGui import *
+        from PySide2.QtWidgets import *
+    elif qt_api() == "PySide6":
+        from PySide6.QtCore import *
+        from PySide6.QtGui import *
+        from PySide6.QtWidgets import *
+    else:
+        QWidget = object
 except:
     QWidget = object
 
-
-from visit_utils.common import require_pyside
-from visit_utils.qannote.items import Rect
 
 class CanvasWidget(QWidget):
     @require_pyside
@@ -41,25 +48,48 @@ class CanvasWidget(QWidget):
     def paintEvent(self,pe):
         img = QImage(self.size[0],self.size[1],QImage.Format_ARGB32)
         QWidget.paintEvent(self,pe)
-        pt = QPainter(img)
-        if not self.view is None:
-            pt.setWindow(self.view[0],self.view[1],self.view[2],self.view[3])
-        else:
-            self.view = [0,0,self.size[0],self.size[1]]
-        pt.setRenderHint(QPainter.Antialiasing)
-        pt.setCompositionMode(QPainter.CompositionMode_Clear)
-        pt.fillRect(self.view[0],self.view[1],self.view[2],self.view[3],QBrush(QColor(0,0,0,0)))
-        pt.setCompositionMode(QPainter.CompositionMode_SourceOver)
-        pt.fillRect(self.view[0],self.view[1],self.view[2],self.view[3],QBrush(QColor(0,0,0,0)))
-        for itm in self.items:
-            itm.render(pt)
-        del pt
-        wpainter = QPainter(self)
-        wpainter.setRenderHint(QPainter.Antialiasing)
-        wpainter.setCompositionMode(QPainter.CompositionMode_Clear)
-        wpainter.drawImage(0,0,img)
-        wpainter.setCompositionMode(QPainter.CompositionMode_SourceOver)
-        wpainter.drawImage(0,0,img)
+        # PySide2 version
+        if qt_api() == "PySide2":
+            pt = QPainter(img)
+            if not self.view is None:
+                pt.setWindow(self.view[0],self.view[1],self.view[2],self.view[3])
+            else:
+                self.view = [0,0,self.size[0],self.size[1]]
+            pt.setRenderHint(QPainter.Antialiasing)
+            pt.setCompositionMode(QPainter.CompositionMode_Clear)
+            pt.fillRect(self.view[0],self.view[1],self.view[2],self.view[3],QBrush(QColor(0,0,0,0)))
+            pt.setCompositionMode(QPainter.CompositionMode_SourceOver)
+            pt.fillRect(self.view[0],self.view[1],self.view[2],self.view[3],QBrush(QColor(0,0,0,0)))
+            for itm in self.items:
+                itm.render(pt)
+            pt.end()
+            wpainter = QPainter(self)
+            wpainter.setRenderHint(QPainter.Antialiasing)
+            wpainter.setCompositionMode(QPainter.CompositionMode_Clear)
+            wpainter.drawImage(0,0,img)
+            wpainter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+            wpainter.drawImage(0,0,img)
+            wpainter.end()
+
+        elif qt_api() == "PySide6":
+            with QPainter(img) as pt:
+                if not self.view is None:
+                    pt.setWindow(self.view[0],self.view[1],self.view[2],self.view[3])
+                else:
+                    self.view = [0,0,self.size[0],self.size[1]]
+                pt.setRenderHint(QPainter.Antialiasing)
+                pt.setCompositionMode(QPainter.CompositionMode_Clear)
+                pt.fillRect(self.view[0],self.view[1],self.view[2],self.view[3],QBrush(QColor(0,0,0,0)))
+                pt.setCompositionMode(QPainter.CompositionMode_SourceOver)
+                pt.fillRect(self.view[0],self.view[1],self.view[2],self.view[3],QBrush(QColor(0,0,0,0)))
+                for itm in self.items:
+                    itm.render(pt)
+            with QPainter(self) as wpainter:
+                wpainter.setRenderHint(QPainter.Antialiasing)
+                wpainter.setCompositionMode(QPainter.CompositionMode_Clear)
+                wpainter.drawImage(0,0,img)
+                wpainter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+                wpainter.drawImage(0,0,img)
 
 class Canvas(object):
     @classmethod
