@@ -489,15 +489,18 @@ VisitSphereTool::DeleteTextActors()
 //   Brad Whitlock, Tue Feb 12 11:08:46 PDT 2002
 //   Added upAxis actors.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
 VisitSphereTool::AddText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->AddActor2D(originTextActor);
+    proxy.GetForeground()->AddViewProp(originTextActor);
     for(int i = 0; i < 3; ++i)
-        proxy.GetForeground()->AddActor2D(radiusTextActor[i]);
+        proxy.GetForeground()->AddViewProp(radiusTextActor[i]);
 #endif
 }
 
@@ -511,6 +514,8 @@ VisitSphereTool::AddText()
 // Creation:   Thu May 2 17:15:11 PST 2002
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
 //
 // ****************************************************************************
 
@@ -518,9 +523,9 @@ void
 VisitSphereTool::RemoveText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->RemoveActor2D(originTextActor);
+    proxy.GetForeground()->RemoveViewProp(originTextActor);
     for(int i = 0; i < 3; ++i)
-        proxy.GetForeground()->RemoveActor2D(radiusTextActor[i]);
+        proxy.GetForeground()->RemoveViewProp(radiusTextActor[i]);
 #endif
 }
 

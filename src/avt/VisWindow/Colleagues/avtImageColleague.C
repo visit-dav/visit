@@ -376,7 +376,7 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
     if(iData == 0 && addedToRenderer)
     {
         debug1 << "Removing the image from the renderer because it could not be read." << endl;
-        mediator.GetForeground()->RemoveActor2D(actor);
+        mediator.GetForeground()->RemoveViewProp(actor);
         addedToRenderer = false;
 
         // Delete the actor and mapper so the image mapper does not freak.

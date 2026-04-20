@@ -676,10 +676,12 @@ VisWinTools::GetToolAvailable(int i) const
 // Creation:   Tue Oct 2 23:58:02 PST 2001
 //
 // Modifications:
-//
-//    Kathleen Bonnell, Mon Nov 26 9:16:32 PST 2001
-//    Make the highlightActor un-pickable.
+//   Kathleen Bonnell, Mon Nov 26 9:16:32 PST 2001
+//   Make the highlightActor un-pickable.
 //   
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp and RemoveViewProp.
+//
 // ****************************************************************************
 
 void
@@ -689,7 +691,7 @@ VisWinTools::UpdateHighlight()
     {
         if(highlightActor != NULL)
         {
-            toolProxy.GetForeground()->RemoveActor2D(highlightActor);
+            toolProxy.GetForeground()->RemoveViewProp(highlightActor);
             highlightAdded = false;
         }
     }
@@ -708,7 +710,7 @@ VisWinTools::UpdateHighlight()
 
         // Add the actor to the foreground renderer.
         if(!highlightAdded)
-            toolProxy.GetForeground()->AddActor2D(highlightActor);
+            toolProxy.GetForeground()->AddViewProp(highlightActor);
 
         highlightAdded = true;
     }
@@ -727,6 +729,8 @@ VisWinTools::UpdateHighlight()
 // Creation:   Wed Oct 3 00:12:10 PDT 2001
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
 //   
 // ****************************************************************************
 
@@ -739,7 +743,7 @@ VisWinTools::SetHighlightEnabled(bool val)
     }
     else if(highlightAdded)
     {
-        toolProxy.GetForeground()->RemoveActor2D(highlightActor);
+        toolProxy.GetForeground()->RemoveViewProp(highlightActor);
         highlightAdded = false;
     }
 }

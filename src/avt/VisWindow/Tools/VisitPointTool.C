@@ -450,13 +450,17 @@ VisitPointTool::DeleteTextActors()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
 VisitPointTool::AddText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->AddActor2D(pointTextActor);
+    proxy.GetForeground()->AddViewProp(pointTextActor);
 #endif
 }
 
@@ -469,13 +473,17 @@ VisitPointTool::AddText()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
 VisitPointTool::RemoveText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->RemoveActor2D(pointTextActor);
+    proxy.GetForeground()->RemoveViewProp(pointTextActor);
 #endif
 }
 

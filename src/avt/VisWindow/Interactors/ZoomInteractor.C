@@ -179,6 +179,9 @@ ZoomInteractor::SetCanvasViewport(void)
 //    color so it uses the right color on MacOS X. Other platforms use the
 //    XOR drawing mode so the color will vary there.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
@@ -205,7 +208,7 @@ ZoomInteractor::StartRubberBand(int x, int y)
     // the routine ForceCoordsToViewport ensures.
     //
     vtkRenderer *ren = proxy.GetBackground();
-    ren->AddActor2D(rubberBandActor);
+    ren->AddViewProp(rubberBandActor);
 
     //
     // The anchor of the rubber band will be where the button press was.
@@ -366,6 +369,9 @@ ZoomInteractor::OnMouseMove()
 //    Removed call to StartTimer since pointer motions are now picked up
 //    by the interactor and the timer is incompatible (and redundant) with it.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
@@ -379,7 +385,7 @@ ZoomInteractor::EndRubberBand()
     // is in display coordinates.
     //
     vtkRenderer *ren = proxy.GetBackground();
-    ren->RemoveActor2D(rubberBandActor);
+    ren->RemoveViewProp(rubberBandActor);
 }
 
 

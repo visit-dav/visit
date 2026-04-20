@@ -246,6 +246,9 @@ VisWinBackground::SetBackgroundImage(const std::string &imgFile, int nx, int ny)
 //    Brad Whitlock, Fri Nov 16 11:01:18 PST 2007
 //    Added background image support.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
@@ -263,18 +266,18 @@ VisWinBackground::AddBackgroundToWindow(int mode)
     vtkRenderer *background = mediator.GetBackground();
     if(mode == 1)
     {
-        background->AddActor2D(bgActor);
+        background->AddViewProp(bgActor);
         bgActor->SetVisibility(true);
     }
     else if(mode == 2)
     {
-        background->AddActor2D(textureActor);
+        background->AddViewProp(textureActor);
         textureActor->SetVisibility(true);
         textureActor->SetSphereMode(false);
     }
     else if(mode == 3)
     {
-        background->AddActor2D(textureActor);
+        background->AddViewProp(textureActor);
         textureActor->SetVisibility(true);
         bool doSphereMode = true;
 
@@ -321,8 +324,11 @@ VisWinBackground::AddBackgroundToWindow(int mode)
 //  Creation:   Wed Aug 29 15:39:59 PST 2001
 //
 //  Modifications:
-//   Brad Whitlock, Fri Nov 16 11:01:00 PST 2007
-//   Added background image support.
+//    Brad Whitlock, Fri Nov 16 11:01:00 PST 2007
+//    Added background image support.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
 //
 // ****************************************************************************
 
@@ -335,8 +341,8 @@ VisWinBackground::RemoveBackgroundFromWindow()
     }
 
     vtkRenderer *background = mediator.GetBackground();
-    background->RemoveActor2D(bgActor);
-    background->RemoveActor2D(textureActor);
+    background->RemoveViewProp(bgActor);
+    background->RemoveViewProp(textureActor);
 
     addedBackground = false;
 }
