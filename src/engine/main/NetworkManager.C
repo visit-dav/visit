@@ -2883,7 +2883,7 @@ NetworkManager::Render(avtImageType imgT, bool getZBuffer,
             CATCH_RETURN2(1, output);
         }
 
-        output = RenderInternal();
+        output = RenderTiledInternal();
         RenderCleanup();
     }
     CATCHALL
@@ -2976,39 +2976,17 @@ NetworkManager::RenderValues(intVector plotIds, bool getZBuffer, int windowID, b
     return output;
 }
 
-// ****************************************************************************
-//  Method: NetworkManager::RenderInternal
-//
-//  Purpose: do the actual rendering and compositing work. this was
-//          originally lumped together with setup/tear down. I factored
-//          it out so that the setup/tear down was not done twice when
-//          IceTNetworkManager called it.
-//
-//  Programmer:  Burlen Loring
-//  Creation:    Thu Sep  3 10:26:48 PDT 2015
-//
-//  Modifications:
-//    Eric Brugger, Tue Sep 16 16:42:11 PDT 2025
-//    Enhanced the output of intermediate images to have more descriptive
-//    names and be named such that their sort order matches the order in
-//    which they are generated. I renumbered the rendering passes.
-//
-//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
-//    Added the ability to enable programmable compositing debug at runtime.
-//
-// ****************************************************************************
-//
 avtDataObject_p
-NetworkManager::RenderInternal()
+NetworkManager::RenderTiledInternal()
 {
-    cerr << "NetworkManager::RenderInternal: enter" << endl;
+    cerr << "NetworkManager::RenderTiledInternal: enter" << endl;
     CallInitializeProgressCallback(RenderingStages());
 
     VisWindow *viswin = renderState.window;
 
     int w, h; 
     viswin->GetSize(w,h);
-    cerr << "NetworkManager::RenderInternal: viswin=" << (void*)viswin << ",w=" << w << ",h=" << h << endl;
+    cerr << "NetworkManager::RenderTiledInternal: viswin=" << (void*)viswin << ",w=" << w << ",h=" << h << endl;
     const int numPix = w*h;
     unsigned char *pixels = new unsigned char[numPix*3];
 
@@ -3126,7 +3104,7 @@ NetworkManager::RenderInternal()
             // pass 4 : translucent geometry if parallel
             // ************************************************************
             if (renderState.transparencyInPass2)
-                pass2 = NetworkManager::RenderTranslucent(pass);
+                pass = NetworkManager::RenderTranslucent(pass);
 
             // ************************************************************
             // pass 5 : 2d overlays
@@ -3191,8 +3169,36 @@ NetworkManager::RenderInternal()
     avtDataObject_p output;
     CopyTo(output, pass2);
 
-    cerr << "NetworkManager::RenderInternal: exiting" << endl;
+    cerr << "NetworkManager::RenderTiledInternal: exiting" << endl;
     return output;
+}
+
+// ****************************************************************************
+//  Method: NetworkManager::RenderInternal
+//
+//  Purpose: do the actual rendering and compositing work. this was
+//          originally lumped together with setup/tear down. I factored
+//          it out so that the setup/tear down was not done twice when
+//          IceTNetworkManager called it.
+//
+//  Programmer:  Burlen Loring
+//  Creation:    Thu Sep  3 10:26:48 PDT 2015
+//
+//  Modifications:
+//    Eric Brugger, Tue Sep 16 16:42:11 PDT 2025
+//    Enhanced the output of intermediate images to have more descriptive
+//    names and be named such that their sort order matches the order in
+//    which they are generated. I renumbered the rendering passes.
+//
+//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
+//    Added the ability to enable programmable compositing debug at runtime.
+//
+// ****************************************************************************
+//
+//
+avtDataObject_p
+NetworkManager::RenderInternal()
+{
 }
 
 // ****************************************************************************

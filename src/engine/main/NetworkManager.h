@@ -577,6 +577,8 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     void               ExportSingleDatabase(int, const ExportDBAttributes &);
 
     virtual
+    avtDataObject_p    RenderTiledInternal();
+    virtual
     avtDataObject_p    RenderInternal();
 
     void               RenderSetup(avtImageType imgT, int windowId, intVector& networkIds, 
