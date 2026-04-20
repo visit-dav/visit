@@ -121,6 +121,9 @@
 #    Re-added magma case (secretly dane case). Combined rzwhippet and
 #    dane case.
 #
+#    Eric Brugger, Fri Apr 17 09:44:19 PDT 2026
+#    Made some fixes for building on crossroads.
+#
 #-----------------------------------------------------------------------
 
 #
@@ -309,10 +312,10 @@ elif [ "$crossroads" = true ]; then
        CXX_COMPILER=g++ \
        PAR_COMPILER=mpicc \
        PAR_COMPILER_CXX=mpic++ \
-       PAR_INCLUDE=-I/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/include \
-       PAR_LIBS="-L/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/opt/cray/pe/mpich/8.1.28/ofi/intel/intel/lib" \
+       PAR_INCLUDE=-I/cpe/23.12/mpich/8.1.28/ofi/intel/2022.1/include \
+       PAR_LIBS="-L/cpe/23.12/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/cpe/23.12/mpich/8.1.28/ofi/intel/2022.1/lib" \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl \
-       --no-adios --no-gdal --no-nektarpp \
+       --no-adios --no-gdal --no-nektarpp --no-openexr \
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
