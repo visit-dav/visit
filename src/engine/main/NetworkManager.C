@@ -3067,9 +3067,6 @@ NetworkManager::RenderTiledInternal()
     cerr << "xPanInit=" << xPanInit << ",yPanInit=" << yPanInit << ",xPanDelta=" << xPanDelta << ",yPanDelta=" << yPanDelta << endl;
     cerr << "xPanInit2=" << xPanInit2 << ",yPanInit2=" << yPanInit2 << ",xPanDelta2=" << xPanDelta2 << ",yPanDelta2=" << yPanDelta2 << endl;
 
-    // ************************************************************
-    // pass 1 : opaque (and translucent geometry if serial)
-    // ************************************************************
     avtView3D view3DTile = view3D;
     view3DTile.imageZoom = zoomUser * zoomTile;
     viswin->SetSize(tileWidth, tileHeight);
@@ -3086,42 +3083,18 @@ NetworkManager::RenderTiledInternal()
         {
             cerr << "view3DTile: zoom=" << view3DTile.imageZoom << ",pan=(" << view3DTile.imagePan[0] << "," << view3DTile.imagePan[1] << ")" << endl;
             viswin->SetView3D(view3DTile);
-            avtImage_p pass = RenderGeometry();
 
-            // ************************************************************
-            // pass 2 : shadow mapping
-            // ************************************************************
-            if (renderState.shadowMap)
-                NetworkManager::RenderShadows(pass);
+            vtkCamera *cam = viswin->GetForeground()->GetActiveCamera();
+            cerr << "######################################################" << endl;
+            cerr << "zoomTile=" << zoomTile << ",foregroundPan=(" << foregroundPan[0] << "," << foregroundPan[1] << ")" << endl;
+            cam->SetFocalPoint(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 0.);
+            cam->SetPosition(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 1.);
+            cam->SetViewUp(0., 1., 0.);
+            cam->SetParallelProjection(1);
+            cam->SetParallelScale(0.5 / zoomTile);
+            viswin->GetForeground()->SetActiveCamera(cam);
 
-            // ************************************************************
-            // pass 3 : depth cues
-            // ************************************************************
-            if (renderState.depthCues)
-                NetworkManager::RenderDepthCues(pass);
-
-            // ************************************************************
-            // pass 4 : translucent geometry if parallel
-            // ************************************************************
-            if (renderState.transparencyInPass2)
-                pass = NetworkManager::RenderTranslucent(pass);
-
-            // ************************************************************
-            // pass 5 : 2d overlays
-            // ************************************************************
-	    vtkCamera *cam = viswin->GetForeground()->GetActiveCamera();
-	    cerr << "######################################################" << endl;
-	    cerr << "zoomTile=" << zoomTile << ",foregroundPan=(" << foregroundPan[0] << "," << foregroundPan[1] << ")" << endl;
-	    cam->SetFocalPoint(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 0.);
-	    cam->SetPosition(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 1.);
-	    cam->SetViewUp(0., 1., 0.);
-	    cam->SetParallelProjection(1);
-	    cam->SetParallelScale(0.5 / zoomTile);
-	    viswin->GetForeground()->SetActiveCamera(cam);
-            RenderPostProcess(pass);
-
-            if (programmableCompositerDebug && PAR_Rank() == 0)
-                writeVTK("pass_5.vtk", pass->GetImage());
+            avtImage_p pass = RenderInternal();
 
             unsigned char *rgbTile = pass->GetImage().GetRGBBuffer();
             float *zbufferTile = pass->GetImage().GetZBuffer();
@@ -3196,9 +3169,41 @@ NetworkManager::RenderTiledInternal()
 // ****************************************************************************
 //
 //
-avtDataObject_p
+avtImage_p
 NetworkManager::RenderInternal()
 {
+    // ************************************************************
+    // pass 1 : opaque (and translucent geometry if serial)
+    // ************************************************************
+    avtImage_p pass = RenderGeometry();
+
+    // ************************************************************
+    // pass 2 : shadow mapping
+    // ************************************************************
+    if (renderState.shadowMap)
+        NetworkManager::RenderShadows(pass);
+
+    // ************************************************************
+    // pass 3 : depth cues
+    // ************************************************************
+    if (renderState.depthCues)
+        NetworkManager::RenderDepthCues(pass);
+
+    // ************************************************************
+    // pass 4 : translucent geometry if parallel
+    // ************************************************************
+    if (renderState.transparencyInPass2)
+        pass = NetworkManager::RenderTranslucent(pass);
+
+    // ************************************************************
+    // pass 5 : 2d overlays
+    // ************************************************************
+    RenderPostProcess(pass);
+
+    if (programmableCompositerDebug && PAR_Rank() == 0)
+        writeVTK("pass_5.vtk", pass->GetImage());
+
+    return pass;
 }
 
 // ****************************************************************************

@@ -579,7 +579,7 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     virtual
     avtDataObject_p    RenderTiledInternal();
     virtual
-    avtDataObject_p    RenderInternal();
+    avtImage_p         RenderInternal();
 
     void               RenderSetup(avtImageType imgT, int windowId, intVector& networkIds, 
                                    bool getZBuffer, int annotMode, bool leftEye, 
