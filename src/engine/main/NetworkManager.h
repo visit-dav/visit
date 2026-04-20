@@ -440,6 +440,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
 //    I added EnableProgrammableCompositerDebug.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added support for tiled rendering.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager : public EngineBase

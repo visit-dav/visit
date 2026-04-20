@@ -2976,6 +2976,21 @@ NetworkManager::RenderValues(intVector plotIds, bool getZBuffer, int windowID, b
     return output;
 }
 
+// ****************************************************************************
+//  Method: NetworkManager::RenderTiledInternal
+//
+//  Purpose:
+//    Render the image in tiles. This routine does the looping over tiles
+//    and RenderInternal does the actual rendering. It calculates a tile
+//    zoom factor and then adjusts the X and Y pan factors for each tile.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    Mon Feb  2 14:37:47 PST 2026
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 avtDataObject_p
 NetworkManager::RenderTiledInternal()
 {
@@ -2983,20 +2998,43 @@ NetworkManager::RenderTiledInternal()
 
     VisWindow *viswin = renderState.window;
 
+    //
+    // Determine if we need z and alpha. This logic mirrors the logic
+    // in RenderGeometry.
+    //
+    bool doZ = false, doA = false;
+    if (PAR_Size() < 2)
+    {
+        doZ = renderState.getZBuffer;
+        doA = renderState.getAlpha;
+    }
+    else if (renderState.zBufferComposite)
+    {
+        doZ = true;
+        doA = renderState.orderComposite;
+    }
+    else
+    {
+        doZ = false;
+        doA = false;
+    }
+    int nChan = doA ? 4 : 3;
+    debug5 << "NetworkManager::RenderTiledInternal: doZ=" << (doZ == true ? "true" : "false")  << ",doA=" << (doA == true ? "true" : "false") << endl;
+
     int w, h; 
     viswin->GetSize(w,h);
     const int numPix = w*h;
-    unsigned char *pixels = new unsigned char[numPix*3];
+    unsigned char *pixels = new unsigned char[numPix*nChan];
 
     //
-    // Create the output vtkImageData without an alpha channel.
+    // Create the output vtkImageData.
     //
     vtkImageData *image = NULL;
 
     vtkUnsignedCharArray *is = vtkUnsignedCharArray::New();
-    is->SetNumberOfComponents(3);
+    is->SetNumberOfComponents(nChan);
     is->SetName("ImageScalars");
-    is->SetArray(pixels, 3*numPix, /*keep=*/0, /*use delete []=*/1);
+    is->SetArray(pixels, nChan*numPix, /*keep=*/0, /*use delete []=*/1);
 
     image = vtkImageData::New();
     image->SetDimensions(w,h,1);
@@ -3007,13 +3045,18 @@ NetworkManager::RenderTiledInternal()
     // Create the zbuffer.
     vtkFloatArray *zbuffer = NULL;
 
-    zbuffer = vtkFloatArray::New();
-    zbuffer->SetNumberOfComponents(1);
-    zbuffer->SetNumberOfValues(numPix);
+    if (doZ)
+    {
+        zbuffer = vtkFloatArray::New();
+        zbuffer->SetNumberOfComponents(1);
+        zbuffer->SetNumberOfValues(numPix);
+    }
 
     avtImage_p pass2 = new avtImage(NULL);
-    //pass2->SetImage(avtImageRepresentation(image, zbuffer));
-    pass2->SetImage(avtImageRepresentation(image));
+    if (doZ)
+        pass2->SetImage(avtImageRepresentation(image, zbuffer));
+    else
+        pass2->SetImage(avtImageRepresentation(image));
 
     unsigned char *rgbImage = NULL;
     float *zbufferImage = NULL;
@@ -3039,9 +3082,9 @@ NetworkManager::RenderTiledInternal()
     const int nxTiles = int(double(imageWidth - 1) / double(tileWidth)) + 1;
     const int nyTiles = int(double(imageHeight - 1) / double(tileHeight)) + 1;
 
-    debug5 << "NetworkManager::RenderTiledInternal: imageWidth=" << w << ",imageHeight=" << h << endl;
-    debug5 << "NetworkManager::RenderTiledInternal: tileWidth=" << tileWidth << ",tileHheight=" << tileHeight << endl;
-    debug5 << "NetworkManager::RenderTiledInternal: nxTiles=" << nxTiles << ",nyTiles=" << nyTiles << endl;
+    debug1 << "NetworkManager::RenderTiledInternal: imageWidth=" << w << ",imageHeight=" << h << endl;
+    debug1 << "NetworkManager::RenderTiledInternal: tileWidth=" << tileWidth << ",tileHheight=" << tileHeight << endl;
+    debug1 << "NetworkManager::RenderTiledInternal: nxTiles=" << nxTiles << ",nyTiles=" << nyTiles << endl;
 
     //
     // Determine the tile zoom and the initial tile pan values and the
@@ -3094,7 +3137,7 @@ NetworkManager::RenderTiledInternal()
         for (int ixTile = 0; ixTile < nxTiles; ixTile++)
         {
             //
-            // Set the view3d and the foreground camera for the tile.
+            // Set the canvas and foreground cameras for the tile.
             //
             viswin->SetView3D(view3DTile);
 
@@ -3123,7 +3166,7 @@ NetworkManager::RenderTiledInternal()
             debug5 << "NetworkManager::RenderTiledInternal: xMax=" << xMax << ",yMax=" << yMax << endl;
             for (int j = 0; j < yMax; ++j)
             {
-                int ll  = j * tileWidth * 3;
+                int ll  = j * tileWidth * nChan;
                 int ll2 = j * tileWidth;
                 int kk  = ((iyTile * tileHeight + j) * imageWidth + ixTile * tileWidth) * 3;
                 int kk2 = (iyTile * tileHeight + j) * imageWidth + ixTile * tileWidth;
@@ -3132,9 +3175,11 @@ NetworkManager::RenderTiledInternal()
                     rgbImage[kk]   = rgbTile[ll];
                     rgbImage[kk+1] = rgbTile[ll+1];
                     rgbImage[kk+2] = rgbTile[ll+2];
-                    kk  += 3;
+		    if (doA) rgbImage[kk+3] = rgbTile[ll+3];
+		    if (doZ) zbufferImage[kk2] = zbufferTile[ll2];
+                    kk  += nChan;
                     kk2 += 1;
-                    ll  += 3;
+                    ll  += nChan;
                     ll2 += 1;
                 }
             }
@@ -3148,7 +3193,7 @@ NetworkManager::RenderTiledInternal()
     }
 
     //
-    // Restore the size, the view3d, and the foreground camera.
+    // Restore the size and the canvas and foreground cameras.
     //
     viswin->SetSize(w,h);
     viswin->SetView3D(view3D);
@@ -3186,6 +3231,9 @@ NetworkManager::RenderTiledInternal()
 //
 //    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
 //    Added the ability to enable programmable compositing debug at runtime.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added support for tiled rendering.
 //
 // ****************************************************************************
 
