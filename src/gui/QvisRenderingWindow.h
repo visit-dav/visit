@@ -121,6 +121,9 @@ class AnariRenderingWidget;
 //   Kathleen Biagas, Thu Aug 28 15:52:57 PDT 2025
 //   Removed objectRepresentation widget and slot, no longer used.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added controls for setting the tiled rendering width and height.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -186,6 +189,8 @@ private slots:
     void depthCueingStartChanged();
     void depthCueingEndChanged();
     void colorTexturingToggled(bool);
+    void tiledRenderingWidthChanged();
+    void tiledRenderingHeightChanged();
     void osprayRenderingToggled(bool);
     void ospraySPPChanged(int);
     void osprayAOChanged(int);
@@ -273,6 +278,11 @@ private:
     QLabel            *depthCueingEndLabel;
     QLineEdit         *depthCueingEndEdit;
     QCheckBox         *colorTexturingToggle;
+    QGroupBox         *tiledRenderingGroup;
+    QLabel            *tiledRenderingWidthLabel;
+    QLineEdit         *tiledRenderingWidth;
+    QLabel            *tiledRenderingHeightLabel;
+    QLineEdit         *tiledRenderingHeight;
 #if defined(HAVE_OSPRAY)
     QGroupBox         *osprayGroup;
     QLabel            *ospraySPPLabel;
