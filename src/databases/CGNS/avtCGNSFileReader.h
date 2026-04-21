@@ -19,6 +19,7 @@
 #include <vector>
 #include <vectortypes.h>
 #include <map>
+#include <utility>
 
 class vtkDataArray;
 class vtkDataSet;
@@ -58,6 +59,21 @@ using namespace std;
 //
 //    Eric Brugger, Tue Jul  6 10:27:03 PDT 2021
 //    Added support for reading rind data.
+//
+//    Kathleen Biagas, Wed Apr 15 12:17:25 PDT 2026
+//    Add new methods and ivars in support of SIDS-style time-varying data
+//    using ZonePointers.
+//    Methods:  ReadZonePointersFromBaseIterativeData
+//              ReadZoneIterativePointers
+//              ResolveGridIndexForTime
+//              ResolveSolutionIndexForTime
+//    ivars:    BaseZoneKey
+//              VarNameToMeshName
+//              initializedMapsTimeState
+//              mapsDependOnTimeState
+//              baseZonePointers
+//              zoneGridCoordinatesPointers
+//              zoneFlowSolutionPointers
 //
 // ****************************************************************************
 
@@ -110,8 +126,16 @@ protected:
         intVector zones;
     };
 
+    typedef std::pair<int,int> BaseZoneKey;
+
     int                    GetFileHandle();
     void                   ReadTimes();
+    void                   ReadZonePointersFromBaseIterativeData(int base);
+    void                   ReadZoneIterativePointers(int base, int zone);
+    int                    ResolveGridIndexForTime(int timestate, int base,
+                               int zone, int ngrids);
+    int                    ResolveSolutionIndexForTime(int timestate, int base,
+                               int zone, int nsols);
     bool                   GetCoords(int timestate, int base, int zone,
                                const cgsize_t *zsize, int cell_dim,
                                int phys_dim, bool structured, float **coords);
@@ -166,9 +190,17 @@ protected:
     std::map<std::string, BaseAndZoneList> MeshDomainMapping;
     std::map<std::string, int>             BaseNameToIndices;
     std::map<std::string, std::string>     VisItNameToCGNSName;
+    std::map<std::string, std::string>     VarNameToMeshName;
     bool                                   initializedMaps;
+    int                                    initializedMapsTimeState;
+    bool                                   mapsDependOnTimeState;
     bool                                   cgnsIsMTMD;
+
+    // Optional CGNS SIDS iterative "pointer" arrays (e.g. ZonePointers,
+    // GridCoordinatesPointers, FlowSolutionPointers).
+    std::map<int, std::vector<std::vector<std::string> > > baseZonePointers;
+    std::map<BaseZoneKey, std::vector<std::string> > zoneGridCoordinatesPointers;
+    std::map<BaseZoneKey, std::vector<std::string> > zoneFlowSolutionPointers;
 };
 
 #endif
-
