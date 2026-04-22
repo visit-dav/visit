@@ -2998,70 +2998,15 @@ NetworkManager::RenderTiledInternal()
 
     VisWindow *viswin = renderState.window;
 
-    //
-    // Determine if we need z and alpha. This logic mirrors the logic
-    // in RenderGeometry.
-    //
-    bool doZ = false, doA = false;
-    if (PAR_Size() < 2)
-    {
-        doZ = renderState.getZBuffer;
-        doA = renderState.getAlpha;
-    }
-    else if (renderState.zBufferComposite)
-    {
-        doZ = true;
-        doA = renderState.orderComposite;
-    }
-    else
-    {
-        doZ = false;
-        doA = false;
-    }
-    int nChan = doA ? 4 : 3;
-    debug5 << "NetworkManager::RenderTiledInternal: doZ=" << (doZ == true ? "true" : "false")  << ",doA=" << (doA == true ? "true" : "false") << endl;
-
     int w, h; 
     viswin->GetSize(w,h);
     const int numPix = w*h;
-    unsigned char *pixels = new unsigned char[numPix*nChan];
 
-    //
-    // Create the output vtkImageData.
-    //
     vtkImageData *image = NULL;
-
-    vtkUnsignedCharArray *is = vtkUnsignedCharArray::New();
-    is->SetNumberOfComponents(nChan);
-    is->SetName("ImageScalars");
-    is->SetArray(pixels, nChan*numPix, /*keep=*/0, /*use delete []=*/1);
-
-    image = vtkImageData::New();
-    image->SetDimensions(w,h,1);
-    image->GetPointData()->SetScalars(is);
-
-    is->Delete();
-
-    // Create the zbuffer.
     vtkFloatArray *zbuffer = NULL;
-
-    if (doZ)
-    {
-        zbuffer = vtkFloatArray::New();
-        zbuffer->SetNumberOfComponents(1);
-        zbuffer->SetNumberOfValues(numPix);
-    }
-
     avtImage_p pass2 = new avtImage(NULL);
-    if (doZ)
-        pass2->SetImage(avtImageRepresentation(image, zbuffer));
-    else
-        pass2->SetImage(avtImageRepresentation(image));
-
     unsigned char *rgbImage = NULL;
     float *zbufferImage = NULL;
-    rgbImage = pass2->GetImage().GetRGBBuffer();
-    zbufferImage = pass2->GetImage().GetZBuffer();
 
     //
     // Determine the tile size and number of tiles.
@@ -3129,6 +3074,18 @@ NetworkManager::RenderTiledInternal()
     view3DTile.imagePan[1] = yPanInit;
     double foregroundPan[2];
     foregroundPan[1] = yPanInit2;
+
+    View3DAttributes view3DAtts = renderState.windowInfo->windowAttributes.GetView3D();
+    int size[2] = {tileWidth, tileHeight};
+    renderState.windowInfo->windowAttributes.SetSize(size);
+    double pan[2] = {xPanInit, yPanInit};
+    view3DAtts.SetImagePan(pan);
+    view3DAtts.SetImageZoom(zoomUser * zoomTile);
+    renderState.windowInfo->windowAttributes.SetView3D(view3DAtts);
+
+    bool firstTime = true;
+    bool doZ = false, doA = false;
+    int nChan = 3;
     for (int iyTile = 0; iyTile < nyTiles; iyTile++)
     {
         view3DTile.imagePan[0] = xPanInit;
@@ -3137,7 +3094,7 @@ NetworkManager::RenderTiledInternal()
         for (int ixTile = 0; ixTile < nxTiles; ixTile++)
         {
             //
-            // Set the canvas and foreground cameras for the tile.
+            // Set the viswin view3D and foreground camera for the tile.
             //
             viswin->SetView3D(view3DTile);
 
@@ -3150,11 +3107,17 @@ NetworkManager::RenderTiledInternal()
             viswin->GetForeground()->SetActiveCamera(cam);
 
             //
+            // Set the windowAttributes view3D for the tile.
+            //
+            view3DAtts.SetImagePan(view3DTile.imagePan);
+            renderState.windowInfo->windowAttributes.SetView3D(view3DAtts);
+
+            //
             // Render the tile.
             //
             avtImage_p pass = RenderInternal();
 
-            //
+            // 
             // Copy the tile into the final image.
             //
             unsigned char *rgbTile = pass->GetImage().GetRGBBuffer();
@@ -3162,6 +3125,54 @@ NetworkManager::RenderTiledInternal()
             const int xMax = std::min(tileWidth, remainingNxCanvas);
             const int yMax = std::min(tileHeight, remainingNyCanvas);
 
+            //
+            // If this is the first time a tile is rendered, initialize
+            // the output image. We do it here because we don't know
+            // if the rendering outputs a zbuffer or alpha channel until
+            // we have rendered the first tile.
+            //
+            if (firstTime)
+            {
+                nChan = pass->GetImage().GetNumberOfColorChannels();
+                if (nChan == 4)
+                    doA = true;
+                if (zbufferTile != NULL)
+                    doZ = true;
+                debug5 << "NetworkManager::RenderTiledInternal: doZ=" << (doZ == true ? "true" : "false")  << ",doA=" << (doA == true ? "true" : "false") << endl;
+
+                //
+                // Create the output vtkImageData.
+                //
+                unsigned char *pixels = new unsigned char[numPix*nChan];
+                vtkUnsignedCharArray *is = vtkUnsignedCharArray::New();
+                is->SetNumberOfComponents(nChan);
+                is->SetName("ImageScalars");
+                is->SetArray(pixels, nChan*numPix, /*keep=*/0, /*use delete []=*/1);
+
+                image = vtkImageData::New();
+                image->SetDimensions(w,h,1);
+                image->GetPointData()->SetScalars(is);
+
+                is->Delete();
+
+                // Create the zbuffer.
+                if (doZ)
+                {
+                    zbuffer = vtkFloatArray::New();
+                    zbuffer->SetNumberOfComponents(1);
+                    zbuffer->SetNumberOfValues(numPix);
+                }
+
+                if (doZ)
+                    pass2->SetImage(avtImageRepresentation(image, zbuffer));
+                else
+                    pass2->SetImage(avtImageRepresentation(image));
+
+                rgbImage = pass2->GetImage().GetRGBBuffer();
+                zbufferImage = pass2->GetImage().GetZBuffer();
+
+                firstTime = false;
+            }
             debug5 << "NetworkManager::RenderTiledInternal: rgbTile=" << (void*)rgbTile << ",zbufferTile=" << (void*)zbufferTile << endl;
             debug5 << "NetworkManager::RenderTiledInternal: xMax=" << xMax << ",yMax=" << yMax << endl;
             for (int j = 0; j < yMax; ++j)
@@ -3175,8 +3186,8 @@ NetworkManager::RenderTiledInternal()
                     rgbImage[kk]   = rgbTile[ll];
                     rgbImage[kk+1] = rgbTile[ll+1];
                     rgbImage[kk+2] = rgbTile[ll+2];
-		    if (doA) rgbImage[kk+3] = rgbTile[ll+3];
-		    if (doZ) zbufferImage[kk2] = zbufferTile[ll2];
+                    if (doA) rgbImage[kk+3] = rgbTile[ll+3];
+                    if (doZ) zbufferImage[kk2] = zbufferTile[ll2];
                     kk  += nChan;
                     kk2 += 1;
                     ll  += nChan;
@@ -3193,7 +3204,7 @@ NetworkManager::RenderTiledInternal()
     }
 
     //
-    // Restore the size and the canvas and foreground cameras.
+    // Restore the viswin size, view3D and foreground camera.
     //
     viswin->SetSize(w,h);
     viswin->SetView3D(view3D);
@@ -3205,6 +3216,18 @@ NetworkManager::RenderTiledInternal()
     cam->SetParallelProjection(1);
     cam->SetParallelScale(0.5);
     viswin->GetForeground()->SetActiveCamera(cam);
+
+    //
+    // Restore the windowAttributes size and view3D.
+    //
+    size[0] = imageWidth;
+    size[1] = imageHeight;
+    renderState.windowInfo->windowAttributes.SetSize(size);
+    pan[0] = xPanUser;
+    pan[1] = yPanUser;
+    view3DAtts.SetImagePan(pan);
+    view3DAtts.SetImageZoom(zoomUser);
+    renderState.windowInfo->windowAttributes.SetView3D(view3DAtts);
 
     avtDataObject_p output;
     CopyTo(output, pass2);
