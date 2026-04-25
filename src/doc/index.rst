@@ -20,6 +20,8 @@ VisIt User Manual
    Acknowledgements <acknowledgements>
    Glossary <glossary>
 
+   pagefind-search
+
 .. Indices and tables
 .. ==================
 
