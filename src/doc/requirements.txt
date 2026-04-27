@@ -69,4 +69,5 @@ urllib3==2.2.1
     # via requests
 zipp==3.18.1
     # via importlib-metadata
+beautifulsoup4
 pagefind[extended]
