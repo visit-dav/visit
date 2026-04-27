@@ -13,7 +13,7 @@ Search
      new PagefindUI({
        element: "#pagefind-search",
        showSubResults: true,
-       showImages: false
+       showImages: false,
        highlightParam: "highlight"
      });
    });
