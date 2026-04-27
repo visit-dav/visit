@@ -19,6 +19,7 @@
 #include <vector>
 #include <vectortypes.h>
 #include <map>
+#include <void_ref_ptr.h>
 #include <utility>
 
 class vtkDataArray;
@@ -75,6 +76,9 @@ using namespace std;
 //              zoneGridCoordinatesPointers
 //              zoneFlowSolutionPointers
 //
+//    Kathleen Biagas, Mon Apr 27 09:58:29 PDT 2026
+//    Add GetAuxiliaryData and GetStructuredDomainBoundaries.
+//
 // ****************************************************************************
 
 class avtCGNSFileReader
@@ -94,6 +98,9 @@ public:
     virtual vtkDataSet    *GetMesh(int, int, const char *);
     virtual vtkDataArray  *GetVar(int, int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+    virtual void          *GetAuxiliaryData(const char *, int,
+                                            const char *, void *,
+                                            DestructorFunction &);
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
@@ -157,6 +164,8 @@ protected:
     void                   GetQuadGhostZones(int base, int zone,
                                const cgsize_t *zsize, int cell_dim,
                                vtkDataSet *ds);
+    void                  *GetStructuredDomainBoundaries(const char *, int,
+                               DestructorFunction &);
     vtkDataSet *           GetCurvilinearMesh(int, int, int, const char *,
                                               const cgsize_t *, int, int);
     vtkDataSet *           GetUnstructuredMesh(int, int, int, const char *,
