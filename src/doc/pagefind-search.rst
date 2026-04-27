@@ -14,6 +14,7 @@ Search
        element: "#pagefind-search",
        showSubResults: true,
        showImages: false
+       highlightParam: "highlight"
      });
    });
    </script>
