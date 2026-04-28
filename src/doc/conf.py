@@ -131,7 +131,7 @@ html_static_path = ['_static']
 #
 #
 #
-html_js_files = ["pagefind-highlight.js"]
+html_js_files = ["pagefind/pagefind-highlight.js", "redirect-rtd-search-to-pagefind.js"]
 
 # -- Options for LaTeX output ---------------------------------------------
 

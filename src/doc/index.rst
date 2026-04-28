@@ -16,7 +16,6 @@ VisIt User Manual
    Getting Data Into VisIt <data_into_visit/index>
    Building VisIt from Sources <building_visit/index>
    Developer Manual <dev_manual/index>
-   How to Search this Manual <searching>
    Acknowledgements <acknowledgements>
    Glossary <glossary>
 

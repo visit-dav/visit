@@ -1,6 +1,8 @@
 Search
 ======
 
+VisIt_ uses PageFind search.
+
 .. raw:: html
 
    <link href="pagefind/pagefind-ui.css" rel="stylesheet">
@@ -16,5 +18,15 @@ Search
        showImages: false,
        highlightParam: "highlight"
      });
+
+     const params = new URLSearchParams(window.location.search);
+     const q = params.get("q");
+     if (q) {
+       const input = document.querySelector("#pagefind-search input");
+       if (input) {
+         input.value = q;
+         input.dispatchEvent(new Event("input", { bubbles: true }));
+       }
+     }
    });
    </script>
