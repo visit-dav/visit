@@ -1,7 +1,8 @@
 Search
 ======
 
-VisIt_ uses PageFind search.
+VisIt_ uses :ref:`Pagefind search <using_pagefind_search>`, a client-side search solution for static pages.
+If you are encountering issues with search, please :ref:`reach out <methods_of_contact>` to the VisIt_ team.
 
 .. raw:: html
 
@@ -33,25 +34,28 @@ VisIt_ uses PageFind search.
    // link directly to body text where the search string was matched. In addition,
    // they automatically highlight the matching text in the paage. But, in order
    // to work correctly, the text fragment URL must be a) properly encoded and 
-   // b) match body text in the page VERBATIM.
+   // b) match the rendered HTML in the body text in the page VERBATIM.
    //
-   // Verbatim matching can be defeated by HTML line breaks, paragraph breaks, auto-
-   // numbering, &Xxx;-chars, etc.
+   // Verbatim matching can be defeated by line breaks, paragraph breaks, auto-
+   // numbering, &Xxx;-chars, tabbed or collapsible sections etc. in the
+   // rendered HTML.
    //
    // The JavaScript logic below takes the `plain_excerpt` member of the `result`
    // object that Pagefind delivers to processResult and attempts to find the first
-   // several words and last several words that do not cross some kind of punctuation
-   // boundary and uses these, after proper encoding, the produce the...
+   // several words and last several words that do not cross a punctuation
+   // boundary and uses these, after proper encoding, to produce the...
    //
    //  :~:text=first%20words,last%20words
    //
-   // URL fragment. If it cannot find suitably long (4) sequence of words at beginning
-   // and end of `plain_excerpt` it falls back to default behavior of using section
-   // headings.
+   // URL fragment. If it cannot find a suitably long (4) sequence of words at
+   // beginning and end of `plain_excerpt` it falls back to default behavior of
+   // using section headings.
    //
    // As a consequence of how we do business, the URLs that are emitted for search
    // results here contain BOTH the section heading id followed by the text fragment
-   // if one is produced. This seems to work fine in all browsers.
+   // if one is produced. Although we should really use just one or the other and not
+   // both together, this seems to work fine in all browsers and removes the need to
+   // parse out of the original URL Pagefind created just the id portion.
    //
 
    function firstLastWordsNoCrossPunctuation(str, n = 4) {

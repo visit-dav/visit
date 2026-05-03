@@ -41,3 +41,15 @@
 .vundl {
   text-decoration: underline;
 }
+
+/* To get rid of odd-ball expand/collapse icons in
+   Pagefind results page */
+.pagefind-ui .headerlink {
+    display: none !important;
+}
+
+.pagefind-ui a.headerlink,
+.pagefind-ui .toc-backref,
+.pagefind-ui .permalink {
+    display: none !important;
+}

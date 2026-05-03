@@ -18,8 +18,8 @@ VisIt User Manual
    Developer Manual <dev_manual/index>
    Acknowledgements <acknowledgements>
    Glossary <glossary>
-
    pagefind-search
+   using-pagefind-search
 
 .. Indices and tables
 .. ==================
