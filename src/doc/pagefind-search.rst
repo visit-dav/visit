@@ -43,7 +43,7 @@ If you are encountering issues with search, please :ref:`reach out <methods_of_c
    // The JavaScript logic below takes the `plain_excerpt` member of the `result`
    // object that Pagefind delivers to processResult and attempts to find the first
    // several words and last several words that do not cross a punctuation
-   // boundary and uses these, after proper encoding, to produce the...
+   // or non-ascii boundary and uses these, after proper encoding, to produce the...
    //
    //  :~:text=first%20words,last%20words
    //
@@ -64,13 +64,15 @@ If you are encountering issues with search, please :ref:`reach out <methods_of_c
      let i;
      let first = [];
      for (i = 0; i < words.length && first.length < n; i++) {
-       if (/[.?:;!,]/.test(words[i])) { first = []; continue; }
+       if (/[.?:;!,]/.test(words[i])) { first = []; continue; } // punctuation
+       if (/[^\x00-\x7F]/.test(words[i])) { first = []; continue; } // non-ascii
        first.push(words[i]);
      }
 
      let last = [];
      for (let j = words.length - 1; j >= 0 && j > i && last.length < n; j--) {
-       if (/[.?:;!,]/.test(words[j])) { last = []; continue; }
+       if (/[.?:;!,]/.test(words[j])) { last = []; continue; } // punctuation
+       if (/[^\x00-\x7F]/.test(words[j])) { last = []; continue; } // non-ascii
        last.unshift(words[j]);
      }
 
