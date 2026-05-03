@@ -48,7 +48,7 @@ If you are encountering issues with search, please :ref:`reach out <methods_of_c
    //  :~:text=first%20words,last%20words
    //
    // URL fragment. If it cannot find a suitably long (4) sequence of words at
-   // beginning and end of `plain_excerpt` it falls back to default behavior of
+   // the beginning and end of `plain_excerpt` it falls back to default behavior of
    // using section headings.
    //
    // As a consequence of how we do business, the URLs that are emitted for search
@@ -56,6 +56,12 @@ If you are encountering issues with search, please :ref:`reach out <methods_of_c
    // if one is produced. Although we should really use just one or the other and not
    // both together, this seems to work fine in all browsers and removes the need to
    // parse out of the original URL Pagefind created just the id portion.
+   //
+   // One final thing we do with the last bit of JavaScript code here is override
+   // ReadTheDoc's default search box behavior such that text entered there gets
+   // instead re-routed to Pagefind search.
+   //
+   // ChatGPT assisted immensely with this code.
    //
 
    function firstLastWordsNoCrossPunctuation(str, n = 4) {
