@@ -22,6 +22,9 @@
 //    Brad Whitlock, Thu Mar 22 00:12:00 PDT 2007
 //    Initialize scale and titleVisibility.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Initialize zoom.
+//
 // ****************************************************************************
 
 avtCurveLegend::avtCurveLegend()
@@ -31,6 +34,7 @@ avtCurveLegend::avtCurveLegend()
 
     scale[0] = 1.;
     scale[1] = 1.;
+    zoom = 1.;
     size[0] = 0.08;
     size[1] = 0.26;
     titleVisibility = true;
@@ -170,6 +174,34 @@ avtCurveLegend::SetLegendScale(double xScale, double yScale)
     // Save the scales.
     scale[0] = xScale;
     scale[1] = yScale;
+}
+
+// ****************************************************************************
+// Method: avtCurveLegend::SetLegendZoom
+//
+// Purpose:
+//   Set the legend zoom.
+//
+// Arguments:
+//   _zoom : The zoom factor.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveLegend::SetLegendZoom(double _zoom)
+{
+    // Scale the color bar
+    double colorBarScale = lineLegend->GetBarWidth() / zoom;
+    colorBarScale *= _zoom;
+    lineLegend->SetBarWidth(colorBarScale);
+
+    // Save the zoom.
+    zoom = _zoom;
 }
 
 // ****************************************************************************

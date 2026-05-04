@@ -463,6 +463,22 @@ avtLegend::SetLegendScale(double xScale, double yScale)
 }
 
 // ****************************************************************************
+// Method: avtLegend::SetLegendZoom
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtLegend::SetLegendZoom(double zoom)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
 // Method: avtLegend::SetBoundingBoxVisibility
 //
 // Programmer: Brad Whitlock

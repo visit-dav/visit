@@ -49,6 +49,9 @@
 //    Hank Childs, Fri Jan 23 15:43:43 PST 2009
 //    Initialize minmaxVisibility.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Initialize zoom.
+//
 // ****************************************************************************
 
 avtLevelsLegend::avtLevelsLegend()
@@ -56,6 +59,7 @@ avtLevelsLegend::avtLevelsLegend()
     min = 0.;
     max = 1.;
     scale[0] = scale[1] = 1.;
+    zoom = 1.;
     maxScale = 1.;
     setMaxScale = true;
 
@@ -387,6 +391,34 @@ avtLevelsLegend::SetLegendScale(double xScale, double yScale)
     // Save the scales.
     scale[0] = xScale;
     scale[1] = yScale;
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetLegendZoom
+//
+// Purpose: 
+//   Set the legend zoom.
+//
+// Arguments:
+//   _zoom : The zoom factor.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetLegendZoom(double _zoom)
+{
+    // Scale the color bar
+    double colorBarScale = sBar->GetBarWidth() / zoom;
+    colorBarScale *= _zoom;
+    sBar->SetBarWidth(colorBarScale);
+
+    // Save the zoom.
+    zoom = _zoom;
 }
 
 // ****************************************************************************
