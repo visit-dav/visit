@@ -15,7 +15,7 @@ build:
   commands:
     - pip install -r src/doc/requirements.txt
     - sphinx-build -b html src/doc $READTHEDOCS_OUTPUT/html
-    - python -m pagefind  --include-characters "_-./:+#<>" --site $READTHEDOCS_OUTPUT/html
+    - python -m pagefind  --include-characters "_-./:+#<>" --exclude-selectors "a.headerlink" --site $READTHEDOCS_OUTPUT/html
 
 # Build documentation in the doc/ directory with Sphinx
 sphinx:
