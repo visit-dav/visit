@@ -1,7 +1,7 @@
 Search
 ======
 
-VisIt_ uses :ref:`Pagefind search <using_pagefind_search>`, a client-side search solution for static pages.
+VisIt_ uses :doc:`Pagefind search <using-pagefind-search>`, a client-side search solution for static pages.
 If you are encountering issues with search, please :ref:`reach out <methods_of_contact>` to the VisIt_ team.
 
 .. raw:: html

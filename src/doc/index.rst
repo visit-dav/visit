@@ -19,7 +19,6 @@ VisIt User Manual
    Acknowledgements <acknowledgements>
    Glossary <glossary>
    pagefind-search
-   using-pagefind-search
 
 .. Indices and tables
 .. ==================

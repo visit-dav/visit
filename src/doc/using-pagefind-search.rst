@@ -1,4 +1,4 @@
-.. _using_pagefind_search:
+:orphan:
 
 Using Pagefind Search
 =====================
