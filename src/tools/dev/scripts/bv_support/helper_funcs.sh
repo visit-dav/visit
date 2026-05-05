@@ -370,6 +370,11 @@ function uncompress_untar
 #                                                                             #
 #   Cyrus Harrison, Thu, Jan 25, 2024  9:35:18 PM                             #
 #   Removed md5 logic, standrize on sha256                                    #
+#                                                                             #
+#   Kathleen Biagas, Tue Apr 7, 2026                                          #
+#   Use sha512sum or sha256sum based on checksum_algo. Simplified logic to    #
+#   use parameter extraction.                                                 #
+#                                                                             #
 # *************************************************************************** #
 
 function verify_sha_checksum
@@ -378,26 +383,31 @@ function verify_sha_checksum
     checksum=$2
     dfile=$3
 
-    tmp=`which shasum`
-    if [[ $? != 0 ]]; then
-        info "could not find shasum, disabling check"
-        return 0
-    fi
 
     if [[ $checksum_algo == 512 ]]; then
-        tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{128\}'`
+        checksum_algo_command="sha512sum"
+        digits=128
     else
-        tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{64\}'`
+        checksum_algo_command="sha256sum"
+        digits=64
     fi
-    if [[ "$tmp" == "$checksum" ]]; then
+
+    tmp=`which $checksum_algo_command`
+    if [[ $? != 0 ]]; then
+        info "could not find $checksum_algo_command, disabling check"
+        return 0
+    fi
+    tmp=`$checksum_algo_command $dfile`
+    tmp2=${tmp:0:$digits}
+
+    if [[ "$tmp2" == "$checksum" ]]; then
         info "verified"
         return 0
     else
-        info "shasum -a $checksum_algo failed: looking for $checksum got $tmp"
+        info "$checksum_algo_command failed: looking for $checksum got $tmp2"
         return 1
     fi
 
-    info "shasum does not support $checksum_algo, check disabled"
     return 0
 }
 
