@@ -234,8 +234,10 @@ endfunction()
 
   keyword arguments:
       HEADER_ONLY (optional) specifies HEADER_ONLY package
-      ADD_GLOBAL_INCLUDE (optional) specifies that PKG_INCLUDE_DIR cache var should be created
-      ADD_GLOBAL_LIBRARY (optional) specifies that PKG_LIBRARY cache var should be created
+      ADD_GLOBAL_INCLUDE (optional) specifies that PKG_INCLUDE_DIR cache var should be created.  May be needed for certain TP libraries that depend on PKG.
+
+      ADD_GLOBAL_LIBRARY (optional) specifies that PKG_LIBRARY cache var should be created.  May be needed for certain TP libraries that depend on PKG.
+
       LIBS (required if HEADER_ONLY not specified AND LIBNAMES not specified)
              is the list of library names for this package
       LIBNAMES List of possible names for a library
