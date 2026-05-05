@@ -53,7 +53,7 @@ def test_files(files):
         if os.path.isfile(f):
             print("[found: %s]" % f)
             res[f] = {}
-            rcode,rout = sexe("md5 < %s" %f ,ret_output=True,echo=True)
+            rcode,rout = sexe("md5sum < %s" %f ,ret_output=True,echo=True)
             if rcode == 0:
                res[f]["md5"] = rout.split()[0]
             rcode,rout = sexe("shasum -a 256 %s" %f ,ret_output=True,echo=True)
@@ -70,27 +70,21 @@ def main():
     res["exe"] = {}
     res["src"] = {}
     ver_underscores = ver.replace(".","_")
-    exe_files = [ "visit%s.darwin22-x86_64.dmg" % ver_underscores,
-                  "visit%s.darwin23-arm64.dmg" % ver_underscores,
-                  "visit%s.darwin22-x86_64.txz" % ver_underscores,
-                  "visit%s.darwin23-arm64.txz" % ver_underscores,
-                  "visit%s.linux-x86_64-debian11.tar.gz" % ver_underscores,
+    exe_files = [ "visit%s.darwin24-arm64.dmg" % ver_underscores,
+                  "visit%s.darwin24-arm64.tar.gz" % ver_underscores,
                   "visit%s.linux-x86_64-debian12.tar.gz" % ver_underscores,
-                  "visit%s.linux-x86_64-fedora39.tar.gz" % ver_underscores,
                   "visit%s.linux-x86_64-fedora40.tar.gz" % ver_underscores,
-                  "visit%s.linux-x86_64-ubuntu18.tar.gz" % ver_underscores,
-                  "visit%s.linux-x86_64-ubuntu20.tar.gz" % ver_underscores,
                   "visit%s.linux-x86_64-ubuntu22.tar.gz" % ver_underscores,
                   "visit%s.linux-x86_64-ubuntu24.tar.gz" % ver_underscores,
-                  "visit%s.linux-x86_64-rocky8.tar.gz" % ver_underscores,
-                  "visit%s.linux-x86_64-rocky9.tar.gz" % ver_underscores,
-                  "visit%s_x64.exe  " % ver,
+                  "visit%s.linux-x86_64-rocky8.9.tar.gz" % ver_underscores,
+                  "visit%s.linux-x86_64-rockylinux9.tar.gz" % ver_underscores,
+                  "visit%s.win11.exe" % ver_underscores,
                   "build_visit%s" % ver_underscores,
                   "visit-install%s" % ver_underscores,
                   "INSTALL_NOTES_%s.txt" % ver_underscores,
                   "jvisit%s.tar.gz" % ver]
-    src_files = ["visit%s.tar.gz" % ver] #, TODO ADD THIS
-                 # "visit_windowsdev_%s.zip" % ver]
+    src_files = ["visit%s.src.tar.gz" % ver_underscores,
+                 "visit_%s.windowsdev.zip" % ver_underscores]
 
     res["exe"] = test_files(exe_files)
     res["src"] = test_files(src_files)

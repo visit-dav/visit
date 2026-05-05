@@ -1483,7 +1483,11 @@ class LLDBDebugger(Debugger):
         super(LLDBDebugger, self).__init__(launcher)
 
     def Executable(self):
-        return ["lldb"]
+        native_arm64 = subprocess.check_output(["sysctl", "-n", "hw.optional.arm64"]).decode().strip()
+        if native_arm64 == "1":
+            return ["arch", "-arm64", "lldb"]
+        else:
+            return ["lldb"]
 
     def CreateCommand(self, args):
         #lldb_args = ["process","launch","--tty","--"]
