@@ -214,8 +214,9 @@ then
    echo "    tuolumne   (LC,   Linux, x86_64, toss4-cray),"
    echo "    rzvernal   (LC,   Linux, x86_64, toss4-cray),"
    echo "    rzadams    (LC,   Linux, x86_64, toss4-cray),"
-   echo "    elcap      (LC,   Linux, x86_64, toss4-cray)"
-   echo "    crossroads (LANL, Linux, x86_64),"
+   echo "    elcap      (LC,   Linux, x86_64, toss4-cray),"
+   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "version is X.X.X, not visitX.X.X"
    exit
 fi
 
