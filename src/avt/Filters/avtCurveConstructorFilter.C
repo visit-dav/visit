@@ -151,7 +151,10 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Kathleen Biagas, Tue Dec 19, 2023
 //    Consolidate logic for no-labels and labels.
 //    Add varname and count to CreateSingleOutput.
-
+//
+//    Eric Brugger, Fri Nov 14 15:51:38 PST 2025
+//    Fix some memory leaks.
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -288,6 +291,13 @@ void avtCurveConstructorFilter::Execute()
     }
 
     SetOutputDataTree(outTree);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        if (ds[i] != NULL)
+            ds[i]->Delete();
+    }
+    delete [] ds;
 }
 
 

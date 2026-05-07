@@ -83,7 +83,7 @@ visit_append_list(
           VTK::CommonMath
           VTK::CommonTransforms
           VTK::FiltersGeometry
-          zlib)
+          ${ZLIB_LIB})
 
 if(NOT VISIT_DBIO_ONLY)
     visit_append_list(

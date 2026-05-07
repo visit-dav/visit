@@ -71,6 +71,9 @@ bool avtMultiresControlFilter::Equivalent(const AttributeGroup *a)
 //   Modifications:
 //     Eric Brugger, Wed Jul 30 19:50:54 PDT 2014
 //     Modified the class to work with avtDataRepresentation.
+// 
+//     Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//     Send the high order options through as well.
 //
 // ****************************************************************************
 
@@ -95,6 +98,9 @@ avtContract_p avtMultiresControlFilter::ModifyContract(avtContract_p contract)
     avtResolutionSelection* res = new avtResolutionSelection;
 
     res->setResolution(atts.GetResolution());
+    res->setMeshRefinementMethod(atts.GetMeshRefMethod());
+    res->setFieldProjectionMethod(atts.GetFieldProjMethod());
+    res->setRefinementBasisType(atts.GetRefBasisType());
     contract->GetDataRequest()->AddDataSelection(res);
 
     // Attempt to lookup the domain level information.  If it gives this

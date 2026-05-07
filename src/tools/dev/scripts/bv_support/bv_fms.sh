@@ -105,6 +105,26 @@ function build_fms
         vopts="${vopts} -DCONDUIT_DIR=${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
     fi
 
+    # fms needs to find mpi if hdf5 was built with mpi support
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        vopts="${vopts} -DENABLE_MPI:BOOL=ON"
+        vopts="${vopts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
+        vopts="${vopts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
+    fi
+
+    if [[ "$PAR_INCLUDE" != "" ]] ; then
+        vopts="${vopts} -DMPI_C_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+        vopts="${vopts} -DMPI_CXX_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+    fi
+
+    if [[ "$PAR_LIBS" != "" ]] ; then
+        vopts="${vopts} -DMPI_C_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
+        vopts="${vopts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+        vopts="${vopts} -DMPI_CXX_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
+        vopts="${vopts} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+    fi
+
+
     #
     # Call configure
     #

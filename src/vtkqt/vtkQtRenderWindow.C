@@ -13,7 +13,9 @@
 #include <QVTKInteractor.h>
 #include <vtkRenderWindow.h>
 
+
 #include <QApplication>
+#include <QScreen>
 #include <vtkUnsignedCharArray.h>
 
 #ifdef __linux__
@@ -132,6 +134,10 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
     // ownership of the gl widget pointer and deletes it at the
     // appropriate time.
     setCentralWidget(d->gl);
+
+    // set DPI according to the screen the window will be shown on
+    setRenderWindowDPI();
+
 }
 
 vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFlags f) : QMainWindow(parent, f)
@@ -146,6 +152,9 @@ vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFla
     // ownership of the gl widget pointer and deletes it at the
     // appropriate time.
     setCentralWidget(d->gl);
+
+    // set DPI according to the screen the window will be shown on
+    setRenderWindowDPI();
 }
 
 
@@ -391,6 +400,7 @@ vtkQtRenderWindow::hideEvent(QHideEvent *e)
 void
 vtkQtRenderWindow::showEvent(QShowEvent *e)
 {
+    setRenderWindowDPI();
     QMainWindow::showEvent(e);
     if(d->showEventCallback)
         (*d->showEventCallback)(d->showEventCallbackData);
@@ -410,11 +420,16 @@ vtkQtRenderWindow::showEvent(QShowEvent *e)
 //
 // Modifications:
 //
+//  Cyrus Harrison, Mon Nov 10 10:20:38 PST 2025
+//  Call setRenderWindowDPI to detect DPI changes due display window changes
+//
 // ****************************************************************************
 
 void
 vtkQtRenderWindow::resizeEvent(QResizeEvent *re)
 {
+    // force check of current DPI
+    setRenderWindowDPI();
     // Handle the resize and then record the size of the GL widget since that's
     // the size that we care about.
     QMainWindow::resizeEvent(re);
@@ -422,3 +437,53 @@ vtkQtRenderWindow::resizeEvent(QResizeEvent *re)
         d->resizeEventCallback(d->resizeEventData);
 }
 
+// ****************************************************************************
+// Method: vtkQtRenderWindow::moveEvent
+//
+// Purpose:
+//   Method that gets called by qt when a move event occurs.
+//
+// Arguments:
+//   re        A pointer to the Qt move event structure.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Nov 10 10:20:38 PST 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkQtRenderWindow::moveEvent(QMoveEvent *re)
+{
+    setRenderWindowDPI();
+    QMainWindow::moveEvent(re);
+}
+
+// ****************************************************************************
+// Method: vtkQtRenderWindow::setRenderingWindowDPI
+//
+// Purpose:
+//   Method that sets the VTK render window dpi
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Sep 24 09:04:56 PDT 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkQtRenderWindow::setRenderWindowDPI()
+{
+    vtkRenderWindow *render_window = d->gl->renderWindow();
+    // Check DPI vs current screen
+    int current_screen_dpi = qRound(this->screen()->logicalDotsPerInch());
+    int current_render_window_dpi = render_window->GetDPI();
+
+    if(current_screen_dpi != current_render_window_dpi)
+    {
+        // force dpi detection
+        render_window->DetectDPI();
+    }
+}

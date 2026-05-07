@@ -143,7 +143,7 @@ extern "C"
 herr_t GetDataSetName( hid_t gid, const char* name, const H5L_info_t *info, void *op_data )
 {
     H5O_info_t io;
-    herr_t herr = H5Oget_info_by_name( gid, name, &io, H5P_DEFAULT );
+    herr_t herr = H5Oget_info_by_name( gid, name, &io, H5O_INFO_ALL, H5P_DEFAULT );
     if( herr<0 )  return herr;
 
     if( io.type == H5O_TYPE_DATASET )
@@ -159,7 +159,7 @@ extern "C"
 herr_t GetSubgroupName( hid_t gid, const char* name, const H5L_info_t *info, void *op_data )
 {
     H5O_info_t io;
-    herr_t herr = H5Oget_info_by_name( gid, name, &io, H5P_DEFAULT );
+    herr_t herr = H5Oget_info_by_name( gid, name, &io, H5O_INFO_ALL, H5P_DEFAULT );
     if( herr<0 )  return herr;
 
     if( io.type == H5O_TYPE_GROUP )
@@ -3400,13 +3400,44 @@ OpenFile()
 //   return file_id;
     if( file_id_<=0 )
     {
-        file_id_ =  H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
-        if( file_id_<0 )
+        // Sometimes a file has been opened elsewhere. In that case, we need to make sure to open it with the same options.
+        // To accomplish this, we try each one seperately after trying the default.
+        // If in the end none of this works we can give up and throw an error.
+        // This modification makes the plugin more robust to being used from Python scripts that may be utilizing the same files via h5py simultaneously.
+
+
+        file_id_ = H5Fopen(filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+
+        if ( file_id_<0 )
         {
-            string msg = "Failed to open Velodyne plot file: \"";
-            msg += filename_;
-            msg+="\".\n";
-            throw std::runtime_error(msg);
+            // try strong
+            hid_t fapl = H5Pcreate(H5P_FILE_ACCESS);
+            H5Pset_fclose_degree(fapl, H5F_CLOSE_STRONG);
+            file_id_ =  H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl );
+            if( file_id_<0 )
+            {
+                // try weak
+                H5Pset_fclose_degree(fapl, H5F_CLOSE_WEAK);
+                file_id_ =  H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl );
+
+                if ( file_id_<0 )
+                {
+                    //try semi
+                    H5Pset_fclose_degree(fapl, H5F_CLOSE_SEMI);
+                    file_id_ =  H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl );
+
+                    if ( file_id_<0 )
+                    {
+                        H5Eprint2(H5E_DEFAULT, stderr);
+                        string msg = "Failed to open Velodyne plot file: \"";
+                        msg += filename_;
+                        msg+="\".\n";
+                        throw std::runtime_error(msg);
+                    }
+                }
+            }
+
+            H5Pclose(fapl);
         }
     }
     return file_id_;

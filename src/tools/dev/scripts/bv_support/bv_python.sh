@@ -1,7 +1,7 @@
 # *************************************************************************** #
 # Function: check_if_py_module_installed                                      #
 #                                                                             #
-# Purpose: Checks if givne .                       #
+# Purpose: Checks if given module is installed.                               #
 #                                                                             #
 # Programmer: Cyrus Harrison                                                  #
 # Date: Wed Apr 29 15:29:04 PDT 2020                                          #
@@ -27,7 +27,7 @@ function download_py_module
 {
     MOD_FILE=$1
     MOD_URL=$2
- 
+
     if ! test -f ${MOD_FILE} ; then
         download_file ${MOD_FILE} "${MOD_URL}"
         if [[ $? != 0 ]] ; then
@@ -174,7 +174,7 @@ function bv_python_system_python
     # this method uses 'which' to find the full path to system python and it's config command
     TEST=`which python3-config`
     if [ $? == 0 ]
-    then 
+    then
         PYTHON_COMMAND=`which python3`
         PYTHON_CONFIG_COMMAND=$TEST
     else
@@ -228,191 +228,281 @@ function bv_python_alt_python_dir
 
 function bv_python_depends_on
 {
-     pydep=""
+     pydep="ninja"
      if [[ $USE_SYSTEM_PYTHON == "no" ]] ; then
-        pydep="zlib"
+        pydep="${pydep} zlib"
      fi
-     echo $pydep
+     echo ${pydep}
 }
 
 function bv_python_info
 {
     info "bv_python_info"
 
-    # python 3.9
+    # python 3.13
     export PYTHON_FILE_SUFFIX="tgz"
-    export PYTHON_VERSION="3.9.18"
-    export PYTHON_COMPATIBILITY_VERSION="3.9"
+    export PYTHON_VERSION="3.13.9"
+    export PYTHON_COMPATIBILITY_VERSION="3.13"
     export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
     export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-    export PYTHON_SHA256_CHECKSUM="504ce8cfd59addc04c22f590377c6be454ae7406cb1ebf6f5a350149225a9354"
+    export PYTHON_SHA256_CHECKSUM="c4c066af19c98fb7835d473bebd7e23be84f6e9874d47db9e39a68ee5d0ce35c"
 
-    export PY_SETUPTOOLS_FILE="setuptools-68.0.0.tar.gz"
-    export PY_SETUPTOOLS_BUILD_DIR="setuptools-68.0.0"
-    export PY_SETUPTOOLS_SHA256_CHECKSUM=""
+    export PY_SETUPTOOLS_VERSION="80.9.0"
+    export PY_SETUPTOOLS_FILE="setuptools-${PY_SETUPTOOLS_VERSION}.tar.gz"
+    export PY_SETUPTOOLS_BUILD_DIR="setuptools-${PY_SETUPTOOLS_VERSION}"
+    export PY_SETUPTOOLS_SHA256_CHECKSUM="f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c"
 
-    export PY_PILLOW_FILE="Pillow-10.0.0.tar.gz"
-    export PY_PILLOW_BUILD_DIR="Pillow-10.0.0"
-    export PY_PILLOW_SHA256_CHECKSUM=""
+    #needed by pybind11
+    export PY_SCIKIT_BUILDCORE_VERSION="0.11.6"
+    export PY_SCIKIT_BUILDCORE_FILE="scikit_build_core-${PY_SCIKIT_BUILDCORE_VERSION}.tar.gz"
+    export PY_SCIKIT_BUILDCORE_BUILD_DIR="scikit_build_core-${PY_SCIKIT_BUILDCORE_VERSION}"
+    export PY_SCIKIT_BUILDCORE_SHA256_CHECKSUM="5982ccd839735be99cfd3b92a8847c6c196692f476c215da84b79d2ad12f9f1b"
 
-    export PY_REQUESTS_FILE="requests-2.31.0.tar.gz"
-    export PY_REQUESTS_BUILD_DIR="requests-2.31.0"
-    export PY_REQUESTS_SHA256_CHECKSUM=""
+    #needed by pillow
+    export PY_PYBIND11_VERSION="3.0.1"
+    export PY_PYBIND11_FILE="pybind11-${PY_PYBIND11_VERSION}.tar.gz"
+    export PY_PYBIND11_BUILD_DIR="pybind11-${PY_PYBIND11_VERSION}"
+    export PY_PYBIND11_SHA256_CHECKSUM="9c0f40056a016da59bab516efb523089139fcc6f2ba7e4930854c61efb932051"
 
-    export PY_CYTHON_FILE="Cython-3.0.0.tar.gz"
-    export PY_CYTHON_BUILD_DIR="Cython-3.0.0"
-    export PY_CYTHON_SHA256_CHECKSUM=""
+    export PY_PILLOW_VERSION="12.0.0"
+    export PY_PILLOW_FILE="pillow-${PY_PILLOW_VERSION}.tar.gz"
+    export PY_PILLOW_BUILD_DIR="pillow-${PY_PILLOW_VERSION}"
+    export PY_PILLOW_SHA256_CHECKSUM="87d4f8125c9988bfbed67af47dd7a953e2fc7b0cc1e7800ec6d2080d490bb353"
 
-    export PY_NUMPY_FILE="numpy-1.25.1.tar.gz"
-    export PY_NUMPY_BUILD_DIR="numpy-1.25.1"
-    export PY_NUMPY_SHA256_CHECKSUM=""
+    export PY_REQUESTS_VERSION="2.32.5"
+    export PY_REQUESTS_FILE="requests-${PY_REQUESTS_VERSION}.tar.gz"
+    export PY_REQUESTS_BUILD_DIR="requests-${PY_REQUESTS_VERSION}"
+    export PY_REQUESTS_SHA256_CHECKSUM="dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf"
 
-    export PY_MPI4PY_FILE="mpi4py-3.1.4.tar.gz"
-    export PY_MPI4PY_BUILD_DIR="mpi4py-3.1.4"
-    export PY_MPI4PY_SHA256_CHECKSUM=""
+    export PY_CYTHON_VERSION="3.2.1"
+    export PY_CYTHON_FILE="cython-${PY_CYTHON_VERSION}.tar.gz"
+    export PY_CYTHON_BUILD_DIR="cython-${PY_CYTHON_VERSION}"
+    export PY_CYTHON_SHA256_CHECKSUM="2be1e4d0cbdf7f4cd4d9b8284a034e1989b59fd060f6bd4d24bf3729394d2ed8"
 
-    export PY_PACKAGING_FILE="packaging-23.1.tar.gz"
-    export PY_PACKAGING_BUILD_DIR="packaging-23.1"
-    export PY_PACKAGING_SHA256_CHECKSUM=""
+    export PY_MESON_VERSION="1.9.1"
+    export PY_MESON_FILE="meson-${PY_MESON_VERSION}.tar.gz"
+    export PY_MESON_BUILD_DIR="meson-${PY_MESON_VERSION}"
+    export PY_MESON_SHA256_CHECKSUM="4e076606f2afff7881d195574bddcd8d89286f35a17b4977a216f535dc0c74ac"
 
-    export PY_IMAGESIZE_FILE="imagesize-1.4.1.tar.gz"
-    export PY_IMAGESIZE_BUILD_DIR="imagesize-1.4.1"
-    export PY_IMAGESIZE_SHA256_CHECKSUM=""
+    export PY_PYPROJECT_METADATA_VERSION="0.9.1"
+    export PY_PYPROJECT_METADATA_FILE="pyproject_metadata-${PY_PYPROJECT_METADATA_VERSION}.tar.gz"
+    export PY_PYPROJECT_METADATA_BUILD_DIR="pyproject_metadata-${PY_PYPROJECT_METADATA_VERSION}"
+    export PY_PYPROJECT_METADATA_SHA256_CHECKSUM="b8b2253dd1b7062b78cf949a115f02ba7fa4114aabe63fa10528e9e1a954a816"
 
-    export PY_ALABASTER_FILE="alabaster-0.7.13.tar.gz"
-    export PY_ALABASTER_BUILD_DIR="alabaster-0.7.13"
-    export PY_ALABASTER_SHA256_CHECKSUM=""
+    export PY_MESON_PYTHON_VERSION="0.18.0"
+    export PY_MESON_PYTHON_FILE="meson_python-${PY_MESON_PYTHON_VERSION}.tar.gz"
+    export PY_MESON_PYTHON_BUILD_DIR="meson_python-${PY_MESON_PYTHON_VERSION}"
+    export PY_MESON_PYTHON_SHA256_CHECKSUM="c56a99ec9df669a40662fe46960321af6e4b14106c14db228709c1628e23848d"
 
-    export PY_BABEL_FILE="Babel-2.12.1.tar.gz"
-    export PY_BABEL_BUILD_DIR="Babel-2.12.1"
-    export PY_BABEL_SHA256_CHECKSUM=""
+    export PY_NUMPY_VERSION="2.3.4"
+    export PY_NUMPY_FILE="numpy-${PY_NUMPY_VERSION}.tar.gz"
+    export PY_NUMPY_BUILD_DIR="numpy-${PY_NUMPY_VERSION}"
+    export PY_NUMPY_SHA256_CHECKSUM="a7d018bfedb375a8d979ac758b120ba846a7fe764911a64465fd87b8729f4a6a"
 
-    export PY_SNOWBALLSTEMMER_FILE="snowballstemmer-2.2.0.tar.gz"
-    export PY_SNOWBALLSTEMMER_BUILD_DIR="snowballstemmer-2.2.0"
-    export PY_SNOWBALLSTEMMER_SHA256_CHECKSUM=""
+    export PY_MPI4PY_VERSION="4.1.1"
+    export PY_MPI4PY_FILE="mpi4py-${PY_MPI4PY_VERSION}.tar.gz"
+    export PY_MPI4PY_BUILD_DIR="mpi4py-${PY_MPI4PY_VERSION}"
+    export PY_MPI4PY_SHA256_CHECKSUM="eb2c8489bdbc47fdc6b26ca7576e927a11b070b6de196a443132766b3d0a2a22"
 
-    export PY_DOCUTILS_FILE="docutils-0.18.1.tar.gz"
-    export PY_DOCUTILS_BUILD_DIR="docutils-0.18.1"
-    export PY_DOCUTILS_SHA256_CHECKSUM=""
+    export PY_PACKAGING_VERSION="25.0"
+    export PY_PACKAGING_FILE="packaging-${PY_PACKAGING_VERSION}.tar.gz"
+    export PY_PACKAGING_BUILD_DIR="packaging-${PY_PACKAGING_VERSION}"
+    export PY_PACKAGING_SHA256_CHECKSUM="d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"
 
-    export PY_PYGMENTS_FILE="Pygments-2.15.1.tar.gz"
-    export PY_PYGMENTS_BUILD_DIR="Pygments-2.15.1"
-    export PY_PYGMENTS_SHA256_CHECKSUM=""
+    export PY_IMAGESIZE_VERSION="1.4.1"
+    export PY_IMAGESIZE_FILE="imagesize-${PY_IMAGESIZE_VERSION}.tar.gz"
+    export PY_IMAGESIZE_BUILD_DIR="imagesize-${PY_IMAGESIZE_VERSION}"
+    export PY_IMAGESIZE_SHA256_CHECKSUM="69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a"
 
-    export PY_JINJA2_FILE="Jinja2-3.1.2.tar.gz"
-    export PY_JINJA2_BUILD_DIR="Jinja2-3.1.2"
-    export PY_JINJA2_SHA256_CHECKSUM=""
+    export PY_ALABASTER_VERSION="1.0.0"
+    export PY_ALABASTER_FILE="alabaster-${PY_ALABASTER_VERSION}.tar.gz"
+    export PY_ALABASTER_BUILD_DIR="alabaster-${PY_ALABASTER_VERSION}"
+    export PY_ALABASTER_SHA256_CHECKSUM="c00dca57bca26fa62a6d7d0a9fcce65f3e026e9bfe33e9c538fd3fbb2144fd9e"
 
-    export PY_SPHINXCONTRIB_QTHELP_FILE="sphinxcontrib-qthelp-1.0.3.tar.gz"
-    export PY_SPHINXCONTRIB_QTHELP_BUILD_DIR="sphinxcontrib-qthelp-1.0.3"
-    export PY_SPHINXCONTRIB_QTHELP_SHA256_CHECKSUM=""
+    export PY_BABEL_VERSION="2.17.0"
+    export PY_BABEL_FILE="babel-${PY_BABEL_VERSION}.tar.gz"
+    export PY_BABEL_BUILD_DIR="babel-${PY_BABEL_VERSION}"
+    export PY_BABEL_SHA256_CHECKSUM="0c54cffb19f690cdcc52a3b50bcbf71e07a808d1c80d549f2459b9d2cf0afb9d"
 
-    export PY_SPHINXCONTRIB_SERIALIZINGHTML_FILE="sphinxcontrib-serializinghtml-1.1.5.tar.gz"
-    export PY_SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR="sphinxcontrib-serializinghtml-1.1.5"
-    export PY_SPHINXCONTRIB_SERIALIZINGHTML_SHA256_CHECKSUM=""
+    export PY_COLORAMA_VERSION="0.4.6"
+    export PY_COLORAMA_FILE="colorama-${PY_COLORAMA_VERSION}.tar.gz"
+    export PY_COLORAMA_BUILD_DIR="colorama-${PY_COLORAMA_VERSION}"
+    export PY_COLORAMA_SHA256_CHECKSUM="08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"
 
-    export PY_SPHINXCONTRIB_HTMLHELP_FILE="sphinxcontrib-htmlhelp-2.0.1.tar.gz"
-    export PY_SPHINXCONTRIB_HTMLHELP_BUILD_DIR="sphinxcontrib-htmlhelp-2.0.1"
-    export PY_SPHINXCONTRIB_HTMLHELP_SHA256_CHECKSUM=""
+    export PY_ROMAN_NUMERALS_VERSION="3.1.0"
+    export PY_ROMAN_NUMERALS_FILE="roman_numerals-${PY_ROMAN_NUMERALS_VERSION}.tar.gz"
+    export PY_ROMAN_NUMERALS_BUILD_DIR="roman_numerals-${PY_ROMAN_NUMERALS_VERSION}"
+    export PY_ROMAN_NUMERALS_SHA256_CHECKSUM="384e36fc1e8d4bd361bdb3672841faae7a345b3f708aae9895d074c878332551"
 
-    export PY_SPHINXCONTRIB_JSMATH_FILE="sphinxcontrib-jsmath-1.0.1.tar.gz"
-    export PY_SPHINXCONTRIB_JSMATH_BUILD_DIR="sphinxcontrib-jsmath-1.0.1"
+    export PY_SNOWBALLSTEMMER_VERSION="3.0.1"
+    export PY_SNOWBALLSTEMMER_FILE="snowballstemmer-${PY_SNOWBALLSTEMMER_VERSION}.tar.gz"
+    export PY_SNOWBALLSTEMMER_BUILD_DIR="snowballstemmer-${PY_SNOWBALLSTEMMER_VERSION}"
+    export PY_SNOWBALLSTEMMER_SHA256_CHECKSUM="6d5eeeec8e9f84d4d56b847692bacf79bc2c8e90c7f80ca4444ff8b6f2e52895"
+
+    export PY_DOCUTILS_VERSION="0.21.2"
+    export PY_DOCUTILS_FILE="docutils-${PY_DOCUTILS_VERSION}.tar.gz"
+    export PY_DOCUTILS_BUILD_DIR="docutils-${PY_DOCUTILS_VERSION}"
+    export PY_DOCUTILS_SHA256_CHECKSUM="3a6b18732edf182daa3cd12775bbb338cf5691468f91eeeb109deff6ebfa986f"
+
+    export PY_PYGMENTS_VERSION="2.19.1"
+    export PY_PYGMENTS_FILE="pygments-${PY_PYGMENTS_VERSION}.tar.gz"
+    export PY_PYGMENTS_BUILD_DIR="pygments-${PY_PYGMENTS_VERSION}"
+    export PY_PYGMENTS_SHA256_CHECKSUM="61c16d2a8576dc0649d9f39e089b5f02bcd27fba10d8fb4dcc28173f7a45151f"
+
+    export PY_JINJA2_VERSION="3.1.6"
+    export PY_JINJA2_FILE="jinja2-${PY_JINJA2_VERSION}.tar.gz"
+    export PY_JINJA2_BUILD_DIR="jinja2-${PY_JINJA2_VERSION}"
+    export PY_JINJA2_SHA256_CHECKSUM="0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d"
+
+    export PY_SPHINXCONTRIB_QTHELP_VERSION="2.0.0"
+    export PY_SPHINXCONTRIB_QTHELP_FILE="sphinxcontrib_qthelp-${PY_SPHINXCONTRIB_QTHELP_VERSION}.tar.gz"
+    export PY_SPHINXCONTRIB_QTHELP_BUILD_DIR="sphinxcontrib_qthelp-${PY_SPHINXCONTRIB_QTHELP_VERSION}"
+    export PY_SPHINXCONTRIB_QTHELP_SHA256_CHECKSUM="4fe7d0ac8fc171045be623aba3e2a8f613f8682731f9153bb2e40ece16b9bbab"
+
+    export PY_SPHINXCONTRIB_SERIALIZINGHTML_VERSION="2.0.0"
+    export PY_SPHINXCONTRIB_SERIALIZINGHTML_FILE="sphinxcontrib_serializinghtml-${PY_SPHINXCONTRIB_SERIALIZINGHTML_VERSION}.tar.gz"
+    export PY_SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR="sphinxcontrib_serializinghtml-${PY_SPHINXCONTRIB_SERIALIZINGHTML_VERSION}"
+    export PY_SPHINXCONTRIB_SERIALIZINGHTML_SHA256_CHECKSUM="e9d912827f872c029017a53f0ef2180b327c3f7fd23c87229f7a8e8b70031d4d"
+
+    export PY_SPHINXCONTRIB_HTMLHELP_VERSION="2.1.0"
+    export PY_SPHINXCONTRIB_HTMLHELP_FILE="sphinxcontrib_htmlhelp-${PY_SPHINXCONTRIB_HTMLHELP_VERSION}.tar.gz"
+    export PY_SPHINXCONTRIB_HTMLHELP_BUILD_DIR="sphinxcontrib_htmlhelp-${PY_SPHINXCONTRIB_HTMLHELP_VERSION}"
+    export PY_SPHINXCONTRIB_HTMLHELP_SHA256_CHECKSUM="c9e2916ace8aad64cc13a0d233ee22317f2b9025b9cf3295249fa985cc7082e9"
+
+    export PY_SPHINXCONTRIB_JSMATH_VERSION="1.0.1"
+    export PY_SPHINXCONTRIB_JSMATH_FILE="sphinxcontrib-jsmath-${PY_SPHINXCONTRIB_JSMATH_VERSION}.tar.gz"
+    export PY_SPHINXCONTRIB_JSMATH_BUILD_DIR="sphinxcontrib-jsmath-${PY_SPHINXCONTRIB_JSMATH_VERSION}"
     export PY_SPHINXCONTRIB_JSMATH_SHA256_CHECKSUM="a9925e4a4587247ed2191a22df5f6970656cb8ca2bd6284309578f2153e0c4b8"
 
-    export PY_SPHINXCONTRIB_DEVHELP_FILE="sphinxcontrib-devhelp-1.0.2.tar.gz"
-    export PY_SPHINXCONTRIB_DEVHELP_BUILD_DIR="sphinxcontrib-devhelp-1.0.2"
-    export PY_SPHINXCONTRIB_DEVHELP_SHA256_CHECKSUM=""
+    export PY_SPHINXCONTRIB_DEVHELP_VERSION="2.0.0"
+    export PY_SPHINXCONTRIB_DEVHELP_FILE="sphinxcontrib_devhelp-${PY_SPHINXCONTRIB_DEVHELP_VERSION}.tar.gz"
+    export PY_SPHINXCONTRIB_DEVHELP_BUILD_DIR="sphinxcontrib_devhelp-${PY_SPHINXCONTRIB_DEVHELP_VERSION}"
+    export PY_SPHINXCONTRIB_DEVHELP_SHA256_CHECKSUM="411f5d96d445d1d73bb5d52133377b4248ec79db5c793ce7dbe59e074b4dd1ad"
 
-    export PY_SPHINXCONTRIB_APPLEHELP_FILE="sphinxcontrib-applehelp-1.0.4.tar.gz"
-    export PY_SPHINXCONTRIB_APPLEHELP_BUILD_DIR="sphinxcontrib-applehelp-1.0.4"
-    export PY_SPHINXCONTRIB_APPLEHELP_SHA256_CHECKSUM=""
+    export PY_SPHINXCONTRIB_APPLEHELP_VERSION="2.0.0"
+    export PY_SPHINXCONTRIB_APPLEHELP_FILE="sphinxcontrib_applehelp-${PY_SPHINXCONTRIB_APPLEHELP_VERSION}.tar.gz"
+    export PY_SPHINXCONTRIB_APPLEHELP_BUILD_DIR="sphinxcontrib_applehelp-${PY_SPHINXCONTRIB_APPLEHELP_VERSION}"
+    export PY_SPHINXCONTRIB_APPLEHELP_SHA256_CHECKSUM="2f29ef331735ce958efa4734873f084941970894c6090408b079c61b2e1c06d1"
 
-    export PY_URLLIB3_FILE="urllib3-2.0.3.tar.gz"
-    export PY_URLLIB3_BUILD_DIR="urllib3-2.0.3"
-    export PY_URLLIB3_SHA256_CHECKSUM=""
+    export PY_URLLIB3_VERSION="2.5.0"
+    export PY_URLLIB3_FILE="urllib3-${PY_URLLIB3_VERSION}.tar.gz"
+    export PY_URLLIB3_BUILD_DIR="urllib3-${PY_URLLIB3_VERSION}"
+    export PY_URLLIB3_SHA256_CHECKSUM="3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760"
 
-    export PY_IDNA_FILE="idna-3.4.tar.gz"
-    export PY_IDNA_BUILD_DIR="idna-3.4"
-    export PY_IDNA_SHA256_CHECKSUM=""
- 
-    export PY_CHARSET_NORMALIZER_FILE="charset-normalizer-3.2.0.tar.gz"
-    export PY_CHARSET_NORMALIZER_BUILD_DIR="charset-normalizer-3.2.0"
-    export PY_CHARSET_NORMALIZER_SHA256_CHECKSUM=""
+    export PY_IDNA_VERSION="3.11"
+    export PY_IDNA_FILE="idna-${PY_IDNA_VERSION}.tar.gz"
+    export PY_IDNA_BUILD_DIR="idna-${PY_IDNA_VERSION}"
+    export PY_IDNA_SHA256_CHECKSUM="795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902"
 
-    export PY_CERTIFI_FILE="python-certifi-2025.07.09.tar.gz"
-    export PY_CERTIFI_BUILD_DIR="python-certifi-2025.07.09"
-    export PY_CERTIFI_SHA256_CHECKSUM=""
+    export PY_CHARSET_NORMALIZER_VERSION="3.4.4"
+    export PY_CHARSET_NORMALIZER_FILE="charset_normalizer-${PY_CHARSET_NORMALIZER_VERSION}.tar.gz"
+    export PY_CHARSET_NORMALIZER_BUILD_DIR="charset_normalizer-${PY_CHARSET_NORMALIZER_VERSION}"
+    export PY_CHARSET_NORMALIZER_SHA256_CHECKSUM="94537985111c35f28720e43603b8e7b43a6ecfb2ce1d3058bbe955b73404e21a"
 
-    export PY_FLITCORE_FILE="flit_core-3.9.0.tar.gz"
-    export PY_FLITCORE_BUILD_DIR="flit_core-3.9.0"
-    export PY_FLITCORE_SHA256_CHECKSUM=""
+    export PY_CERTIFI_VERSION="2025.11.12"
+    export PY_CERTIFI_FILE="certifi-${PY_CERTIFI_VERSION}.tar.gz"
+    export PY_CERTIFI_BUILD_DIR="certifi-${PY_CERTIFI_VERSION}"
+    export PY_CERTIFI_SHA256_CHECKSUM="d8ab5478f2ecd78af242878415affce761ca6bc54a22a27e026d7c25357c3316"
 
-    export PY_TOML_FILE="toml-0.10.2.tar.gz"
-    export PY_TOML_BUILD_DIR="toml-0.10.2"
-    export PY_TOML_SHA256_CHECKSUM=""
+    export PY_FLITCORE_VERSION="3.12.0"
+    export PY_FLITCORE_FILE="flit_core-${PY_FLITCORE_VERSION}.tar.gz"
+    export PY_FLITCORE_BUILD_DIR="flit_core-${PY_FLITCORE_VERSION}"
+    export PY_FLITCORE_SHA256_CHECKSUM="18f63100d6f94385c6ed57a72073443e1a71a4acb4339491615d0f16d6ff01b2"
+
+    export PY_TOML_VERSION="0.10.2"
+    export PY_TOML_FILE="toml-${PY_TOML_VERSION}.tar.gz"
+    export PY_TOML_BUILD_DIR="toml-${PY_TOML_VERSION}"
+    export PY_TOML_SHA256_CHECKSUM="b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"
 
     # and yes, this is a different one from toml!
-    export PY_TOMLI_FILE="tomli-2.0.1.tar.gz"
-    export PY_TOMLI_BUILD_DIR="tomli-2.0.1"
-    export PY_TOMLI_SHA256_CHECKSUM=""
+    export PY_TOMLI_VERSION="2.3.0"
+    export PY_TOMLI_FILE="tomli-${PY_TOMLI_VERSION}.tar.gz"
+    export PY_TOMLI_BUILD_DIR="tomli-${PY_TOMLI_VERSION}"
+    export PY_TOMLI_SHA256_CHECKSUM="64be704a875d2a59753d80ee8a533c3fe183e3f06807ff7dc2232938ccb01549"
 
-    export PY_PATHSPEC_FILE="pathspec-0.11.2.tar.gz"
-    export PY_PATHSPEC_BUILD_DIR="pathspec-0.11.2"
-    export PY_PATHSPEC_SHA256_CHECKSUM=""
+    export PY_PATHSPEC_VERSION="0.12.1"
+    export PY_PATHSPEC_FILE="pathspec-${PY_PATHSPEC_VERSION}.tar.gz"
+    export PY_PATHSPEC_BUILD_DIR="pathspec-${PY_PATHSPEC_VERSION}"
+    export PY_PATHSPEC_SHA256_CHECKSUM="a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712"
 
-    export PY_WHEEL_FILE="wheel-0.41.1.tar.gz"
-    export PY_WHEEL_BUILD_DIR="wheel-0.41.1"
-    export PY_WHEEL_SHA256_CHECKSUM=""
+    export PY_WHEEL_VERSION="0.45.1"
+    export PY_WHEEL_FILE="wheel-${PY_WHEEL_VERSION}.tar.gz"
+    export PY_WHEEL_BUILD_DIR="wheel-${PY_WHEEL_VERSION}"
+    export PY_WHEEL_SHA256_CHECKSUM="661e1abd9198507b1409a20c02106d9670b2576e916d58f520316666abca6729"
 
-    export PY_CALVER_FILE="calver-2022.6.26.tar.gz"
-    export PY_CALVER_BUILD_DIR="calver-2022.6.26"
-    export PY_CALVER_SHA256_CHECKSUM=""
+    export PY_CALVER_VERSION="2025.10.20"
+    export PY_CALVER_FILE="calver-${PY_CALVER_VERSION}.tar.gz"
+    export PY_CALVER_BUILD_DIR="calver-${PY_CALVER_VERSION}"
+    export PY_CALVER_SHA256_CHECKSUM="c98b376c2424642224d456b2f70c51402343e008c63d204634665e1a2a2835f5"
 
-    export PY_TROVECLASSIFIERS_FILE="trove-classifiers-2023.8.7.tar.gz"
-    export PY_TROVECLASSIFIERS_BUILD_DIR="trove-classifiers-2023.8.7"
-    export PY_TROVECLASSIFIERS_SHA256_CHECKSUM=""
+    export PY_TROVECLASSIFIERS_VERSION="2025.9.11.17"
+    export PY_TROVECLASSIFIERS_FILE="trove_classifiers-${PY_TROVECLASSIFIERS_VERSION}.tar.gz"
+    export PY_TROVECLASSIFIERS_BUILD_DIR="trove_classifiers-${PY_TROVECLASSIFIERS_VERSION}"
+    export PY_TROVECLASSIFIERS_SHA256_CHECKSUM="931ca9841a5e9c9408bc2ae67b50d28acf85bef56219b56860876dd1f2d024dd"
 
-    export PY_EDITABLES_FILE="editables-0.5.tar.gz"
-    export PY_EDITABLES_BUILD_DIR="editables-0.5"
-    export PY_EDITABLES_SHA256_CHECKSUM=""
+    export PY_EDITABLES_VERSION="0.5"
+    export PY_EDITABLES_FILE="editables-${PY_EDITABLES_VERSION}.tar.gz"
+    export PY_EDITABLES_BUILD_DIR="editables-${PY_EDITABLES_VERSION}"
+    export PY_EDITABLES_SHA256_CHECKSUM="309627d9b5c4adc0e668d8c6fa7bac1ba7c8c5d415c2d27f60f081f8e80d1de2"
 
-    export PY_PLUGGY_FILE="pluggy-1.2.0.tar.gz"
-    export PY_PLUGGY_BUILD_DIR="pluggy-1.2.0"
-    export PY_PLUGGY_SHA256_CHECKSUM=""
+    export PY_PLUGGY_VERSION="1.6.0"
+    export PY_PLUGGY_FILE="pluggy-${PY_PLUGGY_VERSION}.tar.gz"
+    export PY_PLUGGY_BUILD_DIR="pluggy-${PY_PLUGGY_VERSION}"
+    export PY_PLUGGY_SHA256_CHECKSUM="7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3"
 
-    export PY_HATCHLING_FILE="hatchling-1.18.0.tar.gz"
-    export PY_HATCHLING_BUILD_DIR="hatchling-1.18.0"
-    export PY_HATCHLING_SHA256_CHECKSUM=""
+    export PY_HATCHLING_VERSION="1.27.0"
+    export PY_HATCHLING_FILE="hatchling-${PY_HATCHLING_VERSION}.tar.gz"
+    export PY_HATCHLING_BUILD_DIR="hatchling-${PY_HATCHLING_VERSION}"
+    export PY_HATCHLING_SHA256_CHECKSUM="971c296d9819abb3811112fc52c7a9751c8d381898f36533bb16f9791e941fd6"
 
-    export PY_MARKUPSAFE_FILE="MarkupSafe-2.1.3.tar.gz"
-    export PY_MARKUPSAFE_BUILD_DIR="MarkupSafe-2.1.3"
-    export PY_MARKUPSAFE_SHA256_CHECKSUM=""
+    # needed by urllib3
+    export PY_HATCH_VCS_VERSION="0.5.0"
+    export PY_HATCH_VCS_FILE="hatch_vcs-${PY_HATCH_VCS_VERSION}.tar.gz"
+    export PY_HATCH_VCS_BUILD_DIR="hatch_vcs-${PY_HATCH_VCS_VERSION}"
+    export PY_HATCH_VCS_SHA256_CHECKSUM="0395fa126940340215090c344a2bf4e2a77bcbe7daab16f41b37b98c95809ff9"
 
-    export PY_ZIPP_FILE="zipp-3.16.2.tar.gz"
-    export PY_ZIPP_BUILD_DIR="zipp-3.16.2"
-    export PY_ZIPP_SHA256_CHECKSUM=""
+    # needed by urllib3
+    export PY_SETUPTOOLS_SCM_VERSION="9.2.2"
+    export PY_SETUPTOOLS_SCM_FILE="setuptools_scm-${PY_SETUPTOOLS_SCM_VERSION}.tar.gz"
+    export PY_SETUPTOOLS_SCM_BUILD_DIR="setuptools_scm-${PY_SETUPTOOLS_SCM_VERSION}"
+    export PY_SETUPTOOLS_SCM_SHA256_CHECKSUM="1c674ab4665686a0887d7e24c03ab25f24201c213e82ea689d2f3e169ef7ef57"
+
+    export PY_MARKUPSAFE_VERSION="3.0.3"
+    export PY_MARKUPSAFE_FILE="markupsafe-${PY_MARKUPSAFE_VERSION}.tar.gz"
+    export PY_MARKUPSAFE_BUILD_DIR="markupsafe-${PY_MARKUPSAFE_VERSION}"
+    export PY_MARKUPSAFE_SHA256_CHECKSUM="722695808f4b6457b320fdc131280796bdceb04ab50fe1795cd540799ebe1698"
+
+    export PY_ZIPP_VERSION="3.23.0"
+    export PY_ZIPP_FILE="zipp-${PY_ZIPP_VERSION}.tar.gz"
+    export PY_ZIPP_BUILD_DIR="zipp-${PY_ZIPP_VERSION}"
+    export PY_ZIPP_SHA256_CHECKSUM="a07157588a12518c9d4034df3fbbee09c814741a33ff63c05fa29d26a2404166"
 
     export PY_IMPORTLIB_METADATA_URL=""
-    export PY_IMPORTLIB_METADATA_FILE="importlib_metadata-6.8.0.tar.gz"
-    export PY_IMPORTLIB_METADATA_BUILD_DIR="importlib_metadata-6.8.0"
-    export PY_IMPORTLIB_METADATA_SHA256_CHECKSUM=""
+    export PY_IMPORTLIB_METADATA_VERSION="8.7.0"
+    export PY_IMPORTLIB_METADATA_FILE="importlib_metadata-${PY_IMPORTLIB_METADATA_VERSION}.tar.gz"
+    export PY_IMPORTLIB_METADATA_BUILD_DIR="importlib_metadata-${PY_IMPORTLIB_METADATA_VERSION}"
+    export PY_IMPORTLIB_METADATA_SHA256_CHECKSUM="d13b81ad223b890aa16c5471f2ac3056cf76c5f10f82d6f9292f0b415f389000"
 
-    export PY_SPHINX_FILE="Sphinx-7.0.1.tar.gz"
-    export PY_SPHINX_BUILD_DIR="Sphinx-7.0.1"
-    export PY_SPHINX_SHA256_CHECKSUM=""
+    export PY_SPHINX_VERSION="8.2.3"
+    export PY_SPHINX_FILE="sphinx-${PY_SPHINX_VERSION}.tar.gz"
+    export PY_SPHINX_BUILD_DIR="sphinx-${PY_SPHINX_VERSION}"
+    export PY_SPHINX_SHA256_CHECKSUM="398ad29dee7f63a75888314e9424d40f52ce5a6a87ae88e7071e80af296ec348"
 
-    export PY_SPHINX_RTD_THEME_FILE="sphinx_rtd_theme-1.2.2.tar.gz"
-    export PY_SPHINX_RTD_THEME_BUILD_DIR="sphinx_rtd_theme-1.2.2"
-    export PY_SPHINX_RTD_THEME_SHA256_CHECKSUM=""
+    export PY_SPHINX_RTD_THEME_VERSION="3.0.2"
+    export PY_SPHINX_RTD_THEME_FILE="sphinx_rtd_theme-${PY_SPHINX_RTD_THEME_VERSION}.tar.gz"
+    export PY_SPHINX_RTD_THEME_BUILD_DIR="sphinx_rtd_theme-${PY_SPHINX_RTD_THEME_VERSION}"
+    export PY_SPHINX_RTD_THEME_SHA256_CHECKSUM="b7457bc25dda723b20b086a670b9953c859eab60a2a03ee8eb2bb23e176e5f85"
 
     # needed by sphinx_rtd_theme
-    export PY_SPHINXCONTRIB_JQUERY_FILE="sphinxcontrib-jquery-4.1.tar.gz"
-    export PY_SPHINXCONTRIB_JQUERY_BUILD_DIR="sphinxcontrib-jquery-4.1"
-    export PY_SPHINXCONTRIB_JQUERY_SHA256_CHECKSUM=""
+    export PY_SPHINXCONTRIB_JQUERY_VERSION="4.1"
+    export PY_SPHINXCONTRIB_JQUERY_FILE="sphinxcontrib-jquery-${PY_SPHINXCONTRIB_JQUERY_VERSION}.tar.gz"
+    export PY_SPHINXCONTRIB_JQUERY_BUILD_DIR="sphinxcontrib-jquery-${PY_SPHINXCONTRIB_JQUERY_VERSION}"
+    export PY_SPHINXCONTRIB_JQUERY_SHA256_CHECKSUM="1620739f04e36a2c779f1a131a2dfd49b2fd07351bf1968ced074365933abc7a"
 
-    export PY_SPHINX_TABS_FILE="sphinx-tabs-3.4.1.tar.gz"
-    export PY_SPHINX_TABS_BUILD_DIR="sphinx-tabs-3.4.1"
-    export PY_SPHINX_TABS_SHA256_CHECKSUM=""
+    export PY_SPHINX_TABS_VERSION="3.4.7"
+    export PY_SPHINX_TABS_FILE="sphinx-tabs-${PY_SPHINX_TABS_VERSION}.tar.gz"
+    export PY_SPHINX_TABS_BUILD_DIR="sphinx-tabs-${PY_SPHINX_TABS_VERSION}"
+    export PY_SPHINX_TABS_SHA256_CHECKSUM="991ad4a424ff54119799ba1491701aa8130dd43509474aef45a81c42d889784d"
 }
 
 function bv_python_print
@@ -491,8 +581,13 @@ function bv_python_ensure
                     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
                         # numpy
                         download_py_module ${PY_CYTHON_FILE} ${PY_CYTHON_URL}
+                        download_py_module ${PY_PYPROJECT_METADATA_FILE} ${PY_PyPROJECT_METADATA_URL}
+                        download_py_module ${PY_MESON_FILE} ${PY_MESON_URL}
+                        download_py_module ${PY_MESON_PYTHON_FILE} ${PY_MESON_PYTHON_URL}
                         download_py_module ${PY_NUMPY_FILE} ${PY_NUMPY_URL}
                         # Pillow
+                        download_py_module ${PY_PYBIND11_FILE} ${PY_PYBIND11_URL}
+                        download_py_module ${PY_SCIKIT_BUILDCORE_FILE} ${PY_SCIKIT_BUILDCORE_URL}
                         download_py_module ${PY_PILLOW_FILE} ${PY_PILLOW_URL}
                         # mpi4py
                         if [[ "$PY_BUILD_MPI4PY" == "yes" ]]; then
@@ -510,6 +605,8 @@ function bv_python_ensure
                             download_py_module ${PY_EDITABLES_FILE} ${PY_EDITABLES_URL}
                             download_py_module ${PY_PLUGGY_FILE} ${PY_PLUGGY_URL}
                             download_py_module ${PY_HATCHLING_FILE} ${PY_HATCHLING_URL}
+                            download_py_module ${PY_HATCH_VCS_FILE} ${PY_HATCH_VCS_URL}
+                            download_py_module ${PY_SETUPTOOLS_SCM_FILE} ${PY_SETUPTOOLS_SCM_URL}
                             download_py_module ${PY_URLLIB3_FILE} ${PY_URLLIB3_URL}
                             download_py_module ${PY_IDNA_FILE} ${PY_IDNA_URL}
                             download_py_module ${PY_CHARSET_NORMALIZER_FILE} ${PY_CHARSET_NORMALIZER_URL}
@@ -519,6 +616,8 @@ function bv_python_ensure
                             download_py_module ${PY_IMAGESIZE_FILE} ${PY_IMAGESIZE_URL}
                             download_py_module ${PY_ALABASTER_FILE} ${PY_ALABASTER_URL}
                             download_py_module ${PY_BABEL_FILE} ${PY_BABEL_URL}
+                            download_py_module ${PY_COLORAMA_FILE} ${PY_COLORAMA_URL}
+                            download_py_module ${PY_ROMAN_NUMERALS_FILE} ${PY_ROMAN_NUMERALS_URL}
                             download_py_module ${PY_SNOWBALLSTEMMER_FILE} ${PY_SNOWBALLSTEMMER_URL}
                             download_py_module ${PY_DOCUTILS_FILE} ${PY_DOCUTILS_URL}
                             download_py_module ${PY_PYGMENTS_FILE} ${PY_PYGMENTS_URL}
@@ -557,7 +656,7 @@ function bv_python_ensure
 
 function apply_python_patch
 {
-    # no patches for 3.9
+    # no patches for 3.13
     return 0
 }
 
@@ -667,13 +766,15 @@ function build_python
     cd "$START_DIR"
     info "Done with Python"
 
+    # ensure packages can find cmake, ninja, meson (in python dir)
+    export PATH=${CMAKE_INSTALL}:${NINJA_INSTALL_DIR}/bin:${VISIT_PYTHON_DIR}/bin:$PATH
 
     # wheel and its dependencies
     download_py_module ${PY_FLITCORE_FILE} ${PY_FLITCORE_URL}
     if test $? -ne 0 ; then
         return 1
     fi
-  
+
     download_py_module ${PY_WHEEL_FILE} ${PY_WHEEL_URL}
     if [[ $? != 0 ]] ; then
         return 1
@@ -729,8 +830,131 @@ function build_python
 # *************************************************************************** #
 function build_pillow
 {
+    # download all pkgs first
+    download_py_module ${PY_PATHSPEC_FILE} ${PY_PATHSPEC_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_PLUGGY_FILE} ${PY_PLUGGY_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_TROVECLASSIFIERS_FILE} ${PY_TROVECLASSIFIERS_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_HATCHLING_FILE} ${PY_HATCHLING_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_HATCH_VCS_FILE} ${PY_HATCH_VCS_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_SETUPTOOLS_SCM_FILE} ${PY_SETUPTOOLS_SCM_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_SCIKIT_BUILDCORE_FILE} ${PY_SCIKIT_BUILDCORE_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_PYBIND11_FILE} ${PY_PYBIND11_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
     download_py_module ${PY_PILLOW_FILE} ${PY_PILLOW_URL}
-    if [[ $? != 0 ]] ; then
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+
+    # exract and install each pkg
+    extract_py_module ${PY_PATHSPEC_BUILD_DIR} ${PY_PATHSPEC_FILE} "pathspec"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_PATHSPEC_BUILD_DIR} "pathspec"
+    if test $? -ne 0 ; then
+          return 1
+    fi
+
+    extract_py_module ${PY_PLUGGY_BUILD_DIR} ${PY_PLUGGY_FILE} "pluggy"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_PLUGGY_BUILD_DIR} "pluggy"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_TROVECLASSIFIERS_BUILD_DIR} ${PY_TROVECLASSIFIERS_FILE} "trove_classifiers"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_TROVECLASSIFIERS_BUILD_DIR} "trove_classifiers"
+    if test $? -ne 0 ; then
+          return 1
+    fi
+
+    extract_py_module ${PY_HATCHLING_BUILD_DIR} ${PY_HATCHLING_FILE} "hatchling"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_HATCHLING_BUILD_DIR} "hatchling"
+    if test $? -ne 0 ; then
+          return 1
+    fi
+
+    extract_py_module ${PY_HATCH_VCS_BUILD_DIR} ${PY_HATCH_VCS_FILE} "hatch_vcs"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_HATCH_VCS_BUILD_DIR} "hatch_vcs"
+    if test $? -ne 0 ; then
+          return 1
+    fi
+
+    extract_py_module ${PY_SETUPTOOLS_SCM_BUILD_DIR} ${PY_SETUPTOOLS_SCM_FILE} "setuptools_scm"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_SETUPTOOLS_SCM_BUILD_DIR} "setuptools_scm"
+    if test $? -ne 0 ; then
+          return 1
+    fi
+
+    extract_py_module ${PY_SCIKIT_BUILDCORE_BUILD_DIR} ${PY_SCIKIT_BUILDCORE_FILE} "scikit_build_core"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_SCIKIT_BUILDCORE_BUILD_DIR} "scikit_build_core"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_PYBIND11_BUILD_DIR} ${PY_PYBIND11_FILE} "pybind11"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_PYBIND11_BUILD_DIR} "pybind11"
+    if test $? -ne 0 ; then
         return 1
     fi
 
@@ -757,12 +981,14 @@ function build_pillow
 
     info "Building Pillow ...\n" \
     set -x
+
+    configSettings="-C webp=disable -C freetype=disable -C lcms=disable -C tiff=disable -C xcb=disable -C jpeg2000=disable -C jpeg=disable"
     CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS="${PYEXT_CFLAGS}" \
      CXXFLAGS="${PYEXT_CXXFLAGS}" \
      LDFLAGS="${PYEXT_LDFLAGS}" \
-     ${PYTHON_COMMAND} ./setup.py build_ext --disable-webp --disable-webpmux --disable-freetype --disable-lcms --disable-tiff --disable-xcb --disable-jpeg2000 --disable-jpeg install --prefix="${PYHOME}" --single-version-externally-managed --record record.txt
-    set +x
+    ${PYTHON_COMMAND} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation --no-binary :all: $configSettings .
 
+    set +x
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not build and install Pillow"
@@ -784,6 +1010,7 @@ function build_pillow
 # *************************************************************************** #
 function build_requests
 {
+    # download all modules first, for quicker bailout if there is a download failure
     download_py_module ${PY_CERTIFI_FILE} ${PY_CERTIFIY_URL}
     if test $? -ne 0 ; then
         return 1
@@ -799,37 +1026,12 @@ function build_requests
         return 1
     fi
 
-    download_py_module ${PY_PATHSPEC_FILE} ${PY_PATHSPEC_URL}
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
     download_py_module ${PY_CALVER_FILE} ${PY_TCALVER_URL}
     if test $? -ne 0 ; then
         return 1
     fi
 
-    download_py_module ${PY_TROVECLASSIFIERS_FILE} ${PY_TROVECLASSIFIERS_URL}
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    download_py_module ${PY_PACKAGING_FILE} ${PY_PACKAGING_URL}
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
     download_py_module ${PY_EDITABLES_FILE} ${PY_EDITABLES_URL}
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    download_py_module ${PY_PLUGGY_FILE} ${PY_PLUGGY_URL}
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    download_py_module ${PY_HATCHLING_FILE} ${PY_HATCHLING_URL}
     if test $? -ne 0 ; then
         return 1
     fi
@@ -849,7 +1051,19 @@ function build_requests
         return 1
     fi
 
+    download_py_module ${PY_REQUESTS_FILE} ${PY_REQUESTS_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+
+    # extract and install each pkg, for quicker bailout if one fails
     extract_py_module ${PY_CERTIFI_BUILD_DIR} ${PY_CERTIFI_FILE} "certifi"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_CERTIFI_BUILD_DIR} "certifi"
     if test $? -ne 0 ; then
         return 1
     fi
@@ -859,14 +1073,19 @@ function build_requests
         return 1
     fi
 
+    install_py_module ${PY_TOML_BUILD_DIR} "toml"
+    if test $? -ne 0 ; then
+          return 1
+    fi
+
     extract_py_module ${PY_TOMLI_BUILD_DIR} ${PY_TOMLI_FILE} "tomli"
     if test $? -ne 0 ; then
         return 1
     fi
 
-    extract_py_module ${PY_PATHSPEC_BUILD_DIR} ${PY_PATHSPEC_FILE} "pathspec"
+    install_py_module ${PY_TOMLI_BUILD_DIR} "tomli"
     if test $? -ne 0 ; then
-        return 1
+          return 1
     fi
 
     extract_py_module ${PY_CALVER_BUILD_DIR} ${PY_CALVER_FILE} "calver"
@@ -874,14 +1093,9 @@ function build_requests
         return 1
     fi
 
-    extract_py_module ${PY_TROVECLASSIFIERS_BUILD_DIR} ${PY_TROVECLASSIFIERS_FILE} "trove_classifiers"
+    install_py_module ${PY_CALVER_BUILD_DIR} "calver"
     if test $? -ne 0 ; then
-        return 1
-    fi
-
-    extract_py_module ${PY_PACKAGING_BUILD_DIR} ${PY_PACKAGING_FILE} "packaging"
-    if test $? -ne 0 ; then
-        return 1
+          return 1
     fi
 
     extract_py_module ${PY_EDITABLES_BUILD_DIR} ${PY_EDITABLES_FILE} "editables"
@@ -889,17 +1103,17 @@ function build_requests
         return 1
     fi
 
-    extract_py_module ${PY_PLUGGY_BUILD_DIR} ${PY_PLUGGY_FILE} "pluggy"
+    install_py_module ${PY_EDITABLES_BUILD_DIR} "editables"
     if test $? -ne 0 ; then
-        return 1
-    fi
-
-    extract_py_module ${PY_HATCHLING_BUILD_DIR} ${PY_HATCHLING_FILE} "hatchling"
-    if test $? -ne 0 ; then
-        return 1
+          return 1
     fi
 
     extract_py_module ${PY_URLLIB3_BUILD_DIR} ${PY_URLLIB3_FILE} "urllib3"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_URLLIB3_BUILD_DIR} "urllib3"
     if test $? -ne 0 ; then
         return 1
     fi
@@ -909,77 +1123,17 @@ function build_requests
         return 1
     fi
 
-    extract_py_module ${PY_CHARSET_NORMALIZER_BUILD_DIR} ${PY_CHARSET_NORMALIZER_FILE} "charset-normalizer"
-    if test $? -ne 0 ; then
-            return 1
-    fi
-
-    install_py_module ${PY_CERTIFI_BUILD_DIR} "certifi"
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    install_py_module ${PY_TOML_BUILD_DIR} "toml"
-    if test $? -ne 0 ; then
-          return 1
-    fi
-
-    install_py_module ${PY_TOMLI_BUILD_DIR} "tomlI"
-    if test $? -ne 0 ; then
-          return 1
-    fi
-
-    install_py_module ${PY_PATHSPEC_BUILD_DIR} "pathspec"
-    if test $? -ne 0 ; then
-          return 1
-    fi
-
-    install_py_module ${PY_CALVER_BUILD_DIR} "calver"
-    if test $? -ne 0 ; then
-          return 1
-    fi
-
-    install_py_module ${PY_TROVECLASSIFIERS_BUILD_DIR} "trove_classifiers"
-    if test $? -ne 0 ; then
-          return 1
-    fi
-
-    install_py_module ${PY_PACKAGING_BUILD_DIR} "packaging"
-    if test $? -ne 0 ; then
-          return 1
-    fi
-
-    install_py_module ${PY_EDITABLES_BUILD_DIR} "editables"
-    if test $? -ne 0 ; then
-          return 1
-    fi
-
-    install_py_module ${PY_PLUGGY_BUILD_DIR} "pluggy"
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    install_py_module ${PY_HATCHLING_BUILD_DIR} "hatchling"
-    if test $? -ne 0 ; then
-          return 1
-    fi
-
-    install_py_module ${PY_URLLIB3_BUILD_DIR} "urllib3"
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
     install_py_module ${PY_IDNA_BUILD_DIR} "idna"
     if test $? -ne 0 ; then
         return 1
     fi
 
-    install_py_module ${PY_CHARSET_NORMALIZER_BUILD_DIR} "charset-normalizer"
+    extract_py_module ${PY_CHARSET_NORMALIZER_BUILD_DIR} ${PY_CHARSET_NORMALIZER_FILE} "charset-normalizer"
     if test $? -ne 0 ; then
-        return 1
+            return 1
     fi
 
-    download_py_module ${PY_REQUESTS_FILE} ${PY_REQUESTS_URL}
+    install_py_module ${PY_CHARSET_NORMALIZER_BUILD_DIR} "charset-normalizer"
     if test $? -ne 0 ; then
         return 1
     fi
@@ -1037,12 +1191,57 @@ function build_numpy
         return 1
     fi
 
+    # needed by meson_python  there is also logic elsewhere for this
+    # that should probably only be run if we aren't building numpy
+    download_py_module ${PY_PACKAGING_FILE} ${PY_PACKAGING_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    # needed by meson_python
+    download_py_module ${PY_PYPROJECT_METADATA_FILE} ${PY_PYPROJECT_METADATA_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    # needed by meson_python
+    download_py_module ${PY_MESON_FILE} ${PY_MESON_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    # needed by meson_numpy
+    download_py_module ${PY_MESON_PYTHON_FILE} ${PY_MESON_PYTHON_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
     download_py_module ${PY_NUMPY_FILE} ${PY_NUMPY_URL}
     if [[ $? != 0 ]] ; then
         return 1
     fi
 
     extract_py_module ${PY_CYTHON_BUILD_DIR} ${PY_CYTHON_FILE} "cython"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_PACKAGING_BUILD_DIR} ${PY_PACKAGING_FILE} "packaging"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_PYPROJECT_METADATA_BUILD_DIR} ${PY_PYPROJECT_METADATA_FILE} "pyproject_metadata"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_MESON_BUILD_DIR} ${PY_MESON_FILE} "meson"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_MESON_PYTHON_BUILD_DIR} ${PY_MESON_PYTHON_FILE} "meson_python"
     if [[ $? != 0 ]] ; then
         return 1
     fi
@@ -1057,6 +1256,28 @@ function build_numpy
         return 1
     fi
 
+
+    install_py_module ${PY_PACKAGING_BUILD_DIR} "packaging"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    install_py_module ${PY_PYPROJECT_METADATA_BUILD_DIR} "pyproject_metadata"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    install_py_module ${PY_MESON_BUILD_DIR} "meson"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+
+    install_py_module ${PY_MESON_PYTHON_BUILD_DIR} "meson_python"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
     # Disable blas and lapack on macOS but only if user isn't somehow fiddling with them also.
     # https://numpy.org/doc/1.25/user/building.html#disabling-atlas-and-other-accelerated-libraries
     we_set_numpy_lib_vars=0
@@ -1064,6 +1285,7 @@ function build_numpy
         we_set_numpy_lib_vars=1
         export NPY_BLAS_ORDER= NPY_LAPACK_ORDER=
     fi
+
     install_py_module ${PY_NUMPY_BUILD_DIR} "numpy"
     return_status=$?
     if [ $we_set_numpy_lib_vars -eq 1 ]; then
@@ -1101,6 +1323,16 @@ function build_sphinx
     fi
 
     download_py_module ${PY_BABEL_FILE} ${PY_BABEL_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_COLORAMA_FILE} ${PY_COLORAMA_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_ROMAN_NUMERALS_FILE} ${PY_ROMAN_NUMERALS_URL}
     if test $? -ne 0 ; then
         return 1
     fi
@@ -1150,7 +1382,7 @@ function build_sphinx
         return 1
     fi
 
-    download_py_module ${PY_SPHINXCONTRIB_APPLEHELP_FILE} ${PY_SPHINXCONTRIB_APPLEHELP_ULR}
+    download_py_module ${PY_SPHINXCONTRIB_APPLEHELP_FILE} ${PY_SPHINXCONTRIB_APPLEHELP_URL}
     if test $? -ne 0 ; then
         return 1
     fi
@@ -1194,6 +1426,17 @@ function build_sphinx
     if test $? -ne 0 ; then
         return 1
     fi
+
+    extract_py_module ${PY_COLORAMA_BUILD_DIR} ${PY_COLORAMA_FILE} "colorama"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_ROMAN_NUMERALS_BUILD_DIR} ${PY_ROMAN_NUMERALS_FILE} "roman_numerals"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
 
     extract_py_module ${PY_SNOWBALLSTEMMER_BUILD_DIR} ${PY_SNOWBALLSTEMMER_FILE} "snowballstemmer"
     if test $? -ne 0 ; then
@@ -1291,6 +1534,16 @@ function build_sphinx
     fi
 
     install_py_module ${PY_BABEL_BUILD_DIR} "babel"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_COLORAMA_BUILD_DIR} "colorama"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_ROMAN_NUMERALS_BUILD_DIR} "roman_numerals"
     if test $? -ne 0 ; then
         return 1
     fi
@@ -1466,13 +1719,13 @@ function bv_python_is_installed
     if [[ $# == 1 ]]; then
         PY_CHECK_ECHO=$1
     fi
-    
+
     info "checking if python is installed"
     # byo python, assume mods are there
     if [[ $USE_SYSTEM_PYTHON == "yes" ]]; then
         return 1
     fi
-    
+
     check_if_installed "python" $PYTHON_VERSION
     if [[ $? != 0 ]] ; then
         if [[ $PY_CHECK_ECHO != 0 ]] ; then
@@ -1550,7 +1803,7 @@ function bv_python_build
     if [[ "$DO_PYTHON" == "yes" && "$USE_SYSTEM_PYTHON" == "no" ]] ; then
 
         bv_python_is_installed 1
-        
+
         if [[ $? == 1 ]] ; then
             info "Skipping Python build.  Python is already installed."
         else
@@ -1587,7 +1840,6 @@ function bv_python_build
             fi
 
             check_if_py_module_installed "PIL"
-            # use Pillow for when python 3
             if [[ $? != 0 ]] ; then
                 info "Building the Python Pillow Imaging Library"
                 build_pillow

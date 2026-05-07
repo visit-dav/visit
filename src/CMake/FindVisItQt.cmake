@@ -49,6 +49,10 @@
 #   Add 'tls', 'imageformats', 'iconengines' to the plugins.
 #   Reworked logic related to plugins.
 #
+#   Kathleen Biagas, Wed Mar 4, 2026
+#   Now building/using a static version of openssl lib when build Qt on
+#   Windows, so no need to copy or install its libraries.
+#
 #*****************************************************************************
 
 #[====[
@@ -222,6 +226,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
             if(WIN32)
                 # also needed for build dir
                 add_custom_command(TARGET copy_qt_plugins
+                    POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_directory
                         ${VISIT_QT_DIR}/plugins/${p}
                         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/${p})
@@ -239,28 +244,6 @@ if(NOT VISIT_QT_SKIP_INSTALL)
          # a way to find this via Qt's cmake mechanisms, hence this
          # hard-coded extra step
          THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/libQt${QT_MAJOR_VERSION}XcbQpa.so)
-    elseif(WIN32)
-        # Need the ssl dll's too.
-        if(NOT OPENSSL_ROOT_DIR)
-          set(OPENSSL_ROOT_DIR "${VISIT_QT_DIR}")
-        endif()
-        if(${QT_MAJOR_VERSION} EQUAL 5)
-            set(ssldlls ${OPENSSL_ROOT_DIR}/bin/libeay32.dll
-                        ${OPENSSL_ROOT_DIR}/bin/ssleay32.dll)
-        else()
-            set(ssldlls ${OPENSSL_ROOT_DIR}/bin/libcrypto-1_1-x64.dll
-                        ${OPENSSL_ROOT_DIR}/bin/libssl-1_1-x64.dll)
-        endif()
-        file(COPY ${ssldlls} 
-             DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty
-             FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                              GROUP_READ GROUP_WRITE
-                              WORLD_READ)
-        install(FILES ${ssldlls}
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                PERMISSIONS OWNER_READ OWNER_WRITE
-                            GROUP_READ GROUP_WRITE
-                            WORLD_READ)
     endif()
 endif()
 

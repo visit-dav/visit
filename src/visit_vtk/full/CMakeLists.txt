@@ -47,6 +47,15 @@
 #   Modified to use visit_add_library and blt_patch_target.
 #   Removed vtkVisItStreamline as the class is no longer used.
 #
+#   Kathleen Biagas, Tue Jan 13, 2026
+#   Renamed vtkExtractCellsByType to vtkVisItExtractCellsByType since the
+#   original name exists in VTK, and the class has been modified to subclass
+#   the original version.
+#   Added vtkVertexExtractor.
+#
+#   Kathleen Biagas, Thu Jan 15, 2026 
+#   Remove vtkSTLWriter. Rename vtkOBJWriter to vtkVisItOBJWriter. 
+#
 #****************************************************************************/
 
 
@@ -58,12 +67,10 @@ set(visit_vtk_SOURCES
     vtkCSGCell.C
     vtkCSGGrid.C
     vtkDataSetRemoveGhostCells.C
-    vtkExtractCellsByType.C
     vtkLineoutFilter.C
     vtkLinesFromOriginalCells.C
     vtkMergeTree.C
     vtkMultiSplitter.C
-    vtkOBJWriter.C
     vtkOnionPeelFilter.C
     vtkPolyDataOnionPeelFilter.C
     vtkRectilinearGridFacelistFilter.C
@@ -77,23 +84,25 @@ set(visit_vtk_SOURCES
     vtkUniqueFeatureEdges.C
     vtkUnstructuredGridRelevantPointsFilter.C
     vtkVectorGlyph.C
+    vtkVertexExtractor.C
     vtkVertexFilter.C
     vtkVisItCellDataToPointData.C
     vtkVisItClipper.C
     vtkVisItContourFilter.C
     vtkVisItCutter.C
     vtkVisItDataSetWriter.C
+    vtkVisItExtractCellsByType.C
     vtkVisItExtractGrid.C
     vtkVisItExtractRectilinearGrid.C
     vtkVisItFeatureEdges.C
     vtkVisItGlyph3D.C
     vtkVisItInterpolatedVelocityField.C
+    vtkVisItOBJWriter.C
     vtkVisItPolyDataNormals.C
     vtkVisItPolyDataNormals2D.C
     vtkVisItProbeFilter.C
     vtkVisItScalarTree.C
     vtkVisItSplitter.C
-    vtkVisItSTLWriter.C
     vtkVisItStructuredGridNormals.C
     vtkVisItTensorGlyph.C
     vtkVisItTubeFilter.C
@@ -111,12 +120,10 @@ set(visit_vtk_HEADERS
     vtkCSGFixedLengthBitField.h
     vtkCSGGrid.h
     vtkDataSetRemoveGhostCells.h
-    vtkExtractCellsByType.h
     vtkLineoutFilter.h
     vtkLinesFromOriginalCells.h
     vtkMergeTree.h
     vtkMultiSplitter.h
-    vtkOBJWriter.h
     vtkOnionPeelFilter.h
     vtkPolyDataOnionPeelFilter.h
     vtkRectilinearGridFacelistFilter.h
@@ -130,23 +137,25 @@ set(visit_vtk_HEADERS
     vtkUniqueFeatureEdges.h
     vtkUnstructuredGridRelevantPointsFilter.h
     vtkVectorGlyph.h
+    vtkVertexExtractor.h
     vtkVertexFilter.h
     vtkVisItCellDataToPointData.h
     vtkVisItClipper.h
     vtkVisItContourFilter.h
     vtkVisItCutter.h
     vtkVisItDataSetWriter.h
+    vtkVisItExtractCellsByType.h
     vtkVisItExtractGrid.h
     vtkVisItExtractRectilinearGrid.h
     vtkVisItFeatureEdges.h
     vtkVisItGlyph3D.h
     vtkVisItInterpolatedVelocityField.h
+    vtkVisItOBJWriter.h
     vtkVisItPolyDataNormals.h
     vtkVisItPolyDataNormals2D.h
     vtkVisItProbeFilter.h
     vtkVisItScalarTree.h
     vtkVisItSplitter.h
-    vtkVisItSTLWriter.h
     vtkVisItStructuredGridNormals.h
     vtkVisItTensorGlyph.h
     vtkVisItTubeFilter.h

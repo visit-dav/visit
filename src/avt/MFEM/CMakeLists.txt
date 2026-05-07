@@ -12,6 +12,7 @@ visit_add_library(
     INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/MFEM>
     DEPENDS_ON visitcommon
+               avtdbatts
                VTK::CommonCore
                VTK::FiltersCore
                mfem)

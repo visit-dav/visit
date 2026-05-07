@@ -266,6 +266,10 @@ endmacro()
 # ARGUMENTS:
 #    NAME         target name               REQUIRED
 #
+# Modifications:
+#   Kathleen Biagas, Thu Nov 6, 2025
+#   Use MPI::MPI_C import target instead of all the VISIT_PARALLEL flags.
+#
 ##############################################################################
 
 macro(visit_patch_parallel_target)
@@ -275,43 +279,19 @@ macro(visit_patch_parallel_target)
         message(FATAL_ERROR "visit_patch_parallel_target() must be called with argument NAME <name of parallel target>")
     endif()
 
-    if(UNIX)
-        if(VISIT_PARALLEL_CXXFLAGS)
-            set_property(TARGET ${vppt_NAME} APPEND
-                         PROPERTY COMPILE_FLAGS ${VISIT_PARALLEL_CXXFLAGS})
-        endif()
-        if(VISIT_PARALLEL_LINK_FLAGS)
-            set_property(TARGET ${vppt_NAME} APPEND
-                         PROPERTY LINK_FLAGS ${VISIT_PARALLEL_LINK_FLAGS})
-        endif()
-
-        if(${CMAKE_INSTALL_RPATH})
-            string(REPLACE " " ";" CPAR_RPATHS ${CAKE_INSTALL_RPATH})
-            set_property(TARGET ${vppt_NAME} APPEND PROPERTY
-                         INSTALL_RPATH "${CPAR_RPATHS}")
-        endif()
-
-        if(VISIT_PARALLEL_RPATH)
-            set_property(TARGET ${vppt_NAME} APPEND PROPERTY
-                         INSTALL_RPATH "${VISIT_PARALLEL_RPATH}")
-        endif()
-        if(VISIT_PARALLEL_DEFINES)
-            visit_patch_target(
-                NAME      ${vppt_NAME}
-                DEFINES   ${VISIT_PARALLEL_DEFINES})
-
-        endif()
-    else()
-        visit_patch_target(
-            NAME      ${vppt_NAME}
-            INCLUDES  ${VISIT_PARALLEL_INCLUDE}
-            DEFINES   ${VISIT_PARALLEL_DEFINES})
-    endif()
-    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES AND VISIT_PARALLEL_LIBS)
+    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES AND TARGET MPI::MPI_C)
         visit_patch_target(
             NAME       ${vppt_NAME}
-            LINKDIR    ${VISIT_PARALLEL_LINK_DIRS}
-            DEPENDS_ON ${VISIT_PARALLEL_LIBS})
+            DEPENDS_ON MPI::MPI_CXX)
+    endif()
+    if(VISIT_PARALLEL_DEFINES)
+        visit_patch_target(
+            NAME      ${vppt_NAME}
+            DEFINES   ${VISIT_PARALLEL_DEFINES})
+    endif()
+    if(UNIX AND VISIT_PARALLEL_RPATH)
+        set_target_properties(${vppt_NAME} PROPERTIES
+            INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${VISIT_PARALLEL_RPATH}")
     endif()
 endmacro()
 

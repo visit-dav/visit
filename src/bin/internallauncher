@@ -1483,7 +1483,11 @@ class LLDBDebugger(Debugger):
         super(LLDBDebugger, self).__init__(launcher)
 
     def Executable(self):
-        return ["lldb"]
+        native_arm64 = subprocess.check_output(["sysctl", "-n", "hw.optional.arm64"]).decode().strip()
+        if native_arm64 == "1":
+            return ["arch", "-arm64", "lldb"]
+        else:
+            return ["lldb"]
 
     def CreateCommand(self, args):
         #lldb_args = ["process","launch","--tty","--"]
@@ -3207,6 +3211,10 @@ class MainLauncher(object):
     #   Cyrus Harrison, Fri Sep 19 10:20:16 PDT 2025
     #   Updates to osmesa env support for VTK 9.5, remove R Support
     #
+    #   Kathleen Biagas, Fri Apr 3, 2026
+    #   Ensure visitlibdir/osmesa is added to LD_LIBRARY_PATH if it exists
+    #   and we are using osmesa for the desired compnents.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -3327,14 +3335,19 @@ class MainLauncher(object):
         # OSMesa GL Settings
         #
         # Look for osmesa
-        osmesa_gl_lib = ""
-        osmesa_gl_lib_matches = glob.glob(os.path.join(self.visitlibdir,"libOSMesa.so.*"))
-        if len(osmesa_gl_lib_matches) !=0:
-            osmesa_gl_lib = osmesa_gl_lib_matches[0]
+        osmesa_osmesa_lib = ""
+        osmesa_osmesa_lib_matches = glob.glob(os.path.join(self.visitlibdir,"libOSMesa.so.*"))
+        if len(osmesa_osmesa_lib_matches) !=0:
+            osmesa_osmesa_lib = osmesa_osmesa_lib_matches[0]
+
+        # Look for osmesa-as-gl
+        osmesa_gl_dir = os.path.join(self.visitlibdir,"osmesa")
+        osmesa_gl_lib = os.path.join(osmesa_gl_dir,"libGL.so.1")
+
         #
         # if we have osmesa, use it for the engine & viewer -nowin
         #
-        if os.path.isfile(osmesa_gl_lib):
+        if os.path.isfile(osmesa_osmesa_lib):
             #
             # if we get an explicit osmesa flag, make sure to use mesa
             #
@@ -3347,10 +3360,20 @@ class MainLauncher(object):
                 SETENV("VTK_DEFAULT_OPENGL_WINDOW","vtkOSOpenGLRenderWindow")
                 # osmesa will be in visit's lib dir, make sure this is in LD_LIBRARY_PATH
                 SETENV("LD_LIBRARY_PATH", self.joinpaths([self.visitlibdir, GETENV("LD_LIBRARY_PATH")]))
+
                 # this is used by libsim to dlload the proper gl
-                SETENV("VISIT_MESA_LIB",osmesa_gl_lib)
+                SETENV("VISIT_MESA_LIB",osmesa_osmesa_lib)
+
+                #
+                # Additionally, if we have osmesa-as-gl, add it to LD_LIBRARY_PATH
+                #
+                if os.path.isfile(osmesa_gl_lib):
+                    SETENV("LD_LIBRARY_PATH", self.joinpaths([osmesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
+
         elif self.generalArgs.osmesa:
             self.error("Can't launch using osmesa. '-osmesa' specified, but the osmesa library is not available.")
+
+
 
     ############################################################################
     # Method: PrintEnvironment

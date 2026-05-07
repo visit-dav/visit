@@ -103,7 +103,7 @@ unvGeneralPluginInfo::EnabledByDefault() const
 bool
 unvGeneralPluginInfo::HasWriter() const
 {
-    return false;
+    return true;
 }
 // ****************************************************************************
 //  Method:  unvGeneralPluginInfo::GetDefaultFilePatterns

@@ -10,5 +10,5 @@ visit_add_database_plugin(
                OpenPMDClasses/PMDField.C
                OpenPMDClasses/PMDIteration.C
                OpenPMDClasses/PMDFile.C
-    LIBS       hdf5)
+    LIBS       ${HDF5_LIB})
 

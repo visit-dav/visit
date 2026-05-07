@@ -16,6 +16,11 @@
 #    Removed 'fulldbname' test from allmacros, as it fails when run in any
 #    location other than the nightly regression location.
 #
+#    Mark C. Miller, Fri Mar 20 16:20:47 PDT 2026
+#    Moved testing of dbcomment macro to its own function to avoid using
+#    Silo data to test. The reason is Silo's dbcomment includes information
+#    about current HDF5/PDB driver and Silo library version information.
+#
 # ----------------------------------------------------------------------------
 import os
 
@@ -34,7 +39,7 @@ def allmacros():
     # "zunits" and "varunits" because the input database has no values
     # specified for these.
     #
-    macroNames = ("time", "cycle", "index", "numstates", "dbcomment",
+    macroNames = ("time", "cycle", "index", "numstates",
         "vardim", "numvar", "topodim", "spatialdim", "varname",
         "meshname", "filename", "xlabel", "ylabel", "zlabel")
 
@@ -54,6 +59,30 @@ def allmacros():
     text2d.Delete()
     text3d.Delete()
     textts.Delete()
+
+def dbcmacro():
+    """dbcomment macro"""
+
+    OpenDatabase(data_path("ProteinDataBank_test_data/1D1H.pdb"))
+    AddPlot("Molecule", "backbone")
+    DrawPlots()
+    text2d = create_text2d_annot()
+    text3d = CreateAnnotationObject("Text3D")
+    text3d.heightMode = text3d.Relative
+    text3d.relativeHeight = 0.02
+    text3d.position=(-15.0, 1.0, 7.0)
+    textts = CreateAnnotationObject("TimeSlider")
+    textts.height = 0.1
+    textts.position = (0.05, 0.025)
+    text2d.text = "dbcomment $dbcomment"
+    text3d.text = "dbcomment $dbcomment"
+    textts.text = "dbcomment $dbcomment"
+    TestAutoName()
+    text2d.Delete()
+    text3d.Delete()
+    textts.Delete()
+    DeleteAllPlots()
+    CloseDatabase(data_path("ProteinDataBank_test_data/1D1H.pdb"))
 
 def multimacro():
     """Multiple macros in same annotation"""
@@ -184,6 +213,7 @@ def tsprintf():
     text.text="Time=$time"
     text.timeFormatString = "%A"
     TestAutoName()
+    text.Delete()
 
 def init():
     """Initialization for all tests"""
@@ -218,6 +248,7 @@ def main():
     tafile()
     tsprintf()
     finalize()
+    dbcmacro()
 
 main()
 

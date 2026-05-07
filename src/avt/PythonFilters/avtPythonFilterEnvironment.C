@@ -103,6 +103,9 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //     Update import style to allow wrapping vtkDataSets
 //     See: https://discourse.vtk.org/t/vtk-9-5-q-what-is-proper-way-to-create-python-vtkdataset-object-from-c-address/15712
 //
+//    Kathleen Biagas, Mon Nov 24, 2025
+//    Add lib/python/site-packages for Windows an python v3.13.
+//
 // ****************************************************************************
 
 bool
@@ -122,6 +125,10 @@ avtPythonFilterEnvironment::Initialize()
         return false;
 
 #ifdef _WIN32
+
+    string vlibsitepack = vlibdir + VISIT_SLASH_CHAR + "python" + VISIT_SLASH_CHAR + "lib" + VISIT_SLASH_CHAR + "site-packages";
+    if(!pyi->AddSystemPath(vlibsitepack))
+        return false;
     // need to add ThirdParty dll directory to dll path if it is available
     // (eg for development builds)
     if(GetIsDevelopmentVersion())

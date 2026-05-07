@@ -17,7 +17,3 @@
 
 visit_import_third_party(MOAB LIBS MOAB)
 
-if(VISIT_PARALLEL)
-    visit_import_third_party(MOAB_MPI LIBS MOAB_mpi)
-endif()
-

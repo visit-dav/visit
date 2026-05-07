@@ -8,10 +8,10 @@ REM to work without intervention, building TP libs, and building, installing,
 REM and testing VisIt.
 REM The extracted visit0000.png should be inspected for a valid image.
 
-docker build -f Dockerfile-debian12 -t visitdev:3.4.2-debian12 .
+docker build -f Dockerfile-debian12 -t visitdev:3.5.0-debian12 .
 
-docker create --name dummy visitdev:3.4.2-debian12
-docker cp dummy:/home/visit/visit3_4_2.linux-x86_64.tar.gz ./visit3_4_2.linux-x86_64-debian12.tar.gz
+docker create --name dummy visitdev:3.5.0-debian12
+docker cp dummy:/home/visit/visit3_5_0.linux-x86_64.tar.gz ./visit3_5_0.linux-x86_64-debian12.tar.gz
 docker cp dummy:/home/visit/visit0000.png .
 docker rm -f dummy
 

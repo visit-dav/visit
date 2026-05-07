@@ -63,25 +63,21 @@ using namespace mfem;
 // 
 //    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
 //    Added logic for setting LOR setting from read options.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Removed MFEM LOR file open options. Initialize new MFEM options.
 //
 // ****************************************************************************
 
 avtMFEMFileFormat::avtMFEMFileFormat(const char *filename, 
                                      const DBOptionsAttributes *readOpts)
-    : avtSTMDFileFormat(&filename, 1)
+    : avtSTMDFileFormat(&filename, 1),
+      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR),
+      m_field_projection_method(avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection),
+      m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::Gauss_Lobatto_Default)
 {
     selectedLOD = 0;
     root        = NULL;
-    if (readOpts->GetEnum("MFEM LOR Setting") == 0)
-    {
-        // legacy LOR was requested
-        m_new_refine = false;
-    }
-    else
-    {
-        // new LOR was requested
-        m_new_refine = true;
-    }    
 }
 
 // ****************************************************************************
@@ -292,10 +288,22 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
 //   Cyrus Harrison, Fri Mar  3 10:45:12 PST 2023
 //   Add support for directly reading mfem mesh files.
 //
+//    Cyrus Harrison, Fri Sep 26 09:06:42 PDT 2025
+//    Add support for Quadrature Functions
+// 
+//    Justin Privitera, Fri Nov  7 14:12:05 PST 2025
+//    Fixed a bug causing the LOD to be set to the maximum.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Make an educated guess for what the centering should be.
+//
+//    Brad Whitlock, Tue Feb 10 14:13:48 PST 2026
+//    Expose QuadratureFunctions with more than 3 components as array vars.
+//
 // ****************************************************************************
 void
 avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
-{    
+{
     ///
     /// Open the root file
     ///
@@ -306,7 +314,7 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     vector<string>dset_names;
     root_md.DataSets(dset_names);
 
-    // enumerate datasets)
+    // enumerate datasets
     selectedLOD = 0;
     for(int i=0;i<(int)dset_names.size();i++)
     {
@@ -326,7 +334,8 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                           extents,
                           nblocks,
                           block_origin,
-                          spatial_dim, topo_dim);
+                          spatial_dim,
+                          topo_dim);
 
         md->GetMeshes(i).LODs = atoi(dset.Mesh().Tag("max_lods").c_str());
         // Indicate that we're providing original cells.
@@ -345,65 +354,251 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                dset_names[i].c_str(),
                                AVT_ZONECENT);
 
+
         /// add mesh variables
-        vector<string>field_names;
+        vector<string> field_names;
+        vector<string> qf_mesh_names;
         dset.Fields(field_names);
+
+        std::string qf_mesh_base_name =  dset_names[i] + "_quad_func_o";
+
         for(size_t j=0;j<field_names.size();j++)
         {
             JSONRootEntry &field = dset.Field(field_names[j]);
-            std::string slod = field.Tag("lod");
-            int ilod = std::min(md->GetMeshes(i).LODs,atoi(slod.c_str()));
-            selectedLOD = std::max(selectedLOD,ilod);
-            std::string f_assoc = field.Tag("assoc");
 
-            if(f_assoc == "elements")
+            int ilod = 0;
+            if(field.HasTag("lod"))
+            {
+                std::string slod = field.Tag("lod");
+                ilod = atoi(slod.c_str());
+            }
+
+            selectedLOD = std::max(selectedLOD,ilod);
+            const std::string &f_assoc = field.Tag("assoc");
+
+            avtCentering cent = AVT_UNKNOWN_CENT;
+            if (f_assoc == "quadrature")
+            {
+                // quad func data is presented as zone centered on a special mesh
+                cent = AVT_ZONECENT;
+            }
+            else if (f_assoc == "elements" || f_assoc == "nodes")
+            {
+                std::string basis;
+                const bool has_basis = field.HasTag("basis");
+                if (has_basis)
+                {
+                    basis = field.Tag("basis");
+                }
+
+                if (has_basis && basis.find("QF_") != std::string::npos) // quad func case
+                {
+                    // quad func data is presented as zone centered on a special mesh
+                    cent = AVT_ZONECENT;
+                }
+                else
+                {
+                    if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Zonal_Projection)
+                    {
+                        if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Discontinuous_LOR)
+                        {
+                            EXCEPTION1(InvalidVariableException,
+                                "Zonal projection together with discontinuous low-order-refinement is not supported.");
+                        }
+                        cent = AVT_ZONECENT;
+                    }
+                    else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Nodal_Projection)
+                    {
+                        cent = AVT_NODECENT;
+                    }
+                    else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection)
+                    {
+                        if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Discontinuous_LOR)
+                        {
+                            cent = AVT_NODECENT;
+                        }
+                        else if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR &&
+                                 has_basis && basis.find("L2_") != std::string::npos)
+                        {
+                            // if this field belongs to a topology that might be a periodic 
+                            // mfem mesh then we are always nodal because we are going to
+                            // fall back to legacy LOR if we have selected default refinement.
+                            cent = AVT_NODECENT;
+                        }
+                        else
+                        {
+                            if (has_basis)
+                            {
+                                const bool l2 = basis.find("L2_") != std::string::npos;
+                                const bool h1 = basis.find("H1_") != std::string::npos;
+                                const bool nurbs = basis.find("NURBS") != std::string::npos;
+                                const bool hdiv = basis.find("RT_") != std::string::npos;
+                                const bool hcurl = basis.find("ND_") != std::string::npos;
+                                const int bases = static_cast<int>(l2) +
+                                                  static_cast<int>(h1) +
+                                                  static_cast<int>(hdiv) +
+                                                  static_cast<int>(hcurl) +
+                                                  static_cast<int>(nurbs);
+                                if (0 == bases)
+                                {
+                                    // fall back to provided association
+                                    if (f_assoc == "elements")
+                                    {
+                                        cent = AVT_ZONECENT;
+                                    }
+                                    else if (f_assoc == "nodes")
+                                    {
+                                        cent = AVT_NODECENT;
+                                    }
+                                    else
+                                    {
+                                        std::ostringstream oss;
+                                        oss << "Unsupported association in " << f_assoc;
+                                        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                                    }
+                                }
+                                else if (1 == bases)
+                                {
+                                    if (h1 || nurbs)
+                                    {
+                                        cent = AVT_NODECENT;
+                                    }
+                                    else if (l2 || hdiv || hcurl)
+                                    {
+                                        cent = AVT_ZONECENT;
+                                    }
+                                    else
+                                    {
+                                        std::ostringstream oss;
+                                        oss << "Unsupported basis type in " << basis;
+                                        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                                    }
+                                }
+                                else
+                                {
+                                    std::ostringstream oss;
+                                    oss << "Grid function may not have multiple basis types. "
+                                           "Unsupported basis type in " << basis;
+                                    EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                                }
+                            }
+                            else
+                            {
+                                if (f_assoc == "elements")
+                                {
+                                    cent = AVT_ZONECENT;
+                                }
+                                else if (f_assoc == "nodes")
+                                {
+                                    cent = AVT_NODECENT;
+                                }
+                                else
+                                {
+                                    std::ostringstream oss;
+                                    oss << "Unsupported association in " << f_assoc;
+                                    EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        std::ostringstream oss;
+                        oss << "Unknown field projection method in " << m_field_projection_method;
+                        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                    }
+                }
+            }
+            else
+            {
+                std::ostringstream oss;
+                oss << "Unsupported association in " << f_assoc;
+                EXCEPTION1(InvalidVariableException, oss.str().c_str());
+            }
+
+            if(f_assoc == "elements" || f_assoc == "nodes")
             {
                 if(!field.HasTag("comps") || field.Tag("comps") == "1")
                 {
                     AddScalarVarToMetaData(md,
                                            field_names[j].c_str(),
                                            dset_names[i].c_str(),
-                                           AVT_ZONECENT);
+                                           cent);
                 }
                 else if(field.Tag("comps") == "2")
                 {
                     AddVectorVarToMetaData(md,
-                                          field_names[j].c_str(),
-                                          dset_names[i].c_str(),
-                                          AVT_ZONECENT,2);
-                }
-                else if(field.Tag("comps") == "3")
-                {
-                    AddVectorVarToMetaData(md,
-                                          field_names[j].c_str(),
-                                          dset_names[i].c_str(),
-                                          AVT_ZONECENT,3);
-                }
-
-
-            }
-            else if(f_assoc == "nodes")
-            {
-                if(field.Tag("comps") == "1")
-                {
-                    AddScalarVarToMetaData(md,
                                            field_names[j].c_str(),
                                            dset_names[i].c_str(),
-                                           AVT_NODECENT);
-                }
-                else if(field.Tag("comps") == "2")
-                {
-                    AddVectorVarToMetaData(md,
-                                          field_names[j].c_str(),
-                                          dset_names[i].c_str(),
-                                          AVT_NODECENT,2);
+                                           cent,2);
                 }
                 else if(field.Tag("comps") == "3")
                 {
                     AddVectorVarToMetaData(md,
-                                          field_names[j].c_str(),
-                                          dset_names[i].c_str(),
-                                          AVT_NODECENT,3);
+                                           field_names[j].c_str(),
+                                           dset_names[i].c_str(),
+                                           cent,3);
+                }
+            }
+            else if(f_assoc == "quadrature")
+            {
+                if(!field.HasTag("order"))
+                {
+                    // order of quad func is required to register mesh
+                    debug5 << "Warning: quadrature field `" <<  field_names[j]
+                           << "` is missing `order` tag" <<  " ...skipping it." << endl;
+                    continue;
+                }
+
+                std::string qf_mesh_name = qf_mesh_base_name + field.Tag("order");
+                // add if we have not seen a qf mesh of this order
+                auto qf_mesh_itr = std::find(qf_mesh_names.begin(),
+                                             qf_mesh_names.end(),
+                                             qf_mesh_name);
+
+                if(qf_mesh_itr == qf_mesh_names.end())
+                {
+                    qf_mesh_names.push_back(qf_mesh_name);
+                    AddMeshToMetaData(md,
+                                      qf_mesh_name.c_str(),
+                                      AVT_UNSTRUCTURED_MESH,
+                                      extents,
+                                      nblocks,
+                                      block_origin,
+                                      spatial_dim,
+                                      topo_dim);
+                }
+
+                if(!field.HasTag("comps") || field.Tag("comps") == "1")
+                {
+                    
+                    AddScalarVarToMetaData(md,
+                                           field_names[j],
+                                           qf_mesh_name,
+                                           cent);
+                }
+                else if(field.Tag("comps") == "2")
+                {
+                    AddVectorVarToMetaData(md,
+                                           field_names[j],
+                                           qf_mesh_name,
+                                           cent,2);
+                }
+                else if(field.Tag("comps") == "3")
+                {
+                    AddVectorVarToMetaData(md,
+                                           field_names[j],
+                                           qf_mesh_name,
+                                           cent,3);
+                }
+                else
+                {
+                    const int comps = atoi(field.Tag("comps").c_str());
+                    AddArrayVarToMetaData(md,
+                                          field_names[j],
+                                          comps,
+                                          qf_mesh_name,
+                                          cent);
                 }
             }
         }
@@ -562,13 +757,19 @@ avtMFEMFileFormat::GetTime()
 //    Cyrus Harrison, Thu Mar  2 08:45:54 PST 2023
 //    Add support for boundary mesh
 //
+//    Cyrus Harrison, Fri Sep 26 09:06:42 PDT 2025
+//    Add support for Quadrature Functions
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Pass refinement options down to the MFEM data adaptor.
+//
 // ****************************************************************************
 vtkDataSet *
 avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
 {
     // get base mesh
     std::string mesh_name(meshname);
-
+   
     // check for fetch of boundary mesh
     std::string bndry_suffix = "_boundary";
     bool bndry_mesh = StringHelpers::ends_with(mesh_name,bndry_suffix);
@@ -579,6 +780,20 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
         mesh_name = mesh_name.substr(0, mesh_name.size() - bndry_suffix.size());
     }
 
+    // check for fetch of quad points mesh
+    // {mesh_name}_quad_func_o{order}
+    bool quadpts_mesh = avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(mesh_name);
+    int quadpts_order = -1; // -1 == not quad points case
+
+    // if quadpts mesh find order and the base mesh name
+    if(quadpts_mesh)
+    {
+        std::string qf_mesh_name = mesh_name;
+        avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(qf_mesh_name,
+                                                              mesh_name,
+                                                              quadpts_order);
+    }
+
     Mesh *mesh = FetchMesh(mesh_name,domain);
 
     vtkDataSet *res_ds = NULL;
@@ -586,12 +801,19 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
     {
         res_ds = avtMFEMDataAdaptor::BoundaryMeshToVTK(mesh);
     }
+    else if(quadpts_mesh)
+    {
+        res_ds = avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mesh,
+                                                                 quadpts_order,
+                                                                 m_refinement_basis_type);
+    }
     else
     {
         res_ds = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
                                                      domain,
                                                      selectedLOD+1,
-                                                     m_new_refine);
+                                                     m_mesh_refinement_method,
+                                                     m_refinement_basis_type);
     }
     delete mesh;
 
@@ -616,12 +838,23 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
 //
 //  Programmer: harrison37 -- generated by xml2avt
 //  Creation:   Fri May 23 15:16:20 PST 2014
+// 
+//  Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 vtkDataArray *
+avtMFEMFileFormat::GetVar(int domain, const char *varname, avtCentering &cent_change)
+{
+    return GetRefinedVar(string(varname),domain,selectedLOD+1,cent_change);
+}
+
+vtkDataArray *
 avtMFEMFileFormat::GetVar(int domain, const char *varname)
-{   
-   return GetRefinedVar(string(varname),domain,selectedLOD+1);
+{
+    avtCentering cent_change;
+    return GetVar(domain, varname, cent_change);
 }
 
 // ****************************************************************************
@@ -640,13 +873,24 @@ avtMFEMFileFormat::GetVar(int domain, const char *varname)
 //
 //  Programmer: harrison37 -- generated by xml2avt
 //  Creation:   Fri May 23 15:16:20 PST 2014
+// 
+//  Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
 
 vtkDataArray *
+avtMFEMFileFormat::GetVectorVar(int domain, const char *varname, avtCentering &cent_change)
+{
+    return GetRefinedVar(string(varname),domain,selectedLOD+1,cent_change);
+}
+
+vtkDataArray *
 avtMFEMFileFormat::GetVectorVar(int domain, const char *varname)
 {
-    return GetRefinedVar(string(varname),domain,selectedLOD+1);
+    avtCentering cent_change;
+    return GetVectorVar(domain, varname, cent_change);
 }
 
 
@@ -777,12 +1021,21 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
 //    Cyrus Harrison, Thu Mar  2 08:45:54 PST 2023
 //    Add support for boundary mesh + boundary atts field
 //
+//    Cyrus Harrison, Fri Sep 26 09:06:42 PDT 2025
+//    Add support for Quadrature Functions
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Pass centering change and refinement options down to MFEM data adaptor.
+//
 // ****************************************************************************
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
                                  int domain,
-                                 int lod)
+                                 int lod,
+                                 avtCentering &cent_change)
 {
+    cent_change = AVT_UNKNOWN_CENT;
+
     if(root == NULL)
     {
         //failed to open mesh file
@@ -810,6 +1063,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 
     vtkDataArray *rv;
 
+    // check for boundary mesh
     std::string bndry_suffix = "_boundary";
     bool bndry_mesh = StringHelpers::ends_with(mesh_name,bndry_suffix);
 
@@ -820,6 +1074,13 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         mesh_name = mesh_name.substr(0, mesh_name.size() - bndry_suffix.size());
     }
 
+    JSONRootEntry &field = root->DataSet(mesh_name).Field(var_name);
+    string field_path = field.Path().Expand(domain);
+    bool var_is_nodal = field.Tag("assoc") == "nodes";
+    bool var_is_grid_func = field.Tag("assoc") != "quadrature";
+    int  ncomps       = atoi(field.Tag("comps").c_str());
+    string cat_path = root->DataSet(mesh_name).CatPath().Get();
+    
     // get base mesh
     Mesh *mesh = FetchMesh(mesh_name,domain);
 
@@ -842,56 +1103,98 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         delete mesh;
         return rv;
     }
-
-    JSONRootEntry &field = root->DataSet(mesh_name).Field(var_name);
-    string field_path = field.Path().Expand(domain);
-    bool var_is_nodal = field.Tag("assoc") == "nodes";
-    int  ncomps       = atoi(field.Tag("comps").c_str());
-    string cat_path = root->DataSet(mesh_name).CatPath().Get();
-
-    GridFunction *gf = 0;
-    if (cat_path != "")
+    else if(StringHelpers::ends_with(var_name,"boundary_attribute"))
     {
-        std::istringstream igfstr;
-        FetchDataFromCatFile(cat_path, field_path, igfstr); 
-
-        if (igfstr)
-            gf = new GridFunction(mesh,igfstr);   
+        rv = avtMFEMDataAdaptor::BoundaryAttributeToVTK(mesh);
+        delete mesh;
+        return rv;
     }
 
-    if (!gf)
+    // grid function case
+    if(var_is_grid_func)
     {
-        visit_ifstream igf(field_path.c_str());
-        if (igf().fail())
+        GridFunction *gf = 0;
+        if (cat_path != "")
         {
-            //failed to open gf file
-            ostringstream msg;
-            msg << "Failed to open MFEM grid function: "
-                << " field name: \""       << mesh_name << "\""
-                << " domain: "             << domain
-                << " grid function path: \"" << field_path << "\"";
-            if (cat_path != "")
-                msg << " cat path: \"" << cat_path << "\"";
+            std::istringstream igfstr;
+            FetchDataFromCatFile(cat_path, field_path, igfstr); 
 
-            EXCEPTION1(InvalidFilesException, msg.str());
+            if (igfstr)
+                gf = new GridFunction(mesh,igfstr);   
         }
-        gf = new GridFunction(mesh,igf());   
-    }
 
-    int gf_ncomps = gf->VectorDim();
-    if (gf_ncomps != ncomps)
+        if (!gf)
+        {
+            visit_ifstream igf(field_path.c_str());
+            if (igf().fail())
+            {
+                //failed to open gf file
+                ostringstream msg;
+                msg << "Failed to open MFEM grid function: "
+                    << " field name: \""       << mesh_name << "\""
+                    << " domain: "             << domain
+                    << " grid function path: \"" << field_path << "\"";
+                if (cat_path != "")
+                    msg << " cat path: \"" << cat_path << "\"";
+
+                EXCEPTION1(InvalidFilesException, msg.str());
+            }
+            gf = new GridFunction(mesh,igf());   
+        }
+
+        int gf_ncomps = gf->VectorDim();
+        if (gf_ncomps != ncomps)
+        {
+            EXCEPTION1(InvalidVariableException, 
+                "Expected equality of number of components.");
+        }
+
+        rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, 
+                                                         gf, 
+                                                         lod, 
+                                                         m_mesh_refinement_method,
+                                                         m_field_projection_method,
+                                                         m_refinement_basis_type,
+                                                         cent_change,
+                                                         var_is_nodal);
+        
+        delete gf;
+    }
+    else // quadrature function case
     {
-        EXCEPTION1(InvalidVariableException, 
-            "Expected equality of number of components.");
-    }
+        QuadratureFunction *qf = 0;
+        if (cat_path != "")
+        {
+            std::istringstream iqfstr;
+            FetchDataFromCatFile(cat_path, field_path, iqfstr); 
 
-    rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, 
-                                                     gf, 
-                                                     lod, 
-                                                     m_new_refine, 
-                                                     var_is_nodal);
+            if (iqfstr)
+                qf = new QuadratureFunction(mesh, iqfstr);   
+        }
+
+        if (!qf)
+        {
+            visit_ifstream iqf(field_path.c_str());
+            if (iqf().fail())
+            {
+                //failed to open gf file
+                ostringstream msg;
+                msg << "Failed to open MFEM quadrature function: "
+                    << " field name: \""       << mesh_name << "\""
+                    << " domain: "             << domain
+                    << " grid function path: \"" << field_path << "\"";
+                if (cat_path != "")
+                    msg << " cat path: \"" << cat_path << "\"";
+
+                EXCEPTION1(InvalidFilesException, msg.str());
+            }
+            qf = new QuadratureFunction(mesh,iqf());   
+        }
+      
+        rv = avtMFEMDataAdaptor::QuadratureFunctionToVTK(qf);
+        delete qf;        
+    }
     
-    delete gf;
     delete mesh;
 
     return rv;
@@ -964,6 +1267,10 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 //     sels:    data selection list from the pipeline
 //     applied: pipeline handshaking for handling data selections
 //
+//   Modifications:
+//     Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//     Added m_mesh_refinement_method, m_field_projection_method, and
+//     m_refinement_basis_type.
 //
 // ****************************************************************************
 void
@@ -977,6 +1284,9 @@ avtMFEMFileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p>&
             const avtResolutionSelection* sel =
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->selectedLOD = sel->resolution();
+            this->m_mesh_refinement_method = static_cast<avtMFEMDataAdaptor::meshRefinementMethod>(sel->meshRefinementMethod());
+            this->m_field_projection_method = static_cast<avtMFEMDataAdaptor::fieldProjectionMethod>(sel->fieldProjectionMethod());
+            this->m_refinement_basis_type = static_cast<avtMFEMDataAdaptor::refinementBasisType>(sel->refinementBasisType());
             (*applied)[i] = true;
         }
     }

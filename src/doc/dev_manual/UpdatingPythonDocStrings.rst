@@ -20,16 +20,15 @@ Steps to update the Python scripting manual
 
 #. Modify ``python_scripting/functions.rst``.
 #. Run ``functions_to_plain_py.py`` to generate ``PY_RST_FUNCTIONS_TO_PYTHON.py``.
-#. Run ``2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py`` to check for Python syntax errors and Python 3 compatibly.
+#. Run ``python3 -m py_compile PY_RST_FUNCTIONS_TO_PYTHON.py`` to check for Python syntax errors.
 
    * **NOTE:** ``PY_RST_FUNCTIONS_TO_PYTHON.py`` is just a temporary file to test steps 2 and 3 here.
      It could be named anything and is not part of the repository.
-   * **NOTE:** ``2to3`` will run to completion and issue a number of messages.
-     A zero return code indicates all is well.
+   * **NOTE:** A zero return code from ``python3 -m py_compile`` indicates all is well with syntax of examples added to ``functions.rst``.
 
 #. Run ``functions_to_method_doc.py`` to regenerate ``MethodDoc.C``.
 #. Build and run the VisIt_ scripting interface and assure yourself ``help(<your-new-func-doc>)`` produces the desired output.
-#. Run the ``sphinx_cli_extractor.py`` tool producing new ``attributes.rst`` and ``events.rst`` files.
+#. If you have changed attribute objects or other parts of the API, you will also need to run the ``sphinx_cli_extractor.py`` tool producing new ``attributes.rst`` and ``events.rst`` files.
    To do so, you may need to use a combination of the ``PATH`` and ``PYTHONPATH`` environment variables to tell the ``sphinx_cli_extractor.py`` script where to find the VisIt_ module, ``visit`` in VisIt_'s ``site-packages`` and where to find the Python installation that that module is expecting to run with.
    In addition, you may need to use the ``PYTHONHOME`` environment variable to tell VisIt_'s ``visit`` module where to find standard Python libraries.
    For example, to use an installed version of VisIt_ on my macOS machine, the command would look like...

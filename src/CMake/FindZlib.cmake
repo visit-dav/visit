@@ -26,79 +26,36 @@
 #   Kathleen Biagas, Tue May 28 09:08:56 PDT 2019
 #   Since we require zlib from build_visit, no longer need HAVE_ZLIB_H
 #
-#   Kathleen Biagas, Fri May 31, 2024
-#   Modified to create an INTERFACE target via blt_import_library.
-#   This allows zlib to be a native CMake target, and will also be accounted
-#   for in the generated export set.
+#   Kathleen Biagas, Mon Mar 9, 2026
+#   Use find_package.
 #
 #****************************************************************************/
 
 # Use the ZLIB_DIR hint from the config-site .cmake file
 
-if(ZLIB_DIR)
+if(VISIT_ZLIB_DIR)
+    set(ZLIB_ROOT ${VISIT_ZLIB_DIR})
+endif()
 
-    find_path(_zlib_INCLUDE_DIR zlib.h
-              PATHS ${ZLIB_DIR}
-              PATH_SUFFIXES include
-              NO_DEFAULT_PATH)
+find_package(ZLIB)
 
-    find_library(_zlib_LIBRARY
-             NAMES z zlib zlib1
-             PATHS ${ZLIB_DIR}
-             PATH_SUFFIXES lib lib64
-             NO_DEFAULT_PATH)
+if(ZLIB_FOUND)
+    set(HAVE_LIBZ true CACHE BOOL "Have lib z")
 
-    find_package_handle_standard_args(ZLIB DEFAULT_MSG
-        _zlib_INCLUDE_DIR
-        _zlib_LIBRARY)
+    if(TARGET ZLIB::ZLIB)
+        # for VisIt libraries' needs
+        set(ZLIB_LIB ZLIB::ZLIB)
 
-    if(ZLIB_FOUND)
-        ## VTK needs this set to find our zlib instead of system
-        #set(ZLIB_LIBRARY ${_zlib_LIBRARY})
-        ###
+        # Install 
+        get_target_property(zlib_loc ZLIB::ZLIB IMPORTED_LOCATION_RELEASE)
+        get_target_property(zlib_inc ZLIB::ZLIB INTERFACE_INCLUDE_DIRECTORIES)
+        THIRD_PARTY_INSTALL_LIBRARY(${zlib_loc})
+        THIRD_PARTY_INSTALL_INCLUDE(zlib ${zlib_inc})
 
-
-        blt_import_library(
-            NAME        zlib
-            INCLUDES    $<BUILD_INTERFACE:${_zlib_INCLUDE_DIR}>
-                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/zlib>
-            LIBRARIES   $<BUILD_INTERFACE:${_zlib_LIBRARY}>
-            EXPORTABLE  ON)
-
-        # for now, satisfy vtk interface this way
-        add_library(ZLIB::ZLIB ALIAS zlib)
-
-        # need just the library name for  INSTALL_INTERFACE
-        get_filename_component(libz ${_zlib_LIBRARY} NAME)
-        target_link_libraries(zlib INTERFACE
-            $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libz}>)
-
-        # install and export
-        if(VISIT_INSTALL_THIRD_PARTY)
-            visit_install_export_targets(zlib)
-            THIRD_PARTY_INSTALL_LIBRARY(${_zlib_LIBRARY})
-            THIRD_PARTY_INSTALL_INCLUDE(zlib ${_zlib_INCLUDE_DIR})
-        endif()
-
-        if(WIN32)
-            # need to copy the dll to the build dir
-            cmake_path(SET libz_path ${_zlib_LIBRARY})
-            cmake_path(REPLACE_EXTENSION libz_path dll OUTPUT_VARIABLE _zlib_DLL)
-            if(NOT EXISTS ${_zlib_DLL})
-                cmake_path(GET _zlib_DLL PARENT_PATH _ZLIB_LIBRARY_DIR)
-                cmake_path(GET _zlib_DLL FILENAME _ZLIB_DLL_NAME)
-                cmake_path(SET _zlib_DLL NORMALIZE ${_ZLIB_LIBRARY_DIR}/../bin/${_ZLIB_DLL_NAME})
-            endif()
-            if(EXISTS ${_zlib_DLL})
-                execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                                ${_zlib_DLL}
-                                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-           endif()
-        endif()
-    else()
-        message(FATAL_ERROR "VisIt requires lib z and it could not be found. Tried ZLIB_DIR: ${ZLIB_DIR}")
+        # for plugin vs install:
+        cmake_path(GET zlib_loc FILENAME ZLIB_IMPORT_LIB)
     endif()
 else()
-    message(FATAL_ERROR "VisIt requires lib z and it could not be found. Please set ZLIB_DIR")
+    message(FATAL_ERROR "VisIt requires lib z and it could not be found.")
 endif()
 

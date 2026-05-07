@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------
 // visit includes
 //-----------------------------------------------------------------------------
+#include <visit-config.h>
 #include "avtDatabaseMetaData.h"
 #include "avtResolutionSelection.h"
 
@@ -57,7 +58,9 @@
 //-----------------------------------------------------------------------------
 // mfem includes
 //-----------------------------------------------------------------------------
+#ifdef HAVE_MFEM
 #include "mfem.hpp"
+#endif
 
 
 #ifdef PARALLEL
@@ -78,7 +81,9 @@
 
 using std::string;
 using namespace conduit;
+#ifdef HAVE_MFEM
 using namespace mfem;
+#endif
 
 const std::string avtBlueprintFileFormat::DISPLAY_NAME("display_name");
 
@@ -144,6 +149,9 @@ sanitize_var_name(const std::string &varname)
 // 
 //    Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
 //    Added specset info.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Removed MFEM LOR file open options. Initialize new MFEM options.
 //
 // ****************************************************************************
 avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAttributes *opts)
@@ -157,19 +165,10 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
-      m_new_refine(true)
+      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR),
+      m_field_projection_method(avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection),
+      m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::Gauss_Lobatto_Default)
 {
-    if (opts->GetEnum("MFEM LOR Setting") == 0)
-    {
-        // legacy LOR was requested
-        m_new_refine = false;
-    }
-    else
-    {
-        // new LOR was requested
-        m_new_refine = true;
-    }    
-
     m_tree_cache = new avtBlueprintTreeCache();
 }
 
@@ -1029,6 +1028,12 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
 //    all L2 are periodic) and mark fields for those meshes as nodal because
 //    they will use legacy LOR down the line which makes all fields nodal.
 //
+//    Cyrus Harrison, Fri Sep 26 12:40:56 PDT 2025
+//    Add support for Quadrature Functions
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Make an educated guess for MFEM centering.
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,
@@ -1060,10 +1065,85 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     std::map<std::string, std::string> topo_names_to_gf_names;
 
     //
+    // gather topos that have quad funcs defined on them
+    // 
+
+    // this is done before adding metadata for meshes 
+    // b/c we need to know if we need an extra cases for quad funcs
+
+    std::map<std::string, std::vector<std::string>> topos_to_quad_func_topos;
+    std::map<std::string, std::string> quad_func_fields_to_quad_func_topos;
+
+    if(n_mesh_info.has_child("fields"))
+    {
+        NodeConstIterator fields_itr = n_mesh_info["fields"].children();
+        while (fields_itr.has_next())
+        {
+            const Node &n_field = fields_itr.next();
+            const string field_name = fields_itr.name();
+            const string var_topo_name = n_field["topology"].as_string();
+
+            if (n_field.has_child("basis"))
+            {
+                const std::string basis = n_field["basis"].as_string();
+                if(avtMFEMDataAdaptor::CheckBasisStringForQuadratureFunction(basis))
+                {
+                    BP_PLUGIN_INFO(field_name << " is an mfem quadrature function");
+                    // found a quadrature function
+                    // quad func of specific order is a mesh visit can plot
+                    // we need to know the order, parsing from:
+                    // QF_{ORDER}_{VDIM}
+
+                    int qf_order = 0;
+                    int qf_vdim   = 0;
+                    avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(basis,
+                                                                           qf_order,
+                                                                           qf_vdim);
+
+                    // topo associated with this will be:
+                    // {topo_name}_quad_func_o{order}
+                    // construct the concrete name
+                    std::string qf_topo_name = avtMFEMDataAdaptor::GenerateQuadratureFunctionMeshName(var_topo_name, qf_order);
+
+                    BP_PLUGIN_INFO(field_name << " is defined on " << qf_topo_name);
+
+                    // we keep a map from main topos to quad func topos
+                    auto &mapped_qf_topos = topos_to_quad_func_topos[var_topo_name];
+                    // check if we have already added this to the map
+                    if(std::find(mapped_qf_topos.begin(),
+                                 mapped_qf_topos.end(),
+                                 qf_topo_name) == mapped_qf_topos.end() )
+                    {
+                        // we have not added this yet, do so
+                        mapped_qf_topos.push_back(qf_topo_name);
+                    }
+                    // associate the field with this quad func topo name
+                    quad_func_fields_to_quad_func_topos[field_name] = qf_topo_name;
+                }
+            }
+        }
+    }
+
+    //
+    // print main topo to quad func topos maps
+    //
+    for(auto const &qf_itr  : topos_to_quad_func_topos)
+    {
+        debug5 << "Quadrature function meshes based on topology `"
+               <<  qf_itr.first 
+               << "` : ";
+
+        for(auto qf_topo : qf_itr.second)
+        {
+            debug5 << qf_topo << " ";
+        }
+        debug5 << std::endl;
+    }
+
+    NodeConstIterator topos_itr = n_topos.children();
+    //
     // loop over topologies
     //
-    NodeConstIterator topos_itr = n_topos.children();
-
     while(topos_itr.has_next())
     {
         avtMeshType mt = AVT_UNKNOWN_MESH;
@@ -1082,9 +1162,14 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
         if(n_topo.has_child("grid_function"))
         {
+#ifdef HAVE_MFEM
             BP_PLUGIN_INFO(mesh_topo_name << " is an mfem mesh");
             is_mfem_mesh = true;
             topo_names_to_gf_names[topo_name] = n_topo["grid_function"].as_string();
+#else
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                "Detected mfem mesh, but mfem blueprints are not enabled");
+#endif
         }
 
         string coordset_name = n_topo["coordset"].as_string();
@@ -1178,8 +1263,40 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         mmd->LODs = 20;
         md->Add(mmd);
 
+        // check for assocated quad func meshes
+        if(topos_to_quad_func_topos.count(topo_name) )
+        {
+#ifdef HAVE_MFEM
+            BP_PLUGIN_INFO("Adding quadrature function meshes for topology: " << topo_name );
+            // loop over all qf topos assoc'd with this main topo
+            // add a mesh for each
+            for(auto qf_topo : topos_to_quad_func_topos[topo_name])
+            {
+                std::string mesh_qf_name = mesh_name + "_" + qf_topo;
+                BP_PLUGIN_INFO("Adding quadrature function mesh: " << mesh_qf_name);
+                md->Add( new avtMeshMetaData(mesh_qf_name,
+                                                nblocks,
+                                                0, 0, 0,
+                                                ndims, ndims, mt));
+                m_mfem_mesh_map[mesh_qf_name] = true;
+                m_mesh_and_topo_info[mesh_qf_name]["mesh"] = mesh_name;
+                m_mesh_and_topo_info[mesh_qf_name]["topo"] = qf_topo;
+                m_mesh_and_topo_info[mesh_qf_name]["quad_func"] = "true";
+            }
+#else
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                "Detected quadrature function mesh which requires mfem support");
+#endif
+        }
+
         if(is_mfem_mesh)
         {
+#ifndef HAVE_MFEM
+            std::ostringstream err_oss;
+            err_oss << "avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata: "
+                        << "detected an mfem mesh when mfem is disabled";
+            BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
+#endif
             // if we have a mfem mesh, add extra element_color variable
             md->Add(new avtScalarMetaData(mesh_topo_name + "/element_coloring",
                                           mesh_topo_name,
@@ -1234,8 +1351,15 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             string varname = fields_itr.name();
             string var_topo_name = n_field["topology"].as_string();
             string var_mesh_name = mesh_name + "_" + var_topo_name;
-            string varname_wmesh = var_mesh_name + "/" + varname;
 
+            // quad func case, mesh name is different
+            if( n_field.has_child("basis") &&
+                n_field["basis"].as_string().find("QF_") != std::string::npos )
+            {
+                var_mesh_name = mesh_name + "_" + quad_func_fields_to_quad_func_topos[varname];
+            }
+
+            string varname_wmesh = var_mesh_name + "/" + varname;
             // Make the variable name that the user sees.
             string varname_display(varname_wmesh);
             if(n_field.has_child(DISPLAY_NAME))
@@ -1268,47 +1392,96 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             }
             else if (n_field.has_child("basis"))
             {
+#ifdef HAVE_MFEM
                 // if any of the fields are mfem grid funcs, we may have to
                 // treat the mesh as an mfem mesh, even if it lacks a basis func
-
                 m_mfem_mesh_map[var_topo_name] = true;
 
-                if (periodic_topos.count(var_topo_name) > 0)
+                const std::string basis = n_field["basis"].as_string();
+                if(basis.find("QF_") != std::string::npos) // quad func case
                 {
-                    // if this field belongs to a topology that might be a periodic 
-                    // mfem mesh then we are always nodal because we are going to
-                    // fall back to legacy LOR.
+                    // quad func data is presented as zone centered on a special mesh
+                    cent = AVT_ZONECENT;
+                }
+                else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Zonal_Projection)
+                {
+                    if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Discontinuous_LOR)
+                    {
+                        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                            "Zonal projection together with discontinuous low-order-refinement is not supported.");
+                    }
+                    cent = AVT_ZONECENT;
+                }
+                else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Nodal_Projection)
+                {
                     cent = AVT_NODECENT;
                 }
-                else if (m_new_refine) // if new LOR is turned on
+                else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection)
                 {
-                    const std::string basis = n_field["basis"].as_string();
-                    // H1 is nodal
-                    // L2 is zonal
-                    const bool l2 = basis.find("L2_") != std::string::npos;
-                    const bool h1 = basis.find("H1_") != std::string::npos;
-                    bool node_centered;
-                    if (h1 && l2)
+                    if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Discontinuous_LOR)
                     {
-                        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
-                            "AddBlueprintMeshAndFieldMetadata: grid function cannot be both H1 and L2");
+                        cent = AVT_NODECENT;
                     }
-                    else if (!h1 && !l2) // guess
+                    else if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR &&
+                             periodic_topos.count(var_topo_name) > 0)
                     {
-                        BP_PLUGIN_INFO("WARNING: AddBlueprintMeshAndFieldMetadata: Grid Function is "
-                                      "neither H1 nor L2. Guessing nodal association.");
-                        node_centered = true; 
+                        // if this field belongs to a topology that might be a periodic 
+                        // mfem mesh then we are always nodal because we are going to
+                        // fall back to legacy LOR if we have selected default refinement.
+                        cent = AVT_NODECENT;
                     }
                     else
                     {
-                        node_centered = h1 && !l2;
-                    }
-
-                    if (!node_centered)
-                    {
-                        cent = AVT_ZONECENT;
+                        const std::string basis = n_field["basis"].as_string();
+                        const bool l2 = basis.find("L2_") != std::string::npos;
+                        const bool h1 = basis.find("H1_") != std::string::npos;
+                        const bool nurbs = basis.find("NURBS") != std::string::npos;
+                        const bool hdiv = basis.find("RT_") != std::string::npos;
+                        const bool hcurl = basis.find("ND_") != std::string::npos;
+                        const int bases = static_cast<int>(l2) +
+                                          static_cast<int>(h1) +
+                                          static_cast<int>(hdiv) +
+                                          static_cast<int>(hcurl) +
+                                          static_cast<int>(nurbs);
+                        if (0 == bases)
+                        {
+                            // assume node centered
+                            cent = AVT_NODECENT;
+                        }
+                        else if (1 == bases)
+                        {
+                            if (h1 || nurbs)
+                            {
+                                cent = AVT_NODECENT;
+                            }
+                            else if (l2 || hdiv || hcurl)
+                            {
+                                cent = AVT_ZONECENT;
+                            }
+                            else
+                            {
+                                BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+                                    "AddBlueprintMeshAndFieldMetadata: "
+                                    "Unsupported basis type in " << basis);
+                            }
+                        }
+                        else
+                        {
+                            BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+                                "AddBlueprintMeshAndFieldMetadata: grid function may not have multiple basis types. "
+                                "Unsupported basis type in " << basis);
+                        }
                     }
                 }
+                else
+                {
+                    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                        "Unknown field projection method in " << m_field_projection_method);
+                }
+#else
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                    "Detected mfem grid functions which require mfem support");
+#endif
             }
 
             // special 1D case
@@ -2265,6 +2438,9 @@ avtBlueprintFileFormat::GetTime()
 //    Change how we fetch ndims so that we do not add "values" leaf to 
 //    uniform coordsets.
 // 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Use new LOR options for refinement.
+// 
 // ****************************************************************************
 
 vtkDataSet *
@@ -2289,6 +2465,21 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             abs_1d_curve_field_name = FileFunctions::Basename(abs_meshname);
         }
 
+        // check for fetch of quad points mesh
+        // {mesh_name}_quad_func_o{order}
+        bool is_qf_mesh = avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(abs_meshname_str);
+        int qf_order = -1; // -1 == not quad points case
+
+        // if quadpts mesh find order and the base mesh name
+        if(is_qf_mesh)
+        {
+            std::string qf_mesh_name = abs_meshname_str;
+            avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(qf_mesh_name,
+                                                                  abs_meshname_str,
+                                                                  qf_order);
+        }
+
+        BP_PLUGIN_INFO(abs_meshname << " is quad func mesh = " << is_qf_mesh);
         // reads a single mesh into a blueprint conforming output
         ReadBlueprintMesh(domain, abs_meshname_str, data);
         // check for empty mesh case
@@ -2367,11 +2558,21 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 
             // use mfem to refine and create a vtk dataset
             mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(data);
-            res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
-                                                      domain,
-                                                      m_selected_lod+1,
-                                                      m_new_refine);
 
+            if(is_qf_mesh)
+            {
+                res = avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mesh,
+                                                                      qf_order,
+                                                                      m_refinement_basis_type);
+            }
+            else
+            {
+                res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
+                                                          domain,
+                                                          m_selected_lod+1,
+                                                          m_mesh_refinement_method,
+                                                          m_refinement_basis_type);
+            }
             // cleanup the mfem mesh
             delete mesh;
         }
@@ -2455,12 +2656,26 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 // 
 //    Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
 //    Pass n_coords to FieldToVTK().
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
+//    Pass centering change reference down to MFEM.
+//    Use new LOR options for refinement.
 //
 // ****************************************************************************
 
 vtkDataArray *
 avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 {
+    avtCentering cent_change;
+    return GetVar(domain, abs_varname, cent_change);
+}
+
+vtkDataArray *
+avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+
     try
     {
         BP_PLUGIN_INFO("GetVar: " << abs_varname << " [domain " << domain << "]");
@@ -2817,7 +3032,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 }
             }
 
-            // Check whether the data need to be refined anyway.
+            // Check whether the data needs to be refined anyway.
             const bool meshIsHO = n_mesh.has_path("topologies/" + topo_name + "/grid_function");
             if(meshIsHO && (tdims >= 2) && ((m_selected_lod+1) > 1))
             {
@@ -2843,7 +3058,10 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
-                                                                  m_new_refine);
+                                                                  m_mesh_refinement_method,
+                                                                  m_field_projection_method,
+                                                                  m_refinement_basis_type,
+                                                                  cent_change);
 
                 // cleanup mfem data
                 delete gf;
@@ -2857,15 +3075,31 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                                                                                  *field_ptr);
             }
         }
-        // if we have a basis, this field is actually an mfem grid function
+        // if we have a basis, this field is actually an mfem grid function or quadrature function
         else if(field_ptr->has_child("basis"))
         {
+
             // TODO: we currently have to replace colons, brackets, etc
             // to fetch from the mesh metadata, is there a standard helper
             // util in VisIt that can take care of this for us?
             string abs_meshname = metadata->MeshForVar(sanitize_var_name(abs_varname_str));
 
-            // the grid function needs the mesh in order to refine
+            // we need an mfem mesh to construct a grid function or quadrature function
+
+            // check for qfunc mesh
+            // {mesh_name}_quad_func_o{order}
+            bool is_qf_mesh = avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(abs_meshname);
+            int qf_order = -1; // -1 == not quad points case
+
+            // if quadpts mesh find order and the base mesh name
+            if(is_qf_mesh)
+            {
+                std::string qf_mesh_name = abs_meshname;
+                avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(qf_mesh_name,
+                                                                      abs_meshname,
+                                                                      qf_order);
+                BP_PLUGIN_INFO("base mesh for quadrature function  is: " <<abs_meshname);
+            }
 
             // read the mesh data
             Node n_mesh;
@@ -2881,28 +3115,47 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             if(!blueprint::mesh::verify(n_mesh,verify_info))
             {
                 BP_PLUGIN_INFO("blueprint::mesh::verify failed for field "
-                               << abs_meshname << " [domain " << domain << "]" << endl
-                               << "Verify Info " << endl
-                               << verify_info.to_yaml() << endl
-                               << "Data Schema " << endl
-                               << n_mesh.schema().to_yaml());
+                            << abs_meshname << " [domain " << domain << "]" << endl
+                            << "Verify Info " << endl
+                            << verify_info.to_yaml() << endl
+                            << "Data Schema " << endl
+                            << n_mesh.schema().to_yaml());
                 return NULL;
             }
 
             // create an mfem mesh
             mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(n_mesh);
 
-            // create the grid fuction
-            mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
-                                                                                 *field_ptr);
-            // refine the grid function into a vtk data array
-            res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
-                                                              gf,
-                                                              m_selected_lod+1,
-                                                              m_new_refine);
+            // quad func case
+            if(is_qf_mesh)
+            {
+                BP_PLUGIN_INFO("creating mfem quadrature function");
+                mfem::QuadratureFunction *qf = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(mesh,
+                                                                                *field_ptr);
+                res = avtMFEMDataAdaptor::QuadratureFunctionToVTK(qf);
 
-            // cleanup mfem data
-            delete gf;
+                // cleanup mfem quad func
+                delete qf;
+            }
+            else // grid func case
+            {
+                BP_PLUGIN_INFO("creating mfem grid function");
+                // create the grid fuction
+                mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
+                                                                                *field_ptr);
+                // refine the grid function into a vtk data array
+                res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
+                                                                  gf,
+                                                                  m_selected_lod+1,
+                                                                  m_mesh_refinement_method,
+                                                                  m_field_projection_method,
+                                                                  m_refinement_basis_type,
+                                                                  cent_change);
+
+                // cleanup mfem grid func
+                delete gf;
+            }
+            // cleanup mfem mesh
             delete mesh;
         }
 
@@ -2998,14 +3251,25 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 //
 //  Programmer: harrison37 -- generated by xml2avt
 //  Creation:   Wed Jun 15 16:25:28 PST 2016
+// 
+//  Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
+
+vtkDataArray *
+avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname, avtCentering &cent_change)
+{
+    // vector vars can simply use the normal GetVar logic
+    return GetVar(domain, varname, cent_change);
+}
 
 vtkDataArray *
 avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname)
 {
     // vector vars can simply use the normal GetVar logic
-    return GetVar(domain,varname);
+    return GetVar(domain, varname);
 }
 
 // ****************************************************************************
@@ -3221,6 +3485,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 //  Creation:   09/27/24
 //
 //  Modifications:
+//     Justin Privitera, Tue Jan 27 15:51:14 PST 2026
+//     Removed unnecessary material set conversion.
 //
 // ****************************************************************************
 avtSpecies *
@@ -3250,10 +3516,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         ReadBlueprintMatset(domain,
                             matset_name,
                             n_matset);
-
-        Node n_silo_matset;
-        conduit::blueprint::mesh::matset::to_silo(n_matset,
-                                                  n_silo_matset);
 
         Node n_silo_specset;
         conduit::blueprint::mesh::specset::to_silo(n_specset,
@@ -3323,6 +3585,10 @@ avtBlueprintFileFormat::GetSpecies(int domain,
 //     sels:    data selection list from the pipeline
 //     applied: pipeline handshaking for handling data selections
 //
+//   Modifications:
+//     Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//     Added m_mesh_refinement_method, m_field_projection_method, and
+//     m_refinement_basis_type.
 //
 // ****************************************************************************
 void
@@ -3337,6 +3603,9 @@ avtBlueprintFileFormat::RegisterDataSelections(
             const avtResolutionSelection* sel =
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->m_selected_lod = sel->resolution();
+            this->m_mesh_refinement_method = static_cast<avtMFEMDataAdaptor::meshRefinementMethod>(sel->meshRefinementMethod());
+            this->m_field_projection_method = static_cast<avtMFEMDataAdaptor::fieldProjectionMethod>(sel->fieldProjectionMethod());
+            this->m_refinement_basis_type = static_cast<avtMFEMDataAdaptor::refinementBasisType>(sel->refinementBasisType());
             (*applied)[i] = true;
         }
     }

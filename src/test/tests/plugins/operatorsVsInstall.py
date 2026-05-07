@@ -17,11 +17,15 @@
 #    tests currently available to run against the version built (to be added
 #    at a future time).
 #
+#    Kathleen Biagas, Tue Feb 10, 2026
+#    Use of pathlib is now part of tests_path.
+#
 # ----------------------------------------------------------------------------
 
 Source(tests_path("plugins", "pluginVsInstallHelpers"))
 
 do_plugin_type("operators", ["CartographicProjection", "CracksClipper", "RadialResample", "Slice", "Threshold"])
+
 # for future use
 #do_tests("operators", ["cart_proj.py", "cracksclipper.py", "radial_resample.py", "slice.py", "threshold.py"])
 

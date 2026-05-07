@@ -4,5 +4,5 @@ visit_add_database_plugin(
     DNAME      CarpetHDF5
     MSRC       H5Index.C
     ESRC       H5Index.C
-    LIBS       hdf5)
+    LIBS       ${HDF5_LIB})
 

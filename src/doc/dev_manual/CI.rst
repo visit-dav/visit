@@ -5,7 +5,7 @@ We use Azure Pipelines for CI testing VisIt_'s Pull Requests, located at
 `VisIt Azure DevOps Space <https://dev.azure.com/visit-dav/VisIt/>`_.
 
 
-To speed up our CI testing we use Docker containers with pre-built third party
+To speed up our CI testing we use Docker containers with prebuilt third party
 libraries (TPLs). These containers leverage our ``build_visit`` third party
 build process. The Docker files and build scripts used to create 
 these containers are in ``scripts/ci/docker``. The process to create the

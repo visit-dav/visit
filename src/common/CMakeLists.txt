@@ -91,7 +91,7 @@ endif()
 
 visit_append_list(
     NAME visitcommon_DEPENDS
-    ITEMS zlib)
+    ITEMS ${ZLIB_LIB})
 
 visit_add_library(
     NAME       visitcommon

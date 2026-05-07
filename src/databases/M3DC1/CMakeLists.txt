@@ -4,5 +4,5 @@ visit_add_database_plugin(
     DNAME      M3DC1
     MSRC       avtM3DC1Field.C
     ESRC       avtM3DC1Field.C
-    LIBS       hdf5)
+    LIBS       ${HDF5_LIB})
 

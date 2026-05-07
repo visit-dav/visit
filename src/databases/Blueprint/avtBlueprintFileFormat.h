@@ -57,6 +57,14 @@ class     DBOptionsAttributes;
 // 
 //    Justin Privitera, Fri Sep 27 11:51:59 PDT 2024
 //    Added support for species sets.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added m_mesh_refinement_method, m_field_projection_method, and 
+//    m_refinement_basis_type.
+//    Removed m_new_refine.
+//    Added overrides for GetVar and GetVectorVar for changing centering.
+//    Added HasCenteringChange method to indicate that this plugin can
+//    change centering.
 // ****************************************************************************
 
 class avtBlueprintTreeCache;
@@ -73,7 +81,11 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     // Standard Mesh Access
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
+    virtual vtkDataArray  *GetVar(int, const char *, avtCentering &);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+    virtual vtkDataArray  *GetVectorVar(int, const char *, avtCentering &);
+
+    bool                   HasCenteringChange() override { return true; };
 
     // Other types of Mesh Data (Materials, etc)
     virtual void          *GetAuxiliaryData(const char *var,
@@ -170,6 +182,9 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     avtBlueprintTreeCache  *m_tree_cache;
   
     int                    m_selected_lod;
+    avtMFEMDataAdaptor::meshRefinementMethod  m_mesh_refinement_method;
+    avtMFEMDataAdaptor::fieldProjectionMethod m_field_projection_method;
+    avtMFEMDataAdaptor::refinementBasisType   m_refinement_basis_type;
 
     conduit::Node          m_mesh_and_topo_info;
     conduit::Node          m_matset_info;
@@ -179,9 +194,6 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     std::map<std::string,std::pair<std::string,int> > m_mfem_material_map;
 
     std::set<std::string>  m_curve_names;
-
-    bool                   m_new_refine;
-
 };
 
 

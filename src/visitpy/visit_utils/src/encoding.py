@@ -11,11 +11,11 @@
 
  examples:
     from visit_utils.encoding import *
-    print encoders()
+    print(encoders())
+    encode("input.%04d.png","output.mp4")
     encode("input.%04d.png","output.mpg")
     encode("input.%04d.png","output.wmv",fdup=5)
-    encode("input.%04d.png","output.sm")
-    encode("input.%04d.png","output.sm",stereo=True)
+    encode("input.%04d.png","output.gif")
     extract("movie.mpg","output%04d.png")
     encode("input.mpg","output.wmv")
 
@@ -42,9 +42,7 @@ def encoders():
     """
     res = []
     if not ffmpeg_bin() is None:
-        res.extend(["mpg","wmv","avi","mov","swf","mp4","divx"])
-    if not img2sm_bin() is None:
-        res.append("sm")
+        res.extend(["mp4","mpg","wmv","gif","avi","mov","swf","divx"])
     return res
 
 def extract(ifile,opattern):
@@ -169,11 +167,15 @@ def encode_patterns(patterns,
             cur = encode_mp4(out[0],out[1],
                              input_frame_rate,
                              output_frame_rate)
+        elif etype == "gif":
+            cur = encode_gif(out[0],out[1],
+                             input_frame_rate,
+                             output_frame_rate)
         elif etype == "divx":
             cur = encode_divx(out[0],out[1],
                               input_frame_rate,
                               output_frame_rate)
-                            
+
         if cur != 0:
             nfails = nfails + 1
     return nfails
@@ -450,49 +452,58 @@ def encode_mp4(ipattern,
                input_frame_rate,
                output_frame_rate):
     """
-    Creates a mp4 video file (mpeg4) using ffmpeg.
+    Creates a mp4 video file (x264) using ffmpeg.
     """
     enc_bin = ffmpeg_bin()
     if not enc_bin is None:
-        if ffmpeg_version() > .09 :
-            # two pass support with newer versions requires two calls to ffmpeg
-            cmd =  "echo y | %s "
-            if not input_frame_rate is None:
-                cmd += " -framerate %s " % input_frame_rate
-            cmd += ffmpeg_input_type(ipattern)
-            cmd += "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
-            cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
-            cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
-            cmd += "-an -b:v 18000000 -f mp4 "
-            if not output_frame_rate is None:
-                cmd += " -r %s " % output_frame_rate
-            cmd += " %s"
-            # pass 1
-            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
-            res = sexe(cmd_pass1,echo=True)
-            if res == 0:
-                # pass 2
-                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
-                res = sexe(cmd_pass2,echo=True)
-        else:
-            cmd =  "echo y | %s "
-            if not input_frame_rate is None:
-                cmd += " -framerate %s " % input_frame_rate
-            cmd += ffmpeg_input_type(ipattern)
-            cmd += "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
-            cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
-            cmd += "-an -b 18000000 -f mp4"
-            if not output_frame_rate is None:
-                cmd += " -r %s " % output_frame_rate
-            cmd += " %s"
-            cmd =  cmd % (enc_bin,ipattern,ofile)
-            res = sexe(cmd,echo=True)
+        cmd =  "echo y | %s "
+        if not input_frame_rate is None:
+            cmd += " -framerate %s " % input_frame_rate
+        cmd += ffmpeg_input_type(ipattern)
+        cmd += "-i %s "
+        # use x264 -- its the most ubiquitously supported codec
+        cmd +="-c:v libx264 -profile:v high -level:v 4.0 -pix_fmt yuv420p "
+        cmd +="-crf 20 -preset slow "
+        cmd +='-vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" '
+        cmd +="-movflags +faststart "
+        if not output_frame_rate is None:
+            cmd += " -r %s " % output_frame_rate
+        cmd += " %s"
+        cmd =  cmd % (enc_bin,ipattern,ofile)
+        res = sexe(cmd,echo=True)
         # clean up the log file if it exists
         if os.path.isfile(ffmpeg_log_file_for_pass(ofile)):
             os.remove(ffmpeg_log_file_for_pass(ofile))
         return res
     else:
-        raise VisItException("ffmpeg not found: Unable to encode mp4.")
+        raise VisItException("ffmpeg not found: Unable to encode x264 mp4.")
+
+def encode_gif(ipattern,
+               ofile,
+               input_frame_rate,
+               output_frame_rate):
+    """
+    Creates a gif video file using ffmpeg.
+    """
+    enc_bin = ffmpeg_bin()
+    if not enc_bin is None:
+        cmd =  "echo y | %s "
+        if not input_frame_rate is None:
+            cmd += " -framerate %s " % input_frame_rate
+        cmd += ffmpeg_input_type(ipattern)
+        cmd += "-i %s "
+        cmd += '-vf "split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=floyd_steinberg" '
+        if not output_frame_rate is None:
+            cmd += " -r %s " % output_frame_rate
+        cmd += " %s"
+        cmd =  cmd % (enc_bin,ipattern,ofile)
+        res = sexe(cmd,echo=True)
+        # clean up the log file if it exists
+        if os.path.isfile(ffmpeg_log_file_for_pass(ofile)):
+            os.remove(ffmpeg_log_file_for_pass(ofile))
+        return res
+    else:
+        raise VisItException("ffmpeg not found: Unable to encode gif.")
 
 
 #

@@ -19,6 +19,9 @@
 #   Kathleen Biagas, Fri Dec  2 20:16:38 PST 2022
 #   Use cmake_path to get PARENT_PATH when handling tbb and embree.
 #
+#   Kathleen Biagas, Wed Mar 4, 2026
+#   Ensure ospray's dependent dlls get installed on Windows.
+#
 #*****************************************************************************
 
 if(NOT EXISTS ${VISIT_OSPRAY_DIR})
@@ -63,9 +66,37 @@ if(ospray_FOUND)
             THIRD_PARTY_INSTALL_LIBRARY(${lib})
         endforeach()
 
+        if(WIN32)
+            file(GLOB ospray_lib_dlls
+                 LIST_DIRECTORIES FALSE
+                 ${VISIT_OSPRAY_DIR}/bin/*.dll)
+            install(FILES ${ospray_lib_dlls}
+                    DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                WORLD_READ WORLD_EXECUTE)
+            file(COPY ${ospray_lib_dlls}
+                 DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        endif()
+
         if(NOT VISIT_HEADERS_SKIP_INSTALL)
             THIRD_PARTY_INSTALL_INCLUDE(ospray ${OSPRAY_INCLUDE_DIR})
         endif()
     endif()
+
+    # we use ospray binaries that we dont build, and they lack usual
+    # rpath we rely on for dev builds
+    #
+    # copy the files into visit's lib dir so dev builds can locate them
+    #
+    if(NOT WIN32)
+        file(COPY ${ospray_lib_libs}
+                   DESTINATION ${VISIT_BINARY_DIR}/lib/
+                   FILE_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                    GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                    WORLD_READ WORLD_EXECUTE
+                   FOLLOW_SYMLINK_CHAIN)
+    endif()
+
 endif()
 

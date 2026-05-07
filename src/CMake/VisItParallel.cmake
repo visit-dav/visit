@@ -6,205 +6,58 @@
 #   Kathleen Biagas, Thu Feb 20, 2025
 #   Removed ADD_PARALLEL_FORTRAN_EXECUTABLE target as it was only being used
 #   by sim examples. Functionality replicated there.
-
-function(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
-    # Unset any variables that may have been set before by FindMPI
-    unset(MPI_FOUND CACHE)
-    unset(MPI_INCLUDE_PATH CACHE)
-    unset(MPI_LIB CACHE)
-    unset(MPI_COMPILE_FLAGS CACHE)
-    unset(MPI_LIBRARIES CACHE)
-    unset(MPI_LIBRARY CACHE)
-    unset(MPI_EXTRA_LIBRARY CACHE)
-    unset(MPI_LINK_FLAGS CACHE)
-    unset(MPI_COMPILER CACHE)
-    unset(MPI_RPATH CACHE)
-
-    # Set the compiler and call FindMPI
-    set(MPI_COMPILER ${COMP})
-    include(${CMAKE_ROOT}/Modules/FindMPI.cmake)
-
-    # Return the values
-    if(NOT MPI_FOUND)
-        message(FATAL_ERROR  "Failed to setup MPI using compiler wrapper: ${COMP}")
-    else()
-        # Take the MPI include path and split it into -I's
-        set(MPI_INCLUDE_PATH_CONV "")
-        foreach(I ${MPI_INCLUDE_PATH})
-            set(MPI_INCLUDE_PATH_CONV "${MPI_INCLUDE_PATH_CONV} -I${I}")
-        endforeach()
-
-        set(${mlibs}   ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
-        set(${mflags}  "${MPI_INCLUDE_PATH_CONV} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
-        set(${mlflags} "${MPI_LINK_FLAGS}" CACHE STRING "Parallel linker flags")
-
-        #
-        # Detect all mpi library paths, we need these to keep the RPATH intact
-        # for installs that link to MPI.
-        #
-        set(MPI_RPATH "")
-        foreach(MLIB ${MPI_LIBRARIES})
-            get_filename_component(MLIB_PATH ${MLIB} PATH)
-            # make sure it is not an implicit path - we need to skip these
-            list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${MLIB_PATH}" pidx)
-            if("${pidx}" EQUAL -1)
-                list(APPEND MPI_RPATH ${MLIB_PATH})
-            endif()
-        endforeach(MLIB ${MPI_LIBRARIES})
-        list(REMOVE_DUPLICATES MPI_RPATH)
-        set(${mrpath} "${MPI_RPATH}" CACHE STRING "Parallel rpath(s)")
-    endif()
-
-endfunction()
-
+#
 
 set(VISIT_PARALLEL_DEFINES "PARALLEL;MPICH_IGNORE_CXX_SEEK;MPICH_SKIP_MPICXX;OMPI_SKIP_MPICXX;MPI_NO_CPPBIND" CACHE STRING "Parallel compiler defines")
 
+set(errmsg "")
 if(VISIT_MPI_COMPILER)
-    message(STATUS "Setting up MPI using compiler wrapper")
+    set(MPI_COMPILER ${VISIT_MPI_COMPILER})
+    set(errmsg "Using VISIT_MPI_COMPILER: ${VISIT_MPI_COMPILER}")
+else(VISIT_MPI_HOME)
+    set(MPI_HOME ${VISIT_MPI_HOME})
+    set(MPI_DIR ${VISIT_MPI_DIR})
+    set(errmsg "Using VISIT_MPI_HOME: ${VISIT_MPI_HOM}")
+endif()
 
-    # Detect the MPI settings that C++ wants
-    DETECT_MPI_SETTINGS(${VISIT_MPI_COMPILER}
-        VISIT_PARALLEL_LIBS
-        VISIT_PARALLEL_CFLAGS
-        VISIT_PARALLEL_LINKER_FLAGS
-        VISIT_PARALLEL_RPATH)
+# do we still need this?
+iF(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
+   set(MPI_Fortran_COMPILER ${VISIT_MPI_FORTRAN_COMPILER})
+endif()
 
-    set(VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CFLAGS} CACHE STRING "Parallel CXXFLAGS")
+find_package(MPI)
 
-    # Detect the MPI settings that Fortran wants
-    if(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
-        DETECT_MPI_SETTINGS(${VISIT_MPI_FORTRAN_COMPILER}
-            VISIT_PARALLEL_FORTRAN_LIBS
-            VISIT_PARALLEL_FORTRAN_DEFS
-            VISIT_PARALLEL_FORTRAN_FLAGS
-            VISIT_PARALLEL_FORTRAN_LINKER_FLAGS
-            VISIT_PARALLEL_RPATH
-            )
-    endif()
 
+if(MPI_C_FOUND)
+    message(STATUS "MPI_C_COMPILER:            ${MPI_C_COMPILER}")
+    message(STATUS "MPI_C_COMPILE_OPTIONS:     ${MPI_C_COMPILE_OPTIONS}")
+    message(STATUS "MPI_C_COMPILE_DEFINITIONS: ${MPI_C_COMPILE_DEFINITIONS}")
+    message(STATUS "MPI_C_INCLUDE_DIRS:        ${MPI_C_INCLUDE_DIRS}")
+    message(STATUS "MPI_C_LINK_FLAGS:          ${MPI_C_LINK_FLAGS}")
+    message(STATUS "MPI_C_LIBRARIES:           ${MPI_C_LIBRARIES}")
 else()
-    if(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
-        message(STATUS "Setting up MPI using user defined flags")
-        set(VISIT_PARALLEL_LIBS          ${VISIT_MPI_LIBS}
-            CACHE STRING "MPI libraries")
-        set(VISIT_PARALLEL_FORTRAN_LIBS  ${VISIT_MPI_FORTRAN_LIBS}
-            CACHE STRING "MPI libraries for Fortran")
+    message(FATAL_ERROR "Could not find MPI ${errmsg}")
+endif()
 
-        if(VISIT_MPI_C_FLAGS)
-            set(VISIT_PARALLEL_CFLAGS  "${VISIT_MPI_C_FLAGS}"
-                CACHE STRING "Parallel CFLAGS")
-        else()
-            set(VISIT_PARALLEL_CFLAGS  ""
-                CACHE STRING "Parallel CFLAGS")
-        endif()
-
-        if(VISIT_MPI_CXX_FLAGS)
-            set(VISIT_PARALLEL_CXXFLAGS "${VISIT_MPI_CXX_FLAGS}"
-                CACHE STRING "Parallel CXXFLAGS")
-        else()
-            set(VISIT_PARALLEL_CXXFLAGS  ""
-                CACHE STRING "Parallel CXXFLAGS")
-        endif()
-
-        if(VISIT_MPI_FORTRAN_FLAGS)
-            set(VISIT_PARALLEL_FORTRAN_FLAGS "${VISIT_MPI_FORTRAN_FLAGS}"
-                CACHE STRING "Parallel Fortran flags")
-        else()
-            set(VISIT_PARALLEL_FORTRAN_FLAGS  ""
-                CACHE STRING "Parallel flags for Fortran")
-        endif()
-
-        if(VISIT_MPI_LD_FLAGS)
-            set(VISIT_PARALLEL_LINKER_FLAGS "${VISIT_MPI_LD_FLAGS}"
-                CACHE STRING "Parallel LDFLAGS")
-            set(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS "${VISIT_MPI_LD_FLAGS}"
-                CACHE STRING "Parallel LDFLAGS")
-        else()
-            set(VISIT_PARALLEL_LINKER_FLAGS ""
-                CACHE STRING "Parallel LDFLAGS")
-            set(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS ""
-                CACHE STRING "Parallel LDFLAGS")
-        endif()
+# is this still needed?
+if(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
+    if(MPI_Fortran_FOUND)
+        message(STATUS "MPI_Fortran_COMPILER:            ${MPI_Fortran_COMPILE}")
+        message(STATUS "MPI_Fortran_COMPILE_OPTIONS:     ${MPI_Fortran_COMPILE_OPTIONS}")
+        message(STATUS "MPI_Fortran_COMPILE_DEFINITIONS: ${MPI_Fortran_COMPILE_OPTIONS}")
+        message(STATUS "MPI_Fortran_INCLUDE_DIRS:        ${MPI_Fortran_INCLUDE_DIRS}")
+        message(STATUS "MPI_Fortran_LINK_FLAGS:          ${MPI_Fortran_LINK_FLAGS}")
+        message(STATUS "MPI_Fortran_LIBRARIES:           ${MPI_Fortran_LIBRARIES}")
     else()
-        if(WIN32)
-          if(NOT MPI_FOUND)
-            include(${CMAKE_ROOT}/Modules/FindMPI.cmake)
-            if(MPI_FOUND)
-              set(VISIT_PARALLEL_LIBS "${MPI_LIBRARY}"
-                  CACHE STRING "MPI libraries")
-              set(VISIT_PARALLEL_INCLUDE "${MPI_INCLUDE_PATH}"
-                  CACHE STRING "MPI include dir")
-              if(MPI_EXTRA_LIBRARY)
-                   list(APPEND VISIT_PARALLEL_LIBS "${MPI_EXTRA_LIBRARY}")
-              endif()
-
-              if(MPI_COMPILE_FLAGS)
-                  set(VISIT_PARALLEL_CFLAGS "${MPI_COMPILE_FLAGS}"
-                      CACHE STRING "Parallel CFLAGS")
-                  set(VISIT_PARALLEL_CXXFLAGS "${MPI_COMPILE_FLAGS}"
-                      CACHE STRING "Parallel CXXFLAGS")
-              endif()
-              if(MPI_LINK_FLAGS)
-                  set(VISIT_PARALLEL_LINKER_FLAGS "${MPI_LINK_FLAGS}"
-                      CACHE STRING "Parallel LDFLAGS")
-              endif()
-              find_file(HAVE_HPC_SCHEDULER "Microsoft.Hpc.Scheduler.tlb")
-            else()
-              message(FATAL_ERROR "To build parallel VisIt, you must at a "
-                      "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "
-                      "You may also define VISIT_MPI_LD_FLAGS, "
-                      "VISIT_MPI_CXX_FLAGS." )
-            endif()
-          endif()
-        else()
-            message(FATAL_ERROR "To build parallel VisIt, you must at a "
-                    "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "
-                    "You may also define VISIT_MPI_LD_FLAGS, "
-                    "VISIT_MPI_CXX_FLAGS." )
-        endif()
-
+        message(FATAL_ERROR "Could not find Fortran MPI using VISIT_FORTRAN_MPI_COMPILER: ${VISIT_MPI_FORTRAN_COMPILER}")
     endif()
 endif()
 
-# prepare these for direct use in cmake calls
-if(VISIT_PARALLEL_CXXFLAGS)
-    string(REPLACE " " ";" VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CXXFLAGS})
-endif()
-if(VISIT_PARALLEL_LINKER_FLAGS)
-    string(REPLACE " " ";" VISIT_PARALLEL_LINKER_FLAGS ${VISIT_PARALLEL_LINKER_FLAGS})
-endif()
+# make ;-separated lists, once now instead of per every parallel target added
 if(VISIT_PARALLEL_RPATH)
     string(REPLACE " " ";" VISIT_PARALLEL_RPATH ${VISIT_PARALLEL_RPATH})
 endif()
-
-# Separate link dirs from other flags
-foreach(plf ${VISIT_PARALLEL_LINKER_FLAGS})
-    string(SUBSTRING ${plf} 0 2 lf_type)
-    if(lf_type STREQUAL "-L")
-        string(SUBSTRING ${plf} 2 -1 lf_dir)
-        list(APPEND VISIT_PARALLEL_LINK_DIRS ${lf_dir})
-    else()
-        list(APPEND VISIT_PARALLEL_LINK_FLAGS ${plf})
-    endif()
-endforeach()
-
-
-message(STATUS "Parallel version of VisIt")
-message(STATUS "    VISIT_PARALLEL_CFLAGS = ${VISIT_PARALLEL_CFLAGS}")
-message(STATUS "    VISIT_PARALLEL_CXXFLAGS = ${VISIT_PARALLEL_CXXFLAGS}")
-message(STATUS "    VISIT_PARALLEL_LINK_FLAGS = ${VISIT_PARALLEL_LINK_FLAGS}")
-message(STATUS "    VISIT_PARALLEL_LINK_DIRS = ${VISIT_PARALLEL_LINK_DIRS}")
-message(STATUS "    VISIT_PARALLEL_LIBS = ${VISIT_PARALLEL_LIBS}")
-message(STATUS "    VISIT_PARALLEL_RPATH = ${VISIT_PARALLEL_RPATH}")
-message(STATUS "    VISIT_PARALLEL_DEFINES = ${VISIT_PARALLEL_DEFINES}")
-message(STATUS "    VISIT_PARALLEL_INCLUDE = ${VISIT_PARALLEL_INCLUDE}")
-
-if(VISIT_FORTRAN AND VISIT_PARALLEL_FORTRAN_LIBS)
-    message(STATUS "")
-    message(STATUS "    VISIT_PARALLEL_FORTRAN_FLAGS = ${VISIT_PARALLEL_FORTRAN_FLAGS}")
-    message(STATUS "    VISIT_PARALLEL_FORTRAN_LINKER_FLAGS = ${VISIT_PARALLEL_FORTRAN_LINKER_FLAGS}")
-    message(STATUS "    VISIT_PARALLEL_FORTRAN_LIBS = ${VISIT_PARALLEL_FORTRAN_LIBS}")
+if(CMAKE_INSTALL_RPATH)
+    string(REPLACE " " ";" CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH})
 endif()
-
 

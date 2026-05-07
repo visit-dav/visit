@@ -4,6 +4,7 @@
         <group name="required" comment="All required libraries, built by default. Entire group can be disabled by '--no-thirdparty'. Individual libraries in the group can be disabled via --no-name flag, e.g. --no-python." enabled="yes">
             <lib name="cmake"/>
             <lib name="zlib"/>
+            <lib name="ninja"/>
             <lib name="python"/>
             <lib name="qt"/>
             <lib name="vtk"/>
@@ -35,7 +36,6 @@
             <lib name="pidx"/>
             <lib name="qwt"/>
             <lib name="silo"/>
-            <lib name="szip"/>
             <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
@@ -47,7 +47,6 @@
             <lib name="meson"/>
             <lib name="mpich"/>
             <lib name="nektarpp"/>
-            <lib name="ninja"/>
             <lib name="xcb"/>
             <lib name="xkbcommon"/>
         </group>

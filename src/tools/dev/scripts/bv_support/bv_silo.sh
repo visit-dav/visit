@@ -39,11 +39,11 @@ function bv_silo_depends_on
 
 function bv_silo_info
 {
-    export SILO_VERSION=${SILO_VERSION:-"4.10.2"}
-    export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}-w-unix-line-endings.tar.gz"}
-    export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.2"}
-    export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
-    export SILO_SHA256_CHECKSUM="db5e4fb6a4c313b9c596f09df307659079d51c36f013933dd957fe9412d37761"
+    export SILO_VERSION=${SILO_VERSION:-"4.12.0"}
+    export SILO_FILE=${SILO_FILE:-"Silo-${SILO_VERSION}.tar.xz"}
+    export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.12.0"}
+    export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"Silo-${SILO_VERSION}-build"}
+    export SILO_SHA256_CHECKSUM="bde1685e4547d5dd7416bd6215b41f837efef0e4934d938ba776957afbebdff0"
 }
 
 function bv_silo_print
@@ -72,12 +72,10 @@ function bv_silo_host_profile
             >> $HOSTCONF
 
         libdep=""
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-            libdep="zlib"
-        fi
         if [[ "$DO_HDF5" == "yes" ]] ; then
-            libdep="$libdep hdf5"
+            libdep="HDF5_LIB"
         fi
+        libdep="$libdep ZLIB_LIB"
         if [[ -n "$libdep" ]]; then
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP $libdep TYPE STRING)" \
@@ -98,294 +96,292 @@ function bv_silo_ensure
     fi
 }
 
-function apply_silo_4102_fpzip_patch
+function apply_silo_4120_const_ns_patch
 {
-    info "Patching silo for fpzip DOMAIN and RANGE symbols"
-    patch --verbose -p0 << \EOF
-Index: src/fpzip/codec.h
-===================================================================
---- src/fpzip/codec.h   (revision 809)
-+++ src/fpzip/codec.h   (working copy)
-@@ -16,13 +16,13 @@
- // identity map for integer arithmetic
- template <typename T, unsigned width>
- struct PCmap<T, width, T> {
--  typedef T DOMAIN;
--  typedef T RANGE;
-+  typedef T FPZIP_Domain_t;
-+  typedef T FPZIP_Range_t;
-   static const unsigned bits = width;
-   static const T        mask = ~T(0) >> (bitsizeof(T) - bits);
--  RANGE forward(DOMAIN d) const { return d & mask; }
--  DOMAIN inverse(RANGE r) const { return r & mask; }
--  DOMAIN identity(DOMAIN d) const { return d & mask; }
-+  FPZIP_Range_t forward(FPZIP_Domain_t d) const { return d & mask; }
-+  FPZIP_Domain_t inverse(FPZIP_Range_t r) const { return r & mask; }
-+  FPZIP_Domain_t identity(FPZIP_Domain_t d) const { return d & mask; }
- };
- #endif
+    info "Patching Silo 4.12.0 for constant namescheme issue"
+    patch -p1 << \EOF
+From 43a52d788a3c15bee3b9391906e8ed276c5a456c Mon Sep 17 00:00:00 2001
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Fri, 23 Jan 2026 19:03:18 -0800
+Subject: [PATCH] fix const nameschemes
+
+---
+ src/silo/silo_ns.c | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
+
+diff --git a/Silo-4.12.0/src/silo/silo_ns.c b/Silo-4.12.0/src/silo/silo_ns.c
+index 645077dd..e17a57d4 100644
+--- a/Silo-4.12.0/src/silo/silo_ns.c
++++ b/Silo-4.12.0/src/silo/silo_ns.c
+@@ -424,22 +424,33 @@ DBMakeNamescheme(char const *fmt, ...)
+     */
+     if (rv->ncspecs == 0)
+     {
+-        int rm_unnecessary_delim = 0;
++        free(rv->fmt);
  
-Index: src/fpzip/pcdecoder.inl
-===================================================================
---- src/fpzip/pcdecoder.inl (revision 809)
-+++ src/fpzip/pcdecoder.inl (working copy)
-@@ -19,7 +19,7 @@
- T PCdecoder<T, M, false>::decode(T pred, unsigned context)
- {
-   // map type T to unsigned integer type
--  typedef typename M::RANGE U;
-+  typedef typename M::FPZIP_Range_t U;
-   U p = map.forward(pred);
-   // entropy decode d = r - p
-   U r = p + rd->decode(rm[context]) - bias;
-@@ -46,7 +46,7 @@
- template <typename T, class M>
- T PCdecoder<T, M, true>::decode(T pred, unsigned context)
- {
--  typedef typename M::RANGE U;
-+  typedef typename M::FPZIP_Range_t U;
-   unsigned s = rd->decode(rm[context]);
-   if (s > bias) {      // underprediction
-     unsigned k = s - bias - 1;
-Index: src/fpzip/pcencoder.inl
-===================================================================
---- src/fpzip/pcencoder.inl (revision 809)
-+++ src/fpzip/pcencoder.inl (working copy)
-@@ -18,7 +18,7 @@
- T PCencoder<T, M, false>::encode(T real, T pred, unsigned context)
- {
-   // map type T to unsigned integer type
--  typedef typename M::RANGE U;
-+  typedef typename M::FPZIP_Range_t U;
-   U r = map.forward(real);
-   U p = map.forward(pred);
-   // entropy encode d = r - p
-@@ -47,7 +47,7 @@
- T PCencoder<T, M, true>::encode(T real, T pred, unsigned context)
- {
-   // map type T to unsigned integer type
--  typedef typename M::RANGE U;
-+  typedef typename M::FPZIP_Range_t U;
-   U r = map.forward(real);
-   U p = map.forward(pred);
-   // compute (-1)^s (2^k + m) = r - p, entropy code (s, k),
-Index: src/fpzip/pcmap.h
-===================================================================
---- src/fpzip/pcmap.h   (revision 809)
-+++ src/fpzip/pcmap.h   (working copy)
-@@ -14,53 +14,53 @@
- // specialized for integer-to-integer map
- template <typename T, unsigned width>
- struct PCmap<T, width, void> {
--  typedef T DOMAIN;
--  typedef T RANGE;
--  static const unsigned bits = width;                    // RANGE bits
--  static const unsigned shift = bitsizeof(RANGE) - bits; // DOMAIN\RANGE bits
--  RANGE forward(DOMAIN d) const { return d >> shift; }
--  DOMAIN inverse(RANGE r) const { return r << shift; }
--  DOMAIN identity(DOMAIN d) const { return inverse(forward(d)); }
-+  typedef T FPZIP_Domain_t;
-+  typedef T FPZIP_Range_t;
-+  static const unsigned bits = width;                    // FPZIP_Range_t bits
-+  static const unsigned shift = bitsizeof(FPZIP_Range_t) - bits; // FPZIP_Domain_t\FPZIP_Range_t bits
-+  FPZIP_Range_t forward(FPZIP_Domain_t d) const { return d >> shift; }
-+  FPZIP_Domain_t inverse(FPZIP_Range_t r) const { return r << shift; }
-+  FPZIP_Domain_t identity(FPZIP_Domain_t d) const { return inverse(forward(d)); }
- };
+-        if (n > 2 && fmt[0] == fmt[n-1])
+-            rm_unnecessary_delim = !db_VariableNameValid(fmt);
++        /* If whole string is valid, take all of it. */
++        if (db_VariableNameValid(fmt))
++        {
++            rv->fmt = STRNDUP(&fmt[0],n);
++            rv->fmtlen = n;
++            return rv;
++        }
  
- // specialized for float type
- template <unsigned width>
- struct PCmap<float, width, void> {
--  typedef float    DOMAIN;
--  typedef unsigned RANGE;
-+  typedef float    FPZIP_Domain_t;
-+  typedef unsigned FPZIP_Range_t;
-   union UNION {
--    UNION(DOMAIN d) : d(d) {}
--    UNION(RANGE r) : r(r) {}
--    DOMAIN d;
--    RANGE r;
-+    UNION(FPZIP_Domain_t d) : d(d) {}
-+    UNION(FPZIP_Range_t r) : r(r) {}
-+    FPZIP_Domain_t d;
-+    FPZIP_Range_t r;
-   };
--  static const unsigned bits = width;                    // RANGE bits
--  static const unsigned shift = bitsizeof(RANGE) - bits; // DOMAIN\RANGE bits
--  RANGE fcast(DOMAIN d) const;
--  DOMAIN icast(RANGE r) const;
--  RANGE forward(DOMAIN d) const;
--  DOMAIN inverse(RANGE r) const;
--  DOMAIN identity(DOMAIN d) const;
-+  static const unsigned bits = width;                    // FPZIP_Range_t bits
-+  static const unsigned shift = bitsizeof(FPZIP_Range_t) - bits; // FPZIP_Domain_t\FPZIP_Range_t bits
-+  FPZIP_Range_t fcast(FPZIP_Domain_t d) const;
-+  FPZIP_Domain_t icast(FPZIP_Range_t r) const;
-+  FPZIP_Range_t forward(FPZIP_Domain_t d) const;
-+  FPZIP_Domain_t inverse(FPZIP_Range_t r) const;
-+  FPZIP_Domain_t identity(FPZIP_Domain_t d) const;
- };
+-        free(rv->fmt);
++        /* If whole string but first char is valid, take all but first char */
++        if (db_VariableNameValid(&fmt[1]))
++        {
++            rv->fmt = STRNDUP(&fmt[1],n-1);
++            rv->fmtlen = n-1;
++            return rv;
++        }
  
- // specialized for double type
- template <unsigned width>
- struct PCmap<double, width, void> {
--  typedef double             DOMAIN;
--  typedef unsigned long long RANGE;
-+  typedef double             FPZIP_Domain_t;
-+  typedef unsigned long long FPZIP_Range_t;
-   union UNION {
--    UNION(DOMAIN d) : d(d) {}
--    UNION(RANGE r) : r(r) {}
--    DOMAIN d;
--    RANGE r;
-+    UNION(FPZIP_Domain_t d) : d(d) {}
-+    UNION(FPZIP_Range_t r) : r(r) {}
-+    FPZIP_Domain_t d;
-+    FPZIP_Range_t r;
-   };
--  static const unsigned bits = width;                    // RANGE bits
--  static const unsigned shift = bitsizeof(RANGE) - bits; // DOMAIN\RANGE bits
--  RANGE fcast(DOMAIN d) const;
--  DOMAIN icast(RANGE r) const;
--  RANGE forward(DOMAIN d) const;
--  DOMAIN inverse(RANGE r) const;
--  DOMAIN identity(DOMAIN d) const;
-+  static const unsigned bits = width;                    // FPZIP_Range_t bits
-+  static const unsigned shift = bitsizeof(FPZIP_Range_t) - bits; // FPZIP_Domain_t\FPZIP_Range_t bits
-+  FPZIP_Range_t fcast(FPZIP_Domain_t d) const;
-+  FPZIP_Domain_t icast(FPZIP_Range_t r) const;
-+  FPZIP_Range_t forward(FPZIP_Domain_t d) const;
-+  FPZIP_Domain_t inverse(FPZIP_Range_t r) const;
-+  FPZIP_Domain_t identity(FPZIP_Domain_t d) const;
- };
+-        if (rm_unnecessary_delim)
++        if (fmt[0] == fmt[n-1])
+         {
+             rv->fmt = STRNDUP(&fmt[1],n-2);
+             rv->fmtlen = n-2;
+         }
+         else
+         {
+-            rv->fmt = STRNDUP(&fmt[0],n);
+-            rv->fmtlen = n;
++            rv->fmt = STRNDUP(&fmt[0],n-1);
++            rv->fmtlen = n-1;
+         }
  
- #include "pcmap.inl"
-Index: src/fpzip/pcmap.inl
-===================================================================
---- src/fpzip/pcmap.inl (revision 809)
-+++ src/fpzip/pcmap.inl (working copy)
-@@ -3,12 +3,12 @@
- PCmap<float, width, void>::fcast(float d) const
- {
- #ifdef WITH_REINTERPRET_CAST
--  return reinterpret_cast<const RANGE&>(d);
-+  return reinterpret_cast<const FPZIP_Range_t&>(d);
- #elif defined WITH_UNION
-   UNION shared(d);
-   return shared.r;
- #else
--  RANGE r;
-+  FPZIP_Range_t r;
-   memcpy(&r, &d, sizeof(r));
-   return r;
- #endif
-@@ -19,12 +19,12 @@
- PCmap<float, width, void>::icast(unsigned r) const
- {
- #ifdef WITH_REINTERPRET_CAST
--  return reinterpret_cast<const DOMAIN&>(r);
-+  return reinterpret_cast<const FPZIP_Domain_t&>(r);
- #elif defined WITH_UNION
-   UNION shared(r);
-   return shared.d;
- #else
--  DOMAIN d;
-+  FPZIP_Domain_t d;
-   memcpy(&d, &r, sizeof(d));
-   return d;
- #endif
-@@ -37,7 +37,7 @@
- unsigned
- PCmap<float, width, void>::forward(float d) const
- {
--  RANGE r = fcast(d);
-+  FPZIP_Range_t r = fcast(d);
-   r = ~r;
-   r >>= shift;
-   r ^= -(r >> (bits - 1)) >> (shift + 1);
-@@ -61,7 +61,7 @@
- float
- PCmap<float, width, void>::identity(float d) const
- {
--  RANGE r = fcast(d);
-+  FPZIP_Range_t r = fcast(d);
-   r >>= shift;
-   r <<= shift;
-   return icast(r);
-@@ -72,12 +72,12 @@
- PCmap<double, width, void>::fcast(double d) const
- {
- #ifdef WITH_REINTERPRET_CAST
--  return reinterpret_cast<const RANGE&>(d);
-+  return reinterpret_cast<const FPZIP_Range_t&>(d);
- #elif defined WITH_UNION
-   UNION shared(d);
-   return shared.r;
- #else
--  RANGE r;
-+  FPZIP_Range_t r;
-   memcpy(&r, &d, sizeof(r));
-   return r;
- #endif
-@@ -88,12 +88,12 @@
- PCmap<double, width, void>::icast(unsigned long long r) const
- {
- #ifdef WITH_REINTERPRET_CAST
--  return reinterpret_cast<const DOMAIN&>(r);
-+  return reinterpret_cast<const FPZIP_Domain_t&>(r);
- #elif defined WITH_UNION
-   UNION shared(r);
-   return shared.d;
- #else
--  DOMAIN d;
-+  FPZIP_Domain_t d;
-   memcpy(&d, &r, sizeof(d));
-   return d;
- #endif
-@@ -106,7 +106,7 @@
- unsigned long long
- PCmap<double, width, void>::forward(double d) const
- {
--  RANGE r = fcast(d);
-+  FPZIP_Range_t r = fcast(d);
-   r = ~r;
-   r >>= shift;
-   r ^= -(r >> (bits - 1)) >> (shift + 1);
-@@ -130,7 +130,7 @@
- double
- PCmap<double, width, void>::identity(double d) const
- {
--  RANGE r = fcast(d);
-+  FPZIP_Range_t r = fcast(d);
-   r >>= shift;
-   r <<= shift;
-   return icast(r);
-Index: src/fpzip/read.cpp
-===================================================================
---- src/fpzip/read.cpp  (revision 809)
-+++ src/fpzip/read.cpp  (working copy)
-@@ -103,7 +103,7 @@
- {
-   // initialize decompressor
-   typedef PCmap<T, bits> TMAP;
--  typedef typename TMAP::RANGE U;
-+  typedef typename TMAP::FPZIP_Range_t U;
-   typedef PCmap<U, bits, U> UMAP;
-   RCmodel* rm = new RCqsmodel(false, PCdecoder<U, UMAP>::symbols);
-   PCdecoder<U, UMAP>* fd = new PCdecoder<U, UMAP>(rd, &rm);
-Index: src/fpzip/write.cpp
-===================================================================
---- src/fpzip/write.cpp (revision 809)
-+++ src/fpzip/write.cpp (working copy)
-@@ -103,7 +103,7 @@
- {
-   // initialize compressor
-   typedef PCmap<T, bits> TMAP;
--  typedef typename TMAP::RANGE U;
-+  typedef typename TMAP::FPZIP_Range_t U;
-   typedef PCmap<U, bits, U> UMAP;
-   RCmodel* rm = new RCqsmodel(true, PCencoder<U, UMAP>::symbols);
-   PCencoder<U, UMAP>* fe = new PCencoder<U, UMAP>(re, &rm);
+         return rv;
+-- 
+2.50.1 (Apple Git-155)
+EOF
+
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function apply_silo_4120_mpio_vfd_patch
+{
+    info "Patching Silo 4.12.0 for mpio vfd issue"
+    patch -p1 << \EOF
+From 7cb7983ed1c369b3ad47d1b5852fa8651bb7bdb2 Mon Sep 17 00:00:00 2001
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Tue, 10 Feb 2026 18:54:11 -0800
+Subject: [PATCH] rm mpio vfd from dflt list
+
+---
+ Silo-4.12.0/src/silo/silo.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Silo-4.12.0/src/silo/silo.c b/Silo-4.12.0/src/silo/silo.c
+index f34653cf..893137da 100644
+--- a/Silo-4.12.0/src/silo/silo.c
++++ b/Silo-4.12.0/src/silo/silo.c
+@@ -2837,8 +2837,6 @@ const int* db_get_used_file_options_sets_ids()
+     used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_SPLIT;
+     used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_DIRECT;
+     used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_FAMILY;
+-    used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_MPIO;
+-    used_slots[n++] = DB_FILE_OPTS_H5_DEFAULT_MPIP;
+     for (i = n; i < MAX_FILE_OPTIONS_SETS+NUM_DEFAULT_FILE_OPTIONS_SETS+1; i++)
+         used_slots[i] = -1;
+
+--
+2.50.1 (Apple Git-155)
+EOF
+
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function apply_silo_4120_lib_vs_lib64_patch
+{
+    info "Patching Silo 4.12.0 for install lib/lib64 issue"
+    patch -p1 << \EOF
+--- a/Silo-4.12.0/CMake/SiloConfig.cmake.in	2025-11-20 21:30:59.000000000 -0800
++++ b/Silo-4.12.0/CMake/SiloConfig.cmake.in	2026-02-20 16:39:18.900700000 -0800
+@@ -99,7 +99,7 @@
+ # project which has already built SILO as a subproject
+ #-----------------------------------------------------------------------------
+ if(NOT TARGET @SILO_NAME@)
+-  include (${PACKAGE_PREFIX_DIR}/lib/cmake/Silo/@silo_targets_name@.cmake)
++  include (${CMAKE_CURRENT_LIST_DIR}/@silo_targets_name@.cmake)
+ 
+   if(SILO_ENABLE_HDF5)
+       include(CMakeFindDependencyMacro)
+EOF
+
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function apply_silo_4120_hzip_needs_zlib_patch
+{
+    info "Patching Silo 4.12.0 for hzip needs zlib issue"
+    patch -p0 << \EOF
+--- Silo-4.12.0/CMakeLists.txt.orig	2026-03-10 12:08:28.256403000 -0700
++++ Silo-4.12.0/CMakeLists.txt	2026-03-10 12:08:15.604238000 -0700
+@@ -617,9 +617,7 @@
+             ${Silo_SOURCE_DIR}/src/hzip)
+     endif()
+ 
+-    if(ZLIB_FOUND)
+-        list(APPEND silo_library_include_dirs ${ZLIB_INCLUDE_DIR})
+-    else()
++    if(NOT ZLIB_FOUND)
+         list(APPEND SILO_COMPILE_DEFINES WITHOUT_ZLIB)
+     endif()
+ endif()
+@@ -627,6 +625,10 @@
+ add_library(silo ${silo_library_sources})
+ set_target_properties(silo PROPERTIES VERSION ${SILO_VERSION} SOVERSION ${SILO_SOVERSION})
+ 
++if(ZLIB_FOUND AND SILO_ENABLE_HZIP)
++    target_link_libraries(silo  ZLIB::ZLIB)
++endif()
++
+ target_compile_definitions(silo PRIVATE ${SILO_COMPILE_DEFINES})
+ add_dependencies(silo pdb_detect)
+ target_include_directories(silo PRIVATE ${silo_library_include_dirs})
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function apply_silo_4120_mismatched_hdf5_version_checks
+{
+    info "Patching Silo 4.12.0 for mismatched hdf5 version checks"
+    patch -p0 << \EOF
+--- Silo-4.12.0/src/hdf5_drv/silo_hdf5.c.orig	2026-03-02 13:08:24.000000000 -0700
++++ Silo-4.12.0/src/hdf5_drv/silo_hdf5.c	2026-03-26 14:30:42.000000000 -0700
+@@ -930,17 +930,18 @@
+     }                                                                         \
+ }
+ 
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if HDF5_VERSION_GE(1,4,0)
+ #define MEMBER_3(TYPE,NAME) {                                                 \
+     _tmp_m = T_##TYPE; /*possible function call*/                             \
+     if (_tmp_m>=0) {                                                          \
++        hsize_t _ary_dims[1];                                                 \
+         hid_t _m_ary;                                                         \
+-        _size = 3;                                                            \
+-        _m_ary = H5Tarray_create(_tmp_m, 1, &_size);                          \
++        _ary_dims[0] = 3;                                                     \
++        _m_ary = H5Tarray_create(_tmp_m, 1, _ary_dims);                       \
+         db_hdf5_put_cmemb(_mt, #NAME, OFFSET(_m, NAME), 0, NULL, _m_ary);     \
+         H5Tclose(_m_ary);                                                     \
+         if (_f && (_tmp_f=_f->T_##TYPE)>=0) {                                 \
+-            hid_t _f_ary = H5Tarray_create(_tmp_f, 1, &_size);                \
++            hid_t _f_ary = H5Tarray_create(_tmp_f, 1, _ary_dims);             \
+             db_hdf5_put_cmemb(_ft, #NAME, _f_off, 0, NULL, _f_ary);           \
+             _f_off += H5Tget_size(_f_ary);                                    \
+             H5Tclose(_f_ary);                                                 \
+@@ -7409,7 +7410,7 @@
+                             hsize_t _size = 3;
+                             hid_t _f_ary;
+                             msize = ALIGN(msize, sizeof(dummy)) + sizeof(dummy);
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if HDF5_VERSION_GE(1,4,0)
+                             _f_ary = H5Tarray_create(dbfile->T_int, 1, &_size);
+                             fsize += H5Tget_size(_f_ary);
+                             H5Tclose(_f_ary);
+@@ -7424,7 +7425,7 @@
+                             hsize_t _size = 3;
+                             hid_t _f_ary;
+                             msize = ALIGN(msize, sizeof(dummy)) + sizeof(dummy);
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if HDF5_VERSION_GE(1,4,0)
+                             _f_ary = H5Tarray_create(dbfile->T_float, 1, &_size);
+                             fsize += H5Tget_size(_f_ary);
+                             H5Tclose(_f_ary);
+@@ -7439,7 +7440,7 @@
+                             hsize_t _size = 3;
+                             hid_t _f_ary;
+                             msize = ALIGN(msize, sizeof(dummy)) + sizeof(dummy);
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if HDF5_VERSION_GE(1,4,0)
+                             _f_ary = H5Tarray_create(dbfile->T_double, 1, &_size);
+                             fsize += H5Tget_size(_f_ary);
+                             H5Tclose(_f_ary);
+@@ -7574,7 +7575,7 @@
+                             hid_t _m_ary, _f_ary;
+                             hsize_t _size = 3;
+                             moffset = ALIGN(moffset, sizeof(dummy));
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if HDF5_VERSION_GE(1,4,0)
+                             _m_ary = H5Tarray_create(H5T_NATIVE_INT, 1, &_size);
+                             _f_ary = H5Tarray_create(dbfile->T_int, 1, &_size);
+                             if (H5Tinsert(mtype, obj->comp_names[i], moffset, _m_ary)<0 ||
+@@ -7603,7 +7604,7 @@
+                             hid_t _m_ary, _f_ary;
+                             hsize_t _size = 3;
+                             moffset = ALIGN(moffset, sizeof(dummy));
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if HDF5_VERSION_GE(1,4,0)
+                             _m_ary = H5Tarray_create(H5T_NATIVE_FLOAT, 1, &_size);
+                             _f_ary = H5Tarray_create(dbfile->T_float, 1, &_size);
+                             if (H5Tinsert(mtype, obj->comp_names[i], moffset, _m_ary)<0 ||
+@@ -7632,7 +7633,7 @@
+                             hid_t _m_ary, _f_ary;
+                             hsize_t _size = 3;
+                             moffset = ALIGN(moffset, sizeof(dummy));
+-#if H5_VERS_MAJOR>=1 && H5_VERS_MINOR>=4
++#if HDF5_VERSION_GE(1,4,0)
+                             _m_ary = H5Tarray_create(H5T_NATIVE_DOUBLE, 1, &_size);
+                             _f_ary = H5Tarray_create(dbfile->T_double, 1, &_size);
+                             if (H5Tinsert(mtype, obj->comp_names[i], moffset, _m_ary)<0 ||
+
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function apply_silo_4120_extents_calc
+{
+    info "Patching Silo 4.12.0 for extents calc fix"
+    patch -p1 << \EOF
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Mon, 30 Mar 2026 08:51:03 -0700
+Subject: [PATCH 33/33] Fix extents calc
+
+Fix include_point used in extents calc to condition index tests on ndims
+---
+ Silo-4.12.0/src/silo/silo.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/Silo-4.12.0/src/silo/silo.c b/Silo-4.12.0/src/silo/silo.c
+index bc963bd7..e828de08 100644
+--- a/Silo-4.12.0/src/silo/silo.c
++++ b/Silo-4.12.0/src/silo/silo.c
+@@ -11385,12 +11385,12 @@ include_point(int ptidx, int ndims, int const *dims,
+     int j = ndims>1 ? (ptidx/dims[0])           % dims[1] : 0;
+     int k = ndims>2 ? (ptidx/(dims[1]*dims[0])) % dims[2] : 0;
+
+-    if (i < minidx[0]) return 0;
+-    if (i > maxidx[0]) return 0;
+-    if (j < minidx[1]) return 0;
+-    if (j > maxidx[1]) return 0;
+-    if (k < minidx[2]) return 0;
+-    if (k > maxidx[2]) return 0;
++    if (ndims > 0 && i < minidx[0]) return 0;
++    if (ndims > 0 && i > maxidx[0]) return 0;
++    if (ndims > 1 && j < minidx[1]) return 0;
++    if (ndims > 1 && j > maxidx[1]) return 0;
++    if (ndims > 2 && k < minidx[2]) return 0;
++    if (ndims > 2 && k > maxidx[2]) return 0;
+
+     return 1;
+ }
+--
+2.50.1 (Apple Git-155)
 EOF
     if [[ $? != 0 ]] ; then
         return 1
@@ -396,21 +392,40 @@ function apply_silo_patch
 {
     info "Patching silo . . ."
 
-    compare_version_strings $SILO_VERSION 4.10.3 -le
+    compare_version_strings $SILO_VERSION 4.12.0 -eq
     if [[ $? -eq 0 ]]; then
-        apply_silo_4102_fpzip_patch
+        apply_silo_4120_const_ns_patch
         if [[ $? != 0 ]] ; then
-            if [[ $untarred_silo == 1 ]] ; then
-                warn "Giving up on Silo build because the patch failed."
-                return 1
-            else
-                warn "Patch failed, but continuing.  I believe that this script\n" \
-                     "tried to apply a patch to an existing directory that had\n" \
-                     "already been patched ... that is, the patch is\n" \
-                     "failing harmlessly on a second application."
-            fi
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_mpio_vfd_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_lib_vs_lib64_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_hzip_needs_zlib_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_mismatched_hdf5_version_checks
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_extents_calc
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
         fi
     fi
+
     return 0
 }
 
@@ -445,92 +460,122 @@ function build_silo
         warn "Unable to prepare Silo build directory. Giving Up!"
         return 1
     fi
+    apply_silo_patch || return 1
     
     #
-    # Call configure
+    # CMake Silo
     #
-    info "Configuring Silo . . ."
-    cd $SILO_BUILD_DIR || error "Can't cd to Silo build dir."
+    cmake_opts="\
+        -DCMAKE_INSTALL_PREFIX:PATH=\"${VISITDIR}/silo/${SILO_VERSION}/${VISITARCH}\" \
+        -DBUILD_TESTING:BOOL=OFF \
+        -DSILO_ENABLE_INSTALL_LITE_HEADERS:BOOL=ON"
 
-    apply_silo_patch || return 1
-    info "Invoking command to configure Silo"
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cmake_opts="${cmake_opts} -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo"
+    else
+        cmake_opts="${cmake_opts} -DCMAKE_BUILD_TYPE:STRING=Release"
+    fi
+
+    if [[ "$FC_COMPILER" == "yes" ]] ; then
+        cmake_opts="${cmake_opts} -DSILO_ENABLE_FORTRAN:BOOL=ON"
+    else
+        cmake_opts="${cmake_opts} -DSILO_ENABLE_FORTRAN:BOOL=OFF"
+    fi
+       
+    if [[ "$DO_PYTHON" == "yes" ]] ; then
+        cmake_opts="${cmake_opts} \
+            -DSILO_ENABLE_PYTHON_MODULE:BOOL=ON \
+            -DSILO_PYTHON_DIR:PATH=\"${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}\""
+    fi
+
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        cmake_opts="${cmake_opts} -DSILO_ENABLE_SHARED:BOOL=OFF"
+    else
+        cmake_opts="${cmake_opts} -DSILO_ENABLE_SHARED:BOOL=ON"
+    fi
+
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
-        HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
-        WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
+        cmake_opts="${cmake_opts} \
+            -DSILO_ENABLE_HDF5:BOOL=ON \
+            -DSILO_HDF5_DIR:PATH=\"${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}\""
     else
-        WITHHDF5ARG="--without-hdf5"
-    fi
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-        WITHSZIPARG="--with-szlib=$SZIPDIR"
-    else
-        WITHSZIPARG="--without-szlib"
-    fi
-    if [[ "$DO_ZLIB" == "no" ]]; then
-        WITH_HZIP_AND_FPZIP="--disable-hzip --disable-fpzip"
-    else
-        ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
-    fi
-    WITHSHAREDARG="--enable-shared"
-    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
-        WITHSHAREDARG="--disable-shared"
-    fi
-    WITHSILOQTARG='--disable-silex'
-
-    if [[ "$FC_COMPILER" == "no" ]] ; then
-        FORTRANARGS="--disable-fortran"
-    else
-        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\""
+        cmake_opts="${cmake_opts} -DSILO_ENABLE_HDF5:BOOL=OFF"
     fi
 
-    extra_ac_flags=""
-    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
-    # autoconf don't detect
-    if [[ "$(uname -m)" == "ppc64le" ]] ; then
-         extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
-    elif [[ "$(uname -m)" == "aarch64" ]] ; then
-         extra_ac_flags="ac_cv_build=aarch64-unknown-linux-gnu"
-    fi 
+    if [[ "$DO_ZLIB" == "yes" ]]; then
+        cmake_opts="${cmake_opts} \
+            -DZLIB_ROOT:PATH=${VISIT_ZLIB_DIR} \
+            -DSILO_BUILD_FOR_BSD_LICENSE:BOOL=OFF \
+            -DSILO_ENABLE_HZIP:BOOL=ON \
+            -DSILO_ENABLE_FPZIP:BOOL=ON \
+            -DSILO_ZLIB_DIR:PATH=${VISIT_ZLIB_DIR}"
+    fi
 
-    set -x
-    # In order to ensure $FORTRANARGS is expanded to build the arguments to
-    # configure, we wrap the invokation in 'sh -c "..."' syntax
-    sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        $FORTRANARGS \
-        --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
-        --enable-install-lite-headers --without-readline \
-        $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
-    set +x
+    if [[ "$DO_SILEX" == "yes" ]]; then
+        cmake_opts="${cmake_opts} \
+            -DSILO_ENABLE_SILEX:BOOL=ON \
+            -DSILO_QT6_DIR:PATH=\"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}\""
+    fi
+
+    # silo needs to find mpi if hdf5 was built with mpi support
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        cmake_opts="${cmake_opts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
+    fi
+
+    if [[ "$PAR_INCLUDE" != "" ]] ; then
+        cmake_opts="${cmake_opts} -DMPI_C_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+        cmake_opts="${cmake_opts} -DMPI_CXX_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+    fi
+
+    if [[ "$PAR_LIBS" != "" ]] ; then
+        cmake_opts="${cmake_opts} -DMPI_C_LINK_FLAGS:STRING=\"${PAR_LINKER_FLAGS}\""
+        cmake_opts="${cmake_opts} -DMPI_C_LIBRARIES:STRING=\"${PAR_LIBRARY_LINKER_FLAGS}\""
+        cmake_opts="${cmake_opts} -DMPI_CXX_LINK_FLAGS:STRING=\"${PAR_LINKER_FLAGS}\""
+        cmake_opts="${cmake_opts} -DMPI_CXX_LIBRARIES:STRING=\"${PAR_LIBRARY_LINKER_FLAGS}\""
+    fi
+
+    info "CMake'ing Silo"
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+    mkdir -p ${SILO_BUILD_DIR}
+    cd ${SILO_BUILD_DIR} || error "Can't cd to Silo build dir."
+
+    #
+    # Several platforms have had problems with the VTK cmake configure command
+    # issued simply via "issue_command".  This was first discovered on 
+    # BGQ and then showed up in random cases for both OSX and Linux machines. 
+    # Brad resolved this on BGQ  with a simple work around - we write a simple 
+    # script that we invoke with bash which calls cmake with all of the proper
+    # arguments. We are now using this strategy for all platforms.
+    #
+
+    rm -f bv_run_cmake.sh
+    echo "\"${CMAKE_BIN}\"" ${cmake_opts} ../Silo-${SILO_VERSION} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh
 
     if [[ $? != 0 ]] ; then
-        warn "Silo configure failed.  Giving up"
+        warn "Silo cmake failed. Giving up"
         return 1
     fi
 
     #
     # Build Silo
     #
-    info "Building Silo . . . (~2 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    info "Building Silo. . . (~5 minutes)"
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        $MAKE $MAKE_OPT_FLAGS LIBS=-lstdc++
-        if [[ $? != 0 ]] ; then
-            warn "Silo build failed.  Giving up"
-            return 1
-        fi
+        warn "Silo build failed. Giving up"
+        return 1
     fi
 
     #
     # Install into the VisIt third party location.
     #
     info "Installing Silo"
-
-    $MAKE install
+    ${CMAKE_COMMAND} --install .
     if [[ $? != 0 ]] ; then
-        warn "Silo install failed.  Giving up"
+        warn "Silo install failed. Giving up"
         return 1
     fi
 

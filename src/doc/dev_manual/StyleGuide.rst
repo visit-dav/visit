@@ -115,7 +115,7 @@ CMakeLists.txt, and Python sources. ::
 Includes
 ~~~~~~~~
 
-* Include files should use angle brackes. For example: #include <vtkRectilinearGrid.h>
+* Include files should use angle brackets. For example: #include <vtkRectilinearGrid.h>
 * Class.C should include Class.h first. This is to make sure that Class.h is not using any previously declared headers. Class.C file may use quotes instead of angle brackets to include Class.h.
 * Include files should be grouped from wider scope to narrower scope. This leads to grouping the include files in the following order:
 
@@ -633,7 +633,7 @@ Example: ::
 
     const int nPoints = dataset->GetNumberOfPoints();
 
-    // Since value of nPoints can only be determined at run-time,
+    // Since value of nPoints can only be determined at runtime,
 
     // this will not compile with Visual Studio
     int myarray[nPoints];
@@ -644,7 +644,7 @@ Example: ::
 CMake Conventions
 -----------------
 
-Starting with VisIt_ version 3.5, new more modern CMake conventions will be adopted, and `BLT <https://llnl-blt.readthedocs.io/en/develop/index.html>`_ will be used whenever feasible.
+Starting with VisIt_ version 3.4, new more modern CMake conventions will be adopted, and `BLT <https://llnl-blt.readthedocs.io/en/develop/index.html>`_ will be used whenever feasible.
 
 Handling subdirectories
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -654,3 +654,12 @@ If a given target has source files spread out across multiple subdirectories, th
 The subdirectory will add its sources to the parent's target via `target_sources`.
 
 
+Here's an example from src/avt/DBAtts and src/avt/DBAtts/SIL:
+
+.. literalinclude:: ../../avt/DBAtts/CMakeLists.txt
+    :language: CMake
+    :start-at: add_library(avtdbatts)
+
+.. literalinclude:: ../../avt/DBAtts/SIL/CMakeLists.txt
+    :language: CMake
+    :start-at: target_sources(avtdbatts PRIVATE

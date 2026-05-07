@@ -24,19 +24,11 @@ from pathlib import Path
 from visit_test import *
 from visit_utils.qplot import *
 
-try:
-    import PySide2.QtCore
-except:
-    pass
 
 output_dir  = Path(os.path.dirname(__file__),"_output")
 data_dir    = Path(os.path.dirname(__file__),"_data")
 
 def patch_scene_input(in_fname,ult_fname):
-    #crv_file = os.path.abspath(pjoin(data_dir,"pattern.ult"))
-    #qi = open(pjoin(data_dir,"qplot.example.in")).read().replace("$SOURCE_FILE",crv_file)
-    #qi_fname = pjoin(output_dir,"qplot.example.in"
-    #open(qi_fname,"w").write(qi)
     crv_file = data_dir/ult_fname
     dfile    = data_dir/in_fname
     qi_fname = output_dir/in_fname

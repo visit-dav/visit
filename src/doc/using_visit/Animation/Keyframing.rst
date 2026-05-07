@@ -65,7 +65,7 @@ When you go into keyframing mode for the first time, having never set a number
 of keyframes, VisIt will use the number of states in the active database for
 the number of frames in the new keyframe animation. The number of frames in
 the keyframe animation will vary with the length of the database with the most
-time states unless you manually specify a number of animation frames, which you
+timestates unless you manually specify a number of animation frames, which you
 can do by entering a new number of frames into the 
 **Keyframing Window's Number of frames** text field. Once you enter a number
 of frames, the number of frames will not change unless you change it.
@@ -113,7 +113,7 @@ new number into the text field next to the
 ** Main Window's Time slider** to create a database state keyframe, provided
 the active time slider is not the Animation time slider. To set a database
 state keyframe using the **Time slider** , select a new database time slider
-from the Active time slider combo box and then change time states using the
+from the Active time slider combo box and then change timestates using the
 **Time slider** . Instead of changing the active state for the plots that use
 the specified database, VisIt uses the information to create a new database
 state keyframe for the active animation frame.

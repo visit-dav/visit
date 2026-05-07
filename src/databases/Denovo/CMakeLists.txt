@@ -2,5 +2,5 @@
 
 visit_add_database_plugin(
     DNAME      Denovo
-    LIBS       hdf5)
+    LIBS       ${HDF5_LIB})
 

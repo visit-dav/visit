@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="PFLOTRAN" type="database" label="PFLOTRAN" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <LIBS>
-      hdf5
+      ${HDF5_LIB}
     </LIBS>
     <FilePatterns>
       *.h5

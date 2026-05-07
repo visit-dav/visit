@@ -36,6 +36,9 @@
 #   Kathleen Biagas, Thu July 10, 2025
 #   Support OPENEXR libs in 'lib64'.
 #
+#   Kathleen Biagas, Tue Nov 18, 2025
+#   Use PYTHON_INCLUDE_PATH instead of PYTHON_INCLUDE_DIR.
+#
 #******************************************************************************
 
 
@@ -296,9 +299,9 @@ endif(VISIT_MPICH_INSTALL)
 if(UNIX)
    # python3's include dir has an 'm' after the version. For ease of
    # use with future versions, and to save having to figure this out again
-   # get and use the last part of the PYTHON_INCLUDE_DIR
+   # get and use the last part of the PYTHON_INCLUDE_PATH
    if(PYTHON_FOUND)
-       get_filename_component(py_inc_base ${PYTHON_INCLUDE_DIR} NAME)
+       get_filename_component(py_inc_base ${PYTHON_INCLUDE_PATH} NAME)
        set(python_include_relative_path "/python/include/${py_inc_base}")
    else()
        set(python_include_relative_path "")

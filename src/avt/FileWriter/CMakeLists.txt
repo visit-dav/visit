@@ -4,6 +4,8 @@
 
 #*****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Thu Jan 15, 2026
+#   Add vtkIOGeometry link lib.
 #
 #****************************************************************************
 
@@ -26,6 +28,7 @@ set(avtwriter_DEPENDS
     visitcommon
     visit_vtk
     VTK::ImagingCore
+    VTK::IOGeometry
     VTK::IOPLY)
 
 #********************************* SERIAL ************************************

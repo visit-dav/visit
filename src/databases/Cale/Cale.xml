@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="Cale" type="database" label="Visit Plugin to read Cale PDB dumps" version="1.1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <LIBS>
-      pdb
+      ${PDB_LIB}
     </LIBS>
     <FilePatterns>
       *.pdb

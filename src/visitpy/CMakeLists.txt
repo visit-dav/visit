@@ -492,7 +492,7 @@ visit_add_library(
     DEPENDS_ON avtdbatts
                viewerrpc
                visitcommon
-               ${PYTHON_LIBRARIES}
+               ${PYTHON_LIBRARY}
                Threads::Threads)
 
 if(NOT WIN32)

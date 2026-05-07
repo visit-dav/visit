@@ -94,6 +94,24 @@
 #   configuration being part of the library path on Windows.
 #   Also added cleanup of build artifacts left in source by `pip install`.
 #
+#   Kathleen Biagas, Mon Nov 24, 2025
+#   Remove Python 2 logic.
+#
+#   Kathleen Biagas, Thu Dec 4, 2025
+#   Use CMake's find_package to find Python.
+#
+#   Cyrus Harrison, Wed Jan 21 11:40:15 PST 2026
+#   Change python install logic, use explicit include list for modules in
+#   site-packages to limit modules installed.
+#
+#   Kathleen Biagas, Tue Mar 24, 2026
+#   Fix DESTINATION for install of python's site-packages.
+#
+#   Kathleen Biagas, Wed Mar 25, 2026
+#   For install of python's site-packages, use PATTERN EXCLUDE to eliminate
+#   what we don't want instead of PATTERN to include what we do want, since
+#   the latter always seems to include everything, not just the PATTERNs.
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -108,228 +126,66 @@
 #  PYTHON_VERSION       = version number of found python
 #
 
-message(STATUS "Looking for Python")
-###
-# CODE FROM CONDUIT TO FIND PYTHON INTERP AND LIBS
-###
-# Find the interpreter first
-if(PYTHON_DIR AND NOT PYTHON_EXECUTABLE)
-    if(UNIX)
-        # look for python 3 first
-        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python3)
-        # if this doesn't exist, look for python
-        if(NOT EXISTS "${PYTHON_EXECUTABLE}")
-            set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python)
-        endif()
-    elseif(WIN32)
-        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/python.exe)
-    endif()
-    message(STATUS "Using PYTHON_EXECUTABLE from PYTHON_DIR:")
-    message(STATUS "PYTHON_DIR: ${PYTHON_DIR}")
-    message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}")
+if(VISIT_PYTHON_DIR)
+    message(STATUS "Looking for Python using VISIT_PYTHON_DIR: ${VISIT_PYTHON_DIR}")
+    set(Python3_ROOT_DIR ${VISIT_PYTHON_DIR})
+    find_package(Python3 3.13 REQUIRED COMPONENTS Interpreter Development)
+elseif(PYTHON_DIR)
+    message(STATUS "Looking for Python using PYTHON_DIR: ${PYTHON_DIR}")
+    set(Python3_ROOT_DIR ${PYTHON_DIR})
+    find_package(Python3 3.13 REQUIRED COMPONENTS Interpreter Development)
+else()
+    message(STATUS "Looking for Python in system locations, if this fails try setting Python3_ROOT_DIR before calling CMake.")
+    find_package (Python3 REQUIRED COMPONENTS Interpreter Development)
 endif()
 
-
-find_package(PythonInterp REQUIRED)
-if(PYTHONINTERP_FOUND)
-    message(STATUS "PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE}")
-
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                            "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
-                    OUTPUT_VARIABLE PYTHON_CONFIG_VERSION
-                    ERROR_VARIABLE  ERROR_FINDING_PYTHON_VERSION)
-    message(STATUS "PYTHON_CONFIG_VERSION ${PYTHON_CONFIG_VERSION}")
-
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                            "import sys;from sysconfig import get_path;sys.stdout.write(get_path('include'))"
-                    OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
-                    ERROR_VARIABLE ERROR_FINDING_INCLUDES)
-    message(STATUS "PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR}")
-
-    if(NOT EXISTS ${PYTHON_INCLUDE_DIR})
-        message(FATAL_ERROR "Reported PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} does not exist!")
+if(Python3_FOUND)
+    message(STATUS "Python3 version      ${Python3_VERSION}")
+    message(STATUS "Python3 executable   ${Python3_EXECUTABLE}")
+    message(STATUS "Python3 include dirs ${Python3_INCLUDE_DIRS}")
+    message(STATUS "Python3 libraries:   ${Python3_LIBRARIES}")
+    if(TARGET Python3::Python)
+        set(PYTHONLIBS_FOUND true)
     endif()
 
-    # TODO: replacing distutils.get_python_lib() isn't straight forward
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                            "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
-                    OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
-                    ERROR_VARIABLE ERROR_FINDING_SITE_PACKAGES_DIR)
-    message(STATUS "PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR}")
-
-    if(NOT EXISTS ${PYTHON_SITE_PACKAGES_DIR})
-        message(FATAL_ERROR "Reported PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR} does not exist!")
-    endif()
-
-    # check if we need "-undefined dynamic_lookup" by inspecting LDSHARED flags
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                            "import sys;import sysconfig;sys.stdout.write(sysconfig.get_config_var('LDSHARED'))"
-                    OUTPUT_VARIABLE PYTHON_LDSHARED_FLAGS
-                    ERROR_VARIABLE ERROR_FINDING_PYTHON_LDSHARED_FLAGS)
-
-    message(STATUS "PYTHON_LDSHARED_FLAGS ${PYTHON_LDSHARED_FLAGS}")
-
-    if(PYTHON_LDSHARED_FLAGS MATCHES "-undefined dynamic_lookup")
-        message(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is ON")
-        set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG ON)
-    else()
-        message(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is OFF")
-        set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG OFF)
-    endif()
-
-    # our goal is to find the specific python lib, based on info
-    # we extract from sysconfig from the python executable
-    #
-    # check if python libs differs for windows python installs
-    if(NOT WIN32)
-        # we may build a shared python module against a static python
-        # check for both shared and static libs cases
-
-        # combos to try:
-        # shared:
-        #  LIBDIR + LDLIBRARY
-        #  LIBPL + LDLIBRARY
-        # static:
-        #  LIBDIR + LIBRARY
-        #  LIBPL + LIBRARY
-
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
-                        OUTPUT_VARIABLE PYTHON_CONFIG_LIBDIR
-                        ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBDIR)
-
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBPL'))"
-                        OUTPUT_VARIABLE PYTHON_CONFIG_LIBPL
-                            ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBPL)
-
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LDLIBRARY'))"
-                        OUTPUT_VARIABLE PYTHON_CONFIG_LDLIBRARY
-                        ERROR_VARIABLE  ERROR_FINDING_PYTHON_LDLIBRARY)
-
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBRARY'))"
-                        OUTPUT_VARIABLE PYTHON_CONFIG_LIBRARY
-                        ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBRARY)
-
-        message(STATUS "PYTHON_CONFIG_LIBDIR:     ${PYTHON_CONFIG_LIBDIR}")
-        message(STATUS "PYTHON_CONFIG_LIBPL:      ${PYTHON_CONFIG_LIBPL}")
-        message(STATUS "PYTHON_CONFIG_LDLIBRARY:  ${PYTHON_CONFIG_LDLIBRARY}")
-        message(STATUS "PYTHON_CONFIG_LIBRARY:    ${PYTHON_CONFIG_LIBRARY}")
-
-        set(PYTHON_LIBRARY "")
-        set(PYLIB "") # for PluginVsInstall.cmake.in
-
-        # look for shared libs first
-        # shared libdir + ldlibrary
-        if(NOT EXISTS ${PYTHON_LIBRARY})
-            if(IS_DIRECTORY ${PYTHON_CONFIG_LIBDIR})
-                set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBDIR}/${PYTHON_CONFIG_LDLIBRARY}")
-                message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-                if(EXISTS ${_PYTHON_LIBRARY_TEST})
-                    set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-                    set(PYLIB ${PYTHON_CONFIG_LDLIBRARY})
-                endif()
+    if(NOT PYTHON_DIR)
+        if(Python3_ROOT_DIR)
+            set(PYTHON_DIR ${Python3_ROOT_DIR})
+        else()
+           cmake_path(GET Python3_EXECUTABLE PARENT_PATH PYTHON_DIR)
+           if(NOT WIN32)
+               # parent path of executable is the root dir on Windows
+               # but not elsewhere, so move up 1 more dir
+               cmake_path(SET PYTHON_DIR NORMALIZE ${PYTHON_DIR}/../)
             endif()
-        endif()
-
-        # shared libpl + ldlibrary
-        if(NOT EXISTS ${PYTHON_LIBRARY})
-            if(IS_DIRECTORY ${PYTHON_CONFIG_LIBPL})
-                set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBPL}/${PYTHON_CONFIG_LDLIBRARY}")
-                message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-                if(EXISTS ${_PYTHON_LIBRARY_TEST})
-                    set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-                    set(PYLIB ${PYTHON_CONFIG_LDLIBRARY})
-                endif()
-            endif()
-        endif()
-
-        # static: libdir + library
-        if(NOT EXISTS ${PYTHON_LIBRARY})
-            if(IS_DIRECTORY ${PYTHON_CONFIG_LIBDIR})
-                set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBDIR}/${PYTHON_CONFIG_LIBRARY}")
-                message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-                if(EXISTS ${_PYTHON_LIBRARY_TEST})
-                    set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-                    set(PYLIB ${PYTHON_CONFIG_LIBRARY})
-                endif()
-            endif()
-        endif()
-
-        # static: libpl + library
-        if(NOT EXISTS ${PYTHON_LIBRARY})
-            if(IS_DIRECTORY ${PYTHON_CONFIG_LIBPL})
-                set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBPL}/${PYTHON_CONFIG_LIBRARY}")
-                message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-                if(EXISTS ${_PYTHON_LIBRARY_TEST})
-                    set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-                    set(PYLIB ${PYTHON_CONFIG_LIBRARY})
-                endif()
-            endif()
-        endif()
-    else() # windows
-        get_filename_component(PYTHON_ROOT_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
-        # Note: this assumes that two versions of python are not installed in the same dest dir
-        set(_PYTHON_LIBRARY_TEST  "${PYTHON_ROOT_DIR}/libs/python${PYTHON_CONFIG_VERSION}.lib")
-        message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-        if(EXISTS ${_PYTHON_LIBRARY_TEST})
-            set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-            set(PYLIB python${PYTHON_CONFIG_VERSION}.lib)
         endif()
     endif()
+    message(STATUS "PYTHON_DIR: ${PYTHON_DIR}")
 
-    # Ensure pip module is avaiable
+    # set some vars so that the rest of VisIt doesn't need to change
+    set(PYTHON_LIBRARY Python3::Python)
+    set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+    set(PYTHON_INCLUDE_PATH ${Python3_INCLUDE_DIRS})
+    set(PYTHON_FOUND true)
+    set(PYTHON_COMPAT_VERSION  ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
+    set(PYTHON_VERSION  ${PYTHON_COMPAT_VERSION})
+
+    # for pluginVsInstall
+    cmake_path(GET Python3_LIBRARIES FILENAME PYLIB)
+
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" "import sys; import pip; sys.stdout.write(pip.__version__)"
                     OUTPUT_VARIABLE PYTHON_PIP_VERSION
                     ERROR_VARIABLE  ERROR_FINDING_PYTHON_PIP_MODULE
                     COMMAND_ERROR_IS_FATAL ANY)
     message(STATUS "PYTHON_PIP_VERSION:       ${PYTHON_PIP_VERSION}")
 
-    if(NOT EXISTS ${PYTHON_LIBRARY})
-        message(FATAL_ERROR "Failed to find main library using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
-    endif()
-
-    message(STATUS "{PythonLibs from PythonInterp} using: PYTHON_LIBRARY=${PYTHON_LIBRARY}")
-    find_package(PythonLibs)
-
-    if(NOT PYTHONLIBS_FOUND)
-        message(FATAL_ERROR "Failed to find Python Libraries using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
-    endif()
-
-endif()
-
-
-find_package_handle_standard_args(Python  DEFAULT_MSG
-                                  PYTHON_LIBRARY PYTHON_INCLUDE_DIR)
-
-include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYTHONLIBS DEFAULT_MSG PYTHON_LIBRARIES PYTHON_INCLUDE_PATH)
-
-message(STATUS "PYTHONLIBS_FOUND = ${PYTHONLIBS_FOUND}")
-
-# the rest of VisIt's cmake logic expects PYTHON_VERSION to be the compatibility version
-# (3.7, not 3.7.6 or 2.7, not 2.7.14)
-
-set(PYTHON_VERSION_FULL "${PYTHONLIBS_VERSION_STRING}")
-
-string(REPLACE "." ";" PYTHON_VERSION_LIST ${PYTHON_VERSION_FULL})
-list(GET PYTHON_VERSION_LIST 0 PYTHON_VERSION_MAJOR)
-list(GET PYTHON_VERSION_LIST 1 PYTHON_VERSION_MINOR)
-list(GET PYTHON_VERSION_LIST 2 PYTHON_VERSION_PATCH)
-
-set(PYTHON_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
-
-message(STATUS "PYTHON_VERSION = ${PYTHON_VERSION}")
-
-if(PYTHONLIBS_FOUND)
-    set(PYTHON_FOUND TRUE)
 else()
-    set(PYTHON_FOUND FALSE)
+    message("Python3 not found")
 endif()
 
-message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+
+set(PYTHON_FOUND ${Python3_FOUND})
+
 
 # PYTHON_ADD_MODULE(<name> src1 src2 ... srcN) is used to build modules for python.
 # PYTHON_WRITE_MODULES_HEADER(<filename>) writes a header file you can include
@@ -356,7 +212,7 @@ function(PYTHON_ADD_MODULE _NAME )
         if(WIN32)
             set_target_properties(${_NAME} PROPERTIES SUFFIX ".pyd")
         endif()
-        target_link_libraries(${_NAME} PRIVATE ${PYTHON_LIBRARIES})
+        target_link_libraries(${_NAME} PRIVATE ${PYTHON_LIBRARY})
     endif()
 endfunction()
 
@@ -527,15 +383,15 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
     message(STATUS "We will install Python along with VisIt")
     # Install libpython
     # split the list so that dll's are found correctly on Windows
-    foreach(pylib ${PYTHON_LIBRARIES})
+    foreach(pylib ${Python3_LIBRARIES})
         THIRD_PARTY_INSTALL_LIBRARY(${pylib})
     endforeach()
 
     # Only install Python support files if we are not using the system Python
     if((NOT ${PYTHON_DIR} STREQUAL "/usr"))
         # Install the python executable
-        string(SUBSTRING ${PYTHON_VERSION} 0 1 PYX)
-        string(SUBSTRING ${PYTHON_VERSION} 0 3 PYX_X)
+        set(PYX ${Python3_VERSION_MAJOR})
+        set(PYX_X ${PYTHON_COMPAT_VERSION})
         THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python ${PYTHON_DIR}/bin/python${PYX} ${PYTHON_DIR}/bin/python${PYX_X})
         # note: these can be symlinks to python3.Zm-config
         THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python${PYX}-config ${PYTHON_DIR}/bin/python${PYX_X}-config)
@@ -546,8 +402,6 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                        ${PYTHON_DIR}/bin/pip${PYX_X} # pip3.Z
                        ${PYTHON_DIR}/bin/pyvenv
                        ${PYTHON_DIR}/bin/pyvenv-${PYX_X} # pyvenv-3.Z
-                       ${PYTHON_DIR}/bin/2to3
-                       ${PYTHON_DIR}/bin/2to3-${PYX_X}   #2to3-3.Z
                        )
 
         foreach(_py_extra ${_py_extras})
@@ -561,18 +415,73 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                       GROUP_READ GROUP_WRITE GROUP_EXECUTE
                       WORLD_READ WORLD_EXECUTE)
         # Install the python modules
-        # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
-        # Exclude visit module files.
         if(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
             install(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}
-                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
-                FILE_PERMISSIONS ${filePerms}
-                DIRECTORY_PERMISSIONS ${dirPerms}
-                PATTERN "lib-tk" EXCLUDE
-                PATTERN "visit.*" EXCLUDE
-                PATTERN "visitmodule.*" EXCLUDE
-                PATTERN "visit_writer.*" EXCLUDE
-                PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE)
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
+                    FILE_PERMISSIONS ${filePerms}
+                    DIRECTORY_PERMISSIONS ${dirPerms}
+                    PATTERN "site-packages" EXCLUDE
+            )
+            # Use a separate install for general site packages, with an
+            # include list for modules thats users of visit will want.
+            # This filters out several packages related to building and
+            # creating our docs that are not needed by users -- some of
+            # which may be flagged by security scans over time, causing
+            # visit to get blocked.
+            # Using 'PATTERN' for the items we want to include does not seem
+            # to work, everything is always included.
+            # 'PATTERN EXCLUDE' is effective, if onerous due to the excessive
+            # numer of packages
+            
+            install(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}/site-packages
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib/python${PYTHON_VERSION}/
+                    FILE_PERMISSIONS ${filePerms}
+                    DIRECTORY_PERMISSIONS ${dirPerms}
+                    ## basic build tools we allow
+                    #PATTERN "distutils"
+                    #PATTERN "pip"
+                    #PATTERN "setuptools"
+                    #PATTERN "wheel"
+                    ## modules users may want
+                    #PATTERN "pillow"
+                    #PATTERN "PIL"
+                    #PATTERN "numpy"
+                    #PATTERN "Cython"
+                    #PATTERN "cython"
+                    #PATTERN "mpi4py"
+                    # what we don't want
+                    PATTERN "alabaster*" EXCLUDE
+                    PATTERN "babel*" EXCLUDE
+                    PATTERN "calver*" EXCLUDE
+                    PATTERN "certifi*" EXCLUDE
+                    PATTERN "charset*" EXCLUDE
+                    PATTERN "colorama*" EXCLUDE
+                    PATTERN "docutils*" EXCLUDE
+                    PATTERN "editables*" EXCLUDE
+                    PATTERN "flit*" EXCLUDE
+                    PATTERN "hatch*" EXCLUDE
+                    PATTERN "idna*" EXCLUDE
+                    PATTERN "image*" EXCLUDE
+                    PATTERN "importlib*" EXCLUDE
+                    PATTERN "jinja*" EXCLUDE
+                    PATTERN "markup*" EXCLUDE
+                    PATTERN "meson*" EXCLUDE
+                    PATTERN "packaging*" EXCLUDE
+                    PATTERN "pathspec*" EXCLUDE
+                    PATTERN "pluggy*" EXCLUDE
+                    PATTERN "pybind11*" EXCLUDE
+                    PATTERN "pygments*" EXCLUDE
+                    PATTERN "pyproject*" EXCLUDE
+                    PATTERN "requests*" EXCLUDE
+                    PATTERN "roman*" EXCLUDE
+                    PATTERN "scikit*" EXCLUDE
+                    PATTERN "snowball*" EXCLUDE
+                    PATTERN "sphinx*" EXCLUDE
+                    PATTERN "trove*" EXCLUDE
+                    PATTERN "urllib*" EXCLUDE
+                    PATTERN "zipp*" EXCLUDE
+            )
+
         endif()
 
         # Install the Python headers

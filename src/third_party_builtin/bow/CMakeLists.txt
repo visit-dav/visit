@@ -21,6 +21,6 @@ visit_add_library(
     HEADERS    bow.h fwav.h gzlib.h bow_exports.h
     INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/third_party_builtin/bow>
-    DEPENDS_ON zlib
+    DEPENDS_ON ${ZLIB_LIB}
     FOLDER     thirdparty_builtin/bow)
 

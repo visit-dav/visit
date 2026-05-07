@@ -89,7 +89,7 @@ if(VISIT_ENABLE_UNIT_TESTS)
         NAME       StringHelpers_test
         SOURCES    StringHelpers_test.C
         INCLUDES   ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS_ON visitcommon zlib Threads::Threads ${DL_LIB}
+        DEPENDS_ON visitcommon ${ZLIB_LIB} Threads::Threads ${DL_LIB}
         FOLDER     unit_tests
         SKIP_INSTALL)
 

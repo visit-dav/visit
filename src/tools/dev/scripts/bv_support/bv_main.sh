@@ -556,7 +556,6 @@ function initialize_build_visit()
     export CREATE_RPM="no"
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
-    export DO_VTK94="no"
     DOWNLOAD_ONLY="no"
     LIST_TPS="no"
 
@@ -592,11 +591,11 @@ function initialize_build_visit()
     # handled before calling the bv_XXX_info methods. This would mainly
     # be arguments that affect the version of a package being built.
     #
-    for arg in "$@" ; do
-        case $arg in
-            --vtk94) DO_VTK94="yes"; DO_VTK="yes";;
-        esac
-    done
+    #for arg in "$@" ; do
+    #    case $arg in
+    #        --vtk94) DO_VTK94="yes"; DO_VTK="yes";;
+    #    esac
+    #done
 
     #get visit information..
     bv_visit_info
@@ -1155,6 +1154,8 @@ function run_build_visit()
             --parallel) parallel="yes"; DO_ICET="yes";;
             --prefix) next_arg="prefix";;
             --print-vars) next_action="print-vars";;
+            --print-files) next_action="print-files";;
+            --print-files-html) next_action="print-files-html";;
             --server-components-only) DO_SERVER_COMPONENTS_ONLY="yes";;
             --paradis) DO_PARADIS="yes";;
             --static) DO_STATIC_BUILD="yes"
@@ -1203,6 +1204,8 @@ function run_build_visit()
     if test -n "${next_action}" ; then
         case ${next_action} in
             print-vars) printvariables; exit 2;;
+            print-files) printfiles "txt"; exit 2;;
+            print-files-html) printfiles "html"; exit 2;;
             help) usage; exit 2;;
         esac
     fi

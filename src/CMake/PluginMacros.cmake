@@ -817,6 +817,7 @@ function(visit_add_database_plugin)
             SOURCES     ${LIBM_SOURCES}
             HEADERS     ${LIBM_HEADERS}
             INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                        $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/include>
                         $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
                         ${database_INCLUDES}
                         ${EXTRA_INCLUDES}
@@ -836,6 +837,7 @@ function(visit_add_database_plugin)
         SOURCES     ${LIBE_SOURCES}
         HEADERS     ${LIBE_HEADERS}
         INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                    $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/include>
                     $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
                     ${database_INCLUDES}
                     ${EXTRA_INCLUDES}
@@ -856,6 +858,7 @@ function(visit_add_database_plugin)
             SOURCES     ${LIBE_SOURCES}
             HEADERS     ${LIBE_HEADERS}
             INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                        $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/include>
                         $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
                         ${database_INCLUDES}
                         ${EXTRA_INCLUDES}

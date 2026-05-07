@@ -16,16 +16,57 @@
 #   Kathleen Biagas, Wed July 31, 2024
 #   Add hdf5_hl to search on Linux.
 #
-#   Kathleen Biagas, Mon Mar 31, 2025
-#   Utilize visit_import_third_party.
+#   Kathleen Biagas, Mon Mar 3, 2026
+#   On *nix, use the library specified by IMPORTED_SONAME_RELEASE for
+#   installation so that all the proper symlinks will be installed
+#   alongside VisIt.
 #
 #****************************************************************************/
 
-# Uses the HDF5_DIR hint from the config-site .cmake file
+# Use the HDF5_DIR hint from the config-site .cmake file
 
-visit_import_third_party(HDF5 LIBS hdf5 hdf5_hl)
+if(EXISTS ${VISIT_HDF5_DIR}/cmake)
+  set(HDF5_DIR ${VISIT_HDF5_DIR}/cmake)
+endif()
 
-if(VISIT_PARALLEL)
-    visit_import_third_party(HDF5_MPI LIBS hdf5_mpi hdf5_mpi_hl)
+find_package(HDF5 CONFIG PATHS ${HDF5_DIR} NO_DEFAULT_PATH)
+
+if(TARGET hdf5-shared)
+    set(HDF5_LIB hdf5-shared)
+    set(HAVE_HDF5 TRUE CACHE BOOL "Have HDF5 libraries")
+    if(WIN32)
+        get_target_property(hdf5_locr hdf5-shared IMPORTED_IMPLIB_RELEASE)
+    else()
+        get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
+    endif()
+
+    THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
+
+    if(TARGET hdf5_hl-shared)
+        set(HDF5_HL_LIB hdf5_hl-shared)
+        set(HAVE_HDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
+        if(WIN32)
+            get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_IMPLIB_RELEASE)
+        else()
+            get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_LOCATION_RELEASE)
+        endif()
+        THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
+    endif()
+
+    THIRD_PARTY_INSTALL_INCLUDE(hdf5 ${HDF5_INCLUDE_DIR})
+
+    # for plugin vs install
+    # write SetupHDF5.cmake for our export sets.
+    include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
+    create_lib_setup_cmake(KIT "HDF5"
+                           NAMESPACE "hdf5"
+                           INCBASE "hdf5/include"
+                           ITEMS ${HDF5_LIB} ${HDF5_HL_LIB}
+                           SIMPLE_INCLUDE true)
+
+    # need a few extras in the Setup file.
+    set(fname ${VISIT_BINARY_DIR}/SetupHDF5.cmake)
+    file(APPEND ${fname} "\nset(HDF5_LIB ${HDF5_LIB})\n")
+    file(APPEND ${fname} "\nset(HDF5_HL_LIB ${HDF5_HL_LIB})\n")
 endif()
 

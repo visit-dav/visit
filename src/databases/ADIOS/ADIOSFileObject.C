@@ -147,13 +147,15 @@ ADIOSFileObject::Open()
     MPI_Comm comm_dummy = 0;
     fp = adios_read_open_file(fileName.c_str(), ADIOS_READ_METHOD_BP, comm_dummy);
 #endif
-    if (resetDimensionOrder)
-        ResetDimensionOrder();
 
     if (fp == NULL)
     {
         EXCEPTION1(InvalidDBTypeException, fileName.c_str());
     }
+
+    if (resetDimensionOrder)
+        ResetDimensionOrder();
+
     numTimeSteps = -1;
     //Read vars.
     for (int i = 0; i < fp->nvars; i++)

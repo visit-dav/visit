@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="XGC" type="database" label="XGC" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <LIBS>
-      hdf5
+      ${HDF5_LIB}
     </LIBS>
     <FilePatterns>
       *.h5

@@ -9,7 +9,7 @@
 #include <time.h>
 
 #include <vtkRenderer.h>
-#include <vtkTextActor.h>
+#include <vtkVisItTextActor.h>
 #include <vtkTextProperty.h>
 
 #include <VisWinUserInfo.h>
@@ -49,6 +49,9 @@ const float VisWinUserInfo::defaultUserInfoWidth = 0.2;
 //    Tom Fogal, Fri Jan 28 15:25:43 MST 2011
 //    Account for VTK API change.
 //
+//    Cyrus Harrison, Wed Nov 19 11:40:12 PST 2025
+//    Use vtkVisItTextActor to all db info to adapt to viewport changes.
+//
 // ****************************************************************************
 
 VisWinUserInfo::VisWinUserInfo(VisWindowColleagueProxy &p) 
@@ -59,7 +62,7 @@ VisWinUserInfo::VisWinUserInfo(VisWindowColleagueProxy &p)
     //
     // Create and position the actors.
     //
-    infoActor = vtkTextActor::New();
+    infoActor = vtkVisItTextActor::New();
     infoActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_PROP);
     UpdateUserText();
 

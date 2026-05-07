@@ -18,5 +18,5 @@ visit_add_database_plugin(
                AMRreaderLowResBlkConso.C
                AMRreaderWithLevels.C
                OctKey.C
-    LIBS       hdf5)
+    LIBS       ${HDF5_LIB})
 

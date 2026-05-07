@@ -6,12 +6,12 @@ testEmail=""
 # list of users who want email every night with the log file
 #
 logRecipients="miller86@llnl.gov hank@uoregon.edu"
-logRecipients="${logRecipients} brugger1@llnl.gov harrison37@llnl.gov"
+logRecipients="${logRecipients} brugger1@llnl.gov harrison37@llnl.gov biagas2@llnl.gov"
 
 #
 # Parse the command line to determine the host to run on.
 #
-host="surface"
+host="dane"
 status="fail"
 
 for abc

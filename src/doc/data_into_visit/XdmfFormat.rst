@@ -3,9 +3,9 @@
 The Xdmf file format
 ====================
 
-Xdmf (eXtensible Data Model and Format) files can represent a variety of meshes including the basic simple mesh types, such as, point, regular, rectilinear, curvilinear and unstructured.
+Xdmf (eXtensible Data Model and Format) files can represent a variety of meshes including the basic simple mesh types, such as point, regular, rectilinear, curvilinear and unstructured.
 They also support multi-block meshes.
-Xdmf files consist of an XML (eXensible Markup Language) file containing meta data that references binary data in separate files.
+Xdmf files consist of an XML (eXensible Markup Language) file containing metadata that references binary data in separate files.
 The binary files can either be raw binary files or HDF5 files.
 Xdmf also supports embedding the bulk data in the XML file, but this is usually for illustrative uses or small files.
 
@@ -17,7 +17,7 @@ In fact, if you write out raw binary files, you will have zero external dependen
 
 The remainder of this Xdmf documentation consists of a description of the file format, a simple example, and then more complex examples of the different mesh types.
 
-The official Xdmf file format specification and description can be found `at xdmf.org <https://xdmf.org/index.php/Main_Page>`_.
+The official Xdmf file format specification and description can be found in the `XDMF project repository <https://www.xdmf.org/>`_.
 
 Basic structure of an Xdmf file
 -------------------------------
@@ -83,7 +83,7 @@ The following is an example of a ``DataItem`` that references an array in a bina
 The valid values for ``Format`` are:
 
 ======  ===================================
-XML     Text imbedded in the xml file
+XML     Text embedded in the xml file
 HDF     Binary data stored in an HDF5 file
 Binary  Binary data stored in a binary file
 ======  ===================================

@@ -9,7 +9,7 @@ This section will illustrate how to use the Silo_ library to write out various t
 Since the Silo_ library provides bindings for multiple languages, including C, Fortran, and Python, the source code examples that demonstrate a particular topic will be given in more than one programming language, when appropriate.
 One goal of this section is to provide examples that are complete enough so that they can be readily adapted into working source code.
 This section will not necessarily explain all of the various arguments to function calls in the Silo_ library.
-You can refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ for more information.
+You can refer to the `Silo Manual <https://silo.readthedocs.io/latest/>`_ for more information.
 
 Using the Silo library
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -39,7 +39,7 @@ Linking with Silo
 Before you can build a program that uses Silo_, you must locate the Silo_ header and library files.
 Silo_ is distributed as part of VisIt_ binary distributions but is installed in those distributions differently than it would be if it was installed as a stand-alone package.
 For example, in Linux distros, the library file, ``libsiloh5.so`` (or ``libsilo.so`` for non-HDF5 based Silo), is in the VisIt_ installation's ``<version>/<arch>/lib`` directory and the header file, ``silo.h``, is in the VisIt_ installation's ``<version>/<arch>/include/silo`` directory.
-A link to the most up-to-date version of the Silo_ library's source code can be found on `Silo's Github site <https://github.com/LLNL/Silo/releases>`_.
+A link to the most up-to-date version of the Silo_ library's source code can be found on `Silo's GitHub site <https://github.com/LLNL/Silo/releases>`_.
 
 Once you download the Silo_ source code, building and installing it is usually only a matter of running its ``configure`` script and running ``make``.
 You can even use the ``build_visit`` script from the `VisIt Web site <https://github.com/visit-dav/visit/releases>`_ to build Silo_ with support for HDF5.
@@ -81,7 +81,7 @@ Using Silo on Windows
 """""""""""""""""""""
 
 When you build an application using the Silo_ library on Windows, you can use the precompiled Silo_ DLL and import library that comes with the VisIt_ development distribution for Windows: ``visit_windowsdev_x.y.x.zip``, where ``x.y.z`` refers to the version, like ``3.3.3``.
-The development distribution for Windows includes pre-built binaries (``.dlls`` and import libraries) for the Third party libraries upon which VisIt_ depends, including Silo_.
+The development distribution for Windows includes prebuilt binaries (``.dlls`` and import libraries) for the third party libraries upon which VisIt_ depends, including Silo_.
 Simply unzip the distribution to whichever location best suits your needs.
 The binaries are located in the ``windowsbuild/MSVC<VERSION>`` folder, with ``<VERSION>`` being the version of Visual Studio they were built with (eg ``MSVC2017``).
 
@@ -184,10 +184,10 @@ Dealing with time
 ~~~~~~~~~~~~~~~~~
 
 A Silo_ file is a flexible container for storing many types of data.
-Silo_'s ability to store data hierarchically in directories can allow you to store multiple time states of your simulation data within a single data file.
-However, Silo_ is most often used to store one time state per Silo_ file (or ensemble of files in a parallel context)
+Silo_'s ability to store data hierarchically in directories can allow you to store multiple timestates of your simulation data within a single data file.
+However, Silo_ is most often used to store one timestate per Silo_ file (or ensemble of files in a parallel context)
 VisIt_'s Silo_ plugin is primarily designed and used to work with Silo_ files in this modality.
-Consequently, when writing data, programs that use Silo_ will write a new Silo_ file for each time step.
+Consequently, when writing data, programs that use Silo_ will write a new Silo_ file for each timestep.
 By convention, the new file will contain an index indicating either the simulation cycle or a simple integer counter.
 
 .. code-block:: c
@@ -221,8 +221,8 @@ By convention, the new file will contain an index indicating either the simulati
       return 0;
   }
 
-The above code listing will write out Silo_ files with names such as: ``output0000.silo``, ``output0001.silo``, ``output0002.silo``, ... .
-Each file contains the data from a particular simulation time state.
+The above code listing will write out Silo_ files with names such as: ``output0000.silo``, ``output0001.silo``, ``output0002.silo``, ...
+Each file contains the data from a particular simulation timestate.
 It may seem like the data are less related because they are stored in different files but the fact that the files are related in time is subtly encoded in the name of each of the files.
 When VisIt_ recognizes a pattern in the names of the files such as ``output????.silo``, in this case, VisIt_ automatically recognizes the files as a time-varying database (e.g. a *virtual* database).
 If you choose names for your Silo_ files that cannot be grouped by recognizing a
@@ -234,7 +234,7 @@ Option lists
 
 Many of Silo_'s more complex functions accept an auxiliary argument called an option list.
 An option list is a list of option/value pairs and it is used to specify additional metadata about the data being stored.
-Each Silo_ function that accepts an option list has its options enumerated in the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_.
+Each Silo_ function that accepts an option list has its options enumerated in the `Silo Manual <https://silo.readthedocs.io/latest/>`_.
 We cover only a subset of available options here.
 Option lists need not be passed to the Silo_ functions that do support them.
 In fact, most of the source code examples in this manual will pass NULL instead of passing a pointer to an option list.
@@ -724,7 +724,7 @@ Silo_ also supports fully arbitrary polyhedral zones but that will not be covere
 The procedure for creating the node coordinates is the same with the exception that 3D meshes also require a Z-coordinate.
 The procedure for creating the zone list (connectivity information) is the same except that you specify cells using a larger number of nodes because they are 3D.
 The order in which the nodes are specified is also more important for 3D shapes because if the nodes are not given in the right order, the zones can become tangled.
-The proper zone ordering for each of the four supported 3D zone shapes is shown in `the Silo_'s user manual <https://silo.readthedocs.io/objects.html#silo-standard-hex>`__.
+The proper zone ordering for each of the four supported 3D zone shapes is shown in `the Silo_'s user manual <https://silo.readthedocs.io/latest/objects.html#silo-standard-hex>`__.
 
 :numref:`Figure %s <silo_meshucd3d>` shows an example of a simple 3D unstructured mesh consisting of 2 hexahedrons, 1 pyramid, 1 prism, and 1 tetrahedron.
 
@@ -827,7 +827,7 @@ You can override the default labels using an option list.
 Option lists are created with the ``DBMakeOptlist`` function and freed with the ``DBFreeOptlist`` function.
 All of the Silo_ functions for writing meshes that we've demonstrated so far can
 accept option lists that contain custom axis labels and units.
-Refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ for more information on additional options that can be passed via option lists.
+Refer to the `Silo Manual <https://silo.readthedocs.io/latest/>`_ for more information on additional options that can be passed via option lists.
 
 Adding customized labels and units for a mesh by using option lists ensures that VisIt_ uses your customized labels and units instead of the default values.
 :numref:`Figure %s <silo_meshlabel>` shows how the labels and units in the previous examples show up in VisIt_'s visualization window.
@@ -866,7 +866,7 @@ Example for associating new axis labels and units with a mesh:
     c Free the option list
         err = dbfreeoptlist(optlistid)
 
-Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <https://silo.readthedocs.io/globals.html#dbsetcompression>`__ for more information.
+Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <https://silo.readthedocs.io/latest/globals.html#dbsetcompression>`__ for more information.
 
 Writing a scalar variable
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1017,7 +1017,7 @@ Example for writing zone-centered variables:
 Both of the previous code examples produce a data file with 4 different scalar arrays.
 Note that in both of the previous code examples, the same ``DBPutQuadvar1`` function (or ``dbputqv1`` in Fortran) function was used to write out data arrays of differing types.
 
-The ``DBPutQuadvar1`` function can also be used to write out node centered variables.
+The ``DBPutQuadvar1`` function can also be used to write out node-centered variables.
 There are two differences that you must observe when writing a node-centered variable as opposed to writing a zone-centered variable.
 First, the data array that you pass to the ``DBPutQuadvar1`` function must be larger by 1 in each of its dimensions and you must pass ``DB_NODECENT`` instead of ``DB_ZONECENT``.
 
@@ -1072,7 +1072,7 @@ For zone-centered variables, you must have (NX- 1)*(NY-1)*(NZ-1) data values and
 .. figure:: images/var_quadvar3d.png
   :scale: 40%
 
-  Zone centered variable in 3D and a node-centered varaible in 3D (shown with a partially transparent plot)
+  Zone-centered variable in 3D and a node-centered varaible in 3D (shown with a partially transparent plot)
 
 Example for writing variables on a 3D mesh:
 
@@ -1263,7 +1263,7 @@ Adding variable units
 All of the examples for writing scalar variables presented so far have focused on the basics of writing a variable array to a Silo_ file.
 Silo_'s option list mechanism allows a variable object to be annotated with various extra information.
 In the case of scalar variables, the option list passed to ``DBPutQuadvar1`` and ``DBPutUcdvar1`` can contain the units that describe the variable being stored.
-Refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`__ for a complete list of the options accepted by the ``DBPutQuadvar1`` and ``DBPutUcdvar1`` functions.
+Refer to the `Silo Manual <https://silo.readthedocs.io/latest/>`__ for a complete list of the options accepted by the ``DBPutQuadvar1`` and ``DBPutUcdvar1`` functions.
 When a scalar variable has associated units, the units appear in the variable legend in VisIt_'s visualization window (see :numref:`Figure %s <silo_varunits>`).
 
 .. _silo_varunits:
@@ -1312,7 +1312,7 @@ After having written some variables to a Silo_ file, you've no doubt learned tha
 When you pass data to a Silo_ function, you also must pass a flag that tells Silo_ how to interpret the data stored in your data array.
 For example, if you have single precision floating point data then you would tell Silo_ to traverse the data as such using the ``DB_FLOAT`` type flag in the function call to ``DBPutQuadvar1``.
 Many of the functions in the Silo_ library require a type flag to indicate the type of data being passed to Silo_.
-In fact, even the functions to write mesh coordinates can accept different data types.
+In fact, even the functions to write mesh coordinates can accept different datatypes.
 This means that you can use double-precision to specify your mesh coordinates, which can be immensely useful when dealing with very large or very small objects.
 
 
@@ -1399,7 +1399,7 @@ Creating a master file for parallel
 When a parallel program saves out its data files, often the most efficient method of I/O is for each processor to write its own piece of the simulation, or domain, to its own Silo_ file.
 If each processor writes its own Silo_ file then no communication or synchronization must take place to manage access to a shared file.
 However, once the simulation has completed, there are many files and all of them are required to reconstitute the simulated object.
-Expecting a user to plot each domain file manually in VisIt would be very tedious. So, Silo_ provides functions to create what is known as a *master* file (or *root* file), which is a top-level file that defines cooresponding objects which list all their constituent Silo_ objects in the the domain files.
+Expecting a user to plot each domain file manually in VisIt would be very tedious. So, Silo_ provides functions to create what is known as a *master* file (or *root* file), which is a top-level file that defines corresponding objects which list all their constituent Silo_ objects in the domain files.
 When you open a master file in VisIt_ and plot variables out of it, all domains are plotted.
 
 Master files contain what are known as multimeshes, multivars, and multimaterials.
@@ -1508,11 +1508,11 @@ Example for writing a multimesh:
         end
 
 Sometimes it can be advantageous to have each processor write its files to a unique subdirectory (e.g. proc-0, proc-1, proc-2, ...).
-You can also choose for each processor to write its files to a common directory so all files for a given time step are contained in a single place (e.g. cycle0000, cycle0001, cycle0002, ...).
+You can also choose for each processor to write its files to a common directory so all files for a given timestep are contained in a single place (e.g. cycle0000, cycle0001, cycle0002, ...).
 Generally, you will want to tailor your strategy to the strengths of your file system to spread the demands of writing files across as many I/O nodes as possible in order to increase throughput.
 The organization strategies mentioned so far are only suggestions and you will have to determine the optimum method for storing domain files on your computer system.
 Moving your domain files to subdirectories can make it easier to navigate your file system and can provide benefits later such as VisIt_ not having to check permissions, etc on so many files.
-Code to create the list of mesh names where each processor writes its data to a different subdirectory that contains all files for a given time step might look like the following:
+Code to create the list of mesh names where each processor writes its data to a different subdirectory that contains all files for a given timestep might look like the following:
 
 .. code-block:: c
 
@@ -1624,6 +1624,5 @@ Note that if you use the ``"EMPTY"`` keyword in a multivar object then the same 
   DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, NULL);
 
 
-For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating file system paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multi-block objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multi-block objects.
+For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating file system paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multi-block objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/latest/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multi-block objects.
 You can find many more examples of various features of Silo by browsing source code in either `VisIt's <https://github.com/visit-dav/visit/tree/develop/src/tools/data/datagen>`__ or `Silo's <https://github.com/LLNL/Silo/tree/main/tests>`__ test suites or the `test data files <https://github.com/search?q=repo%3Avisit-dav%2Fvisit%20path%3Asilo*.tar.xz&type=code>`__ used in VisIt_'s testing.
-

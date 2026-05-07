@@ -71,9 +71,9 @@ private slots:
 
 private:
     void SetChecked(const bool);
-    void UpdateLibraryName(const std::string);
-    void UpdateLibrarySubtypes(const std::string);
-    void UpdateRendererSubtypes(const std::string);
+    void UpdateLibraryName(const std::string &);
+    void UpdateLibrarySubtypes(const std::string &);
+    void UpdateRendererSubtypes(const std::string &);
 
     void UpdateRendererParameters(const stringVector &);
     void UpdateUSDParameters(const stringVector &);
@@ -94,7 +94,7 @@ private:
     QStackedLayout *dynamicLayouts; // Caches the dynamic widgets
 
     // Mapping of dynamic widget key (backend:subtype:renderer) to index in
-    // dyamicLayouts
+    // dynamicLayouts
     std::map<std::string, int> dynamicLayoutMap;
     int topRows;
     int bottomRows;

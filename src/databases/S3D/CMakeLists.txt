@@ -2,6 +2,5 @@
 
 visit_add_database_plugin(
     DNAME      S3D
-    LIBS       netcdf_cxx
-               netcdf)
+    LIBS       netcdf)
 

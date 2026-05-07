@@ -67,6 +67,9 @@
 #  Use custom command to copy bin files so that cmake keeps them
 #  up-to-date in `/bin` when the source files are modified.
 #
+#  Kathleen Biagas, Tue Nov 11, 2025
+#  Compile visit.c with C++ 17.
+#
 #****************************************************************************
 
 #-----------------------------------------------------------------------------
@@ -179,6 +182,7 @@ else()
                     ${VISIT_VISIT_RESOURCE_FILE}
         INCLUDES    ${VISIT_BINARY_DIR}/include
         DEPENDS_ON  shlwapi
+        FEATURES    cxx_std_17
         OUTPUT_NAME visit)
 
     #--------------------------------------------------------------------------

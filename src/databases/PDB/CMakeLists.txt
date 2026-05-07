@@ -27,6 +27,6 @@ visit_add_database_plugin(
                Streaker.C
                JMFileFormat.C
     INCLUDES   ${PDB_INCLUDES}
-    LIBS       pdb
+    LIBS       ${PDB_LIB}
                bow)
 

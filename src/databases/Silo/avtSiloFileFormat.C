@@ -63,13 +63,13 @@
 #include <BadDomainException.h>
 #include <BadIndexException.h>
 #include <BufferConnection.h>
+#include <DatabaseException.h>
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 #include <InvalidZoneTypeException.h>
-#include <SiloException.h>
 #include <avtExecutionManager.h>
 
 #include <avtStructuredDomainBoundaries.h>
@@ -125,7 +125,7 @@ static bool TetIsInverted(const int *siloTetrahedron,
                             vtkUnstructuredGrid *ugrid);
 
 static void ArbInsertArbitrary(vtkUnstructuredGrid *ugrid,
-    DBphzonelist *phzl, int gz, const vector<int> &nloffs,
+    int nsdims, DBphzonelist *phzl, int gz, const vector<int> &nloffs,
     const vector<int> &floffs, unsigned int ocdata[2],
     vector<int> *cellReMap, vector<int> *nodeReMap);
 
@@ -156,6 +156,29 @@ static int FindFirstNonEmptyBlock(char const *mbobj_name, int nblocks,
     int repr_block_idx, int empty_cnt, int const *empty_list);
 
 static int db_get_index(DBnamescheme const *ns, int natnum);
+
+//
+// When using Silo's read mask to reduce I/O during metadata operations, an
+// issue is that anything that causes an exception out of a block where a
+// read mask has been set can perhaps leave the read mask in a bad state.
+// So, we add logic here to capture any such exceptions and essentially
+// disable the read mask until a new block decides to set it again.
+//
+class SiloException : public DatabaseException
+{
+  public: SiloException(const char *)
+          {
+              char str[1024];
+              sprintf(str, "A Silo error occurred.\nThe error is \"%s.\"", filename.c_str());
+              msg = str;
+              DBSetDataReadMask2(DBAll); // precaution against exception out from a
+                                         // block where mask was other than DBAll
+          };
+    virtual ~SiloException() VISIT_THROW_NOTHING {;};
+};
+
+/* We don't want to include hdf5.h for this one function */
+extern "C" {int H5get_libversion(unsigned *maj, unsigned *min, unsigned *rel);}
 
 // ****************************************************************************
 //  Class: avtSiloFileFormat
@@ -1143,23 +1166,32 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     multispecCache.Clear();
 
     //
-    // We're just interested in metadata for now, so tell Silo not
-    // to read the extra data arrays, except for material names and
-    // numbers and colors.
+    // It is easy to conclude the right thing for PopulateDatabaseMetadata
+    // is to call DBSetDataReadMask2(DBNone) to avoid any bulk-data reads
+    // during bootstrap for opening a file. However, that would then prevent
+    // us from getting information about material names, numbers and colors
+    // used in parts of the GUI as well as multiblock object names which are
+    // needed for various purposes including accessing the first non-empty
+    // block to get additional metadata about the object as well as matching
+    // multiblock objects to their associated multiblock mesh.
     //
 #if SILO_VERSION_GE(4,11,0)
-    DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors|DBMBNamesAndTypes|DBMBOptions);
+    DBSetDataReadMask2(
+         DBMBNamesAndTypes // to get names/types from all multi-block objects
+       | DBMBOptions       // to get other optional arrays on multi-block objects
+       | DBMatMatnames     // to get material names from mat objects
+       | DBMatMatnos       // to get material numbers from mat objects
+       | DBMatMatcolors    // to get material colors from mat objects
+    );
 #else
-DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors);
+    DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors);
 #endif
 
     //
     // Do a recursive search through the subdirectories.
     //
     ReadDir(dbfile, topDir.c_str(), md);
-#ifdef PARALLEL
     BroadcastGlobalInfo(md);
-#endif
     DoRootDirectoryWork(md);
 
     //
@@ -1500,6 +1532,9 @@ DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors);
 //
 //    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
 //    Added logic to support adding of block decomposition as a variable.
+// 
+//    Mark C. Miller, Fri Aug  9 20:56:16 PDT 2024
+//    Improve logic to populate db comment with driver and version info.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
@@ -1639,18 +1674,85 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                 }
             }
 
-            if (DBInqVarExists(dbfile, "_fileinfo"))
+            char drvrinfo_str[16];
+            switch (DBGetDriverType(dbfile))
             {
-                int lfileinfo = DBGetVarLength(dbfile, "_fileinfo");
-                if (lfileinfo > 0)
+                case DB_HDF5: strcpy(drvrinfo_str, "HDF5"); break;
+                case DB_PDB:  strcpy(drvrinfo_str, "PDB Lite"); break;
+                case DB_PDBP: strcpy(drvrinfo_str, "PDB Proper"); break;
+                default:      strcpy(drvrinfo_str, "Unknown"); break;
+            }
+
+            char *siloinfo_str = 0;
+            if (DBInqVarExists(dbfile, "_silolibinfo"))
+            {
+                int linfo = DBGetVarLength(dbfile, "_silolibinfo");
+                if (linfo > 0)
                 {
-                    char *fileinfo_str = new char[lfileinfo+1];
-                    DBReadVar(dbfile, "_fileinfo", fileinfo_str);
-                    md->SetDatabaseComment(fileinfo_str);
-                    delete [] fileinfo_str;
+                    siloinfo_str = new char[linfo+1];
+                    DBReadVar(dbfile, "_silolibinfo", siloinfo_str);
                 }
             }
 
+            char *hdf5info_str = 0;
+            if (DBInqVarExists(dbfile, "_hdf5libinfo"))
+            {
+                int linfo = DBGetVarLength(dbfile, "_hdf5libinfo");
+                if (linfo > 0)
+                {
+                    hdf5info_str = new char[linfo+1];
+                    DBReadVar(dbfile, "_hdf5libinfo", hdf5info_str);
+                }
+            }
+
+            char *fileinfo_str = 0;
+            int lfileinfo = 0;
+            if (DBInqVarExists(dbfile, "_fileinfo"))
+            {
+                lfileinfo = DBGetVarLength(dbfile, "_fileinfo");
+                if (lfileinfo > 0)
+                {
+                    fileinfo_str = new char[lfileinfo+1];
+                    DBReadVar(dbfile, "_fileinfo", fileinfo_str);
+                }
+            }
+
+            char *hdf5libinfo_str = 0;
+#ifdef HAVE_HDF5
+            {
+                unsigned h5maj, h5min, h5rel;
+                H5get_libversion(&h5maj, &h5min, &h5rel);
+                hdf5libinfo_str = new char[9];
+                snprintf(hdf5libinfo_str, sizeof(hdf5libinfo_str), "%d.%d.%d",
+                    h5maj, h5min, h5rel);
+            }
+#endif
+
+            // 
+            // We are adding some of our own stuff to the database comment
+            // string here to indicate version of the hdf5 and silo library
+            // used to produce the file and version of the hdf5 and silo
+            // library being used in the current plugin reading it.
+            //
+            char *dbcmt = new char[lfileinfo+256];
+            snprintf(dbcmt, lfileinfo+256, "%.256s%sDriver: %s\nFile: %s%s%s\nPlugin:%s%s%ssilo-%s",
+                fileinfo_str?fileinfo_str:"",
+                fileinfo_str?"\n":"",
+                drvrinfo_str,
+                hdf5info_str?hdf5info_str:"",
+                siloinfo_str?", silo-":"",
+                siloinfo_str?siloinfo_str:"",
+                hdf5libinfo_str?" hdf5-":"",
+                hdf5libinfo_str?hdf5libinfo_str:"",
+                hdf5libinfo_str?", ":"",
+                DBVersion());
+            md->SetDatabaseComment(dbcmt);
+            delete[] dbcmt;
+
+            if (fileinfo_str) delete [] fileinfo_str;
+            if (hdf5info_str) delete [] hdf5info_str;
+            if (siloinfo_str) delete [] siloinfo_str;
+            if (hdf5libinfo_str) delete [] hdf5libinfo_str;
 
             // See if we should add the block decomp as a scalar var
             if (codeNameGuess == "BlockStructured" &&
@@ -4651,10 +4753,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
 //    Added logic to support adding of block decomposition as a variable.
 // ****************************************************************************
-#ifdef PARALLEL
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
 {
+#ifdef PARALLEL
     int rank = PAR_Rank();
 
     //
@@ -4755,8 +4857,8 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastInt(have_amr_group_info);
     haveAmrGroupInfo = have_amr_group_info;
 
-}
 #endif
+}
 
 // ****************************************************************************
 //  Method:  avtSiloFileFormat::StoreMultimeshInfo
@@ -6340,7 +6442,7 @@ inline void GetWord(char *&s, char *word, bool allowSlash)
 }
 
 
-void
+static void
 AddDefvars(const char *defvars, avtDatabaseMetaData *md)
 {
     char *dv_tmp = new char[strlen(defvars)+1];
@@ -8353,17 +8455,20 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
 //    Mark C. Miller, Wed Aug 13 22:20:07 PDT 2014
 //    Add support for tensor variables. Re-factor code for quad and point
 //    vars to this one template method.
+//
+//    Mark C. Miller, Tue Nov 11 20:04:22 PST 2025
+//    Handle row/col major order transposition
 // ****************************************************************************
 
 template <typename T, typename Tarr, typename DBvar>
 static vtkDataArray *
 CopyAndPadPointOrQuadVectorVar(const DBvar *mv, avtVarType vtype)
 {
-    int const Z = -1; // Place holder for zero'd components
+    int const Z = -1; // Place holder for components to be zero'd in the loop
     int const j_remap_2df[9] = {0,1,Z,2,3,Z,Z,Z,Z}; // map 2d full tensor to VTK
     int const j_remap_2d[9]  = {0,2,Z,2,1,Z,Z,Z,Z}; // map 2d symm. tensor comp Voigt order to VTK
     int const j_remap_3d[9]  = {0,5,4,5,1,3,4,3,2}; // map 3d symm. tensor comp Voigt order to VTK
-    int const *j_remap = 0;
+    int const *j_remap = 0;                         // all other cases map 1:1 to VTK
     size_t i;
     int j, nvtkcomps = mv->nvals;
     Tarr *vectors = Tarr::New();
@@ -8371,48 +8476,107 @@ CopyAndPadPointOrQuadVectorVar(const DBvar *mv, avtVarType vtype)
     if (vtype == AVT_UNKNOWN_TYPE && mv->nvals == 2)
         nvtkcomps = 3;
     else if (vtype == AVT_VECTOR_VAR)
-        nvtkcomps = 3; // zero pad extra components
+        nvtkcomps = 3; // Loop below will zero pad any extra VTK components
     else if (vtype == AVT_SYMMETRIC_TENSOR_VAR)
     {
         if (mv->nvals == 3)
             j_remap = j_remap_2d;
         else if (mv->nvals == 6)
             j_remap = j_remap_3d;
-        nvtkcomps = 9; // fill and/or zero pad extra components
+        nvtkcomps = 9; // Loop below will zero pad any extra VTK components
     }
     else if (vtype == AVT_TENSOR_VAR)
     {
         if (mv->nvals == 4)
             j_remap = j_remap_2df;
-        nvtkcomps = 9; // fill and/or zero pad extra components
+        nvtkcomps = 9; // Loop below will zero pad any extra VTK components
     }
+
     vectors->SetNumberOfComponents(nvtkcomps);
     vectors->SetNumberOfTuples(mv->nels);
     T *ptr = vectors->GetPointer(0);
 
-    if (j_remap)
+    // Handle major order reordering using logical indexing loops
+    if (mv->major_order != DB_ROWMAJOR)
     {
-        for (i = 0; i < (size_t)mv->nels; i++)
+        int nx = mv->dims[0];
+        int ny = mv->dims[1];
+        int nz = mv->ndims == 3 ? mv->dims[2] : 1;
+        int nxy = nx * ny;
+        int nyz = ny * nz;
+
+        if (j_remap)
         {
-            for (j = 0; j < nvtkcomps; j++)
+            for (int k = 0; k < nz; k++)
             {
-                if (j_remap[j] < 0)
-                    ptr[i*nvtkcomps+j] = ((T)0);
-                else
-                    ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j_remap[j]][i];
+                for (int j = 0; j < ny; j++)
+                {
+                    for (int i = 0; i < nx; i++)
+                    {
+                        int dstIdx = k*nxy + j*nx + i;
+                        int srcIdx = k + j*nz + i*nyz;
+
+                        for (int q = 0; q < nvtkcomps; q++)
+                        {
+                            if (j_remap[q] < 0)
+                                ptr[dstIdx*nvtkcomps+q] = ((T)0);
+                            else
+                                ptr[dstIdx*nvtkcomps+q] = ((T**)(mv->vals))[j_remap[q]][srcIdx];
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (int k = 0; k < nz; k++)
+            {
+                for (int j = 0; j < ny; j++)
+                {
+                    for (int i = 0; i < nx; i++)
+                    {
+                        int dstIdx = k*nxy + j*nx + i;
+                        int srcIdx = k + j*nz + i*nyz;
+
+                        for (int q = 0; q < nvtkcomps; q++)
+                        {
+                            if (q < mv->nvals)
+                                ptr[dstIdx*nvtkcomps+q] = ((T**)(mv->vals))[q][srcIdx];
+                            else
+                                ptr[dstIdx*nvtkcomps+q] = ((T)0);
+                        }
+                    }
+                }
             }
         }
     }
     else
     {
-        for (i = 0; i < (size_t)mv->nels; i++)
+        // Handle "normal" case...no need to manage logical indexing
+        if (j_remap)
         {
-            for (j = 0; j < nvtkcomps; j++)
+            for (i = 0; i < (size_t)mv->nels; i++)
             {
-                if (j < mv->nvals)
-                    ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j][i];
-                else
-                    ptr[i*nvtkcomps+j] = ((T)0);
+                for (j = 0; j < nvtkcomps; j++)
+                {
+                    if (j_remap[j] < 0)
+                        ptr[i*nvtkcomps+j] = ((T)0);
+                    else
+                        ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j_remap[j]][i];
+                }
+            }
+        }
+        else
+        {
+            for (i = 0; i < (size_t)mv->nels; i++)
+            {
+                for (j = 0; j < nvtkcomps; j++)
+                {
+                    if (j < mv->nvals)
+                        ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j][i];
+                    else
+                        ptr[i*nvtkcomps+j] = ((T)0);
+                }
             }
         }
     }
@@ -16400,7 +16564,7 @@ ExceptionGenerator(char *msg)
 //
 // ****************************************************************************
 
-char *
+static char *
 GenerateName(const char *dirname, const char *varname, const char *topdirname)
 {
     if (varname[0] == '/')
@@ -16518,7 +16682,7 @@ GenerateName(const char *dirname, const char *varname, const char *topdirname)
 //
 // ****************************************************************************
 
-string
+static string
 PrepareDirName(const char *dirvar, const char *curdir)
 {
     int len = strlen(dirvar);
@@ -16570,7 +16734,7 @@ PrepareDirName(const char *dirvar, const char *curdir)
 //    Fixed memory problem when strlen dirvar is zero
 // ****************************************************************************
 
-void
+static void
 SplitDirVarName(const char *dirvar, const char *curdir,
                 string &dir, string &var)
 {
@@ -16637,7 +16801,7 @@ SplitDirVarName(const char *dirvar, const char *curdir,
 //
 // ****************************************************************************
 
-int
+static int
 SiloZoneTypeToVTKZoneType(int zonetype)
 {
     int  vtk_zonetype = -1;
@@ -16727,7 +16891,7 @@ SiloZoneTypeToVTKZoneType(int zonetype)
 //
 // ****************************************************************************
 
-void
+static void
 TranslateSiloWedgeToVTKWedge(const int *siloWedge, vtkIdType vtkWedge[6])
 {
     //
@@ -16765,7 +16929,7 @@ TranslateSiloWedgeToVTKWedge(const int *siloWedge, vtkIdType vtkWedge[6])
 //
 // ****************************************************************************
 
-void
+static void
 TranslateSiloPyramidToVTKPyramid(const int *siloPyramid, vtkIdType vtkPyramid[5])
 {
     //
@@ -16798,7 +16962,7 @@ TranslateSiloPyramidToVTKPyramid(const int *siloPyramid, vtkIdType vtkPyramid[5]
 //
 // ****************************************************************************
 
-void
+static void
 TranslateSiloTetrahedronToVTKTetrahedron(const int *siloTetrahedron,
                                          vtkIdType vtkTetrahedron[4])
 {

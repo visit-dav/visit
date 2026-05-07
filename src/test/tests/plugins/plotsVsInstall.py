@@ -16,6 +16,9 @@
 #    auto-regenerated. See issue #19044.
 #    Add Molecule in it's place.
 #
+#    Kathleen Biagas, Tue Feb 10, 2026
+#    Use of pathlib is now part of tests_path.
+#
 # ----------------------------------------------------------------------------
 
 Source(tests_path("plugins", "pluginVsInstallHelpers"))

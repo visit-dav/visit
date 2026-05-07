@@ -4,13 +4,16 @@
 
 #ifndef AVT_CONDUIT_BLUEPRINT_DATA_ADAPTOR_H
 #define AVT_CONDUIT_BLUEPRINT_DATA_ADAPTOR_H
+#include <visit-config.h>
 #include <avtblueprint_exports.h>
 #include <conduit.hpp>
 
 //-----------------------------------------------------------------------------
 // mfem includes
 //-----------------------------------------------------------------------------
+#ifdef HAVE_MFEM
 #include <mfem.hpp>
+#endif
 
 //-----------------------------------------------------------------------------
 // vtk forward decls
@@ -107,6 +110,7 @@ public:
                                        const int ndims);
     };
 
+#ifdef HAVE_MFEM
     class AVTBLUEPRINT_API BlueprintToMFEM
     {
     public:
@@ -115,7 +119,11 @@ public:
 
         static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh,
                                                const conduit::Node &field);
+
+        static mfem::QuadratureFunction *FieldToMFEMQuadratureFunction(mfem::Mesh *mesh,
+                                                                       const conduit::Node &field);
     };
+#endif
 };
 
 #endif

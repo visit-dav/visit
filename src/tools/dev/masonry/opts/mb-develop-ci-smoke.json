@@ -10,6 +10,7 @@
                     "args":"--no-thirdparty --optional --no-moab --no-pidx --no-icet ",
                     "comments": "setup for ci testing, builds basics + optional tpls",
           "libs":["cmake",
+                  "ninja",
                   "python",
                   "vtk",
                   "qt",
@@ -18,7 +19,6 @@
                   "mesagl",
                   "hdf5",
                   "silo",
-                  "szip",
                   "zlib",
                   "mpich"]}
 }}

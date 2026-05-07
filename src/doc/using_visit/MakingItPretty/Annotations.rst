@@ -299,7 +299,7 @@ first unchecking the **Auto set ticks** check box on the **General 3D**
 tab then typing new tick spacing values into the **Major minimum**,
 **Major maximum**, **Major spacing**, and **Minor spacing** text fields.
 
-The 3D grid lines are a set of lines that make a grid over the the bounding
+The 3D grid lines are a set of lines that make a grid over the bounding
 box. The grid lines are disabled by default but you can enable them by
 checking the **Show grid** check box. The grid lines correspond to the
 major tick marks.
@@ -560,10 +560,10 @@ The list of named values currently supported along with their *default* formats 
     +--------------------+----------+-------------------------------------+
 
 In addition, the following ``$<T>tafile<I>`` named values permit arbitrary text annotation content to be taken from a ``txt`` file with name of the form ``<T>tafile<I>.txt`` where ``<T>`` is either ``s`` (for files of string values), ``i`` (for files of integer values) or ``f`` (for files of floating point values) and ``<I>`` is either ``1``, ``2`` or ``3`` to provide 3 separate options for storing files of values used for different annotation purposes.
-Each line of such a file corresponds to a time step in a time series.
+Each line of such a file corresponds to a timestep in a time series.
 If a ``$$<T>tafile<I>`` named annotation is used, VisIt_ will search for the associated file first in the same directory containing the database, then in the directory ``/$TMPDIR/$USER`` or (``/var/tmp/$USER``) and finally in :ref:`vuser_home`.
 
-A common use case for ``$<T>tafile<I>`` named values is for animations to display the numerical values from a query over time and have those values update as the time step being displayed changes.
+A common use case for ``$<T>tafile<I>`` named values is for animations to display the numerical values from a query over time and have those values update as the timestep being displayed changes.
 
     +--------------------+----------+-------------------------------------+
     |   **Value name**   | **Fmt**  |       **Meaning**                   |
@@ -602,7 +602,7 @@ A common use case for ``$<T>tafile<I>`` named values is for animations to displa
 
 Multiple named values can appear in a text annotation string and the same named value can also appear multiple times.
 
-For example, to create a text annoation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
+For example, to create a text annotation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
 To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle%06d$`` where the optional ``%`` followed by a :ref:`printf-style <FormattingNumbers>` format string is specified.
 To display the first 3 characters of the variable name, use the string ``$varname%.3s$``.
 Note that in both of the preceding examples, because the optional formatting string is used, the terminating ``$`` is also required.
@@ -941,7 +941,7 @@ Once you release the left mouse button, the location of the cross-hairs is used 
 
 The **X scale** and **Y scale** spin boxes control the size of the legend, with values of '100%' being the default size.  You can enter new values using the text field or use the + and - buttons to the right of the text field.
 
-The **Orientation** of the legend is changed using the corresponding drop-down menu, with options: **Vertical, Text on Right**; **Vertical, Text on Left**; **Horizontal, Text on Top** and **Horizonatal, Text on Bottom**.
+The **Orientation** of the legend is changed using the corresponding drop-down menu, with options: **Vertical, Text on Right**; **Vertical, Text on Left**; **Horizontal, Text on Top** and **Horizontal, Text on Bottom**.
 
 .. _legend_position_image:
 

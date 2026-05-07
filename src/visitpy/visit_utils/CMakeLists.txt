@@ -8,6 +8,12 @@
 #  For PYTHON_ADD_PIP_SETUP change DEST_DIR from lib/site-packages to
 #  simply site-packages. The lib part handled in PYTHON_ADD_PIP_SETUP.
 #
+#  Kathleen Biagas, Tue Nov 18, 2025
+#  Remove convert2to3.py
+#
+#  Cyrus Harrison, Thu Jan 15 13:35:30 PST 2026
+#  Added flux batch helper.
+#
 #****************************************************************************
 
 PYTHON_ADD_PIP_SETUP(NAME visit_utils_py_setup
@@ -25,12 +31,12 @@ PYTHON_ADD_PIP_SETUP(NAME visit_utils_py_setup
                      src/property_tree.py
                      src/query.py
                      src/slurm.py
+                     src/flux.py
                      src/status.py
                      src/ult.py
                      src/windows.py
                      # builtin module
                      src/builtin/__init__.py
-                     src/builtin/convert2to3.py
                      src/builtin/evalfuncs.py
                      src/builtin/flatten.py
                      src/builtin/writescript.py

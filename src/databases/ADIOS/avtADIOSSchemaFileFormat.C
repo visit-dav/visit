@@ -65,6 +65,7 @@ avtADIOSSchemaFileFormat::Identify(const char *fname)
     MPI_Comm comm_dummy = 0;
     fp = adios_read_open_file(fname, ADIOS_READ_METHOD_BP, comm_dummy);
 #endif
+    if (!fp) return false;
 
     bool isSchema = false;
     for (int i = 0; i < fp->nvars && !isSchema; i++)

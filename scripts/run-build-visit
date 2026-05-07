@@ -9,8 +9,9 @@
 # Usage:
 #    run-build-visit -<machine name> -v <version> -s <build_visit_script>
 #    Valid machine names:
-#       poodle     (LC, Linux, x86_64, toss4),
+#       dane       (LC, Linux, x86_64, toss4),
 #       rzwhippet  (LC, Linux, x86_64, toss4),
+#       magma      (LC, Linux, x86_64, toss4),
 #       rzvernal   (LC, Linux, x86_64, toss4-cray),
 #       crossroads (LANL, x86_64),
 #       tuolumne   (LC, Linux, x86_64, toss4-cray),
@@ -105,18 +106,34 @@
 #    Justin Privitera, Thu Oct  9 14:12:13 PDT 2025
 #    Removed lassen (blueOS).
 #
+#    Eric Brugger, Fri Oct 31 12:53:30 PDT 2025
+#    Enabled IceT on elcap and rzadams. Enabled Moab on elcap and
+#    tuolumne. Set the LD_LIBRARY_PATH on elcap and tuolumne.
+#
+#    Eric Brugger, Mon Nov 10 13:30:01 PST 2025
+#    Collapsed the 3 build cases for elcap, rzadams and tuolumne into
+#    tuolumne since they are now the same.
+#
+#    Cyrus Harrison, Mon Dec  1 14:40:14 PST 2025
+#    Added support for building on dane.
+# 
+#    Justin Privitera, Thu Mar 19 13:51:40 PDT 2026
+#    Re-added magma case (secretly dane case). Combined rzwhippet and
+#    dane case.
+#
+#    Eric Brugger, Fri Apr 17 09:44:19 PDT 2026
+#    Made some fixes for building on crossroads.
+#
 #-----------------------------------------------------------------------
 
 #
 # Parse the execute line, providing default values for error checking.
 #
-poodle=false
-rzwhippet=false
+
+dane=false
 rzvernal=false
 crossroads=false
 tuolumne=false
-elcap=false
-rzadams=false
 
 machine_name="unknown"
 
@@ -133,14 +150,19 @@ ran_build_visit=false
 for abc
 do
    case $1 in
-      -poodle)
-         poodle=true
-         machine_name="poodle"
+      -dane)
+         dane=true
+         machine_name="dane"
          shift
          ;;
       -rzwhippet)
-         rzwhippet=true
+         dane=true
          machine_name="rzwhippet"
+         shift
+         ;;
+      -magma)
+         dane=true
+         machine_name="magma"
          shift
          ;;
       -rzvernal)
@@ -160,13 +182,11 @@ do
          ;;
       -rzadams)
          tuolumne=true
-         rzadams=true
          machine_name="rzadams"
          shift
          ;;
       -elcap)
          tuolumne=true
-         elcap=true
          machine_name="elcap"
          shift
          ;;
@@ -188,13 +208,14 @@ if [ "$build_visit_script" = "undefined" ] || [ "$version" = "undefined" ]
 then
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    poodle     (LC, Linux, x86_64, toss4),"
-   echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
-   echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
+   echo "    dane       (LC,   Linux, x86_64, toss4),"
+   echo "    rzwhippet  (LC,   Linux, x86_64, toss4),"
+   echo "    magma      (LC,   Linux, x86_64, toss4),"
+   echo "    tuolumne   (LC,   Linux, x86_64, toss4-cray),"
+   echo "    rzvernal   (LC,   Linux, x86_64, toss4-cray),"
+   echo "    rzadams    (LC,   Linux, x86_64, toss4-cray),"
+   echo "    elcap      (LC,   Linux, x86_64, toss4-cray)"
    echo "    crossroads (LANL, Linux, x86_64),"
-   echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
-   echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
-   echo "    elcap      (LC, Linux, x86_64, toss4-cray)"
    exit
 fi
 
@@ -214,7 +235,7 @@ fi
 #
 # Info and set ran_build_visit
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || \
    [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    echo "Building on $machine_name"
@@ -227,7 +248,7 @@ fi
 #
 # Set destination directory
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$dane" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
 elif [ "$rzvernal" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx90a
@@ -243,7 +264,7 @@ fi
 #
 # Set destination group
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || \
    [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    dest_group=visit
 elif [ "$crossroads" = true ]; then
@@ -256,7 +277,7 @@ fi
 #
 # housekeeping
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || \
    [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    if [ -f ${build_visit_script}_log.${machine_name} ]; then
@@ -273,7 +294,8 @@ fi
 #
 # Call build_visit
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$dane" = true ]; then
+   ml gcc
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
@@ -290,39 +312,20 @@ elif [ "$crossroads" = true ]; then
        CXX_COMPILER=g++ \
        PAR_COMPILER=mpicc \
        PAR_COMPILER_CXX=mpic++ \
-       PAR_INCLUDE=-I/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/include \
-       PAR_LIBS="-L/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/opt/cray/pe/mpich/8.1.28/ofi/intel/intel/lib" \
+       PAR_INCLUDE=-I/cpe/23.12/mpich/8.1.28/ofi/intel/2022.1/include \
+       PAR_LIBS="-L/cpe/23.12/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/cpe/23.12/mpich/8.1.28/ofi/intel/2022.1/lib" \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl \
-       --no-adios --no-gdal --no-nektarpp \
+       --no-adios --no-gdal --no-nektarpp --no-openexr \
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
-# The cases for elcap and rzadams must be before tuolumne.
-# If any of these 3 machines is set then tuolumne is always set, but
-# if elcap or rzadams is also set, then we want the code for that
-# case to be run. By having them earlier in the if then, elif cases
-# we get that behaviour.
-elif [ "$elcap" = true ]; then
-   env CC=gcc \
-       CXX=g++ \
-       PAR_COMPILER=cc \
-       PAR_COMPILER_CXX=CC \
-       ./$build_visit_script --group ${dest_group} --required --optional --osmesa --parallel \
-       --qwt --no-moab --no-uintah --no-visit --no-icet --makeflags -j24 --thirdparty-path ${dest_dir}
-elif [ "$rzadams" = true ]; then
-   export LD_LIBRARY_PATH="/opt/cray/pe/lib64:/opt/cray/lib64:/opt/cray/pe/papi/7.2.0.2/lib64:/opt/cray/libfabric/2.1/lib64:${LD_LIBRARY_PATH}"
-   env CC=gcc \
-       CXX=g++ \
-       PAR_COMPILER=cc \
-       PAR_COMPILER_CXX=CC \
-       ./$build_visit_script --group ${dest_group} --required --optional --osmesa --parallel \
-       --qwt --no-uintah --no-visit --no-icet --makeflags -j24 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
-   env CC=gcc \
-       CXX=g++ \
-       PAR_COMPILER=cc \
-       PAR_COMPILER_CXX=CC \
+   env CC=/usr/tce/packages/gcc/gcc-10.3.1-magic/bin/gcc \
+       CXX=/usr/tce/packages/gcc/gcc-10.3.1-magic/bin/g++ \
+       PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-9.0.1-gcc-10.3.1-magic/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-9.0.1-gcc-10.3.1-magic/bin/mpic++ \
+       PKG_CONFIG_PATH=/opt/cray/libfabric/2.1/lib64/pkgconfig:$PKG_CONFIG_PATH \
        ./$build_visit_script --group ${dest_group} --required --optional --anari --osmesa --parallel \
-       --qwt --no-moab --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
+       --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
@@ -331,7 +334,7 @@ fi
 #
 # Final housekeeping and permissions
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || \
    [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    mv ${build_visit_script}_log ${build_visit_script}_log.${machine_name}
@@ -352,12 +355,13 @@ then
    echo "Invalid or missing machine name."
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    poodle     (LC, Linux, x86_64, toss4),"
-   echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
-   echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
+   echo "    dane       (LC,   Linux, x86_64, toss4),"
+   echo "    rzwhippet  (LC,   Linux, x86_64, toss4),"
+   echo "    magma      (LC,   Linux, x86_64, toss4),"
+   echo "    tuolumne   (LC,   Linux, x86_64, toss4-cray),"
+   echo "    rzvernal   (LC,   Linux, x86_64, toss4-cray),"
+   echo "    rzadams    (LC,   Linux, x86_64, toss4-cray),"
+   echo "    elcap      (LC,   Linux, x86_64, toss4-cray)"
    echo "    crossroads (LANL, Linux, x86_64),"
-   echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
-   echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
-   echo "    elcap      (LC, Linux, x86_64, toss4-cray)"
    exit
 fi

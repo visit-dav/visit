@@ -40,7 +40,7 @@ set(avtpythonfilters_INCLUDES
 set(avtpythonfilters_DEPENDS
     visitcommon
     avtdbatts
-    ${PYTHON_LIBRARIES})
+    ${PYTHON_LIBRARY})
 
 #********************************* SERIAL ************************************
 visit_add_library(

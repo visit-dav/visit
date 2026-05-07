@@ -17,7 +17,4 @@ visit_add_database_plugin(
                avtPIConGPUFileFormat.C
                ADIOSFileObject.C
     LIBS       VTK::FiltersHybrid
-    MLIBS      adios
-    ESERLIBS   adios
-    EPARLIBS   adios_mpi)
-
+               adios)

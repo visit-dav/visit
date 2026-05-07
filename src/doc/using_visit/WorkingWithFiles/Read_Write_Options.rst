@@ -6,28 +6,6 @@ Several database plugins have options that affect reading and/or writing with th
 format. These are described in this section. Alternatively, in some cases, the
 behavior of a database plugin may be affected by enviornment variables.
 
-Blueprint
-~~~~~~~~~
-
-MFEM LOR Setting
-""""""""""""""""
-This option allows the user to select a MFEM Low-Order-Refinement Scheme. 
-The two options are Legacy LOR and MFEM LOR. 
-The Legacy setting was previously VisIt's only LOR method in the Blueprint Plugin. 
-It produces discontinuous output, while the new option produces a continuous low order mesh. 
-This new option is the default.
-
-MFEM
-~~~~
-
-MFEM LOR Setting
-""""""""""""""""
-This option allows the user to select a MFEM Low-Order-Refinement Scheme. 
-The two options are Legacy LOR and MFEM LOR. 
-The Legacy setting was previously VisIt's only LOR method in the MFEM Plugin. 
-It produces discontinuous output, while the new option produces a continuous low order mesh. 
-This new option is the default.
-
 Exodus
 ~~~~~~
 
@@ -58,9 +36,9 @@ produce the names of the scalar variables holding material-specific values for a
 associated non-material-specific variable.
 
 The
-`nameschemes <./using_visit/WorkingWithFiles/Read_Write_Options.rst>`__
+nameschemes
 used here are identical to those described in the
-`Silo user's manual <https://silo.readthedocs.io/index.html>`__
+`Silo user's manual <https://silo.readthedocs.io/latest/>`__
 with one extension. The conversion specifier ``%V`` is used to denote the basename
 (non-material-specific) name of a set of scalar variables holding material
 specific values.
@@ -106,7 +84,7 @@ In client/server mode, the STRIPACK library must be installed on both the client
 and the server.
 
 The :ref:`build_visit <Building>` tool can be used to download, build and install the
-STRIPACK library. Here is an example bash shell ``build_visit`` command-line...
+STRIPACK library. Here is an example bash shell ``build_visit`` command line...
 
 .. code-block:: shell
 
@@ -148,7 +126,7 @@ file it should read is:
 - Binary or ASCII
 - Fortran-style (record based or not) or C-style
 - Has Iblanking or not
-- Single block or multiblock
+- Single block or multi-block
 
 To get VisIt_ to read your file, you need to give it hints. You do this with a
 text file with extension `.vp3d`, which describes the variant of Plot3D being
@@ -332,7 +310,7 @@ very old versions of these options.
 Force Single
 """"""""""""
 The ``Force Single`` check box enables the Silo_ library's
-`DBForceSingle() <https://silo.readthedocs.io/globals.html#dbforcesingle>`__
+`DBForceSingle() <https://silo.readthedocs.io/latest/globals.html#dbforcesingle>`__
 method. This can potentially be useful when reading double precision data and
 running out of memory.
 
@@ -340,7 +318,7 @@ Search for ANNOTATION_INT (and friends)
 """""""""""""""""""""""""""""""""""""""
 The ``ANNOTATION_INT`` (and friends) objects are generic containers sometimes
 used to store mesh-specific data using Silo_'s
-`compound array <https://silo.readthedocs.io/generic.html#dbputcompoundarray>`__.
+`compound array <https://silo.readthedocs.io/latest/generic.html#dbputcompoundarray>`__.
 However, because there is no multi-block analog for Silo_ compound arrays, in
 order to handle them VisIt_ needs to be forced to go searching for their
 existance in all the files comprising a multi-block database. Thus, enabling

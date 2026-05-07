@@ -218,6 +218,31 @@ def shexe(cmd,ret_output=False,echo=False,env=None,redirect=None):
             else:
                 return subprocess.call(cmd,**kwargs),""
 
+##########################################################################
+# NOTE (cyrush) 2021-05-27
+# the hdiutil commands are unreliable. They can often fail with:
+#   hdiutil: Resource busy 
+# but then work fine on subsequent tries, so we try here multiple times.
+##########################################################################
+
+def hdiutil(arg_str,env):
+    success = False
+    max_attempts = 7
+    attempts = 0
+    output = ""
+    while (not success) and (attempts < max_attempts):
+        rcode, rout = shexe("hdiutil " + arg_str, ret_output=True, echo=True, env=env)
+        print("[res: %s, rcode: %d]" % (rout,rcode))
+        output = rout
+        if rcode == 0:
+            success = True
+        else:
+            attempts += 1
+            time.sleep(1.5**attempts)
+    if not success:
+        msg = "[error in \"hdiutil {0}\" ({1} attempts)]".format(args_str, attempts)
+        raise RuntimeError(msg, cmd, output)
+
 class Context(object):
     def __init__(self,enable_logging=True,log_dir=None):
         self.enable_logging = enable_logging
@@ -418,38 +443,8 @@ class NotarizeAction(Action):
                 print("[removing existing temporary dmg file: {0}]".format(temp_dmg))
                 os.remove(temp_dmg)
 
-            cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, temp_dmg)
-
-            ##########################################################################
-            # NOTE (cyrush) 2021-05-27
-            # the dmg creation process is unreliable, it can often fail with:
-            #   hdiutil: create failed - Resource busy 
-            # but then works fine on subsequent tries, so we try here multiple times
-            #
-            # NOTE (miller86) Mark C. Miller, Fri Dec 13 19:12:02 PST 2024
-            # I believe the "Resource busy" condition we sometimes hit is actually not
-            # from hdiutil commands here but instead down in CMake's `make package`
-            # logic when large parallel task counts are used (e.g. -j8 or more).
-            # So, in the trigger in the bootstrap, we override nthreads to 1 there in
-            # hopes of preventing the "Resource busy" error in hdiutil commands.
-            ##########################################################################
-
-            dmg_created = False
-            dmg_create_max_attempts = 5
-            dmg_create_attempts = 0
-            dmg_create_output = ""
-            while not dmg_created and dmg_create_attempts < dmg_create_max_attempts:
-                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
-                print("[res: %s]" % rout)
-                dmg_create_output = rout
-                if rcode == 0:
-                    dmg_created = True
-                else:
-                    dmg_create_attempts += 1
-
-            if not dmg_created:
-                msg = "[error creating VisIt dmg for notarization ({0} attempts)]".format(dmg_create_attempts)
-                raise RuntimeError(msg, cmd, dmg_create_output)
+            cmd = "create -ov -srcFolder %s -o %s" % (src_folder, temp_dmg)
+            hdiutil(cmd,env)
 
             ######################################
             # Submit to Apple Notary Service 
@@ -500,19 +495,13 @@ class NotarizeAction(Action):
 
                 # Create new DMG with stapled containing notarized app
                 dmg_stapled = pjoin(notarize_dir, "VisIt.stpl.dmg")
-                cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, dmg_stapled)
-                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
-                print('[hdiutil result: "%s"]' % rout)
-                if rcode != 0:
-                    raise RuntimeError("[error creating stapled VisIt.stpl.dmg]", cmd)
+                cmd = "create -ov -srcFolder %s -o %s" % (src_folder, dmg_stapled)
+                hdiutil(cmd,env)
 
                 final_dmg_name = "visit%s.darwin%s-%s.dmg" % (self.params["build_version"].replace('.','_'),os.uname().release[0:2],os.uname().machine)
                 dmg_release = pjoin(notarize_dir, final_dmg_name)
-                cmd = "hdiutil convert %s -format UDZO -o %s" % (dmg_stapled, dmg_release)
-                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
-                print('[hdiutil convert result: "%s"]' % rout)
-                if rcode != 0:
-                    raise RuntimeError("[error creating final {0}]".format(final_dmg_name), cmd)
+                cmd = "convert -ov %s -format ULMO -o %s" % (dmg_stapled, dmg_release)
+                hdiutil(cmd,env)
             else:
                 raise RuntimeError("Notarization Failed!")
         except KeyboardInterrupt as e:

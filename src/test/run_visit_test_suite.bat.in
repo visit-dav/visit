@@ -1,4 +1,6 @@
-SET PYTHONPATH=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/
+SET PYTHONPATH=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/;@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/python/lib/
+SET PYTHONHOME=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/;@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/python/lib/
+
 @PYTHON_EXECUTABLE@ @CMAKE_CURRENT_SOURCE_DIR@/run_visit_test_suite.py ^
    --lessverbose --no-timings --fuzzy ^
    -d @CMAKE_BINARY_DIR@/testdata ^
@@ -9,3 +11,7 @@ SET PYTHONPATH=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/
    --cmake "@CMAKE_COMMAND@" ^
    -o testing_output ^
    -e @CMAKE_RUNTIME_OUTPUT_DIRECTORY@/@CMAKE_BUILD_TYPE@/visit.exe %*
+
+rem clean up environment
+SET PYTHONPATH=
+SET PYTHONHOME=

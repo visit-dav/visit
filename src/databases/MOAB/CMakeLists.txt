@@ -2,7 +2,5 @@
 
 visit_add_database_plugin(
     DNAME      MOAB
-    MLIBS      moab
-    ESERLIBS   moab
-    EPARLIBS   moab_mpi)
+    LIBS       moab)
 

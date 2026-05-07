@@ -4,7 +4,7 @@
       *.amr
     </FilePatterns>
     <LIBS>     
-      hdf5
+      ${HDF5_LIB}
     </LIBS>
     <Files components="M,E">
       EOS.C

@@ -12,5 +12,5 @@ visit_add_database_plugin(
                Partition.C
                pvldReader.C
                pvldPartReader.C
-    LIBS       hdf5)
+    LIBS       ${HDF5_LIB})
 

@@ -4,5 +4,5 @@ visit_add_database_plugin(
     DNAME      Velodyne
     MSRC       VelodyneReader.C
     ESRC       VelodyneReader.C
-    LIBS       hdf5)
+    LIBS       ${HDF5_LIB})
 

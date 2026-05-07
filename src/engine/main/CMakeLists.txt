@@ -261,6 +261,11 @@ if(VISIT_PARALLEL)
                     Threads::Threads
         OUTPUT_NAME engine_par)
 
+    if(APPLE)
+        # use custom plist to avoid engine exes from appearing in the macOS dock
+        target_link_options(engine_par_exe PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${VISIT_SOURCE_DIR}/include/EngineInfo.plist)
+    endif()
+
     if(WIN32 AND MSVC)
         set_target_properties(engine_par_exe PROPERTIES
             LINK_FLAGS "/STACK:4000000")

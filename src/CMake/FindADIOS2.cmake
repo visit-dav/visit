@@ -28,7 +28,8 @@
 #   Adjust parallel to include both serial and parallel libs.
 #
 #   Kathleen Biagas, Mon Mar 24, 2025
-#   Utilize visit_import_third_party.
+#   Utilize visit_import_third_party in order to get a single adios2 target
+#   that includes all the relevant libraries.
 #
 #****************************************************************************/
 
@@ -49,15 +50,15 @@ if(NOT WIN32)
         adios2_perfstubs)
 endif()
 
-visit_import_third_party(ADIOS2 LIBS ${adios2_libs})
-
-
+set(adios2_defines)
 if(VISIT_PARALLEL)
-    visit_import_third_party(ADIOS2_PAR
-         LIBS     ${adios2_libs}
-                  adios2_c_mpi
-                  adios2_cxx11_mpi
-                  adios2_core_mpi
-          DEFINES ADIOS2_USE_MPI)
+    list(APPEND adios2_libs
+        adios2_c_mpi
+        adios2_cxx11_mpi
+        adios2_core_mpi)
 endif()
+
+visit_import_third_party(ADIOS2
+     LIBS    ${adios2_libs}
+     DEFINES ${adios2_defines})
 

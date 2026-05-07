@@ -46,30 +46,13 @@ if(VISIT_PARALLEL)
 
     if(UNIX)
         set_target_properties(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
-        if(VISIT_PARALLEL_CXXFLAGS)
-            set(PAR_COMPILE_FLAGS "-fno-strict-aliasing")
-            foreach(X ${VISIT_PARALLEL_CXXFLAGS})
-                set(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-            endforeach()
-            set_target_properties(mpicom PROPERTIES
-                                  COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
-        endif()
-        if(VISIT_PARALLEL_LINKER_FLAGS)
-            set(PAR_LINK_FLAGS "")
-            foreach(X ${VISIT_PARALLEL_LINKER_FLAGS})
-                set(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            endforeach()
-            set_target_properties(mpicom PROPERTIES
-                              LINK_FLAGS ${PAR_LINK_FLAGS})
-        endif()
-    else()
-        target_include_directories(mpicom PRIVATE ${VISIT_PARALLEL_INCLUDE})
-        target_compile_definitions(mpicom PRIVATE ${VISIT_PARALLEL_DEFINES})
     endif()
+
+    target_compile_definitions(mpicom PUBLIC ${VISIT_PARALLEL_DEFINES})
 
     target_link_libraries(mpicom PRIVATE
                           ${PYTHON_LIBRARY}
-                          ${VISIT_PARALLEL_LIBS})
+                          MPI::MPI_C)
 
 else()
     # we still need to build the module w/ the mpi stub

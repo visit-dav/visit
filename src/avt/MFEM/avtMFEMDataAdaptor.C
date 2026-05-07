@@ -28,6 +28,7 @@
 // visit includes
 //-----------------------------------------------------------------------------
 #include "InvalidVariableException.h"
+#include <StringHelpers.h>
 
 #include "avtMFEMLogging.h"
 
@@ -107,7 +108,7 @@ VTKCellTypeSize(int cell_type)
 }
 
 // ****************************************************************************
-//  Method: LegacyRefineMeshToVTK
+//  Method: DiscontinuousRefineMeshToVTK
 //
 //  Purpose:
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
@@ -131,13 +132,16 @@ VTKCellTypeSize(int cell_type)
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to MFEM data adaptor.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Renamed LegacyRefineMeshToVTK to DiscontinuousRefineMeshToVTK.
 //
 // ****************************************************************************
 
 vtkDataSet *
-avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
-                                          int domain,
-                                          int lod)
+avtMFEMDataAdaptor::DiscontinuousRefineMeshToVTK(mfem::Mesh *mesh,
+                                                 const int domain,
+                                                 const int lod)
 {
     // create output objects
     vtkUnstructuredGrid *res_ds  = vtkUnstructuredGrid::New();
@@ -351,15 +355,16 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
 //
 //  Arguments:
-//    mesh:        MFEM mesh to be refined
-//    domain:      domain id
-//    lod:         number of refinement steps
-//    new_refine:  switch for using the new LOR or legacy LOR
+//    mesh:            MFEM mesh to be refined
+//    domain:          domain id
+//    lod:             number of refinement steps
+//    mesh_ref_method: chosen MFEM mesh refinement method
+//    ref_basis_type:  chosen MFEM refinement basis method
 //
 //  Programmer: Justin Privitera
 //  Creation:   Wed Apr 13 13:53:06 PDT 2022
 //
-// Notes: See LegacyRefineMeshToVTK for the function originally 
+// Notes: See DiscontinuousRefineMeshToVTK for the function originally 
 //   with this name.
 // 
 // Modifications:
@@ -378,20 +383,29 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 // 
 //    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
 //    Simplified test for periodic meshes and added comments.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Rewrote this method to handle new LOR options, new basis types, and
+//    conversions to low order.
 //
 // ****************************************************************************
 vtkDataSet *
 avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
                                     int domain,
                                     int lod,
-                                    bool new_refine)
+                                    const meshRefinementMethod mesh_ref_method,
+                                    const refinementBasisType ref_basis_type)
 {
+    // discontinuous LOR -> forces discontinuous refine
+    // default LOR -> continuous refine unless mesh is periodic (see below)
+    // continuous LOR -> forces continuous refine
+
     AVT_MFEM_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
-    if (!new_refine)
+    if (meshRefinementMethod::Discontinuous_LOR == mesh_ref_method)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine mesh.");
-        return LegacyRefineMeshToVTK(mesh, domain, lod);
+        return DiscontinuousRefineMeshToVTK(mesh, domain, lod);
     }
 
     if (mesh && mesh->GetNodalFESpace() && mesh->GetNodalFESpace()->IsDGSpace())
@@ -410,11 +424,18 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         // periodic. So our best bet is to catch all L2 meshes and fall back
         // to legacy LOR.
 
-        AVT_MFEM_INFO("High Order Mesh may be periodic; falling back to Legacy LOR.");
-        return LegacyRefineMeshToVTK(mesh, domain, lod);
+        if (meshRefinementMethod::Default_LOR == mesh_ref_method)
+        {
+            AVT_MFEM_INFO("High Order Mesh may be periodic and default "
+                          "projection has been selected; falling back to "
+                          "Legacy LOR.");
+            return DiscontinuousRefineMeshToVTK(mesh, domain, lod);
+        }
     }
-
-    AVT_MFEM_INFO("High Order Mesh is not periodic.");
+    else
+    {
+        AVT_MFEM_INFO("High Order Mesh is not periodic.");
+    }
 
     // mfem::Mesh::MakeRefined does not yet support pyramids
     if(mesh->GetNE() > 0)
@@ -427,7 +448,20 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     }
 
     // refine the mesh
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    mfem::Mesh lo_mesh;
+    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    }
+    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
+    }
 
     vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
 
@@ -444,7 +478,19 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     int orig_nelems = mesh->GetNE();
 
     GeometryRefiner refiner;
-    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
+    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
+    {
+        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
+    }
+    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
+    {
+        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::ClosedUniform));
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
+    }
 
     int lor_nelems = lo_mesh.GetNE();
 
@@ -676,9 +722,70 @@ avtMFEMDataAdaptor::BoundaryMeshToVTK(mfem::Mesh *mesh)
     return ugrid;
 }
 
+// ****************************************************************************
+//  Method: QuadratureFunctionMeshToVTK
+//
+//  Purpose:
+//    Constructs a vtkUnstructuredGrid that represents an mfem quad pts mesh.
+//
+//  Arguments:
+//    mesh:        MFEM mesh
+//.   order:       Quad Func Order
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Sep 26 09:16:26 PDT 2025
+// 
+//  Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Use refinement basis type.
+//
+// ****************************************************************************
+vtkDataSet *
+avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
+                                                int order,
+                                                const refinementBasisType ref_basis_type)
+{
+    vtkDataSet *rv = nullptr;
+   
+    // refine the mesh
+    // gauss p points, we use gauss lobatto lor'd mesh with p + 1
+    // we use the mfem quad function to get the right numbers
+
+    ///
+    // this logic for order and ref_factor is from glviz
+    // assume identical order
+    // const int order = quad_f->GetIntRule(0).GetOrder()/2; // <-- Gauss-Legendre
+    //
+    // The order which can be perfectly integated is equal to (2 * p -1) quad points
+    // gauss lobatto lor'd mesh with p + 1 == order / 2 +1
+    const int qpts_order = order / 2;
+    const int ref_factor = qpts_order + 1;
+    ///
+    
+    // Note:
+    // mfem::BasisType::ClosedGL is what glviz uses
+    mfem::Mesh lo_mesh;
+    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::GaussLobatto);
+    }
+    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::ClosedUniform);
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
+    }
+    
+
+    vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
+    return res_ds;
+}
 
 // ****************************************************************************
-//  Method: LegacyRefineGridFunctionToVTK
+//  Method: DiscontinuousRefineGridFunctionToVTK
 //
 //  Purpose:
 //   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
@@ -703,13 +810,17 @@ avtMFEMDataAdaptor::BoundaryMeshToVTK(mfem::Mesh *mesh)
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to MFEM data adaptor.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Renamed LegacyRefineGridFunctionToVTK to
+//    DiscontinuousRefineGridFunctionToVTK.
 //
 // ****************************************************************************
 vtkDataArray *
-avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                  mfem::GridFunction *gf,
-                                                  int lod,
-                                                  bool var_is_nodal)
+avtMFEMDataAdaptor::DiscontinuousRefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                         mfem::GridFunction *gf,
+                                                         const int lod,
+                                                         const bool var_is_nodal)
 {
     int npts=0;
     int neles=0;
@@ -734,14 +845,14 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     vtkFloatArray *rv = vtkFloatArray::New();
 
-    int ncomps = gf->VectorDim();
+    const int ncomps = gf->VectorDim();
 
     if(ncomps == 2)
         rv->SetNumberOfComponents(3);
     else
         rv->SetNumberOfComponents(ncomps);
 
-    if(var_is_nodal)
+    if (var_is_nodal)
         rv->SetNumberOfTuples(npts);
     else
         rv->SetNumberOfTuples(neles);
@@ -797,6 +908,9 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to MFEM data adaptor.
 // 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Properly handle ncomps.
+// 
 // ****************************************************************************
 
 vtkDataArray *
@@ -805,24 +919,21 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     AVT_MFEM_INFO("Converting Low Order Grid Function To VTK");
 
     mfem::FiniteElementSpace *fespace = gf->FESpace();
-    int vdim = fespace->GetVDim();
-    int ndofs = fespace->GetNDofs();
-
-    // all supported grid functions coming out of mfem end up being 
-    // associated with vertices
+    const int ncomps = fespace->GetVectorDim();
+    const int ndofs = fespace->GetNDofs();
 
     AVT_MFEM_INFO("VTKDataArray num_tuples = " << ndofs << " "
-                    << " num_comps = " << vdim);
+                    << " num_comps = " << ncomps);
 
     vtkDataArray *retval = vtkDoubleArray::New();
     // vtk reqs us to set number of comps before number of tuples
-    retval->SetNumberOfComponents(vdim == 2 ? 3 : vdim);
+    retval->SetNumberOfComponents(ncomps == 2 ? 3 : ncomps);
     // set number of tuples
     retval->SetNumberOfTuples(ndofs);
 
     const double *values = gf->HostRead();
 
-    if (vdim == 1) // scalar case
+    if (ncomps == 1) // scalar case
     {
         for (vtkIdType i = 0; i < ndofs; i ++)
         {
@@ -833,26 +944,99 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     {
         // deal with striding of all components
         bool bynodes = fespace->GetOrdering() == mfem::Ordering::byNODES;
-        int stride = bynodes ? 1 : vdim;
-        int vdim_stride = bynodes ? ndofs : 1;
+        int stride = bynodes ? 1 : ncomps;
+        int ncomps_stride = bynodes ? ndofs : 1;
         int offset = 0;
 
-        for (int i = 0;  i < vdim; i ++)
+        for (int i = 0;  i < ncomps; i ++)
         {
             for (vtkIdType j = 0; j < ndofs; j ++)
             {
                 retval->SetComponent(j, i, values[offset + j * stride]);
-                if(vdim == 2)
+                if(ncomps == 2)
                 {
                     retval->SetComponent(j, 2, 0.0);
                 }
             }
-            offset += vdim_stride;
+            offset += ncomps_stride;
         }
     }
 
     return retval;
 }
+
+// ****************************************************************************
+mfem::GridFunction *
+ConvertGridFunctionToScalar(mfem::GridFunction *org_gf,
+                            const avtMFEMDataAdaptor::fieldProjectionMethod field_proj_method,
+                            const avtMFEMDataAdaptor::refinementBasisType ref_basis_type)
+{
+    mfem::Mesh *mesh = org_gf->FESpace()->GetMesh();
+    const int dim = mesh->Dimension();
+    const int p = org_gf->FESpace()->GetMaxElementOrder();
+
+    FiniteElementCollection *new_fec = nullptr;
+    if (avtMFEMDataAdaptor::refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
+    {
+        if (avtMFEMDataAdaptor::fieldProjectionMethod::Nodal_Projection == field_proj_method)
+        {
+            new_fec = new H1_FECollection(p, dim, BasisType::GaussLobatto);
+        }
+        else if (avtMFEMDataAdaptor::fieldProjectionMethod::Zonal_Projection == field_proj_method)
+        {
+            new_fec = new L2_FECollection(p, dim, BasisType::GaussLobatto);
+        }
+        else
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                "Unknown MFEM LOR field projection type: " << ref_basis_type);
+        }
+    }
+    else if (avtMFEMDataAdaptor::refinementBasisType::Closed_Uniform == ref_basis_type)
+    {
+        if (avtMFEMDataAdaptor::fieldProjectionMethod::Nodal_Projection == field_proj_method)
+        {
+            new_fec = new H1_FECollection(p, dim, BasisType::ClosedUniform);
+        }
+        else if (avtMFEMDataAdaptor::fieldProjectionMethod::Zonal_Projection == field_proj_method)
+        {
+            new_fec = new L2_FECollection(p, dim, BasisType::ClosedUniform);
+        }
+        else
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                "Unknown MFEM LOR field projection type: " << ref_basis_type);
+        }
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
+    }
+    FiniteElementSpace *new_fes =
+        new FiniteElementSpace(mesh, new_fec, org_gf->VectorDim());
+    GridFunction *new_gf = new GridFunction(new_fes);
+    new_gf->MakeOwner(new_fec);
+
+    if (org_gf->FESpace()->FEColl()->GetRangeType(dim) ==
+        FiniteElement::RangeType::VECTOR )
+    {
+       org_gf->ProjectVectorFieldOn(*new_gf);
+    }
+    else if ( org_gf->FESpace()->GetVectorDim() == 1 )
+    {
+       mfem::GridFunctionCoefficient gf_cf(org_gf);
+       new_gf->ProjectCoefficient(gf_cf);
+    }
+    else
+    {
+       mfem::VectorGridFunctionCoefficient gf_cf(org_gf);
+       new_gf->ProjectCoefficient(gf_cf);
+    }
+    return new_gf;
+}
+
+
 
 // ****************************************************************************
 //  Method: RefineGridFunctionToVTK
@@ -861,15 +1045,20 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 //   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
 //
 //  Arguments:
-//   mesh:         MFEM mesh for the field
-//   gf:           MFEM Grid Function for the field
-//   lod:          number of refinement steps
-//   new_refine:   switch for using the new LOR or legacy LOR
+//   mesh:              MFEM mesh for the field
+//   gf:                MFEM Grid Function for the field
+//   lod:               number of refinement steps
+//   mesh_ref_method:   chosen MFEM mesh refinement method
+//   field_proj_method: chosen MFEM grid function projetion method
+//   ref_basis_type:    chosen MFEM refinement basis method
+//   cent_change:       records if a centering change has taken place due to the
+//                      refinement options
+//   var_is_nodal:      a guess if the resulting variable will be nodal or not
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri May  6 15:23:56 PDT 2022
 //
-//  Notes: See LegacyRefineGridFunctionToVTK for the function originally 
+//  Notes: See DiscontinuousRefineGridFunctionToVTK for the function originally 
 //   with this name.
 // 
 //  Modifications:
@@ -889,21 +1078,38 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 // 
 //    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
 //    Simplified test for periodic meshes and added comments.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Rewrote this method to handle new LOR options, new basis types, and
+//    conversions to low order.
 //
 // ****************************************************************************
 vtkDataArray *
 avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             mfem::GridFunction *gf,
-                                            int lod,
-                                            bool new_refine,
+                                            const int lod,
+                                            const meshRefinementMethod mesh_ref_method,
+                                            const fieldProjectionMethod field_proj_method,
+                                            const refinementBasisType ref_basis_type,
+                                            avtCentering &cent_change,
                                             bool var_is_nodal)
 {
-    AVT_MFEM_INFO("Creating Refined MFEM Field with lod:" << lod);
+    AVT_MFEM_INFO("Creating Refined MFEM Field with meshRefinementMethod: " << mesh_ref_method);
+    AVT_MFEM_INFO("Creating Refined MFEM Field with fieldProjectionMethod: " << field_proj_method);
+    AVT_MFEM_INFO("Creating Refined MFEM Field with refinementBasisType: " << ref_basis_type);
+    AVT_MFEM_INFO("Creating Refined MFEM Field with lod: " << lod);
 
-    if (!new_refine)
+    if (meshRefinementMethod::Discontinuous_LOR == mesh_ref_method)
     {
+        if (fieldProjectionMethod::Zonal_Projection == field_proj_method)
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                "Zonal projection together with discontinuous low-order-refinement is not supported.");
+        }
+
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
-        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+        cent_change = AVT_NODECENT;
+        return DiscontinuousRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
     if (mesh && mesh->GetNodalFESpace() && mesh->GetNodalFESpace()->IsDGSpace())
@@ -922,73 +1128,172 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         // periodic. So our best bet is to catch all L2 meshes and fall back
         // to legacy LOR.
 
-        AVT_MFEM_INFO("High Order Mesh may be periodic; falling back to Legacy LOR.");
-        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+        if (meshRefinementMethod::Default_LOR == mesh_ref_method)
+        {
+            if (fieldProjectionMethod::Zonal_Projection == field_proj_method)
+            {
+                AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                    "Zonal projection together with discontinuous low-order-refinement is not supported.");
+            }
+            AVT_MFEM_INFO("High Order Mesh may be periodic and default "
+                          "refinement has been selected; falling back to "
+                          "Legacy LOR.");
+            cent_change = AVT_NODECENT;
+            return DiscontinuousRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+        }
+    }
+    else
+    {
+        AVT_MFEM_INFO("High Order Mesh is not periodic.");
     }
 
-    AVT_MFEM_INFO("High Order Mesh is not periodic.");
-
-    mfem::FiniteElementSpace *ho_fes = gf->FESpace();
-    if(!ho_fes)
+    if(!gf->FESpace())
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException, 
             "RefineGridFunctionToVTK: high order gf finite element space is null");
     }
-    // create the low order grid function
-    mfem::FiniteElementCollection *lo_col;
 
-    // H1 is nodal
-    // L2 is zonal
-
+    // extract basis type information
     std::string basis(gf->FESpace()->FEColl()->Name());
-    // we may have more than just L2 or H1 at this point
-    bool l2 = basis.find("L2_") != std::string::npos;
-    bool h1 = basis.find("H1_") != std::string::npos;
-    bool node_centered;
-    if (h1 && l2)
+    bool h1    = basis.find("H1_")   != std::string::npos; // nodal
+    bool l2    = basis.find("L2_")   != std::string::npos; // zonal
+    bool hdiv  = basis.find("RT_")   != std::string::npos;
+    bool hcurl = basis.find("ND_")   != std::string::npos;
+    bool nurbs = basis.find("NURBS") != std::string::npos;
+
+    int bases = static_cast<int>(l2) +
+                static_cast<int>(h1) +
+                static_cast<int>(hdiv) +
+                static_cast<int>(hcurl) +
+                static_cast<int>(nurbs);
+
+    // go ahead and fall back to var_is_nodal guess
+    if (0 == bases)
+    {
+        if (var_is_nodal)
+        {
+            h1 = true;
+        }
+        else
+        {
+            l2 = true;
+        }
+        bases = 1;
+    }
+
+    // we must enforce only a single basis type
+    if (1 != bases)
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException, 
-            "RefineGridFunctionToVTK: grid function cannot be both H1 and L2");
+            "RefineGridFunctionToVTK: grid function may not have multiple basis types. "
+            "Unsupported basis type in " << basis);
     }
-    else if (!h1 && !l2) // defer
+
+    // We will need to resolve the default field projection method to either zonal or nodal,
+    // so we include another variable to store the resulting field projection method.
+    fieldProjectionMethod field_proj_method_to_use = field_proj_method;
+
+    // select projection type and convert gridfunction when necessary
+    mfem::GridFunction *gf_to_use = gf;
+    bool delete_gf_to_use = false;
+    if (fieldProjectionMethod::Default_Projection == field_proj_method)
     {
-        AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: Grid Function is "
-                      "neither H1 nor L2. Deferring to arguments to determine "
-                      "if grid function is nodal or zonal.");
-        node_centered = var_is_nodal; 
-        // the only danger is that var_is_nodal has a default value
-        // however, the mfem plugin will always pass var_is_nodal, and the 
-        // blueprint plugin always produces h1 or l2.
+        if (h1)
+        {
+            // default h1 -> nodal
+            field_proj_method_to_use = fieldProjectionMethod::Nodal_Projection;
+        }
+        else if (l2)
+        {
+            // default l2 -> zonal
+            field_proj_method_to_use = fieldProjectionMethod::Zonal_Projection;
+        }
+        else if (hdiv || hcurl)
+        {
+            // default hdiv, hcurl -> zonal
+            field_proj_method_to_use = fieldProjectionMethod::Zonal_Projection;
+            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use, ref_basis_type); // Convert to L2
+            delete_gf_to_use = true;
+        }
+        else if (nurbs)
+        {
+            // default nurbs -> nodal
+            field_proj_method_to_use = fieldProjectionMethod::Nodal_Projection;
+            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use, ref_basis_type); // Convert to H1
+            delete_gf_to_use = true;
+        }
     }
-    // This case will override whatever was passed in for var_is_nodal
+    else if (fieldProjectionMethod::Nodal_Projection == field_proj_method ||
+             fieldProjectionMethod::Zonal_Projection == field_proj_method)
+    {
+        field_proj_method_to_use = field_proj_method;
+        // whatever refinement method we end up using, we cannot directly refine hdiv, hcurl, and nurbs
+        if (hdiv || hcurl || nurbs)
+        {
+            // we must convert to either h1 or l2 using the specified refinement method
+            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use, ref_basis_type);
+            delete_gf_to_use = true;
+        }
+    }
     else
-        node_centered = h1 && !l2;
-
-    if (node_centered != var_is_nodal)
-        AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: nodal determination mismatch, is var_is_nodal using default value?")
-
-    if (node_centered)
     {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement method: " << field_proj_method_to_use);
+    }
+
+    // create the low order grid function
+    mfem::FiniteElementCollection *lo_col;
+    if (fieldProjectionMethod::Nodal_Projection == field_proj_method_to_use)
+    {
+        // convert to H1
         lo_col = new mfem::LinearFECollection;
+        // node centered
+        cent_change = AVT_NODECENT;
+    }
+    else if (fieldProjectionMethod::Zonal_Projection == field_proj_method_to_use)
+    {
+        // convert to L2
+        lo_col = new mfem::L2_FECollection(0, mesh->Dimension(), 1);
+        // element centered
+        cent_change = AVT_ZONECENT;
     }
     else
     {
-        int p = 0; // single scalar
-        lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement method: " << field_proj_method_to_use);
     }
     
     // refine the mesh and convert to vtk
     // it would be nice if this was cached somewhere but we will do it again
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
-    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
+    mfem::Mesh lo_mesh;
+    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    }
+    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
+    }
+    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf_to_use->FESpace()->GetVectorDim());
     mfem::GridFunction lo_gf(&lo_fes);
-    // transform the higher order function to a low order function somehow
-    mfem::OperatorHandle hi_to_lo;
-    lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
-    hi_to_lo.Ptr()->Mult(*gf, lo_gf);
+    // transform the higher order function to a low order function
+    // using a matrix free transfer operator
+    mfem::OperatorHandle hi_to_lo(mfem::Operator::ANY_TYPE);
+    lo_fes.GetTransferOperator(*gf_to_use->FESpace(), hi_to_lo);
+    hi_to_lo.Ptr()->Mult(*gf_to_use, lo_gf);
 
     vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
-    
+
+    if (delete_gf_to_use)
+    {
+        delete gf_to_use;
+    }
+
     delete lo_col;
 
     return retval;
@@ -1190,4 +1495,302 @@ avtMFEMDataAdaptor::BoundaryAttributeToVTK(mfem::Mesh *mesh)
 
     return rv;
 }
+// ****************************************************************************
+//  Method: BoundaryAttributeToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains the quad points values
+//   for a mfem mesh. These are piece wise constant.
+//
+//  Arguments:
+//   qf:      MFEM quad function object
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Sep 26 09:16:26 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+vtkDataArray *
+avtMFEMDataAdaptor::QuadratureFunctionToVTK(mfem::QuadratureFunction *qf)
+{
+    AVT_MFEM_INFO("Creating MFEM Quadrature Function")
 
+    //mfem::QuadratureSpace *qspace = qf->FESpace();
+    const int vdim = qf->GetVDim();
+    const int qfsize = qf->Size();
+    const int ntuples = qfsize / vdim;
+
+    const double *values = qf->HostRead();
+
+    AVT_MFEM_INFO("VTKDataArray "
+                    << " quad function mesh elements: " << ntuples
+                    << " vdim: " << vdim << " "
+                    << " quad function total size: " << qfsize);
+
+    vtkDataArray *retval = vtkDoubleArray::New();
+    // vtk reqs us to set number of comps before number of tuples
+    retval->SetNumberOfComponents(vdim == 2 ? 3 : vdim);
+    // set number of tuples
+    retval->SetNumberOfTuples(ntuples);
+
+    if (vdim == 1) // scalar case
+    {
+        for (vtkIdType i = 0; i < ntuples; i ++)
+        {
+            retval->SetComponent(i, 0, (double) values[i]);
+        }
+    }
+    else // vector case
+    {
+        // NOTE: quad function is strided by vdims
+        int idx = 0;
+        for (vtkIdType j = 0; j < ntuples; j ++)
+        {
+            for (int i = 0;  i < vdim; i ++)
+            {
+                retval->SetComponent(j, i, values[idx]);
+                idx++;
+            }
+            // vtk always wants 3d for vector fields
+            if(vdim == 2)
+            {
+                retval->SetComponent(j, 2, 0.0);
+            }
+        }
+
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: CheckBasisStringForQuadratureFunction
+//
+//  Purpose:
+//   Checks if the basis string has a `QF_` prefix, which indicates
+//   a QuadratureFunction
+//
+//  Arguments:
+//   basis:     MFEM style basis string
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+avtMFEMDataAdaptor::CheckBasisStringForQuadratureFunction(const std::string &basis)
+{
+    return basis.find("QF_") != std::string::npos;
+}
+
+// ****************************************************************************
+//  Method: ParseQuadratureFunctionBasisString
+//
+//  Purpose:
+//   Parse Order and VDim details from a Quadrature Function style basis
+//   string.
+//
+//  Arguments:
+//   basis:     MFEM style basis string
+//   qf_order:  Order result
+//   qf_vdim:   VDim Result
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//   Cyrus Harrison, Tue Feb 17 09:46:24 PST 2026
+//   Expand the string pattern to support QF_{TYPE}_{ORDER}_{VDIM} style
+//
+// ****************************************************************************
+void
+avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(const std::string &basis,
+                                                       int &qf_order,
+                                                       int &qf_vdim)
+{
+    // the pattern used to encode the quad space params is:
+    //  QF_{ORDER}_{VDIM}
+    // or
+    //  QF_{TYPE}_{ORDER}_{VDIM}
+    //
+    // ORDER is the degree of the polynmials for the quad rule
+    // VDIM  is the number of components at each quad point (scalar, vector, etc)
+    //
+    // Note: Order == 2*(quad points) -1
+    //
+    // split to parse
+    std::vector<std::string> toks = StringHelpers::split(basis,'_');
+
+    // there should be 3 or 4 tokens
+    if(toks.size() != 3 && toks.size() != 4)
+    {
+        //bad qf basis string
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Invalid quadrature function basis string: " << basis  << std::endl
+                            << "Expected: QF_{ORDER}_{VDIM} or QF_{TYPE}_{ORDER}_{VDIM}");
+    }
+
+    int order_index = toks.size() - 2;
+    int vdim_index  = toks.size() - 1;
+
+    // ORDER
+    if(!StringHelpers::StringToInt(toks[order_index],qf_order))
+    {
+        // error
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Failed to parse quadrature function order from " << toks[order_index]);
+    }
+    // VDIM
+    if(!StringHelpers::StringToInt(toks[vdim_index],qf_vdim))
+    {
+        // error
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Failed to parse quadrature function vdim from " << toks[vdim_index]);
+    }
+}
+
+// ****************************************************************************
+//  Method: GenerateQuadratureFunctionBasisString
+//
+//  Purpose:
+//   Create a Quadrature Function Basis String from a QuadratureFunction
+//   object.
+//
+//  Arguments:
+//   qf:     MFEM QuadratureFunction object
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+avtMFEMDataAdaptor::GenerateQuadratureFunctionBasisString(mfem::QuadratureFunction *qf)
+{
+    return GenerateQuadratureFunctionBasisString(qf->GetSpace()->GetOrder(),
+                                                 qf->GetVDim());
+}
+// ****************************************************************************
+//  Method: GenerateQuadratureFunctionBasisString
+//
+//  Purpose:
+//   Create a Quadrature Function Basis String for a given order and vdim.
+//
+//  Arguments:
+//   qf_order:  Order
+//   qf_vdim:   VDim
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+avtMFEMDataAdaptor::GenerateQuadratureFunctionBasisString(int qf_order,
+                                                          int qf_vdim)
+{
+    std::ostringstream oss;
+    oss << "QF_"<< qf_order << "_" << qf_vdim;
+    return oss.str();
+}
+
+// ****************************************************************************
+//  Method: CheckMeshNameForQuadratureFunctionString
+//
+//  Purpose:
+//   Checks if the mesh name represents a QuadratureFunction mesh.
+//
+//  Arguments:
+//   mesh_name:     Mesh Name
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Mon Oct 27 14:43:23 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(const std::string &mesh_name)
+{
+    return mesh_name.find("_quad_func_o") != std::string::npos;
+}
+
+// ****************************************************************************
+//  Method: ParseQuadratureFunctionMeshString
+//
+//  Purpose:
+//   Parses the base mesh name and order from a Quadrature Function mesh name
+//
+//  Arguments:
+//   qf_mesh_name:    qf style mesh name
+//   base_mesh_name:  parsed base mesh name (output) 
+//   qf_order:        parsed quad func order (output)
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(const std::string &qf_mesh_name,
+                                                      std::string &base_mesh_name,
+                                                      int &qf_order)
+{
+    qf_order = -1; // -1 == not quad points case
+    base_mesh_name = ""; // empty == not quad points case
+
+    // check for fetch of quad points mesh
+    // {mesh_name}_quad_func_o{order}
+
+    std::string qf_indicator = "_quad_func_o";
+    size_t qf_str_idx = qf_mesh_name.find(qf_indicator);
+    if(qf_str_idx != std::string::npos)
+    {
+        // quadrature points are a special variant of the main mfem mesh
+        // fetch w/o quad pts suffix
+        // extract the order from mesh name
+        std::string order_str = qf_mesh_name.substr(qf_str_idx + qf_indicator.size());
+        base_mesh_name = qf_mesh_name.substr(0, qf_str_idx);
+        // parse order
+        if(!StringHelpers::StringToInt(order_str,qf_order))
+        {
+            // error
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                "Failed to parse quadrature function mesh order from "
+                                <<order_str);
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: GenerateQuadratureFunctionMeshName
+//
+//  Purpose:
+//   Creates a Quadrature Function mesh name from base mesh and order
+//
+//  Arguments:
+//   base_mesh:  Base mesh name
+//   qf_order:   Quadrature Function order
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+avtMFEMDataAdaptor::GenerateQuadratureFunctionMeshName(const std::string &base_mesh,
+                                                       int qf_order)
+{
+    // the mesh name associated is:
+    // {base_mesh}_quad_func_o{order}
+    std::ostringstream oss;
+    oss << base_mesh << "_quad_func_o" << qf_order;
+    return oss.str();
+}

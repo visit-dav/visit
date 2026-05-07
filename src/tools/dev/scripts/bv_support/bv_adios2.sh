@@ -43,6 +43,10 @@ function bv_adios2_depends_on
             depends_on="$depends_on hdf5"
         fi
 
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            depends_on="$depends_on zlib"
+        fi
+
         depends_on="$depends_on blosc2"
 
         echo $depends_on
@@ -91,23 +95,10 @@ function bv_adios2_host_profile
             echo "SETUP_APP_VERSION(ADIOS2 $ADIOS2_VERSION)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR $ADIOS2_INSTALL_DIR)" >> $HOSTCONF
         else
-            libdep="blosc2"
-            if [[ "$DO_HDF5" == "yes" ]] ; then
-                libdep="blosc2 hdf5"
-            fi
-
             echo "SETUP_APP_VERSION(ADIOS2 $ADIOS2_VERSION)" >> $HOSTCONF
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR \${VISITHOME}/adios2-ser/\${ADIOS2_VERSION}/\${VISITARCH})" \
+                "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR \${VISITHOME}/adios2/\${ADIOS2_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_LIBDEP ${libdep})" >> $HOSTCONF
-
-            if [[ "$parallel" == "yes" ]] ; then
-                echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR \${VISITHOME}/adios2-par/\${ADIOS2_VERSION}/\${VISITARCH})" \
-                >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_LIBDEP ${libdep})" >> $HOSTCONF
-            fi
         fi
     fi
 }
@@ -115,13 +106,7 @@ function bv_adios2_host_profile
 function bv_adios2_ensure
 {
     if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
-        ensure_built_or_ready "adios2-ser" $ADIOS2_VERSION $ADIOS2_BUILD_DIR $ADIOS2_FILE
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_ADIOS2="no"
-            error "Unable to build ADIOS2.  ${ADIOS2_FILE} not found."
-        fi
-        ensure_built_or_ready "adios2-par" $ADIOS2_VERSION $ADIOS2_BUILD_DIR $ADIOS2_FILE
+        ensure_built_or_ready "adios2" $ADIOS2_VERSION $ADIOS2_BUILD_DIR $ADIOS2_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ADIOS2="no"
@@ -155,9 +140,10 @@ function build_adios2
 
     #### begin parallel
 
-    par_build_types="ser"
     if [[ "$parallel" == "yes" ]]; then
-        par_build_types="$par_build_types par"
+        par_build_types="par"
+    else
+        par_build_types="ser"
     fi
 
     ADIOS2_SRC_DIR=$ADIOS2_BUILD_DIR
@@ -186,16 +172,19 @@ function build_adios2
         rm -Rf $ADIOS2_BUILD_DIR/CMakeCache.txt $ADIOS2_BUILD_DIR/*/CMakeCache.txt
 
         adios2_build_mode="${VISIT_BUILD_MODE}"
-        adios2_install_path="${VISITDIR}/adios2-$bt/${ADIOS2_VERSION}/${VISITARCH}"
+        adios2_install_path="${VISITDIR}/adios2/${ADIOS2_VERSION}/${VISITARCH}"
 
         cfg_opts=""
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:STRING=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:STRING=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_Fortran:STRING=OFF"
+        cfg_opts="${cfg_opts} -DBUILD_TESTING:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_Python:STRING=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_PIP:STRING=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_PNG:STRING=OFF"
 
         # Disable PNG and FFI dependence on macOS
         if [[ "$OPSYS" == "Darwin" ]]; then
-            cfg_opts="${cfg_opts} -DADIOS2_USE_PNG:STRING=OFF"
             cfg_opts="${cfg_opts} -DCMAKE_DISABLE_FIND_PACKAGE_LibFFI=TRUE"
         fi
 
@@ -214,18 +203,15 @@ function build_adios2
         # Use Blosc2
         if [[ "$DO_BLOSC2" == "yes" ]] ; then
             BLOSC2_INSTALL_DIR="${VISITDIR}/blosc2/${BLOSC2_VERSION}/${VISITARCH}"
-            BLOSC2_INCLUDE_DIR="${BLOSC2_INSTALL_DIR}/include"
             # note: lib dir can be `lib``, or `lib64` depending on the platform
             if [[ -d "${BLOSC2_INSTALL_DIR}/lib64/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib64/libblosc2.${SO_EXT}"
+                BLOSC2_DIR="${BLOSC2_INSTALL_DIR}/lib64/cmake/Blosc2"
             elif [[ -d "${BLOSC2_INSTALL_DIR}/lib/" ]] ; then
-                BLOSC2_LIBRARY="${BLOSC2_INSTALL_DIR}/lib/libblosc2.${SO_EXT}"
+                BLOSC2_DIR="${BLOSC2_INSTALL_DIR}/lib/cmake/Blosc2"
             fi
 
             cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc2:STRING=ON"
-            cfg_opts="${cfg_opts} -DBlosc2_DIR=${BLOSC2_INSTALL_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC2_INCLUDE_DIR=${BLOSC2_INCLUDE_DIR}"
-            cfg_opts="${cfg_opts} -DBLOSC2_LIBRARY=${BLOSC2_LIBRARY}"
+            cfg_opts="${cfg_opts} -DBlosc2_DIR:PATH=${BLOSC2_DIR}"
         fi
 
         if [[ "$bt" == "ser" ]]; then
@@ -241,8 +227,16 @@ function build_adios2
         # Use HDF5?
         if [[ "$DO_HDF5" == "yes" ]] ; then
             hdf5_install_path="${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}"
-            cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH:PATH=${hdf5_install_path}"
+            cfg_opts="${cfg_opts} -DHDF5_DIR:PATH=${hdf5_install_path}/cmake"
         fi
+
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            # ensure hdf5 finds the correct zlib
+            cfg_opts="${cfg_opts} -DZLIB_ROOT:PATH=${VISIT_ZLIB_DIR}"
+            # ensure adios2 uses the correct zlib
+            cfg_opts="${cfg_opts} -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+        fi
+
 
         # call configure.
         CMAKE_BIN="${CMAKE_INSTALL}/cmake"
@@ -250,7 +244,9 @@ function build_adios2
             rm -f bv_run_cmake.sh
         fi
 
-        echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../ > bv_run_cmake.sh
+        # ran into an issue (only with adios2) where cmake didn't
+        # recognize '../' as the project SOURCE dir, so use -S
+        echo "\"${CMAKE_BIN}\"" ${cfg_opts} -S ../ > bv_run_cmake.sh
         cat bv_run_cmake.sh
         issue_command bash bv_run_cmake.sh
 
@@ -318,16 +314,8 @@ function bv_adios2_build
     cd "$START_DIR"
 
     if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
-        ser_installed="no"
-        par_installed="no"
-        check_if_installed "adios2-ser" $ADIOS2_VERSION
-        if [[ $? == 0 ]] ; then ser_installed="yes"; fi
-        if [[ "$parallel" == "yes" ]]; then
-            check_if_installed "adios2-par" $ADIOS2_VERSION
-            if [[ $? == 0 ]] ; then par_installed="yes"; fi
-        fi
-
-        if [ "$ser_installed" == "yes" ] && ([ "$parallel" == "no" ] || [ "$par_installed" == "yes" ]) ; then
+        check_if_installed "adios2" $ADIOS2_VERSION
+        if [[ $? == 0 ]] ; then
             info "ADIOS2 already installed, skipping"
         else
             build_adios2

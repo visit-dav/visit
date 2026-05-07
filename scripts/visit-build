@@ -9,7 +9,7 @@ set -e
 # Date:   October 27, 2000
 #
 # Usage:
-#    visit-build [-<machine name>] -d <distribution>
+#    visit-build [-<machine name>] -d <distribution> [result_dir]
 # 
 # Notes:
 #    This script used to be two scripts, visit-build-open and 
@@ -403,7 +403,7 @@ esac
 #
 # Parse the execute line, providing default values for error checking.
 #
-poodle=false
+dane=false
 rzwhippet=false
 rzvernal=false
 tuolumne=false
@@ -412,21 +412,20 @@ magma=false
 crossroads=false
 
 dist=undefined
+result_dir=undefined
 machine_name="unknown"
 config_site="unknown"
 
 #
-# The loop is executed once for each symbol on the execute line.  This means
-# that $1 may be blank for later executions of the loop if any "shift 2"
-# commands are executed.  The variable abc is not used in the loop.  
+# The loop is executed once for each symbol on the execute line.
 #
-for abc
+while [ $# -gt 0 ]
 do
    case $1 in
-      -poodle)
-         poodle=true
-         machine_name="poodle"
-         config_site="poodle18.cmake"
+      -dane)
+         dane=true
+         machine_name="dane"
+         config_site="dane1.cmake"
          shift
          ;;
       -rzwhippet)
@@ -435,7 +434,7 @@ do
          config_site="rzwhippet17.cmake"
          shift
          ;;
-      -rzvernal)
+      -rzvernal) # TODO maybe remove this case as we are using the gfx942 build instead
          rzvernal=true
          machine_name="rzvernal"
          config_site="rzvernal10.cmake"
@@ -475,6 +474,21 @@ do
          dist=$2
          shift 2
          ;;
+      -*)
+         echo "Usage: [-<machine name>] -d <distribution> [result_dir]"
+         echo "Unknown option: $1"
+         exit 1
+         ;;
+      *)
+         if [ "$result_dir" = "undefined" ]; then
+            result_dir=$1
+            shift
+         else
+            echo "Usage: [-<machine name>] -d <distribution> [result_dir]"
+            echo "Only one optional result_dir argument may be provided."
+            exit 1
+         fi
+         ;;
    esac
 done
 
@@ -483,12 +497,13 @@ done
 #
 if [ "$dist" = "undefined" ]
 then
-   echo "Usage: [-<machine name>] -d <distribution>"
+   echo "Usage: [-<machine name>] -d <distribution> [result_dir]"
    echo "Valid machine names:"
-   echo "    poodle rzwhippet rzvernal tuolumne rzadams elcap"
+   echo "    dane rzwhippet rzvernal tuolumne rzadams elcap"
    echo "    magma (LC, x86_64)"
    echo "    crossroads (LANL, x86_64)"
    echo "distribution should be the name of the distribution file minus the '.tar.gz'"
+   echo "result_dir is optional and defaults based on the selected machine"
    exit
 fi
 
@@ -503,19 +518,21 @@ then
 fi
 
 #
-# Determine the landing place for the results
+# Determine the landing place for the results.
 #
-if [ "$crossroads" = true ]; then
-    result_dir=/usr/projects/views/visit/_release_builds
-else
-    result_dir=/usr/workspace/visit/visit/_release_builds
+if [ "$result_dir" = "undefined" ]; then
+   if [ "$crossroads" = true ]; then
+      result_dir=/usr/projects/views/visit/_release_builds
+   else
+      result_dir=/usr/workspace/visit/visit/_release_builds
+   fi
 fi
 
 #
 # make sure landing place for results exist
 #
-if test ! -d $result_dir ; then
-   mkdir -p $result_dir
+if test ! -d "$result_dir" ; then
+   mkdir -p "$result_dir"
 fi
 
 #######################################################
@@ -525,7 +542,7 @@ fi
 #
 # create the build script
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$magma" = true ] || \
    [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
    [ "$crossroads" = true ]; then
@@ -542,29 +559,29 @@ fi
 #
 # set up paths
 #
-if [ "$poodle" = true ]; then
+if [ "$dane" = true ]; then
    cat <<EOF >> machine_specific_build_script
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+PATH=/usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4/cmake/3.31.8/linux-x86_64_gcc-10.3/bin/:\$PATH
 EOF
 elif [ "$rzwhippet" = true ] || [ "$magma" = true ]; then
 cat <<EOF >> machine_specific_build_script
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4/cmake/3.31.8/linux-x86_64_gcc-10.3/bin/:\$PATH
 EOF
 elif [ "$rzvernal" = true ]; then
 cat <<EOF >> machine_specific_build_script
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4-cray/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4-cray/cmake/3.31.8/linux-x86_64_gcc-12.2/bin/:\$PATH
 EOF
 elif [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
 cat <<EOF >> machine_specific_build_script
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4-cray-gfx942/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
+export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4-cray-gfx942/cmake/3.31.8/linux-x86_64_gcc-13.3/bin/:\$PATH
 EOF
 elif [ "$crossroads" = true ]; then
 cat <<EOF >> machine_specific_build_script
@@ -580,7 +597,7 @@ fi
 #
 # housekeeping
 #
-if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
+if [ "$dane" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
    [ "$rzwhippet" = true ] || \
    [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
    cat <<EOF >> machine_specific_build_script
@@ -622,7 +639,7 @@ fi
 # 
 # Actually build
 # 
-if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
+if [ "$dane" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
    [ "$rzwhippet" = true ] || [ "$tuolumne" = true ] || \
    [ "$elcap" = true ] || [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_build_script
@@ -638,20 +655,20 @@ fi
 #
 # move things to result directory
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$rzvernal" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || [ "$rzvernal" = true ] || \
    [ "$magma" = true ] || [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_build_script
-rm -f $result_dir/buildlog.$machine_name
-cp buildlog $result_dir/buildlog.$machine_name
-rm -f $result_dir/visit\$ver2.linux-x86_64-$machine_name.tar.gz
-cp build/visit\$ver2.linux-x86_64.tar.gz $result_dir/visit\$ver2.linux-x86_64-$machine_name.tar.gz
+rm -f "$result_dir"/buildlog.$machine_name
+cp buildlog "$result_dir"/buildlog.$machine_name
+rm -f "$result_dir"/visit\$ver2.linux-x86_64-$machine_name.tar.gz
+cp build/visit\$ver2.linux-x86_64.tar.gz "$result_dir"/visit\$ver2.linux-x86_64-$machine_name.tar.gz
 EOF
 elif [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
    cat <<EOF >> machine_specific_build_script
-rm -f $result_dir/buildlog.$machine_name
-cp buildlog $result_dir/buildlog.$machine_name
-rm -f $result_dir/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
-cp build/visit\$ver2.linux-x86_64-gfx942.tar.gz $result_dir/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
+rm -f "$result_dir"/buildlog.$machine_name
+cp buildlog "$result_dir"/buildlog.$machine_name
+rm -f "$result_dir"/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
+cp build/visit\$ver2.linux-x86_64-gfx942.tar.gz "$result_dir"/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
 EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -661,7 +678,7 @@ fi
 #
 # result log
 #
-if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
+if [ "$dane" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
    [ "$rzwhippet" = true ] || \
    [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
    [ "$crossroads" = true ]; then
@@ -678,8 +695,8 @@ echo "number of plot plugins = "\`ls build/plugins/plots/libI* | wc -l\` >> resu
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls build/plugins/databases/libI* | sed "s/build\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -f $result_dir/resultlog.$machine_name
-cp resultlog $result_dir/resultlog.$machine_name
+rm -f "$result_dir"/resultlog.$machine_name
+cp resultlog "$result_dir"/resultlog.$machine_name
 EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
@@ -689,7 +706,7 @@ fi
 #
 # email
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_build_script
 mail  -s "VisIt build ($dist): $machine_name" $emailName < resultlog
@@ -711,6 +728,7 @@ fi
 #
 if [ "$test" = "no" ]; then
    echo "Building on $machine_name"
+   echo "Script arguments: -$machine_name -d $dist $result_dir"
    cp machine_specific_build_script ${machine_name}_buildit
    cp $dist.tar.gz ${machine_name}_$dist.tar.gz
    chmod 750 ${machine_name}_buildit

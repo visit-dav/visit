@@ -77,11 +77,11 @@ function bv_conduit_host_profile
 
         CONDUIT_HC_LIBDEPS=""
         if [[ "$DO_HDF5" == "yes" ]] ; then
-            CONDUIT_HC_LIBDEPS="hdf5"
+            CONDUIT_HC_LIBDEPS="HDF5_LIB"
         fi
 
         if [[ "$DO_SILO" == "yes" ]] ; then
-            CONDUIT_HC_LIBDEPS="${CONDUIT_HC_LIBDEPS} silo"
+            CONDUIT_HC_LIBDEPS="${CONDUIT_HC_LIBDEPS} SILO_LIB"
         fi
 
         if [[ "$CONDUIT_HC_LIBDEPS" != "" ]] ; then
@@ -192,13 +192,11 @@ function build_conduit
     else
         cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
-    
+
     cfg_opts="${cfg_opts} -DENABLE_TESTS:BOOL=false"
     cfg_opts="${cfg_opts} -DENABLE_DOCS:BOOL=false"
     cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} ${PAR_LINKER_FLAGS}\""
-    cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} ${PAR_LINKER_FLAGS}\""
     if test "${OPSYS}" = "Darwin" ; then
         cfg_opts="${cfg_opts} -DCMAKE_INSTALL_NAME_DIR:PATH=${conduit_install_path}/lib"
         if test "${MACOSX_DEPLOYMENT_TARGET}" = "10.10"; then
@@ -219,6 +217,16 @@ function build_conduit
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
         cfg_opts="${cfg_opts} -DHDF5_DIR:STRING=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/"
+        if [[ "$PAR_COMPILER" != "" ]] ; then
+            cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} ${PAR_LINKER_FLAGS} -I${PAR_HOME}/include\""
+            cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} ${PAR_LINKER_FLAGS} -I${PAR_HOME}/include\""
+        else
+            cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} ${PAR_LINKER_FLAGS}\""
+            cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} ${PAR_LINKER_FLAGS}\""
+        fi
+    else
+        cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} ${PAR_LINKER_FLAGS}\""
+        cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} ${PAR_LINKER_FLAGS}\""
     fi
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then

@@ -41,6 +41,9 @@
 #    Adjust filtering of OPENEXR with version 3.3.4, Add OPENEXR_VERSION,
 #    remove support for older OPENEXR.
 #
+#    Kathleen Biagas, Thu Dec 4, 2025
+#    Filter Python3::Python to be ${PYTHON_LIBRARY}
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -195,6 +198,8 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                                          "Qt${QT_MAJOR_VERSION}\\1"
                                          newtoken ${token})
                 endif()
+            elseif(token MATCHES "Python3::Python")
+                string(REPLACE "Python3::Python" "\${PYTHON_LIBRARY}" newtoken ${token})
             elseif(token MATCHES "VTK::")
                 if(APPLE)
                     set(sepchar ".")

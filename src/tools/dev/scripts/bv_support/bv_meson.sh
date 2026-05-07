@@ -39,10 +39,10 @@ function bv_meson_initialize_vars
 
 function bv_meson_info
 {
-    export MESON_VERSION=${MESON_VERSION:-"1.6.1"}
+    export MESON_VERSION=${MESON_VERSION:-"1.9.1"}
     export MESON_FILE=${MESON_FILE:-"meson-${MESON_VERSION}.tar.gz"}
     export MESON_BUILD_DIR=${MESON_BUILD_DIR:-"meson-${MESON_VERSION}"}
-    export MESON_SHA256_CHECKSUM="1eca49eb6c26d58bbee67fd3337d8ef557c0804e30a6d16bfdf269db997464de"
+    export MESON_SHA256_CHECKSUM="4e076606f2afff7881d195574bddcd8d89286f35a17b4977a216f535dc0c74ac"
 }
 
 function bv_meson_print

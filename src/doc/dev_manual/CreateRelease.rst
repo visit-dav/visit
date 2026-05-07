@@ -14,6 +14,13 @@ Creating the release
 
 We will describe creating a release by way of example using the steps used to create the 3.3.3 release.
 
+Before tagging a release
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before you tag a release, make sure VisIt's Read the Docs build process is passing on the relevant RC branch.
+When a new release tag is added to our GitHub repo, Read the Docs will automatically build and serve docs for the release.
+
+
 Tagging the release
 ~~~~~~~~~~~~~~~~~~~
 Commit a change that references the tagged release, which in our case is 3.3.3. ::
@@ -81,7 +88,7 @@ Enter ``v3.3.3`` for the title and add the description as shown below.
 
    Describing the release.
 
-At this point you can go to the bottom of the window and click on *Publish release*.
+At this point you can go to the bottom of the window and click on *Save draft*.
 
 Your newly created release will now appear.
 
@@ -93,14 +100,15 @@ Now you can edit the release and add the unified ``build_visit`` script and the 
 Do not *Publish* the release as you add assets.
 You should just *Save* the release.
 If you publish the release, a notification will go out to everyone watching the VisIt_ repository and it will show up as the latest release on the releases tab.
-You should wait until you have most, if not all, of the assets before publishing the release.
+You should wait until you have all of the assets before publishing the release.
+You should also wait until you have the website updates (described next) ready to go so that you can update it after publishing the release.
 
 Updating the VisIt_ website
 ---------------------------
 
 Once you have created the release you will need to update the VisIt_ website.
 It is in the repository ``visit-dav/visit-website``.
-Changes are typically made to the VisIt_ website repository directly on the master branch.
+Changes are typically made to the VisIt_ website repository directly on the main `gh-pages` branch.
 
 Creating the release notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -111,7 +119,7 @@ The release notes are located in ``pages/releases``.
 Copy one of the release notes files that is closest to the type of release you are making, either a patch release or a minor release, as a starting point.
 Remove or update any version specific content from the new release notes file.
 Copy the raw html from the VisIt_ repository release notes into the Markdown release notes file and convert the raw html into Markdown.
-Commit the changes when you are finished.
+Commit the changes when you are finished, but don't push them to GitHub yet or they will become live.
 
 Updating the release table
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,7 +134,8 @@ Each release also has a series of shortcuts for each of the release assets.
 You can copy an existing series of shortcuts and update them for the current release.
 If you don't have all of the release assets added to the release you should use *Coming soon!* as a substitute for the link.
 If you don't do this, people will follow the broken links and report it to you.
-You should only commit the changes once the release has been published so that the links actually point to something.
+Commit the changes when you are finished.
+Once the release has been published you can push the changes to GitHib so that the links actually point to something.
 
 Creating a blog entry for the new release
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -139,15 +148,17 @@ Patch releases list the number of bug fixes and enhancements along with a teaser
 Minor releases also contain a teaser followed by the two or three major enhancements in the release.
 Three major enhancements is prefereable to two and sometimes you will need to aggregate multiple enhancements into a major enhancement.
 Use the existing posts as examples.
-You should only commit the new blog post once the release has been published.
+Commit the changes when you are finished.
+You should only push the changes to GitHub once the release has been published and the other website changes have been pushed to GitHub.
+You can push all the website changes in a single push.
 
 Updating the Spack ``package.py`` file
 --------------------------------------
 
-Once a new VisIt_ release is actually available *as a release*, the `Spack <https://spack.io>`_ `package.py <https://github.com/spack/spack/blob/develop/var/spack/repos/builtin/packages/visit/package.py>`_ file for building VisIt_ with Spack should be reviewed for any changes needed to build this release.
+Once a new VisIt_ release is actually available *as a release*, the `Spack <https://spack.io>`_ `VisIt package <https://github.com/spack/spack-packages/blob/develop/repos/spack_repo/builtin/packages/visit/package.py>`_ should be reviewed for any changes needed to build this release.
 Generally, this work should be put in a pull request to Spack's ``develop`` branch.
 We think Spack is being released often enough that changes pushed to their ``develop`` will make it into a public release less than a few months later.
-If earlier public availability of this release of VisIt_ with Spack is needed, then have a look at `Spack's project boards <https://github.com/spack/spack/projects?type=classic>`_ to find a suitable upcomming minor release and consider pushing it there.
+If earlier public availability of this release of VisIt_ with Spack is needed, then have a look at `Spack's project boards <https://github.com/orgs/spack/projects>`_ to find a suitable upcomming minor release and consider pushing it there.
 Be aware, however, that if any of the changes made result in changes to how VisIt_ conrcretizes in Spack, it may be required to be delayed to a major release of Spack.
 
 Deleting a release

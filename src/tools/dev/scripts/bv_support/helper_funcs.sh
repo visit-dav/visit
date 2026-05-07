@@ -500,6 +500,10 @@ function verify_checksum_by_lookup
 #                                                                             #
 #   Kathleen Biagas, Monday May 12, 2025                                      #
 #   Return early if file to be downloaded is already present.                 #
+#
+#   Cyrus Harrison, Fri Jan  9 12:09:47 PST 2026                              #
+#   Removed direct lfs path (avoiding extra lfs costs), see                   #
+#   https://github.com/visit-dav/visit/issues/19340                           #
 # *************************************************************************** #
 
 function download_file
@@ -562,16 +566,6 @@ function download_file
                 fi
             fi
         done
-    fi
-
-    # if all else has failed, and running develop version of build_visit,
-    # then also check the master repo.
-    if [[ "$TRUNK_BUILD" == "yes" ]]; then
-        site="${thirdpartyroot_dev}"
-        try_download_file $site/$dfile $dfile
-        if [[ $? == 0 ]] ; then
-            return 0
-        fi
     fi
 
     return 1
@@ -984,6 +978,25 @@ function check_files
     return 0
 }
 
+# *************************************************************************** #
+#                         Function get_par_compiler_home_dir                  #
+# --------------------------------------------------------------------------- #
+# Compute path suitable for setting MPI_HOME used by CMake for finding MPI.   #
+# The computed path is exported and in subsequent calls always echoed so the  #
+# function can be used to return from anywhere in build_visit if the export,  #
+# for some reason, is not available.                                          #
+# *************************************************************************** #
+function get_par_compiler_home_dir 
+{
+    if [ -n "$PAR_COMPILER" ] && [ "${PAR_HOME+x}" != x ]; then
+        PAR_COMPILER_PATH=$(command -v $PAR_COMPILER)
+        PAR_COMPILER_REAL="$(cd "$(dirname "$PAR_COMPILER_PATH")" && pwd -P)/$(basename "$PAR_COMPILER_PATH")"
+        PAR_BIN_DIR="$(dirname "$PAR_COMPILER_REAL")"
+        PAR_HOME="$(dirname "$PAR_BIN_DIR")"
+        export PAR_HOME=$PAR_HOME
+    fi
+    echo $PAR_HOME
+}
 
 # *************************************************************************** #
 #                          process_parallel_ldflags                           #
@@ -1060,6 +1073,7 @@ function check_parallel
                 info \
                     "Configuring with mpi c++ compiler wrapper: $VISIT_MPI_COMPILER_CXX"
             fi
+            get_par_compiler_home_dir > /dev/null
             return 0
         fi
 
@@ -1077,10 +1091,13 @@ function check_parallel
             export PAR_COMPILER="$MPICH_COMPILER"
             export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
             export PAR_INCLUDE="-I${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/include"
+            export PAR_HOME="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}"
             info  "Configuring parallel with mpich build: "
-            info  "  PAR_COMPILER: $PAR_COMPILER"
+            info  "  PAR_COMPILER:     $PAR_COMPILER"
             info  "  PAR_COMPILER_CXX: $PAR_COMPILER_CXX"
-            info  "  PAR_INCLUDE: $PAR_INCLUDE"
+            info  "  PAR_INCLUDE:      $PAR_INCLUDE"
+            info  "  PAR_HOME:         $PAR_HOME"
+            get_par_compiler_home_dir > /dev/null
             return 0
         fi
 
@@ -1113,6 +1130,7 @@ function check_parallel
             export PAR_COMPILER=$MPIWRAPPER
             info \
                 "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
+            get_par_compiler_home_dir > /dev/null
             return 0
         fi
 
@@ -1128,6 +1146,7 @@ function check_parallel
             export PAR_COMPILER="$MPICH_COMPILER"
             info \
                 "Configuring with build mpich: $MPICH_COMPILER"
+            get_par_compiler_home_dir > /dev/null
             return 0
         fi
 
@@ -1203,6 +1222,7 @@ function check_parallel
         fi
     fi
 
+    get_par_compiler_home_dir > /dev/null
     return 0
 }
 
@@ -1497,19 +1517,6 @@ function build_hostconf
 
     echo >> $HOSTCONF
 
- #
- # Patch for Ubuntu 11.04
- #
- #if test -d "/usr/lib/x86_64-linux-gnu" ; then
- #    numLibs=$(ls -1 /usr/lib/x86_64-linux-gnu | wc -l)
- #    if (( $numLibs > 10 )) ; then
- #       rm -f $HOSTCONF.tmp
- #       cat $HOSTCONF | sed "s/\/usr\/lib/\/usr\/lib\/x86_64-linux-gnu/" > $HOSTCONF.tmp
- #       rm $HOSTCONF
- #       mv $HOSTCONF.tmp $HOSTCONF
- #    fi
- #fi
-
  cd "$START_DIR"
  echo "Done creating $HOSTCONF"
  return 0
@@ -1564,6 +1571,69 @@ function printvariables
             $initialize
         done
     done
+}
+
+function printfiles
+{
+    # The output is either "txt" or "html".
+    output=$1
+
+    # Output the heading. Either a title or the table tag.
+    if [[ "$output" == txt ]]; then
+        printf "The list of third party library files that are downloaded.\n"
+    else
+        printf "<table>\n"
+    fi
+
+    # Loop over the different groups (required, optional, extra).
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
+    do
+        group=`echo ${grouplibs_name[$bv_i]} | sed 's/./\U&/'`
+        if [[ "$output" == txt ]]; then
+            printf "\n${group} files:\n\n"
+        else
+            printf "<tr><td><b>${group}</b></td></tr>\n"
+        fi
+
+        # Loop over the libraries in the current group.
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            # Convert the library name from lower to upper case.
+            lib2=`echo "${lib}" | tr 'a-z' 'A-Z'`
+            # Only print environment variables that contain "FILE".
+            # There is one exception "PYTHON_FILE_SUFFIX", which we
+            # want to ignore.
+            # We only want the library name, so take the part after
+            # the "=" sign.
+            lib2_libs=`printenv | grep ${lib2} | grep "FILE" | grep -v "SUFFIX" | cut -d "=" -f 2`
+            for lib2_lib in `echo ${lib2_libs}`;
+            do
+	        if [[ "$output" == txt ]]; then
+                    printf "${lib2_lib}\n"
+                else
+                    printf "<tr><td>${lib2_lib}</td></tr>\n"
+                fi
+            done
+            # If we are doing the Python library, we also want
+            # environment that start with "PY".
+            if [[ "$lib2" == PYTHON ]]; then
+                lib2_libs=`printenv | grep "PY_" | grep "FILE" | cut -d "=" -f 2`
+                for lib2_lib in `echo ${lib2_libs}`;
+                do
+	            if [[ "$output" == txt ]]; then
+                        printf "${lib2_lib}\n"
+                    else
+                        printf "<tr><td>${lib2_lib}</td></tr>\n"
+                    fi
+                done
+            fi
+        done
+    done
+
+    # Output closing table tag if html.
+    if [[ "$output" == html ]]; then
+        printf "</table>\n"
+    fi
 }
 
 # *************************************************************************** #
@@ -1689,6 +1759,8 @@ function usage
     printf "%-20s <%s>\n" "--log-file"  "filename"
     printf "%-20s %s [%s]\n" ""  "Write build log to provided filename" "$LOG_FILE"
     printf "%-20s %s [%s]\n" "--print-vars" "Display user settable environment variables" "no"
+    printf "%-20s %s [%s]\n" "--print-files" "Display the third party libraries" "no"
+    printf "%-20s %s [%s]\n" "--print-files-html" "Display the third party libraries as html" "no"
     printf "%-20s %s\n" "--server-components-only" ""
     printf "%-20s %s\n" "" "Only build VisIt's server components"
     printf "%-20s %s [%s]\n" "" "(mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"

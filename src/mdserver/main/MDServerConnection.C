@@ -1041,6 +1041,9 @@ MDServerConnection::ExpandPath(const std::string &path)
 //   Brad Whitlock, Mon Mar 24 15:39:07 PST 2003
 //   I made this routine read the file list.
 //
+//   Kathleen Biagas, Tue Nov 11, 2025
+//   Change check for 'My Computer' to 'This PC'.
+//
 // ****************************************************************************
 
 int
@@ -1050,7 +1053,7 @@ MDServerConnection::ChangeDirectory(const std::string &dir)
     std::string expandedDir = ExpandPath(dir);
 
 #if defined(_WIN32)
-    if(expandedDir != "My Computer")
+    if(expandedDir != "This PC")
     {
         // Try and change the current working directory.
         if(_chdir(expandedDir.c_str()) != 0)
@@ -1189,7 +1192,7 @@ MDServerConnection::ReadFileList()
     validFileList = true;
 
 #if defined(_WIN32)
-    if(currentWorkingDirectory == "My Computer")
+    if(currentWorkingDirectory == "This PC")
     {
         // Add the drives to the list.
         char buf[200];

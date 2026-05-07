@@ -2,5 +2,5 @@
 
 visit_add_database_plugin(
     DNAME      KullLite
-    LIBS       pdb)
+    LIBS       ${PDB_LIB})
 

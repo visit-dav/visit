@@ -19,8 +19,3 @@
 
 visit_import_third_party(NETCDF LIBS netcdf WIN32DEFINES DLL_NETCDF)
 
-if(NOT WIN32)
-    set(NETCDF_CXX_DIR ${NETCDF_DIR})
-    visit_import_third_party(NETCDF_CXX LIBS netcdf_c++)
-endif()
-

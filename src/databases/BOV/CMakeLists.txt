@@ -2,5 +2,5 @@
 
 visit_add_database_plugin(
     DNAME      BOV
-    LIBS       zlib)
+    LIBS       ${ZLIB_LIB})
 

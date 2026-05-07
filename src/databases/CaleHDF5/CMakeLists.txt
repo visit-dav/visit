@@ -2,5 +2,5 @@
 
 visit_add_database_plugin(
     DNAME      CaleHDF5
-    LIBS       hdf5)
+    LIBS       ${HDF5_LIB})
 

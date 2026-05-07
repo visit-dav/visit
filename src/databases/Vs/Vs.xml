@@ -25,7 +25,7 @@
       HighOrderUnstructuredData.C
     </Files>
     <LIBS>
-      hdf5
+      ${HDF5_LIB}
     </LIBS>
     <FilePatterns>
       *.tvsh5

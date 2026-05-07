@@ -5,7 +5,7 @@
       *.mkf
     </FilePatterns>
     <LIBS>
-       pdb
+      ${PDB_LIB}
     </LIBS>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="KullLite.code">
       <Function name="KullLiteCommonPluginInfo::SetupDatabase" user="false" member="true">

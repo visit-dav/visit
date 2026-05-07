@@ -341,6 +341,13 @@ class     vtkUnstructuredGrid;
 //    Kathleen Biagas, Thu Aug 21, 2025
 //    Add optional 'isPrimary' arg to ExchangeVariable to aid in setting
 //    'active' variables (eg ActiveScalars, ActiveVectors, etc).
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add overrides for GetScalarVariable, GetVectorVariable,
+//    GetSymmetricTensorVariable, GetTensorVariable, GetArrayVariable, and
+//    GetLabelVariable to handle centering changes.
+//    Refactored some shared centering logic from the QueryXXX methods into
+//    a new method called HandleCentering.
 //
 // ****************************************************************************
 
@@ -438,22 +445,45 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     vtkDataArray              *GetScalarVariable(const char *, int, int,
                                                  const char *,
                                                  const avtDataRequest_p);
+    vtkDataArray              *GetScalarVariable(const char *, int, int,
+                                                 const char *,
+                                                 const avtDataRequest_p,
+                                                 avtCentering &);
     vtkDataArray              *GetVectorVariable(const char *, int, int,
                                                  const char *,
                                                  const avtDataRequest_p);
+    vtkDataArray              *GetVectorVariable(const char *, int, int,
+                                                 const char *,
+                                                 const avtDataRequest_p,
+                                                 avtCentering &);
     vtkDataArray              *GetSymmetricTensorVariable(const char *,int,int,
                                                           const char *,
                                                           const avtDataRequest_p);
+    vtkDataArray              *GetSymmetricTensorVariable(const char *,int,int,
+                                                          const char *,
+                                                          const avtDataRequest_p,
+                                                          avtCentering &);
     vtkDataArray              *GetTensorVariable(const char *, int, int,
+                                                 const char *,
+                                                 const avtDataRequest_p);
+    vtkDataArray              *GetTensorVariable(const char *, int, int,
+                                                 const char *,
+                                                 const avtDataRequest_p,
+                                                 avtCentering &);
+    vtkDataArray              *GetArrayVariable(const char *, int, int,
                                                  const char *,
                                                  const avtDataRequest_p);
     vtkDataArray              *GetArrayVariable(const char *, int, int,
                                                  const char *,
-                                                 const avtDataRequest_p);
+                                                 const avtDataRequest_p,
+                                                 avtCentering &);
     vtkDataArray              *GetSpeciesVariable(const char *, int, int,
                                                   const char *, int);
     vtkDataArray              *GetLabelVariable(const char *, int, int,
                                                 const char *);
+    vtkDataArray              *GetLabelVariable(const char *, int, int,
+                                                const char *,
+                                                avtCentering &);
     vtkDataArray              *GetGlobalNodeIds(int, const char *, int);
     vtkDataArray              *GetGlobalZoneIds(int, const char *, int);
     void                       AddSecondaryVariables(vtkDataSet *, int, int,
@@ -663,6 +693,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                 int level);
     void                       UpdateInternalState(int);
 
+    void                       HandleCentering(const avtCentering cent_change,
+                                               const avtCentering var_centering,
+                                               PickVarInfo &varInfo,
+                                               bool &zoneCent,
+                                               bool &validCentering);
     virtual bool               QueryScalars(const std::string &, const int,
                                             const int , const int ,
                                             const intVector &,

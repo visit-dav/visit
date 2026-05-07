@@ -159,6 +159,10 @@
 #    Kathleen Biagas, Thu Jun 19, 2025
 #    Make VTK minimum version 9.5.0.
 #
+#    Kathleen Biagas, Thu Jan 8 2026
+#    Allow test data dir to be specified by VISIT_DATA_DIR var, which will
+#    only be used if 'data' dir does not exist peer to 'src'.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -355,9 +359,9 @@ set(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 
 # Set up placeholders for package vars: XXX_DIR
-foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO ANARI BLOSC2 BOOST BOXLIB CFITSIO CGNS
-            CONDUIT DAMARIS EMBREE FMS GDAL HDF5 HDF5_MPI H5PART ICET
-            ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB MOAB_MPI NEKTAR++ NETCDF
+foreach(pkg ADIOS ADIOS2 ADVIO ANARI BLOSC2 BOOST BOXLIB CFITSIO CGNS
+            CONDUIT DAMARIS EMBREE FMS GDAL HDF5 H5PART ICET
+            ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB NEKTAR++ NETCDF
             OPENGL OPENEXR OSPRAY PIDX PYTHON QT QWT SILO SZIP TBB
             TIFF UINTAH VTK VTKM XDMF XSD ZLIB)
     VISIT_3RDPARTY_DIR(${pkg})
@@ -369,8 +373,8 @@ if(NOT WIN32)
 endif()
 
 # Set up placeholders for package vars: XXX_LIBDEP
-foreach(pkg ADIOS2 ADIOS2_PAR CGNS CONDUIT FMS HDF5 HDF5_MPI H5PART MFEM
-        NEKTAR++ NETCDF SILO XDMF)
+foreach(pkg CGNS CONDUIT FMS HDF5 H5PART MFEM NEKTAR++ NETCDF
+            SILO XDMF)
     VISIT_3RDPARTY_LIBDEP(${pkg})
 endforeach()
 
@@ -524,6 +528,17 @@ if(WIN32)
     visit_setup_windows()
 endif()
 
+# some Find modules might try to setup MPI themselves (adios2 is one), see if
+# this can be mitigated by using our Parallel first, before finding any TP libs.
+if(VISIT_PARALLEL)
+    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
+    message(STATUS "PARALLEL version of VisIt")
+else()
+    message(STATUS "Serial version of VisIt")
+endif()
+
+# macros/defines also needed by PluginVsInstall.cmake.in
+include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
@@ -633,12 +648,6 @@ if(VISIT_FORTRAN)
     enable_language(Fortran)
 endif()
 
-if(VISIT_PARALLEL)
-    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
-    message(STATUS "PARALLEL version of VisIt")
-else()
-    message(STATUS "Serial version of VisIt")
-endif()
 
 set(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
@@ -647,8 +656,6 @@ if(NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
     set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
 endif()
 
-# macros/defines also needed by PluginVsInstall.cmake.in
-include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 # Mac-specific function
 function(MAC_NIB_INSTALL exename)
@@ -739,9 +746,6 @@ configure_file(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
 
 configure_file(${VISIT_SOURCE_DIR}/include/visit-version.h.in
                ${VISIT_BINARY_DIR}/include/visit-version.h @ONLY IMMEDIATE)
-
-configure_file(${VISIT_SOURCE_DIR}/include/visit-hdf5.h.in
-               ${VISIT_BINARY_DIR}/include/visit-hdf5.h @ONLY IMMEDIATE)
 
 #-----------------------------------------------------------------------------
 # Create common/misc/ConfigureInfo.C
@@ -865,6 +869,10 @@ if(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
     add_subdirectory(${VISIT_SOURCE_DIR}/../data
                      ${CMAKE_CURRENT_BINARY_DIR}/testdata
                      EXCLUDE_FROM_ALL)
+elseif(IS_DIRECTORY ${VISIT_DATA_DIR})
+    add_subdirectory(${VISIT_DATA_DIR}
+                     ${CMAKE_CURRENT_BINARY_DIR}/testdata
+                     EXCLUDE_FROM_ALL)
 endif()
 
 
@@ -898,6 +906,7 @@ if(NOT WIN32)
         set(CPACK_BUNDLE_ICON "${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns")
         set(CPACK_BUNDLE_PLIST "${VISIT_BINARY_DIR}/tools/dev/scripts/Info.plist")
         set(CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_BINARY_DIR}/exe/visit_macos_launcher")
+        set(CPACK_COMMAND_HDIUTIL ${CMAKE_SOURCE_DIR}/tools/dev/scripts/hdiutil-wrapper.sh)
     else()
         set(CPACK_GENERATOR "TGZ")
 

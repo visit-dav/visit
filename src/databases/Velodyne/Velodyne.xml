@@ -8,7 +8,7 @@
       VelodyneReader.C
     </Files>
     <LIBS>     
-      hdf5
+      ${HDF5_LIB}
     </LIBS>
     <Attribute name="" purpose="" persistent="true" keyframe="true">
     </Attribute>

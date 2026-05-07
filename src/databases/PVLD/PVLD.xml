@@ -6,7 +6,7 @@
       *.bgm
     </FilePatterns>
     <LIBS>     
-      hdf5
+      ${HDF5_LIB}
     </LIBS>
     <Files components="M,E">
      statm.C

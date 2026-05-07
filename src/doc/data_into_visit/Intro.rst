@@ -55,13 +55,13 @@ Here is a list of recommended library based formats and the mesh types they supp
 | Name                                          | Supported mesh types                                   |
 +===============================================+========================================================+
 | :ref:`Silo <Data_Into_VisIt_Silo>`            | Point, Regular, Rectilinear, Structured, Unstructured, |
-|                                               | Multiblock, Patch based AMR                            |
+|                                               | Multi-block, Patch-based AMR                           |
 +-----------------------------------------------+--------------------------------------------------------+
 | :ref:`Xdmf <Data_Into_VisIt_Xdmf>`            | Point, Regular, Rectilinear, Structured, Unstructured, |
-|                                               | Multiblock                                             |
+|                                               | Multi-block                                            |
 +-----------------------------------------------+--------------------------------------------------------+
 | :ref:`Conduit/Blueprint <Data_Into_VisIt_BP>` | Point, Regular, Rectilinear, Structured, Unstructured, |
-|                                               | Multiblock, Patch based AMR                            |
+|                                               | Multi-block, Patch-based AMR                           |
 +-----------------------------------------------+--------------------------------------------------------+
 
-Files representing a single block or a single time step may also be grouped into a multi-block representation or time series using a :ref:`.visit<dotvisitfiles>` file.
+Files representing a single block or a single timestep may also be grouped into a multi-block representation or time series using a :ref:`.visit<dotvisitfiles>` file.

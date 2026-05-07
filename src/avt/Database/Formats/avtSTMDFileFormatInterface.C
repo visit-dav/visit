@@ -146,8 +146,29 @@ avtSTMDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //
 //    Brad Whitlock, Tue May 4 13:47:45 PST 2004
 //    Reenabled exception.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
+
+vtkDataArray *
+avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    if (ts < 0 || ts >= nTimesteps)
+    {
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
+    }
+    if (timesteps[ts]->HasCenteringChange())
+    {
+        return timesteps[ts]->GetVar(dom, var, cent_change);
+    }
+    else
+    {
+        return timesteps[ts]->GetVar(dom, var);
+    }
+}
 
 vtkDataArray *
 avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
@@ -187,8 +208,29 @@ avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //
 //    Brad Whitlock, Tue May 4 13:47:45 PST 2004
 //    Reenabled exception.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added override for handling centering changes.
 //
 // ****************************************************************************
+
+vtkDataArray *
+avtSTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    if (ts < 0 || ts >= nTimesteps)
+    {
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
+    }
+    if (timesteps[ts]->HasCenteringChange())
+    {
+        return timesteps[ts]->GetVectorVar(dom, var, cent_change);
+    }
+    else
+    {
+        return timesteps[ts]->GetVectorVar(dom, var);
+    }
+}
 
 vtkDataArray *
 avtSTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)

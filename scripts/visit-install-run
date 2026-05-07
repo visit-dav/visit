@@ -8,7 +8,7 @@ set -e
 # Date:   October 27, 2000
 #
 # Usage:
-#    visit-install-run [-<machine name>] -v <version>
+#    visit-install-run [-<machine name>] -v <version> [result_dir]
 #
 # Modifications from visit-install-open:
 #   Brad Whitlock, Tue Mar 7 14:08:59 PST 2006
@@ -266,6 +266,9 @@ set -e
 #   Justin Privitera, Thu Oct  9 14:12:13 PDT 2025
 #   Removed lassen, rzansel, and sierra (blueOS).
 # 
+#   Cyrus Harrison, Mon Dec  1 14:40:14 PST 2025
+#   Changed poodle to dane.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -309,7 +312,7 @@ esac
 #
 # Parse the execute line, providing default values for error checking.
 #
-poodle=false
+dane=false
 rzwhippet=false
 magma=false
 tuolumne=false
@@ -318,20 +321,19 @@ elcap=false
 crossroads=false
 
 ver=undefined
+result_dir=undefined
 machine_name="unknown"
 architecture="unknown"
 
 #
-# The loop is executed once for each symbol on the execute line.  This means
-# that $1 may be blank for later executions of the loop if any "shift 2"
-# commands are executed.  The variable abc is not used in the loop.
+# The loop is executed once for each symbol on the execute line.
 #
-for abc
+while [ $# -gt 0 ]
 do
    case $1 in
-      -poodle)
-         poodle=true
-         machine_name="poodle"
+      -dane)
+         dane=true
+         machine_name="dane"
          architecture="linux-x86_64"
          network="llnl_open_cz"
          shift
@@ -384,6 +386,21 @@ do
          ver=$2
          shift 2
          ;;
+      -*)
+         echo "Usage: [-<machine name>] -v <version> [result_dir]"
+         echo "Unknown option: $1"
+         exit 1
+         ;;
+      *)
+         if [ "$result_dir" = "undefined" ]; then
+            result_dir=$1
+            shift
+         else
+            echo "Usage: [-<machine name>] -v <version> [result_dir]"
+            echo "Only one optional result_dir argument may be provided."
+            exit 1
+         fi
+         ;;
    esac
 done
 
@@ -392,11 +409,12 @@ done
 #
 if [ "$ver" = "undefined" ]
 then
-   echo "Usage: [-<machine name>] -v <version>"
+   echo "Usage: [-<machine name>] -v <version> [result_dir]"
    echo "Valid machine names:"
-   echo "    poodle rzwhippet magma tuolumne rzadams"
+   echo "    dane rzwhippet magma tuolumne rzadams"
    echo "    elcap crossroads"
-   echo "version should just be the version number (e.g. 3.4.9)"
+   echo "version should just be the version number (e.g. 3.5.0)"
+   echo "result_dir is optional and defaults based on the selected machine"
    exit
 fi
 
@@ -413,11 +431,15 @@ fi
 # Determine the result and installation locations.
 #
 if [ "$crossroads" = true ]; then
-   result_dir=/usr/projects/views/visit/_release_builds
    install_location=/usr/projects/views/visit
+   default_result_dir=/usr/projects/views/visit/_release_builds
 else
-   result_dir=/usr/workspace/visit/visit/_release_builds
    install_location=/usr/gapps/visit
+   default_result_dir=/usr/workspace/visit/visit/_release_builds
+fi
+
+if [ "$result_dir" = "undefined" ]; then
+   result_dir=$default_result_dir
 fi
 
 ver2=`echo $ver | tr "." "_"`
@@ -430,7 +452,7 @@ ver=`echo $ver2 | tr "_" "."`
 #
 # create the install script and call visit-install
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$magma" = true ] || [ "$tuolumne" = true ] || \
    [ "$elcap" = true ]; then
    rm -f machine_specific_install_script
@@ -456,7 +478,7 @@ fi
 #
 # resultlog
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$magma" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || [ "$magma" = true ] || \
    [ "$tuolumne" = true ] || \
    [ "$elcap" = true ] || [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_install_script
@@ -491,7 +513,7 @@ if [ "$rzadams" = true ]; then
    cat <<EOF >> machine_specific_install_script
 ln -s $install_location/$ver+/$architecture $install_location/$ver+/linux-x86_64-gfx90a
 EOF
-elif [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+elif [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
      [ "$magma" = true ] || [ "$tuolumne" = true ] || \
      [ "$elcap" = true ] || [ "$crossroads" = true ]; then
    # nothing to do for this case
@@ -505,7 +527,7 @@ fi
 #
 # email
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_install_script
 mail -s "VisIt install ($ver): $machine_name" $emailName < resultlog.$machine_name
@@ -526,8 +548,10 @@ fi
 # Call our machine-specific install script
 #
 if [ "$test" = "no" ]; then
+   echo "Installing on $machine_name"
+   echo "Script arguments: -$machine_name -v $ver $result_dir"
    cp machine_specific_install_script ${machine_name}_install
-   cp $result_dir/visit$ver2.${architecture}-${machine_name}.tar.gz .
+   cp "$result_dir"/visit$ver2.${architecture}-${machine_name}.tar.gz .
    chmod 750 ${machine_name}_install;./${machine_name}_install
 
    # Clean up

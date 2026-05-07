@@ -24,6 +24,10 @@ visit_add_library(
                lightweight_visit_vtk
                VTK::CommonCore
                VTK::FiltersCore
-               conduit
-               mfem)
+               conduit)
 
+if(HAVE_MFEM)
+    visit_patch_target(
+        NAME        avtblueprint
+        DEPENDS_ON  avtmfem)
+endif()

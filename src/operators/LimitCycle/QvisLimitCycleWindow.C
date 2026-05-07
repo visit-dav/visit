@@ -7,18 +7,20 @@
 #include <LimitCycleAttributes.h>
 #include <ViewerProxy.h>
 
-#include <QTabWidget>
+#include <QButtonGroup>
 #include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QSpinBox>
-#include <QButtonGroup>
-#include <QComboBox>
-#include <QGroupBox>
-#include <QRadioButton>
-#include <QvisVariableButton.h>
 #include <QListWidget>
+#include <QRadioButton>
+#include <QScrollArea>
+#include <QSpinBox>
+#include <QTabWidget>
+
+#include <QvisVariableButton.h>
 
 #include <Plot.h>
 #include <PlotList.h>
@@ -51,7 +53,7 @@ QvisLimitCycleWindow::QvisLimitCycleWindow(const int type,
                                                  const QString &caption,
                                                  const QString &shortName,
                                                  QvisNotepadArea *notepad)
-  : QvisOperatorWindow(type, subj, caption, shortName, notepad)
+  : QvisOperatorWindow(type, subj, caption, shortName, notepad, false)
 {
     plotType = type;
     atts = subj;
@@ -85,6 +87,10 @@ QvisLimitCycleWindow::~QvisLimitCycleWindow()
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
+// Modifications:
+//   Kathleen Biagas, Wed Feb 4, 2026
+//   Add QScrollAreas for easier use on smaller laptop displays.
+//
 // ****************************************************************************
 
 void
@@ -96,16 +102,30 @@ QvisLimitCycleWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // Integration tab
     // ----------------------------------------------------------------------
-    QWidget *integrationTab = new QWidget();
+    QScrollArea *integrationTab = new QScrollArea();
+    integrationTab->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    integrationTab->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    integrationTab->setWidgetResizable(true);
+
+    QWidget *integrationContents = new QWidget();
+    integrationTab->setWidget(integrationContents);
+
     propertyTabs->addTab(integrationTab, tr("Integration"));
-    CreateIntegrationTab(integrationTab);
+    CreateIntegrationTab(integrationContents);
 
     // ----------------------------------------------------------------------
     // Appearance tab
     // ----------------------------------------------------------------------
-    QWidget *appearanceTab = new QWidget();
+    QScrollArea *appearanceTab = new QScrollArea();
+    appearanceTab->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    appearanceTab->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    appearanceTab->setWidgetResizable(true);
+
+    QWidget *appearanceContents = new QWidget();
+    appearanceTab->setWidget(appearanceContents);
+
     propertyTabs->addTab(appearanceTab, tr("Appearance"));
-    CreateAppearanceTab(appearanceTab);
+    CreateAppearanceTab(appearanceContents);
 
     // ----------------------------------------------------------------------
     // Advanced tab
@@ -116,7 +136,7 @@ QvisLimitCycleWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
-// Method: QvisLimitCycleWindow::CreateSourceTab
+// Method: QvisLimitCycleWindow::CreateIntegrationTab
 //
 // Purpose:
 //   Populates the source tab.
@@ -780,7 +800,7 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForCriticalPoints, 3, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
     warningsGLayout->addWidget(critPointLabel, 3, 1, 1, 2);
-    
+
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
     warningsGLayout->addWidget(criticalPointThresholdLabel, 4, 1);

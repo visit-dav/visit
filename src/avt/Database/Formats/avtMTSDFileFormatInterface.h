@@ -61,7 +61,10 @@ class avtIOInformation;
 //    Pass mesh name to PopulateIOInformation.
 //
 //    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
-//    Added GetCycles and GetTimes. 
+//    Added GetCycles and GetTimes.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Added overrides for GetVar and GetVectorVar to handle centering changes.
 //
 // ****************************************************************************
 
@@ -74,7 +77,9 @@ class DATABASE_API avtMTSDFileFormatInterface : public avtFileFormatInterface
 
     virtual vtkDataSet     *GetMesh(int, int, const char *);
     virtual vtkDataArray   *GetVar(int, int, const char *);
+    virtual vtkDataArray   *GetVar(int, int, const char *, avtCentering &);
     virtual vtkDataArray   *GetVectorVar(int, int, const char *);
+    virtual vtkDataArray   *GetVectorVar(int, int, const char *, avtCentering &);
     virtual void           *GetAuxiliaryData(const char *var, int, int,
                                              const char *type, void *args,
                                              DestructorFunction &);

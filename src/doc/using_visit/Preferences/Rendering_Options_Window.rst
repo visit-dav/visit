@@ -72,6 +72,8 @@ The **Shadows**, and **Depth Cueing** options are covered in the
 
     The advanced rendering options
 
+.. _ScalableRendering:
+
 Scalable rendering
 """"""""""""""""""
 

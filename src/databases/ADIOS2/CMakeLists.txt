@@ -20,7 +20,9 @@ visit_add_database_plugin(
                ADIOS2HelperFuncs.C
     LIBS       VTK::FiltersHybrid
                VTK::vtksys
-    MLIBS      adios2
-    ESERLIBS   adios2
-    EPARLIBS   adios2_par)
+               adios2)
+if(VISIT_PARALLEL)
+    target_compile_definitions(EADIOS2Database_par PRIVATE ADIOS2_USE_MPI)
+endif()
+
 

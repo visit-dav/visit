@@ -1622,6 +1622,7 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
     CheckNCError(nc_inq_varid);
 
     nc_type vtype;
+    string vtype_str;
     int vndims, vdimids[NC_MAX_VAR_DIMS];
     VisItNCErr = nc_inq_var(ncExIIId, timesVarId, 0, &vtype, &vndims, vdimids, 0);
     CheckNCError(nc_inq_var);
@@ -1664,6 +1665,7 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
         {
             double *atimes = &(times->operator[](0));
             float *vals = new float[len];
+            vtype_str = "NC_FLOAT";
             VisItNCErr = nc_get_var_float(ncExIIId, timesVarId, vals);
             CheckNCError(nc_get_var_float);
             for (size_t i = 0; i < len; i++)
@@ -1672,12 +1674,13 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
         }
         else if (vtype == NC_DOUBLE)
         {
+            vtype_str = "NC_DOUBLE";
             VisItNCErr = nc_get_var_double(ncExIIId, timesVarId, &(times->operator[](0)));
             CheckNCError(nc_get_var_double);
         }
         else
         {
-            EXCEPTION2(UnexpectedValueException, "NC_FLOAT || NC_DOUBLE", vtype);
+            EXCEPTION2(UnexpectedValueException, "NC_FLOAT || NC_DOUBLE", vtype_str);
         }
     }
 }
@@ -2777,6 +2780,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         // Note: for poly-case, num_nodes_per_elem should be size of entire connect array
         bool contains_nonlinear_elems = false;
         vtkIdType *verts = new vtkIdType[num_nodes_per_elem];
+        string connect_vartype_str = "NC_INT"; 
         switch (connect_vartype)
         {
             case NC_INT:
@@ -2806,6 +2810,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
             case NC_INT64:
             {
                 long long *conn_buf = new long long[connect_varlen];
+                connect_vartype_str = "NC_INT64"; 
                 VisItNCErr = nc_get_var_longlong(ncExIIId, connect_varid, conn_buf);
                 CheckNCError(nc_get_var_longlong);
                 if (VisItNCErr != NC_NOERR)
@@ -2829,7 +2834,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
 #endif
             default:
             {
-                EXCEPTION2(UnexpectedValueException, "NC_INT || NC_INT64", connect_vartype);
+                EXCEPTION2(UnexpectedValueException, "NC_INT || NC_INT64", connect_vartype_str);
             }
         }
         if (ebepecnt_buf) delete [] ebepecnt_buf;
@@ -3169,13 +3174,12 @@ ConvertGlobalElementIdsToInt(vtkDataArray *da)
 }
 
 // Temporary hack to work-around vtkIntArray assumptions upstream
+// See issue: https://github.com/visit-dav/visit/issues/20787
+// Ideally, we move our ghost zone comm logic to leverage 64-bit ids
+// and then this conversion and guards will not be necessary.
 static vtkDataArray *
 EnsureGlobalElementIdsAreInt(vtkDataArray *da)
 {
-#if VISIT_VERSION_GE(3,5,0)
-#error EITHER FIX GLOBAL ELEMENT ID BASED GHOST-ZONE COMM OR UPDATE THIS VERSION TRIGGER
-#endif
-
     if (!da) return 0;
 
     if (da->IsA("vtkIntArray")) return da;

@@ -8398,6 +8398,9 @@ QvisGUIApplication::SaveMovie()
 //   Replace QString::asprintf with QString::arg as suggested in Qt docs,
 //   and with setNum in the simpler cases.
 //
+//   Kathleen Biagas, Mon Dec 22, 2025
+//   Use pathlib.Path for the Source call in code.
+//
 // ****************************************************************************
 
 void
@@ -8465,7 +8468,8 @@ QvisGUIApplication::SaveMovieMain()
             QString makemovie2(MakeCodeSlashes(makemovie.c_str()));
 
             // Assemble a string of code to execute.
-            QString code(QString("try:\n    Source('%1')\n").arg(makemovie2));
+            QString code("from pathlib import Path\n");
+            code += QString("try:\n    Source(Path('%1').as_posix())\n").arg(makemovie2);
             code += "    movie = MakeMovie()\n";
             code += "    movie.sendClientFeedback = 1\n";
             const stringVector &formats = movieAtts->GetFileFormats();
@@ -8709,6 +8713,8 @@ QvisGUIApplication::SaveCinema()
 // Creation:   Thu Sep 14 12:08:08 PDT 2017
 //
 // Modifications:
+//   Kathleen Biagas, Mon Dec 22, 2025
+//   Use pathlib.Path for the Source call in code.
 //
 // ****************************************************************************
 
@@ -8774,7 +8780,8 @@ QvisGUIApplication::SaveCinemaMain()
         QString makemovie2(MakeCodeSlashes(makemovie.c_str()));
 
         // Assemble a string of code to execute.
-        QString code(QString("try:\n    Source('%1')\n").arg(makemovie2));
+        QString code("from pathlib import Path\n");
+        code += QString("try:\n    Source(Path('%1').as_posix())\n").arg(makemovie2);
         code += "    cinema = VisItCinema()\n";
         code += "    cinema.sendClientFeedback = 1\n";
         code += QString("    cinema.cameraMode = \"%1\"\n").arg(cinemaAtts->GetCameraMode().c_str());

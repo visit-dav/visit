@@ -67,7 +67,10 @@ vtkVisItTextActor::SetTextHeight(float val)
 // Creation:   Mon Sep 19 15:22:18 PDT 2011
 //
 // Modifications:
-//   
+//
+//   Cyrus Harrison, Mon Nov 10 10:13:28 PST 2025
+//   Changed scaling heurstic to be DPI aware.
+//
 // ****************************************************************************
 
 void
@@ -88,9 +91,7 @@ vtkVisItTextActor::ComputeScaledFont(vtkViewport *viewport)
         || (   this->TextProperty
             && (this->TextProperty->GetMTime() > this->BuildTime) ) )
       {
-        float desiredSizePixels = (viewport->GetSize()[1] * this->TextHeight);
-        // This relation seems to give us good results when we measure on the screen.
-        int desiredSizePoints = int(desiredSizePixels * 4.f / 3.f);
+        int desiredSizePoints = GetDPIScaledFontSize(viewport,this->TextHeight);
         this->ScaledTextProperty->SetFontSize(desiredSizePoints);
 
         // An heuristic for the shadow offset. We can get rid of this if we
@@ -109,3 +110,56 @@ vtkVisItTextActor::ComputeScaledFont(vtkViewport *viewport)
     }
 }
 
+// ****************************************************************************
+// Method: vtkVisItTextActor::RenderOpaqueGeometry
+//
+// Purpose:
+//   Render text, make sure viewport changes are refle
+//
+// Arguments:
+//   viewport    Pointer to vtk viewport
+//
+// Modifications:
+//
+// ****************************************************************
+
+int vtkVisItTextActor::RenderOpaqueGeometry(vtkViewport *viewport)
+{
+  // the text size is relative to the viewport
+  // so if the viewport has changed, our text has as well
+  if(viewport->GetMTime() > this->GetMTime())
+  {
+    this->Modified();
+  }
+  return vtkTextActor::RenderOpaqueGeometry(viewport);
+}
+
+// ****************************************************************************
+// Method: vtkVisItTextActor::GetDPIScaledFontSize
+//
+// Purpose:
+//   Helper for font size scaling that takes into account DPI settings
+//
+// Arguments:
+//   viewport    Pointer to vtk viewport
+//   fontHeight  Desired font height
+//
+// Returns:  Scaled font size
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Nov 10 11:03:28 PST 2025
+//
+// Modifications:
+//   Cyrus Harrison, Wed Nov 19 11:13:41 PST 2025
+//   Use direct scaling, avoid extra 1.05 scaling.
+//
+// ****************************************************************************
+double
+vtkVisItTextActor::GetDPIScaledFontSize(vtkViewport *viewport,
+                                        double fontHeight)
+{
+  // Desired size seems relative to common dpi (72)
+  // divide DPI to avoid extra large fonts
+  vtkWindow *win = viewport->GetVTKWindow();
+  return (viewport->GetSize()[1] * fontHeight * 72.0 / double(win->GetDPI()));;
+}

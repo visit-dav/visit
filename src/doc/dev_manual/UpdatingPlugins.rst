@@ -27,6 +27,7 @@ GUI                                  **G**
 Python scripting                     **S**
 Viewer                               **V**
 Widgets                              **W**
+Widgets for viewer                   **VW**
 =================================    ===========================
 
 Here is a list of most often updated tags:
@@ -44,7 +45,7 @@ Tag                Purpose                                Supported components
  
 
 *xml2cmake* also supports the *Conditional* addition of an include directory, definition, link library or source file.
-The condition is a CMake variable that describes something related to the build: e.g. an OS-specification (*WIN32, LINUX, MACOS*), the availability of a third-party library (*HAVE_CONDUIT*) or a build option that can be toggled on/off (*VISIT_PARALLEL*). 
+The condition is a CMake variable that describes something related to the build: e.g. an OS-specification (*WIN32, LINUX, macOS*), the availability of a third party library (*HAVE_CONDUIT*) or a build option that can be toggled on/off (*VISIT_PARALLEL*). 
 Conditionals must be specified in the *.code* file with *Target* specified as *xml2cmake*.
 
 Here's example lines for a .code file::
@@ -81,7 +82,7 @@ and the corresponding entry in the .xml file::
 Attributes
 ----------
 
-Regeneration of Attributes is handled by three :ref:`XML Tools<XML Tools>`: one for cpp files (``xml2atts``), one for python (``xml2python``) and one for java (``xml2java``).
+Regeneration of Attributes is handled by three :ref:`XML Tools<XML Tools>`: one for cpp files (``xml2atts``, one for python (``xml2python`` and one for java (``xml2java``.
 
 When Attributes objects are changed (e.g. members removed or renamed), our policy is to maintain backward compatibility with older versions for at least 2 point releases.
 VisIt_ can encounter older Attributes objects in either Python CLI code or from previous saves of XML content (e.g. settings).

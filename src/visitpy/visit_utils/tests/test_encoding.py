@@ -53,14 +53,17 @@ class TestEncoding(unittest.TestCase):
             self.assertTrue("mpg" in encoders)
             self.assertTrue("wmv" in encoders)
     def test_ffmpeg_encoders(self):
-        for enc in ["wmv","mpg","divx","mov","swf","mp4","avi"]:
+        for enc in ["wmv","mpg","divx","mov","swf","mp4","avi","gif"]:
             if enc in encoding.encoders():
+                print("Testing encoder: ", enc)
                 ofile = pjoin(output_dir,"wave.movie.%s" % enc)
                 encoding.encode(iframes,ofile)
+                print("result for {0} {1}".format(enc, check_encoded_file(ofile)))
                 self.assertTrue(check_encoded_file(ofile))
                 ofile = pjoin(output_dir,"wave.movie.slow.%s" % enc)
                 encoding.encode(iframes,ofile,2)
                 self.assertTrue(check_encoded_file(ofile))
+                print("result for {0} {1}".format(enc, check_encoded_file(ofile)))
     def test_sm(self):
         if "sm" in encoding.encoders():
             ofile = pjoin(output_dir,"wave.movie.sm")
@@ -116,7 +119,7 @@ class TestEncoding(unittest.TestCase):
             self.assertEqual(0,len(lst_slnks()))
             self.assertTrue(check_encoded_file(ofile))
     def test_ffmpeg_input_frame_rate(self):
-        for enc in ["wmv","mpg","divx","mov","swf","mp4"]:
+        for enc in ["wmv","mpg","divx","mov","swf","mp4","gif"]:
             if enc in encoding.encoders():
                 clean_slnks()
                 ofile = pjoin(output_dir,"wave.movie.input_frame_rate.%s" % enc)

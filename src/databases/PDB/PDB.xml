@@ -5,7 +5,7 @@
       ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/bow
     </CXXFLAGS>
     <LIBS>
-      pdb bow
+      ${PDB_LIB} bow
     </LIBS>
     <FilePatterns>
       *.pdb

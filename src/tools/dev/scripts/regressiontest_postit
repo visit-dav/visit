@@ -1,0 +1,152 @@
+#!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:/usr/bin:/bin
+
+if test "$#" -ne 4; then
+    echo "Usage: $0 date_tag test_host serial postit"
+    exit 1
+fi
+
+dateTag=$1
+testHost=$2
+serial=$3
+post=$4
+
+
+testDir="/usr/WS1/visit/test_trunk"
+buildDir="$testDir/build_$testHost"
+repoDir="$testDir/visit"
+scriptDir="$repoDir/src/tools/dev/scripts"
+
+#
+# Check if the test suite completed every "retry_delay" seconds, for a
+# maximum of "retry_count" times.
+#
+finished_file="$testDir/nightly_cron/run_finished"
+retry_count=120
+retry_delay=600
+while [ ! -f "$finished_file" ] && [ $retry_count -gt 0 ]
+do
+    sleep $retry_delay
+    echo "Checking if test suite completed at `date`, retry_count=$retry_count."
+    ((retry_count--))
+done
+
+if [ ! -f "$finished_file" ]; then
+    echo "Test suite never finished, aborting posting of results at `date`."
+    exit 1
+fi
+
+#
+# The test suite completed, let's post the results.
+#
+echo "Posting results at `date`."
+
+
+cd $buildDir/test
+
+# if we don't have a test results directory, exit with failure now
+if test ! -d "$dateTag"; then
+    echo "$dateTag doesn't exist, aborting posting of results at `date`."
+    $scriptDir/visit-notify-test-failure -host $testHost
+    exit 1
+fi
+
+# Determine if the test suite passed or failed.
+if test "$serial" = "true" ; then
+    modes="$testHost,trunk,serial"
+else
+    modes="$testHost,trunk,serial $testHost,trunk,parallel $testHost,trunk,scalable,parallel,icet"
+fi
+
+hasFailed=""
+for m in $modes; do
+    theMode=`echo $m | tr ',' '_'`
+    if test "$hasFailed" = ""; then
+        hasFailed=`cat "$dateTag/$theMode/index.html" | grep -m 1 Failed 2>/dev/null`
+    fi
+    if test "$hasFailed" = ""; then
+        hasFailed=`cat "$dateTag/$theMode/index.html" | grep -m 1 Unacceptable 2>/dev/null`
+    fi
+    if test "$hasFailed" = ""; then
+        hasFailed=`cat "$dateTag/$theMode/index.html" | grep -m 1 OS-Killed 2>/dev/null`
+    fi
+done
+
+if test "$post" = "true" ; then
+    # If the test suite passed then update the revision number indicating the
+    # last pass.
+    cd  $repoDir
+    if test "$hasFailed" = ""; then
+        echo "Updating lastpass_$testHost at `date`."
+        gitHead=`git log -1 | grep "^commit" | cut -d' ' -f2`
+        gitBranch="task/visit/`date +%Y_%m_%d`_update_lastpass"
+        # First do a git checkout of develop, do a git pull to update
+        # it, then create a branch to update lastpass, update lastpass,
+        # merge the branch into develop, push develop to the remote and
+        # finally delete the branch used to update lastpass.
+        git checkout develop
+        git pull
+        git checkout -b $gitBranch
+        git checkout src/tools/dev/scripts/lastpass_$testHost
+        rm -f src/tools/dev/scripts/lastpass_$testHost
+        git pull
+        echo "$gitHead" > src/tools/dev/scripts/lastpass_$testHost
+        git add src/tools/dev/scripts/lastpass_$testHost
+        git commit -m "Update the last test suite pass on $testHost."
+        git fetch origin
+        git checkout develop
+        git merge $gitBranch
+        git push origin develop
+        git branch -D $gitBranch
+    fi
+
+    # Copy the results to the dashboard checkout on quartz. 
+    echo "Updating the dashboard at `date`."
+    cd $buildDir/test
+    python3 $scriptDir/visit-copy-test-results.py --host $testHost 
+
+    # Update the main index.html.
+    $scriptDir/visit-update-test-website
+
+    # Check the results into github.
+    cd $buildDir/test
+    newResults=`ls -d ????-??-??-??:??`
+    # should the dashboard have group perms?
+    cd /usr/WS1/visit/dashboard/dashboard
+    # First do a "git pull" to update main in case there have been
+    # any commits since the last update. This is most likely from
+    # removing an old test result. Then add the new results and push
+    # to GitHub.
+    git pull
+    git add $newResults baselines index.html
+    git commit -m "Add new results to the dashboard."
+    git push
+    
+    # Set group read/write permissions so others can update the dashboard.
+    chmod -R g+rwX .
+
+    # Move the new results to old_results.
+    echo "Moving the new results to old_results at `date`."
+    cd $buildDir/test
+    mv $newResults ../../old_results
+
+    # Send out an e-mail notifying the users of the test suite status.
+    #
+    # The visit-notify-test-failure script expects to be in the repo
+    # directory.
+    echo "Sending out the email at `date`."
+    cd $repoDir
+    if test "$hasFailed" = ""; then
+        $scriptDir/visit-notify-test-failure -pass -host $testHost
+    else
+        $scriptDir/visit-notify-test-failure -host $testHost
+    fi
+
+    # log current quota usage
+    python3 $scriptDir/visit-check-lc-workspace-quota.py >> /usr/workspace/visit/QUOTA_HISTORY.txt
+
+fi
+
+

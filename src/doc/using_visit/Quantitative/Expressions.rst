@@ -604,7 +604,7 @@ Vector Compose Operator (``{}``) : ``{expr0, expr1, ... , exprN-1}``
     The component expressions, ``expr0``, ``expr1``, etc.  must all be the same type (e.g. scalar, vector) and must all be the same centering.
     Scalars compose into (row) vectors and (row) vectors compose into tensors, row-by-row.
     
-    If constant values (e.g. ``1`` or ``0``) are needed in composing a vector expression, then use the expression functions designed to create constant expressions such as ``nodal_constant(<mesh>,value)`` (for node-centered constant expressions) or ``zonal_constant(<mesh>,value)`` (for zone-centered consntant expressions).
+    If constant values (e.g. ``1`` or ``0``) are needed in composing a vector expression, then use the expression functions designed to create constant expressions such as ``nodal_constant(<mesh>,value)`` (for node-centered constant expressions) or ``zonal_constant(<mesh>,value)`` (for zone-centered constant expressions).
     Using the constant values themselves (e.g. ``0`` or ``1``) directly in the compose operator does not always work as expected depending on VisIt_'s ability to infer the intended *mesh* and/or *centering*.
     
 .. _Vector_Component_Expression_Operator:
@@ -769,7 +769,7 @@ The inner instances compose sets of scalars into row vectors and the outer insta
 Tensor expressions in 2D still require 9 scalar components but those in the 3rd row and column must be all zeros.
 Symmetric tensor expressions also still require 9 scalar components but must also exhibit symmetry.
 
-If constant values (e.g. ``1`` or ``0``) are needed in composing a tensor expression, then use the expression functions designed to create constant expressions such as ``nodal_constant(<mesh>,value)`` (for node-centered constant expressions) or ``zonal_constant(<mesh>,value)`` (for zone-centered consntant expressions).
+If constant values (e.g. ``1`` or ``0``) are needed in composing a tensor expression, then use the expression functions designed to create constant expressions such as ``nodal_constant(<mesh>,value)`` (for node-centered constant expressions) or ``zonal_constant(<mesh>,value)`` (for zone-centered constant expressions).
 Using the constant values themselves (e.g. ``0`` or ``1``) directly in the compose operator does not always work as expected depending on VisIt_'s ability to infer the intended *mesh* and/or *centering*.
 
 Often, using the tensor expression functions described here necessitates a detailed understanding of the actual numerical calculations VisIt_ uses in evaluating the expressions.
@@ -863,7 +863,7 @@ Inverse Function: ``inverse()`` : ``inverse(expr0)``
 
 Principal Deviatoric Tensor Function: ``principal_deviatoric_tensor()`` : ``principal_deviatoric_tensor(expr0)``
     Deviatoric stress is the stress tensor which results after subtracting the
-    `hydrostatic stress tensor <http://www.continuummechanics.org/hydrodeviatoricstress.html>`_.
+    `hydrostatic stress tensor <https://en.wikipedia.org/wiki/Deviatoric_stress>`_.
     Hydrostatic stress is a *scalar* quantity also often referred to as
     *average pressure* or just *pressure*. However, it is often characterized in
     *tensor* form by multiplying it through a 3x3 identity matrix.
@@ -900,7 +900,7 @@ Principal Tensor Function: ``principal_tensor()`` : ``principal_tensor(expr0)``
     Creates a new *vector* expression which is everywhere the 
     principal stress components of the input argument, which must a *symmetric*
     tensor. The principal stress components are the
-    `eigenvalues of the stress tensor. <https://uclageo.com/SoilMechanicsNotes/Section2.3.php>`_
+    `eigenvalues of the stress tensor. <https://en.wikipedia.org/wiki/Principal_stress>`_
     So, the vector expression computed here is the same as 
     :ref:`eigenvalue() <Eigenvalue_Expression_Function>`.
 
@@ -1549,7 +1549,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    See case A in the examples below.
 
    When the donor variable is in a different database **and** the databases
-   do not have multiple time states, then only sub-string 1, above, is
+   do not have multiple timestates, then only sub-string 1, above, is
    needed to specify the path to the database in the file system. The path
    to the database can be specified using either *absolute* or *relative*
    paths. *Relative* paths are interpreted relative to the current working
@@ -1561,12 +1561,12 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    ``State Id`` substring is a square-bracket enclosed number used to identify
    *which state* from which to take the donor variable. The ``Modality``
    substring is a one- or two-character moniker. The first character indicates
-   whether the number in the the ``State Id`` substring is a cycle (``c``),
+   whether the number in the ``State Id`` substring is a cycle (``c``),
    a time (``t``), or an index (``i``). The second character, if present, is a
    ``d`` character to indicate the cycle, time or index is *relative* (e.g. a
    *delta*) to the current state. For example, the substring ``[200]c`` means to
    treat the ``200`` as a *cycle* number in the donor database whereas the
-   the substring ``[-10]id`` means to treat the ``-10`` as an (``i``) index
+   substring ``[-10]id`` means to treat the ``-10`` as an (``i``) index
    (``d``) delta. So, ``[200]c`` would map the *donor* at cycle 200
    to the *current* cycle of the *target* and ``[-10]id`` would map the
    *donor* at the current *index minus 10* to the *current* index of the *target*.
@@ -2256,7 +2256,7 @@ the magnitude() built-in expression or the array de-reference operator.
 Centering Compatibility
 """""""""""""""""""""""
 
-Some variables are zone centered and some are node centered. What happens if
+Some variables are zone-centered and some are node-centered. What happens if
 a user combines these in an expression? VisIt_ will default to zone centering
 for the result. If this is not the desired result, the
 :ref:`recenter() <Recenter_Expression_Function>` expression function should be

@@ -2,5 +2,6 @@
 
 visit_add_database_plugin(
     DNAME      unv
-    LIBS       zlib)
+    LIBS       ${ZLIB_LIB}
+               VTK::IOGeometry)
 

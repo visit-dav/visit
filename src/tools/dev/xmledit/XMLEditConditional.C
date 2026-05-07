@@ -424,6 +424,8 @@ XMLEditConditional::mlinklibsChanged()
 //  Creation:    Oct 21, 2025 
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Nov  4 16:39:54 PST 2025
+//    Add missing setting of VLinkLibraries in conditional.
 //
 // ****************************************************************************
 
@@ -457,6 +459,8 @@ XMLEditConditional::elinklibsChanged()
     int index = conditionList->currentRow();
     if (index == -1)
         return;
+    Conditional *c = codeFile->conditions[index];
+    c->keyVals["ELinkLibraries:"] = elinklibs->text();
 }
 
 // ****************************************************************************

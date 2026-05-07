@@ -53,85 +53,34 @@ Some common use cases are using VisIt_ as part of a larger Python workflow or wh
 You should always try to use VisIt_'s Python interpreter directly, since importing VisIt's Python module may not always work.
 
 When importing the VisIt_ module into the system Python, at a minimum the major version numbers must match and ideally the major and minor version numbers would match.
+As of VisIt_ 3.5.0, the python import process uses a frontend module `visit_launcher` to locate and launch VisIt_.
 In general, there are three things you must do to import the VisIt_ module into the system Python.
 
-1. Tell the Python interpreter where the standard C++ library used to compile VisIt_ is located.
-   This needs to be done before any modules other than `ctypes` are imported.
-2. Tell the Python interpreter where the VisIt_ module is located.
-3. Specify the version of VisIt_ you are using if you have multiple versions of VisIt_ installed in the same directory.
+1. Tell the Python interpreter where the `visit_launcher` module is located.
+2. Set launch options
+3. Launch and `import visit`
 
-Not all of the steps are necessary.
-For example, if VisIt_ was compiled with the default system compiler then you do not need to perform the first step.
-It is important that the steps are done in the order specified above.
+In this example VisIt_ is imported into the system Python and used to save an image from one of our sample datasets. ::
 
-In this example VisIt_ is imported into the system Python and used to save an image from one of our sample datasets.
-The paths specified for the location of the standard C++ library and the VisIt_ module will need to be changed as appropriate for your system. ::
+    #
+    # setup visit module launcher
+    #
+    import sys
+    sys.path.append("/usr/gapps/visit/current/linux-x86_64/lib/site-packages/")
+    import visit_launcher
+    visit_launcher.AddArgument("-v 3.5")
+    visit_launcher.LaunchNowin(vdir="/usr/gapps/visit/")
+    #
+    # use launched visit
+    #
+    import visit
+    visit.OpenDatabase("/usr/gapps/visit/data/noise.silo")
+    visit.AddPlot("Pseudocolor", "hardyglobal")
+    visit.DrawPlots()
+    visit.SaveWindow()
 
-    python3
-    Python 3.7.2 (default, Feb 26 2019, 08:59:10)
-    [GCC 4.9.3] on linux
-    Type "help", "copyright", "credits" or "license" for more information.
-    >>> import ctypes
-    >>> ctypes.cdll.LoadLibrary('/usr/tce/packages/gcc/gcc-7.3.0/lib64/libstdc++.so.6')
-    <CDLL '/usr/tce/packages/gcc/gcc-7.3.0/lib64/libstdc++.so.6', handle 6d3e30 at 0x2aaaac14b7f0>
-    >>> import sys
-    >>> sys.path.append("/usr/gapps/visit/3.3.3/linux-x86_64/lib/site-packages/")
-    >>> import visit
-    >>> visit.AddArgument("-v")
-    >>> visit.AddArgument("3.3.3")
-    >>> visit.LaunchNowin()
-    Running: viewer3.3.3 -nowin -forceversion 3.3.3 -noint -host 127.0.0.1 -port 5601
-    True
-    >>> import visit
-    >>> visit.OpenDatabase("/usr/gapps/visit/data/noise.silo")
-    Running: mdserver3.3.3 -forceversion 3.3.3 -host 127.0.0.1 -port 5601
-    Running: engine_ser3.3.3 -forceversion 3.3.3 -dir /usr/gapps/visit -idle-timeout 480 -host 127.0.0.1 -port 5601
-    1
-    >>> visit.AddPlot("Pseudocolor", "hardyglobal")
-    1
-    >>> visit.DrawPlots()
-    1
-    >>> visit.SaveWindow()
-    VisIt: Message - Rendering window 1...
-    VisIt: Message - Saving window 1...
-    VisIt: Message - Saved visit0000.png
-    'visit0000.png'
-    >>> quit()
 
-Sometimes telling Python where the standard C++ library used to compile VisIt_ is located does not work and instead you can tell it where VisIt_'s Python library is located. ::
-
-    python3
-    Python 3.9.12 (main, Apr 15 2022, 09:20:22)
-    [GCC 10.3.1 20210422 (Red Hat 10.3.1-1)] on linux
-    Type "help", "copyright", "credits" or "license" for more information.
-    >>> import ctypes
-    >>> ctypes.CDLL('/usr/gapps/visit/3.3.3/linux-x86_64-toss4/lib/libpython3.7m.so')
-    <CDLL '/usr/gapps/visit/3.3.3/linux-x86_64-toss4/lib/libpython3.7m.so', handle 508b30 at 0x155546edf4f0>
-    >>> import sys
-    >>> sys.path.append("/usr/gapps/visit/3.3.3/linux-x86_64-toss4/lib/site-packages")
-    >>> import visit
-    >>> visit.AddArgument("-v")
-    >>> visit.AddArgument("3.3.3")
-    >>> visit.LaunchNowin()
-    Running: viewer3.3.3 -nowin -forceversion 3.3.3 -noint -host 127.0.0.1 -port 5600
-    True
-    >>> import visit
-    >>> visit.OpenDatabase("/usr/gapps/visit/data/noise.silo")
-    Running: mdserver3.3.3 -forceversion 3.3.3 -host 127.0.0.1 -port 5600
-    Running: engine_ser3.3.3 -forceversion 3.3.3 -dir /usr/gapps/visit -idle-timeout 480 -host 127.0.0.1 -port 5600
-    1
-    >>> visit.AddPlot("Pseudocolor", "hardyglobal")
-    1
-    >>> visit.DrawPlots()
-    1
-    >>> visit.SaveWindow()
-    VisIt: Message - Rendering window 1...
-    VisIt: Message - Saving window 1...
-    VisIt: Message - Saved visit0000.png
-    'visit0000.png'
-    >>> quit()
-
-Handling Command line arguments
+Handling command line arguments
 -------------------------------
 
 In some cases, a VisIt_ python script also needs to handle its own command line arguments.
@@ -180,8 +129,8 @@ Working with databases
 ----------------------
 
 VisIt allows you to open a wide array of databases both in terms of supported file formats and in terms how databases treat time. 
-Databases can have a single time state or can have multiple time states. 
-Databases can natively support multiple time states or sets of single time states files can be grouped into time-varying databases using .visit files or using virtual databases. 
+Databases can have a single timestate or can have multiple timestates. 
+Databases can natively support multiple timestates or sets of single timestates files can be grouped into time-varying databases using .visit files or using virtual databases. 
 Working with databases gets even trickier if you are using VisIt to visualize a database that is still being generated by a simulation. 
 This section describes how to interact with databases.
 
@@ -189,7 +138,7 @@ Opening a database
 ~~~~~~~~~~~~~~~~~~
 
 Opening a database is a relatively simple operation - most complexities arise in how the database treats time. 
-If you only want to visualize a single time state or if your database format natively supports multiple timestates per file then opening a database requires just a single call to the OpenDatabase function.
+If you only want to visualize a single timestate or if your database format natively supports multiple timestates per file then opening a database requires just a single call to the OpenDatabase function.
 
 .. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
     :language: Python
@@ -200,11 +149,11 @@ If you only want to visualize a single time state or if your database format nat
 Opening a database at specific time
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Opening a database at a later timestate is done just the same as opening a database at time state zero except that you must specify the time state at which you want to open the database. 
-There are a number of reasons for opening a database at a later time state. 
-The most common reason for doing so, as opposed to just changing time states later, is that VisIt uses the metadata from the first opened time state to describe the contents of the database for all timestates (except for certain file formats that don't do this, i.e. SAMRAI). 
-This means that the list of variables found for the first time state that you open is used for all timestates. 
-If your database contains a variable at a later timestate that does not exist at earlier time states, you must open the database at a later time state to gain access to the transient variable.
+Opening a database at a later timestate is done just the same as opening a database at timestate zero except that you must specify the timestate at which you want to open the database. 
+There are a number of reasons for opening a database at a later timestate. 
+The most common reason for doing so, as opposed to just changing timestates later, is that VisIt uses the metadata from the first opened timestate to describe the contents of the database for all timestates (except for certain file formats that don't do this, i.e. SAMRAI). 
+This means that the list of variables found for the first timestate that you open is used for all timestates. 
+If your database contains a variable at a later timestate that does not exist at earlier timestates, you must open the database at a later timestate to gain access to the transient variable.
 
 .. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
     :language: Python
@@ -215,11 +164,11 @@ If your database contains a variable at a later timestate that does not exist at
 Opening a virtual database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-VisIt provides two ways for accessing a set of single time-state files as a single time- varying database. 
-The first method is a .visit file, which is a simple text file that contains the names of each file to be used as a time state in the time-varying database. 
+VisIt provides two ways for accessing a set of single timestate files as a single time-varying database. 
+The first method is a .visit file, which is a simple text file that contains the names of each file to be used as a timestate in the time-varying database. 
 The second method uses "virtual databases", which allow VisIt to exploit the file naming conventions that are often employed by simulation codes when they create their dumps. 
 In many cases, VisIt can scan a specified directory and determine which filenames look related. 
-Filenames with close matches are grouped as individual time states into a virtual database whose name is based on the more abstract pattern used to create the filenames.
+Filenames with close matches are grouped as individual timestates into a virtual database whose name is based on the more abstract pattern used to create the filenames.
 
 .. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
     :language: Python
@@ -265,7 +214,7 @@ Here are the most common options for launching a compute engine.
     -nn   <# nodes>      The number of nodes to allocate.
     -p    <part>         Partition to run in.
     -b    <bank>         Bank from which to draw resources.
-    -t    <time>         Maximum job run time.
+    -t    <time>         Maximum job runtime.
     -machinefile <file>  Machine file.
 
 
@@ -495,7 +444,7 @@ It generates one curve per scalar value returned by the query.
 Frequently, the user wants to process the result of a query over time.
 A CSV file is a convenient way to output the data for further processing.
 
-Here is a pattern where we loop over the time steps writing the results of a ``Time`` query and a ``PickByNode`` to a text file in the form of a CSV file.
+Here is a pattern where we loop over the timesteps writing the results of a ``Time`` query and a ``PickByNode`` to a text file in the form of a CSV file.
 
 .. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
     :language: Python
@@ -789,8 +738,8 @@ In the set of images below we can see how the plot changes as the color table it
 
 
 
-Creating a continous color table from scratch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating a continuous color table from scratch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Creating a continuous color table involves creating a ``ColorControlPoint`` for each color you want, setting its ``colors`` and ``position`` fields and then adding them to a ``ColorControlPointList``.
 The ``ColorControlPointList`` is then passed as an argument to ``AddColorTable``.
@@ -877,7 +826,7 @@ The following example defines a function that creates an expression that maps ma
 It takes a list of *pairs* of material number and scalar value.
 The material number of the last pair is ignored.
 Its value is used for any unspecified materials.
-The expression generated by calling the function is then used in a Psuedocolor plot.:
+The expression generated by calling the function is then used in a Pseudocolor plot.:
 
 .. literalinclude:: ../../test/tests/quickrecipes/expressions.py
     :language: Python
@@ -891,7 +840,7 @@ The expression generated by calling the function is then used in a Psuedocolor p
 Exporting data
 ----------------------------------------------------
 
-You can export data transfomed by VisIt pipelines to be reopened in VisIt, or to be used in other tools. 
+You can export data transformed by VisIt pipelines to be reopened in VisIt, or to be used in other tools. 
 These examples show how to export data from VisIt pipelines to VTK, Silo, and Conduit Blueprint files.
 
 Exporting to VTK
@@ -933,5 +882,4 @@ CSV export is an option in the Conduit Blueprint Database Exporter.
     :language: Python
     :start-after: # exportToBlueprintCSV {
     :end-before: # exportToBlueprintCSV }
-
 

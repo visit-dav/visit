@@ -10,6 +10,9 @@
 #   Brad Whitlock, Thu Jan 20 08:48:38 PST 2011
 #   Do not build QtVisWindow on engine-only or server-components-only builds.
 #
+#   Ryan Krattiger, Fri Oct 31 13:37:05 CST 2025
+#   Blueprints with optional MFEM dependency
+#
 #****************************************************************************
 
 if(VISIT_DBIO_ONLY)
@@ -45,7 +48,7 @@ else()
         add_subdirectory(MFEM)
     endif()
 
-    if(CONDUIT_FOUND AND MFEM_FOUND)
+    if(CONDUIT_FOUND)
         add_subdirectory(Blueprint)
     endif()
 endif()

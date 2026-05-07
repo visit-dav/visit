@@ -4,5 +4,5 @@ visit_add_database_plugin(
     DNAME      H5Nimrod
     MSRC       H5utils.C
     ESRC       H5utils.C
-    LIBS       hdf5)
+    LIBS       ${HDF5_LIB})
 

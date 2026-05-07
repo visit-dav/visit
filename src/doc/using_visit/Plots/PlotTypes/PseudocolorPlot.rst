@@ -46,7 +46,7 @@ Limits
 
 Setting limits for the plot imposes artificial minima and maxima on the plotted variable.
 This effectively restricts the range of data used to color the **Pseudocolor** plot.
-You might set limits when you are interested in only a small range of the data or when data limits need to be maintained for multiple time steps, as when playing an animation.
+You might set limits when you are interested in only a small range of the data or when data limits need to be maintained for multiple timesteps, as when playing an animation.
 In fact, we recommend setting the limits when producing an animation so the colors will correspond to the same values instead of varying over time with the range of the plotted variable.
 Setting limits often highlights a certain range in the data by assigning more colors to that data range.
 
@@ -97,16 +97,16 @@ Opacity
 '''''''
 
 You can make the **Pseudocolor** plot transparent by changing its opacity using the **Opacity** menu.
-There are four options: 
+There are four options:
 
 1. **Fully opaque:** (the default), no transparency is applied.
-2. **From color table:**, opacity values are obtained from the active color table for the plot.
+2. **From color table:** opacity values are obtained from the active color table for the plot.
    If the color table doesn't support opacities, the plot will be fully opaque.
 3. **Constant:**  A constant opacity is applied everywhere.
    A slider is provided to modify the opacity value.
    Moving the opacity slider to the left makes the plot more transparent while moving the slider to the right makes the plot more opaque.
 4. **Ramp:**   Opacity is applied on a sliding scale ranging from fully transparent (applied to the lowest values), to the opacity value chosen on the slider.
-   If the the slider is fully to the right, then the maximum values being plotted will be fully opaque.
+   If the slider is fully to the right, then the maximum values being plotted will be fully opaque.
 
 Legend Behavior
 '''''''''''''''

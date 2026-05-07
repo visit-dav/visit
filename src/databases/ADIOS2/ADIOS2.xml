@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="ADIOS2" type="database" label="ADIOS2" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <DEFINES components="EPar">
+      ADIOS2_USE_MPI
+    </DEFINES>
     <FilePatterns>
       *.bp
       *.bp.sst
@@ -10,12 +13,7 @@
     <LIBS> 
       vtkFiltersHybrid
       vtksys
-    </LIBS>
-    <LIBS components="M,ESer">
       adios2
-    </LIBS>
-    <LIBS components="EPar">
-      adios2_par
     </LIBS>
     <Files components="M,E">
       avtMEUMMAPSFileFormat.C
