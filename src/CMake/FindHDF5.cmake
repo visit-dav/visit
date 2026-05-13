@@ -23,7 +23,8 @@
 #
 #****************************************************************************/
 
-# Use the HDF5_DIR hint from the config-site .cmake file
+# Uses the HDF5_DIR hint from the config-site .cmake file
+
 
 if(EXISTS ${VISIT_HDF5_DIR}/cmake)
   set(HDF5_DIR ${VISIT_HDF5_DIR}/cmake)
@@ -60,7 +61,7 @@ if(TARGET hdf5-shared)
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
     create_lib_setup_cmake(KIT "HDF5"
                            NAMESPACE "hdf5"
-                           INCBASE "hdf5/include"
+                           INCBASE "hdf5"
                            ITEMS ${HDF5_LIB} ${HDF5_HL_LIB}
                            SIMPLE_INCLUDE true)
 

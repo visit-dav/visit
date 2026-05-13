@@ -10,7 +10,7 @@
 #   Kathleen Biagas, Thu Nov 6, 2025
 #   Removed most VISIT_PARALLEL flags.  Use MPI_COMPILER or
 #   MPI_HOME and MPI_DIR to find specific versions of MPI.
-#   The MPI::MPI_CXX target created by the find_package call will be used
+#   The MPI::MPI_C target created by the find_package call will be used
 #   to link with MPI.  It also contains the INCLUDES necessary for the build.
 
 

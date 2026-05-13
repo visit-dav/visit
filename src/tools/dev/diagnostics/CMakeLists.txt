@@ -15,7 +15,7 @@ add_subdirectory(networktest)
 add_subdirectory(exceptiontest)
 
 
-if(OSMESA_FOUND)
+if(HAVE_OSMESA)
     add_subdirectory(osmesatest)
 endif()
 

@@ -186,6 +186,9 @@ if(Python3_FOUND)
                            ITEMS Python3::Python Python3::Interpreter
                            SIMPLE_INCLUDE true)
 
+    set(fname ${VISIT_BINARY_DIR}/SetupPYTHON.cmake)
+    file(APPEND ${fname} "\nset(PYTHON_LIBRARY Python3::Python)\n")
+    file(APPEND ${fname} "set(PYTHON_EXECUTABE Python3::Interpreter)\n\n")
 else()
     message("Python3 not found")
 endif()
@@ -427,8 +430,8 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
                     FILE_PERMISSIONS ${filePerms}
                     DIRECTORY_PERMISSIONS ${dirPerms}
-                    PATTERN "site-packages" EXCLUDE
-            )
+                    PATTERN "site-packages" EXCLUDE)
+
             # Use a separate install for general site packages, with an
             # include list for modules thats users of visit will want.
             # This filters out several packages related to building and

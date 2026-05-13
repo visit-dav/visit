@@ -57,4 +57,20 @@ if(HAVE_ANARI)
     include(${CMAKE_CURRENT_LIST_DIR}/SetupANARI.cmake)
 endif()
 
+###############################################################################
+# Import HDF5's CMake targets
+###############################################################################
+
+if(HAVE_HDF5)
+    include(${CMAKE_CURRENT_LIST_DIR}/SetupHDF5.cmake)
+endif()
+
+###############################################################################
+# Import SILO's CMake targets
+###############################################################################
+
+if(HAVE_SILO)
+    include(${CMAKE_CURRENT_LIST_DIR}/SetupSILO.cmake)
+endif()
+
 

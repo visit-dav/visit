@@ -245,7 +245,7 @@ endforeach()
 #-----------------------------------------------------------------------------
 # If we have HDF5 build all HDF5 Data Gen Target Programs
 #-----------------------------------------------------------------------------
-if(HDF5_FOUND)
+if(HAVE_HDF5)
     set(xdmf3d_SOURCES xdmf.C)
     foreach(HDF5_TARGET unic xdmf3d xdmf2d)
         BUILD_DATA_TARGET(${HDF5_TARGET}
@@ -257,7 +257,7 @@ endif()
 #-----------------------------------------------------------------------------
 # If we have Silo build all Silo & PDB Data Gen Programs
 #-----------------------------------------------------------------------------
-if(SILO_FOUND)
+if(HAVE_SILO)
     #-------------------------------------------------------------------------
     #  Setup {TARGET}_SOURCES for targets with multiple source files.
     #-------------------------------------------------------------------------
@@ -386,7 +386,7 @@ if(USE_VISIT_DIST_DATA_TARBALL)
             WORLD_READ WORLD_EXECUTE)
 
 else()
-    if(SILO_FOUND)
+    if(HAVE_SILO)
         if(WIN32)
             set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
         else()

@@ -4,5 +4,5 @@ visit_add_database_plugin(
     DNAME      Silo
     MSRC       avtSiloMBObjectCache.C
     ESRC       avtSiloMBObjectCache.C
-    LIBS       silo)
+    LIBS       ${SILO_LIB})
 

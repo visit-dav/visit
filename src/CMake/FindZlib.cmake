@@ -26,9 +26,6 @@
 #   Kathleen Biagas, Tue May 28 09:08:56 PDT 2019
 #   Since we require zlib from build_visit, no longer need HAVE_ZLIB_H
 #
-#   Kathleen Biagas, Mon Mar 9, 2026
-#   Use find_package.
-#
 #   Kathleen Biagas, Thu Dec 11, 2025
 #   Use visit_import_third_party.
 #
@@ -38,6 +35,8 @@
 
 visit_import_third_party(ZLIB LIBNAMES z zlib zlib1 ADD_GLOBAL_INCLUDE ADD_GLOBAL_LIBRARY)
 
-if(NOT TARGET zlib)
+if(TARGET zlib)
+    set(ZLIB_LIB zlib)
+else()
     message(FATAL_ERROR "VisIt requires lib z and it could not be found. Please set ZLIB_DIR")
 endif()

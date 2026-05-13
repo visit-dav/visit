@@ -53,8 +53,8 @@
 #   the original version.
 #   Added vtkVertexExtractor.
 #
-#   Kathleen Biagas, Thu Jan 15, 2026 
-#   Remove vtkSTLWriter. Rename vtkOBJWriter to vtkVisItOBJWriter. 
+#   Kathleen Biagas, Thu Jan 15, 2026
+#   Remove vtkSTLWriter. Rename vtkOBJWriter to vtkVisItOBJWriter.
 #
 #****************************************************************************/
 
@@ -162,7 +162,7 @@ set(visit_vtk_HEADERS
     vtkVolumeFromCSGVolume.h
     vtkVolumeFromVolume.h)
 
-if(OPENEXR_FOUND)
+if(HAVE_OPENEXR)
     list(APPEND visit_vtk_SOURCES vtkOpenEXRWriter.C)
     list(APPEND visit_vtk_HEADERS vtkOpenEXRWriter.h)
 endif()
@@ -187,7 +187,7 @@ visit_add_library(
 target_include_directories(visit_vtk PRIVATE
     $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/Pipeline/Data>)
 
-if(OPENEXR_FOUND)
+if(HAVE_OPENEXR)
     target_link_libraries(visit_vtk PRIVATE openexr)
 endif()
 

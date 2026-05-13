@@ -44,11 +44,11 @@ else()
         add_subdirectory(PythonFilters)
     endif()
 
-    if(MFEM_FOUND)
+    if(HAVE_MFEM)
         add_subdirectory(MFEM)
     endif()
 
-    if(CONDUIT_FOUND)
+    if(HAVE_CONDUIT)
         add_subdirectory(Blueprint)
     endif()
 endif()

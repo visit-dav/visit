@@ -17,7 +17,7 @@
 #
 #****************************************************************************
 
-if(SILO_FOUND)
+if(HAVE_SILO)
 
   function(ADD_SILO_EXAMPLE target)
     visit_add_executable(

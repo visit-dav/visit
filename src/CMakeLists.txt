@@ -532,12 +532,13 @@ endif()
 # this can be mitigated by using our Parallel first, before finding any TP libs.
 if(VISIT_PARALLEL)
     include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
+    install(FILES ${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake
+        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
     message(STATUS "PARALLEL version of VisIt")
 else()
     message(STATUS "Serial version of VisIt")
 endif()
 
-# macros/defines also needed by PluginVsInstall.cmake.in
 include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
