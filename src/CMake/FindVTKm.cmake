@@ -110,7 +110,7 @@ if (VISIT_VTKM_DIR)
         # write SetupVTKM.cmake 
         include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
         set(target_list vtkm::filter)
-        create_lib_setup_cmake(KIT "VTKM"
+        create_lib_setup_cmake(NAME "VTKM"
                                NAMESPACE "vtkm::"
                                INCBASE "vtkm-${vtkm_short}"
                                ITEMS ${target_list}

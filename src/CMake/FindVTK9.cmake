@@ -161,7 +161,7 @@ else(VISIT_VTK_SKIP_INSTALL)
     endforeach()
     # write SetupVTK.cmake for our export sets.
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
-    create_lib_setup_cmake(KIT "VTK"
+    create_lib_setup_cmake(NAME "VTK"
                            NAMESPACE "VTK::" 
                            INCBASE "vtk-${vtk_short}" 
                            ITEMS ${vtktargs}

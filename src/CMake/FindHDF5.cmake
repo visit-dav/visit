@@ -59,7 +59,7 @@ if(TARGET hdf5-shared)
     # for plugin vs install
     # write SetupHDF5.cmake for our export sets.
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
-    create_lib_setup_cmake(KIT "HDF5"
+    create_lib_setup_cmake(NAME "HDF5"
                            NAMESPACE "hdf5"
                            INCBASE "hdf5"
                            ITEMS ${HDF5_LIB} ${HDF5_HL_LIB}

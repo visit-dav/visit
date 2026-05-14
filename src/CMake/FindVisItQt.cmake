@@ -157,7 +157,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
     list(APPEND qttargs Qt${QT_MAJOR_VERSION}::moc)
     list(APPEND qttargs Qt${QT_MAJOR_VERSION}::cmake_automoc_parser)
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
-    create_lib_setup_cmake(KIT "QT"
+    create_lib_setup_cmake(NAME "QT"
                            NAMESPACE "Qt${QT_MAJOR_VERSION}::"
                            INCBASE "qt"
                            ITEMS ${qttargs})
@@ -167,7 +167,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
     foreach(mod ${visit_qt_modules})
         list(APPEND qttargs Qt::${mod})
     endforeach()
-    create_lib_setup_cmake(KIT "QT"
+    create_lib_setup_cmake(NAME "QT"
                            NAMESPACE "Qt::"
                            INCBASE "qt"
                            ITEMS ${qttargs}

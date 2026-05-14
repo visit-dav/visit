@@ -146,7 +146,7 @@ if(anari_FOUND)
     # write SetupAnari.cmake for our export sets.
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
     set(target_list anari::anari)
-    create_lib_setup_cmake(KIT "ANARI"
+    create_lib_setup_cmake(NAME "ANARI"
                            NAMESPACE "anari::"
                            INCBASE "anari"
                            ITEMS ${target_list})

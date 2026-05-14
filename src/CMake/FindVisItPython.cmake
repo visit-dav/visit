@@ -180,7 +180,7 @@ if(Python3_FOUND)
     message(STATUS "PYTHON_PIP_VERSION:       ${PYTHON_PIP_VERSION}")
 
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
-    create_lib_setup_cmake(KIT "PYTHON"
+    create_lib_setup_cmake(NAME "PYTHON"
                            NAMESPACE "Python3::"
                            INCBASE "python"
                            ITEMS Python3::Python Python3::Interpreter

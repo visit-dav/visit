@@ -112,7 +112,7 @@ if(TARGET silo)
     # for plugin vs install
     # write SetupSILO.cmake for our export sets.
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
-    create_lib_setup_cmake(KIT "SILO"
+    create_lib_setup_cmake(NAME "SILO"
                            NAMESPACE "silo"
                            INCBASE "silo"
                            ITEMS ${SILO_LIB}
