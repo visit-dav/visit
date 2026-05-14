@@ -119,16 +119,16 @@ else(VISIT_VTK_SKIP_INSTALL)
         set(pathnameandprefix "${VTK_PREFIX_PATH}/lib/")
     endif()
 
-    set(vtk_short ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
+    set(vtk_majmin ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
     macro(SETUP_INSTALL vtk_component)
         set(sepchar "-")
         if(${vtk_component} MATCHES "vtksys")
-          set(LIBNAME   ${pathnameandprefix}${vtk_component}${sepchar}${vtk_short}.${SO_EXT})
+          set(LIBNAME   ${pathnameandprefix}${vtk_component}${sepchar}${majmin}.${SO_EXT})
         elseif(${vtk_component} MATCHES "WrappingPythonCore")
           # also needs PYTHON_VERSION
-          set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${PYTHON_COMPAT_VERSION}${sepchar}${vtk_short}.${SO_EXT})
+          set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${PYTHON_COMPAT_VERSION}${sepchar}${majmin}.${SO_EXT})
         else()
-            set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${sepchar}${vtk_short}.${SO_EXT})
+            set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${sepchar}${majmin}.${SO_EXT})
         endif()
 
         if(EXISTS ${LIBNAME})
@@ -145,7 +145,7 @@ else(VISIT_VTK_SKIP_INSTALL)
     if(VISIT_HEADERS_SKIP_INSTALL)
         message(STATUS "Skipping vtk headers installation")
     else()
-        install(DIRECTORY ${VTK_PREFIX_PATH}/include/vtk-${vtk_short}
+        install(DIRECTORY ${VTK_PREFIX_PATH}/include/vtk-${majmin}
             DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
             FILE_PERMISSIONS OWNER_WRITE OWNER_READ
                              GROUP_WRITE GROUP_READ
@@ -163,7 +163,7 @@ else(VISIT_VTK_SKIP_INSTALL)
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
     create_lib_setup_cmake(NAME "VTK"
                            NAMESPACE "VTK::" 
-                           INCBASE "vtk-${vtk_short}" 
+                           INCBASE "vtk-${majmin}" 
                            ITEMS ${vtktargs}
                            SIMPLE_INCLUDE true)
     unset(vtktargs)
