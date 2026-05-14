@@ -9,7 +9,7 @@
       avtblueprint
       conduit
       mfem
-      HDF5_LIB
+      ${HDF5_LIB}
     </LIBS>
     <FilePatterns>
       *.blueprint_root

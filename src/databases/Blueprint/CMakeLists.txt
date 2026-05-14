@@ -13,6 +13,6 @@ visit_add_database_plugin(
                avtblueprint
                conduit
                mfem
-               HDF5_LIB
+               ${HDF5_LIB}
     EPARLIBS   conduit_mpi)
 
