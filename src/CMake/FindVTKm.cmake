@@ -57,7 +57,7 @@ if (VISIT_VTKM_DIR)
    message(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
 
    if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_VTKM_SKIP_INSTALL)
-       set(vtkm_short ${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
+       set(vtkm_majmin ${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
 
        # use the vtkm CMake properties to find locations and all interface
        # link dependencies.
@@ -97,7 +97,7 @@ if (VISIT_VTKM_DIR)
        unset(addl_ll)
 
        if(NOT VISIT_HEADERS_SKIP_INSTALL)
-           install(DIRECTORY ${VTKM_DIR}/include/vtkm-${vtkm_short}
+           install(DIRECTORY ${VTKM_DIR}/include/vtkm-${vtkm_majmin}
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
                 FILE_PERMISSIONS OWNER_WRITE OWNER_READ
                                  GROUP_WRITE GROUP_READ
@@ -112,7 +112,7 @@ if (VISIT_VTKM_DIR)
         set(target_list vtkm::filter)
         create_lib_setup_cmake(NAME "VTKM"
                                NAMESPACE "vtkm::"
-                               INCBASE "vtkm-${vtkm_short}"
+                               INCBASE "vtkm-${vtkm_majmin}"
                                ITEMS ${target_list}
                                NESTED_INCLUDES true)
         unset(target_list)
