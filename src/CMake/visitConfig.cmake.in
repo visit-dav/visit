@@ -80,12 +80,4 @@ set(BLT_CXX_STD @BLT_CXX_STD@)
 set(BLT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/blt)
 include(${CMAKE_CURRENT_LIST_DIR}/SetupBLT.cmake)
 
-
 cmake_path(SET VISIT_INCLUDE_DIR NORMALIZE ${CMAKE_CURRENT_LIST_DIR}/../include/visit)
-
-if(TARGET silo)
-    add_library(pdb ALIAS silo)
-    set(HAVE_PDB TRUE)
-endif()
-
-
