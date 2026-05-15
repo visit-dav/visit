@@ -40,7 +40,7 @@ extensions = ['sphinx.ext.mathjax',
               'visit_copy_pagefind_anchors']
 
 #
-# Add directory containin VisIt python extensions for Sphinx
+# Add directory containing VisIt python extensions for Sphinx
 #
 sys.path.insert(0, os.path.abspath("_ext"))
 
