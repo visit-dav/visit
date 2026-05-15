@@ -60,7 +60,8 @@ class Conditional
     }
 
 
-    inline static const std::vector<QString> keys{
+    inline static const std::vector<QString> keys
+    {
         "Definitions:",
         "CXXFlags:",
         "VLinkLibraries:",
