@@ -214,8 +214,9 @@ then
    echo "    tuolumne   (LC,   Linux, x86_64, toss4-cray),"
    echo "    rzvernal   (LC,   Linux, x86_64, toss4-cray),"
    echo "    rzadams    (LC,   Linux, x86_64, toss4-cray),"
-   echo "    elcap      (LC,   Linux, x86_64, toss4-cray)"
-   echo "    crossroads (LANL, Linux, x86_64),"
+   echo "    elcap      (LC,   Linux, x86_64, toss4-cray),"
+   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "version is X.X.X, not visitX.X.X"
    exit
 fi
 
@@ -324,7 +325,7 @@ elif [ "$tuolumne" = true ]; then
        PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-9.0.1-gcc-10.3.1-magic/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-9.0.1-gcc-10.3.1-magic/bin/mpic++ \
        PKG_CONFIG_PATH=/opt/cray/libfabric/2.1/lib64/pkgconfig:$PKG_CONFIG_PATH \
-       ./$build_visit_script --group ${dest_group} --required --optional --anari --osmesa --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --anari --mesagl --parallel \
        --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
    echo "case for $machine_name not implemented. Bailing out."
