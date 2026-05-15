@@ -13,55 +13,32 @@ If you are encountering issues with search, please :ref:`reach out <methods_of_c
 
    <script>
    //
-   // By default, Pagefind's search results page will produce links to the nearest
-   // section heading containing body text where the search string matched.
+   // By default, Pagefind's search results page will produce links to the nearest section heading containing body text where the search string matched.
    //
-   // Many of VisIt's documentation pages contain such long body text that the
-   // user may have to read a lot or search quite a bit forward before finding
-   // the relevant section of the body text where the search string matched.
+   // Many of VisIt's documentation pages contain such long body text that the user may have to read a lot or search quite a bit forward before finding the relevant section of the body text where the search string matched.
    //
-   // To address this and improve the user experience in other ways, we override
-   // Pagefind's processResult() method to produce text fragment URLs,
-   // https://en.wikipedia.org/wiki/URI_fragment. Some tests were performed on
-   // Safari, Chrome and Firefox browsers to confirm that all support text fragments
-   // though Firefox is by far the most adaptable.
+   // To address this and improve the user experience in other ways, we override Pagefind's processResult() method to produce text fragment URLs, https://en.wikipedia.org/wiki/URI_fragment.
+   // Some tests were performed on Safari, Chrome and Firefox browsers to confirm that all support text fragments though Firefox is by far the most adaptable.
    //
-   // These URLs have the form...
+   // These URLs have the form https://somepage.htm#:~:text=matching%20initial%20text,matching%20end%20text
    //
-   //   https://somepage.htm#:~:text=matching%20initial%20text,matching%20end%20text
+   // When they work, text fragment URLs are perfect for this purpose because they link directly to body text where the search string was matched.
+   // In addition, they automatically highlight the matching text in the paage.
+   // But, in order to work correctly, the text fragment URL must be a) properly URL encoded and b) match the rendered HTML in the body text in the page VERBATIM.
    //
-   // When they work, text fragment URLs are perfect for this purpose because they
-   // link directly to body text where the search string was matched. In addition,
-   // they automatically highlight the matching text in the paage. But, in order
-   // to work correctly, the text fragment URL must be a) properly encoded and 
-   // b) match the rendered HTML in the body text in the page VERBATIM.
+   // Verbatim matching can be defeated by various html-isms such as line breaks, paragraph breaks, auto-numbering, &Xxx;-chars, tabbed or collapsible sections etc. in the rendered HTML.
    //
-   // Verbatim matching can be defeated by line breaks, paragraph breaks, auto-
-   // numbering, &Xxx;-chars, tabbed or collapsible sections etc. in the
-   // rendered HTML.
+   // The JavaScript logic below takes the `plain_excerpt` member of the `result` object that Pagefind delivers to processResult and attempts to find the first several words and last several words that do not cross a punctuation or non-ascii boundary and uses these, after proper encoding, to produce the :~:text=first%20words,last%20words URL fragment.
    //
-   // The JavaScript logic below takes the `plain_excerpt` member of the `result`
-   // object that Pagefind delivers to processResult and attempts to find the first
-   // several words and last several words that do not cross a punctuation
-   // or non-ascii boundary and uses these, after proper encoding, to produce the...
+   // If it cannot find a suitably long (4) sequence of words at the beginning and end of `plain_excerpt` it falls back to default behavior of using section headings.
    //
-   //  :~:text=first%20words,last%20words
+   // As a consequence of how we do business, the URLs that are emitted for search results here contain BOTH the section heading id followed by the text fragment if one is produced.
+   // Although we should really use just one or the other and not both together, this seems to work fine in all browsers and removes the need find and remove from the original URL Pagefind created just the id portion.
    //
-   // URL fragment. If it cannot find a suitably long (4) sequence of words at
-   // the beginning and end of `plain_excerpt` it falls back to default behavior of
-   // using section headings.
+   // One final thing we do with the last bit of JavaScript code here is override ReadTheDoc's default search box behavior such that text entered there gets instead re-routed to Pagefind search.
+   // Some logic here combined with more JavaScript in `_static/redirect-rtd-search-to-pagefind.js` achieves this.
    //
-   // As a consequence of how we do business, the URLs that are emitted for search
-   // results here contain BOTH the section heading id followed by the text fragment
-   // if one is produced. Although we should really use just one or the other and not
-   // both together, this seems to work fine in all browsers and removes the need to
-   // parse out of the original URL Pagefind created just the id portion.
-   //
-   // One final thing we do with the last bit of JavaScript code here is override
-   // ReadTheDoc's default search box behavior such that text entered there gets
-   // instead re-routed to Pagefind search.
-   //
-   // ChatGPT assisted immensely with this code.
+   // ChatGPT assisted immensely with this JavaScript code.
    //
 
    function firstLastWordsNoCrossPunctuation(str, n = 4) {
