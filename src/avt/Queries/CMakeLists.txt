@@ -47,7 +47,7 @@ add_subdirectory(Queries)
 
 set(avtquery_ser_DEPENDS visitcommon avtmath avtshapelets visit_vtk)
 
-if(CONDUIT_FOUND)
+if(HAVE_CONDUIT)
     # we will use conduit in queries
     list(APPEND avtquery_ser_DEPENDS conduit)
 endif()
@@ -57,13 +57,6 @@ if(NOT WIN32 AND NOT APPLE)
     find_library(LIBRT rt)
     list(APPEND avtquery_ser_DEPENDS ${LIBRT})
 endif()
-
-if(VISIT_PYTHON_FILTERS)
-    visit_append_list(
-        NAME avtquery_ser_INCLUDES
-        ITEMS $<BUILD_INTERFACE:>${PYTHON_INCLUDE_PATH})
-endif()
-
 
 set(avtquery_par_SOURCES  ${avtquery_ser_SOURCES})
 set(avtquery_par_HEADERS  ${avtquery_ser_HEADERS})
@@ -94,7 +87,7 @@ if(VISIT_PARALLEL)
                  NAME avtquery_par
                  DEPENDS_ON avtpythonfilters_par)
         endif()
-        if(CONDUIT_FOUND)
+        if(HAVE_CONDUIT)
             visit_patch_target(
                 NAME avtquery_par
                 DEPENDS_ON conduit_mpi)

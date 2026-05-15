@@ -7,6 +7,12 @@
 #   Removed ADD_PARALLEL_FORTRAN_EXECUTABLE target as it was only being used
 #   by sim examples. Functionality replicated there.
 #
+#   Kathleen Biagas, Thu Nov 6, 2025
+#   Removed most VISIT_PARALLEL flags.  Use MPI_COMPILER or
+#   MPI_HOME and MPI_DIR to find specific versions of MPI.
+#   The MPI::MPI_C target created by the find_package call will be used
+#   to link with MPI.  It also contains the INCLUDES necessary for the build.
+
 
 set(VISIT_PARALLEL_DEFINES "PARALLEL;MPICH_IGNORE_CXX_SEEK;MPICH_SKIP_MPICXX;OMPI_SKIP_MPICXX;MPI_NO_CPPBIND" CACHE STRING "Parallel compiler defines")
 
@@ -17,7 +23,7 @@ if(VISIT_MPI_COMPILER)
 else(VISIT_MPI_HOME)
     set(MPI_HOME ${VISIT_MPI_HOME})
     set(MPI_DIR ${VISIT_MPI_DIR})
-    set(errmsg "Using VISIT_MPI_HOME: ${VISIT_MPI_HOM}")
+    set(errmsg "Using VISIT_MPI_HOME: ${VISIT_MPI_HOME}")
 endif()
 
 # do we still need this?

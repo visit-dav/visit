@@ -54,16 +54,8 @@ function bv_xdmf_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR \${VISITHOME}/Xdmf/$XDMF_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
 
-        xml64=""
-        xmlsep="-"
-        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
-            xml64="64"
-        fi
-        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
-            xmlsep="."
-        fi
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP \${VISIT_VTK_DIR}/lib${xml64} vtklibxml2${xmlsep}\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} HDF5_LIB TYPE STRING)"\
+            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP VTK::libxml2 HDF5_LIB TYPE STRING)"\
                 >> $HOSTCONF
     fi
 }

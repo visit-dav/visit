@@ -26,36 +26,17 @@
 #   Kathleen Biagas, Tue May 28 09:08:56 PDT 2019
 #   Since we require zlib from build_visit, no longer need HAVE_ZLIB_H
 #
-#   Kathleen Biagas, Mon Mar 9, 2026
-#   Use find_package.
+#   Kathleen Biagas, Thu Dec 11, 2025
+#   Use visit_import_third_party.
 #
 #****************************************************************************/
 
 # Use the ZLIB_DIR hint from the config-site .cmake file
 
-if(VISIT_ZLIB_DIR)
-    set(ZLIB_ROOT ${VISIT_ZLIB_DIR})
-endif()
+visit_import_third_party(ZLIB LIBNAMES z zlib zlib1 ADD_GLOBAL_INCLUDE ADD_GLOBAL_LIBRARY)
 
-find_package(ZLIB)
-
-if(ZLIB_FOUND)
-    set(HAVE_LIBZ true CACHE BOOL "Have lib z")
-
-    if(TARGET ZLIB::ZLIB)
-        # for VisIt libraries' needs
-        set(ZLIB_LIB ZLIB::ZLIB)
-
-        # Install 
-        get_target_property(zlib_loc ZLIB::ZLIB IMPORTED_LOCATION_RELEASE)
-        get_target_property(zlib_inc ZLIB::ZLIB INTERFACE_INCLUDE_DIRECTORIES)
-        THIRD_PARTY_INSTALL_LIBRARY(${zlib_loc})
-        THIRD_PARTY_INSTALL_INCLUDE(zlib ${zlib_inc})
-
-        # for plugin vs install:
-        cmake_path(GET zlib_loc FILENAME ZLIB_IMPORT_LIB)
-    endif()
+if(TARGET zlib)
+    set(ZLIB_LIB zlib)
 else()
-    message(FATAL_ERROR "VisIt requires lib z and it could not be found.")
+    message(FATAL_ERROR "VisIt requires lib z and it could not be found. Please set ZLIB_DIR")
 endif()
-

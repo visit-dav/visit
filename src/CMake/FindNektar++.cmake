@@ -75,6 +75,6 @@ if(DEFINED VISIT_NEKTAR++_DIR AND EXISTS ${VISIT_NEKTAR++_DIR})
       set(HAVE_NEKTAR_PP true CACHE BOOL "Have Nektar++ lib")
   else()
       unset(NEKTAR++_LIBRARIES)
-  endif(NEKTAR++_FOUND)
+  endif()
 endif()
 

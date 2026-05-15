@@ -20,6 +20,9 @@
 #  For PYTHON_ADD_PIP_SETUP change DEST_DIR from lib/site-packages to
 #  simply site-packages. The lib part handled in PYTHON_ADD_PIP_SETUP.
 #
+#  Kathleen Biagas, Thu Nov 6, 2025
+#  Use MPI::MPI_C target for linking with mpi.
+#
 #****************************************************************************
 
 set(MPICOM_PY_SOURCES py_src/__init__.py
@@ -41,8 +44,7 @@ if(VISIT_PARALLEL)
 
     target_include_directories(mpicom PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
-        $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/visitpy/common>
-        $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>)
+        $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/visitpy/common>)
 
     if(UNIX)
         set_target_properties(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")

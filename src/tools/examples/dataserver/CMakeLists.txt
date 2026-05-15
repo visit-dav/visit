@@ -28,7 +28,6 @@ visit_add_executable(
                 VisItDataServer.cpp
                 ${STATIC_SOURCES}
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
-                ${PYTHON_INCLUDE_PATH}
     DEPENDS_ON  ${cli_IOperator}
                 ${cli_SOperator}
                 ${cli_IPlot}

@@ -24,6 +24,9 @@
 visit_import_third_party(GDAL LIBNAMES gdal gdal_i)
 
 if(WIN32)
+    # dll name doesn't match import library name, so it must
+    # be handled separately from the visit_import_third_party call.
+
     if(EXISTS ${VISIT_GDAL_DIR}/lib/gdal224.dll)
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy
             ${VISIT_GDAL_DIR}/lib/gdal224.dll

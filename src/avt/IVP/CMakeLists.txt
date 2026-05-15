@@ -103,7 +103,7 @@ set(avtivp_DEPENDS
     VTK::FiltersCore
     nek5000_interp)
 
-if(NEKTAR++_FOUND)
+if(HAVE_NEKTAR_PP)
     list(APPEND avtivp_SOURCES
         avtIVPNektar++Field.C
         avtIVPNektar++TimeVaryingField.C)

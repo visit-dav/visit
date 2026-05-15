@@ -488,7 +488,6 @@ visit_add_library(
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/visitpy>
                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/visitpy/common>
                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/visitpy/visitpy>
-               $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>
     DEPENDS_ON avtdbatts
                viewerrpc
                visitcommon
@@ -510,7 +509,7 @@ set(cli_DEPENDS
     avtdbatts
     visitcommon
     visitpy
-    ${PYTHON_LIBRARIES}
+    ${PYTHON_LIBRARY}
     Threads::Threads)
 
 if(NOT WIN32)
@@ -530,7 +529,6 @@ visit_add_executable(
                 ${CLI_SOURCES}
                 ${VISIT_CLI_RESOURCE_FILE}
     HEADERS     ${COMMON_HEADERS}
-    INCLUDES    ${PYTHON_INCLUDE_PATH}
     DEPENDS_ON  ${cli_DEPENDS})
 
 if(NOT WIN32)

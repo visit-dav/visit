@@ -261,31 +261,12 @@ class CMakeGeneratorPlugin : public Plugin
                 QString tmp(libs[i]);
 
                 // convert to VTK:: form for VTK-9
-                if (using_dev)
-                {
-                    QString tmp2(libs[i]);
-                    if (tmp2 == "vtksys")
-                        tmp2.prepend("VTK::");
-                    else
-                        tmp2.replace(0,3,"VTK::");
-                    libs[i] = tmp2;
-                }
+                QString tmp2(libs[i]);
+                if (tmp2 == "vtksys")
+                    tmp2.prepend("VTK::");
                 else
-                {
-                    tmp.append(vtkversion);
-                    libs[i] = tmp;
-                }
-            }
-            else if(libs[i].startsWith("VTK::"))
-            {
-                if (!using_dev)
-                {
-                    // for plugin-vs-install, need to
-                    // replace 'VTK::' with 'vtk' and append the version
-                    QString tmp(libs[i].replace(QString("VTK::"), QString("vtk")));
-                    tmp.append(vtkversion);
-                    libs[i] = tmp;
-                }
+                    tmp2.replace(0,3,"VTK::");
+                libs[i] = tmp2;
             }
         }
     }
@@ -632,7 +613,10 @@ class CMakeGeneratorPlugin : public Plugin
         // engine libs
         WriteCMake_PluginLibs(out, "ESER", elibsSer, hasELibs);
         WriteCMake_PluginLibs(out, "EPAR", elibsPar, hasELibs);
-
+        if(!using_dev)
+        {
+            out << "\n    PUBLIC_BUILD";
+        }
         out << ")" << Endl;
 
         WriteCMake_AdditionalCode(out, false);
@@ -682,6 +666,10 @@ class CMakeGeneratorPlugin : public Plugin
         // engine libs
         WriteCMake_PluginLibs(out, "ESER", elibsSer, hasELibs);
         WriteCMake_PluginLibs(out, "EPAR", elibsPar, hasELibs);
+        if(!using_dev)
+        {
+            out << "\n    PUBLIC_BUILD";
+        }
 
         out << ")" << Endl;
 
@@ -737,22 +725,28 @@ class CMakeGeneratorPlugin : public Plugin
         // include something in the generated output.
         if(!using_dev)
         {
-            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << Endl;
+            out << "cmake_minimum_required(VERSION 3.24 FATAL_ERROR)\n" << Endl;
+            out << "project(" << name << "_" << type << "_plugin)\n" << Endl;
+
+            out << "# if you want to use a particular instance of MPI" << Endl;
+            out << "# uncomment one of the following and fill in with" << Endl;
+            out << "# a path proper for your MPI installation." << Endl;
+            out << "# set(VISIT_MPI_COMPILER /path/to/mpicc)" << Endl;
+            out << "# set(VISIT_MPI_HOME /path/to/mpi_root_dir)\n" << Endl;
+
             if(installpublic)
             {
-                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub
+                out << "set(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub
                     << "\")" << Endl;
             }
             else // installprivate or default
             {
-                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpri
+                out << "set(VISIT_PLUGIN_DIR \"" << qvisitplugdirpri
                     << "\")" << Endl;
             }
 
-            out << "INCLUDE(\"" << qvisithome
-                << "/include/PluginVsInstall.cmake\")" << Endl;
-            out << "INCLUDE(\"" << qvisithome
-                << "/include/VisItLibraryDependencies.cmake\")" << Endl;
+            out << "include(\"" << qvisithome
+                << "/cmake/visitConfig.cmake\")" << Endl;
             out << Endl;
         }
         else
@@ -761,12 +755,12 @@ class CMakeGeneratorPlugin : public Plugin
             // or private.
             if(installpublic)
             {
-               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpub << ")" << Endl;
+               out << "set(VISIT_PLUGIN_DIR " << qvisitplugdirpub << ")" << Endl;
             }
 
             if(installprivate)
             {
-               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpri << ")" << Endl;
+               out << "set(VISIT_PLUGIN_DIR " << qvisitplugdirpri << ")" << Endl;
             }
         }
 

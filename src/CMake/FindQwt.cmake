@@ -60,17 +60,6 @@ if(QWT_FOUND)
         LIBRARIES   $<BUILD_INTERFACE:${_qwt_LIBRARY}>
         EXPORTABLE  ON)
 
-
-    # CMake doesn't prepend ${_IMPORT_PREFIX} in the generated export
-    # set for INTERFACE libs, so "${IMPORT_PREFIX}" needs to be
-    # explicitly added to the INSTALL_INTERFACE, and escaped so it
-    # doesn't get evaluated.
-    #
-    # Also, it seems if the INSTALL_INTERFACE is used in the
-    # blt_import_library,  the ${_IMPORT_PREFIX} is stripped, even
-    # if it is escaped, so it appears to be getting evaluated.
-    # That's why it is added separately here instead of being added
-    # to the LIBRARIES above.
     target_link_libraries(qwt INTERFACE
         $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${lib_qwt}>)
 
@@ -83,12 +72,7 @@ if(QWT_FOUND)
     endif()
     if(WIN32)
         # need to copy the dll to the build dir
-        cmake_path(REPLACE_EXTENSION _qwt_LIBRARY dll OUTPUT_VARIABLE _qwt_DLL)
-        if(NOT EXISTS ${_qwt_DLL})
-            get_filename_component(_qwt_LIBRRARY_DIR _qwt_LIBRARY PATH)
-            get_filename_component(dll_qwt ${_qwt_DLL} NAME)
-            cmake_path(SET _qwt_DLL NORMALIZE ${_qwt_LIBRARY_DIR}/../bin/${dll_qwt})
-        endif()
+        visit_get_dll_from_library(${_qwt_LIBRARY} _qwt_DLL)
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                         ${_qwt_DLL}
                         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
@@ -97,3 +81,5 @@ if(QWT_FOUND)
     set(HAVE_QWT TRUE CACHE BOOL "Have Qwt library")
 endif()
 
+unset(_qwt_INCLUDE_DIR CACHE)
+unset(_qwt_LIBRARY CACHE)

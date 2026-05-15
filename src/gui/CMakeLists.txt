@@ -219,7 +219,7 @@ set(GUILIB_SOURCES
     SimCommandSlots.C
     SplashScreen.C
     WidgetDataNode.C
-    $<$<BOOL:${QWT_FOUND}>:QvisStripChart.C>
+    $<$<BOOL:${HAVE_QWT}>:QvisStripChart.C>
     $<$<BOOL:${HAVE_ANARI}>:anari/AnariParameterInfo.C>
     $<$<BOOL:${HAVE_ANARI}>:anari/AnariRenderingWidget.C>)
 
@@ -387,7 +387,7 @@ set(GUILIB_HEADERS
     StatusSubject.h
     WidgetDataNode.h
     gui_exports.h
-    $<$<BOOL:${QWT_FOUND}>:QvisStripChart.h>
+    $<$<BOOL:${HAVE_QWT}>:QvisStripChart.h>
     $<$<BOOL:${HAVE_ANARI}>:anari/AnariParameterInfo.h>
     $<$<BOOL:${HAVE_ANARI}>:anari/AnariRenderingWidget.h>)
 
@@ -407,7 +407,7 @@ set(GUI_DEPENDS
     ${QT_QTXML_LIBRARY} 
     ${QT_QTCORE_LIBRARY}
     ${QT_QTPRINTSUPPORT_LIBRARY}
-    $<$<BOOL:${QWT_FOUND}>:qwt>
+    $<$<BOOL:${HAVE_QWT}>:qwt>
     $<$<BOOL:${HAVE_ANARI}>:anari::anari>)
 
 
@@ -444,7 +444,7 @@ if(WIN32)
     set_target_properties(gui PROPERTIES
         OUTPUT_NAME guilib
         LINK_FLAGS "/NODEFAULTLIB:libcmt")
-    if(QWT_FOUND)
+    if(HAVE_QWT)
         set_target_properties(gui PROPERTIES COMPILE_DEFINITIONS QWT_DLL)
     endif()
 else()

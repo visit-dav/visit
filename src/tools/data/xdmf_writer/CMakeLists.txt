@@ -17,9 +17,9 @@ visit_add_library(
     SOURCES     xdmf_writer.c
     HEADERS     xdmf_writer.h
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS_ON  hdf5
+    DEPENDS_ON  ${HDF5_LIB}
                 m
-    SKIP_INSTALL)  
+    SKIP_INSTALL)
 
 function(add_serial_example tname)
 
@@ -30,7 +30,7 @@ function(add_serial_example tname)
         INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
         DEPENDS_ON  xdmf_writer_ser
                     m
-        SKIP_INSTALL)  
+        SKIP_INSTALL)
 endfunction()
 
 add_serial_example(xdmf_curv3d)
@@ -46,9 +46,9 @@ IF(VISIT_PARALLEL)
         SOURCES     xdmf_writer.c
         HEADERS     xdmf_writer.h
         INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS_ON  hdf5
+        DEPENDS_ON  ${HDF5_LIB}
                     m
-        SKIP_INSTALL)  
+        SKIP_INSTALL)
 
     function(add_parallel_example tname)
 
@@ -59,7 +59,7 @@ IF(VISIT_PARALLEL)
             INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
             DEPENDS_ON  xdmf_writer_par
                         m
-            SKIP_INSTALL)  
+            SKIP_INSTALL)
     endfunction()
 
     add_parallel_example(xdmf_mpi_example)

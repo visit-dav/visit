@@ -34,8 +34,7 @@ set(avtpythonfilters_HEADERS
 set(avtpythonfilters_INCLUDES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/PythonFilters>
-    $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/visitpy/common>
-    $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>)
+    $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/visitpy/common>)
 
 set(avtpythonfilters_DEPENDS
     visitcommon
@@ -51,10 +50,6 @@ visit_add_library(
     DEPENDS_ON ${avtpythonfilters_DEPENDS}
                avtpipeline_ser)
 
-visit_patch_target(
-    NAME    avtpythonfilters_ser
-    LINKDIR ${PYTHON_DIR})
-
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
     visit_add_parallel_library(
@@ -64,8 +59,5 @@ if(VISIT_PARALLEL)
         INCLUDES   ${avtpythonfilters_INCLUDES}
         DEPENDS_ON ${avtpythonfilters_DEPENDS}
                    avtpipeline_par)
-    visit_patch_target(
-        NAME    avtpythonfilters_par
-        LINKDIR ${PYTHON_DIR})
 endif()
 

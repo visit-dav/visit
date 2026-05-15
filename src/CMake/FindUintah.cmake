@@ -34,8 +34,8 @@ if(_interfaces_lib)
         UINTAH_LIBRARY_DIR=\"${idir}\"
         UINTAH_INTERFACES_LIB=\"${iname}\"
         UINTAH_VERSION_HEX=${UINTAH_VERSION_HEX})
-    unset(_interfaces_lib)
 endif()
+unset(_interfaces_lib CACHE)
 
 visit_import_third_party(UINTAH
     INCDIR  ${uintah_INCDIR}

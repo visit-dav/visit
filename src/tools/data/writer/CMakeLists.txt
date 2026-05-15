@@ -24,7 +24,6 @@ set_target_properties(visit_writer PROPERTIES PREFIX "")
 
 target_include_directories(visit_writer PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PYTHON_INCLUDE_PATH}
     # for python 2 + 3 helper header
     ${VISIT_INCLUDE_DIR}/visitpy/common)
 

@@ -58,7 +58,7 @@ if(VISIT_FORTRAN)
     ADD_EXAMPLE(fbov fbov.f)
 endif()
 
-if(SILO_FOUND)
+if(HAVE_SILO)
     ##
     ## Silo examples
     ##

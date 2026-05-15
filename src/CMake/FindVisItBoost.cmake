@@ -11,7 +11,7 @@
 
 # Uses the BOOST_DIR hint from the config-site .cmake file
 
-if(NEKTAR++_FOUND)
+if(HAVE_NEKTAR_PP)
     visit_import_third_party(BOOST LIBS
         boost_chrono
         boost_iostreams

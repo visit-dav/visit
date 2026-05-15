@@ -23,66 +23,10 @@
 # Uses the JPEG_DIR hint from the config-site .cmake file
 
 if(JPEG_DIR)
+    visit_import_third_party(JPEG LIBNAMES jpeg libjpeg ADD_GLOBAL_INCLUDE ADD_GLOBAL_LIBRARY)
 
-    find_path(_jpeg_INCLUDE_DIR jpeglib.h
-              PATHS ${JPEG_DIR}
-              PATH_SUFFIXES include
-              NO_DEFAULT_PATH)
-
-    find_library(_jpeg_LIBRARY
-             NAMES jpeg libjpeg
-             PATHS ${JPEG_DIR}
-             PATH_SUFFIXES lib lib64
-             NO_DEFAULT_PATH)
-
-    find_package_handle_standard_args(JPEG DEFAULT_MSG
-        _jpeg_INCLUDE_DIR
-        _jpeg_LIBRARY)
-
-    if(JPEG_FOUND)
-        ####
-        # VTK needs this var set in order to find our version of jpeg
-        #set(JPEG_LIBRARY ${_jpeg_LIBRARY})
-        ####
-
-        blt_import_library(
-            NAME        jpeg
-            INCLUDES    $<BUILD_INTERFACE:${_jpeg_INCLUDE_DIR}>
-                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/jpeg>
-            LIBRARIES   $<BUILD_INTERFACE:${_jpeg_LIBRARY}>
-            EXPORTABLE  ON)
-
-       # for now, satisfy vtk interface this way
+    if(TARGET jpeg)
        add_library(JPEG::JPEG ALIAS jpeg)
-
-       # need just the library name for  INSTALL_INTERFACE
-        get_filename_component(libjpeg ${_jpeg_LIBRARY} NAME)
-        target_link_libraries(jpeg INTERFACE
-            $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libjpeg}>)
-
-        # install and export
-        if(VISIT_INSTALL_THIRD_PARTY)
-            visit_install_export_targets(jpeg)
-            THIRD_PARTY_INSTALL_LIBRARY(${_jpeg_LIBRARY})
-            THIRD_PARTY_INSTALL_INCLUDE(jpeg ${_jpeg_INCLUDE_DIR})
-        endif()
-
-        if(WIN32)
-            # need to copy the dll to the build dir
-            cmake_path(SET libjpeg_path ${_jpeg_LIBRARY})
-            cmake_path(REPLACE_EXTENSION libjpeg_path dll OUTPUT_VARIABLE _jpeg_DLL)
-            if(NOT EXISTS ${_jpeg_DLL})
-                cmake_path(GET _jpeg_DLL PARENT_PATH _JPEG_LIBRARY_DIR)
-                cmake_path(GET _jpeg_DLL FILENAME _JPEG_DLL_NAME)
-                cmake_path(SET _jpeg_DLL NORMALIZE ${_JPEG_LIBRARY_DIR}/../bin/${_JPEG_DLL_NAME})
-            endif()
-
-            if(EXISTS ${_jpeg_DLL})
-                execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                                ${_jpeg_DLL}
-                                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-            endif()
-        endif()
     else()
         message(STATUS "Jpeg was requested and it could not be found. Tried JPEG_DIR: ${JPEG_DIR}")
     endif()

@@ -136,16 +136,17 @@ function(BUILD_DATA_TARGET_IMPL target_name do_parallel)
         set(target_SOURCES ${target_name}.C)
     endif()
 
-    if("${do_parallel}" STREQUAL "ON")
+    if(${do_parallel})
         if(VISIT_PARALLEL)
-            set(tname "${target_name}_par")
+            set(tname ${target_name}_par)
             visit_add_parallel_executable(
                 NAME        ${tname}
                 SOURCES     ${target_SOURCES}
                 INCLUDES    ${target_INCLUDE_DIRS}
                 DEFINES     ${target_DEFS}
                 DEPENDS_ON  ${target_LIBS}
-                FOLDER      tools/data/datagen)
+                FOLDER      tools/data/datagen
+               SKIP_INSTALL)
         endif()
     else()
         set(tname ${target_name})
@@ -155,7 +156,19 @@ function(BUILD_DATA_TARGET_IMPL target_name do_parallel)
             INCLUDES    ${target_INCLUDE_DIRS}
             DEFINES     ${target_DEFS}
             DEPENDS_ON  ${target_LIBS}
-            FOLDER      tools/data/datagen)
+            FOLDER      tools/data/datagen
+            SKIP_INSTALL)
+    endif()
+
+    # this does not work fully, I get the silo dll, but not hdf5 dll, which
+    # is a transitive dependency from silo, nor any hdf5 transitive dependencies
+    # I do, however get all the VTK libs needed for degen_meshes
+    if(TARGET ${tname})
+        add_custom_command(TARGET ${tname} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy
+                    -t $<TARGET_FILE_DIR:${tname}>
+                    $<TARGET_RUNTIME_DLLS:${tname}>
+                    COMMAND_EXPAND_LISTS)
     endif()
 
     if(target_LIB_DIRS)
@@ -232,7 +245,7 @@ endforeach()
 #-----------------------------------------------------------------------------
 # If we have HDF5 build all HDF5 Data Gen Target Programs
 #-----------------------------------------------------------------------------
-if(HDF5_FOUND)
+if(HAVE_HDF5)
     set(xdmf3d_SOURCES xdmf.C)
     foreach(HDF5_TARGET unic xdmf3d xdmf2d)
         BUILD_DATA_TARGET(${HDF5_TARGET}
@@ -244,7 +257,7 @@ endif()
 #-----------------------------------------------------------------------------
 # If we have Silo build all Silo & PDB Data Gen Programs
 #-----------------------------------------------------------------------------
-if(SILO_FOUND)
+if(HAVE_SILO)
     #-------------------------------------------------------------------------
     #  Setup {TARGET}_SOURCES for targets with multiple source files.
     #-------------------------------------------------------------------------
@@ -373,7 +386,7 @@ if(USE_VISIT_DIST_DATA_TARBALL)
             WORLD_READ WORLD_EXECUTE)
 
 else()
-    if(SILO_FOUND)
+    if(HAVE_SILO)
         if(WIN32)
             set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
         else()
@@ -441,6 +454,7 @@ else()
             ${correlationtest_output}
             ${multi_test_output})
         add_custom_target(create_data_examples ALL DEPENDS ${all_example_output})
+
         if(WIN32)
             # Silo's dependent dlls are installed alongside it, so just
             # copy the dll's to the necessary directory

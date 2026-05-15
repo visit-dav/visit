@@ -70,6 +70,25 @@ set(VISIT_TP_PERMS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                    WORLD_READ WORLD_EXECUTE)
 
 # ==============================================
+# Finds matching DLL for given library.
+# Works only if DLL name matches library name.
+# ==============================================
+
+function(visit_get_dll_from_library lib dll)
+    cmake_path(REPLACE_EXTENSION lib LAST_ONLY dll OUTPUT_VARIABLE _DLL)
+    if(NOT EXISTS ${_DLL})
+        cmake_path(GET _DLL PARENT_PATH _LIBRARY_DIR)
+        cmake_path(GET _DLL FILENAME _DLL_NAME)
+        cmake_path(SET _DLL NORMALIZE ${_LIBRARY_DIR}/../bin/${_DLL_NAME})
+    endif()
+
+    if(EXISTS ${_DLL})
+        set(${dll} ${_DLL} PARENT_SCOPE)
+    endif()
+endfunction()
+
+
+# ==============================================
 # Installs a library and any of its needed symlink variants.
 # ==============================================
 
@@ -80,15 +99,7 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
         endif()
 
-        cmake_path(SET tmpLIBFILE ${LIBFILE})
-        cmake_path(GET tmpLIBFILE EXTENSION LAST_ONLY LIBEXT)
-        file(REAL_PATH ${tmpLIBFILE} LIBREALPATH)
-        cmake_path(GET LIBREALPATH PARENT_PATH curPATH)
-        cmake_path(GET LIBREALPATH FILENAME realNAME)
-        string(REPLACE ${LIBEXT} "" curNAMEWE ${realNAME})
-        set(curNAME "${curPATH}/${curNAMEWE}")
-        set(dllNAME "${curNAME}.dll")
-        set(libNAME "${curNAME}.lib")
+        visit_get_dll_from_library(${LIBFILE} dllNAME)
         if(EXISTS ${dllNAME})
             install(FILES ${dllNAME}
                 DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
@@ -99,25 +110,11 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                             ${dllNAME}
                             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-        else() # try 'bin' directory
-            cmake_path(SET dll_path NORMALIZE "${curPATH}/../bin/${curNAMEWE}")
-            set(newdllNAME "${dll_path}.dll")
-            if(EXISTS ${newdllNAME})
-                install(FILES ${newdllNAME}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                    PERMISSIONS ${VISIT_TP_PERMS}
-                    )
-                # On Windows, we also need to copy the file to the
-                # binary dir so our out of source builds can run.
-                execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                                ${newdllNAME}
-                                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-            endif()
         endif()
 
-        if(VISIT_INSTALL_THIRD_PARTY AND EXISTS ${libNAME})
+        if(VISIT_INSTALL_THIRD_PARTY AND EXISTS ${LIBFILE})
             # also install the import libraries
-            INSTALL(FILES ${libNAME}
+            INSTALL(FILES ${LIBFILE}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS ${VISIT_TP_PERMS}
                 )
@@ -236,7 +233,11 @@ endfunction()
   pkg is the name used to specify the x_DIR (generally upper case name of pkg)
 
   keyword arguments:
-      HEADER_ONLY optional specifies HEADER_ONLY package
+      HEADER_ONLY (optional) specifies HEADER_ONLY package
+      ADD_GLOBAL_INCLUDE (optional) specifies that PKG_INCLUDE_DIR cache var should be created.  May be needed for certain TP libraries that depend on PKG.
+
+      ADD_GLOBAL_LIBRARY (optional) specifies that PKG_LIBRARY cache var should be created.  May be needed for certain TP libraries that depend on PKG.
+
       LIBS (required if HEADER_ONLY not specified AND LIBNAMES not specified)
              is the list of library names for this package
       LIBNAMES List of possible names for a library
@@ -269,7 +270,7 @@ function(visit_import_third_party pkg)
         return()
     endif()
 
-    cmake_parse_arguments(PARSE_ARGV 1 vitp "HEADER_ONLY" "LIBDIR;INCDIR" "LIBS;LIBNAMES;DEFINES;WIN32DEFINES")
+    cmake_parse_arguments(PARSE_ARGV 1 vitp "HEADER_ONLY;ADD_GLOBAL_INCLUDE;ADD_GLOBAL_LIBRARY" "LIBDIR;INCDIR" "LIBS;LIBNAMES;DEFINES;WIN32DEFINES")
 
     if(NOT ${vitp_HEADER_ONLY} AND
        NOT DEFINED vitp_LIBNAMES AND
@@ -342,9 +343,19 @@ function(visit_import_third_party pkg)
 
         if(_${pkg}_LIBRARY)
             list(APPEND tplibs _${pkg}_LIBRARY)
+
+            # prepare for setting IMPORTED_IMPLIB and IMPORTED_LOCATION)
+            set(_${LNAME}_IMPLIB ${_${pkg}_LIBRARY})
+            if(WIN32)
+                visit_get_dll_from_library(${_${pkg}_LIBRARY} _${pkg}_DLL)
+                if(EXISTS ${_${pkg}_DLL})
+                   set(_${LNAME}_LOCATION ${_${pkg}_DLL})
+                endif()
+            endif()
         endif()
     else()
         set(tplibs)
+        list(LENGTH vitp_LIBS numlibs)
         foreach (X ${vitp_LIBS})
             find_library(_${pkg}_${X}
                          NAMES ${X}
@@ -353,7 +364,14 @@ function(visit_import_third_party pkg)
                          NO_DEFAULT_PATH)
             if(_${pkg}_${X})
                 list(APPEND tplibs _${pkg}_${X})
-                message(STATUS "  Found library ${X} in one of ${libdirs}")
+                message(STATUS "  Found library ${X} for package ${pkg}: ${_${pkg}_${X}}")
+                set(_${LNAME}_IMPLIB ${_${pkg}_${X}})
+                if(WIN32 AND (numlibs EQUAL 1))
+                    visit_get_dll_from_library(${_${pkg}_${X}} _${pkg}_DLL)
+                    if(EXISTS ${_${pkg}_DLL})
+                       set(_${LNAME}_LOCATION ${_${pkg}_DLL})
+                    endif()
+                endif()
             else()
                 message(FATAL_ERROR "Library ${X} not found in one of ${libdirs}")
                 if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
@@ -373,6 +391,9 @@ function(visit_import_third_party pkg)
     if(${pkg}_FOUND)
         set(HAVE_${pkg} TRUE CACHE BOOL "Have ${LNAME} libraries")
 
+        if(vitp_ADD_GLOBAL_INCLUDE)
+            set(${pkg}_INCLUDE_DIR ${_${pkg}_INCLUDE_DIR} CACHE PATH "")
+        endif()
         # create a list of libs using BUILD_INTERFACE
         set(buildlibs)
         foreach(lib ${tplibs})
@@ -386,6 +407,27 @@ function(visit_import_third_party pkg)
                         $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/${LNAME}>
             LIBRARIES   ${buildlibs}
             EXPORTABLE  ON)
+
+        # if this is a single-lib situation, then set IMPORTED_LOCATION
+        # and IMPORTED_IMPLIB  properties
+        if(_${LNAME}_IMPLIB)
+            if(WIN32)
+                set_target_properties(${LNAME} PROPERTIES
+                    IMPORTED_IMPLIB ${_${LNAME}_IMPLIB})
+            else()
+                set_target_properties(${LNAME} PROPERTIES
+                    IMPORTED_LOCATION ${_${LNAME}_IMPLIB})
+            endif()
+            if(vitp_ADD_GLOBAL_LIBRARY)
+                set(${pkg}_LIBRARY ${_${LNAME}_IMPLIB} CACHE FILEPATH "")
+            endif()
+        endif()
+        if(WIN32)
+            if(_${LNAME}_LOCATION)
+                set_target_properties(${LNAME} PROPERTIES
+                    IMPORTED_LOCATION ${_${LNAME}_LOCATION})
+            endif()
+        endif()
 
         if(DEFINED vitp_DEFINES)
             target_compile_definitions(${LNAME} INTERFACE ${vitp_DEFINES})
@@ -434,13 +476,13 @@ function(visit_import_third_party pkg)
                 # that were built by build_visit and are installed alongside
                 # VisIt, not for system libraries or ThirdParty libraries
                 # that aren't in the general VisIt-specified location.
-                # 
+                #
                 # Need a mechanism to bypass the below install commands
                 # but still be able to find all necessary dependencies
                 # during an 'import visit' or building against an installed
                 # version of VisIt
 
-               
+
                 # Install libs and headers
                 foreach(lib ${tplibs})
                     cmake_path(SET tmplib ${${lib}})
@@ -465,6 +507,9 @@ function(visit_import_third_party pkg)
             endif()
         endif()
         set(${pkg}_FOUND true CACHE BOOL "${pkg} library found" FORCE)
+        foreach(l ${tplibs})
+           unset(${l} CACHE)
+        endforeach()
     endif()
 endfunction()
 
@@ -588,3 +633,4 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 endif()
 
 unset(VISIT_TP_PERMS)
+

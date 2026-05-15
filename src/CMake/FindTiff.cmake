@@ -12,8 +12,8 @@
 # Uses the TIFF_DIR hint from the config-site .cmake file
 
 if(WIN32 AND VISIT_TIFF_DIR)
-    visit_import_third_party(TIFF LIBS tiff)
-    # for now, satisfy the vtk interface this way
-    add_library(TIFF::TIFF ALIAS tiff)
+    set(TIFF_DIR ${VISIT_TIFF_DIR})
+    visit_import_third_party(TIFF LIBS tiff ADD_GLOBAL_INCLUDE ADD_GLOBAL_LIBRARY)
+    add_library(TIFF::Tiff ALIAS tiff)
 endif()
 

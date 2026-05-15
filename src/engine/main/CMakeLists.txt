@@ -110,7 +110,7 @@ set(LIBENGINE_DEPENDS
     enginerpc
     avtview)
 
-if(CONDUIT_FOUND AND MFEM_FOUND)
+if(HAVE_CONDUIT AND HAVE_MFEM)
     list(APPEND LIBENGINE_DEPENDS mfem avtblueprint)
 endif()
 
