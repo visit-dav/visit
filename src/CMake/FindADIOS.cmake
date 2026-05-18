@@ -20,10 +20,10 @@
 
 # Uses the ADIOS_DIR hint from the config-site .cmake file
 
+visit_import_third_party(ADIOS LIBS adiosread_nompi)
 
 if(VISIT_PARALLEL)
+    set(ADIOS_MPI_DIR ${VISIT_ADIOS_DIR})
     visit_import_third_party(ADIOS_MPI LIBS adiosread)
-else()
-    visit_import_third_party(ADIOS LIBS adiosread_nompi)
 endif()
 
