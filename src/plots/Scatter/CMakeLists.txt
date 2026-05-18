@@ -5,3 +5,4 @@ visit_add_plot_plugin(
     GSRC       QvisScatterWidget.C
                QvisScatterPlotWizard.C
                QvisScatterPlotWizardPage.C)
+

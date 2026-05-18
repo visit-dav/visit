@@ -218,7 +218,6 @@ endmacro()
 #
 #    SOURCES      [source1 [source2 ...]]    OPTIONAL
 #    HEADERS      [header1 [header2 ...]]    OPTIONAL
-#    LINKDIR                                 OPTIONAL
 #
 # pass-through to blt_patch_target:
 #
@@ -232,7 +231,7 @@ macro(visit_patch_target)
     # need to parse everything that VisIt recognizes and everything that
     # BLT recognizes, otherwise there ends up being issues.
     set(singleValueArgs NAME)
-    set(multiValueArgs SOURCES HEADERS LINKDIR INCLUDES DEFINES DEPENDS_ON)
+    set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON)
     # parse the arguments
     cmake_parse_arguments(vpt "" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -244,9 +243,6 @@ macro(visit_patch_target)
     endif()
     if (vpt_SOURCES OR vpt_HEADERS)
         target_sources(${vpt_NAME} PRIVATE ${vpt_SOURCES} ${vpt_HEADERS})
-    endif()
-    if (vpt_LINKDIR)
-        target_link_directories(${vpt_NAME} PRIVATE ${vpt_LINKDIR})
     endif()
 
     # pass along only the args not used above

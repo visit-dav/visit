@@ -8,3 +8,4 @@ visit_add_plot_plugin(
     ESRC       avtCurveMapper.C
                avtPolarToCartesianFilter.C
                vtkCurveMapper.C)
+

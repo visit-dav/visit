@@ -33,6 +33,9 @@ endif()
 find_package(HDF5 CONFIG PATHS ${HDF5_DIR} NO_DEFAULT_PATH)
 
 if(TARGET hdf5-shared)
+    # We use CMake vars for HDF5 pointing to the actual target.
+    # Should ease maintenance if actual library name changes.
+    # For example: hdf5-shared vs hdf5-static.
     set(HDF5_LIB hdf5-shared)
     set(HAVE_HDF5 TRUE CACHE BOOL "Have HDF5 libraries")
     if(WIN32)
@@ -65,7 +68,7 @@ if(TARGET hdf5-shared)
                            ITEMS ${HDF5_LIB} ${HDF5_HL_LIB}
                            SIMPLE_INCLUDE true)
 
-    # need a few extras in the Setup file.
+    # Add the needed CMake vars to the setup file.
     set(fname ${VISIT_BINARY_DIR}/SetupHDF5.cmake)
     file(APPEND ${fname} "\nset(HDF5_LIB ${HDF5_LIB})\n")
     file(APPEND ${fname} "\nset(HDF5_HL_LIB ${HDF5_HL_LIB})\n")

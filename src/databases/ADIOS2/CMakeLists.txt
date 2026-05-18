@@ -21,6 +21,7 @@ visit_add_database_plugin(
     LIBS       VTK::FiltersHybrid
                VTK::vtksys
                adios2)
+
 if(VISIT_PARALLEL)
     target_compile_definitions(EADIOS2Database_par PRIVATE ADIOS2_USE_MPI)
 endif()

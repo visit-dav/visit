@@ -23,7 +23,6 @@ visit_add_database_plugin(
                VsAttribute.C
                VsFile.C
                VsReader.C
-               VsStaggeredField.C
                HighOrderUnstructuredData.C
     ESRC       VsFilter.C
                VsLog.C
@@ -46,7 +45,6 @@ visit_add_database_plugin(
                VsAttribute.C
                VsFile.C
                VsReader.C
-               VsStaggeredField.C
                HighOrderUnstructuredData.C
     LIBS       ${HDF5_LIB})
 

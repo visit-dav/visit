@@ -41,10 +41,12 @@ visit_add_plot_plugin(
                avtfilters_par
                VTK::RenderingVolumeOpenGL2
                ${Volume_ELibs})
+
 if(HAVE_ANARI)
     target_sources(GVolumePlot PUBLIC
         anari/AnariVolumeWidget.C
         anari/AnariVolumeWidget.h)
     target_include_directories(GVolumePlot PUBLIC anari)
 endif()
+
 

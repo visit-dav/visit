@@ -6,6 +6,6 @@
     <FilePatterns>
       .nc
     </FilePatterns>
-    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MFIXCDF.code">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

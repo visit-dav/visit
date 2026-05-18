@@ -6,3 +6,4 @@ visit_add_operator_plugin(
                avtLCSFilterFSLE.C
     ESERLIBS   avtivp_ser
     EPARLIBS   avtivp_par)
+

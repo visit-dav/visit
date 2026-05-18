@@ -10,3 +10,4 @@ visit_add_plot_plugin(
                avtLabelMapper.C
                vtkLabelMapperBase.C
                vtkLabelMapper.C)
+

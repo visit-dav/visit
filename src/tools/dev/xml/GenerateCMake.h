@@ -177,7 +177,7 @@
 //    Filter happens all the time now, not just when not using dev.
 //
 //    Kathleen Biagas, Tue Nov 29, 2022
-//    Remove inclusion of PluginMacros.cmake, now included in each 
+//    Remove inclusion of PluginMacros.cmake, now included in each
 //    plugin category (plot/operators/databases) root CMakeLists.txt.
 //
 //    Kathleen Biagas, Thu Mar 30, 2023
@@ -204,7 +204,9 @@
 //    visit_add_database_plugin.  Thus most of the CMake logic resides
 //    there instead of here, where it can be hard to parse to make changes.
 //
+//    Kathleen Biagas, Fri May 15, 2026
 //    Removed no-longer used code.
+//    Handle conditional CXXFlags.
 //
 // ****************************************************************************
 
@@ -330,47 +332,6 @@ class CMakeGeneratorPlugin : public Plugin
         return s;
     }
 
-    void
-    CMakeWrite_TargetIncludes(QTextStream &out,
-                              const char *indent,
-                              const char *comp,
-                              const char *suffix,
-                              const std::vector<QString> &inc)
-    {
-        QString ptype = type;
-        ptype[0] = type[0].toUpper();
-        out << indent << "TARGET_INCLUDE_DIRECTORIES(" << comp << name;
-        out << ptype << suffix << " PRIVATE";
-        out << IncludesToString(inc, false, true);
-        out << ")" << Endl;
-    }
-
-    void
-    CMakeWrite_TargetLinkDirs(QTextStream &out,
-                              const char *indent,
-                              const char *comp,
-                              const char *suffix,
-                              const std::vector<QString> &ld)
-    {
-        QString ptype = type;
-        ptype[0] = type[0].toUpper();
-        out << indent << "TARGET_LINK_DIRECTORIES(" << comp << name;
-        out << ptype << suffix << " PRIVATE " << ToString(ld)<< ")" << Endl;
-    }
-
-    void
-    CMakeWrite_TargetDefines(QTextStream &out,
-                              const char *indent,
-                              const char *comp,
-                              const char *suffix,
-                              const std::vector<QString> &def)
-    {
-        QString ptype = type;
-        ptype[0] = type[0].toUpper();
-        out << indent << "TARGET_COMPILE_DEFINITIONS(" << comp << name;
-        out << ptype << suffix << " PRIVATE " << ToString(def)<< ")" << Endl;
-    }
-
     bool
     GetCondition(const QString &c, QStringList &cond, QStringList &val) const
     {
@@ -382,32 +343,15 @@ class CMakeGeneratorPlugin : public Plugin
         return retval;
     }
 
-    void WriteCMake_ConditionalIncludes(QTextStream &out)
-    {
-        QStringList conditions, incs;
-        if(GetCondition("Includes:", conditions, incs))
-        {
-           for (int i = 0; i < conditions.size(); ++i)
-           {
-                out << "if(" << conditions[i] << ")" << Endl;
-                out << "    include_directories(";
-                out << incs[i];
-                out << ")" << Endl;
-                out << "endif()" << Endl;
-                out << Endl;
-            }
-        }
-    }
-
-    void WriteCMake_ConditionalDefinitions(QTextStream &out)
+    void WriteCMake_ConditionalCompileFlags(QTextStream &out)
     {
         QStringList conditions, defs;
-        if(GetCondition("Definitions:", conditions, defs))
+        if(GetCondition("CXXFlags:", conditions, defs))
         {
             for (int i = 0; i < conditions.size(); ++i)
             {
-                out << "if(" << conditions[i] << ")" << Endl;
-                out << "    add_definitions(";
+                out << "\nif(" << conditions[i] << ")" << Endl;
+                out << "    add_compile_options(";
                 out << defs[i];
                 out << ")" << Endl;
                 out << "endif()" << Endl;
@@ -433,7 +377,7 @@ class CMakeGeneratorPlugin : public Plugin
                     }
                     else if (!prefix && !second[i].isEmpty())
                     {
-                        out << second[i] << Endl;
+                        out << "\n" << second[i] << Endl;
                     }
                 }
             }
@@ -577,7 +521,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << "visit_add_plot_plugin(" << Endl;
             out << "    PNAME      " << name;
         }
-        else 
+        else
         {
             out << "visit_add_operator_plugin(" << Endl;
             out << "    ONAME      " << name;
@@ -620,6 +564,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << ")" << Endl;
 
         WriteCMake_AdditionalCode(out, false);
+        out << Endl;
     }
 
     void WriteCMake_DatabasePlugin(QTextStream &out)
@@ -627,6 +572,7 @@ class CMakeGeneratorPlugin : public Plugin
         bool useFortran = false;
 
         WriteCMake_AdditionalCode(out, true);
+        WriteCMake_ConditionalCompileFlags(out);
         bool hasDefines = WriteCMake_PluginConditionalDefinitions(out);
         bool hasIncludes = WriteCMake_PluginConditionalIncludes(out);
         bool hasMLibs  = WriteCMake_PluginConditionalLibs(out, "M");

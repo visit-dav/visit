@@ -4,3 +4,4 @@ visit_add_plot_plugin(
     PNAME      Pseudocolor
     VSRC       avtPseudocolorMapper.C
     ESRC       avtPseudocolorMapper.C)
+

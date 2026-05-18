@@ -5,3 +5,4 @@ visit_add_plot_plugin(
     GSRC       QvisParallelCoordinatesWidget.C
                QvisParallelCoordinatesPlotWizard.C
                QvisParallelCoordinatesPlotWizardPage.C)
+

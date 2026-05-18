@@ -4,3 +4,4 @@ visit_add_plot_plugin(
     PNAME      MultiCurve
     VSRC       avtMultiCurveLabelMapper.C
     ESRC       avtMultiCurveLabelMapper.C)
+

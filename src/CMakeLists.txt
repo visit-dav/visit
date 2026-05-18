@@ -373,14 +373,10 @@ if(NOT WIN32)
 endif()
 
 # Set up placeholders for package vars: XXX_LIBDEP
-foreach(pkg CGNS CONDUIT FMS HDF5 H5PART MFEM NEKTAR++ NETCDF
-            SILO XDMF)
+foreach(pkg CGNS CONDUIT FMS H5PART MFEM NEKTAR++ NETCDF XDMF)
     VISIT_3RDPARTY_LIBDEP(${pkg})
 endforeach()
 
-
-# Set up placeholders for package vars: XXX_INCDEP
-VISIT_3RDPARTY_INCDEP(MFEM)
 
 # Set up placeholders misc pkg vars
 VISIT_3RDPARTY_VAR(OPENGL_LIBRARY "Path to OpenGL lib")

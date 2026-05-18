@@ -76,10 +76,6 @@ function(VISIT_3RDPARTY_LIBDEP pkg)
     VISIT_3RDPARTY_DEP(${pkg}_LIBDEP "${pkg} library dependencies")
 endfunction()
 
-function(VISIT_3RDPARTY_INCDEP pkg)
-    VISIT_3RDPARTY_DEP(${pkg}_INCDEP "${pkg} include dependencies")
-endfunction()
-
 function(VISIT_3RDPARTY_DIR pkg)
     VISIT_3RDPARTY_VAR(${pkg}_DIR "Path containing ${pkg}")
 endfunction()

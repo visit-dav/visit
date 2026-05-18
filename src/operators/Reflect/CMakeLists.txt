@@ -3,3 +3,4 @@
 visit_add_operator_plugin(
     ONAME      Reflect
     GSRC       QvisReflectWidget.C)
+

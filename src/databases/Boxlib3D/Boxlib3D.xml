@@ -11,6 +11,6 @@
       avtBoxlibFileFormat.C
       BoxLibHelper.C
     </Files>
-    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="Boxlib3D.code">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

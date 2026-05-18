@@ -6,3 +6,4 @@ visit_add_plot_plugin(
                vtkVisItMoleculeMapper.C
     ESRC       avtMoleculeMapper.C
                vtkVisItMoleculeMapper.C)
+

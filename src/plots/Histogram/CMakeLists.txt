@@ -6,3 +6,4 @@ visit_add_plot_plugin(
     ESRC       avtHistogramMapper.C
     ESERLIBS   avtexpressions_ser
     EPARLIBS   avtexpressions_par)
+

@@ -6,3 +6,4 @@ visit_add_operator_plugin(
                avtCracksDensityFilter.C
                vtkCracksClipper.C
                vtkCrackWidthFilter.C)
+

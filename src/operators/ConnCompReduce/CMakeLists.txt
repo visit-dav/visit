@@ -2,3 +2,4 @@
 
 visit_add_operator_plugin(
     ONAME      ConnCompReduce)
+
