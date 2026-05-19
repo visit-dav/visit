@@ -75,9 +75,7 @@ There is also the notion of directly injecting CMake logic via `Code: custom`.
 Here's an example used with the Volume plot, to add logic to the top or bottom of the generated CMakeLists.txt via `Prefix` and `Postfix` tags.
 `Prefix` logic will be added ``before`` the `visit_add_xxx_plugin` call.
 `Postfix` logic will be added ``after`` the `visit_add_xxx_plugin` call.
-Here's an example from the Volume plot's .code file:
-
-.. code-block:: cmake
+Here's an example from the Volume plot's .code file::
 
     Target: xml2cmake
     Code: custom
