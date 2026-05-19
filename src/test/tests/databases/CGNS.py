@@ -35,6 +35,9 @@
 #    Use FXAA for anti-aliasing as MSAA doesn't work in the
 #    build configuration that is used for testing.
 #
+#    Kathleen Biagas, Tue Apr 21 12:04:40 PDT 2026
+#    Add 'testTimeVarying' for SIDS-style data.
+#
 # ----------------------------------------------------------------------------
 
 RequiredDatabasePlugin("CGNS")
@@ -375,6 +378,27 @@ def testNFaceElements(datapath):
     DeleteAllPlots()
     CloseDatabase(pjoin(datapath, "spherePolyMesh3D.cgns"))
 
+def testTimeVarying(datapath):
+    TestSection("time varying zone pointer data")
+    OpenDatabase(pjoin(datapath, "multi_zone", "FTD_IBC_3D_VEF_POST1.cgns"))
+    AddPlot("Mesh", "INTERFACES_ELEM")
+    AddPlot("Pseudocolor", "INTERFACES_ELEM/NUMERO")
+    for state in range(TimeSliderGetNStates()):
+        SetTimeSliderState(state)
+        DrawPlots()
+        Test("timevarying_base1_%02d"%state)
+    DeleteAllPlots()
+
+    AddPlot("Mesh", "INTERFACES_SOM")
+    AddPlot("Pseudocolor", "INTERFACES_SOM/NUMERO")
+    for state in range(TimeSliderGetNStates()):
+        SetTimeSliderState(state)
+        DrawPlots()
+        Test("timevarying_base2_%02d"%state)
+    DeleteAllPlots()
+    CloseDatabase(pjoin(datapath, "multi_zone", "FTD_IBC_3D_VEF_POST1.cgns"))
+
+
 def main():
     # Draw antialiased lines
     r = GetRenderingAttributes()
@@ -389,6 +413,7 @@ def main():
     test3(datapath)
     testNGonElements(datapath)
     testNFaceElements(datapath)
+    testTimeVarying(datapath)
 
 main()
 Exit()
