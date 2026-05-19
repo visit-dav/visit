@@ -1,8 +1,8 @@
 #/usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4-cray-gfx942/cmake/3.31.8/linux-x86_64_gcc-13.3/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Mon Mar 16 15:25:19 PDT 2026
-## system: Linux rzadams1017 4.18.0-553.104.1.1toss.t4.x86_64 #1 SMP Thu Feb 12 09:50:47 PST 2026 x86_64 x86_64 x86_64 GNU/Linux
+## created: Wed May  6 16:26:32 PDT 2026
+## system: Linux rzadams1001 4.18.0-553.117.1.1toss.t4.x86_64 #1 SMP Thu Apr 16 10:55:47 PDT 2026 x86_64 x86_64 x86_64 GNU/Linux
 ## by: justin
 
 ##
@@ -62,6 +62,16 @@ VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/${ZLIB_VERSION}/${VISITARC
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/3.13.9/${VISITARCH})
 
 ##
+## LLVM
+##
+VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/6.0.1/${VISITARCH})
+
+##
+## MesaGL
+##
+VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
+
+##
 ## QT
 ##
 SETUP_APP_VERSION(QT 6.4.2)
@@ -84,16 +94,6 @@ VISIT_OPTION_DEFAULT(VISIT_ANARI_DIR ${VISITHOME}/anari/${ANARI_VERSION}/${VISIT
 ##
 SETUP_APP_VERSION(VTK 9.5.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
-
-##
-## LLVM
-##
-VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/6.0.1/${VISITARCH})
-
-##
-## OSMesa
-##
-VISIT_OPTION_DEFAULT(VISIT_OSMESA_DIR ${VISITHOME}/osmesa/17.3.9/${VISITARCH})
 
 ##
 ## HDF5
