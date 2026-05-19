@@ -27,7 +27,6 @@ GUI                                  **G**
 Python scripting                     **S**
 Viewer                               **V**
 Widgets                              **W**
-Widgets for viewer                   **VW**
 =================================    ===========================
 
 Here is a list of most often updated tags:
@@ -37,7 +36,7 @@ Tag                Purpose                                Supported components
 ================== ====================================== ===================== 
  **CXXFLAGS**      Include directories                    M,ESer,EPar
  **DEFINES**       Compile-time/preprocessor definitions  M,ESer,EPar
- **LDFLAGS**       Link flags, link directories           M,ESer,EPar
+ **LDFLAGS**       Link flags                             M,ESer,EPar
  **LIBS**          Link libraries                         G,M,ESer,EPar,V
  **Files**         Files to compile                       All
  **WIN32DEFINES**  Windows specific definitions           None, always applies to all 
@@ -51,15 +50,53 @@ Conditionals must be specified in the *.code* file with *Target* specified as *x
 Here's example lines for a .code file::
 
     Target: xml2cmake
-    Condition: VISIT_SLIVR
-    Definitions: -DVISIT_SLIVR
+    Condition: HAVE_VTKM
+    ELinkLibraries: vtkm::cont vtkm::filter_core vtkm::filter_contour vtkm::filter_entity_extraction vtkm::filter_field_conversion vtkm::worklet vtkm::vtkmdiympi_nompi
 
-The above conditional creates these lines in the CMakeLists.txt::
 
-    if(VISIT_SLIVR)
-        add_definitions(-DVISIT_SLIVR)
+The above conditional creates these lines in the CMakeLists.txt:
+
+.. code-block:: cmake
+
+    if(HAVE_VTKM)
+        set(Isovolume_ELibs vtkm::cont vtkm::filter_core vtkm::filter_contour vtkm::filter_entity_extraction vtkm::filter_field_conversion vtkm::worklet vtkm::vtkmdiympi_nompi)
     endif()
 
+The new ELibs var that is created will be added to the call to create the plugin:
+
+.. code-block:: cmake
+
+    visit_add_operator_plugin(
+        ONAME      Isovolume
+        ESERLIBS   ${Isovolume_ELibs}
+        EPARLIBS   ${Isovolume_ELibs})
+
+There is also the notion of directly injecting CMake logic via `Code: custom`.
+Here's an example used with the Volume plot, to add logic to the top or bottom of the generated CMakeLists.txt via `Prefix` and `Postfix` tags.
+`Prefix` logic will be added ``before`` the `visit_add_xxx_plugin` call.
+`Postfix` logic will be added ``after`` the `visit_add_xxx_plugin` call.
+Here's an example from the Volume plot's .code file:
+
+.. code-block:: cmake
+
+    Target: xml2cmake
+    Code: custom
+    Prefix:
+    if(HAVE_ICET)
+        # We need to link with OpenGL on Mac when we have IceT.
+        if(APPLE)
+            set(ICET_OPENGL ${OPENGL_gl_LIBRARY})
+        endif()
+        # Link icet libraries
+            set(ICET_LIBS icet ${ICET_OPENGL})
+        endif()
+    Postfix:
+    if(HAVE_ANARI)
+        target_sources(GVolumePlot PUBLIC
+            anari/AnariVolumeWidget.C
+            anari/AnariVolumeWidget.h)
+        target_include_directories(GVolumePlot PUBLIC anari)
+    endif()
 
 Info files
 ----------

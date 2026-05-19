@@ -28,7 +28,7 @@ visit_import_third_party
                      ADD_GLOBAL_INCLUDE [TRUE | FALSE]
                      ADD_GLOBAL_LIBRARY [TRUE | FALSE])
 
-The function utilizes `blt_import_libraray` to create exportable CMake targets that have all the information needed for VisIt_ to compile against and link with a thirdparty library.
+The function utilizes `blt_import_library` to create exportable CMake targets that have all the information needed for VisIt_ to compile against and link with a thirdparty library.
 The first argument must be the uppercase name of the library to be found.
 A CMake target with a name that is the lowercase version of the first argument will be created if the library is found.
 
