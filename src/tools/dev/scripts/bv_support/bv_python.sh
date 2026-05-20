@@ -503,6 +503,17 @@ function bv_python_info
     export PY_SPHINX_TABS_FILE="sphinx-tabs-${PY_SPHINX_TABS_VERSION}.tar.gz"
     export PY_SPHINX_TABS_BUILD_DIR="sphinx-tabs-${PY_SPHINX_TABS_VERSION}"
     export PY_SPHINX_TABS_SHA256_CHECKSUM="991ad4a424ff54119799ba1491701aa8130dd43509474aef45a81c42d889784d"
+
+    # needed for Pagefind search
+    export PY_BEAUTIFULSOUP4_VERSION="4.14.3"
+    export PY_BEAUTIFULSOUP4_FILE="beautifulsoup4-${PY_BEAUTIFULSOUP4_VERSION}.tar.gz"
+    export PY_BEAUTIFULSOUP4_BUILD_DIR="beautifulsoup4-${PY_BEAUTIFULSOUP4_VERSION}"
+    export PY_BEAUTIFULSOUP4_SHA256_CHECKSUM="6292b1c5186d356bba669ef9f7f051757099565ad9ada5dd630bd9de5fa7fb86"
+
+    export PY_PAGEFIND_VERSION="1.5.2"
+    export PY_PAGEFIND_FILE="pagefind-${PY_PAGEFIND_VERSION}.tar.gz"
+    export PY_PAGEFIND_BUILD_DIR="pagefind-${PY_PAGEFIND_VERSION}"
+    export PY_PAGEFIND_SHA256_CHECKSUM="fffddd6e2016b06bdca83b83d4ac4bef379cf0559f05ecdb6908a8729a27dbf3"
 }
 
 function bv_python_print
@@ -638,6 +649,9 @@ function bv_python_ensure
                             download_py_module ${PY_SPHINX_RTD_THEME_FILE} ${PY_SPHINX_RTD_THEME_URL}
                             # sphinx tabs
                             download_py_module ${PY_SPHINX_TABS_FILE} ${PY_SPHINX_TABS_URL}
+                            # pagefind search
+                            download_py_module ${PY_BEAUTIFULSOUP4_FILE} ${PY_BEAUTIFULSOUP4_URL}
+                            download_py_module ${PY_PAGEFIND_FILE} ${PY_PAGEFIND_URL}
                         fi
                     fi
                 fi
@@ -1705,6 +1719,56 @@ function build_sphinx_tabs
     return 0
 }
 
+# *************************************************************************** #
+#                              build_beautifulsoup4                           #
+# *************************************************************************** #
+function build_beautifulsoup4
+{
+    download_py_module ${PY_BEAUTIFULSOUP4_FILE} ${PY_BEAUTIFULSOUP4_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_BEAUTIFULSOUP4_BUILD_DIR} ${PY_BEAUTIFULSOUP4_FILE} "beautifulsoup4"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    install_py_module ${PY_BEAUTIFULSOUP4_BUILD_DIR} "beautifulsoup4"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    fix_py_permissions
+
+    return 0
+}
+
+# *************************************************************************** #
+#                              build_pagefind                                 #
+# *************************************************************************** #
+function build_pagefind
+{
+    download_py_module ${PY_PAGEFIND_FILE} ${PY_PAGEFIND_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_PAGEFIND_BUILD_DIR} ${PY_PAGEFIND_FILE} "pagefind"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    install_py_module ${PY_PAGEFIND_BUILD_DIR} "pagefind"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    fix_py_permissions
+
+    return 0
+}
+
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
@@ -1898,6 +1962,24 @@ function bv_python_build
                         error "sphinx tabs python module build failed. Bailing out."
                     fi
                     info "Done building the sphinx tabs."
+                fi
+
+                check_if_py_module_installed "beautifulsoup4"
+                if [[ $? != 0 ]] ; then
+                    build_beautifulsoup4
+                    if [[ $? != 0 ]] ; then
+                        error "beautifulsoup4 python module build failed. Bailing out."
+                    fi
+                    info "Done building the beautifulsoup4."
+                fi
+
+                check_if_py_module_installed "pagefind"
+                if [[ $? != 0 ]] ; then
+                    build_pagefind
+                    if [[ $? != 0 ]] ; then
+                        error "pagefind python module build failed. Bailing out."
+                    fi
+                    info "Done building the pagefind."
                 fi
             fi
         fi
