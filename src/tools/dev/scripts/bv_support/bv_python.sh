@@ -514,6 +514,11 @@ function bv_python_info
     export PY_PAGEFIND_FILE="pagefind-${PY_PAGEFIND_VERSION}.tar.gz"
     export PY_PAGEFIND_BUILD_DIR="pagefind-${PY_PAGEFIND_VERSION}"
     export PY_PAGEFIND_SHA256_CHECKSUM="fffddd6e2016b06bdca83b83d4ac4bef379cf0559f05ecdb6908a8729a27dbf3"
+
+    export PY_TYPING_EXTENSIONS_VERSION="4.15.0"
+    export PY_TYPING_EXTENSIONS_FILE="typing_extensions-${PY_TYPING_EXTENSIONS_VERSION}.tar.gz"
+    export PY_TYPING_EXTENSIONS_BUILD_DIR="typing_extensions-${PY_TYPING_EXTENSIONS_VERSION}"
+    export PY_TYPING_EXTENSIONS_SHA256_CHECKSUM="0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"
 }
 
 function bv_python_print
@@ -652,6 +657,7 @@ function bv_python_ensure
                             # pagefind search
                             download_py_module ${PY_BEAUTIFULSOUP4_FILE} ${PY_BEAUTIFULSOUP4_URL}
                             download_py_module ${PY_PAGEFIND_FILE} ${PY_PAGEFIND_URL}
+                            download_py_module ${PY_TYPING_EXTENSIONS_FILE} ${PY_TYPING_EXTENSIONS_URL}
                         fi
                     fi
                 fi
@@ -1769,6 +1775,31 @@ function build_pagefind
     return 0
 }
 
+# *************************************************************************** #
+#                              build_typing_extensions                        #
+# *************************************************************************** #
+function build_typing_extensions
+{
+    download_py_module ${PY_TYPING_EXTENSIONS_FILE} ${PY_TYPING_EXTENSIONS_URL}
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_TYPING_EXTENSIONS_BUILD_DIR} ${PY_TYPING_EXTENSIONS_FILE} "typing_extensions"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    install_py_module ${PY_TYPING_EXTENSIONS_BUILD_DIR} "typing_extensions"
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    fix_py_permissions
+
+    return 0
+}
+
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
@@ -1980,6 +2011,15 @@ function bv_python_build
                         error "pagefind python module build failed. Bailing out."
                     fi
                     info "Done building the pagefind."
+                fi
+
+                check_if_py_module_installed "typing_extensions"
+                if [[ $? != 0 ]] ; then
+                    build_typing_extensions
+                    if [[ $? != 0 ]] ; then
+                        error "typing_extensions python module build failed. Bailing out."
+                    fi
+                    info "Done building the typing_extensions."
                 fi
             fi
         fi
