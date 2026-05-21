@@ -38,8 +38,7 @@ pr:
   branches:
     include:
     - develop
-    - '[0-9].[0-9]RC'
-    - '[0-9].[0-9][0-9]RC'
+    - *.*RC
   paths:
     include:
     - 'azure-pipelines.yml'
