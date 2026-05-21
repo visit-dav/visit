@@ -998,29 +998,31 @@ add_custom_target(visit-dist
 #
 #-------------------------------------------------------------------------
 
-include(CMakePackageConfigHelpers)
+if(VISIT_INSTALL_THIRD_PARTY)
+    include(CMakePackageConfigHelpers)
 
-# generate the top level config file
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/visitConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
-    INSTALL_DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+    # generate the top level config file
+    configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/visitConfig.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
+        INSTALL_DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
 
-# generate the version config file
-write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfigVersion.cmake
-  VERSION ${VISIT_VERSION}
-  COMPATIBILITY SameMinorVersion)
+    # generate the version config file
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfigVersion.cmake
+        VERSION ${VISIT_VERSION}
+        COMPATIBILITY SameMinorVersion)
 
-# install the config files
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfigVersion.cmake
-        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+    # install the config files
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfigVersion.cmake
+            DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
 
-# install the target files
-install(EXPORT visitTargets
-        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+    # install the target files
+    install(EXPORT visitTargets
+            DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
 
-# install BLT
-install(DIRECTORY ${VISIT_SOURCE_DIR}/blt
-        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+    # install BLT
+    install(DIRECTORY ${VISIT_SOURCE_DIR}/blt
+            DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+endif()
 
