@@ -36,13 +36,7 @@ release = '3.2.2'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.mathjax',
-              'sphinx_tabs.tabs',
-              'visit_copy_pagefind_anchors']
-
-#
-# Add directory containing VisIt python extensions for Sphinx
-#
-sys.path.insert(0, os.path.abspath("_ext"))
+              'sphinx_tabs.tabs']
 
 # Force installation of any special stuff in the RTD virtual machine instance
 # needed to support any custom extensions.
@@ -127,12 +121,6 @@ htmlhelp_basename = 'VisItUserManualdoc'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-
-#
-#
-#
-#html_js_files = ["pagefind/pagefind-highlight.js", "redirect-rtd-search-to-pagefind.js"]
-html_js_files = ["redirect-rtd-search-to-pagefind.js"]
 
 # -- Options for LaTeX output ---------------------------------------------
 
