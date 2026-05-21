@@ -86,8 +86,8 @@ Here's an example from the Volume plot's .code file::
             set(ICET_OPENGL ${OPENGL_gl_LIBRARY})
         endif()
         # Link icet libraries
-            set(ICET_LIBS icet ${ICET_OPENGL})
-        endif()
+        set(ICET_LIBS icet ${ICET_OPENGL})
+    endif()
     Postfix:
     if(HAVE_ANARI)
         target_sources(GVolumePlot PUBLIC
