@@ -32,7 +32,7 @@ The function utilizes `blt_import_library` to create exportable CMake targets th
 The first argument must be the uppercase name of the library to be found.
 A CMake target with a name that is the lowercase version of the first argument will be created if the library is found.
 
-LIBS: Required if HEADER_ONLY OR LIBNAMES not specified.
+LIBS: Required if HEADER_ONLY or LIBNAMES not specified.
   A list of libraries to be found and added to the target.
 
 LIBNAMES: Required if LIBS or HEADER_ONLY not specified.
