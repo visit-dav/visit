@@ -2,7 +2,6 @@ function bv_hdf5_initialize
 {
     export DO_HDF5="no"
     export USE_SYSTEM_HDF5="no"
-    export HDF5_USE_FILE_LOCKING=FALSE
     add_extra_commandline_args "hdf5" "alt-hdf5-dir" 1 "Use alternative directory for hdf5"
 }
 
