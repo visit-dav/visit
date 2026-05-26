@@ -271,9 +271,6 @@ class JobSubmitter_jsrun_LLNL(JobSubmitter):
 #   Eric Brugger, Thu Oct  2 16:39:43 PDT 2025
 #   Added logic to set the LD_LIBRARY_PATH to include the path to libfi.so
 #   on elcap, rzadams and tuolumne.
-#
-#   Mark C. Miller, Tue May 26 13:14:57 PDT 2026
-#   Add env. var turning off HDF5 file locking.
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -314,9 +311,6 @@ class LLNLLauncher(MainLauncher):
             self.generalArgs.host = "130.106.204.1"
         elif self.generalArgs.host == "agate5.llnl.gov":
             self.generalArgs.host = "130.106.204.3"
-
-        # Precaution against poorly configured HDF5 file locking
-        SETENV("HDF5_USE_FILE_LOCKING", "FALSE")
 
         # Set the LD_LIBRARY_PATH on rzadams to add some paths that are
         # missing for MPI. The paths are included on tuolumne.
