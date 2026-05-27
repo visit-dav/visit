@@ -14,6 +14,7 @@
 # consistent with those same files listed in the paths trigger
 #####
 variables:
+  GIT_LFS_SKIP_SMUDGE: 1
   container_tag: visitdav/visit-ci-develop:2026-03-04-sha1bd594
   python_test_files: >
     ../../src/test/tests/databases/silo.py
@@ -77,8 +78,11 @@ stages:
       vmImage: 'ubuntu-latest'
     steps:
       - checkout: self
-        clean: boolean
-        submodules: recursive
+        clean: true
+        submodules: true
+        fetchDepth: 1
+        fetchTags: false
+        lfs: false
 
       - script: |
           #######################################
@@ -103,8 +107,11 @@ stages:
       TPLS_PATH: /masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
     steps:
       - checkout: self
-        clean: boolean
-        submodules: recursive
+        clean: true
+        submodules: true
+        fetchDepth: 1
+        fetchTags: false
+        lfs: false
 
       - script: |
            #################################
@@ -137,10 +144,10 @@ stages:
            git lfs pull --include "**/silo*.tar.xz"
            git lfs pull --include "**/blueprint*.tar.xz"
            cd ../
-           git lfs pull  --include test/baseline/databases/silo
-           git lfs pull  --include test/baseline/databases/blueprint
-           git lfs pull  --include test/baseline/databases/blueprint_export
-           git lfs pull  --include test/baseline/hybrid/ddf
+           git lfs pull  --include test/baseline/databases/silo/**
+           git lfs pull  --include test/baseline/databases/blueprint/**
+           git lfs pull  --include test/baseline/databases/blueprint_export/**
+           git lfs pull  --include test/baseline/hybrid/ddf/**
            cd build/testdata/
            for f in ../../data/silo*.tar.xz ../../data/blueprint*.tar.xz; do
              tar xvf "$f"
