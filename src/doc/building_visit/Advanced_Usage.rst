@@ -178,4 +178,3 @@ The portion of the script that runs ``build_visit`` is shown below.
         :language: bash
         :start-after: begin call build_visit sphinx literal include tag
         :end-before: end call build_visit sphinx literal include tag
-
