@@ -3179,7 +3179,7 @@ NetworkManager::RenderTiledInternal()
             {
                 int ll  = j * tileWidth * nChan;
                 int ll2 = j * tileWidth;
-                int kk  = ((iyTile * tileHeight + j) * imageWidth + ixTile * tileWidth) * 3;
+                int kk  = ((iyTile * tileHeight + j) * imageWidth + ixTile * tileWidth) * nChan;
                 int kk2 = (iyTile * tileHeight + j) * imageWidth + ixTile * tileWidth;
                 for (int i = 0; i < xMax; ++i)
                 {
