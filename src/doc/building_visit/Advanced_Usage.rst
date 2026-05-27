@@ -161,3 +161,21 @@ The error that caused the failure should be near the end of the log file.
 When ``build_visit`` finishes running, it will leave the directories that it used to build the packages intact.
 You can go into the directory of the package that failed and correct the issue and finish building and installing the package.
 You can then execute the ``build_visit`` command again to have it continue the build.
+
+Examples of using ``build_visit`` on several parallel systems
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are several examples of running ``build_visit`` in the script `run-build-visit <../../../scripts/run-build-visit>`_ that runs ``build_visit`` to generate the third party libraries on several parallel systems.
+The portion of the script that runs ``build_visit`` is shown below.
+
+.. container:: collapsible
+
+    .. container:: header
+
+        **Show/Hide Code for** running ``build_visit``
+
+    .. literalinclude:: ../../../scripts/run-build-visit
+        :language: bash
+        :start-after: begin call build_visit sphinx literal include tag
+        :end-before: end call build_visit sphinx literal include tag
+
