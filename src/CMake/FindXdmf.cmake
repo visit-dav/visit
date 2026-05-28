@@ -28,10 +28,13 @@
 #   Don't test for vtklibxml2 here, SET_UP_THIRD_PARTY checks already,
 #   and other libs with LIBDEP don't perform an extra check.
 #
+#   Kathleen Biagas, Mon Mar 31, 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the XDMF_DIR hint from the config-site .cmake file
+# Uses the XDMF_DIR hint from the config-site .cmake file
 #
 
-SET_UP_THIRD_PARTY(XDMF LIBS Xdmf)
+visit_import_third_party(XDMF LIBS Xdmf)
 

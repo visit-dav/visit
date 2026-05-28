@@ -11,6 +11,7 @@
 #include <avtDatabaseWriter.h>
 
 #include <string>
+#include <vector>
 
 
 // ****************************************************************************
@@ -28,11 +29,11 @@ avtlataWriter : public avtDatabaseWriter
 {
   public:
                    avtlataWriter();
-    virtual       ~avtlataWriter() {;};
+    virtual       ~avtlataWriter() {;}
 
   protected:
     std::string    stem;
-    vector<string> filenames_var;
+    std::vector<std::string> filenames_var;
     const avtDatabaseMetaData *md_;
     // deux methodes OpenFile (car changement d'interface entre 16 et 161
     double ftime;
@@ -45,7 +46,7 @@ avtlataWriter : public avtDatabaseWriter
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
     
-    void write_data(vtkDataArray *arr,const string& pos,string& filename);
+    void write_data(vtkDataArray *arr,const std::string& pos,std::string& filename);
 
 };
 

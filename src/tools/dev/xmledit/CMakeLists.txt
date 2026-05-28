@@ -13,75 +13,86 @@
 #   Kathleen Biagas, Tue May 5, 2023
 #   Disable qt6 forcing of defines for UNICODE.
 #
-#   Kathleen Biagas, Tue Sep 30 14:34:07 PDT 2025
-#   Renamed XMLEditMakefile to XMLEditCMake.
-#   Add XMLEditConditional.
-#
 #****************************************************************************
 
-SET(XMLEDIT_SOURCES
-XMLEditMain.C
-XMLDocument.C
-XMLEdit.C
-XMLEditAttribute.C
-XMLEditPlugin.C
-XMLEditEnums.C
-XMLEditFields.C
-XMLEditFunctions.C
-XMLEditCode.C
-XMLEditCodeGeneratorWindow.C
-XMLEditCodeSelectionDialog.C
-XMLEditConditional.C
-XMLEditConstants.C
-XMLEditIncludes.C
-XMLEditCMake.C
-)
+set(xmledit_SOURCES
+    XMLDocument.C
+    XMLEdit.C
+    XMLEditAttribute.C
+    XMLEditCMake.C
+    XMLEditCode.C
+    XMLEditCodeGeneratorWindow.C
+    XMLEditCodeSelectionDialog.C
+    XMLEditConditional.C
+    XMLEditConstants.C
+    XMLEditEnums.C
+    XMLEditFields.C
+    XMLEditFunctions.C
+    XMLEditIncludes.C
+    XMLEditMain.C
+    XMLEditPlugin.C)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/tools/dev/xml
-)
+set(xmledit_HEADERS
+    XMLDocument.h
+    XMLEdit.h
+    XMLEditAttribute.h
+    XMLEditCMake.h
+    XMLEditCode.h
+    XMLEditCodeGeneratorWindow.h
+    XMLEditCodeSelectionDialog.h
+    XMLEditConditional.h
+    XMLEditConstants.h
+    XMLEditEnums.h
+    XMLEditFields.h
+    XMLEditFunctions.h
+    XMLEditIncludes.h
+    XMLEditPlugin.h
+    XMLEditStd.h
+    XMLToolIds.h)
 
-IF(APPLE)
-    ADD_EXECUTABLE(xmledit MACOSX_BUNDLE ${XMLEDIT_SOURCES})
-    SET(MACOSX_BUNDLE_BUNDLE_NAME          "XmlEdit ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_INFO_STRING          "Editor for VisIt plugin XML files")
-    SET(MACOSX_BUNDLE_ICON_FILE            ${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns)
-    SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns
-        PROPERTIES
-        MACOSX_PACKAGE_LOCATION Resources
-    )
-    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
-    SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "XmlEdit version ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "XmlEdit ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2026, Lawrence Livermore National Security, LLC")
-ELSE(APPLE)
-    ADD_EXECUTABLE(xmledit ${VISIT_APPLICATION_STYLE} ${XMLEDIT_SOURCES})
-ENDIF(APPLE)
+set(xmledit_DEPENDS 
+    ${QT_QTGUI_LIBRARY}
+    ${QT_QTWIDGETS_LIBRARY}
+    ${QT_QTXML_LIBRARY})
+
+if(VISIT_STATIC)
+    list(APPEND xmledit_DEPENDS
+        ${QT_QTGUI_LIB_DEPENDENCIES}
+        ${QT_QTXML_LIB_DEPENDENCIES}
+        ${QT_QTCORE_LIB_DEPENDENCIES})
+endif()
+
+visit_add_executable(
+    NAME        xmledit
+    SOURCES     ${xmledit_SOURCES}
+    HEADERS     ${xmledit_HEADERS}
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                ${VISIT_SOURCE_DIR}/common/utility
+                ${VISIT_SOURCE_DIR}/tools/dev/xml
+                ${VISIT_BINARY_DIR}/include
+    DEPENDS_ON  ${xmledit_DEPENDS}
+    FOLDER      tools/xml )
 
 set_target_properties(xmledit PROPERTIES AUTOMOC ON)
 
-SET(RELEVANT_QT_LIBS 
-${QT_QTGUI_LIBRARY}
-${QT_QTWIDGETS_LIBRARY}
-${QT_QTXML_LIBRARY}
-${QT_QTCORE_LIBRARY}
-)
-IF(VISIT_STATIC)
-    MAC_NIB_INSTALL(xmledit)
-    SET(RELEVANT_QT_LIBS
-        ${RELEVANT_QT_LIBS}
-        ${QT_QTGUI_LIB_DEPENDENCIES}
-        ${QT_QTXML_LIB_DEPENDENCIES}
-        ${QT_QTCORE_LIB_DEPENDENCIES}
-    )
-ENDIF(VISIT_STATIC)
-
-TARGET_LINK_LIBRARIES(xmledit ${RELEVANT_QT_LIBS})
-
 qt6_disable_unicode_defines(xmledit)
 
-VISIT_INSTALL_TARGETS(xmledit)
-VISIT_TOOLS_ADD_FOLDER(xml xmledit)
+if(APPLE)
+    set_target_properties(xmledit PROPERTIES MACOSX_BUNDLE TRUE)
+
+    set(MACOSX_BUNDLE_BUNDLE_NAME          "XmlEdit ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_INFO_STRING          "Editor for VisIt plugin XML files")
+    set(MACOSX_BUNDLE_ICON_FILE            ${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns)
+
+    set_source_files_properties(${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    set(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
+    set(MACOSX_BUNDLE_LONG_VERSION_STRING  "XmlEdit version ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_SHORT_VERSION_STRING "XmlEdit ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
+    set(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2025, Lawrence Livermore National Security, LLC")
+    if(VISIT_STATIC)
+        MAC_NIB_INSTALL(xmledit)
+    endif()
+endif()
+

@@ -7,18 +7,22 @@
 #
 #****************************************************************************
 
-set(VISWINDOW_SOURCES
-    VisWindow.C
-    VisWindowTypes.C
-    VisWindowWithInteractions.C)
+visit_append_list(
+    NAME  avtviswindow_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/VisWindow.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowTypes.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowWithInteractions.C)
 
-target_sources(avtviswindow_ser PRIVATE ${VISWINDOW_SOURCES})
-target_include_directories(avtviswindow_ser PUBLIC .)
+visit_append_list(
+    NAME  avtviswindow_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/VisCallback.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindow.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/viswindow_exports.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowTypes.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowWithInteractions.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtviswindow_par PRIVATE ${VISWINDOW_SOURCES})
-    target_include_directories(avtviswindow_par PUBLIC .)
-endif()
-
-unset(VISWINDOW_SOURCES)
+visit_append_list(
+    NAME  avtviswindow_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/VisWindow/VisWindow>)
 

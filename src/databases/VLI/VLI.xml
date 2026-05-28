@@ -3,12 +3,7 @@
     <FilePatterns>
       *.vli
     </FilePatterns>
-    <Files components="M">
-      avtVLIFileFormat.C
-      VLIFileManager.C
-    </Files>
-    <Files components="E">
-      avtVLIFileFormat.C
+    <Files components="M,E">
       VLIFileManager.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

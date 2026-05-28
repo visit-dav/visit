@@ -10,7 +10,7 @@
 
 
 set(VISIT_PARALLEL @VISIT_PARALLEL@)
-set(OSMESA_FOUND @OSMESA_FOUND@)
+set(HAVE_OSMESA @HAVE_OSMESA@)
 set(VISIT_BINARY_DIR @VISIT_BINARY_DIR@)
 set(VISIT_FORTRAN @VISIT_FORTRAN@)
 set(VISIT_ENABLE_XDB @VISIT_ENABLE_XDB@)
@@ -44,11 +44,6 @@ list(APPEND visit_libs_ser ${SIMV2_SER_LIBS} ${AVT_LIBS} ${AVT_SER_LIBS}
 if(VISIT_PARALLEL)
     list(APPEND visit_libs_par ${SIMV2_PAR_LIBS} ${AVT_LIBS} ${AVT_PAR_LIBS}
                                ${VISIT_LIBS} ${TP_LIBS})
-endif()
-
-if(OSMESA_FOUND)
-    list(APPEND visit_libs_ser visit_vtk_offscreen)
-    list(APPEND visit_libs_par visit_vtk_offscreen)
 endif()
 
 macro(get_enabled_plugins fname type suffix plist)

@@ -72,39 +72,26 @@ The typical way to enable support for a specific TPL involves a handfule of line
     ##
     SETUP_APP_VERSION(GORFO 1.2.3)
     VISIT_OPTION_DEFAULT(VISIT_GORFO_DIR ${VISITHOME}/gorfo/${GORFO_VERSION}/${VISITARCH})
-    VISIT_OPTION_DEFAULT(VISIT_GORFO_LIBDEP /path/to/abc/lib abc /path/to/xyz/lib xyz TYPE STRING)
+    VISIT_OPTION_DEFAULT(VISIT_GORFO_LIBDEP abc xyz TYPE STRING)
 
     ##
     ## FooBar
     ##
     SETUP_APP_VERSION(FOOBAR 6.7.8)
     VISIT_OPTION_DEFAULT(VISIT_FOOBAR_DIR ${VISITHOME}/foobar/${FOOBAR_VERSION}/${VISITARCH})
-    VISIT_OPTION_DEFAULT(VISIT_FOOBAR_LIBDEP ${VISIT_GORFO_LIBDEP} HDF5_LIB TYPE STRING)
+    VISIT_OPTION_DEFAULT(VISIT_FOOBAR_LIBDEP gorfo HDF5_LIB TYPE STRING)
 
 The first line indicates the version number of the TPL.
 The second line indicates the location of the TPL installation.
 This is typically always ``${VISITHOME}/<package-name>/<package-version-number>/${VISITARCH}``.
 
-The third line is only necessary when the TPL has a dependence on another TPL.
-This line defines a *library dependence* (``_LIBDEP``) variable.
-In the example above, the Gorfo depends on two libraries, abc, and xyz and FooBar depends on Gorfo and HDF5.
-The ``_LIBDEP`` variable can be populated with one of a few different kinds of references.
-
-The first kind is a *pair* of space separated entries as is seen in ``VISIT_GORFO_LIBDEP``.
-The first entry in the pair is the path to a directory holding library such as would be used in a ``-L</path/to/lib/dir>`` linker flag.
-The second entry in the pair is the name of the library such as would be used in a ``-l<libname>`` linker flag.
-
-The second kind is a CMake variable representing a bona fide CMake *imported target*.
-For all TPLs VisIt supports, only a few (HDF5, Silo, ZLIB) are currently handled as bona fide CMake imported targets.
-This situation will improve to include many more TPLs as imported targets but currently (as of version 3.5.0), only a handful of TPLs are handled this way.
-The variable, ``HDF5_LIB`` is the variable which holds the imported target name for the HDF5 library (typically ``hdf5-shared``).
-
-A third kind is the CMake variable representing all the dependencies of another TPL.
-In the example above, ``VISIT_FOOBAR_LIBDEP`` indicates FooBar depends on Gorfo using the ``${VISIT_GORFO_LIBDEP}`` which is interpreted to mean that because FooBar depends on Gorfo, then FooBar depends on all the libraries that Gorfo depends on.
-
-Sometimes, there is a 4th kind of line for a TPL involving *include dependencies*.
-This is needed when the TPL not only has a link-time dependence on another library but also a compile-time dependence.
-The line will appear as ``VISIT_OPTION_DEFAULT(VISIT_GORFO_INCDEP HDF5_INCLUDE_DIR FMS_INCLUDE_DIR)``.
+The third line defines a *library dependence* (``_LIBDEP``) variable.
+The third line is only necessary when the TPL does not provide CMake import targets useable by VisIt_.
+Starting with VisIt_ version 3.5.1, VisIt_ will either import a TPL's libraries natively using their provided CMake targets, or manually create import targets from the TPL's known libraries.
+Library dependencies in the third line will either be listed as their imported target name or via a place-holder CMake variable that can point to different library names based on how VisIt_ is being built.
+In the example above, Gorfo depends on two libraries: abc and xyz, which are either native or VisIt_ created CMake targets.
+FooBar depends on gorfo (a CMake target) and HDF5 which is represented by the CMake variable ``HDF5_LIB``.
+``HDF5_LIB`` will hold the imported target name for the HDF5 library, which will typically be ``hdf5-shared`` but may be ``hdf5-static``.
 
 If ``build_visit`` is used to build VisIt_'s TPLs, then it will create the config-site file for the TPL installation once the build is completed.
 

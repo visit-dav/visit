@@ -10,26 +10,20 @@
 #
 #****************************************************************************
 
-SET(AVTVIEW_SOURCES
-avtView2D.C
-avtView3D.C
-avtViewCurve.C
-avtViewInfo.C
-avtViewAxisArray.C
-)
+visit_add_library(
+    NAME        avtview
+    SOURCES     avtView2D.C
+                avtView3D.C
+                avtViewAxisArray.C
+                avtViewCurve.C
+                avtViewInfo.C
+    HEADERS     avtView2D.h
+                avtView3D.h
+                avtViewAxisArray.h
+                avtViewCurve.h
+                avtViewInfo.h
+                view_exports.h
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/View>
+    DEPENDS_ON  visitcommon VTK::RenderingOpenGL2 VTK::RenderingFreeType VTK::InteractionStyle)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VTK_INCLUDE_DIRS}
-)
-
-set(vtklibs VTK::RenderingOpenGL2 VTK::RenderingFreeType VTK::InteractionStyle)
-
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
-
-ADD_LIBRARY(avtview ${AVTVIEW_SOURCES})
-TARGET_LINK_LIBRARIES(avtview visitcommon ${vtklibs})
-
-VISIT_INSTALL_TARGETS(avtview)

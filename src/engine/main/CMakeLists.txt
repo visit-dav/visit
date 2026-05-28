@@ -39,7 +39,7 @@
 #    Eric Brugger, Tue Jul 20 11:55:04 PDT 2021
 #    Added OPENGL_INCLUDE_DIR to the include directories if building IceT
 #    with MesaGL.
-# 
+#
 #    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 #    Added logic to be aware of avtBP lib.
 #
@@ -49,8 +49,11 @@
 #    Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #    Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
-#    Kathleen Biagas, Tue Sep 5, 2023 
+#    Kathleen Biagas, Tue Sep 5, 2023
 #    Remove untested, unused EGL logic.
+#
+#    Kathleen Biagas, Thu Oct 3, 2024
+#    Utilize visit_add_library.
 #
 #    Kathleen Biagas, Wed Jun 18, 2025
 #    Remove visit_vtk_offscreen, no longer needed (VTK 9.5).
@@ -59,268 +62,219 @@
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
-ProgrammableCompositer.C
-DataNetwork.C
-ClonedDataNetwork.C
-CumulativeQueryNamedSelectionExtension.C
-Engine.C
-EngineBase.C
-LoadBalancer.C
-MesaDisplay.C
-Netnodes.C
-NetworkManager.C
-VisItDisplay.C
-)
+    ClonedDataNetwork.C
+    CumulativeQueryNamedSelectionExtension.C
+    DataNetwork.C
+    Engine.C
+    EngineBase.C
+    LoadBalancer.C
+    MesaDisplay.C
+    Netnodes.C
+    NetworkManager.C
+    ProgrammableCompositer.C
+    VisItDisplay.C)
+
+set(LIBENGINE_HEADERS
+    ClonedDataNetwork.h
+    CumulativeQueryNamedSelectionExtension.h
+    DataNetwork.h
+    Engine.h
+    EngineBase.h
+    EngineRPCExecutor.h
+    Executors.h
+    LoadBalancer.h
+    MesaDisplay.h
+    Netnodes.h
+    NetworkManager.h
+    ProgrammableCompositer.h
+    VisItDisplay.h
+    engine_main_exports.h)
 
 # If the engine is static then we need some static symbol lookup functions
 if(VISIT_STATIC)
-    set(ENGINE_STATIC_SOURCES EngineStaticSymbolLocator.C)
+    list(APPEND LIBENGINE_SOURCES EngineStaticSymbolLocator.C)
 endif()
 
 if(NOT WIN32 AND NOT APPLE AND VISIT_USE_X)
-    set(LIBENGINE_SOURCES ${LIBENGINE_SOURCES} XDisplay.C)
+    list(APPEND LIBENGINE_SOURCES XDisplay.C)
+    list(APPEND LIBENGINE_HEADERS XDisplay.h)
 endif()
 
-if(NOT WIN32)
-    # This keeps comm's exceptions visible when using -fvisibility=hidden
-    add_definitions(-DCOMM_EXPORTS)
-endif()
 
-include_directories(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/third_party_builtin/cognomen/src
-${VISIT_SOURCE_DIR}/third_party_builtin/cognomen/src/cog
-${VISIT_SOURCE_DIR}/engine/proxy
-${VISIT_SOURCE_DIR}/engine/rpc
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/DataBinning
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/Database/Ghost
-${VISIT_SOURCE_DIR}/avt/Expressions/Abstract
-${VISIT_SOURCE_DIR}/avt/Expressions/CMFE
-${VISIT_SOURCE_DIR}/avt/Expressions/Conditional
-${VISIT_SOURCE_DIR}/avt/Expressions/Derivations
-${VISIT_SOURCE_DIR}/avt/Expressions/General
-${VISIT_SOURCE_DIR}/avt/Expressions/ImageProcessing
-${VISIT_SOURCE_DIR}/avt/Expressions/Management
-${VISIT_SOURCE_DIR}/avt/Expressions/Math
-${VISIT_SOURCE_DIR}/avt/Expressions/MeshQuality
-${VISIT_SOURCE_DIR}/avt/FileWriter
-${VISIT_SOURCE_DIR}/avt/Filters
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-${VISIT_SOURCE_DIR}/avt/Plotter
-${VISIT_SOURCE_DIR}/avt/Plotter/vtk
-${VISIT_SOURCE_DIR}/avt/Queries/Abstract
-${VISIT_SOURCE_DIR}/avt/Queries/Misc
-${VISIT_SOURCE_DIR}/avt/Queries/Pick
-${VISIT_SOURCE_DIR}/avt/Queries/Queries
-${VISIT_SOURCE_DIR}/avt/View
-${VISIT_SOURCE_DIR}/avt/VisWindow/Colleagues
-${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
-${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS}
-)
+set(LIBENGINE_INCLUDES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/engine/main>)
 
-# Add link directories
-link_directories(${AVT_REQUIRED_LIB_DIR})
-
-#********************************* SERIAL ************************************
-add_library(engine_ser ${LIBENGINE_SOURCES})
-if(WIN32)
-    set_target_properties(engine_ser PROPERTIES OUTPUT_NAME enginelib_ser)
-endif()
-
-target_link_libraries(engine_ser
+set(LIBENGINE_DEPENDS
     visitcommon
     enginerpc
-    avtview
-    avtwriter_ser
-    avtplotter_ser
-    avtquery_ser
-    avtviswindow_ser
-    avtpipeline_ser
-)
+    avtview)
 
-if(TARGET avtblueprint)
-    INCLUDE_DIRECTORIES(
-        ${VISIT_SOURCE_DIR}/avt/Blueprint
-        )
-    TARGET_LINK_LIBRARIES(engine_ser
-        avtblueprint
-        )
+if(HAVE_CONDUIT AND HAVE_MFEM)
+    list(APPEND LIBENGINE_DEPENDS mfem avtblueprint)
 endif()
 
 
-# These 3 variables are only defined when building statically.
-# engine_ser_exe_EDatabase_ser = The list of database libE libraries needed to link
-# engine_ser_exe_EOperator_ser = The list of operator libE libraries needed to link
-# engine_ser_exe_EPlot_ser = The list of plot libE libraries needed to link
+#************************** SERIAL LIBRARY ************************************
+visit_add_library(
+    NAME        engine_ser
+    SOURCES     ${LIBENGINE_SOURCES}
+    HEADERS     ${LIBENGINE_HEADERS}
+    INCLUDES    ${LIBENGINE_INCLUDES}
+    DEPENDS_ON  ${LIBENGINE_DEPENDS}
+                avtwriter_ser
+                avtplotter_ser
+                avtquery_ser
+                avtviswindow_ser
+                avtpipeline_ser)
 
-add_executable(engine_ser_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_SER_RESOURCE_FILE})
-set_target_properties(engine_ser_exe PROPERTIES OUTPUT_NAME engine_ser)
-
-if(APPLE)
-    # use custom plist to avoid engine exes from appearing in the macOS dock
-    target_link_options(engine_ser_exe PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${VISIT_SOURCE_DIR}/include/EngineInfo.plist)
+if(WIN32)
+    visit_patch_target(NAME engine_ser OUTPUT_NAME enginelib_ser)
+else()
+    # This keeps comm's exceptions visible when using -fvisibility=hidden
+    visit_patch_target(NAME engine_ser DEFINES COMM_EXPORTS)
 endif()
 
-if(WIN32 AND MSVC)
-    set_target_properties(engine_ser_exe PROPERTIES LINK_FLAGS "/STACK:4000000")
-endif()
 
-target_link_libraries(engine_ser_exe
-    ${VISIT_EXE_LINKER_FLAGS}
-    ${engine_ser_exe_IDatabase}
-    ${engine_ser_exe_EDatabase_ser}
-    ${engine_ser_exe_IOperator}
-    ${engine_ser_exe_EOperator_ser}
-    ${engine_ser_exe_IPlot}
-    ${engine_ser_exe_EPlot_ser}
-    engine_ser
-    visit_verdict
-    ${vtkjpeg_LIBRARIES}
-    ${vtkpng_LIBRARIES}
-    ${ALL_THIRDPARTY_IO_LIB}
-    Threads::Threads
-    ${ZLIB_LIBRARY}
-)
+#************************** PARALLEL LIBRARY **********************************
 
-# If we're building statically then the engine can't be linked until the plugin
-# sources are built
-if(VISIT_STATIC)
-    add_dependencies(engine_ser_exe
-        ${engine_ser_exe_IDatabase}
-        ${engine_ser_exe_EDatabase_ser}
-        ${engine_ser_exe_IOperator}
-        ${engine_ser_exe_EOperator_ser}
-        ${engine_ser_exe_IPlot}
-        ${engine_ser_exe_EPlot_ser}
-    )
-endif(VISIT_STATIC)
-
-VISIT_INSTALL_TARGETS(engine_ser engine_ser_exe)
-
-#********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    set(ENGINE_PAR_SOURCES MPIXfer.C)
     # If we have Ice-T then add more sources to the build
-    if(ICET_FOUND)
+    if(HAVE_ICET)
         set(ICET_SOURCES IceTNetworkManager.C)
-        include_directories(${ICET_INCLUDE_DIR})
-        link_directories(${ICET_LIBRARY_DIR})
-        if(VISIT_MESAGL_DIR)
-            include_directories(${OPENGL_INCLUDE_DIR})
-        endif()
-    endif()
-
-    ADD_PARALLEL_LIBRARY(engine_par ${LIBENGINE_SOURCES} ${ENGINE_PAR_SOURCES} ${ICET_SOURCES})
-    if (WIN32)
-        set_target_properties(engine_par PROPERTIES OUTPUT_NAME enginelib_par)
-    endif (WIN32)
-
-    # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
-    if(ICET_FOUND)
-        ADD_TARGET_DEFINITIONS(engine_par "HAVE_ICET")
+        set(ICET_HEADERS IceTNetworkManager.h)
         if(APPLE)
             # We need to link with OpenGL on Mac when we have IceT.
             set(ICET_OPENGL ${OPENGL_LIBRARIES})
         endif()
 
         if(VISIT_STATIC)
-            set(ICET_STATIC_LIB ${ICET_LIB} ${ICET_OPENGL} ${VISIT_PARALLEL_LIBS})
+            set(ICET_STATIC_LIB icet ${ICET_OPENGL} ${VISIT_PARALLEL_LIBS})
         else()
-            set(ICET_DYNAMIC_LIB ${ICET_LIB} ${ICET_OPENGL})
+            set(ICET_DYNAMIC_LIB icet ${ICET_OPENGL})
         endif()
-    endif(ICET_FOUND)
-
-    target_link_libraries(engine_par
-        visitcommon
-        enginerpc
-        avtview
-        avtwriter_par
-        avtplotter_par
-        avtquery_par
-        avtviswindow_par
-        avtpipeline_par
-        cognomen
-        ${ICET_DYNAMIC_LIB}
-    )
-
-    if(CONDUIT_FOUND AND MFEM_FOUND)
-        TARGET_LINK_LIBRARIES(engine_par
-            ${MFEM_LIB} 
-            avtblueprint
-            )
     endif()
 
+    visit_add_parallel_library(
+        NAME        engine_par
+        SOURCES     ${LIBENGINE_SOURCES}
+                    ${ICET_SOURCES}
+                    MPIXfer.C
+        HEADERS     ${LIBENGINE_HEADERS}
+                    ${ICET_HEADERS}
+                    MPIXfer.h
+        INCLUDES    ${LIBENGINE_INCLUDES}
+        DEPENDS_ON  ${LIBENGINE_DEPENDS}
+                    avtwriter_par
+                    avtplotter_par
+                    avtquery_par
+                    avtviswindow_par
+                    avtpipeline_par
+                    ${ICET_DYNAMIC_LIB}
+                    cognomen)
+
+    if(WIN32)
+        visit_patch_target(NAME engine_par OUTPUT_NAME enginelib_par)
+    else()
+        # This keeps comm's exceptions visible when using -fvisibility=hidden
+        visit_patch_target(NAME engine_par DEFINES COMM_EXPORTS)
+    endif()
+
+    if(HAVE_ICET)
+        if(VISIT_MESAGL_DIR)
+            visit_patch_target(
+                NAME engine_par
+                INCLUDES $<BUILD_INTERFACE:${OPENGL_INCLUDE_DIR}>)
+        endif()
+    endif()
+endif()
+
+
+#*********************** SERIAL EXECUTABLE ************************************
+
+# These 3 variables are only defined when building statically.
+# engine_ser_exe_EDatabase_ser = The list of database libE libraries needed to link
+# engine_ser_exe_EOperator_ser = The list of operator libE libraries needed to link
+# engine_ser_exe_EPlot_ser = The list of plot libE libraries needed to link
+
+visit_add_executable(
+    NAME        engine_ser_exe
+    SOURCES     main.C
+                ${ENGINE_STATIC_SOURCES}
+                ${VISIT_ENGINE_SER_RESOURCE_FILE}
+    DEPENDS_ON  ${engine_ser_exe_IDatabase}
+                ${engine_ser_exe_EDatabase_ser}
+                ${engine_ser_exe_IOperator}
+                ${engine_ser_exe_EOperator_ser}
+                ${engine_ser_exe_IPlot}
+                ${engine_ser_exe_EPlot_ser}
+                engine_ser
+                visit_verdict
+                ${vtkjpeg_LIBRARIES}
+                ${vtkpng_LIBRARIES}
+                ${ALL_THIRDPARTY_IO_LIB}
+                Threads::Threads
+    OUTPUT_NAME engine_ser)
+
+if(WIN32 AND MSVC)
+    set_target_properties(engine_ser_exe PROPERTIES LINK_FLAGS "/STACK:4000000")
+endif()
+
+
+
+#************************ PARALLEL EXECUTABLE *********************************
+
+if(VISIT_PARALLEL)
     if(VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        add_library(link_mpi_libs STATIC empty.c)
-        target_link_libraries(link_mpi_libs ${VISIT_PARALLEL_LIBS})
-    endif(VISIT_NOLINK_MPI_WITH_LIBRARIES)
+        visit_add_library(
+            NAME link_mpi_libs
+            SOURCES empty.c
+            DEPENDS_ON ${VISIT_PARALLEL_LIBS}
+            FORCE_STATIC
+            SKIP_INSTALL)
+    endif()
 
     # For static builds with icet, don't add the parallel libs automatically. We
     # try to control it explicitly so icet comes before mpi on the link line.
-    if(ICET_FOUND AND VISIT_STATIC)
+    if(HAVE_ICET AND VISIT_STATIC)
         set(tmpval ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
         set(VISIT_NOLINK_MPI_WITH_LIBRARIES OFF)
-    endif(ICET_FOUND AND VISIT_STATIC)
+    endif()
 
-    ADD_PARALLEL_EXECUTABLE(engine_par_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_PAR_RESOURCE_FILE})
+    visit_add_parallel_executable(
+        NAME        engine_par_exe 
+        SOURCES     main.C
+                    ${ENGINE_STATIC_SOURCES}
+                    ${VISIT_ENGINE_PAR_RESOURCE_FILE}
+        DEPENDS_ON  ${engine_par_exe_IDatabase_par}
+                    ${engine_par_exe_EDatabase_par}
+                    ${engine_par_exe_IOperator_par}
+                    ${engine_par_exe_EOperator_par}
+                    ${engine_par_exe_IPlot_par}
+                    ${engine_par_exe_EPlot_par}
+                    engine_par
+                    visit_verdict
+                    ${vtkjpeg_LIBRARIES}
+                    ${vtkpng_LIBRARIES}
+                    ${ALL_THIRDPARTY_IO_LIB}
+                    ${ICET_STATIC_LIB}
+                    Threads::Threads
+        OUTPUT_NAME engine_par)
 
     if(APPLE)
         # use custom plist to avoid engine exes from appearing in the macOS dock
         target_link_options(engine_par_exe PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${VISIT_SOURCE_DIR}/include/EngineInfo.plist)
     endif()
 
-    if(ICET_FOUND AND VISIT_STATIC)
-        set(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})
-    endif(ICET_FOUND AND VISIT_STATIC)
-
-    set_target_properties(engine_par_exe PROPERTIES OUTPUT_NAME engine_par)
     if(WIN32 AND MSVC)
         set_target_properties(engine_par_exe PROPERTIES
             LINK_FLAGS "/STACK:4000000")
     endif()
 
-    PARALLEL_EXECUTABLE_LINK_LIBRARIES(engine_par_exe
-        ${engine_par_exe_IDatabase_par}
-        ${engine_par_exe_EDatabase_par}
-        ${engine_par_exe_IOperator_par}
-        ${engine_par_exe_EOperator_par}
-        ${engine_par_exe_IPlot_par}
-        ${engine_par_exe_EPlot_par}
-        engine_par
-        visit_verdict
-        ${vtkjpeg_LIBRARIES}
-        ${vtkpng_LIBRARIES}
-        ${ALL_THIRDPARTY_IO_LIB}
-        ${ICET_STATIC_LIB}
-        Threads::Threads
-        ${ZLIB_LIBRARY}
-    )
-
-    # If we're building statically then the engine can't be linked until the plugin
-    # sources are built
-    if(VISIT_STATIC)
-        add_dependencies(engine_par_exe
-            ${engine_par_exe_IDatabase_par}
-            ${engine_par_exe_EDatabase_par}
-            ${engine_par_exe_IOperator_par}
-            ${engine_par_exe_EOperator_par}
-            ${engine_par_exe_IPlot_par}
-            ${engine_par_exe_EPlot_par}
-        )
+    if(HAVE_ICET)
+        if(VISIT_STATIC)
+            set(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})
+        endif()
     endif()
 
-    VISIT_INSTALL_TARGETS(engine_par engine_par_exe)
-endif(VISIT_PARALLEL)
+endif()

@@ -71,16 +71,6 @@ function bv_silo_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_SILO_DIR \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
 
-        libdep=""
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            libdep="HDF5_LIB"
-        fi
-        libdep="$libdep ZLIB_LIB"
-        if [[ -n "$libdep" ]]; then
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP $libdep TYPE STRING)" \
-                >> $HOSTCONF
-        fi
     fi
 }
 

@@ -4,12 +4,7 @@
       *.img
       *.hdr
     </FilePatterns>
-    <Files components="M">
-      avtANALYZEFileFormat.C
-      DSRObject.C
-    </Files>
-    <Files components="E">
-      avtANALYZEFileFormat.C
+    <Files components="M,E">
       DSRObject.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">

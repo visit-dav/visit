@@ -11,60 +11,83 @@
 #
 #****************************************************************************
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(FUN_PREFIX "nek_" CACHE STRING "prefix for exported symbols")
+set(NEK5000_FUN_PREFIX "nek_" CACHE STRING "prefix for nek5000 exported symbols")
 
-option(LOCAL_LONG "use long for local index type (instead of int)" ON)
-option(LOCAL_LONG_LONG "use long long for local index type (instead of int)" OFF)
+option(NEK5000_LOCAL_LONG "use long for nek5000 local index type (instead of int)" ON)
+option(NEK5000_LOCAL_LONG_LONG "use long long for nek5000 local index type (instead of int)" OFF)
 
-ADD_DEFINITIONS(-DPREFIX=${FUN_PREFIX} -DUSE_NAIVE_BLAS -DNO_NEK_EXITT -DUNDERSCORE)
+set(nek5000_interp_DEFINES
+    PREFIX=${NEK5000_FUN_PREFIX}
+    USE_NAIVE_BLAS
+    NO_NEK_EXITT
+    UNDERSCORE)
 
-if(LOCAL_LONG)
-  add_definitions(-DUSE_LONG)
+if(NEK5000_LOCAL_LONG)
+  list(APPEND nek5000_interp_DEFINES NEK_USE_LONG)
   set(NEK_UINT "unsigned long")
-elseif(LOCAL_LONG_LONG)
-  add_definitions(-DUSE_LONG_LONG)
+elseif(NEK5000_LOCAL_LONG_LONG)
+  list(APPEND nek5000_interp_DEFINES NEK_USE_LONG_LONG)
   set(NEK_UINT "unsigned long long")
 else()
   set(NEK_UINT "unsigned")
 endif()
 
-configure_file (
-  "${CMAKE_CURRENT_SOURCE_DIR}/ext/nek_config.h.in"
-  "${VISIT_BINARY_DIR}/include/nek_config.h"
-  )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ext/nek_config.h.in
+               ${VISIT_BINARY_DIR}/include/nek_config.h)
 
 
-SET(NEK5000_INTERP_SOURCES
-sort.c
-sarray_sort.c
-obbox.c
-tensor.c
-poly.c
-lob_bnd.c
-findpts_el_3.c
-findpts_el_2.c
-fail.c
-comm.c
-gs_local.c
-findpts_local.c
-mem.c
-ext/findpts_local_ext.c
-)
+set(nek5000_interp_SOURCES
+    comm.c
+    fail.c
+    findpts_el_2.c
+    findpts_el_3.c
+    findpts_local.c
+    gs_local.c
+    lob_bnd.c
+    mem.c
+    obbox.c
+    poly.c
+    sarray_sort.c
+    sort.c
+    tensor.c
+    ext/findpts_local_ext.c)
 
-INCLUDE_DIRECTORIES(
-${VISIT_SOURCE_DIR}/third_party_builtin/nek5000
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${CMAKE_CURRENT_SOURCE_DIR}
-${CMAKE_CURRENT_BINARY_DIR}
-)
+set(nek5000_interp_HEADERS
+    c99.h
+    comm.h
+    fail.h
+    findpts_el.h
+    findpts_local.h
+    findpts_local_imp.h
+    gs.h
+    gs_defs.h
+    gs_local.h
+    lob_bnd.h
+    mem.h
+    name.h
+    obbox.h
+    poly.h
+    poly_imp.h
+    sarray_sort.h
+    sort.h
+    sort_imp.h
+    tensor.h
+    types.h
+    ext/findpts_local.h
+    ${VISIT_BINARY_DIR}/include/nek_config.h)
 
-#Add link directories needed.
-LINK_DIRECTORIES()
+set(nek5000_interp_INCLUDES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>)
 
-ADD_LIBRARY(nek5000_interp ${NEK5000_INTERP_SOURCES})
-TARGET_LINK_LIBRARIES(nek5000_interp)
 
-VISIT_INSTALL_TARGETS(nek5000_interp)
-SET_TARGET_PROPERTIES(nek5000_interp PROPERTIES FOLDER thirdparty_builtin/nek5000_interp)
+visit_add_library(
+    NAME     nek5000_interp
+    SOURCES  ${nek5000_interp_SOURCES}
+    HEADERS  ${nek5000_interp_HEADERS}
+    DEFINES  ${nek5000_interp_DEFINES}
+    INCLUDES ${nek5000_interp_INCLUDES}
+    FOLDER   thirdparty_builtin/nek5000_interp)
+

@@ -4,7 +4,7 @@
 
 #ifndef QVIS_GRID_WIDGET_H
 #define QVIS_GRID_WIDGET_H
-#include <gui_exports.h>
+
 #include <QWidget>
 
 class QPixmap;
@@ -33,7 +33,7 @@ class QPainter;
 //
 // ****************************************************************************
 
-class GUI_API QvisGridWidget : public QWidget
+class QvisGridWidget : public QWidget
 {
     Q_OBJECT
 public:
