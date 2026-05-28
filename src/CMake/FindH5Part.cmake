@@ -7,16 +7,15 @@
 #   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
 #   Remove ${VISIT_MSVC_VERSION} from lib location.
 #
+#   Kathleen Biagas, Mon Mar 31 2025
+#   Utilize visit_import_third_party.
+#
 #   Kathleen Biagas, Wed Mar 4, 2026
 #   Update h5part library name on windows.
 #
 #****************************************************************************/
 
-# Use the H5PART_DIR hint from the config-site .cmake file
+# Uses the H5PART_DIR hint from the config-site .cmake file
 
-if(WIN32)
-  SET_UP_THIRD_PARTY(H5PART LIBS h5part)
-else()
-  SET_UP_THIRD_PARTY(H5PART LIBS H5Part)
-endif()
+visit_import_third_party(H5PART LIBNAMES H5Part h5part)
 

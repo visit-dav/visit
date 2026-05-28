@@ -9,35 +9,42 @@
 #
 #****************************************************************************
 
-SET(MPEG2ENCODE_SOURCES
-conform.c
-fdctref.c
-idct.c
-motion.c
-mpeg2enc.c
-predict.c
-putbits.c
-puthdr.c
-putmpg.c
-putpic.c
-putseq.c
-putvlc.c
-quantize.c
-ratectl.c
-readpic.c
-stats.c
-transfrm.c
-writepic.c
-)
+set(mpeg2encode_SOURCES
+    conform.c
+    fdctref.c
+    idct.c
+    motion.c
+    mpeg2enc.c
+    predict.c
+    putbits.c
+    puthdr.c
+    putmpg.c
+    putpic.c
+    putseq.c
+    putvlc.c
+    quantize.c
+    ratectl.c
+    readpic.c
+    stats.c
+    transfrm.c
+    writepic.c)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-)
+set(mpeg2encode_HEADERS
+   config.h
+   global.h
+   mpeg2enc.h
+   vlc.h)
 
-ADD_EXECUTABLE(mpeg2encode ${MPEG2ENCODE_SOURCES})
-IF(NOT WIN32)
-    TARGET_LINK_LIBRARIES(mpeg2encode m)
-ENDIF(NOT WIN32)
+visit_add_executable(
+    NAME        mpeg2encode
+    SOURCES     ${mpeg2encode_SOURCES}
+    HEADERS     ${mpeg2encode_HEADERS}
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+    FOLDER      tools/mpeg2encode)
 
-VISIT_INSTALL_TARGETS(mpeg2encode)
-VISIT_TOOLS_ADD_FOLDER(mpeg2encode)
+if(NOT WIN32)
+    visit_patch_target(
+        NAME        mpeg2encode
+        DEPENDS_ON  m)
+endif()
+

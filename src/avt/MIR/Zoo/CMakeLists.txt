@@ -7,21 +7,26 @@
 #
 #****************************************************************************
 
-set(ZOO_SOURCES
-    BitUtils.C
-    CellReconstructor.C
-    IsovolumeCellReconstructor.C
-    RecursiveCellReconstructor.C
-    ResampledMat.C
-    ZooMIR.C)
+visit_append_list(
+    NAME  avtmir_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/BitUtils.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellReconstructor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/IsovolumeCellReconstructor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/RecursiveCellReconstructor.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/ResampledMat.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/ZooMIR.C)
 
-target_sources(avtmir_ser PRIVATE ${ZOO_SOURCES})
-target_include_directories(avtmir_ser PUBLIC .)
+visit_append_list(
+    NAME  avtmir_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/BitUtils.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellReconstructor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/IsovolumeCellReconstructor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/RecursiveCellReconstructor.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/ResampledMat.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/ZooMIR.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtmir_par PRIVATE ${ZOO_SOURCES})
-    target_include_directories(avtmir_par PUBLIC .)
-endif()
-
-unset(ZOO_SOURCES)
+visit_append_list(
+    NAME  avtmir_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/MIR/Zoo>)
 

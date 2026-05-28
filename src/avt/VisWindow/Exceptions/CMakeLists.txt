@@ -7,20 +7,25 @@
 #
 #****************************************************************************
 
-set(EXCEPTIONS_SOURCES
-    BadColleagueException.C
-    BadInteractorException.C
-    BadPlotException.C
-    BadWindowModeException.C
-    PlotDimensionalityException.C)
+visit_append_list(
+    NAME  avtviswindow_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/BadColleagueException.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/BadInteractorException.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/BadPlotException.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/BadWindowModeException.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/PlotDimensionalityException.C)
 
-target_sources(avtviswindow_ser PRIVATE ${EXCEPTIONS_SOURCES})
-target_include_directories(avtviswindow_ser PUBLIC .)
+visit_append_list(
+    NAME  avtviswindow_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/BadColleagueException.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/BadInteractorException.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/BadPlotException.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/BadWindowModeException.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/PlotDimensionalityException.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisWindowException.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtviswindow_par PRIVATE ${EXCEPTIONS_SOURCES})
-    target_include_directories(avtviswindow_par PUBLIC .)
-endif()
-
-unset(EXCEPTIONS_SOURCES)
+visit_append_list(
+    NAME  avtviswindow_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/VisWindow/Exceptions>)
 

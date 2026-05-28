@@ -1,11 +1,5 @@
 <?xml version="1.0"?>
   <Plugin name="OpenPMD" type="database" label="A reader for the OpenPMD 1.X meta-data format (in HDF5)" version="1.1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <CXXFLAGS>
-      ${HDF5_INCLUDE_DIR}
-    </CXXFLAGS>
-    <LDFLAGS>
-      ${HDF5_LIBRARY_DIR}
-    </LDFLAGS>
     <LIBS>
       ${HDF5_LIB}
     </LIBS>
@@ -14,19 +8,11 @@
       *.opmd
       *.h5
     </FilePatterns>
-    <Files components="M">
+    <Files components="M,E">
       OpenPMDClasses/PMDParticle.C
       OpenPMDClasses/PMDField.C
       OpenPMDClasses/PMDIteration.C
       OpenPMDClasses/PMDFile.C
-      avtOpenPMDFileFormat.C
-    </Files>
-    <Files components="E">
-      OpenPMDClasses/PMDParticle.C
-      OpenPMDClasses/PMDField.C
-      OpenPMDClasses/PMDIteration.C
-      OpenPMDClasses/PMDFile.C
-      avtOpenPMDFileFormat.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

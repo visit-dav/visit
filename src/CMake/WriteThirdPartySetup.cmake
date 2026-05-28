@@ -230,9 +230,9 @@ function(write_standard_header fname kit)
 endfunction()
 
 function(get_all_targets)
-    cmake_parse_arguments(gat "" "KIT;NAMESPACE" "ITEMS" ${ARGN})
-    if(NOT DEFINED gat_KIT)
-        message(FATAL_ERROR "get_all_targets missing KIT arg")
+    cmake_parse_arguments(gat "" "NAME;NAMESPACE" "ITEMS" ${ARGN})
+    if(NOT DEFINED gat_NAME)
+        message(FATAL_ERROR "get_all_targets missing NAME arg")
     endif()
     if(NOT DEFINED gat_NAMESPACE)
         message(FATAL_ERROR "get_all_targets missing NAMESPACE arg")
@@ -250,14 +250,14 @@ function(get_all_targets)
         if(size GREATER_EQUAL 0)
             string(SUBSTRING ${t} 0 ${size} starts_with_namespace)
             if(starts_with_namespace STREQUAL ${gat_NAMESPACE})
-                visit_tp_append_list(NAME ${gat_KIT}_list ITEMS ${t})
+                visit_tp_append_list(NAME ${gat_NAME}_list ITEMS ${t})
             endif()
         else()
         endif()
         get_target_property(ill ${t} INTERFACE_LINK_LIBRARIES)
         if(ill)
             foreach(lib ${ill})
-                get_all_targets(KIT ${gat_KIT}
+                get_all_targets(NAME ${gat_NAME}
                                 NAMESPACE ${gat_NAMESPACE}
                                 ITEMS ${lib})
             endforeach()
@@ -272,9 +272,9 @@ function(create_lib_setup_cmake)
     # 'blt_import_library' cannot be used with the EXPORTABLE flag on.
     #
     # required arguments:
-    #   KIT               Name of the ThirdParty library
+    #   NAME               Name of the ThirdParty library
     #                         (will be used for the filename).
-    #   NAMESPACE         Namespace used by KIT.
+    #   NAMESPACE         Namespace used by NAME.
     #   ITEMS             Initial list of targets to be written.
     #   INCBASE           Base of include directory
     #
@@ -285,9 +285,9 @@ function(create_lib_setup_cmake)
     #                     libraries that need to call this function twice
     #                     (like Qt).
     #
-    cmake_parse_arguments(clsc "SIMPLE_INCLUDE;NESTED_INCLUDES;SKIP_HEADER" "KIT;NAMESPACE;INCBASE" "ITEMS" ${ARGN})
-    if(NOT DEFINED clsc_KIT)
-        message(FATAL_ERROR "create_lib_setup_make missing KIT arg")
+    cmake_parse_arguments(clsc "SIMPLE_INCLUDE;NESTED_INCLUDES;SKIP_HEADER" "NAME;NAMESPACE;INCBASE" "ITEMS" ${ARGN})
+    if(NOT DEFINED clsc_NAME)
+        message(FATAL_ERROR "create_lib_setup_make missing NAME arg")
     endif()
     if(NOT DEFINED clsc_NAMESPACE)
         message(FATAL_ERROR "create_lib_setup_make missing NAMESPACE arg")
@@ -303,20 +303,20 @@ function(create_lib_setup_cmake)
 
     # easiest to get all necessary targets up front
     # (those in the inital targetList and all their dependencies).
-    set(${clsc_KIT}_list)
-    get_all_targets(KIT       ${clsc_KIT}
+    set(${clsc_NAME}_list)
+    get_all_targets(NAME       ${clsc_NAME}
                     NAMESPACE ${clsc_NAMESPACE}
                     ITEMS     ${clsc_ITEMS})
-    list(REMOVE_DUPLICATES ${clsc_KIT}_list)
+    list(REMOVE_DUPLICATES ${clsc_NAME}_list)
 
-    set(fname ${VISIT_BINARY_DIR}/Setup${clsc_KIT}.cmake)
+    set(fname ${VISIT_BINARY_DIR}/Setup${clsc_NAME}.cmake)
     if(NOT ${clsc_SKIP_HEADER})
         file(WRITE ${fname} "")
-        write_standard_header(${fname} ${clsc_KIT})
+        write_standard_header(${fname} ${clsc_NAME})
     endif()
 
-    set(prefix ${clsc_KIT}_PREFIX)
-    foreach(onetarget ${${clsc_KIT}_list})
+    set(prefix ${clsc_NAME}_PREFIX)
+    foreach(onetarget ${${clsc_NAME}_list})
         write_library_entry(${fname} ${onetarget} ${clsc_NAMESPACE} ${clsc_INCBASE} ${prefix} ${clsc_SIMPLE_INCLUDE} ${clsc_NESTED_INCLUDES})
     endforeach()
 
@@ -324,7 +324,7 @@ function(create_lib_setup_cmake)
             DESTINATION  ${VISIT_INSTALLED_VERSION}/cmake)
 
     # cleanup
-    unset(${clsc_KIT}_list CACHE)
+    unset(${clsc_NAME}_list CACHE)
     unset(fname)
     unset(prefix)
 endfunction()

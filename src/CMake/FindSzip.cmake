@@ -7,15 +7,12 @@
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   Removed VISIT_MSVC_VERSION from windows handling.
 #
+#   Kathleen Biagas, Mon Mar 31, 2025
+#   Utilize visit_import_third_party
+#
 #****************************************************************************/
 
-# Use the SZIP_DIR hint from the config-site .cmake file
+# Uses the SZIP_DIR hint from the config-site .cmake file
 
-IF (WIN32)
-  IF(SZIP_LIB_NAME)
-      SET_UP_THIRD_PARTY(SZIP LIBS ${SZIP_LIB_NAME})
-  ELSE()
-      SET_UP_THIRD_PARTY(SZIP LIBS szlibdll)
-  ENDIF()
-ENDIF (WIN32)
+visit_import_third_party(SZIP LIBNAMES sz szip)
 

@@ -1,28 +1,19 @@
 <?xml version="1.0"?>
   <Plugin name="PVLD" type="database" label="Partitioned Velodyne plot file" version="5" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <LIBS>
-      ${HDF5_LIB}
-    </LIBS>
     <FilePatterns>
       *.pvld
       *.vld
       *.bgm
     </FilePatterns>
-    <Files components="M">
-      statm.C
-      dbginfo.C
-      Partition.C
-      pvldReader.C
-      pvldPartReader.C
-      avtPVLDFileFormat.C
-    </Files>
-    <Files components="E">
-      statm.C
-      dbginfo.C
-      Partition.C
-      pvldReader.C
-      pvldPartReader.C
-      avtPVLDFileFormat.C
+    <LIBS>     
+      ${HDF5_LIB}
+    </LIBS>
+    <Files components="M,E">
+     statm.C
+     dbginfo.C
+     Partition.C
+     pvldReader.C
+     pvldPartReader.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

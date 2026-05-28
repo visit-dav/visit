@@ -4,7 +4,6 @@
 
 #ifndef QVIS_COLOR_BUTTON_H
 #define QVIS_COLOR_BUTTON_H
-#include <gui_exports.h>
 
 #include <QAbstractButton>
 #include <QColor>
@@ -32,7 +31,7 @@ class QvisColorSelectionWidget;
 //
 // ****************************************************************************
 
-class GUI_API QvisColorButton : public QAbstractButton
+class QvisColorButton : public QAbstractButton
 {
     Q_OBJECT
 

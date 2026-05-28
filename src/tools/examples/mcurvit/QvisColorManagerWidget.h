@@ -4,7 +4,7 @@
 
 #ifndef QVIS_COLOR_MANAGER_WIDGET_H
 #define QVIS_COLOR_MANAGER_WIDGET_H
-#include <gui_exports.h>
+
 #include <vector>
 #include <QColor>
 #include <QLayout>
@@ -45,7 +45,7 @@ class QvisOpacitySlider;
 //
 // ****************************************************************************
 
-class GUI_API QvisColorManagerWidget : public QScrollArea
+class QvisColorManagerWidget : public QScrollArea
 {
     Q_OBJECT
 

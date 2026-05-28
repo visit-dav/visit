@@ -13,7 +13,9 @@
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
+#ifdef ENGINE
 #include <avtGradientExpression.h>
+#endif
 #include <avtVolumeRenderer.h>
 #include <avtLookupTable.h>
 #include <avtShiftCenteringFilter.h>
@@ -801,10 +803,13 @@ avtVolumePlot::ReleaseData(void)
     {
         volumeResampleFilter->ReleaseData();
     }
+#ifdef ENGINE
     if (gradientFilter != nullptr)
     {
         gradientFilter->ReleaseData();
     }
+#endif
+
 }
 
 
