@@ -410,7 +410,7 @@ function(visit_add_plot_plugin)
         if(VISIT_JAVA)
             file(COPY ${JATTS} DESTINATION ${JavaClient_BINARY_DIR}/src/plots)
             add_custom_target(Java${plot_PNAME} ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ${JATTS}
-                DEPENDS_ON JavaClient
+                DEPENDS JavaClient
                 WORKING_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
         endif()
     endif()
@@ -654,8 +654,8 @@ function(visit_add_operator_plugin)
 
         if(VISIT_JAVA)
             file(COPY ${JATTS} DESTINATION ${JavaClient_BINARY_DIR}/src/operators)
-            add_custom_target(Java${plot_ONAME} ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ${JATTS}
-                DEPENDS_ON JavaClient
+            add_custom_target(Java${operator_ONAME} ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ${JATTS}
+                DEPENDS JavaClient
                 WORKING_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
         endif()
     endif()
