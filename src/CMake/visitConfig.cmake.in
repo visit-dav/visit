@@ -1,0 +1,83 @@
+# VisIt settings
+
+enable_language(CXX)
+set(CMAKE_CXX_STANDARD @CMAKE_CXX_STANDARD@)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
+set(CMAKE_CONFIGURATION_TYPES Release)
+
+set(BUILD_SHARED_LIBS @BUILD_SHARED_LIBS@)
+
+# Warn if compilers might be incompatible.
+if(WIN32 AND MSVC)
+    if(NOT @MSVC_VERSION@ STREQUAL ${MSVC_VERSION})
+      message(WARNING "MSVC version used for VisIt (@MSVC_VERSION@) differs from the one used for the current project ${MSVC_VERSION}!  They may incompatible.")
+    endif()
+else()
+    if(EXISTS "@CMAKE_C_COMPILER@" AND
+       NOT ${CMAKE_C_COMPILER} STREQUAL "@CMAKE_C_COMPILER@")
+      message(WARNING "C compiler used for VisIt (@CMAKE_C_COMPILER@)\n"
+              "differs from the one used for the current project!\n"
+              "(${CMAKE_C_COMPILER}) They may be incompatible.")
+    endif()
+    if(EXISTS "@CMAKE_CXX_COMPILER@" AND
+       NOT ${CMAKE_CXX_COMPILER} STREQUAL "@CMAKE_CXX_COMPILER@")
+      message(WARNING "C++ compiler used for VisIt (@CMAKE_CXX_COMPILER@)\n"
+              "differs from the one used for the current project!\n"
+              "(${CMAKE_CXX_COMPILER})  They may be incompatible.")
+    endif()
+endif()
+
+
+# The comment below is intended to capture version information
+# of the compiler in use at the time CMake was invoked to build
+# VisIt. If there is no comment in the intervening lines, then
+# compiler version information was not successfully obtained.
+# -------------------------------------------------------------
+# @CMAKE_C_COMPILER_VERSION_MESSAGE@
+# @CMAKE_CXX_COMPILER_VERSION_MESSAGE@
+# -------------------------------------------------------------
+
+include(${CMAKE_CURRENT_LIST_DIR}/CheckMinimumCompilerVersion.cmake)
+
+
+# VisIt options
+set(VISIT_PYTHON_SCRIPTING       @VISIT_PYTHON_SCRIPTING@)
+set(VISIT_SERVER_COMPONENTS_ONLY @VISIT_SERVER_COMPONENTS_ONLY@)
+set(VISIT_ENGINE_ONLY            @VISIT_ENGINE_ONLY@)
+set(VISIT_DBIO_ONLY              @VISIT_DBIO_ONLY@)
+set(VISIT_JAVA                   @VISIT_JAVA@)
+set(VISIT_SLIVR                  @VISIT_SLIVR@)
+set(HAVE_OSPRAY                  @HAVE_OSPRAY@)
+set(HAVE_ANARI                   @HAVE_ANARI@)
+set(HAVE_VTKM                    @HAVE_VTKM@)
+set(HAVE_ICET                    @HAVE_ICET@)
+set(HAVE_HDF5                    @HAVE_HDF5@)
+set(HAVE_SILO                    @HAVE_SILO@)
+set(HAVE_ANARI                   @HAVE_ANARI@)
+
+set(VISIT_PARALLEL               @VISIT_PARALLEL@)
+set(VISIT_PARALLEL_DEFINES       @VISIT_PARALLEL_DEFINES@)
+
+#include files with functions/macros
+include(${CMAKE_CURRENT_LIST_DIR}/VisItMacros.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/PluginMacros.cmake)
+
+# Include Find module for TP dependencies
+include(${CMAKE_CURRENT_LIST_DIR}/FindDependencies.cmake)
+
+# Include visit targets
+include(${CMAKE_CURRENT_LIST_DIR}/visitTargets.cmake)
+
+# satisfy some VTK dependencies
+add_library(ZLIB::ZLIB ALIAS zlib)
+
+if(TARGET tiff)
+  add_library(TIFF::TIFF ALIAS tiff)
+endif()
+
+set(BLT_CXX_STD @BLT_CXX_STD@)
+set(BLT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/blt)
+include(${CMAKE_CURRENT_LIST_DIR}/SetupBLT.cmake)
+
+cmake_path(SET VISIT_INCLUDE_DIR NORMALIZE ${CMAKE_CURRENT_LIST_DIR}/../include/visit)

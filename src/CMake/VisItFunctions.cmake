@@ -8,6 +8,9 @@
 #    Kathleen Biagas, Tue Jan 31, 2023
 #    Add visit_install_system_libs and visit_install_mpich functions.
 #
+#    Kathleen Biagas, Thu May 16, 2024
+#    Add visit_install_export_targets functions.
+#
 # ------------------------------------------------------------------------
 
 function(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
@@ -71,10 +74,6 @@ endfunction()
 
 function(VISIT_3RDPARTY_LIBDEP pkg)
     VISIT_3RDPARTY_DEP(${pkg}_LIBDEP "${pkg} library dependencies")
-endfunction()
-
-function(VISIT_3RDPARTY_INCDEP pkg)
-    VISIT_3RDPARTY_DEP(${pkg}_INCDEP "${pkg} include dependencies")
 endfunction()
 
 function(VISIT_3RDPARTY_DIR pkg)
@@ -213,3 +212,38 @@ function(visit_install_mpich)
             DIRECTORY_PERMISSIONS ${vdp})
 endfunction()
 
+# need a function different than VISIT_INSTALL_TARGETS because we cannot use
+# the EXPORT unless all of the target's VisIt dependencies are also exported.
+# so have a separate function until all of VisIt's libraries have been updated
+# to be exported properly
+function(visit_install_export_targets_relative dest_dir)
+    if(VISIT_STATIC)
+        # Skip installation of static libraries when we build statically
+        foreach(T ${ARGN})
+            get_target_property(pType ${T} TYPE)
+            if(NOT ${pType} STREQUAL "STATIC_LIBRARY")
+                install(TARGETS ${T} EXPORT visitTargets
+                    RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
+                    BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
+                    LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+                    ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}/${dest_dir}
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                WORLD_READ             WORLD_EXECUTE)
+            endif()
+        endforeach()
+    else()
+        install(TARGETS ${ARGN} EXPORT visitTargets
+            RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
+            BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
+            LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+            ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}/${dest_dir}
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                        GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                        WORLD_READ             WORLD_EXECUTE)
+    endif()
+endfunction()
+
+function(visit_install_export_targets)
+    visit_install_export_targets_relative("" ${ARGN})
+endfunction()

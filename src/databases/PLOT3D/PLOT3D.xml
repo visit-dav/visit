@@ -5,16 +5,7 @@
       *.x
       *.vp3d
     </FilePatterns>
-    <Files components="M">
-      avtPLOT3DFileFormat.C
-      avtPLOT3DOptions.C
-      vtkPLOT3DReaderInternals.C
-      vtkPLOT3DReader.C
-      PLOT3DFunctions.C
-    </Files>
-    <Files components="E">
-      avtPLOT3DFileFormat.C
-      avtPLOT3DOptions.C
+    <Files components="M,E">
       vtkPLOT3DReaderInternals.C
       vtkPLOT3DReader.C
       PLOT3DFunctions.C

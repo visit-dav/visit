@@ -2,9 +2,16 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
+#-----------------------------------------------------------------------------
+# Modifications:
+#   Kathleen Biagas, Mon Mar 31, 2025
+#   Utilize visit_import_third_party.
 #
-# Use the FMS_DIR hint from the config-site .cmake file
+#-----------------------------------------------------------------------------
+
+#
+# Uses the FMS_DIR hint from the config-site .cmake file
 #
 
-SET_UP_THIRD_PARTY(FMS LIBS fms)
+visit_import_third_party(FMS LIBS fms)
 

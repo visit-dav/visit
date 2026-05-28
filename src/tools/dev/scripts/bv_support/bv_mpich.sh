@@ -55,8 +55,7 @@ function bv_mpich_host_profile
             >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON TYPE BOOL)" >> $HOSTCONF
         echo "" >> $HOSTCONF
-        echo "# Tell VisIt the parallel compiler so it can deduce parallel flags" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER \${VISIT_MPICH_DIR}/bin/mpicc TYPE FILEPATH)"  >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_MPI_HOME \${VISIT_MPICH_DIR} TYPE PATH)"  >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)" >> $HOSTCONF
     fi
 }

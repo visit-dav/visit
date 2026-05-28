@@ -1,32 +1,12 @@
 <?xml version="1.0"?>
   <Plugin name="ADIOS" type="database" label="ADIOS" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <CXXFLAGS>
-      $(ADIOS_INCLUDE_DIR)
-    </CXXFLAGS>
-    <LDFLAGS>
-      $(ADIOS_LIBRARY_DIR)
-    </LDFLAGS>
-    <LIBS>
-      vtkFiltersHybrid
-    </LIBS>
     <FilePatterns>
       *.bp
     </FilePatterns>
-    <Files components="M">
-      avtADIOSFileFormat.C
-      avtADIOSBasicFileFormat.C
-      avtXGCFileFormat.C
-      avtSpecFEMFileFormat.C
-      avtADIOSSchemaFileFormat.C
-      avtLAMMPSFileFormat.C
-      avtPIConGPUFileFormat.C
-      ADIOSFileObject.C
-    </Files>
-    <LIBS components="M">
-      -ladiosread_nompi
+    <LIBS>
+      vtkFiltersHybrid
     </LIBS>
-    <Files components="E">
-      avtADIOSFileFormat.C
+    <Files components="M,E">
       avtADIOSBasicFileFormat.C
       avtXGCFileFormat.C
       avtSpecFEMFileFormat.C
@@ -35,11 +15,11 @@
       avtPIConGPUFileFormat.C
       ADIOSFileObject.C
     </Files>
-    <LIBS components="ESer">
-      -ladiosread_nompi
+    <LIBS components="M,ESer">
+      adios
     </LIBS>
     <LIBS components="EPar">
-      -ladiosread
+      adios_mpi
     </LIBS>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="ADIOS.code">
       <Function name="ADIOSCommonPluginInfo::SetupDatabase" user="false" member="true">

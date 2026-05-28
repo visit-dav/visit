@@ -15,7 +15,25 @@
 #
 #****************************************************************************
 
-SET(CLIPEDITOR_SOURCES
+
+visit_add_executable(
+    NAME        genhexcases
+    SOURCES     genhexcases.C
+    SKIP_INSTALL)
+visit_add_executable(
+    NAME        gentestcases
+    SOURCES     gentetcases.C
+    SKIP_INSTALL)
+visit_add_executable(
+    NAME        genvoxcases
+    SOURCES     genvoxcases.C
+    SKIP_INSTALL)
+visit_add_executable(
+    NAME        genpolycases
+    SOURCES     genpolycases.C
+    SKIP_INSTALL)
+
+set(clipeditor_SOURCES
     ClipEditor.C
     DataSet.C
     Font.C
@@ -24,40 +42,42 @@ SET(CLIPEDITOR_SOURCES
     Shape.C
     Transforms.C
     Vector.C
-    Viewer.C
-)
+    Viewer.C)
 
-ADD_EXECUTABLE(genhexcases genhexcases.C)
-ADD_EXECUTABLE(gentetcases gentetcases.C)
-ADD_EXECUTABLE(genvoxcases genvoxcases.C)
-ADD_EXECUTABLE(genpolycases genpolycases.C)
+set(clipeditor_HEADERS
+    ClipEditor.h
+    DataSet.h
+    Font.h
+    Matrix.h
+    Shape.h
+    Transforms.h
+    Vector.h
+    Viewer.h)
 
-SET(RELEVANT_QT_LIBS 
+set(RELEVANT_QT_LIBS 
     ${QT_QTOPENGL_LIBRARY}
     ${QT_QTGUI_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     ${QT_QTWIDGETS_LIBRARY}
-    ${QT_QTOPENGLWIDGETS_LIBRARY}
-)
-IF(VISIT_STATIC)
+    ${QT_QTOPENGLWIDGETS_LIBRARY})
+
+if(VISIT_STATIC)
     MAC_NIB_INSTALL(clipeditor)
-    SET(RELEVANT_QT_LIBS
-        ${RELEVANT_QT_LIBS}
+    list(APPEND RELEVANT_QT_LIBS
         ${QT_QTCORE_LIB_DEPENDENCIES}
         ${QT_QTGUI_LIB_DEPENDENCIES}
-        ${QT_QTOPENGL_LIB_DEPENDENCIES}
-    )
-ENDIF(VISIT_STATIC)
+        ${QT_QTOPENGL_LIB_DEPENDENCIES})
+endif()
 
-INCLUDE_DIRECTORIES(${VISIT_SOURCE_DIR}/visit_vtk/lightweight)
-
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-ADD_EXECUTABLE(clipeditor ${VISIT_APPLICATION_STYLE} ${CLIPEDITOR_SOURCES})
+visit_add_executable(
+    NAME        clipeditor
+    SOURCES     ${clipeditor_SOURCES}
+    HEADERS     ${clipeditor_HEADERS}
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
+    DEPENDS_ON  ${RELEVANT_QT_LIBS})
 
 set_target_properties(clipeditor PROPERTIES AUTOMOC ON)
-
-TARGET_LINK_LIBRARIES(clipeditor  ${RELEVANT_QT_LIBS} ${OPENGL_LIBRARIES})
 
 qt6_disable_unicode_defines(clipeditor)
 

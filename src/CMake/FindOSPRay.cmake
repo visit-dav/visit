@@ -45,23 +45,22 @@ find_package(ospray ${OSPRAY_VERSION} REQUIRED
              NO_DEFAULT_PATH)
 
 if(ospray_FOUND)
-    set(HAVE_LIBOSPRAY true)
-    add_definitions(-DHAVE_OSPRAY)
-    # since all the libs needed for VisIt at runtime aren't
-    # enumerated in the ospray targets from find_package,
-    # just install all of them
-    set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib)
-    if(EXISTS ${VISIT_OSPRAY_DIR}/lib64)
-        set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib64)
-    endif()
-    if(NOT ospray_lib_libs)
-        file(GLOB ospray_lib_libs
-                LIST_DIRECTORIES FALSE
-                ${LIB_SEARCH_PATH}/*)
-    endif()
-    unset(LIB_SEARCH_PATH)
+    set(HAVE_OSPRAY TRUE CACHE BOOL "Have ospray libraries")
 
     if(VISIT_INSTALL_THIRD_PARTY)
+        # since all the libs needed for VisIt at runtime aren't
+        # enumerated in the ospray targets from find_package,
+        # just install all of them
+        set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib)
+        if(EXISTS ${VISIT_OSPRAY_DIR}/lib64)
+            set(LIB_SEARCH_PATH ${VISIT_OSPRAY_DIR}/lib64)
+        endif()
+        if(NOT ospray_lib_libs)
+            file(GLOB ospray_lib_libs
+                 LIST_DIRECTORIES FALSE
+                 ${LIB_SEARCH_PATH}/*)
+        endif()
+        unset(LIB_SEARCH_PATH)
         #  install libraries
         foreach(lib ${ospray_lib_libs})
             THIRD_PARTY_INSTALL_LIBRARY(${lib})

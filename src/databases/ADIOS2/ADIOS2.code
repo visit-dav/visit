@@ -52,3 +52,11 @@ ADIOS2CommonPluginInfo::SetupDatabase(const char *const *list,
     return db;
 }
 
+Target: xml2cmake
+Code: custom
+Prefix:
+Postfix:
+if(VISIT_PARALLEL)
+    target_compile_definitions(EADIOS2Database_par PRIVATE ADIOS2_USE_MPI)
+endif()
+

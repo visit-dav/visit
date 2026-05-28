@@ -1,4 +1,0 @@
-Target: xml2cmake
-Condition: WIN32
-Definitions: ${CGNS_WIN32_DEFINES}
-

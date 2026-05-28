@@ -2,11 +2,14 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-# Use the BLOSC_DIR hint from the config-site .cmake file
+#-----------------------------------------------------------------------------
+# Modifications:
+#   Kathleen Biagas, Wed Apr 9, 2025
+#   Utilize visit_import_third_party.
+#
+#-----------------------------------------------------------------------------
 
-if(WIN32)
-    SET_UP_THIRD_PARTY(BLOSC2 LIBS libblosc2)
-else()
-    SET_UP_THIRD_PARTY(BLOSC2 LIBS blosc2)
-endif()
+# Uses the BLOSC2_DIR hint from the config-site .cmake file
+
+visit_import_third_party(BLOSC2 LIBNAMES blosc2 libblosc2)
 

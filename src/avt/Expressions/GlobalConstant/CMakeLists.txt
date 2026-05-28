@@ -7,22 +7,28 @@
 #
 #*****************************************************************************
 
-set(GLOBAL_CONSTANT_SOURCES
-    avtGlobalAvgExpression.C
-    avtGlobalMaxExpression.C
-    avtGlobalMinExpression.C
-    avtGlobalRMSExpression.C
-    avtGlobalStdDevExpression.C
-    avtGlobalSumExpression.C
-    avtGlobalVarianceExpression.C)
+visit_append_list(
+    NAME  avtexpressions_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalAvgExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalMaxExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalMinExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalRMSExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalStdDevExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalSumExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalVarianceExpression.C)
 
-target_sources(avtexpressions_ser PRIVATE ${GLOBAL_CONSTANT_SOURCES})
-target_include_directories(avtexpressions_ser PUBLIC .)
+visit_append_list(
+    NAME  avtexpressions_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalAvgExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalMaxExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalMinExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalRMSExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalStdDevExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalSumExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGlobalVarianceExpression.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtexpressions_par PRIVATE ${GLOBAL_CONSTANT_SOURCES})
-    target_include_directories(avtexpressions_par PUBLIC .)
-endif()
-
-unset(GLOBAL_CONSTANT_SOURCES)
+visit_append_list(
+    NAME  avtexpressions_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Expressions/GlobalConstant>)
 
