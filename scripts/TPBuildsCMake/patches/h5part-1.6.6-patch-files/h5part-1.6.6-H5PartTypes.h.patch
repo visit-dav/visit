@@ -1,0 +1,36 @@
+--- src\H5PartTypes.h	2026-02-09 10:11:42.000000000 -0800
++++ src\H5PartTypes.h	2025-12-10 11:08:30.000000000 -0800
+@@ -16,16 +16,12 @@
+ typedef h5part_int64_t (*h5part_error_handler)( const char*, const h5part_int64_t, const char*,...)
+ #ifdef __GNUC__
+ __attribute__ ((format (printf, 3, 4)))
+ #endif
+  ;
+ 
+-#ifndef PARALLEL_IO
+-typedef unsigned long		MPI_Comm;
+-#endif
+-
+ #define H5PART_STEPNAME_LEN	64
+ #define H5PART_DATANAME_LEN	64
+ 
+ struct H5BlockFile;
+ 
+ /**
+@@ -83,14 +79,15 @@
+ 	*/
+ 	int myproc;
+ 
+ 	/**
+ 	   MPI communicator
+ 	*/
++#ifdef PARALLEL_IO
+ 	MPI_Comm comm;
+-
++#endif
+ 	int throttle;
+ 
+ 	struct H5BlockStruct *block;
+ 	h5part_int64_t (*close_block)(struct H5PartFile *f);
+ 
+ #ifdef PARALLEL_IO

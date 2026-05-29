@@ -1,0 +1,34 @@
+--- CMakeLists.txt	2026-02-19 16:05:16.000000000 -0800
++++ CMakeLists.txt	2026-02-20 13:51:54.000000000 -0800
+@@ -571,14 +571,14 @@
+ 
+     # pkg-config .pc file
+     configure_file(
+          "${CMAKE_CURRENT_SOURCE_DIR}/blosc2.pc.in"
+          "${CMAKE_CURRENT_BINARY_DIR}/blosc2.pc"
+          @ONLY)
+-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/blosc2.pc"
+-            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig" COMPONENT DEV)
++    #install(FILES "${CMAKE_CURRENT_BINARY_DIR}/blosc2.pc"
++    #        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig" COMPONENT DEV)
+ 
+     # uninstaller
+     configure_file(
+         "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+         "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+         @ONLY)
+@@ -586,13 +586,13 @@
+         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+ endif()
+ 
+ 
+ # packaging
+ if(NOT BLOSC_IS_SUBPROJECT)
+-    include(InstallRequiredSystemLibraries)
++    #include(InstallRequiredSystemLibraries)
+ 
+     set(CPACK_GENERATOR TGZ ZIP)
+     set(CPACK_SOURCE_GENERATOR TGZ ZIP)
+     set(CPACK_PACKAGE_VERSION_MAJOR ${BLOSC2_VERSION_MAJOR})
+     set(CPACK_PACKAGE_VERSION_MINOR ${BLOSC2_VERSION_MINOR})
+     set(CPACK_PACKAGE_VERSION_PATCH ${BLOSC2_VERSION_PATCH})

@@ -1,0 +1,21 @@
+--- Rendering\RayTracing\vtkOSPRayPass.cxx	2025-06-23 11:12:36.000000000 -0800
++++ Rendering\RayTracing\vtkOSPRayPass.cxx	2025-06-03 07:37:59.000000000 -0800
+@@ -414,12 +414,18 @@
+     usedDepthTex->Deactivate();
+     usedColorTex->Deactivate();
+   }
+ }
+ 
+ //------------------------------------------------------------------------------
++vtkViewNodeFactory* vtkOSPRayPass::GetViewNodeFactory()
++{
++  return this->Internal->Factory;
++}
++
++//------------------------------------------------------------------------------
+ bool vtkOSPRayPass::IsSupported()
+ {
+   static bool detected = false;
+   static bool is_supported = true;
+ 
+   // Short-circuit to avoid querying on every call.

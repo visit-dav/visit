@@ -1,0 +1,50 @@
+--- src\silo\silo_ns.c	2025-11-20 21:30:59.000000000 -0800
++++ src\silo\silo_ns.c	2026-03-02 07:56:29.000000000 -0800
+@@ -421,28 +421,39 @@
+        that is true, we treat the first and last characters as
+        (unnecessary) delimiter characters and remove them. Otherwise,
+        we assume no delimter characters are present and keep everything.
+     */
+     if (rv->ncspecs == 0)
+     {
+-        int rm_unnecessary_delim = 0;
+-
+-        if (n > 2 && fmt[0] == fmt[n-1])
+-            rm_unnecessary_delim = !db_VariableNameValid(fmt);
+-
+         free(rv->fmt);
+ 
+-        if (rm_unnecessary_delim)
++        /* If whole string is valid, take all of it. */
++        if (db_VariableNameValid(fmt))
+         {
++            rv->fmt = STRNDUP(&fmt[0],n);
++            rv->fmtlen = n;
++            return rv;
++        }
++
++        /* If whole string but first char is valid, take all but first char */
++        if (db_VariableNameValid(&fmt[1]))
++        {
++            rv->fmt = STRNDUP(&fmt[1],n-1);
++            rv->fmtlen = n-1;
++            return rv;
++        }
++
++        if (fmt[0] == fmt[n-1])
++        {
+             rv->fmt = STRNDUP(&fmt[1],n-2);
+             rv->fmtlen = n-2;
+         }
+         else
+         {
+-            rv->fmt = STRNDUP(&fmt[0],n);
+-            rv->fmtlen = n;
++            rv->fmt = STRNDUP(&fmt[0],n-1);
++            rv->fmtlen = n-1;
+         }
+ 
+         return rv;
+     }
+ 
+     /* Make a pass through rest of fmt string to count array refs in the

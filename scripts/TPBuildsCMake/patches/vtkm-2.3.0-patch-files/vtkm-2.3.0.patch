@@ -1,0 +1,24 @@
+--- vtkm/cont/arg/TransportTagTopologyFieldIn.h	2025-04-09 10:09:45.000000000 -0800
++++ vtkm/cont/arg/TransportTagTopologyFieldIn.h	2026-01-23 07:06:46.000000000 -0800
+@@ -85,19 +85,21 @@
+   ExecObjectType operator()(const ContObjectType& object,
+                             const vtkm::cont::CellSet& inputDomain,
+                             vtkm::Id,
+                             vtkm::Id,
+                             vtkm::cont::Token& token) const
+   {
++#if 0
+     if (object.GetNumberOfValues() != detail::TopologyDomainSize(inputDomain, TopologyElementTag()))
+     {
+       throw vtkm::cont::ErrorBadValue("Input array to worklet invocation the wrong size.");
+     }
++#endif()
+ 
+     return object.PrepareForInput(Device(), token);
+   }
+ };
+ }
+ }
+ } // namespace vtkm::cont::arg
+ 
+ #endif //vtk_m_cont_arg_TransportTagTopologyFieldIn_h

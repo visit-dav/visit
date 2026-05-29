@@ -1,0 +1,99 @@
+--- qwtconfig.pri	2023-02-17 03:44:55.000000000 -0800
++++ qwtconfig.pri	2026-02-11 08:30:05.000000000 -0800
+@@ -13,23 +13,24 @@
+ QWT_VERSION      = $${QWT_VER_MAJ}.$${QWT_VER_MIN}.$${QWT_VER_PAT}
+ 
+ ######################################################################
+ # Install paths
+ ######################################################################
+ 
+-QWT_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]
++# force setting of QWT_INSTALL_PREFIX from command line
++#QWT_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]
+ 
+-unix {
+-    QWT_INSTALL_PREFIX    = /usr/local/qwt-$$QWT_VERSION-dev
++#unix {
++#    QWT_INSTALL_PREFIX    = /usr/local/qwt-$$QWT_VERSION-dev
+     # QWT_INSTALL_PREFIX = /usr/local/qwt-$$QWT_VERSION-dev-qt-$$QT_VERSION
+-}
++#}
+ 
+-win32 {
+-    QWT_INSTALL_PREFIX    = C:/Qwt-$$QWT_VERSION-dev
++#win32 {
++#    QWT_INSTALL_PREFIX    = C:/Qwt-$$QWT_VERSION-dev
+     # QWT_INSTALL_PREFIX = C:/Qwt-$$QWT_VERSION-dev-qt-$$QT_VERSION
+-}
++#}
+ 
+ QWT_INSTALL_DOCS      = $${QWT_INSTALL_PREFIX}/doc
+ QWT_INSTALL_HEADERS   = $${QWT_INSTALL_PREFIX}/include
+ QWT_INSTALL_LIBS      = $${QWT_INSTALL_PREFIX}/lib
+ 
+ ######################################################################
+@@ -39,13 +40,13 @@
+ # directories listed in the QT_PLUGIN_PATH environment variable.
+ # When using the path below QWT_INSTALL_PREFIX you need to
+ # add $${QWT_INSTALL_PREFIX}/plugins to QT_PLUGIN_PATH in the
+ # runtime environment of designer/creator.
+ ######################################################################
+ 
+-QWT_INSTALL_PLUGINS   = $${QWT_INSTALL_PREFIX}/plugins/designer
++#QWT_INSTALL_PLUGINS   = $${QWT_INSTALL_PREFIX}/plugins/designer
+ 
+ # linux distributors often organize the Qt installation
+ # their way and QT_INSTALL_PREFIX doesn't offer a good
+ # path. Also QT_INSTALL_PREFIX is only one of the default
+ # search paths of the designer - not the Qt creator
+ 
+@@ -60,13 +61,13 @@
+ # ( see http://doc.trolltech.com/4.7/qmake-advanced-usage.html#adding-new-configuration-features )
+ # I recommend not to install the Qwt features together with the
+ # Qt features, because you will have to reinstall the Qwt features,
+ # with every Qt upgrade.
+ ######################################################################
+ 
+-QWT_INSTALL_FEATURES  = $${QWT_INSTALL_PREFIX}/features
++#QWT_INSTALL_FEATURES  = $${QWT_INSTALL_PREFIX}/features
+ # QWT_INSTALL_FEATURES  = $$[QT_INSTALL_PREFIX]/features
+ 
+ ######################################################################
+ # Build the static/shared libraries.
+ # If QwtDll is enabled, a shared library is built, otherwise
+ # it will be a static library.
+@@ -134,31 +135,31 @@
+ 
+ ######################################################################
+ # If you want to auto build the examples, enable the line below
+ # Otherwise you have to build them from the examples directory.
+ ######################################################################
+ 
+-QWT_CONFIG     += QwtExamples
++#QWT_CONFIG     += QwtExamples
+ 
+ ######################################################################
+ # The playground is primarily intended for the Qwt development
+ # to explore and test new features. Nevertheless you might find
+ # ideas or code snippets that help for application development
+ # If you want to auto build the applications in playground, enable
+ # the line below.
+ # Otherwise you have to build them from the playground directory.
+ ######################################################################
+ 
+-QWT_CONFIG     += QwtPlayground
++#QWT_CONFIG     += QwtPlayground
+ 
+ ######################################################################
+ # If you want to auto build the tests, enable the line below
+ # Otherwise you have to build them from the tests directory.
+ ######################################################################
+ 
+-QWT_CONFIG     += QwtTests
++#QWT_CONFIG     += QwtTests
+ 
+ ######################################################################
+ # When Qt has been built as framework qmake wants
+ # to link frameworks instead of regular libs
+ ######################################################################
+ 

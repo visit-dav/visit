@@ -1,0 +1,20 @@
+--- qwt.pro	2023-02-17 03:44:55.000000000 -0800
++++ qwt.pro	2026-02-11 08:08:35.000000000 -0800
+@@ -11,12 +11,17 @@
+ 
+     lessThan(QT_MINOR_VERSION, 8) {
+         error(Qt >= 4.8 required.)
+     }
+ }
+ 
++# force setting of QWT_INSTALL_PREFIX on command line
++!defined(QWT_INSTALL_PREFIX, var) {
++        error(QWT_INSTALL_PREFIX must be defined on command line.)
++}
++
+ include( qwtconfig.pri )
+ 
+ TEMPLATE = subdirs
+ CONFIG   += ordered
+ 
+ SUBDIRS = \

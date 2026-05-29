@@ -1,0 +1,31 @@
+--- Rendering\ANARI\vtkAnariPolyDataMapperInheritInterface.h	2026-02-26 12:51:15.000000000 -0800
++++ Rendering\ANARI\vtkAnariPolyDataMapperInheritInterface.h	2026-02-26 13:23:44.000000000 -0800
+@@ -63,24 +63,24 @@
+   virtual int GetSurfaceRepresentation(vtkProperty* property) const;
+   virtual ParameterFlags GetBaseUpdateResponsibility() const;
+ 
+   virtual anari::Geometry InitializeSpheres(vtkPolyData* polyData, vtkProperty* property,
+     std::vector<vec3>& vertices, std::vector<uint32_t>& indexArray, double pointSize,
+     vtkDataArray* scaleArray, vtkPiecewiseFunction* scaleFunction, std::vector<vec2>& textureCoords,
+-    std::vector<float>& pointValueTextureCoords, std::vector<vec4>& pointColors, int cellFlag);
++    std::vector<vec2>& pointValueTextureCoords, std::vector<vec4>& pointColors, int cellFlag);
+   virtual anari::Geometry InitializeCurves(vtkPolyData* polyData, vtkProperty* property,
+     std::vector<vec3>& vertices, std::vector<uint32_t>& indexArray, double lineWidth,
+     vtkDataArray* scaleArray, vtkPiecewiseFunction* scaleFunction, std::vector<vec2>& textureCoords,
+-    std::vector<float>& pointValueTextureCoords, std::vector<vec4>& pointColors, int cellFlag);
++    std::vector<vec2>& pointValueTextureCoords, std::vector<vec4>& pointColors, int cellFlag);
+   virtual anari::Geometry InitializeCylinders(vtkPolyData* polyData, vtkProperty* property,
+     std::vector<vec3>& vertices, std::vector<uint32_t>& indexArray, double lineWidth,
+     vtkDataArray* scaleArray, vtkPiecewiseFunction* scaleFunction, std::vector<vec2>& textureCoords,
+-    std::vector<float>& pointValueTextureCoords, std::vector<vec4>& pointColors, int cellFlag);
++    std::vector<vec2>& pointValueTextureCoords, std::vector<vec4>& pointColors, int cellFlag);
+   virtual anari::Geometry InitializeTriangles(vtkPolyData* polyData, vtkProperty* property,
+     std::vector<vec3>& vertices, std::vector<uint32_t>& indexArray, std::vector<vec3>& normals,
+-    std::vector<vec2>& textureCoords, std::vector<float>& pointValueTextureCoords,
++    std::vector<vec2>& textureCoords, std::vector<vec2>& pointValueTextureCoords,
+     std::vector<vec4>& pointColors, int cellFlag);
+ 
+   /**
+    * Inheriting classes can also influence the postfix of the created prim names.
+    */
+   virtual const char* GetSpheresPostfix() const;
