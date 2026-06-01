@@ -579,6 +579,8 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     bool               ValidNetworkId(int id) const;
     void               ExportSingleDatabase(int, const ExportDBAttributes &);
 
+    void               CopyTileToImage(int, int, int, int, int, int, int, int,
+                                       avtImage_p &, avtImage_p &);
     virtual
     avtDataObject_p    RenderTiledInternal();
     virtual
