@@ -16,3 +16,6 @@ build-mb-*
 _logs
 *.vscode
 *.DS_Store
+.local
+build-*
+*.vlog

@@ -41,7 +41,7 @@ public:
     // delete all of the callback data.
     void Clear()
     {
-        std::for_each(Data.begin(), Data.end(), std::ptr_fun(del<simV2_CallbackData>));
+        std::for_each(Data.begin(), Data.end(), del<simV2_CallbackData>);
         Data.clear();
     }
 private:

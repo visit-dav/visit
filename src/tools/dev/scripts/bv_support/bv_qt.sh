@@ -115,6 +115,11 @@ function apply_qt_base_patch
                 return 1
             fi
 
+            qt6_macos_arm64_neon_patch
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+
             qt6_macos_15_opengl_patch
             if [[ $? != 0 ]] ; then
                 return 1
@@ -130,6 +135,39 @@ function apply_qt_base_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+    fi
+}
+
+function qt6_macos_arm64_neon_patch
+{
+    info "Patching qt 6 for macOS arm64 NEON runtime detection"
+
+    patch -p0 << \EOF
+diff -crB qtbase-everywhere-src-6.4.2/src/corelib/global/qsimd.cpp qtbase-everywhere-src-6.4.2-patched/src/corelib/global/qsimd.cpp
+*** qtbase-everywhere-src-6.4.2/src/corelib/global/qsimd.cpp	Tue Nov 15 23:54:24 2022
+--- qtbase-everywhere-src-6.4.2-patched/src/corelib/global/qsimd.cpp	Sun May 31 22:27:00 2026
+***************
+*** 131,137 ****
+--- 131,141 ----
+      // fall back to compile-time flags if getauxval failed
+  #elif defined(Q_OS_DARWIN) && defined(Q_PROCESSOR_ARM)
+      unsigned feature;
+      size_t len = sizeof(feature);
++ #  if defined(Q_PROCESSOR_ARM_64)
++     // NEON is baseline on AArch64. Some newer macOS releases no longer
++     // report hw.optional.neon, so do not fail Qt's required-feature check.
++     features |= CpuFeatureNEON;
++ #  else
+      if (sysctlbyname("hw.optional.neon", &feature, &len, nullptr, 0) == 0)
+          features |= feature ? CpuFeatureNEON : 0;
++ #  endif
+      if (sysctlbyname("hw.optional.armv8_crc32", &feature, &len, nullptr, 0) == 0)
+          features |= feature ? CpuFeatureCRC32 : 0;
+      // There is currently no optional value for crypto/AES.
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 6 for macOS arm64 NEON runtime detection failed"
+        return 1
     fi
 }
 
@@ -631,17 +669,31 @@ function build_qt_tools
     cd ${QT_TOOLS_BUILD_DIR}
 
     qt_module_cmake_flags="$(qt_mesagl_cmake_flags)"
+    qt_module_cmake_flags="${qt_module_cmake_flags# -- }"
 
     info "Configuring Qt tools . . . "
     env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
         ${QT_INSTALL_DIR}/bin/qt-configure-module  ../${QT_TOOLS_SOURCE_DIR} \
+        -- -DFEATURE_assistant=OFF \
         ${qt_module_cmake_flags}
+    if [[ $? != 0 ]] ; then
+        warn "Qt tools configure failed.  Giving up"
+        return 1
+    fi
 
     info "Building Qt6 tools . . . "
     ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+        warn "Qt tools build failed.  Giving up"
+        return 1
+    fi
 
     info "Installing Qt tools . . . "
     ${CMAKE_COMMAND} --install .
+    if [[ $? != 0 ]] ; then
+        warn "Qt tools install failed.  Giving up"
+        return 1
+    fi
 
     return 0;
 }
