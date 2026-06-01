@@ -2166,12 +2166,16 @@ ViewerWindow::UpdateColorTable(const std::string &ctName)
 // Creation:   Fri Jun 15 13:23:56 PST 2001
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I added a call to TriggerPlotListUpdate to update annotations on a
+//   redraw.
 //
 // ****************************************************************************
 
 void
 ViewerWindow::RedrawWindow()
 {
+    visWindow->TriggerPlotListUpdate();
     visWindow->EnableUpdates();
     visWindow->Render();
 }

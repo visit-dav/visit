@@ -463,7 +463,7 @@ class VisitInteractor;
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //    Added Set/Get TiledRenderingWidth and TiledRenderingHeight to
-//    support tiled rendering.
+//    support tiled rendering. I added TriggerPlotListUpdate.
 //
 // ****************************************************************************
 
@@ -793,6 +793,8 @@ public:
     void                 GetExtents(double ext[2]); // TODO: Remove with VTK8
 
     vtkRenderer         *GetForeground(void);
+
+    void                 TriggerPlotListUpdate();
 protected:
     VisWindowColleagueProxy            colleagueProxy;
     VisWindowInteractorProxy           interactorProxy;

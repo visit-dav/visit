@@ -8005,3 +8005,23 @@ VisWindow::GetExtents(double ext[2]) // TODO: Remove with VTK8
 {
     plots->GetDataRange(ext[0], ext[1]);
 }
+
+// ****************************************************************************
+// Method: TriggerPlotListUpdate
+//
+// Purpose:
+//   Trigger a plot list update on all the plots.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::TriggerPlotListUpdate()
+{
+    if (plots != NULL)
+        plots->TriggerPlotListUpdate();
+}
