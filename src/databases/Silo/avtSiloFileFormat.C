@@ -1718,7 +1718,7 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
             }
 
             char *hdf5libinfo_str = 0;
-#ifdef HAVE_LIBHDF5
+#ifdef HAVE_HDF5
             {
                 unsigned h5maj, h5min, h5rel;
                 H5get_libversion(&h5maj, &h5min, &h5rel);

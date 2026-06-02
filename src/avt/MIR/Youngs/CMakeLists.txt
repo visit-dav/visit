@@ -7,22 +7,35 @@
 #
 #****************************************************************************
 
-set(YOUNGS_SOURCES
-    CellInterface.C
-    CellInterface2D.C
-    CellInterface3D.C
-    vtkCQS.C
-    vtkDataSetGradient.C
-    vtkYoungsMaterialInterface.C
-    YoungsMIR.C)
+visit_append_list(
+    NAME  avtmir_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/CellInterface.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterface2D.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterface3D.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/vtkCQS.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/vtkDataSetGradient.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/vtkYoungsMaterialInterface.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/YoungsMIR.C)
 
-target_sources(avtmir_ser PRIVATE ${YOUNGS_SOURCES})
-target_include_directories(avtmir_ser PUBLIC .)
+visit_append_list(
+    NAME  avtmir_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/CellInterface.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterface2D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterface3D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterfaceCommon.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterfaceCUDA.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterfaceMath.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterfaceTools2D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterfaceTools2D_Axis.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterfaceTools3D.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/CellInterfaceTypes.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/vtkCQS.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/vtkDataSetGradient.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/vtkYoungsMaterialInterface.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/YoungsMIR.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtmir_par PRIVATE ${YOUNGS_SOURCES})
-    target_include_directories(avtmir_par PUBLIC .)
-endif()
-
-unset(YOUNGS_SOURCES)
+visit_append_list(
+    NAME  avtmir_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/MIR/Youngs>)
 

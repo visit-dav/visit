@@ -4,7 +4,7 @@
 
 #ifndef QVIS_LINE_WIDTH_WIDGET_H
 #define QVIS_LINE_WIDTH_WIDGET_H
-#include <gui_exports.h>
+
 #include <QWidget>
 
 class QComboBox;
@@ -33,7 +33,7 @@ class QComboBox;
 //
 // ****************************************************************************
 
-class GUI_API QvisLineWidthWidget : public QWidget
+class QvisLineWidthWidget : public QWidget
 {
     Q_OBJECT
 public:

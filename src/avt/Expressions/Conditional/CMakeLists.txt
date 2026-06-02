@@ -7,25 +7,34 @@
 #
 #*****************************************************************************
 
-set(CONDITIONAL_SOURCES
-    avtConditionalExpression.C
-    avtLogicalAndExpression.C
-    avtLogicalNegationExpression.C
-    avtLogicalOrExpression.C
-    avtTestEqualToExpression.C
-    avtTestGreaterThanExpression.C
-    avtTestGreaterThanOrEqualToExpression.C
-    avtTestLessThanExpression.C
-    avtTestLessThanOrEqualToExpression.C
-    avtTestNotEqualToExpression.C)
+visit_append_list(
+    NAME  avtexpressions_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtConditionalExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLogicalAndExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLogicalNegationExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLogicalOrExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestEqualToExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestGreaterThanExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestGreaterThanOrEqualToExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestLessThanExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestLessThanOrEqualToExpression.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestNotEqualToExpression.C)
 
-target_sources(avtexpressions_ser PRIVATE ${CONDITIONAL_SOURCES})
-target_include_directories(avtexpressions_ser PUBLIC .)
+visit_append_list(
+    NAME  avtexpressions_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtConditionalExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLogicalAndExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLogicalNegationExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLogicalOrExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestEqualToExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestGreaterThanExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestGreaterThanOrEqualToExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestLessThanExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestLessThanOrEqualToExpression.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTestNotEqualToExpression.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtexpressions_par PRIVATE ${CONDITIONAL_SOURCES})
-    target_include_directories(avtexpressions_par PUBLIC .)
-endif()
-
-unset(CONDITIONAL_SOURCES)
+visit_append_list(
+    NAME  avtexpressions_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Expressions/Conditional>)
 

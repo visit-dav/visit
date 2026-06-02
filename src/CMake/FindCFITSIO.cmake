@@ -7,9 +7,12 @@
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   Removed logic handling windows differently than other platforms.
 #
+#   Kathleen Biagas, Mon Mar 24, 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the CFITSIO_DIR hint from the config-site .cmake file
+# Uses the CFITSIO_DIR hint from the config-site .cmake file
 
-SET_UP_THIRD_PARTY(CFITSIO LIBS cfitsio)
+visit_import_third_party(CFITSIO LIBS cfitsio)
 

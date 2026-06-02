@@ -7,9 +7,12 @@
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   Removed logic handling windows differently than other platforms.
 #
+#   Kathleen Biagas, Fri Mar 21, 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the ADVIO_DIR hint from the config-site .cmake file
+# Uses the ADVIO_DIR hint from the config-site .cmake file
 
-SET_UP_THIRD_PARTY(ADVIO LIBS AdvDocIO AdvFileIO AdvBase)
+visit_import_third_party(ADVIO LIBS AdvDocIO AdvFileIO AdvBase)
 

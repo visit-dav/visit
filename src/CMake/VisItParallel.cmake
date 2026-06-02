@@ -2,68 +2,16 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-#****************************************************************************
-#  Modifications:
-#    Eric Brugger, Mon Sep 22 16:41:58 PDT 2025
-#    I changed the logic to create the INSTALL_RPATH for parallel
-#    executables to generate a semicolon separated list instead of a
-#    space separated list.
+# Modifications:
+#   Kathleen Biagas, Thu Feb 20, 2025
+#   Removed ADD_PARALLEL_FORTRAN_EXECUTABLE target as it was only being used
+#   by sim examples. Functionality replicated there.
 #
-#****************************************************************************
-
-function(ADD_PARALLEL_EXECUTABLE target)
-    add_executable(${target} ${ARGN})
-     if(UNIX AND VISIT_PARALLEL_RPATH)
-         set(PAR_RPATHS "")
-         foreach(X ${CMAKE_INSTALL_RPATH})
-             list(APPEND PAR_RPATHS ${X})
-         endforeach()
-         foreach(X ${VISIT_PARALLEL_RPATH})
-             list(APPEND PAR_RPATHS ${X})
-         endforeach()
-         set_target_properties(${target} PROPERTIES
-                INSTALL_RPATH "${PAR_RPATHS}")
-    endif()
-
-    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES AND TARGET MPI::MPI_C)
-        target_link_libraries(${target} MPI::MPI_C)
-    endif()
-    if(VISIT_PARALLEL_DEFINES)
-        target_compile_definitions(${target} PUBLIC ${VISIT_PARALLEL_DEFINES})
-    endif()
-
-endfunction()
-
-function(ADD_PARALLEL_FORTRAN_EXECUTABLE target)
-    add_executable(${target} ${ARGN})
-
-    if(VISIT_PARALLEL_RPATH)
-        set(PAR_RPATHS "")
-        foreach(X ${CMAKE_INSTALL_RPATH})
-            list(APPEND PAR_RPATHS ${X})
-        endforeach()
-        foreach(X ${VISIT_PARALLEL_RPATH})
-            list(APPEND PAR_RPATHS ${X})
-        endforeach()
-        set_target_properties(${target} PROPERTIES
-                    INSTALL_RPATH ${PAR_RPATHS})
-    endif()
-    target_link_libraries(${target} ${VISIT_EXE_LINKER_FLAGS} MPI::MPI_FORTRAN) 
-endfunction()
-
-function(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
-    if(VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        target_link_libraries(${target} ${ARGN} link_mpi_libs)
-    else()
-        if(VISIT_STATIC)
-            target_link_libraries(${target} ${ARGN} ${VISIT_PARALLEL_LIBS})
-        else()
-            target_link_libraries(${target} ${ARGN})
-        endif()
-    endif()
-endfunction()
-
-
+#   Kathleen Biagas, Thu Nov 6, 2025
+#   Removed most VISIT_PARALLEL flags.  Use MPI_COMPILER or
+#   MPI_HOME and MPI_DIR to find specific versions of MPI.
+#   The MPI::MPI_C target created by the find_package call will be used
+#   to link with MPI.  It also contains the INCLUDES necessary for the build.
 
 
 set(VISIT_PARALLEL_DEFINES "PARALLEL;MPICH_IGNORE_CXX_SEEK;MPICH_SKIP_MPICXX;OMPI_SKIP_MPICXX;MPI_NO_CPPBIND" CACHE STRING "Parallel compiler defines")
@@ -75,7 +23,7 @@ if(VISIT_MPI_COMPILER)
 else(VISIT_MPI_HOME)
     set(MPI_HOME ${VISIT_MPI_HOME})
     set(MPI_DIR ${VISIT_MPI_DIR})
-    set(errmsg "Using VISIT_MPI_HOME: ${VISIT_MPI_HOM}")
+    set(errmsg "Using VISIT_MPI_HOME: ${VISIT_MPI_HOME}")
 endif()
 
 # do we still need this?
@@ -111,4 +59,11 @@ if(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
     endif()
 endif()
 
+# make ;-separated lists, once now instead of per every parallel target added
+if(VISIT_PARALLEL_RPATH)
+    string(REPLACE " " ";" VISIT_PARALLEL_RPATH ${VISIT_PARALLEL_RPATH})
+endif()
+if(CMAKE_INSTALL_RPATH)
+    string(REPLACE " " ";" CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH})
+endif()
 

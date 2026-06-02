@@ -3215,6 +3215,9 @@ class MainLauncher(object):
     #   Ensure visitlibdir/osmesa is added to LD_LIBRARY_PATH if it exists
     #   and we are using osmesa for the desired compnents.
     #
+    #   Mark C. Miller, Tue May 26 16:32:50 PDT 2026
+    #   As a precaution, disable HDF5 file locking via HDF5_USE_FILE_LOCKING
+    #   env. variable.
     ############################################################################
 
     def SetupEnvironment(self):
@@ -3291,6 +3294,11 @@ class MainLauncher(object):
 
         # Turn off trapping of floating point exceptions.
         SETENV("TRAP_FPE", "")
+
+        # As a precaution against HDF5 default file locking, if HDF5's file locking
+        # env. variable is not already set, disable HDF5 file locking here.
+        if GETENV("HDF5_USE_FILE_LOCKING") == "":
+            SETENV("HDF5_USE_FILE_LOCKING", "FALSE")
 
         # Turn off a warning message when running on Linux systems displaying
         # to a remote display.  The message messes up the communication between

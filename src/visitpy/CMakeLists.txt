@@ -73,9 +73,6 @@
 #  Kevin Griffin, Wed Sep 10, 2025
 #  Add AnariAttributes.
 #
-#  Kathleen Biagas, Thu Dec 4, 2025
-#  Use PYTHON_LIBRARY instead of PYTHON_LIBRARIES, matches rest of VisIt.
-#
 #****************************************************************************
 
 #########################################################
@@ -105,7 +102,7 @@
 # Metadata Objects
 #####################
 
-SET(PY_GEN_METADATA_OBJECTS
+set(PY_GEN_METADATA_OBJECTS
     avtArrayMetaData
     avtBaseVarMetaData
     avtCurveMetaData
@@ -134,7 +131,7 @@ SET(PY_GEN_METADATA_OBJECTS
 # State Objects that we can't Code-Gen, or have customizations:
 #####################
 
-SET(PY_GEN_STATE_OBJECTS
+set(PY_GEN_STATE_OBJECTS
     AnariAttributes
     AnimationAttributes
     AnnotationAttributes
@@ -203,7 +200,7 @@ SET(PY_GEN_STATE_OBJECTS
 # RPC Objects
 #######
 
-SET(PY_GEN_RPC_OBJECTS ViewerRPC)
+set(PY_GEN_RPC_OBJECTS ViewerRPC)
 
 
 #########################################################
@@ -242,263 +239,346 @@ endforeach()
 #########################################################
 
 
-SET(COMMON_SOURCES
-# Annotation Wrappers are still custom, and hand ported
-# to python 3. They diverge from  code gen to map custom
-# parts of the fields to the general annotation object.
-# while we could just implement this in python (instead of)
-# C++, replication the current logic would be a detailed
-# and tricky endeavor
-common/PyImageObject.C
-common/PyLegendAttributesObject.C
-common/PyLineObject.C
-common/PyLine3DObject.C
-common/PyText2DObject.C
-common/PyText3DObject.C
-common/PyTimeSliderObject.C
-# end Annotation Wrappers
-common/CallbackHandlers.C
-common/CallbackManager.C
-common/Logging.C
-common/MethodDoc.C
-common/PySILRestrictionBase.C
-common/PySILRestriction.C
-common/PyTable.C
-common/ViewerRPCArguments.C
-common/ViewerRPCCallbacks.C
-common/visitmodule.C
-)
+set(COMMON_SOURCES
+    # Annotation Wrappers are still custom, and hand ported
+    # to python 3. They diverge from  code gen to map custom
+    # parts of the fields to the general annotation object.
+    # while we could just implement this in python (instead of)
+    # C++, replication the current logic would be a detailed
+    # and tricky endeavor
+    common/PyImageObject.C
+    common/PyLegendAttributesObject.C
+    common/PyLineObject.C
+    common/PyLine3DObject.C
+    common/PyText2DObject.C
+    common/PyText3DObject.C
+    common/PyTimeSliderObject.C
+    # end Annotation Wrappers
+    common/CallbackHandlers.C
+    common/CallbackManager.C
+    common/Logging.C
+    common/MethodDoc.C
+    common/PySILRestrictionBase.C
+    common/PySILRestriction.C
+    common/PyTable.C
+    common/ViewerRPCArguments.C
+    common/ViewerRPCCallbacks.C
+    common/visitmodule.C)
 
-SET(PY_SOURCES
-common/PyMapNode.C
-common/PyVariant.C
-)
+set(COMMON_HEADERS
+    common/PyImageObject.h
+    common/PyLegendAttributesObject.h
+    common/PyLineObject.h
+    common/PyLine3DObject.h
+    common/PyText2DObject.h
+    common/PyText3DObject.h
+    common/PyTimeSliderObject.h
+    common/CallbackHandlers.h
+    common/CallbackManager.h
+    common/Logging.h
+    common/MethodDoc.h
+    common/PySILRestrictionBase.h
+    common/PySILRestriction.h
+    common/PyTable.h
+    common/ViewerRPCCallbacks.h
+    common/visitmodulehelpers.h)
 
-SET(METADATA_SOURCES
-visitpy/PyavtArrayMetaData.C
-visitpy/PyavtBaseVarMetaData.C
-visitpy/PyavtCurveMetaData.C
-visitpy/PyavtDatabaseMetaData.C
-visitpy/PyavtDefaultPlotMetaData.C
-visitpy/PyavtLabelMetaData.C
-visitpy/PyavtMatSpeciesMetaData.C
-visitpy/PyavtMaterialMetaData.C
-visitpy/PyavtMeshMetaData.C
-visitpy/PyavtScalarMetaData.C
-visitpy/PyavtSimulationCommandSpecification.C
-visitpy/PyavtSimulationInformation.C
-visitpy/PyavtSpeciesMetaData.C
-visitpy/PyavtSubsetsMetaData.C
-visitpy/PyavtSymmetricTensorMetaData.C
-visitpy/PyavtTensorMetaData.C
-visitpy/PyavtVarMetaData.C
-visitpy/PyavtVectorMetaData.C
-)
+set(PY_SOURCES
+    common/PyMapNode.C
+    common/PyVariant.C)
+
+set(PY_HEADERS
+    common/PyMapNode.h
+    common/PyVariant.h)
+
+set(METADATA_SOURCES
+    visitpy/PyavtArrayMetaData.C
+    visitpy/PyavtBaseVarMetaData.C
+    visitpy/PyavtCurveMetaData.C
+    visitpy/PyavtDatabaseMetaData.C
+    visitpy/PyavtDefaultPlotMetaData.C
+    visitpy/PyavtLabelMetaData.C
+    visitpy/PyavtMatSpeciesMetaData.C
+    visitpy/PyavtMaterialMetaData.C
+    visitpy/PyavtMeshMetaData.C
+    visitpy/PyavtScalarMetaData.C
+    visitpy/PyavtSimulationCommandSpecification.C
+    visitpy/PyavtSimulationInformation.C
+    visitpy/PyavtSpeciesMetaData.C
+    visitpy/PyavtSubsetsMetaData.C
+    visitpy/PyavtSymmetricTensorMetaData.C
+    visitpy/PyavtTensorMetaData.C
+    visitpy/PyavtVarMetaData.C
+    visitpy/PyavtVectorMetaData.C)
+
+set(METADATA_HEADERS
+    visitpy/PyavtArrayMetaData.h
+    visitpy/PyavtBaseVarMetaData.h
+    visitpy/PyavtCurveMetaData.h
+    visitpy/PyavtDatabaseMetaData.h
+    visitpy/PyavtDefaultPlotMetaData.h
+    visitpy/PyavtLabelMetaData.h
+    visitpy/PyavtMatSpeciesMetaData.h
+    visitpy/PyavtMaterialMetaData.h
+    visitpy/PyavtMeshMetaData.h
+    visitpy/PyavtScalarMetaData.h
+    visitpy/PyavtSimulationCommandSpecification.h
+    visitpy/PyavtSimulationInformation.h
+    visitpy/PyavtSpeciesMetaData.h
+    visitpy/PyavtSubsetsMetaData.h
+    visitpy/PyavtSymmetricTensorMetaData.h
+    visitpy/PyavtTensorMetaData.h
+    visitpy/PyavtVarMetaData.h
+    visitpy/PyavtVectorMetaData.h
+    visitpy/visitpy_exports.h)
 
 
-SET(GENERATED_PY_SOURCES
-visitpy/PyAnariAttributes.C
-visitpy/PyAnimationAttributes.C
-visitpy/PyAnnotationAttributes.C
-visitpy/PyAxes2D.C
-visitpy/PyAxes3D.C
-visitpy/PyAxesArray.C
-visitpy/PyAxisAttributes.C
-visitpy/PyAxisLabels.C
-visitpy/PyAxisTickMarks.C
-visitpy/PyAxisTitles.C
-visitpy/PyColorAttribute.C
-visitpy/PyColorAttributeList.C
-visitpy/PyColorControlPoint.C
-visitpy/PyColorControlPointList.C
-visitpy/PyColorTableAttributes.C
-visitpy/PyConstructDataBinningAttributes.C
-visitpy/PyDatabaseCorrelation.C
-visitpy/PyDBOptionsAttributes.C
-visitpy/PyDBOptionsAttributes_Helpers.C
-visitpy/PyEngineProperties.C
-visitpy/PyExportDBAttributes.C
-visitpy/PyExpression.C
-visitpy/PyExpressionList.C
-visitpy/PyFontAttributes.C
-visitpy/PyFileOpenOptions.C
-visitpy/PyFXAAOptions.C
-visitpy/PyGaussianControlPoint.C
-visitpy/PyGaussianControlPointList.C
-visitpy/PyGlobalAttributes.C
-visitpy/PyGlobalLineoutAttributes.C
-visitpy/PyInteractorAttributes.C
-visitpy/PyKeyframeAttributes.C
-visitpy/PyLaunchProfile.C
-visitpy/PyLightAttributes.C
-visitpy/PyMachineProfile.C
-visitpy/PyMaterialAttributes.C
-visitpy/PyMeshManagementAttributes.C
-visitpy/PyNameschemeAttributes.C
-visitpy/PyPickAttributes.C
-visitpy/PyPickVarInfo.C
-visitpy/PyPlot.C
-visitpy/PyPlotList.C
-visitpy/PyPrinterAttributes.C
-visitpy/PyProcessAttributes.C
-visitpy/PyQueryAttributes.C
-visitpy/PyQueryOverTimeAttributes.C
-visitpy/PyRenderingAttributes.C
-visitpy/PySaveWindowAttributes.C
-visitpy/PySaveSubWindowAttributes.C
-visitpy/PySaveSubWindowsAttributes.C
-visitpy/PySelectionProperties.C
-visitpy/PySelectionSummary.C
-visitpy/PySelectionVariableSummary.C
-visitpy/PySelectionList.C
-visitpy/PyThresholdOpAttributes.C
-visitpy/PyView2DAttributes.C
-visitpy/PyView3DAttributes.C
-visitpy/PyViewAttributes.C
-visitpy/PyViewAxisArrayAttributes.C
-visitpy/PyViewerClientAttributes.C
-visitpy/PyViewerClientInformation.C
-visitpy/PyViewerClientInformationElement.C
-visitpy/PyViewCurveAttributes.C
-visitpy/PyViewerRPC.C
-visitpy/PyWindowInformation.C
-)
+set(GENERATED_PY_SOURCES
+    visitpy/PyAnariAttributes.C
+    visitpy/PyAnimationAttributes.C
+    visitpy/PyAnnotationAttributes.C
+    visitpy/PyAxes2D.C
+    visitpy/PyAxes3D.C
+    visitpy/PyAxesArray.C
+    visitpy/PyAxisAttributes.C
+    visitpy/PyAxisLabels.C
+    visitpy/PyAxisTickMarks.C
+    visitpy/PyAxisTitles.C
+    visitpy/PyColorAttribute.C
+    visitpy/PyColorAttributeList.C
+    visitpy/PyColorControlPoint.C
+    visitpy/PyColorControlPointList.C
+    visitpy/PyColorTableAttributes.C
+    visitpy/PyConstructDataBinningAttributes.C
+    visitpy/PyDatabaseCorrelation.C
+    visitpy/PyDBOptionsAttributes.C
+    visitpy/PyDBOptionsAttributes_Helpers.C
+    visitpy/PyEngineProperties.C
+    visitpy/PyExportDBAttributes.C
+    visitpy/PyExpression.C
+    visitpy/PyExpressionList.C
+    visitpy/PyFontAttributes.C
+    visitpy/PyFileOpenOptions.C
+    visitpy/PyFXAAOptions.C
+    visitpy/PyGaussianControlPoint.C
+    visitpy/PyGaussianControlPointList.C
+    visitpy/PyGlobalAttributes.C
+    visitpy/PyGlobalLineoutAttributes.C
+    visitpy/PyInteractorAttributes.C
+    visitpy/PyKeyframeAttributes.C
+    visitpy/PyLaunchProfile.C
+    visitpy/PyLightAttributes.C
+    visitpy/PyMachineProfile.C
+    visitpy/PyMaterialAttributes.C
+    visitpy/PyMeshManagementAttributes.C
+    visitpy/PyNameschemeAttributes.C
+    visitpy/PyPickAttributes.C
+    visitpy/PyPickVarInfo.C
+    visitpy/PyPlot.C
+    visitpy/PyPlotList.C
+    visitpy/PyPrinterAttributes.C
+    visitpy/PyProcessAttributes.C
+    visitpy/PyQueryAttributes.C
+    visitpy/PyQueryOverTimeAttributes.C
+    visitpy/PyRenderingAttributes.C
+    visitpy/PySaveWindowAttributes.C
+    visitpy/PySaveSubWindowAttributes.C
+    visitpy/PySaveSubWindowsAttributes.C
+    visitpy/PySelectionProperties.C
+    visitpy/PySelectionSummary.C
+    visitpy/PySelectionVariableSummary.C
+    visitpy/PySelectionList.C
+    visitpy/PyThresholdOpAttributes.C
+    visitpy/PyView2DAttributes.C
+    visitpy/PyView3DAttributes.C
+    visitpy/PyViewAttributes.C
+    visitpy/PyViewAxisArrayAttributes.C
+    visitpy/PyViewerClientAttributes.C
+    visitpy/PyViewerClientInformation.C
+    visitpy/PyViewerClientInformationElement.C
+    visitpy/PyViewCurveAttributes.C
+    visitpy/PyViewerRPC.C
+    visitpy/PyWindowInformation.C)
 
-SET(CLI_SOURCES
-cli/cli.C
-)
-IF(VISIT_STATIC)
-    SET(CLI_SOURCES ${CLI_SOURCES} cli/ScriptingStaticSymbolLocator.C)
-ENDIF(VISIT_STATIC)
+set(GENERATED_PY_HEADERS
+    visitpy/PyAnariAttributes.h
+    visitpy/PyAnimationAttributes.h
+    visitpy/PyAnnotationAttributes.h
+    visitpy/PyAxes2D.h
+    visitpy/PyAxes3D.h
+    visitpy/PyAxesArray.h
+    visitpy/PyAxisAttributes.h
+    visitpy/PyAxisLabels.h
+    visitpy/PyAxisTickMarks.h
+    visitpy/PyAxisTitles.h
+    visitpy/PyColorAttribute.h
+    visitpy/PyColorAttributeList.h
+    visitpy/PyColorControlPoint.h
+    visitpy/PyColorControlPointList.h
+    visitpy/PyColorTableAttributes.h
+    visitpy/PyConstructDataBinningAttributes.h
+    visitpy/PyDatabaseCorrelation.h
+    visitpy/PyDBOptionsAttributes.h
+    visitpy/PyDBOptionsAttributes_Helpers.h
+    visitpy/PyEngineProperties.h
+    visitpy/PyExportDBAttributes.h
+    visitpy/PyExpression.h
+    visitpy/PyExpressionList.h
+    visitpy/PyFontAttributes.h
+    visitpy/PyFileOpenOptions.h
+    visitpy/PyFXAAOptions.h
+    visitpy/PyGaussianControlPoint.h
+    visitpy/PyGaussianControlPointList.h
+    visitpy/PyGlobalAttributes.h
+    visitpy/PyGlobalLineoutAttributes.h
+    visitpy/PyInteractorAttributes.h
+    visitpy/PyKeyframeAttributes.h
+    visitpy/PyLaunchProfile.h
+    visitpy/PyLightAttributes.h
+    visitpy/PyMachineProfile.h
+    visitpy/PyMaterialAttributes.h
+    visitpy/PyMeshManagementAttributes.h
+    visitpy/PyNameschemeAttributes.h
+    visitpy/PyPickAttributes.h
+    visitpy/PyPickVarInfo.h
+    visitpy/PyPlot.h
+    visitpy/PyPlotList.h
+    visitpy/PyPrinterAttributes.h
+    visitpy/PyProcessAttributes.h
+    visitpy/PyQueryAttributes.h
+    visitpy/PyQueryOverTimeAttributes.h
+    visitpy/PyRenderingAttributes.h
+    visitpy/PySaveWindowAttributes.h
+    visitpy/PySaveSubWindowAttributes.h
+    visitpy/PySaveSubWindowsAttributes.h
+    visitpy/PySelectionProperties.h
+    visitpy/PySelectionSummary.h
+    visitpy/PySelectionVariableSummary.h
+    visitpy/PySelectionList.h
+    visitpy/PyThresholdOpAttributes.h
+    visitpy/PyView2DAttributes.h
+    visitpy/PyView3DAttributes.h
+    visitpy/PyViewAttributes.h
+    visitpy/PyViewAxisArrayAttributes.h
+    visitpy/PyViewerClientAttributes.h
+    visitpy/PyViewerClientInformation.h
+    visitpy/PyViewerClientInformationElement.h
+    visitpy/PyViewCurveAttributes.h
+    visitpy/PyViewerRPC.h
+    visitpy/PyWindowInformation.h)
 
-INCLUDE_DIRECTORIES(
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/visitpy/common
-${VISIT_SOURCE_DIR}/visitpy/visitpy
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/viewer/proxy
-${VISIT_SOURCE_DIR}/viewer/rpc
-${PYTHON_INCLUDE_PATH}
-)
+set(CLI_SOURCES cli/cli.C)
 
-IF (NOT WIN32)
-    # This keeps comm's exceptions visible when using -fvisibility=hidden
-    ADD_DEFINITIONS(-DCOMM_EXPORTS)
-    # This keeps visitpy functions visible. On Windows, we don't need to do this
-    # because the visitpy library that exports the symbols already gets
-    # visitpy_EXPORTS defined for it.
-    ADD_DEFINITIONS(-DVISITPY_EXPORTS)
-ENDIF (NOT WIN32)
+if(VISIT_STATIC)
+    list(APPEND CLI_SOURCES cli/ScriptingStaticSymbolLocator.C)
+endif()
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+
 
 # Add the visitpy library, which contains all of the Py extension classes.
-ADD_LIBRARY(visitpy
-${PY_SOURCES}
-${METADATA_SOURCES}
-${GENERATED_PY_SOURCES}
-)
+visit_add_library(
+    NAME       visitpy
+    SOURCES    ${PY_SOURCES}
+               ${METADATA_SOURCES}
+               ${GENERATED_PY_SOURCES}
+    HEADERS    ${PY_HEADERS}
+               ${METADATA_HEADERS}
+               ${GENERATED_PY_HEADERS}
+    INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/visitpy>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/visitpy/common>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/visitpy/visitpy>
+    DEPENDS_ON avtdbatts
+               viewerrpc
+               visitcommon
+               ${PYTHON_LIBRARY}
+               Threads::Threads)
 
-TARGET_LINK_LIBRARIES(visitpy
-avtdbatts
-viewerrpc
-visitcommon
-${PYTHON_LIBRARY}
-Threads::Threads
-)
+if(NOT WIN32)
+    # This keeps comm's exceptions visible when using -fvisibility=hidden
+    target_compile_definitions(visitpy PRIVATE COMM_EXPORTS)
+endif()
+
+set(cli_DEPENDS
+    ${cli_IOperator}
+    ${cli_SOperator}
+    ${cli_IPlot}
+    ${cli_SPlot}
+    viewerproxy
+    viewerrpc
+    avtdbatts
+    visitcommon
+    visitpy
+    ${PYTHON_LIBRARY}
+    Threads::Threads)
+
+if(NOT WIN32)
+    list(APPEND cli_DEPENDS dl)
+    if(NOT APPLE)
+        find_library(LIBRT rt)
+        list(APPEND cli_DEPENDS ${LIBRT})
+        # Is this a Python companion libary? We need it for unresolved openpty/forkpty
+        list(APPEND cli_DEPENDS util)
+    endif()
+endif()
 
 # Create the CLI
-ADD_EXECUTABLE(cli
-${COMMON_SOURCES}
-${CLI_SOURCES}
-${VISIT_CLI_RESOURCE_FILE}
-)
+visit_add_executable(
+    NAME        cli
+    SOURCES     ${COMMON_SOURCES}
+                ${CLI_SOURCES}
+                ${VISIT_CLI_RESOURCE_FILE}
+    HEADERS     ${COMMON_HEADERS}
+    DEPENDS_ON  ${cli_DEPENDS})
 
-TARGET_LINK_LIBRARIES(cli
-${cli_IOperator}
-${cli_SOperator}
-${cli_IPlot}
-${cli_SPlot}
-viewerproxy
-viewerrpc
-avtdbatts
-visitcommon
-visitpy
-${PYTHON_LIBRARY}
-Threads::Threads
-)
-IF(NOT WIN32)
-    TARGET_LINK_LIBRARIES(cli dl)
-    IF(NOT APPLE)
-        find_library(LIBRT rt)
-        TARGET_LINK_LIBRARIES(cli ${LIBRT})
-        # Is this a Python companion libary? We need it for unresolved openpty/forkpty
-        TARGET_LINK_LIBRARIES(cli util)
-    ENDIF(NOT APPLE)
+if(NOT WIN32)
+    # This keeps comm's exceptions visible when using -fvisibility=hidden
+    target_compile_definitions(cli PRIVATE COMM_EXPORTS)
 else()
     # resolve inconsistent dll-linkage problem
-    set_target_properties(cli PROPERTIES COMPILE_DEFINITIONS "visitmodule_EXPORTS")
-ENDIF(NOT WIN32)
-
-# If we're building statically then the cli can't be linked until the plugin
-# sources are built
-IF(VISIT_STATIC)
-    ADD_DEPENDENCIES(cli
-        ${cli_IOperator}
-        ${cli_SOperator}
-        ${cli_IPlot}
-        ${cli_SPlot}
-    )
-
-    VISIT_INSTALL_TARGETS(cli)
-ELSE(VISIT_STATIC)
+    set_target_properties(cli PROPERTIES
+        COMPILE_DEFINITIONS "visitmodule_EXPORTS"
+        WIN32_EXECUTABLE  FALSE)
+endif()
 
 
+if(NOT VISIT_STATIC)
     # Create the visitmodule
     PYTHON_ADD_MODULE(visitmodule
                       ${COMMON_SOURCES})
-    TARGET_LINK_LIBRARIES(visitmodule PUBLIC
+    target_link_libraries(visitmodule PUBLIC
         viewerproxy
         viewerrpc
         avtdbatts
         visitcommon
         visitpy
-        ${PYTHON_LIBRARY}
-    )
+        ${PYTHON_LIBRARY})
 
-    IF(NOT WIN32)
-        IF(NOT APPLE)
+    if(NOT WIN32)
+        if(NOT APPLE)
             find_library(LIBRT rt)
-            TARGET_LINK_LIBRARIES(visitmodule PUBLIC ${LIBRT})
-        ENDIF(NOT APPLE)
-        SET_TARGET_PROPERTIES(visitmodule PROPERTIES
-                                          LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
-    ENDIF(NOT WIN32)
-
-
-    IF(NOT APPLE)
-        SET_TARGET_PROPERTIES(visitmodule PROPERTIES INSTALL_RPATH "$ORIGIN")
-    ENDIF(NOT APPLE)
-
-
-    VISIT_INSTALL_TARGETS(visitpy cli)
+            target_link_libraries(visitmodule PUBLIC ${LIBRT})
+            set_target_properties(visitmodule PROPERTIES INSTALL_RPATH "$ORIGIN")
+        endif()
+        set_target_properties(visitmodule PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
+    endif()
     VISIT_INSTALL_TARGETS_RELATIVE(site-packages/visit visitmodule)
-ENDIF(VISIT_STATIC)
+endif()
 
 #
 # For module setup pure python visit modules
 #
-ADD_SUBDIRECTORY(visit_module)
-ADD_SUBDIRECTORY(visit_launcher)
-ADD_SUBDIRECTORY(visit_utils)
-ADD_SUBDIRECTORY(visit_flow)
+add_subdirectory(visit_module)
+add_subdirectory(visit_launcher)
+add_subdirectory(visit_utils)
+add_subdirectory(visit_flow)
 
 # the visit compiled module depends on the dir structure from the python shell
 target_link_libraries(visitmodule PRIVATE visit_module_py_setup)
 
-IF(VISIT_PYTHON_FILTERS)
-    ADD_SUBDIRECTORY(pyavt)
-    ADD_SUBDIRECTORY(mpicom)
-ENDIF(VISIT_PYTHON_FILTERS)
+if(VISIT_PYTHON_FILTERS)
+    add_subdirectory(pyavt)
+    add_subdirectory(mpicom)
+endif()
 

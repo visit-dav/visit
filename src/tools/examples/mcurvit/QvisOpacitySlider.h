@@ -4,7 +4,7 @@
 
 #ifndef QVIS_OPACITY_SLIDER_H
 #define QVIS_OPACITY_SLIDER_H
-#include <gui_exports.h>
+
 #include <QAbstractSlider>
 
 class QTimer;
@@ -34,7 +34,7 @@ class QTimer;
 //
 // ****************************************************************************
 
-class GUI_API QvisOpacitySlider : public QAbstractSlider
+class QvisOpacitySlider : public QAbstractSlider
 {
     Q_OBJECT
     Q_PROPERTY(int pageStep READ pageStep WRITE setPageStep )

@@ -11,7 +11,7 @@
 //-----------------------------------------------------------------------------
 // mfem includes
 //-----------------------------------------------------------------------------
-#ifdef HAVE_LIBMFEM
+#ifdef HAVE_MFEM
 #include <mfem.hpp>
 #endif
 
@@ -110,7 +110,7 @@ public:
                                        const int ndims);
     };
 
-#ifdef HAVE_LIBMFEM
+#ifdef HAVE_MFEM
     class AVTBLUEPRINT_API BlueprintToMFEM
     {
     public:

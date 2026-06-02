@@ -60,127 +60,175 @@
 #
 #****************************************************************************
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-FUNCTION(SET_SIMULATION_PROPERTIES target)
-    IF(NOT WIN32)
-        SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
-            OUTPUT_NAME ${target}
-            RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/Simulations
-            FOLDER tools/data/DataManualExamples/Simulations
-        )
-    ELSE()
-        SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
-            OUTPUT_NAME ${target}
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
-            RUNTIME_OUTPUT_DIRECTORY_REWITHDEBINFO ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
-            RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
-            FOLDER tools/data/DataManualExamples/Simulations
-        )
-    ENDIF()
-ENDFUNCTION(SET_SIMULATION_PROPERTIES)
+if(WIN32)
+    set(RTOD ${VISIT_EXECUTABLE_DIR})
+else()
+    set(RTOD ${VISIT_BINARY_DIR})
+endif()
+
+string(APPEND RTOD "/tools/DataManualExamples/Simulations")
 
 # We need more libraries on Linux and Windows
-IF(WIN32)
-    SET(EXTRA_SIM_LIBS ws2_32)
-ELSE(WIN32)
-    IF(NOT APPLE)
-        SET(EXTRA_SIM_LIBS dl m)
-    ENDIF(NOT APPLE)
-ENDIF(WIN32)
+if(WIN32)
+    set(EXTRA_SIM_LIBS ws2_32)
+elseif(NOT APPLE)
+    set(EXTRA_SIM_LIBS dl m)
+endif()
 
 # If we have XDB and we're static linking then we need to link with libXDBLib here.
-IF(VISIT_STATIC AND VISIT_ENABLE_XDB)
-    SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${VISIT_LIBRARY_DIR}/libXDBLib.so) # Just Linux for now.
-ENDIF(VISIT_STATIC AND VISIT_ENABLE_XDB)
+if(VISIT_STATIC AND VISIT_ENABLE_XDB)
+     # Just Linux for now.
+    set(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${VISIT_LIBRARY_DIR}/libXDBLib.so)
+endif()
 
-SET(VTK_LIBS vtkCommonCore vtkImagingCore vtkRenderingCore vtkIOLegacy vtkIOPLY
-             vtkInteractionStyle vtkRenderingOpenGL2 
-             vtkFiltersHybrid vtkFiltersModeling vtkGeovisCore)
-IF(ICET_FOUND)
-    LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
-ENDIF(ICET_FOUND)
+set(VTK_LIBS
+    VTK::CommonCore
+    VTK::ImagingCore
+    VTK::RenderingCore
+    VTK::IOLegacy
+    VTK::IOPLY
+    VTK::InteractionStyle
+    VTK::RenderingOpenGL2 
+    VTK::FiltersHybrid
+    VTK::FiltersModeling
+    VTK::GeovisCore)
+
 
 ##
 ## SimV2 functions
 ##
 
-FUNCTION(ADD_SIMV2_SIMULATION target)
-    ADD_EXECUTABLE(sim_${target} ${ARGN})
-    SET_SIMULATION_PROPERTIES(${target})
-    SET_TARGET_PROPERTIES(sim_${target} PROPERTIES HAS_CXX ON)
-    IF(NOT VISIT_STATIC)
-        TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
-    ELSE()
-        TARGET_LINK_LIBRARIES(sim_${target} simV2_static_ser
-           ${VTK_LIBS} ${ZLIB_LIBRARY} ${EXTRA_SIM_LIBS})
-    ENDIF()
-    ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
-ENDFUNCTION(ADD_SIMV2_SIMULATION)
+function(ADD_SIMV2_SIMULATION target)
+    if(NOT VISIT_STATIC)
+        set(sim_${target}_DEPENDS simV2 ${EXTRA_SIM_LIBS})
+    else()
+        set(sim_${target}_DEPENDS simV2_static_ser
+           ${VTK_LIBS} ${EXTRA_SIM_LIBS})
+    endif()
 
-FUNCTION(ADD_FORTRAN_SIMV2_SIMULATION target)
-    ADD_EXECUTABLE(sim_${target} ${ARGN} simulationexamplev2.f)
-    SET_SIMULATION_PROPERTIES(${target})
-    IF(NOT VISIT_STATIC)
-        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${EXTRA_SIM_LIBS})
-    ELSE()
-        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2_static_ser 
-            ${VTK_LIBS} ${ZLIB_LIBRARY} ${EXTRA_SIM_LIBS})
-    ENDIF()
-    ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
-ENDFUNCTION(ADD_FORTRAN_SIMV2_SIMULATION)
+    visit_add_executable(
+        NAME        sim_${target}
+        SOURCES     ${ARGN}
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${VISIT_SOURCE_DIR}/sim/V2/lib
+        DEPENDS_ON  ${sim_${target}_DEPENDS}
+        OUTPUT_NAME ${target}
+        FOLDER      tools/data/DataManualExamples/Simulations
+        SKIP_INSTALL)
 
-FUNCTION(ADD_PARALLEL_SIMV2_SIMULATION target)
-    IF(BLUEGENEQ)
-        SET(TMP_NOLINK ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
-        # Do this to try and control the order of MPI libraries on the command line
-        SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ON)
-        SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${ICET_LIB} ${VISIT_PARALLEL_LIBS})
-    ELSE(BLUEGENEQ)
-       IF(ICET_FOUND)
-           SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${ICET_LIB})
-       ENDIF(ICET_FOUND)
-    ENDIF(BLUEGENEQ)
-    ADD_PARALLEL_EXECUTABLE(sim_${target} ${ARGN})
-    SET_SIMULATION_PROPERTIES(${target})
-    SET_TARGET_PROPERTIES(sim_${target} PROPERTIES HAS_CXX ON)
-    IF(NOT VISIT_STATIC)
-        TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
-    ELSE()
-        TARGET_LINK_LIBRARIES(sim_${target} simV2_static_par ${VTK_LIBS} ${ZLIB_LIBRARY}
-                                                             ${EXTRA_SIM_LIBS})
-    ENDIF()
-    ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
-    IF(BLUEGENEQ)
-        SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ${TMP_NOLINK})
-    ENDIF(BLUEGENEQ)
-ENDFUNCTION(ADD_PARALLEL_SIMV2_SIMULATION)
+    set_target_properties(sim_${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${RTOD}
+        HAS_CXX ON)
 
-FUNCTION(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
-    ADD_PARALLEL_FORTRAN_EXECUTABLE(sim_${target} ${ARGN} simulationexamplev2.f)
-    SET_SIMULATION_PROPERTIES(${target})
-    SET(FLIBS ${EXTRA_SIM_LIBS})
-    IF(ICET_FOUND)
-        SET(FLIBS ${FLIBS} ${ICET_LIB})
-    ENDIF(ICET_FOUND)
-    # HACK: Force the Fortran MPI libraries.
-    SET(FLIBS ${FLIBS} ${MPI_Fortran_LIBRARIES})
-    IF(NOT VISIT_STATIC)
-        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${FLIBS})
-    ELSE()
-        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2_static_ser 
-            ${VTK_LIBS} ${ZLIB_LIBRARY} ${FLIBS})
-    ENDIF()
-    ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
-    # HACK:Force the Fortran include path. Why was it not already set?
-    ADD_TARGET_INCLUDE(sim_${target} ${MPI_Fortran_INCLUDE_PATH})
-ENDFUNCTION(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION)
+endfunction()
 
-FUNCTION(ADD_PYTHON_SIMV2_SIMULATION target)
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+function(ADD_FORTRAN_SIMV2_SIMULATION target)
+    if(NOT VISIT_STATIC)
+        set(sim_${target}_DEPENDS simV2f simV2 ${EXTRA_SIM_LIBS})
+    else()
+        set(sim_${target}_DEPENDS simV2f simV2_static_ser 
+            ${VTK_LIBS} ${EXTRA_SIM_LIBS})
+    endif()
+
+    visit_add_executable(
+        NAME        sim_${target}
+        SOURCES     ${ARGN}
+                    simulationexamplev2.f
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${VISIT_SOURCE_DIR}/sim/V2/lib
+        DEPENDS_ON  ${sim_${target}_DEPENDS}
+        OUTPUT_NAME ${target}
+        SKIP_INSTALL)
+
+    set_target_properties(sim_${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${RTOD})
+endfunction()
+
+function(ADD_PARALLEL_SIMV2_SIMULATION target)
+    if(NOT VISIT_STATIC)
+        set(sim_${target}_DEPENDS simV2 ${EXTRA_SIM_LIBS})
+    else()
+        set(sim_${target}_DEPENDS simV2_static_par
+            ${VTK_LIBS} ${EXTRA_SIM_LIBS})
+    endif()
+    if(HAVE_ICET)
+        list(APPEND sim_${target}_DEPENDS icet)
+    endif()
+
+    visit_add_parallel_executable(
+        NAME        sim_${target}
+        SOURCES     ${ARGN}
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${VISIT_SOURCE_DIR}/sim/V2/lib
+        DEPENDS_ON  ${sim_${target}_DEPENDS}
+        OUTPUT_NAME ${target}
+        SKIP_INSTALL)
+
+    set_target_properties(sim_${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${RTOD}
+        HAS_CXX ON)
+
+endfunction()
+
+function(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
+
+    set(sim_${target}_DEPENDS
+        simV2f
+        ${EXTRA_SIM_LIBS}
+        ${VISIT_PARALLEL_FORTRAN_LIBS}
+        # HACK: Force the Fortran MPI libraries.
+        ${MPI_Fortran_LIBRARIES})
+
+    if(HAVE_ICET)
+        list(APPEND sim_${target}_DEPENDS icet)
+    endif()
+
+    if(NOT VISIT_STATIC)
+        list(APPEND sim_${target}_DEPENDS simV2)
+    else()
+        list(APPEND sim_${target}_DEPENDS simV2_static_ser 
+            ${VTK_LIBS} )
+    endif()
+
+    visit_add_executable(
+        NAME        sim_${target}
+        SOURCES     ${ARGN}
+                    simulationexamplev2.f
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${VISIT_SOURCE_DIR}/sim/V2/lib
+                    ${MPI_Fortran_INCLUDE_PATH}
+        DEPENDS_ON  ${sim_${target}_DEPENDS}
+        OUTPUT_NAME ${target}
+        SKIP_INSTALL)
+
+    set_target_properties(sim_${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${RTOD})
+
+    if(VISIT_PARALLEL_FORTRAN_FLAGS)
+        set_property(TARGET sim_${target} APPEND
+            PROPERTY COMPILE_FLAGS ${VISIT_PARALLEL_FORTRAN})
+    endif()
+
+    if(VISIT_PARALLEL_DEFINES)
+        visit_patch_target(NAME sim_${target} DEFINES ${VISIT_PARALLEL_DEFINES})
+    endif()
+
+    if(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS)
+        set_property(TARGET sim_${target} APPEND
+            PROPERTY LINK_FLAGS ${VISIT_PARALLEL_FORTRAN_LINKER_FLAGS})
+    endif()
+
+    if(VISIT_PARALLEL_RPATH)
+        set_property(TARGET sim_${target} APPEND
+            PROPERTY INSTALL_RPATH "${VISIT_PARALLEL_RPATH}")
+    endif()
+endfunction()
+
+function(ADD_PYTHON_SIMV2_SIMULATION target)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_SOURCE_DIR}/${target} ${CMAKE_CURRENT_BINARY_DIR})
-ENDFUNCTION(ADD_PYTHON_SIMV2_SIMULATION)
+endfunction()
 
 
 ##
@@ -228,7 +276,7 @@ ADD_SIMV2_SIMULATION(var var.c)
 ADD_SIMV2_SIMULATION(writeback writeback.c)
 ADD_SIMV2_SIMULATION(zerocopy zerocopy.c extract.c)
 
-IF(VISIT_FORTRAN)
+if(VISIT_FORTRAN)
     ADD_FORTRAN_SIMV2_SIMULATION(famr famr.f)
     ADD_FORTRAN_SIMV2_SIMULATION(fcurve fcurve.f)
     ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)
@@ -246,9 +294,9 @@ IF(VISIT_FORTRAN)
     ADD_FORTRAN_SIMV2_SIMULATION(fsim12 fsim12.f)
     ADD_FORTRAN_SIMV2_SIMULATION(funstructured funstructured.f)
     ADD_FORTRAN_SIMV2_SIMULATION(fupdateplots fupdateplots.f)
-ENDIF(VISIT_FORTRAN)
+endif()
 
-IF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
     ADD_PARALLEL_SIMV2_SIMULATION(batch_par batch.c extract.c)
     ADD_PARALLEL_SIMV2_SIMULATION(domainbounds_par domainbounds.c)
     ADD_PARALLEL_SIMV2_SIMULATION(ghostcells_par ghostcells.c)
@@ -267,7 +315,7 @@ IF(VISIT_PARALLEL)
     if(VISIT_FORTRAN)
         ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION(fscalarp fscalarp.f)
     endif() 
-ENDIF(VISIT_PARALLEL)
+endif()
 
 
 # copy python examples to simulation examples build dir
