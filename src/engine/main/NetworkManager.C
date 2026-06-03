@@ -3002,16 +3002,22 @@ NetworkManager::CopyTileToImage(int imageWidth, int imageHeight,
     unsigned char *rgbImage = NULL;
     float *zbufferImage = NULL;
 
-    bool doZ = false, doA = false;
-    int nChan = 3;
-
     // 
-    // Copy the tile into the final image.
+    // Determine the portion of the tile to copy to the final image.
     //
-    unsigned char *rgbTile = pass->GetImage().GetRGBBuffer();
-    float *zbufferTile = pass->GetImage().GetZBuffer();
     const int xMax = std::min(tileWidth, remainingNxCanvas);
     const int yMax = std::min(tileHeight, remainingNyCanvas);
+    debug5 << "NetworkManager::CopyTileToImage: xMax=" << xMax << ",yMax=" << yMax << endl;
+
+    //
+    // Determine the image channel information.
+    //
+    int nChan = pass->GetImage().GetNumberOfColorChannels();
+    bool doZ = false, doA = false;
+    if (nChan == 4)
+        doA = true;
+    if (pass->GetImage().GetZBuffer() != NULL)
+        doZ = true;
 
     //
     // If this is the first time a tile is rendered, initialize
@@ -3021,11 +3027,6 @@ NetworkManager::CopyTileToImage(int imageWidth, int imageHeight,
     //
     if (ixTile == 0 && iyTile == 0)
     {
-        nChan = pass->GetImage().GetNumberOfColorChannels();
-        if (nChan == 4)
-            doA = true;
-        if (zbufferTile != NULL)
-            doZ = true;
         debug5 << "NetworkManager::RenderTiledInternal: doZ=" << (doZ == true ? "true" : "false")  << ",doA=" << (doA == true ? "true" : "false") << endl;
 
         //
@@ -3056,11 +3057,13 @@ NetworkManager::CopyTileToImage(int imageWidth, int imageHeight,
         else
             pass2->SetImage(avtImageRepresentation(image));
 
-        rgbImage = pass2->GetImage().GetRGBBuffer();
-        zbufferImage = pass2->GetImage().GetZBuffer();
     }
-    debug5 << "NetworkManager::RenderTiledInternal: rgbTile=" << (void*)rgbTile << ",zbufferTile=" << (void*)zbufferTile << endl;
-    debug5 << "NetworkManager::RenderTiledInternal: xMax=" << xMax << ",yMax=" << yMax << endl;
+
+    rgbImage = pass2->GetImage().GetRGBBuffer();
+    zbufferImage = pass2->GetImage().GetZBuffer();
+    unsigned char *rgbTile = pass->GetImage().GetRGBBuffer();
+    float *zbufferTile = pass->GetImage().GetZBuffer();
+    debug5 << "NetworkManager::CopyTileToImage: rgbTile=" << (void*)rgbTile << ",zbufferTile=" << (void*)zbufferTile << endl;
     for (int j = 0; j < yMax; ++j)
     {
         int ll  = j * tileWidth * nChan;
@@ -3232,6 +3235,9 @@ NetworkManager::RenderTiledInternal()
         view3DTile.imagePan[1] -= yPanDelta;
         foregroundPan[1] -= yPanDelta2;
     }
+
+    if (programmableCompositerDebug)
+        writeVTK("pass_6_tiled_image.vtk", pass2->GetImage());
 
     //
     // Restore the viswin size, view3D and foreground camera.
