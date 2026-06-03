@@ -3110,8 +3110,6 @@ NetworkManager::RenderTiledInternal()
     int imageWidth, imageHeight; 
     viswin->GetSize(imageWidth, imageHeight);
 
-    avtImage_p pass2 = new avtImage(NULL);
-
     //
     // Determine the tile size and number of tiles.
     //
@@ -3132,6 +3130,22 @@ NetworkManager::RenderTiledInternal()
     debug1 << "NetworkManager::RenderTiledInternal: imageWidth=" << imageWidth << ",imageHeight=" << imageHeight << endl;
     debug1 << "NetworkManager::RenderTiledInternal: tileWidth=" << tileWidth << ",tileHheight=" << tileHeight << endl;
     debug1 << "NetworkManager::RenderTiledInternal: nxTiles=" << nxTiles << ",nyTiles=" << nyTiles << endl;
+
+    //
+    // If there is only a single tile then bypass the tiling.
+    //
+    if (nxTiles == 1 && nyTiles == 1)
+    {
+        //
+        // Render the tile.
+        //
+        avtImage_p pass = RenderInternal();
+
+        avtDataObject_p output;
+        CopyTo(output, pass);
+
+        return output;
+    }
 
     //
     // Determine the tile zoom and the initial tile pan values and the
@@ -3184,6 +3198,8 @@ NetworkManager::RenderTiledInternal()
     view3DAtts.SetImagePan(pan);
     view3DAtts.SetImageZoom(zoomUser * zoomTile);
     renderState.windowInfo->windowAttributes.SetView3D(view3DAtts);
+
+    avtImage_p pass2 = new avtImage(NULL);
 
     int rank = PAR_Rank();
     for (int iyTile = 0; iyTile < nyTiles; iyTile++)
