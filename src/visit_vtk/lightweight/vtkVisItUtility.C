@@ -29,6 +29,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkShortArray.h>
 #include <vtkStructuredGrid.h>
+#include <vtkVisItCellLocator.h>
 #include <vtkVisItPointLocator.h>
 #include <vtkWedge.h>
 
@@ -518,6 +519,11 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
 //    Kathleen Bonnell, Wed Jul  7 15:02:03 PDT 2004
 //    Delete objects before early return, to prevent memory leaks.
 //
+//    Kathleen Bonnell, Wed Jun 3, 2026
+//    Add last-ditch attempt to find cell using vtkVisItCellLocator after other
+//    attempts have failed. Fixes bug with extremely zoomed in plot containing
+//    extremely long thin hexes.
+//
 // ****************************************************************************
 
 int
@@ -634,6 +640,40 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
         cellIds->Delete();
         closestPoints->Delete();
         locator->Delete();
+
+        //
+        // When this method is called from avtZonePickQuery or avtNodePickQuery,
+        // it is usually because an intersection was found but for various
+        // reasons the first reported cellId is discarded.  It is expected a
+        // valid cellId should be found here. There has been user data with
+        // very long thin hexes with tiny spatial extetents which confounds
+        // the vtkCell::EvaluationPosisition method used above, so this next
+        // piece of logic is a last-ditch effort to find the intersected cell.
+        //
+        if (found == -1)
+        {
+            vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
+            cellLocator->SetDataSet(ds);
+            cellLocator->SetIgnoreGhosts(true);
+            cellLocator->BuildLocator();
+
+            vtkIdType closestCell = -1;
+            int closestSubId = -1;
+            double closestDist2 = FLT_MAX;
+            double closestPt[3] = {0., 0., 0.};
+            cellLocator->FindClosestPoint(x, closestPt, closestCell,
+                                          closestSubId, closestDist2);
+
+            if (closestCell >= 0)
+            {
+                const double locatorTol = std::max(tol, 1e-8*diagLen);
+                if (closestDist2 <= locatorTol*locatorTol)
+                    found = static_cast<int>(closestCell);
+            }
+
+            cellLocator->Delete();
+        }
+
         return found;
     }
 }
