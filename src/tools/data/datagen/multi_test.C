@@ -3022,7 +3022,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     int             nblocks_dup = noEmptys ? iteration : nblocks;
     int             extentssize;
     int            *tmpList;
-    CLANG_TYPE      tmpExtents;
+    double         *tmpExtents;
 
     int             isIteratingHack = 0;
 
@@ -3205,7 +3205,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     // create the multi-block mesh
     //
     extentssize = 2 * dim;
-    tmpExtents = (CLANG_TYPE *) malloc(nblocks * extentssize * sizeof(CLANG_TYPE));
+    tmpExtents = (double *) malloc(nblocks * extentssize * sizeof(double));
     for (i = 0; i < nblocks; i++)
     {
        for (j = 0; j < dim; j++)
