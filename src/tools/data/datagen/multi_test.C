@@ -173,12 +173,12 @@ fill_rect3d_mat(CLANG_TYPE x[], CLANG_TYPE y[], CLANG_TYPE z[], int matlist[], i
                 CLANG_TYPE ycenter, CLANG_TYPE zcenter, CLANG_TYPE radius)
 {
     int             i, j, k, l, m, n;
-    CLANG_TYPE          dist;
+    CLANG_TYPE      dist;
     int             cnt;
     int             mixlen2;
     int            *itemp;
-    CLANG_TYPE           dx, dy, dz;
-    CLANG_TYPE           xx[10], yy[10], zz[10];
+    CLANG_TYPE      dx, dy, dz;
+    CLANG_TYPE      xx[10], yy[10], zz[10];
 
     mixlen2 = *mixlen;
 
@@ -346,17 +346,17 @@ build_block_rect2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 #undef NZ
 #define NZ 30
     int             cycle;
-    CLANG_TYPE           time;
-    CLANG_TYPE          dtime;
+    float           time;
+    double          dtime;
     char           *coordnames[3];
     int             ndims;
     int             dims[3], zdims[3];
-    CLANG_TYPE          *coords[3];
-    CLANG_TYPE           x[NX + 1], y[NY + 1];
+    CLANG_TYPE     *coords[3];
+    CLANG_TYPE      x[NX + 1], y[NY + 1];
 
     char           *meshname, *var1name, *var2name, *var3name, *var4name, *matname;
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup, *matnamedup;
-    CLANG_TYPE           d[NX * NY], p[NX * NY], u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      d[NX * NY], p[NX * NY], u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
 
     int             nmats;
     int             matnos[3];
@@ -364,16 +364,16 @@ build_block_rect2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             dims2[3];
     int             mixlen;
     int             mix_mat[NX * NY];
-    CLANG_TYPE           mix_vf[NX * NY];
+    CLANG_TYPE      mix_vf[NX * NY];
 
     DBoptlist      *optlist;
 
     int             i, j, k, l;
-    CLANG_TYPE           xave, yave;
-    CLANG_TYPE           xcenter, ycenter;
-    CLANG_TYPE           dist;
-    CLANG_TYPE           dx, dy;
-    CLANG_TYPE           xx[20], yy[20];
+    CLANG_TYPE      xave, yave;
+    CLANG_TYPE      xcenter, ycenter;
+    CLANG_TYPE      dist;
+    CLANG_TYPE      dx, dy;
+    CLANG_TYPE      xx[20], yy[20];
     int             cnt;
     int             itemp[(NX + 1) * (NY + 1)];
 
@@ -382,12 +382,12 @@ build_block_rect2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             base_x, base_y;
     int             n_x, n_y;
 
-    CLANG_TYPE           x2[NX + 1], y2[NY + 1];
-    CLANG_TYPE           d2[NX * NY], p2[NX * NY], u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      x2[NX + 1], y2[NY + 1];
+    CLANG_TYPE      d2[NX * NY], p2[NX * NY], u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
     int             matlist2[NX * NY];
     int             mixlen2;
     int             mix_next2[NX * NY], mix_mat2[NX * NY], mix_zone2[NX * NY];
-    CLANG_TYPE           mix_vf2[NX * NY];
+    CLANG_TYPE      mix_vf2[NX * NY];
 
     //
     // Create the mesh.
@@ -746,17 +746,17 @@ build_block_curv2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
                    int nblocks_x, int nblocks_y)
 {
     int             cycle;
-    CLANG_TYPE           time;
-    CLANG_TYPE          dtime;
+    float           time;
+    double          dtime;
     char           *coordnames[3];
     int             ndims;
     int             dims[3], zdims[3];
-    CLANG_TYPE          *coords[3];
-    CLANG_TYPE           x[(NX + 1) * (NY + 1)], y[(NX + 1) * (NY + 1)];
+    CLANG_TYPE     *coords[3];
+    CLANG_TYPE      x[(NX + 1) * (NY + 1)], y[(NX + 1) * (NY + 1)];
 
     char           *meshname, *var1name, *var2name, *var3name, *var4name, *matname;
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup, *matnamedup;
-    CLANG_TYPE           d[NX * NY], p[NX * NY], u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      d[NX * NY], p[NX * NY], u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
 
     int             nmats;
     int             matnos[3];
@@ -764,24 +764,24 @@ build_block_curv2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             dims2[3];
     int             mixlen;
     int             mix_next[NX * NY], mix_mat[NX * NY], mix_zone[NX * NY];
-    CLANG_TYPE           mix_vf[NX * NY];
+    CLANG_TYPE      mix_vf[NX * NY];
 
     DBoptlist      *optlist = NULL;
 
     int             i, j;
-    CLANG_TYPE           xave, yave;
-    CLANG_TYPE           xcenter, ycenter;
-    CLANG_TYPE           theta, dtheta;
-    CLANG_TYPE           r, dr;
-    CLANG_TYPE           dist;
+    CLANG_TYPE      xave, yave;
+    CLANG_TYPE      xcenter, ycenter;
+    CLANG_TYPE      theta, dtheta;
+    CLANG_TYPE      r, dr;
+    CLANG_TYPE      dist;
 
     int             block;
     int             delta_x, delta_y;
     int             base_x, base_y;
     int             n_x, n_y;
 
-    CLANG_TYPE           x2[(NX + 1) * (NY + 1)], y2[(NX + 1) * (NY + 1)];
-    CLANG_TYPE           d2[NX * NY], p2[NX * NY], u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      x2[(NX + 1) * (NY + 1)], y2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      d2[NX * NY], p2[NX * NY], u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
     int             matlist2[NX * NY];
 
     // 
@@ -1019,34 +1019,34 @@ build_block_point2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
                     int nblocks_x, int nblocks_y)
 {
     int             cycle;
-    CLANG_TYPE           time;
-    CLANG_TYPE          dtime;
-    CLANG_TYPE          *coords[3];
-    CLANG_TYPE           x[(NX + 1) * (NY + 1)], y[(NX + 1) * (NY + 1)];
+    float           time;
+    double          dtime;
+    CLANG_TYPE     *coords[3];
+    CLANG_TYPE      x[(NX + 1) * (NY + 1)], y[(NX + 1) * (NY + 1)];
 
     char           *meshname, *var1name, *var2name, *var3name, *var4name;
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup;
-    CLANG_TYPE           d[(NX + 1) * (NY + 1)], p[(NX + 1) * (NY + 1)];
-    CLANG_TYPE           u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      d[(NX + 1) * (NY + 1)], p[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
 
     DBoptlist      *optlist = NULL;
 
     int             i, j;
-    CLANG_TYPE           xcenter, ycenter;
-    CLANG_TYPE           theta, dtheta;
-    CLANG_TYPE           r, dr;
-    CLANG_TYPE           dist;
+    CLANG_TYPE      xcenter, ycenter;
+    CLANG_TYPE      theta, dtheta;
+    CLANG_TYPE      r, dr;
+    CLANG_TYPE      dist;
 
     int             block;
     int             delta_x, delta_y;
     int             base_x, base_y;
     int             n_x, n_y;
     int             npts;
-    CLANG_TYPE          *vars[1];
+    CLANG_TYPE     *vars[1];
 
-    CLANG_TYPE           x2[(NX + 1) * (NY + 1)], y2[(NX + 1) * (NY + 1)];
-    CLANG_TYPE           d2[(NX + 1) * (NY + 1)], p2[(NX + 1) * (NY + 1)];
-    CLANG_TYPE           u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      x2[(NX + 1) * (NY + 1)], y2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      d2[(NX + 1) * (NY + 1)], p2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE      u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
 
     // 
     // Create the mesh.
@@ -1239,21 +1239,21 @@ build_block_rect3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
                    int nblocks_x, int nblocks_y, int nblocks_z)
 {
     int             cycle;
-    CLANG_TYPE           time;
-    CLANG_TYPE          dtime;
+    float           time;
+    double          dtime;
     char           *coordnames[3];
     int             ndims;
     int             dims[3], zdims[3];
-    CLANG_TYPE          *coords[3];
-    CLANG_TYPE           x[NX + 1], y[NY + 1], z[NZ + 1];
+    CLANG_TYPE     *coords[3];
+    CLANG_TYPE      x[NX + 1], y[NY + 1], z[NZ + 1];
 
     char           *meshname, *var1name, *var2name, *var3name, *var4name;
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup;
     char           *var5name, *matname;
     char           *var5namedup, *matnamedup;
-    CLANG_TYPE           d[NX * NY * NZ], p[NX * NY * NZ];
-    CLANG_TYPE           u[(NX + 1) * (NY + 1) * (NZ + 1)], v[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           w[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      d[NX * NY * NZ], p[NX * NY * NZ];
+    CLANG_TYPE      u[(NX + 1) * (NY + 1) * (NZ + 1)], v[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      w[(NX + 1) * (NY + 1) * (NZ + 1)];
 
     int             nmats;
     int             matnos[3];
@@ -1261,28 +1261,28 @@ build_block_rect3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             dims2[3];
     int             mixlen;
     int             mix_next[MIXMAX], mix_mat[MIXMAX], mix_zone[MIXMAX];
-    CLANG_TYPE           mix_vf[MIXMAX];
+    CLANG_TYPE      mix_vf[MIXMAX];
 
     DBoptlist      *optlist = NULL;
 
     int             i, j, k;
-    CLANG_TYPE           xave, yave, zave;
-    CLANG_TYPE           xcenter, ycenter, zcenter;
-    CLANG_TYPE           dist;
+    CLANG_TYPE      xave, yave, zave;
+    CLANG_TYPE      xcenter, ycenter, zcenter;
+    CLANG_TYPE      dist;
 
     int             block;
     int             delta_x, delta_y, delta_z;
     int             base_x, base_y, base_z;
     int             n_x, n_y, n_z;
 
-    CLANG_TYPE           x2[NX + 1], y2[NY + 1], z2[NZ + 1];
-    CLANG_TYPE           d2[NX * NY * NZ], p2[NX * NY * NZ];
-    CLANG_TYPE           u2[(NX + 1) * (NY + 1) * (NZ + 1)], v2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           w2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      x2[NX + 1], y2[NY + 1], z2[NZ + 1];
+    CLANG_TYPE      d2[NX * NY * NZ], p2[NX * NY * NZ];
+    CLANG_TYPE      u2[(NX + 1) * (NY + 1) * (NZ + 1)], v2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      w2[(NX + 1) * (NY + 1) * (NZ + 1)];
     int             matlist2[NX * NY * NZ];
     int             mixlen2;
     int             mix_next2[MIXMAX], mix_mat2[MIXMAX], mix_zone2[MIXMAX];
-    CLANG_TYPE           mix_vf2[MIXMAX];
+    CLANG_TYPE      mix_vf2[MIXMAX];
 
     // 
     // Create the mesh.
@@ -1966,11 +1966,11 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 #define NZ 30
 
     int             cycle;
-    CLANG_TYPE           time;
-    CLANG_TYPE          dtime;
+    float           time;
+    double          dtime;
     char           *coordnames[3];
-    CLANG_TYPE          *coords[3];
-    CLANG_TYPE           x[(NX + 1) * (NY + 1) * (NZ + 1)], y[(NX + 1) * (NY + 1) * (NZ + 1)],
+    CLANG_TYPE     *coords[3];
+    CLANG_TYPE      x[(NX + 1) * (NY + 1) * (NZ + 1)], y[(NX + 1) * (NY + 1) * (NZ + 1)],
                     z[(NX + 1) * (NY + 1) * (NZ + 1)];
     int             nfaces, nzones, nnodes;
     int             lfacelist, lzonelist;
@@ -1984,9 +1984,9 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup;
     char           *var5name, *var6name, *matname;
     char           *var5namedup, *var6namedup, *matnamedup;
-    CLANG_TYPE          *vars[1];
+    CLANG_TYPE     *vars[1];
     char           *varnames[1];
-    CLANG_TYPE           d[(NX + 1) * (NY + 1) * (NZ + 1)], p[(NX + 1) * (NY + 1) * (NZ + 1)],
+    CLANG_TYPE      d[(NX + 1) * (NY + 1) * (NZ + 1)], p[(NX + 1) * (NY + 1) * (NZ + 1)],
                     u[(NX + 1) * (NY + 1) * (NZ + 1)], v[(NX + 1) * (NY + 1) * (NZ + 1)],
                     w[(NX + 1) * (NY + 1) * (NZ + 1)];
 
@@ -1995,8 +1995,8 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             matlist[NX * NY * NZ];
     int             mixlen;
     int             mix_next[4500], mix_mat[4500], mix_zone[4500];
-    CLANG_TYPE           mix_vf[4500];
-    CLANG_TYPE           xstrip[NX + NY + NZ], ystrip[NX + NY + NZ], zstrip[NX + NY + NZ];
+    CLANG_TYPE      mix_vf[4500];
+    CLANG_TYPE      xstrip[NX + NY + NZ], ystrip[NX + NY + NZ], zstrip[NX + NY + NZ];
 
     DBoptlist      *optlist;
 
@@ -2004,11 +2004,11 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 
     int             i, j, k;
     int             iz;
-    CLANG_TYPE           xcenter, ycenter;
-    CLANG_TYPE           theta, dtheta;
-    CLANG_TYPE           r, dr;
-    CLANG_TYPE           h, dh;
-    CLANG_TYPE           dist;
+    CLANG_TYPE      xcenter, ycenter;
+    CLANG_TYPE      theta, dtheta;
+    CLANG_TYPE      r, dr;
+    CLANG_TYPE      h, dh;
+    CLANG_TYPE      dist;
 
     int             block;
     int             delta_x, delta_y, delta_z;
@@ -2017,9 +2017,9 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             imin, imax, jmin, jmax, kmin, kmax;
     int             nx, ny, nz;
 
-    CLANG_TYPE           x2[2646], y2[2646], z2[2646];
-    CLANG_TYPE           d2[2646], p2[2646], u2[2646], v2[2646], w2[2646];
-    CLANG_TYPE           hist2[(NX-1)*(NY-1)*(NZ-1)];
+    CLANG_TYPE      x2[2646], y2[2646], z2[2646];
+    CLANG_TYPE      d2[2646], p2[2646], u2[2646], v2[2646], w2[2646];
+    CLANG_TYPE      hist2[(NX-1)*(NY-1)*(NZ-1)];
     int             matlist2[2000], ghost[2000];
 
     int             nreal;
@@ -2604,14 +2604,14 @@ build_block_curv3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 #define NZ 30
 
     int             cycle;
-    CLANG_TYPE           time;
-    CLANG_TYPE          dtime;
+    float           time;
+    double          dtime;
     char           *coordnames[3];
-    CLANG_TYPE          *coords[3];
+    CLANG_TYPE     *coords[3];
 
-    CLANG_TYPE           x[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           y[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           z[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      x[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      y[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      z[(NX + 1) * (NY + 1) * (NZ + 1)];
 
     int             ndims, zdims[3];
     int             dims[3], dims2[3];
@@ -2621,10 +2621,10 @@ build_block_curv3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     char           *var5name, *matname;
     char           *var5namedup, *matnamedup;
 
-    CLANG_TYPE           d[NX * NY * NZ], p[NX * NY * NZ];
-    CLANG_TYPE           u[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           v[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           w[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      d[NX * NY * NZ], p[NX * NY * NZ];
+    CLANG_TYPE      u[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      v[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      w[(NX + 1) * (NY + 1) * (NZ + 1)];
 
     int             nmats;
     int             matnos[3];
@@ -2632,32 +2632,32 @@ build_block_curv3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             mixlen;
     int             mix_next[NX * NY * NZ], mix_mat[NX * NY * NZ];
     int             mix_zone[NX * NY * NZ];
-    CLANG_TYPE           mix_vf[NX * NY * NZ];
+    CLANG_TYPE      mix_vf[NX * NY * NZ];
 
     DBoptlist      *optlist = NULL;
 
     int             i, j, k;
 
-    CLANG_TYPE           xave, yave;
-    CLANG_TYPE           xcenter, ycenter;
+    CLANG_TYPE      xave, yave;
+    CLANG_TYPE      xcenter, ycenter;
 
-    CLANG_TYPE           theta, dtheta;
-    CLANG_TYPE           r, dr;
-    CLANG_TYPE           h, dh;
-    CLANG_TYPE           dist;
+    CLANG_TYPE      theta, dtheta;
+    CLANG_TYPE      r, dr;
+    CLANG_TYPE      h, dh;
+    CLANG_TYPE      dist;
 
     int             block;
     int             delta_x, delta_y, delta_z;
     int             base_x, base_y, base_z;
     int             n_x, n_y, n_z;
 
-    CLANG_TYPE           x2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           y2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           z2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           d2[NX * NY * NZ], p2[NX * NY * NZ];
-    CLANG_TYPE           u2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           v2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    CLANG_TYPE           w2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      x2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      y2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      z2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      d2[NX * NY * NZ], p2[NX * NY * NZ];
+    CLANG_TYPE      u2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      v2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE      w2[(NX + 1) * (NY + 1) * (NZ + 1)];
     int             matlist2[NX * NY * NZ];
 
     //
@@ -2967,8 +2967,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
 {
     int             i,j,k;
     int             cycle;
-    CLANG_TYPE           time;
-    CLANG_TYPE          dtime;
+    float           time;
+    double          dtime;
     int             nmatnos;
     int             matnos[3];
     char            names[MAXBLOCKS][STRLEN];
@@ -3022,7 +3022,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     int             nblocks_dup = noEmptys ? iteration : nblocks;
     int             extentssize;
     int            *tmpList;
-    CLANG_TYPE         *tmpExtents;
+    CLANG_TYPE      tmpExtents;
 
     int             isIteratingHack = 0;
 
