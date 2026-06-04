@@ -255,6 +255,7 @@ if(SILO_FOUND)
     #-------------------------------------------------------------------------
     set(noise_SOURCES noise.C QuadMesh.C)
     set(multidir_SOURCES multidir.C QuadMesh.C)
+    set(dmulti_test_SOURCES multi_test.C)
     # Build Silo Targets
     foreach (SILO_TARGET arbpoly bigsil bounce big_quads csg emptydomains
                          fullframe galaxy ghost global_node globe largefile
@@ -269,6 +270,13 @@ if(SILO_FOUND)
             LIB_DIRS ${SILO_LIBRARY_DIR}
             LIBS ${SILO_LIB})
     endforeach()
+    BUILD_DATA_TARGET(dmulti_test
+        INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+                     ${SILO_INCLUDE_DIR}
+                     ${VISIT_SOURCE_DIR}/common/utility
+        LIB_DIRS ${SILO_LIBRARY_DIR}
+        LIBS ${SILO_LIB}
+        DEFS DOUBLE_PRECISION)
     if(WIN32)
       set_target_properties(multi_test PROPERTIES LINK_FLAGS "/STACK:8000000")
     endif()

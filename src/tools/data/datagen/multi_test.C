@@ -66,6 +66,19 @@ using std::vector;
     if (HASEXT != 0)                                        \
        DBAddOption(optlist, DBOPT_HAS_EXTERNAL_ZONES, HASEXT)
 
+#define SPRINTF(fmt, ...) snprintf(fmt, sizeof(fmt), __VA_ARGS__)
+
+#ifdef DOUBLE_PRECISION
+#define CLANG_TYPE double
+#define SILO_TYPE DB_DOUBLE
+#define DPREFIX "d"
+#define DBCREATE(A,B,C,D,E) DBCreate(DPREFIX A,B,C,D,E)
+#else
+#define CLANG_TYPE float
+#define SILO_TYPE DB_FLOAT
+#define DBCREATE(A,B,C,D,E) DBCreate(A,B,C,D,E)
+#define DPREFIX
+#endif
 
 // variables set by argc/argv 
 static int noDups = 0;
@@ -76,7 +89,7 @@ static int noTimeInvariantMultimesh = 0;
 static int noHalfMesh = 0;
 static int noEmptys = 0;
 
-double varextents[MAXNUMVARS][2*MAXBLOCKS];
+CLANG_TYPE varextents[MAXNUMVARS][2*MAXBLOCKS];
 int mixlens[MAXBLOCKS];
 int zonecounts[MAXBLOCKS];
 int has_external_zones[MAXBLOCKS];
@@ -94,20 +107,20 @@ void          build_block_ucd3d(DBfile *, char[MAXBLOCKS][STRLEN], int, int,
                                 int, int);
 
 int           build_multi(DBfile *, int, int, int, int, int, int, int, int);
-static void   put_extents(float *arr, int len, double *ext_arr, int block);
+static void   put_extents(CLANG_TYPE *arr, int len, CLANG_TYPE *ext_arr, int block);
 static void   fill_rect3d_bkgr(int matlist[], int nx, int ny, int nz,
                                int matno);
-static void   fill_rect3d_mat(float x[], float y[], float z[], int matlist[],
+static void   fill_rect3d_mat(CLANG_TYPE x[], CLANG_TYPE y[], CLANG_TYPE z[], int matlist[],
                               int nx, int ny, int nz, int mix_next[],
-                              int mix_mat[], int mix_zone[], float mix_vf[],
-                              int *mixlen, int matno, double xcenter,
-                              double ycenter, double zcenter, double radius);
+                              int mix_mat[], int mix_zone[], CLANG_TYPE mix_vf[],
+                              int *mixlen, int matno, CLANG_TYPE xcenter,
+                              CLANG_TYPE ycenter, CLANG_TYPE zcenter, CLANG_TYPE radius);
 
 static void
-put_extents(float *arr, int len, double *ext_arr, int block)
+put_extents(CLANG_TYPE *arr, int len, CLANG_TYPE *ext_arr, int block)
 {
    int i;
-   double min = arr[0], max = min;
+   CLANG_TYPE min = arr[0], max = min;
    for (i = 0; i < len; i++)
    {
       if (arr[i] < min)
@@ -154,18 +167,18 @@ fill_rect3d_bkgr(int matlist[], int nx, int ny, int nz, int matno)
 }
 
 static void
-fill_rect3d_mat(float x[], float y[], float z[], int matlist[], int nx,
+fill_rect3d_mat(CLANG_TYPE x[], CLANG_TYPE y[], CLANG_TYPE z[], int matlist[], int nx,
                 int ny, int nz, int mix_next[], int mix_mat[], int mix_zone[],
-                float mix_vf[], int *mixlen, int matno, double xcenter,
-                double ycenter, double zcenter, double radius)
+                CLANG_TYPE mix_vf[], int *mixlen, int matno, CLANG_TYPE xcenter,
+                CLANG_TYPE ycenter, CLANG_TYPE zcenter, CLANG_TYPE radius)
 {
     int             i, j, k, l, m, n;
-    double          dist;
+    CLANG_TYPE          dist;
     int             cnt;
     int             mixlen2;
     int            *itemp;
-    float           dx, dy, dz;
-    float           xx[10], yy[10], zz[10];
+    CLANG_TYPE           dx, dy, dz;
+    CLANG_TYPE           xx[10], yy[10], zz[10];
 
     mixlen2 = *mixlen;
 
@@ -242,8 +255,8 @@ fill_rect3d_mat(float x[], float y[], float z[], int matlist[], int nx,
                     mix_next[mixlen2 + 1] = 0;
                     mix_zone[mixlen2] = i * nx * ny + j * nx + k + 1; // 1-origin
                     mix_zone[mixlen2 + 1] = i * nx * ny + j * nx + k + 1; // 1-origin
-                    mix_vf[mixlen2] = 1. - (((float)cnt) / 1000.);
-                    mix_vf[mixlen2 + 1] = ((float)cnt) / 1000.;
+                    mix_vf[mixlen2] = 1. - (((CLANG_TYPE)cnt) / 1000.);
+                    mix_vf[mixlen2 + 1] = ((CLANG_TYPE)cnt) / 1000.;
                     mixlen2 += 2;
                 }
             }
@@ -266,18 +279,18 @@ build_curves(DBfile *dbfile,  char dirnames[MAXBLOCKS][STRLEN])
 #define CIRCLE 3
 
     int i, coord_sys = DB_SPHERICAL;
-    float x[NCURVES][NVALS];
-    float y[NCURVES][NVALS];
+    CLANG_TYPE x[NCURVES][NVALS];
+    CLANG_TYPE y[NCURVES][NVALS];
     for (i = 0; i < NVALS; i++)
     {
-        x[LINE][i] = (float) i;
+        x[LINE][i] = (CLANG_TYPE) i;
         y[LINE][i] = 0.5 * x[LINE][i] + -5.0; 
 
-        x[WAVE][i] = (float) i;
+        x[WAVE][i] = (CLANG_TYPE) i;
         y[WAVE][i] = sin(9.0*i*3.1415926 / 180.);
 
         x[LOG][i] = log(i+1.0);
-        y[LOG][i] = (float) i;
+        y[LOG][i] = (CLANG_TYPE) i;
 
         x[CIRCLE][i] = 1.0;
         y[CIRCLE][i] = i * 2.0 * 3.1415926 / (NVALS-1);
@@ -298,17 +311,17 @@ build_curves(DBfile *dbfile,  char dirnames[MAXBLOCKS][STRLEN])
     char *log = "log";
     char *circle = "circle";
     DBAddOption(optlist, DBOPT_LABEL, line);
-    DBPutCurve(dbfile, "line", x[LINE], y[LINE], DB_FLOAT, NVALS, optlist);
+    DBPutCurve(dbfile, "line", x[LINE], y[LINE], SILO_TYPE, NVALS, optlist);
     DBClearOption(optlist, DBOPT_LABEL);
     DBAddOption(optlist, DBOPT_LABEL, wave);
-    DBPutCurve(dbfile, "wave", x[WAVE], y[WAVE], DB_FLOAT, NVALS, optlist);
+    DBPutCurve(dbfile, "wave", x[WAVE], y[WAVE], SILO_TYPE, NVALS, optlist);
     DBClearOption(optlist, DBOPT_LABEL);
     DBAddOption(optlist, DBOPT_LABEL, log);
-    DBPutCurve(dbfile, "log", x[LOG], y[LOG], DB_FLOAT, NVALS, optlist);
+    DBPutCurve(dbfile, "log", x[LOG], y[LOG], SILO_TYPE, NVALS, optlist);
     DBClearOption(optlist, DBOPT_LABEL);
     DBAddOption(optlist, DBOPT_LABEL, circle);
     DBAddOption(optlist, DBOPT_COORDSYS, &coord_sys);
-    DBPutCurve(dbfile, circle, x[CIRCLE], y[CIRCLE], DB_FLOAT, NVALS, optlist);
+    DBPutCurve(dbfile, circle, x[CIRCLE], y[CIRCLE], SILO_TYPE, NVALS, optlist);
 
     DBFreeOptlist(optlist);
 
@@ -333,17 +346,17 @@ build_block_rect2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 #undef NZ
 #define NZ 30
     int             cycle;
-    float           time;
-    double          dtime;
+    CLANG_TYPE           time;
+    CLANG_TYPE          dtime;
     char           *coordnames[3];
     int             ndims;
     int             dims[3], zdims[3];
-    float          *coords[3];
-    float           x[NX + 1], y[NY + 1];
+    CLANG_TYPE          *coords[3];
+    CLANG_TYPE           x[NX + 1], y[NY + 1];
 
     char           *meshname, *var1name, *var2name, *var3name, *var4name, *matname;
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup, *matnamedup;
-    float           d[NX * NY], p[NX * NY], u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           d[NX * NY], p[NX * NY], u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
 
     int             nmats;
     int             matnos[3];
@@ -351,16 +364,16 @@ build_block_rect2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             dims2[3];
     int             mixlen;
     int             mix_mat[NX * NY];
-    float           mix_vf[NX * NY];
+    CLANG_TYPE           mix_vf[NX * NY];
 
     DBoptlist      *optlist;
 
     int             i, j, k, l;
-    float           xave, yave;
-    float           xcenter, ycenter;
-    float           dist;
-    float           dx, dy;
-    float           xx[20], yy[20];
+    CLANG_TYPE           xave, yave;
+    CLANG_TYPE           xcenter, ycenter;
+    CLANG_TYPE           dist;
+    CLANG_TYPE           dx, dy;
+    CLANG_TYPE           xx[20], yy[20];
     int             cnt;
     int             itemp[(NX + 1) * (NY + 1)];
 
@@ -369,12 +382,12 @@ build_block_rect2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             base_x, base_y;
     int             n_x, n_y;
 
-    float           x2[NX + 1], y2[NY + 1];
-    float           d2[NX * NY], p2[NX * NY], u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           x2[NX + 1], y2[NY + 1];
+    CLANG_TYPE           d2[NX * NY], p2[NX * NY], u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
     int             matlist2[NX * NY];
     int             mixlen2;
     int             mix_next2[NX * NY], mix_mat2[NX * NY], mix_zone2[NX * NY];
-    float           mix_vf2[NX * NY];
+    CLANG_TYPE           mix_vf2[NX * NY];
 
     //
     // Create the mesh.
@@ -512,8 +525,8 @@ build_block_rect2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
                 matlist[j * NX + i] = -(mixlen + 1);
                 mix_mat[mixlen] = 1;
                 mix_mat[mixlen + 1] = 2;
-                mix_vf[mixlen] = 1. - (((float)cnt) / 400.);
-                mix_vf[mixlen + 1] = ((float)cnt) / 400.;
+                mix_vf[mixlen] = 1. - (((CLANG_TYPE)cnt) / 400.);
+                mix_vf[mixlen + 1] = ((CLANG_TYPE)cnt) / 400.;
                 mixlen += 2;
             }
         }
@@ -571,8 +584,8 @@ build_block_rect2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
                 matlist[j * NX + i] = -(mixlen + 1);
                 mix_mat[mixlen] = 2;
                 mix_mat[mixlen + 1] = 3;
-                mix_vf[mixlen] = 1. - (((float)cnt) / 400.);
-                mix_vf[mixlen + 1] = ((float)cnt) / 400.;
+                mix_vf[mixlen] = 1. - (((CLANG_TYPE)cnt) / 400.);
+                mix_vf[mixlen + 1] = ((CLANG_TYPE)cnt) / 400.;
                 mixlen += 2;
             }
         }
@@ -678,45 +691,45 @@ build_block_rect2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
             has_external_zones[block] = 1;
         zonecounts[block] = (dims[0]-1)*(dims[1]-1);
         DBPutQuadmesh(dbfile, meshname, coordnames, coords, dims, ndims,
-                      DB_FLOAT, DB_COLLINEAR, optlist);
+                      SILO_TYPE, DB_COLLINEAR, optlist);
         if (!noDups && block < 2)
             DBPutQuadmesh(dbfile, meshnamedup, coordnames, coords, dims, ndims,
-                      DB_FLOAT, DB_COLLINEAR, optlist);
+                      SILO_TYPE, DB_COLLINEAR, optlist);
 
         put_extents(d2,(dims[0]-1)*(dims[1]-1),varextents[3],block);
         DBPutQuadvar1(dbfile, var1name, meshname, d2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var1namedup, meshnamedup, d2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
 
         put_extents(p2,(dims[0]-1)*(dims[1]-1),varextents[4],block);
         DBPutQuadvar1(dbfile, var2name, meshname, p2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
 
         put_extents(u2,dims[0]*dims[1],varextents[5],block);
         DBPutQuadvar1(dbfile, var3name, meshname, u2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var3namedup, meshnamedup, u2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(v2,dims[0]*dims[1],varextents[6],block);
         DBPutQuadvar1(dbfile, var4name, meshname, v2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var4namedup, meshnamedup, v2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         matcounts[block] = count_mats(dims2[0]*dims2[1],matlist2,matlists[block]);
         mixlens[block] = mixlen2;
             DBPutMaterial(dbfile, matname, meshname, nmats, matnos,
                       matlist2, dims2, ndims, mix_next2, mix_mat2,
-                      mix_zone2, mix_vf2, mixlen2, DB_FLOAT, optlist);
+                      mix_zone2, mix_vf2, mixlen2, SILO_TYPE, optlist);
         if (!noDups && block < 2)
             DBPutMaterial(dbfile, matnamedup, meshnamedup, nmats, matnos,
                       matlist2, dims2, ndims, mix_next2, mix_mat2,
-                      mix_zone2, mix_vf2, mixlen2, DB_FLOAT, optlist);
+                      mix_zone2, mix_vf2, mixlen2, SILO_TYPE, optlist);
 
         DBFreeOptlist(optlist);
 
@@ -733,17 +746,17 @@ build_block_curv2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
                    int nblocks_x, int nblocks_y)
 {
     int             cycle;
-    float           time;
-    double          dtime;
+    CLANG_TYPE           time;
+    CLANG_TYPE          dtime;
     char           *coordnames[3];
     int             ndims;
     int             dims[3], zdims[3];
-    float          *coords[3];
-    float           x[(NX + 1) * (NY + 1)], y[(NX + 1) * (NY + 1)];
+    CLANG_TYPE          *coords[3];
+    CLANG_TYPE           x[(NX + 1) * (NY + 1)], y[(NX + 1) * (NY + 1)];
 
     char           *meshname, *var1name, *var2name, *var3name, *var4name, *matname;
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup, *matnamedup;
-    float           d[NX * NY], p[NX * NY], u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           d[NX * NY], p[NX * NY], u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
 
     int             nmats;
     int             matnos[3];
@@ -751,24 +764,24 @@ build_block_curv2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             dims2[3];
     int             mixlen;
     int             mix_next[NX * NY], mix_mat[NX * NY], mix_zone[NX * NY];
-    float           mix_vf[NX * NY];
+    CLANG_TYPE           mix_vf[NX * NY];
 
     DBoptlist      *optlist = NULL;
 
     int             i, j;
-    float           xave, yave;
-    float           xcenter, ycenter;
-    float           theta, dtheta;
-    float           r, dr;
-    float           dist;
+    CLANG_TYPE           xave, yave;
+    CLANG_TYPE           xcenter, ycenter;
+    CLANG_TYPE           theta, dtheta;
+    CLANG_TYPE           r, dr;
+    CLANG_TYPE           dist;
 
     int             block;
     int             delta_x, delta_y;
     int             base_x, base_y;
     int             n_x, n_y;
 
-    float           x2[(NX + 1) * (NY + 1)], y2[(NX + 1) * (NY + 1)];
-    float           d2[NX * NY], p2[NX * NY], u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           x2[(NX + 1) * (NY + 1)], y2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           d2[NX * NY], p2[NX * NY], u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
     int             matlist2[NX * NY];
 
     // 
@@ -951,45 +964,45 @@ build_block_curv2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
         has_external_zones[block] = 1;
         zonecounts[block] = (dims[0]-1)*(dims[1]-1);
         DBPutQuadmesh(dbfile, meshname, coordnames, coords, dims, ndims,
-                      DB_FLOAT, DB_NONCOLLINEAR, optlist);
+                      SILO_TYPE, DB_NONCOLLINEAR, optlist);
         if (!noDups && block < 2)
             DBPutQuadmesh(dbfile, meshnamedup, coordnames, coords, dims, ndims,
-                      DB_FLOAT, DB_NONCOLLINEAR, optlist);
+                      SILO_TYPE, DB_NONCOLLINEAR, optlist);
 
         put_extents(d2,(dims[0]-1)*(dims[1]-1),varextents[3],block);
         DBPutQuadvar1(dbfile, var1name, meshname, d2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var1namedup, meshnamedup, d2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
 
         put_extents(p2,(dims[0]-1)*(dims[1]-1),varextents[4],block);
         DBPutQuadvar1(dbfile, var2name, meshname, p2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
 
         put_extents(u2,dims[0]*dims[1],varextents[5],block);
         DBPutQuadvar1(dbfile, var3name, meshname, u2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var3namedup, meshnamedup, u2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(v2,dims[0]*dims[1],varextents[6],block);
         DBPutQuadvar1(dbfile, var4name, meshname, v2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var4namedup, meshnamedup, v2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         matcounts[block] = count_mats(dims2[0]*dims2[1],matlist2,matlists[block]);
         mixlens[block] = mixlen;
         DBPutMaterial(dbfile, matname, meshname, nmats, matnos,
                       matlist2, dims2, ndims, mix_next, mix_mat, mix_zone,
-                      mix_vf, mixlen, DB_FLOAT, optlist);
+                      mix_vf, mixlen, SILO_TYPE, optlist);
         if (!noDups && block < 2)
             DBPutMaterial(dbfile, matnamedup, meshnamedup, nmats, matnos,
                       matlist2, dims2, ndims, mix_next, mix_mat, mix_zone,
-                      mix_vf, mixlen, DB_FLOAT, optlist);
+                      mix_vf, mixlen, SILO_TYPE, optlist);
 
         DBFreeOptlist(optlist);
 
@@ -1006,34 +1019,34 @@ build_block_point2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
                     int nblocks_x, int nblocks_y)
 {
     int             cycle;
-    float           time;
-    double          dtime;
-    float          *coords[3];
-    float           x[(NX + 1) * (NY + 1)], y[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           time;
+    CLANG_TYPE          dtime;
+    CLANG_TYPE          *coords[3];
+    CLANG_TYPE           x[(NX + 1) * (NY + 1)], y[(NX + 1) * (NY + 1)];
 
     char           *meshname, *var1name, *var2name, *var3name, *var4name;
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup;
-    float           d[(NX + 1) * (NY + 1)], p[(NX + 1) * (NY + 1)];
-    float           u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           d[(NX + 1) * (NY + 1)], p[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           u[(NX + 1) * (NY + 1)], v[(NX + 1) * (NY + 1)];
 
     DBoptlist      *optlist = NULL;
 
     int             i, j;
-    float           xcenter, ycenter;
-    float           theta, dtheta;
-    float           r, dr;
-    float           dist;
+    CLANG_TYPE           xcenter, ycenter;
+    CLANG_TYPE           theta, dtheta;
+    CLANG_TYPE           r, dr;
+    CLANG_TYPE           dist;
 
     int             block;
     int             delta_x, delta_y;
     int             base_x, base_y;
     int             n_x, n_y;
     int             npts;
-    float          *vars[1];
+    CLANG_TYPE          *vars[1];
 
-    float           x2[(NX + 1) * (NY + 1)], y2[(NX + 1) * (NY + 1)];
-    float           d2[(NX + 1) * (NY + 1)], p2[(NX + 1) * (NY + 1)];
-    float           u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           x2[(NX + 1) * (NY + 1)], y2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           d2[(NX + 1) * (NY + 1)], p2[(NX + 1) * (NY + 1)];
+    CLANG_TYPE           u2[(NX + 1) * (NY + 1)], v2[(NX + 1) * (NY + 1)];
 
     // 
     // Create the mesh.
@@ -1178,37 +1191,37 @@ build_block_point2d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
         put_extents(x2,npts,varextents[0],block);
         put_extents(y2,npts,varextents[1],block);
         zonecounts[block] = 0;
-        DBPutPointmesh(dbfile, meshname, 2, coords, npts, DB_FLOAT, optlist);
+        DBPutPointmesh(dbfile, meshname, 2, coords, npts, SILO_TYPE, optlist);
         if (!noDups && block < 2)
-            DBPutPointmesh(dbfile, meshnamedup, 2, coords, npts, DB_FLOAT, optlist);
+            DBPutPointmesh(dbfile, meshnamedup, 2, coords, npts, SILO_TYPE, optlist);
 
         put_extents(d2,npts,varextents[3],block);
         vars[0] = d2;
-        DBPutPointvar(dbfile, var1name, meshname, 1, vars, npts, DB_FLOAT,
+        DBPutPointvar(dbfile, var1name, meshname, 1, vars, npts, SILO_TYPE,
                       optlist);
         if (!noDups && block < 2)
-            DBPutPointvar(dbfile, var1namedup, meshnamedup, 1, vars, npts, DB_FLOAT,
+            DBPutPointvar(dbfile, var1namedup, meshnamedup, 1, vars, npts, SILO_TYPE,
                       optlist);
 
         put_extents(p2,npts,varextents[4],block);
         vars[0] = p2;
-        DBPutPointvar(dbfile, var2name, meshname, 1, vars, npts, DB_FLOAT,
+        DBPutPointvar(dbfile, var2name, meshname, 1, vars, npts, SILO_TYPE,
                       optlist);
 
         put_extents(u2,npts,varextents[5],block);
         vars[0] = u2;
-        DBPutPointvar(dbfile, var3name, meshname, 1, vars, npts, DB_FLOAT,
+        DBPutPointvar(dbfile, var3name, meshname, 1, vars, npts, SILO_TYPE,
                       optlist);
         if (!noDups && block < 2)
-            DBPutPointvar(dbfile, var3namedup, meshnamedup, 1, vars, npts, DB_FLOAT,
+            DBPutPointvar(dbfile, var3namedup, meshnamedup, 1, vars, npts, SILO_TYPE,
                       optlist);
 
         put_extents(v2,npts,varextents[6],block);
         vars[0] = v2;
-        DBPutPointvar(dbfile, var4name, meshname, 1, vars, npts, DB_FLOAT,
+        DBPutPointvar(dbfile, var4name, meshname, 1, vars, npts, SILO_TYPE,
                       optlist);
         if (!noDups && block < 2)
-            DBPutPointvar(dbfile, var4namedup, meshnamedup, 1, vars, npts, DB_FLOAT,
+            DBPutPointvar(dbfile, var4namedup, meshnamedup, 1, vars, npts, SILO_TYPE,
                       optlist);
 
         DBFreeOptlist(optlist);
@@ -1226,21 +1239,21 @@ build_block_rect3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
                    int nblocks_x, int nblocks_y, int nblocks_z)
 {
     int             cycle;
-    float           time;
-    double          dtime;
+    CLANG_TYPE           time;
+    CLANG_TYPE          dtime;
     char           *coordnames[3];
     int             ndims;
     int             dims[3], zdims[3];
-    float          *coords[3];
-    float           x[NX + 1], y[NY + 1], z[NZ + 1];
+    CLANG_TYPE          *coords[3];
+    CLANG_TYPE           x[NX + 1], y[NY + 1], z[NZ + 1];
 
     char           *meshname, *var1name, *var2name, *var3name, *var4name;
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup;
     char           *var5name, *matname;
     char           *var5namedup, *matnamedup;
-    float           d[NX * NY * NZ], p[NX * NY * NZ];
-    float           u[(NX + 1) * (NY + 1) * (NZ + 1)], v[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           w[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           d[NX * NY * NZ], p[NX * NY * NZ];
+    CLANG_TYPE           u[(NX + 1) * (NY + 1) * (NZ + 1)], v[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           w[(NX + 1) * (NY + 1) * (NZ + 1)];
 
     int             nmats;
     int             matnos[3];
@@ -1248,28 +1261,28 @@ build_block_rect3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             dims2[3];
     int             mixlen;
     int             mix_next[MIXMAX], mix_mat[MIXMAX], mix_zone[MIXMAX];
-    float           mix_vf[MIXMAX];
+    CLANG_TYPE           mix_vf[MIXMAX];
 
     DBoptlist      *optlist = NULL;
 
     int             i, j, k;
-    float           xave, yave, zave;
-    float           xcenter, ycenter, zcenter;
-    float           dist;
+    CLANG_TYPE           xave, yave, zave;
+    CLANG_TYPE           xcenter, ycenter, zcenter;
+    CLANG_TYPE           dist;
 
     int             block;
     int             delta_x, delta_y, delta_z;
     int             base_x, base_y, base_z;
     int             n_x, n_y, n_z;
 
-    float           x2[NX + 1], y2[NY + 1], z2[NZ + 1];
-    float           d2[NX * NY * NZ], p2[NX * NY * NZ];
-    float           u2[(NX + 1) * (NY + 1) * (NZ + 1)], v2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           w2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           x2[NX + 1], y2[NY + 1], z2[NZ + 1];
+    CLANG_TYPE           d2[NX * NY * NZ], p2[NX * NY * NZ];
+    CLANG_TYPE           u2[(NX + 1) * (NY + 1) * (NZ + 1)], v2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           w2[(NX + 1) * (NY + 1) * (NZ + 1)];
     int             matlist2[NX * NY * NZ];
     int             mixlen2;
     int             mix_next2[MIXMAX], mix_mat2[MIXMAX], mix_zone2[MIXMAX];
-    float           mix_vf2[MIXMAX];
+    CLANG_TYPE           mix_vf2[MIXMAX];
 
     // 
     // Create the mesh.
@@ -1512,52 +1525,52 @@ build_block_rect3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 
         zonecounts[block] = (dims[0]-1)*(dims[1]-1)*(dims[2]-1);
         DBPutQuadmesh(dbfile, meshname, coordnames, coords, dims, ndims,
-                      DB_FLOAT, DB_COLLINEAR, optlist);
+                      SILO_TYPE, DB_COLLINEAR, optlist);
         if (!noDups && block < 2)
             DBPutQuadmesh(dbfile, meshnamedup, coordnames, coords, dims, ndims,
-                      DB_FLOAT, DB_COLLINEAR, optlist);
+                      SILO_TYPE, DB_COLLINEAR, optlist);
 
         put_extents(d2,(dims[0]-1)*(dims[1]-1)*(dims[2]-1),varextents[3],block);
         DBPutQuadvar1(dbfile, var1name, meshname, d2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var1namedup, meshnamedup, d2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
 
         put_extents(p2,(dims[0]-1)*(dims[1]-1)*(dims[2]-1),varextents[4],block);
         DBPutQuadvar1(dbfile, var2name, meshname, p2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
 
         put_extents(u2,dims[0]*dims[1]*dims[2],varextents[5],block);
         DBPutQuadvar1(dbfile, var3name, meshname, u2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var3namedup, meshnamedup, u2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(v2,dims[0]*dims[1]*dims[2],varextents[6],block);
         DBPutQuadvar1(dbfile, var4name, meshname, v2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var4namedup, meshnamedup, v2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(w2,dims[0]*dims[1]*dims[2],varextents[7],block);
         DBPutQuadvar1(dbfile, var5name, meshname, w2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var5namedup, meshnamedup, w2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         matcounts[block] = count_mats(dims2[0]*dims2[1]*dims2[2],matlist2,matlists[block]);
         mixlens[block] = mixlen2;
         DBPutMaterial(dbfile, matname, meshname, nmats, matnos,
                   matlist2, dims2, ndims, mix_next2, mix_mat2, mix_zone2,
-                      mix_vf2, mixlen2, DB_FLOAT, optlist);
+                      mix_vf2, mixlen2, SILO_TYPE, optlist);
         if (!noDups && block < 2)
             DBPutMaterial(dbfile, matnamedup, meshnamedup, nmats, matnos,
                   matlist2, dims2, ndims, mix_next2, mix_mat2, mix_zone2,
-                      mix_vf2, mixlen2, DB_FLOAT, optlist);
+                      mix_vf2, mixlen2, SILO_TYPE, optlist);
 
         DBFreeOptlist(optlist);
 
@@ -1646,10 +1659,10 @@ static void TraverseZonelistForMaterials(int mat1, int mat2, int nzones,
 }
 
 // Purpose: Given a zone number, compute the average of its 8 nodal values.
-static float NodalToZonal(const float *nodalvals, const int *hexlist, int zoneno)
+static CLANG_TYPE NodalToZonal(const CLANG_TYPE *nodalvals, const int *hexlist, int zoneno)
 {
     hexlist += (8 * zoneno);
-    float sum = 0;
+    CLANG_TYPE sum = 0;
     for (int i = 0; i < 8; i++)
         sum += nodalvals[hexlist[i]];
     return sum / 8;
@@ -1666,12 +1679,12 @@ static float NodalToZonal(const float *nodalvals, const int *hexlist, int zoneno
 static void
 PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
     int matnos[], int matlist[], int dims[], int ndims,
-    int mix_next[], int mix_mat[], int mix_zone[], float *mix_vf,
+    int mix_next[], int mix_mat[], int mix_zone[], CLANG_TYPE *mix_vf,
     int mixlen, int datatype, DBoptlist *optlist, const int *zonelist,
-    const float *p2, const float *d2, int block)
+    const CLANG_TYPE *p2, const CLANG_TYPE *d2, int block)
 {
     int i,j;
-    float *vars[1];
+    CLANG_TYPE *vars[1];
     char  *varnames[1];
     char *var1name = "p_on_mats_2";
     char *var2name = "d_on_mats_1_3";
@@ -1692,7 +1705,7 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
     // Construct zonal equiv. for p2
     int nzones = 1;
     for (i = 0; i < ndims; i++) nzones *= dims[i];
-    float *p2fullz = new float[nzones];
+    CLANG_TYPE *p2fullz = new CLANG_TYPE[nzones];
     for (i = 0; i < nzones; i++)
         p2fullz[i] = NodalToZonal(p2, zonelist, i);
 
@@ -1702,7 +1715,7 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
         0, &clean_map, &mixed_map, &nclean, &nmixed);
     if (nclean)
     {
-        float *p2z = new float[nclean];
+        CLANG_TYPE *p2z = new CLANG_TYPE[nclean];
         for (i = 0; i < nclean; i++)
         {
             p2z[i] = p2fullz[clean_map[i]];
@@ -1715,7 +1728,7 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
         varnames[0] = var1name; 
         DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist);
         DBPutUcdvar(dbfile, "p_on_mats_2", meshname, 1, varnames, vars,
-            nclean, NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+            nclean, NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
         DBClearOption(optlist, DBOPT_REGION_PNAMES);
         delete [] p2z;
     }
@@ -1737,7 +1750,7 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
             continue;
         }
 
-        float *p2z = new float[nclean];
+        CLANG_TYPE *p2z = new CLANG_TYPE[nclean];
         for (i = 0; i < nclean; i++)
         {
             p2z[i] = 1.0;
@@ -1749,14 +1762,14 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
 
         char varname[256];
         char matname[32];
-        sprintf(matname, "%d", matno);
+        SPRINTF(matname, "%d", matno);
         char *matnamelist[] = {matname, 0};
-        sprintf(varname, "m%dvf_on_mats_%d", matno, matno);
+        SPRINTF(varname, "m%dvf_on_mats_%d", matno, matno);
         vars[0] = p2z;
         varnames[0] = varname; 
         DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist);
         DBPutUcdvar(dbfile, varname, meshname, 1, varnames, vars,
-            nclean, NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+            nclean, NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
         DBClearOption(optlist, DBOPT_REGION_PNAMES);
         delete [] p2z;
     }
@@ -1766,8 +1779,8 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
         zonelist, &clean_map, &mixed_map, &nclean, &nmixed);
     if (nclean || nmixed)
     {
-        float *d2clean = new float[nclean?nclean:nmixed];
-        float *d2mixed = new float[nmixed];
+        CLANG_TYPE *d2clean = new CLANG_TYPE[nclean?nclean:nmixed];
+        CLANG_TYPE *d2mixed = new CLANG_TYPE[nmixed];
         if (nclean == 0)
         {
             nclean = nmixed;
@@ -1785,11 +1798,11 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
         char *matnamelist[] = {"1", "3", 0};
         vars[0] = d2clean;
         varnames[0] = var2name; 
-        float *mvars[1];
+        CLANG_TYPE *mvars[1];
         mvars[0] = d2mixed;
         DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist);
         DBPutUcdvar(dbfile, "d_on_mats_1_3", meshname, 1, varnames, vars,
-            nclean, mvars, nmixed, DB_FLOAT, DB_NODECENT, optlist);
+            nclean, mvars, nmixed, SILO_TYPE, DB_NODECENT, optlist);
         DBClearOption(optlist, DBOPT_REGION_PNAMES);
         delete [] d2clean;
         delete [] d2mixed;
@@ -1802,12 +1815,12 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
 static void
 PutMatsUsingMrgtree(DBfile *dbfile, const char *name, const char *meshname,
     int nmat, int matnos[], int matlist[], int dims[], int ndims,
-    int mix_next[], int mix_mat[], int mix_zone[], float *mix_vf,
+    int mix_next[], int mix_mat[], int mix_zone[], CLANG_TYPE *mix_vf,
     int mixlen, int datatype, DBoptlist *optlist, const int *zonelist)
 {
     map<int, vector<int> > clean_seg_data;
     map<int, vector<int> > mixed_seg_data;
-    map<int, vector<float> > mixed_frac_data;
+    map<int, vector<CLANG_TYPE> > mixed_frac_data;
     int i;
 
     int nzones = 1;
@@ -1875,10 +1888,10 @@ PutMatsUsingMrgtree(DBfile *dbfile, const char *name, const char *meshname,
     // Output the groupel map for materials
     if (have_fracs)
         DBPutGroupelmap(dbfile, "materials_map", nmat * 2,
-            seg_types, seg_lens, seg_ids, seg_data, seg_fracs, DB_FLOAT, 0);
+            seg_types, seg_lens, seg_ids, seg_data, seg_fracs, SILO_TYPE, 0);
     else
         DBPutGroupelmap(dbfile, "materials_map", nmat * 2,
-            seg_types, seg_lens, seg_ids, seg_data, 0, DB_FLOAT, 0);
+            seg_types, seg_lens, seg_ids, seg_data, 0, SILO_TYPE, 0);
 
     // Construct mrgtree consisting solely of material decomp for now
     DBmrgtree *mrgtree = DBMakeMrgtree(DB_UCDMESH, 0, 1, 0);
@@ -1923,9 +1936,9 @@ PutMatsUsingMrgtree(DBfile *dbfile, const char *name, const char *meshname,
 static void
 PutMatVarsUsingMrgtrees(DBfile *dbfile, const char *name, const char *meshname,
     int nmat, int matnos[], int matlist[], int dims[], int ndims,
-    int mix_next[], int mix_mat[], int mix_zone[], float *mix_vf,
+    int mix_next[], int mix_mat[], int mix_zone[], CLANG_TYPE *mix_vf,
     int mixlen, int datatype, DBoptlist *optlist, const int *zonelist,
-    const float *p2, const float *d2)
+    const CLANG_TYPE *p2, const CLANG_TYPE *d2)
 {
 }
 
@@ -1953,11 +1966,11 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 #define NZ 30
 
     int             cycle;
-    float           time;
-    double          dtime;
+    CLANG_TYPE           time;
+    CLANG_TYPE          dtime;
     char           *coordnames[3];
-    float          *coords[3];
-    float           x[(NX + 1) * (NY + 1) * (NZ + 1)], y[(NX + 1) * (NY + 1) * (NZ + 1)],
+    CLANG_TYPE          *coords[3];
+    CLANG_TYPE           x[(NX + 1) * (NY + 1) * (NZ + 1)], y[(NX + 1) * (NY + 1) * (NZ + 1)],
                     z[(NX + 1) * (NY + 1) * (NZ + 1)];
     int             nfaces, nzones, nnodes;
     int             lfacelist, lzonelist;
@@ -1971,9 +1984,9 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     char           *meshnamedup, *var1namedup, *var3namedup, *var4namedup;
     char           *var5name, *var6name, *matname;
     char           *var5namedup, *var6namedup, *matnamedup;
-    float          *vars[1];
+    CLANG_TYPE          *vars[1];
     char           *varnames[1];
-    float           d[(NX + 1) * (NY + 1) * (NZ + 1)], p[(NX + 1) * (NY + 1) * (NZ + 1)],
+    CLANG_TYPE           d[(NX + 1) * (NY + 1) * (NZ + 1)], p[(NX + 1) * (NY + 1) * (NZ + 1)],
                     u[(NX + 1) * (NY + 1) * (NZ + 1)], v[(NX + 1) * (NY + 1) * (NZ + 1)],
                     w[(NX + 1) * (NY + 1) * (NZ + 1)];
 
@@ -1982,8 +1995,8 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             matlist[NX * NY * NZ];
     int             mixlen;
     int             mix_next[4500], mix_mat[4500], mix_zone[4500];
-    float           mix_vf[4500];
-    float           xstrip[NX + NY + NZ], ystrip[NX + NY + NZ], zstrip[NX + NY + NZ];
+    CLANG_TYPE           mix_vf[4500];
+    CLANG_TYPE           xstrip[NX + NY + NZ], ystrip[NX + NY + NZ], zstrip[NX + NY + NZ];
 
     DBoptlist      *optlist;
 
@@ -1991,11 +2004,11 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 
     int             i, j, k;
     int             iz;
-    float           xcenter, ycenter;
-    float           theta, dtheta;
-    float           r, dr;
-    float           h, dh;
-    float           dist;
+    CLANG_TYPE           xcenter, ycenter;
+    CLANG_TYPE           theta, dtheta;
+    CLANG_TYPE           r, dr;
+    CLANG_TYPE           h, dh;
+    CLANG_TYPE           dist;
 
     int             block;
     int             delta_x, delta_y, delta_z;
@@ -2004,9 +2017,9 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             imin, imax, jmin, jmax, kmin, kmax;
     int             nx, ny, nz;
 
-    float           x2[2646], y2[2646], z2[2646];
-    float           d2[2646], p2[2646], u2[2646], v2[2646], w2[2646];
-    float           hist2[(NX-1)*(NY-1)*(NZ-1)];
+    CLANG_TYPE           x2[2646], y2[2646], z2[2646];
+    CLANG_TYPE           d2[2646], p2[2646], u2[2646], v2[2646], w2[2646];
+    CLANG_TYPE           hist2[(NX-1)*(NY-1)*(NZ-1)];
     int             matlist2[2000], ghost[2000];
 
     int             nreal;
@@ -2020,9 +2033,9 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     //
     // Create the coordinate arrays for the entire mesh.
     //
-    dh = 20. / (float)NX;
-    dtheta = (180. / (float)NY) * (3.1415926 / 180.);
-    dr = 3. / (float)NZ;
+    dh = 20. / (CLANG_TYPE)NX;
+    dtheta = (180. / (CLANG_TYPE)NY) * (3.1415926 / 180.);
+    dr = 3. / (CLANG_TYPE)NZ;
     h = 0.;
     for (i = 0; i < NX + 1; i++)
     {
@@ -2093,9 +2106,9 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 
     for (i = 0; i < NY; i++)
     {
-        xstrip[i] = (float)i;
-        ystrip[i] = (float)i;
-        zstrip[i] = (float)i;
+        xstrip[i] = (CLANG_TYPE)i;
+        ystrip[i] = (CLANG_TYPE)i;
+        zstrip[i] = (CLANG_TYPE)i;
     }
 
     mixlen = 0;
@@ -2416,25 +2429,25 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
         {
             if (nfaces > 0)
                 DBPutUcdmesh(dbfile, meshname, 3, coordnames, coords,
-                             nnodes, nzones, "zl1", "fl1", DB_FLOAT, optlist);
+                             nnodes, nzones, "zl1", "fl1", SILO_TYPE, optlist);
             else
                 DBPutUcdmesh(dbfile, meshname, 3, coordnames, coords,
-                             nnodes, nzones, "zl1", NULL, DB_FLOAT, optlist);
+                             nnodes, nzones, "zl1", NULL, SILO_TYPE, optlist);
 
             if (!noHalfMesh)
             {
                 char tmpName[256];
                 if (block < nblocks_x * nblocks_y * nblocks_z / 2)
-                    sprintf(tmpName, "%s_back", meshname);
+                    SPRINTF(tmpName, "%s_back", meshname);
                 else
-                    sprintf(tmpName, "%s_front", meshname);
+                    SPRINTF(tmpName, "%s_front", meshname);
 
                 if (nfaces > 0)
                     DBPutUcdmesh(dbfile, tmpName, 3, coordnames, coords,
-                                 nnodes, nzones, "zl1", "fl1", DB_FLOAT, optlist);
+                                 nnodes, nzones, "zl1", "fl1", SILO_TYPE, optlist);
                 else
                     DBPutUcdmesh(dbfile, tmpName, 3, coordnames, coords,
-                                 nnodes, nzones, "zl1", NULL, DB_FLOAT, optlist);
+                                 nnodes, nzones, "zl1", NULL, SILO_TYPE, optlist);
             }
         }
 
@@ -2450,124 +2463,124 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 
         if (!noDups && block < iteration)
             DBPutUcdmesh(dbfile, meshnamedup, 3, coordnames, coords,
-                nnodes, nzones, "zl1_dup", NULL, DB_FLOAT, NULL);
+                nnodes, nzones, "zl1_dup", NULL, SILO_TYPE, NULL);
 
         put_extents(d2,nzones,varextents[3],block);
         vars[0] = d2;
         varnames[0] = var1name;
         DBPutUcdvar(dbfile, var1name, meshname, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         varnames[0] = var1namedup;
         if (!noDups && block < iteration)
             DBPutUcdvar(dbfile, var1namedup, meshnamedup, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noHalfMesh)
         {
             char tmpVarName[256];
             char tmpMeshName[256];
             if (block < nblocks_x * nblocks_y * nblocks_z / 2)
             {
-                sprintf(tmpMeshName, "%s_back", meshname);
-                sprintf(tmpVarName, "%s_back", var1name);
+                SPRINTF(tmpMeshName, "%s_back", meshname);
+                SPRINTF(tmpVarName, "%s_back", var1name);
             }
             else
             {
-                sprintf(tmpMeshName, "%s_front", meshname);
-                sprintf(tmpVarName, "%s_front", var1name);
+                SPRINTF(tmpMeshName, "%s_front", meshname);
+                SPRINTF(tmpVarName, "%s_front", var1name);
             }
             DBPutUcdvar(dbfile, tmpVarName, tmpMeshName, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         }
 
         put_extents(p2,nzones,varextents[4],block);
         vars[0] = p2;
         varnames[0] = var2name;
         DBPutUcdvar(dbfile, var2name, meshname, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(u2,nnodes,varextents[5],block);
         vars[0] = u2;
         varnames[0] = var3name;
         DBPutUcdvar(dbfile, var3name, meshname, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         varnames[0] = var3namedup;
         if (!noDups && block < iteration)
             DBPutUcdvar(dbfile, var3namedup, meshnamedup, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(v2,nnodes,varextents[6],block);
         vars[0] = v2;
         varnames[0] = var4name;
         DBPutUcdvar(dbfile, var4name, meshname, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         varnames[0] = var4namedup;
         if (!noDups && block < iteration)
             DBPutUcdvar(dbfile, var4namedup, meshnamedup, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(w2,nnodes,varextents[7],block);
         vars[0] = w2;
         varnames[0] = var5name;
         DBPutUcdvar(dbfile, var5name, meshname, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         varnames[0] = var5namedup;
         if (!noDups && block < iteration)
             DBPutUcdvar(dbfile, var5namedup, meshnamedup, 1, varnames, vars,
-                    nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                    nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(hist2,nzones-hi_off,varextents[8],block);
         vars[0] = hist2;
         varnames[0] = var6name;
         DBPutUcdvar(dbfile, var6name, meshname, 1, varnames, vars,
-                    nzones-hi_off, NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                    nzones-hi_off, NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
         varnames[0] = var6namedup;
         if (!noDups && block < iteration) 
             DBPutUcdvar(dbfile, var6namedup, meshnamedup, 1, varnames, vars,
-                    nzones-hi_off, NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                    nzones-hi_off, NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
         if (!noHalfMesh)
         {
             char tmpVarName[256];
             char tmpMeshName[256];
             if (block < nblocks_x * nblocks_y * nblocks_z / 2)
             {
-                sprintf(tmpMeshName, "%s_back", meshname);
-                sprintf(tmpVarName, "%s_back", var6name);
+                SPRINTF(tmpMeshName, "%s_back", meshname);
+                SPRINTF(tmpVarName, "%s_back", var6name);
             }
             else
             {
-                sprintf(tmpMeshName, "%s_front", meshname);
-                sprintf(tmpVarName, "%s_front", var6name);
+                SPRINTF(tmpMeshName, "%s_front", meshname);
+                SPRINTF(tmpVarName, "%s_front", var6name);
             }
             DBPutUcdvar(dbfile, tmpVarName, tmpMeshName, 1, varnames, vars,
-                    nzones-hi_off, NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                    nzones-hi_off, NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
         }
 
         matcounts[block] = count_mats(nzones,matlist2,matlists[block]);
         mixlens[block] = mixlen;
         DBPutMaterial(dbfile, matname, meshname, nmats, matnos,
                       matlist2, &nzones, 1, mix_next, mix_mat, mix_zone,
-                      mix_vf, mixlen, DB_FLOAT, optlist);
+                      mix_vf, mixlen, SILO_TYPE, optlist);
         if (!noDups && block < iteration)
             DBPutMaterial(dbfile, matnamedup, meshnamedup, nmats, matnos,
                       matlist2, &nzones, 1, mix_next, mix_mat, mix_zone,
-                      mix_vf, mixlen, DB_FLOAT, optlist);
+                      mix_vf, mixlen, SILO_TYPE, optlist);
 
         // First, using ordinary material object, output variables
         // on only some of the materials.
         PutMatVars(dbfile, matname, meshname, nmats, matnos,
             matlist2, &nzones, 1, mix_next, mix_mat, mix_zone,
-            mix_vf, mixlen, DB_FLOAT, optlist, zonelist, p2, d2, block);
+            mix_vf, mixlen, SILO_TYPE, optlist, zonelist, p2, d2, block);
 
         // Now, output materials themselves using mrgtrees
         PutMatsUsingMrgtree(dbfile, matname, meshname, nmats, matnos,
             matlist2, &nzones, 1, mix_next, mix_mat, mix_zone,
-            mix_vf, mixlen, DB_FLOAT, optlist, zonelist);
+            mix_vf, mixlen, SILO_TYPE, optlist, zonelist);
 
         // Now, using materials defined using mrgtrees, output variables
         // defined on only some materials.
         PutMatVarsUsingMrgtrees(dbfile, matname, meshname, nmats, matnos,
             matlist2, &nzones, 1, mix_next, mix_mat, mix_zone,
-            mix_vf, mixlen, DB_FLOAT, optlist, zonelist, p2, d2);
+            mix_vf, mixlen, SILO_TYPE, optlist, zonelist, p2, d2);
 
         DBFreeOptlist(optlist);
 
@@ -2591,14 +2604,14 @@ build_block_curv3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
 #define NZ 30
 
     int             cycle;
-    float           time;
-    double          dtime;
+    CLANG_TYPE           time;
+    CLANG_TYPE          dtime;
     char           *coordnames[3];
-    float          *coords[3];
+    CLANG_TYPE          *coords[3];
 
-    float           x[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           y[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           z[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           x[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           y[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           z[(NX + 1) * (NY + 1) * (NZ + 1)];
 
     int             ndims, zdims[3];
     int             dims[3], dims2[3];
@@ -2608,10 +2621,10 @@ build_block_curv3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     char           *var5name, *matname;
     char           *var5namedup, *matnamedup;
 
-    float           d[NX * NY * NZ], p[NX * NY * NZ];
-    float           u[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           v[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           w[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           d[NX * NY * NZ], p[NX * NY * NZ];
+    CLANG_TYPE           u[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           v[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           w[(NX + 1) * (NY + 1) * (NZ + 1)];
 
     int             nmats;
     int             matnos[3];
@@ -2619,32 +2632,32 @@ build_block_curv3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     int             mixlen;
     int             mix_next[NX * NY * NZ], mix_mat[NX * NY * NZ];
     int             mix_zone[NX * NY * NZ];
-    float           mix_vf[NX * NY * NZ];
+    CLANG_TYPE           mix_vf[NX * NY * NZ];
 
     DBoptlist      *optlist = NULL;
 
     int             i, j, k;
 
-    float           xave, yave;
-    float           xcenter, ycenter;
+    CLANG_TYPE           xave, yave;
+    CLANG_TYPE           xcenter, ycenter;
 
-    float           theta, dtheta;
-    float           r, dr;
-    float           h, dh;
-    float           dist;
+    CLANG_TYPE           theta, dtheta;
+    CLANG_TYPE           r, dr;
+    CLANG_TYPE           h, dh;
+    CLANG_TYPE           dist;
 
     int             block;
     int             delta_x, delta_y, delta_z;
     int             base_x, base_y, base_z;
     int             n_x, n_y, n_z;
 
-    float           x2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           y2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           z2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           d2[NX * NY * NZ], p2[NX * NY * NZ];
-    float           u2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           v2[(NX + 1) * (NY + 1) * (NZ + 1)];
-    float           w2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           x2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           y2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           z2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           d2[NX * NY * NZ], p2[NX * NY * NZ];
+    CLANG_TYPE           u2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           v2[(NX + 1) * (NY + 1) * (NZ + 1)];
+    CLANG_TYPE           w2[(NX + 1) * (NY + 1) * (NZ + 1)];
     int             matlist2[NX * NY * NZ];
 
     //
@@ -2889,54 +2902,54 @@ build_block_curv3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
         has_external_zones[block] = 1;
         zonecounts[block] = (dims[0]-1)*(dims[1]-1)*(dims[2]-1);
         DBPutQuadmesh(dbfile, meshname, coordnames, coords,
-                      dims, ndims, DB_FLOAT, DB_NONCOLLINEAR,
+                      dims, ndims, SILO_TYPE, DB_NONCOLLINEAR,
                       optlist);
         if (!noDups && block < 2)
             DBPutQuadmesh(dbfile, meshnamedup, coordnames, coords,
-                      dims, ndims, DB_FLOAT, DB_NONCOLLINEAR,
+                      dims, ndims, SILO_TYPE, DB_NONCOLLINEAR,
                       optlist);
 
         put_extents(d2,(dims[0]-1)*(dims[1]-1)*(dims[2]-1),varextents[3],block);
         DBPutQuadvar1(dbfile, var1name, meshname, d2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var1namedup, meshnamedup, d2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
 
         put_extents(p2,(dims[0]-1)*(dims[1]-1)*(dims[2]-1),varextents[4],block);
         DBPutQuadvar1(dbfile, var2name, meshname, p2, zdims, ndims,
-                      NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
 
         put_extents(u2,dims[0]*dims[1]*dims[2],varextents[5],block);
         DBPutQuadvar1(dbfile, var3name, meshname, u2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var3namedup, meshnamedup, u2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(v2,dims[0]*dims[1]*dims[2],varextents[6],block);
         DBPutQuadvar1(dbfile, var4name, meshname, v2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var4namedup, meshnamedup, v2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         put_extents(w2,dims[0]*dims[1]*dims[2],varextents[7],block);
         DBPutQuadvar1(dbfile, var5name, meshname, w2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
         if (!noDups && block < 2)
             DBPutQuadvar1(dbfile, var5namedup, meshnamedup, w2, dims, ndims,
-                      NULL, 0, DB_FLOAT, DB_NODECENT, optlist);
+                      NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
 
         matcounts[block] = count_mats((dims[0]-1)*(dims[1]-1)*(dims[2]-1),matlist2,matlists[block]);
         mixlens[block] = mixlen;
         DBPutMaterial(dbfile, matname, meshname, nmats, matnos,
                       matlist2, dims2, ndims, mix_next, mix_mat, mix_zone,
-                      mix_vf, mixlen, DB_FLOAT, optlist);
+                      mix_vf, mixlen, SILO_TYPE, optlist);
         if (!noDups && block < 2)
             DBPutMaterial(dbfile, matnamedup, meshnamedup, nmats, matnos,
                       matlist2, dims2, ndims, mix_next, mix_mat, mix_zone,
-                      mix_vf, mixlen, DB_FLOAT, optlist);
+                      mix_vf, mixlen, SILO_TYPE, optlist);
 
         DBFreeOptlist(optlist);
 
@@ -2954,8 +2967,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
 {
     int             i,j,k;
     int             cycle;
-    float           time;
-    double          dtime;
+    CLANG_TYPE           time;
+    CLANG_TYPE          dtime;
     int             nmatnos;
     int             matnos[3];
     char            names[MAXBLOCKS][STRLEN];
@@ -3009,7 +3022,13 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     int             nblocks_dup = noEmptys ? iteration : nblocks;
     int             extentssize;
     int            *tmpList;
-    double         *tmpExtents;
+    CLANG_TYPE         *tmpExtents;
+
+    int             isIteratingHack = 0;
+
+    // Hack to detect calls where this is part of time series dump
+    if (meshtype == DB_UCDMESH && coord_type == 0 && iteration > 2)
+        isIteratingHack = 1;
 
     //
     // Initialize the names and create the directories for the blocks.
@@ -3017,36 +3036,36 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     for (i = 0; i < nblocks; i++)
     {
         if (iteration > 100)
-            sprintf(names[i], "multi_ucd3d_ti_base:/block%d/mesh1", i);
+            SPRINTF(names[i], "multi_ucd3d_ti_base:/block%d/mesh1", i);
         else
-            sprintf(names[i], "/block%d/mesh1", i);
+            SPRINTF(names[i], "/block%d/mesh1", i);
         meshnames[i] = names[i];
         meshtypes[i] = meshtype;
 
-        sprintf(names1[i], "/block%d/d", i);
-        sprintf(names2[i], "/block%d/p", i);
-        sprintf(names3[i], "/block%d/u", i);
-        sprintf(names4[i], "/block%d/v", i);
-        sprintf(names5[i], "/block%d/w", i);
-        sprintf(names6[i], "/block%d/hist", i);
+        SPRINTF(names1[i], "/block%d/d", i);
+        SPRINTF(names2[i], "/block%d/p", i);
+        SPRINTF(names3[i], "/block%d/u", i);
+        SPRINTF(names4[i], "/block%d/v", i);
+        SPRINTF(names5[i], "/block%d/w", i);
+        SPRINTF(names6[i], "/block%d/hist", i);
         if (i == 0 || i == 2 || i == 9 || i == 11 ||
             i == 24 || i == 26 || i == 33 || i == 35)
         {
-            sprintf(names7[i], "EMPTY");
-            sprintf(names9[i], "EMPTY");
+            SPRINTF(names7[i], "EMPTY");
+            SPRINTF(names9[i], "EMPTY");
         }
         else
         {
-            sprintf(names7[i], "/block%d/p_on_mats_2", i);
-            sprintf(names9[i], "/block%d/m2vf_on_mats_2", i);
+            SPRINTF(names7[i], "/block%d/p_on_mats_2", i);
+            SPRINTF(names9[i], "/block%d/m2vf_on_mats_2", i);
         }
         if (i == 4 || i == 7 || (i >= 15 && i <= 20) ||
             i == 28 || i == 31)
-            sprintf(names10[i], "/block%d/m3vf_on_mats_3", i);
+            SPRINTF(names10[i], "/block%d/m3vf_on_mats_3", i);
         else
-            sprintf(names10[i], "EMPTY");
-        sprintf(names8[i], "/block%d/d_on_mats_1_3", i);
-        sprintf(names11[i], "/block%d/m1vf_on_mats_1", i);
+            SPRINTF(names10[i], "EMPTY");
+        SPRINTF(names8[i], "/block%d/d_on_mats_1_3", i);
+        SPRINTF(names11[i], "/block%d/m1vf_on_mats_1", i);
         var1names[i] = names1[i];
         var2names[i] = names2[i];
         var3names[i] = names3[i];
@@ -3060,47 +3079,47 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         var11names[i] = names11[i];
         vartypes[i] = vartype;
 
-        sprintf(names0[i], "/block%d/mat1", i);
+        SPRINTF(names0[i], "/block%d/mat1", i);
         matnames[i] = names0[i];
 
         if (!noDups)
         {
             if (i < iteration)
             {
-                sprintf(namesdup[i], "/block%d/mesh1_dup", i);
+                SPRINTF(namesdup[i], "/block%d/mesh1_dup", i);
                 meshnamesdup[i] = namesdup[i];
 
-                sprintf(names1dup[i], "/block%d/d_dup", i);
-                sprintf(names3dup[i], "/block%d/u_dup", i);
-                sprintf(names4dup[i], "/block%d/v_dup", i);
-                sprintf(names5dup[i], "/block%d/w_dup", i);
-                sprintf(names6dup[i], "/block%d/hist_dup", i);
+                SPRINTF(names1dup[i], "/block%d/d_dup", i);
+                SPRINTF(names3dup[i], "/block%d/u_dup", i);
+                SPRINTF(names4dup[i], "/block%d/v_dup", i);
+                SPRINTF(names5dup[i], "/block%d/w_dup", i);
+                SPRINTF(names6dup[i], "/block%d/hist_dup", i);
                 var1namesdup[i] = names1dup[i];
                 var3namesdup[i] = names3dup[i];
                 var4namesdup[i] = names4dup[i];
                 var5namesdup[i] = names5dup[i];
                 var6namesdup[i] = names6dup[i];
 
-                sprintf(names0dup[i], "/block%d/mat1_dup", i);
+                SPRINTF(names0dup[i], "/block%d/mat1_dup", i);
                 matnamesdup[i] = names0dup[i];
             }
             else
             {
-                sprintf(namesdup[i], "EMPTY");
+                SPRINTF(namesdup[i], "EMPTY");
                 meshnamesdup[i] = namesdup[i];
 
-                sprintf(names1dup[i], "EMPTY");
-                sprintf(names3dup[i], "EMPTY");
-                sprintf(names4dup[i], "EMPTY");
-                sprintf(names5dup[i], "EMPTY");
-                sprintf(names6dup[i], "EMPTY");
+                SPRINTF(names1dup[i], "EMPTY");
+                SPRINTF(names3dup[i], "EMPTY");
+                SPRINTF(names4dup[i], "EMPTY");
+                SPRINTF(names5dup[i], "EMPTY");
+                SPRINTF(names6dup[i], "EMPTY");
                 var1namesdup[i] = names1dup[i];
                 var3namesdup[i] = names3dup[i];
                 var4namesdup[i] = names4dup[i];
                 var5namesdup[i] = names5dup[i];
                 var6namesdup[i] = names6dup[i];
 
-                sprintf(names0dup[i], "EMPTY");
+                SPRINTF(names0dup[i], "EMPTY");
                 matnamesdup[i] = names0dup[i];
             }
         }
@@ -3108,7 +3127,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         //
         // make the directory for the block mesh
         //
-        sprintf(dirnames[i], "/block%d", i);
+        SPRINTF(dirnames[i], "/block%d", i);
 
         if (DBMkDir(dbfile, dirnames[i]) == -1)
         {
@@ -3167,9 +3186,9 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     //
     // create the option lists for the multi-block calls.
     //
-    cycle = 48;
-    time = 4.8;
-    dtime = 4.8;
+    cycle = isIteratingHack ? iteration * 48 : 48;
+    time = isIteratingHack ? iteration * 4.8 : 4.8;
+    dtime = isIteratingHack ? iteration * 4.8 : 4.8;
     nmatnos = 3;
     matnos[0] = 1;
     matnos[1] = 2;
@@ -3186,7 +3205,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     // create the multi-block mesh
     //
     extentssize = 2 * dim;
-    tmpExtents = (double *) malloc(nblocks * extentssize * sizeof(double));
+    tmpExtents = (CLANG_TYPE *) malloc(nblocks * extentssize * sizeof(CLANG_TYPE));
     for (i = 0; i < nblocks; i++)
     {
        for (j = 0; j < dim; j++)
@@ -3211,9 +3230,9 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         for (i = 0; i < nblocks; i++)
         {
             if (i < nblocks / 2)
-                sprintf(tmpNames[i], "/block%d/mesh1_back", i);
+                SPRINTF(tmpNames[i], "/block%d/mesh1_back", i);
             else
-                sprintf(tmpNames[i], "/block%d/mesh1_front", i);
+                SPRINTF(tmpNames[i], "/block%d/mesh1_front", i);
             tmpMeshnames[i] = tmpNames[i];
         }
         DBPutMultimesh(dbfile, "mesh1_back", nblocks / 2,
@@ -3277,11 +3296,11 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         for (i = 0; i < nblocks; i++)
         {
             if (i < nblocks / 2)
-                sprintf(tmpNames[i], "/block%d/d_back", i);
+                SPRINTF(tmpNames[i], "/block%d/d_back", i);
             else
-                sprintf(tmpNames[i], "/block%d/d_front", i);
+                SPRINTF(tmpNames[i], "/block%d/d_front", i);
             if (i == 0 || (rand() % 7) == 0)
-                sprintf(tmpNames[i], "EMPTY");
+                SPRINTF(tmpNames[i], "EMPTY");
             tmpVarnames[i] = tmpNames[i];
         }
         DBPutMultivar(dbfile, "d_split", nblocks, tmpVarnames, vartypes, NULL);
@@ -3461,26 +3480,26 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     int    types[4];
 
     types[0] = DB_VARTYPE_SCALAR;
-    sprintf(vnames[0], "sum");
+    SPRINTF(vnames[0], "sum");
     if (dim == 2)
-        sprintf(defns[0], "u+v");
+        SPRINTF(defns[0], "u+v");
     else
-        sprintf(defns[0], "u+v+w");
+        SPRINTF(defns[0], "u+v+w");
 
     types[1] = DB_VARTYPE_VECTOR;
-    sprintf(vnames[1], "vec");
+    SPRINTF(vnames[1], "vec");
     if (dim == 2)
-        sprintf(defns[1], "{u,v}");
+        SPRINTF(defns[1], "{u,v}");
     else
-        sprintf(defns[1], "{u,v,w}");
+        SPRINTF(defns[1], "{u,v,w}");
 
     types[2] = DB_VARTYPE_SCALAR;
-    sprintf(vnames[2], "nmats");
-    sprintf(defns[2], "nmats(mat1)");
+    SPRINTF(vnames[2], "nmats");
+    SPRINTF(defns[2], "nmats(mat1)");
 
     types[3] = DB_VARTYPE_SCALAR;
-    sprintf(vnames[3], "mag");
-    sprintf(defns[3], "magnitude(vec)");
+    SPRINTF(vnames[3], "mag");
+    SPRINTF(defns[3], "magnitude(vec)");
 
     // Create a list of optlist objects
     DBoptlist *optlists[4];
@@ -3535,7 +3554,7 @@ main(int argc, char **argv)
     // Create the multi-block rectilinear 2d mesh.
     //
     fprintf(stderr, "creating multi_rect2d.silo\n");
-    if ((dbfile = DBCreate("multi_rect2d.silo", DB_CLOBBER, DB_LOCAL,
+    if ((dbfile = DBCREATE("multi_rect2d.silo", DB_CLOBBER, DB_LOCAL,
                            "multi-block rectilinear 2d test file", driver))
         == NULL)
     {
@@ -3554,7 +3573,7 @@ main(int argc, char **argv)
     // Create the multi-block curvilinear 2d mesh.
     //
     fprintf(stderr, "creating multi_curv2d.silo\n");
-    if ((dbfile = DBCreate("multi_curv2d.silo", DB_CLOBBER, DB_LOCAL,
+    if ((dbfile = DBCREATE("multi_curv2d.silo", DB_CLOBBER, DB_LOCAL,
                            "multi-block curvilinear 2d test file", driver))
         == NULL)
     {
@@ -3573,7 +3592,7 @@ main(int argc, char **argv)
     // Create the multi-block point 2d mesh.
     //
     fprintf(stderr, "creating multi_point2d.silo\n");
-    if ((dbfile = DBCreate("multi_point2d.silo", DB_CLOBBER, DB_LOCAL,
+    if ((dbfile = DBCREATE("multi_point2d.silo", DB_CLOBBER, DB_LOCAL,
                            "multi-block point 2d test file", driver))
         == NULL)
     {
@@ -3592,7 +3611,7 @@ main(int argc, char **argv)
     // Create the multi-block rectilinear 3d mesh.
     //
     fprintf(stderr, "creating multi_rect3d.silo\n");
-    if ((dbfile = DBCreate("multi_rect3d.silo", DB_CLOBBER, DB_LOCAL,
+    if ((dbfile = DBCREATE("multi_rect3d.silo", DB_CLOBBER, DB_LOCAL,
                            "multi-block rectilinear 3d test file", driver))
         == NULL)
     {
@@ -3611,7 +3630,7 @@ main(int argc, char **argv)
     // Create the multi-block curvilinear 3d mesh.
     //
     fprintf(stderr, "creating multi_curv3d.silo\n");
-    if ((dbfile = DBCreate("multi_curv3d.silo", DB_CLOBBER, DB_LOCAL,
+    if ((dbfile = DBCREATE("multi_curv3d.silo", DB_CLOBBER, DB_LOCAL,
                            "multi-block curvilinear 3d test file", driver))
         == NULL)
     {
@@ -3630,7 +3649,7 @@ main(int argc, char **argv)
     // Create the multi-block ucd 3d mesh.
     //
     fprintf(stderr, "creating multi_ucd3d.silo\n");
-    if ((dbfile = DBCreate("multi_ucd3d.silo", DB_CLOBBER, DB_LOCAL,
+    if ((dbfile = DBCREATE("multi_ucd3d.silo", DB_CLOBBER, DB_LOCAL,
                            "multi-block ucd 3d test file", driver))
         == NULL)
     {
@@ -3655,9 +3674,9 @@ main(int argc, char **argv)
         {
             char tmpName[256];
             if (noEmptys)
-                sprintf(tmpName, "histne_ucd3d_%04d", iter);
+                SPRINTF(tmpName, DPREFIX "histne_ucd3d_%04d", iter);
             else
-                sprintf(tmpName, "hist_ucd3d_%04d", iter);
+                SPRINTF(tmpName, DPREFIX "hist_ucd3d_%04d", iter);
             fprintf(stderr, "creating %s\n", tmpName);
 
             if ((dbfile = DBCreate(tmpName, DB_CLOBBER, DB_LOCAL,
@@ -3687,9 +3706,9 @@ main(int argc, char **argv)
         char tmpName[256];
         char tmpStr[1024];
         if (iter == 0)
-            sprintf(tmpName, "multi_ucd3d_ti_base");
+            SPRINTF(tmpName, DPREFIX "multi_ucd3d_ti_base");
         else
-            sprintf(tmpName, "multi_ucd3d_ti_%04d", iter);
+            SPRINTF(tmpName, DPREFIX "multi_ucd3d_ti_%04d", iter);
         fprintf(stderr, "creating %s\n", tmpName);
 
         if ((dbfile = DBCreate(tmpName, DB_CLOBBER, DB_LOCAL,
@@ -3712,10 +3731,10 @@ main(int argc, char **argv)
             {
                 DBSetDir(dbfile,"/");
                 int len;
-                sprintf(tmpStr, "d;p;u;v;w;hist;mat1");
+                SPRINTF(tmpStr, "d;p;u;v;w;hist;mat1");
                 len = strlen(tmpStr);
                 DBWrite(dbfile, "MultivarToMultimeshMap_vars", tmpStr, &len, 1, DB_CHAR);
-                sprintf(tmpStr, "mesh1;mesh1;mesh1;mesh1;mesh1;mesh1;mesh1");
+                SPRINTF(tmpStr, "mesh1;mesh1;mesh1;mesh1;mesh1;mesh1;mesh1");
                 len = strlen(tmpStr);
                 DBWrite(dbfile, "MultivarToMultimeshMap_meshes", tmpStr, &len, 1, DB_CHAR);
             }
