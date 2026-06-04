@@ -21,7 +21,7 @@ endif()
 
 # if not requested, return
 if(NOT (BUILD_ALL OR ENABLE_SILO))
-    message(STATUS "SILO already installed.")
+    return()
 endif()
 
 message(STATUS "SILO being added to the build")

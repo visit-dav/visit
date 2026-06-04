@@ -18,7 +18,7 @@ endif()
 
 # if not requested, return
 if(NOT (BUILD_ALL OR ENABLE_MILI))
-    message(STATUS "MILI already installed")
+    return()
 endif()
 
 message(STATUS "MILI being added to the build")

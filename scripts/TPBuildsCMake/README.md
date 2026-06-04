@@ -97,7 +97,7 @@ Paths to the following executables must be part of your PATH environment varaiab
 
 ### To use the generated libraries when building VisIt.
 
-If the chosen INSTALL location is not the standard location within visit-deps/windowsbuild/MSVC2022, then add `-DVISIT_THIDPARTY_PATH:PATH=/path/to/INSTALL` when configuring VisIt with CMake.
+If the chosen INSTALL location is not the standard location within visit-deps/windowsbuild/MSVC2022, then add `-DVISIT_THIRDPARTY_PATH:PATH=/path/to/INSTALL` when configuring VisIt with CMake.
 
 ## Caveats
 

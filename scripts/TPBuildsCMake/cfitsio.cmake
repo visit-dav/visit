@@ -21,7 +21,7 @@ endif()
 
 # if not requested return
 if(NOT (BUILD_ALL OR ENABLE_CFITSIO))
-    message(STATUS "CFITSIO already installed")
+    return()
 endif()
 
 message(STATUS "CFITSIO being added to the build")

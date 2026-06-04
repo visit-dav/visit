@@ -21,7 +21,7 @@ if(EXISTS ${visit_png_include}/png.h AND
 endif()
 
 # if not requested, return
-if(BUILD_ALL OR ENABLE_PNG)
+if(NOT (BUILD_ALL OR ENABLE_PNG))
     return()
 endif()
 
