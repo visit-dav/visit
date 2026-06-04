@@ -13,50 +13,43 @@
 #
 #****************************************************************************
 
-add_library(avtdatabase_ser)
-if(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtdatabase_par)
-endif()
-
 add_subdirectory(Database)
 add_subdirectory(Formats)
 add_subdirectory(Ghost)
 
-include_directories(
-    ${VISIT_COMMON_INCLUDES}
-    ${VISIT_SOURCE_DIR}/avt/Math
-    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-    ${VISIT_SOURCE_DIR}/avt/MIR/Base
-    ${VISIT_SOURCE_DIR}/avt/MIR/Tet
-    ${VISIT_SOURCE_DIR}/avt/MIR/Youngs
-    ${VISIT_SOURCE_DIR}/avt/MIR/Zoo
-    ${VISIT_SOURCE_DIR}/avt/MIR/Discrete/
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-    ${VISIT_SOURCE_DIR}/third_party_builtin/tess2
-    ${VISIT_SOURCE_DIR}/visit_vtk/full
-    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-    ${VTK_INCLUDE_DIRS})
+set(avtdatabase_ser_DEPENDS
+    visitcommon
+    avtdbatts
+    visit_vtk
+    tess2)
 
-# Unless we're doing a VISIT_DBIO_ONLY build then we need avtmir
+set(avtdatabase_par_SOURCES  ${avtdatabase_ser_SOURCES})
+set(avtdatabase_par_HEADERS  ${avtdatabase_ser_HEADERS})
+set(avtdatabase_par_INCLUDES ${avtdatabase_ser_INCLUDES})
+set(avtdatabase_par_DEPENDS  ${avtdatabase_ser_DEPENDS})
+
 if(NOT VISIT_DBIO_ONLY)
-    set(AVTMIR_SER avtmir_ser)
-    set(AVTMIR_PAR avtmir_par)
+    list(APPEND avtdatabase_ser_DEPENDS avtmir_ser)
+    list(APPEND avtdatabase_par_DEPENDS avtmir_par)
 endif()
 
-
 #********************************* SERIAL ************************************
-target_link_libraries(avtdatabase_ser visitcommon avtdbatts ${AVTMIR_SER} avtpipeline_ser visit_vtk tess2)
-VISIT_INSTALL_TARGETS(avtdatabase_ser)
+visit_add_library(
+    NAME       avtdatabase_ser
+    SOURCES    ${avtdatabase_ser_SOURCES}
+    HEADERS    ${avtdatabase_ser_HEADERS}
+    INCLUDES   ${avtdatabase_ser_INCLUDES}
+    DEPENDS_ON ${avtdatabase_ser_DEPENDS}
+               avtpipeline_ser)
 
 #********************************* PARALLEL **********************************
 if(VISIT_PARALLEL)
-    target_link_libraries(avtdatabase_par visitcommon avtdbatts ${AVTMIR_PAR} avtpipeline_par visit_vtk tess2)
-    VISIT_INSTALL_TARGETS(avtdatabase_par)
+    visit_add_parallel_library(
+        NAME       avtdatabase_par
+        SOURCES    ${avtdatabase_par_SOURCES}
+        HEADERS    ${avtdatabase_par_HEADERS}
+        INCLUDES   ${avtdatabase_par_INCLUDES}
+        DEPENDS_ON ${avtdatabase_par_DEPENDS}
+                   avtpipeline_par)
 endif()
 

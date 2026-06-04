@@ -111,11 +111,16 @@ if(NOT WIN32)
         xmltest)
 
     if(APPLE)
-        #--------------------------------------------------------------------------
-        # Create launcher binary for macos. This is the thing double-clicking the
-        # icon actually has the effect of executing.
-        #--------------------------------------------------------------------------
-        add_executable(visit_macos_launcher ${VISIT_APPLICATION_STYLE} visit_macos_launcher.c ${VISIT_VISIT_RESOURCE_FILE})
+        #---------------------------------------------------------------------
+        # Create launcher binary for macos.
+        #  This is the thing double-clicking the
+        #  icon actually has the effect of executing.
+        #---------------------------------------------------------------------
+        visit_add_executable(
+            NAME        visit_macos_launcher
+            SOURCES     visit_macos_launcher.c
+                        ${VISIT_VISIT_RESOURCE_FILE}
+            SKIP_INSTALL)
         set_source_files_properties(visit_macos_launcher.c PROPERTIES LANGUAGE C)
     endif()
 
@@ -158,8 +163,8 @@ if(NOT WIN32)
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
 
-    install(FILES makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py
-                  visitdiff.py makemili_driver_ser
+    install(FILES makemovie.py makemoviemain.py visitcinema.py
+                  visitcinemamain.py visitdiff.py makemili_driver_ser
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -171,13 +176,14 @@ else()
     #--------------------------------------------------------------------------
     # Create VisIt launcher binary for windows
     #--------------------------------------------------------------------------
-    add_executable(visit_exe ${VISIT_APPLICATION_STYLE} visit.c ${VISIT_VISIT_RESOURCE_FILE})
-    set_target_properties(visit_exe PROPERTIES OUTPUT_NAME visit)
-    set_source_files_properties(visit.c PROPERTIES LANGUAGE CXX)
-    target_include_directories(visit_exe PRIVATE ${VISIT_COMMON_INCLUDES})
-    target_compile_features(visit_exe PRIVATE cxx_std_17)
-    target_link_libraries(visit_exe PRIVATE shlwapi)
-    VISIT_INSTALL_TARGETS(visit_exe)
+    visit_add_executable(
+        NAME        visit_exe
+        SOURCES     visit.cpp
+                    ${VISIT_VISIT_RESOURCE_FILE}
+        INCLUDES    ${VISIT_BINARY_DIR}/include
+        DEPENDS_ON  shlwapi
+        FEATURES    cxx_std_17
+        OUTPUT_NAME visit)
 
     #--------------------------------------------------------------------------
     # Install and copy to build the movie helper scripts

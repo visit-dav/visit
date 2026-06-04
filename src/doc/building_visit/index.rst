@@ -15,7 +15,6 @@ This chapter describes how to build VisIt_, starting with the most simple case a
 
     Basic_Usage
     Advanced_Usage
-    Common_Build_Scenarios
     BuildingOnWindows/index
     BuildingOnMac/index
     Spack

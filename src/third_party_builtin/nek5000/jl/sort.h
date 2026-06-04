@@ -65,7 +65,7 @@ uint *sortp_ui(buffer *restrict buf, int start_perm,
                const unsigned *restrict A, uint n, unsigned stride);
 uint *sortp_ul(buffer *restrict buf, int start_perm,
                const unsigned long *restrict A, uint n, unsigned stride);
-#if defined(USE_LONG_LONG) || defined(GLOBAL_LONG_LONG)
+#if defined(NEK_USE_LONG_LONG) || defined(GLOBAL_LONG_LONG)
 void sortv_ull(unsigned long long *out,
                const unsigned long long *A, uint n, unsigned stride,
                buffer *restrict buf);

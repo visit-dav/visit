@@ -1,15 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="Histogram.xpm">
-    <CXXFLAGS>
-      ${VISIT_INCLUDE_DIR}/avt/Expressions/MeshQuality
-      ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
-    </CXXFLAGS>
     <Files components="V">
-      avtHistogramFilter.C
       avtHistogramMapper.C
     </Files>
     <Files components="E">
-      avtHistogramFilter.C
       avtHistogramMapper.C
     </Files>
     <LIBS components="ESer">

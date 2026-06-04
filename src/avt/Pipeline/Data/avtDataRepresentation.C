@@ -10,7 +10,7 @@
 
 #include <visit-config.h>
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
 #include <avtVtkmDataSet.h>
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/ArrayHandleCompositeVector.h>
@@ -78,7 +78,7 @@ avtVtkmDataSet *avtDataRepresentation::nullVTKmDataset         = NULL;
 
 #include <set>
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
 template<typename T>
 T *
 GetVTKmPointer(vtkm::cont::ArrayHandle<T> &handle)
@@ -1638,7 +1638,7 @@ avtDataRepresentation::avtDataRepresentation(avtVtkmDataSet *d, int dom,
 {
     InitializeNullDatasets();
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
     asVTK        = NULL;
     asChar       = NULL;
     asCharLength = 0;
@@ -1779,7 +1779,7 @@ avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
     asChar       = NULL;
     asCharLength = 0;
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
     if (rhs.asVTKm)
     {
         asVTKm = rhs.asVTKm;
@@ -1840,7 +1840,7 @@ avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
 
 avtDataRepresentation::~avtDataRepresentation()
 {
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
     if (asVTKm)
     {
         //delete asVTKm;
@@ -1922,7 +1922,7 @@ avtDataRepresentation::operator=(const avtDataRepresentation &rhs)
     if (&rhs == this)
         return *this;
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
     if (asVTKm)
     {
         delete asVTKm;
@@ -1943,7 +1943,7 @@ avtDataRepresentation::operator=(const avtDataRepresentation &rhs)
     asVTKm = NULL;
     asChar = NULL;
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
     if (rhs.asVTKm)
     {
         asVTKm = rhs.asVTKm;
@@ -2054,7 +2054,7 @@ avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
    {
       long long numCells = 0;
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
       if (dataRepType == DATA_REP_TYPE_VTKM)
       {
           numCells = 0;
@@ -2232,7 +2232,7 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
                 dst = datasetType;
             }
         }
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
         else if (dataRepType == DATA_REP_TYPE_VTKM)
         {
             if (asVTKm == nullVTKmDataset)
@@ -2340,7 +2340,7 @@ avtDataRepresentation::GetDataVTK(void)
         }
         else
         {
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
             //try to convert from VTKm dataset
             if (asVTKm != NULL)
                 asVTK = VTKmToVTK(asVTKm);
@@ -2473,7 +2473,7 @@ avtDataRepresentation::GetDataVTK(void)
 avtVtkmDataSet *
 avtDataRepresentation::GetDataVTKm(void)
 {
-#ifndef HAVE_LIBVTKM
+#ifndef HAVE_VTKM
     asVTKm = NULL;
 #else
 
@@ -2555,7 +2555,7 @@ avtDataRepresentation::InitializeNullDatasets(void)
     dummyPoints->Delete();
     nullVTKDataset = ugrid;
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
     nullVTKmDataset = new avtVtkmDataSet();
 #endif
 
@@ -2600,7 +2600,7 @@ avtDataRepresentation::DeleteNullDatasets(void)
         nullVTKDataset = NULL;
     }
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
     delete nullVTKmDataset;
     nullVTKmDataset = NULL;
 #endif
@@ -3128,7 +3128,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 }
 
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
 // ****************************************************************************
 //  Method: avtDataRepresentation::VTKmToVTK
 //

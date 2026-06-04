@@ -9,25 +9,18 @@
 #
 #****************************************************************************
 
-SET(TARGETS exceptiontest)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-)
+visit_add_executable(
+    NAME        exceptiontest
+    SOURCES     exceptiontest.cpp
+    DEPENDS_ON  visitcommon
+    FOLDER      tools/diagnostics)
 
-LINK_DIRECTORIES(
-${LIBRARY_OUTPUT_DIRECTORY}
-)
+if(VISIT_PARALLEL)
+    visit_add_parallel_executable(
+        NAME        exceptiontest_par
+        SOURCES     exceptiontest.cpp
+        DEPENDS_ON  visitcommon
+        FOLDER      tools/diagnostics)
+endif()
 
-ADD_EXECUTABLE(exceptiontest exceptiontest.cpp)
-TARGET_LINK_LIBRARIES(exceptiontest ${VISIT_EXE_LINKER_FLAGS} visitcommon)
-
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_EXECUTABLE(exceptiontest_par exceptiontest.cpp)
-    PARALLEL_EXECUTABLE_LINK_LIBRARIES(exceptiontest_par visitcommon)
-    SET(TARGETS ${TARGETS} exceptiontest_par)
-ENDIF(VISIT_PARALLEL)
-
-VISIT_INSTALL_TARGETS(${TARGETS})
-VISIT_TOOLS_ADD_FOLDER(diagnostics/exceptiontest ${TARGETS})

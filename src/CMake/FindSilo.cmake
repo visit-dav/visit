@@ -64,30 +64,63 @@ endif()
 find_package(Silo PATHS ${SILO_DIR} NO_DEFAULT_PATH)
 
 if(TARGET silo)
-    set(SILO_FOUND true)
+    set(HAVE_SILO true)
     set(SILO_LIB silo)
     if(WIN32)
         get_target_property(silo_loc silo IMPORTED_IMPLIB_RELEASE)
     else()
         get_target_property(silo_loc silo IMPORTED_LOCATION_RELEASE)
-
     endif()
 
     # include dirs aren't attached to the library in the export set
     target_include_directories(silo INTERFACE ${SILO_INCLUDE_DIR})
     THIRD_PARTY_INSTALL_LIBRARY(${silo_loc})
     THIRD_PARTY_INSTALL_INCLUDE(silo ${SILO_INCLUDE_DIR})
-endif()
 
+    if(WIN32 AND TARGET silex)
+        get_target_property(silex_loc silex IMPORTED_LOCATION_RELEASE)
+    
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+             ${silex_loc} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
 
-# We use Silo for PDB most of the time so set up additional PDB variables.
-if(SILO_FOUND)
+        install(FILES ${silex_loc}
+                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ WORLD_EXECUTE)
+    endif()
+
+    if(WIN32 AND TARGET browser)
+        get_target_property(browser_loc browser IMPORTED_LOCATION_RELEASE)
+    
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+             ${browser_loc} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+
+        install(FILES ${browser_loc}
+                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ WORLD_EXECUTE)
+    endif()
+
+    # We use Silo for PDB most of the time so set up additional PDB variables.
     message(STATUS "    Using PDB Lite built into Silo")
-    set(PDB_FOUND 1 CACHE BOOL "PDB library found" FORCE)
+    set(HAVE_PDB true CACHE BOOL "PDB library found" FORCE)
     set(PDB_LIB silo CACHE STRING "PDB library" FORCE)
     mark_as_advanced(PDB_LIB)
 
-   # for plugin vs install:
-   cmake_path(GET silo_loc FILENAME SILO_IMPORT_LIB)
+    # for plugin vs install
+    # write SetupSILO.cmake for our export sets.
+    include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
+    create_lib_setup_cmake(NAME "SILO"
+                           NAMESPACE "silo"
+                           INCBASE "silo"
+                           ITEMS ${SILO_LIB}
+                           SIMPLE_INCLUDE true)
+
+    # need a few extras in the Setup file.
+    set(fname ${VISIT_BINARY_DIR}/SetupSILO.cmake)
+    file(APPEND ${fname} "\nset(SILO_LIB ${SILO_LIB})\n")
+    file(APPEND ${fname} "\nset(PDB_LIB  ${SILO_LIB})\n")
 endif()
 

@@ -7,22 +7,22 @@
 #   Brad Whitlock, Mon Nov 28 16:21:26 PST 2011
 #   I moved LaunchRPC to common/state.
 #
+#   Kathleen Biagas, Thu Oct 3, 2024
+#   Utilize visit_add_library.
+#
 #****************************************************************************
 
-SET(VCLRPC_SOURCES
-ConnectSimRPC.C
-LauncherMethods.C
-LauncherState.C
-)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-)
+visit_add_library(
+    NAME        vclrpc
+    SOURCES     ConnectSimRPC.C
+                LauncherMethods.C
+                LauncherState.C
+    HEADERS     ConnectSimRPC.h
+                LauncherMethods.h
+                LauncherState.h
+                vclrpc_exports.h
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/launcher/rpc>
+    DEPENDS_ON  visitcommon)
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-ADD_LIBRARY(vclrpc ${VCLRPC_SOURCES})
-TARGET_LINK_LIBRARIES(vclrpc visitcommon)
-
-VISIT_INSTALL_TARGETS(vclrpc)

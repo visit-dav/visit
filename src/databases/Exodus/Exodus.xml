@@ -1,58 +1,44 @@
 <?xml version="1.0"?>
   <Plugin name="Exodus" type="database" label="Exodus" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <CXXFLAGS>
-      ${NETCDF_INCLUDE_DIR}
-    </CXXFLAGS>
-    <LDFLAGS>
-      ${NETCDF_LIBRARY_DIR}
-    </LDFLAGS>
-    <LIBS>
-      ${NETCDF_LIB}
-    </LIBS>
     <FilePatterns>
-      *.ex
-      *.e
-      *.exo
-      *.ex2
-      *.exii
-      *.exoii
-      *.e.#.#
-      *.e.##.##
-      *.e.###.###
-      *.e.####.####
-      *.e.#####.#####
-      *.ex.#.#
-      *.ex.##.##
-      *.ex.###.###
-      *.ex.####.####
-      *.ex.#####.#####
-      *.exo.#.#
-      *.exo.##.##
-      *.exo.###.###
-      *.exo.####.####
-      *.exo.#####.#####
-      *.ex2.#.#
-      *.ex2.##.##
-      *.ex2.###.###
-      *.ex2.####.####
-      *.ex2.#####.#####
-      *.exii.#.#
-      *.exii.##.##
-      *.exii.###.###
-      *.exii.####.####
-      *.exii.#####.#####
-      *.gen
-      *.exodus
-      *.nemesis
+    *.ex
+    *.e
+    *.exo
+    *.ex2
+    *.exii
+    *.exoii
+    *.e.#.#
+    *.e.##.##
+    *.e.###.###
+    *.e.####.####
+    *.e.#####.#####
+    *.ex.#.#
+    *.ex.##.##
+    *.ex.###.###
+    *.ex.####.####
+    *.ex.#####.#####
+    *.exo.#.#
+    *.exo.##.##
+    *.exo.###.###
+    *.exo.####.####
+    *.exo.#####.#####
+    *.ex2.#.#
+    *.ex2.##.##
+    *.ex2.###.###
+    *.ex2.####.####
+    *.ex2.#####.#####
+    *.exii.#.#
+    *.exii.##.##
+    *.exii.###.###
+    *.exii.####.####
+    *.exii.#####.#####
+    *.gen
+    *.exodus
+    *.nemesis
     </FilePatterns>
-    <Files components="M">
-      avtExodusFileFormat.C
-      avtExodusOptions.C
-    </Files>
-    <Files components="E">
-      avtExodusFileFormat.C
-      avtExodusOptions.C
-    </Files>
+    <LIBS>
+      netcdf
+    </LIBS>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Exodus.code">
       <Function name="ExodusCommonPluginInfo::SetupDatabase" user="false" member="true">
       </Function>

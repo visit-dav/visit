@@ -1,26 +1,15 @@
 <?xml version="1.0"?>
   <Plugin name="Velodyne" type="database" label="velodyne plot file" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <CXXFLAGS>
-      ${HDF5_INCLUDE_DIR}
-    </CXXFLAGS>
-    <LDFLAGS>
-      ${HDF5_LIBRARY_DIR}
-    </LDFLAGS>
-    <LIBS>
-      ${HDF5_LIB}
-    </LIBS>
     <FilePatterns>
       *.vld
       *.rst
     </FilePatterns>
-    <Files components="M">
-      avtVelodyneFileFormat.C
+    <Files components="M,E">
       VelodyneReader.C
     </Files>
-    <Files components="E">
-      avtVelodyneFileFormat.C
-      VelodyneReader.C
-    </Files>
+    <LIBS>     
+      ${HDF5_LIB}
+    </LIBS>
     <Attribute name="" purpose="" persistent="true" keyframe="true">
     </Attribute>
   </Plugin>

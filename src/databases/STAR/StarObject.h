@@ -658,7 +658,7 @@ static long long filesize(const char* filename)
 static long long filesize(FILE* infile)
 {
     if(infile == NULL) 
-        FATAL("filesize: fatal error: infile is null");
+        FATAL("filesize: fatal : infile is null");
 
     long long currentOffset = ftell(infile);
 

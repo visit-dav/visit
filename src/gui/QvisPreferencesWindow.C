@@ -314,7 +314,7 @@ QvisPreferencesWindow::CreateGeneralTab(QWidget *gTab)
     precisionType->addButton(inc,2);
     precLayout->addWidget(inc);
 
-#if defined(HAVE_LIBVTKM)
+#if defined(HAVE_VTKM)
     //
     // Create radio button controls to change the backend.
     //

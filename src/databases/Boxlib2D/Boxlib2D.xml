@@ -1,29 +1,16 @@
 <?xml version="1.0"?>
   <Plugin name="Boxlib2D" type="database" label="Boxlib2D" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="true" opensWholeDirectory="false">
-    <CXXFLAGS>
-      ${BOXLIB_INCLUDE_DIR}
-    </CXXFLAGS>
-    <LDFLAGS>
-      ${BOXLIB_LIBRARY_DIR}
-    </LDFLAGS>
     <LIBS>
-      ${BOXLIB_2D_LIB}
+      boxlib2d
     </LIBS>
-    <DEFINES>
-      -DBL_SPACEDIM=2
-    </DEFINES>
     <FilePatterns>
       *.boxlib2d
       Header
     </FilePatterns>
-    <Files components="M">
-      avtBoxlibFileFormat.C
+    <Files components="M,E">
       BoxLibHelper.C
-    </Files>
-    <Files components="E">
       avtBoxlibFileFormat.C
-      BoxLibHelper.C
     </Files>
-    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="Boxlib2D.code">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

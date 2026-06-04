@@ -8,46 +8,26 @@
 #    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 #    Added visit_vtk to include dirs and target link libs.
 #
-#    Ryan Krattiger, Fri Oct 31 13:37:05 CST 2025
-#    Blueprints with optional MFEM dependency
-#
 #****************************************************************************
 
-set(AVTBLUEPRINT_SOURCES
-    avtConduitBlueprintDataAdaptor.C
-    avtConduitBlueprintInfoWarningHandler.C
-    )
+visit_add_library(
+    NAME       avtblueprint
+    SOURCES    avtConduitBlueprintDataAdaptor.C
+               avtConduitBlueprintInfoWarningHandler.C
+    HEADERS    avtblueprint_exports.h
+               avtConduitBlueprintDataAdaptor.h
+               avtConduitBlueprintInfoWarningHandler.C
+               avtConduitBlueprintLogging.h
+    INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Blueprint>
+    DEPENDS_ON visitcommon
+               lightweight_visit_vtk
+               VTK::CommonCore
+               VTK::FiltersCore
+               conduit)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${VISIT_COMMON_INCLUDES}
-                    ${VISIT_SOURCE_DIR}/avt/MFEM
-                    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-                    ${VTK_INCLUDE_DIRS}
-                    ${CONDUIT_INCLUDE_DIR}
-                    ${MFEM_INCLUDE_DIR}
-                    )
-
-# Add link directories
-link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${CONDUIT_LIBRARY_DIR})
-if (MFEM_FOUND)
-    link_directories(${MFEM_LIBRARY_DIR})
-endif ()
-
-add_library(avtblueprint ${AVTBLUEPRINT_SOURCES})
-
-set(vtklibs lightweight_visit_vtk VTK::CommonCore VTK::FiltersCore)
-
-target_link_libraries(avtblueprint PUBLIC
-    visitcommon
-    ${CONDUIT_LIB}
-    ${vtklibs}
-    $<$<BOOL:"${MFEM_FOUND}">:avtmfem ${MFEM_LIB}>
-)
-
-target_include_directories(avtblueprint PUBLIC
-    ${CONDUIT_INCLUDE_DIR}
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<$<BOOL:"${MFEM_FOUND}">:${MFEM_INCLUDE_DIR}>
-)
-
-VISIT_INSTALL_TARGETS(avtblueprint)
+if(HAVE_MFEM)
+    visit_patch_target(
+        NAME        avtblueprint
+        DEPENDS_ON  avtmfem)
+endif()

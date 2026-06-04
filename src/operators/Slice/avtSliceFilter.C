@@ -10,7 +10,8 @@
 
 #include <float.h>
 
-#ifdef HAVE_LIBVTKM
+#include <visit-config.h> // for HAVE_VTKM
+#ifdef HAVE_VTKM
 #include <avtVtkmDataSet.h>
 #include <vtkm/ImplicitFunction.h>
 #include <vtkm/cont/DataSet.h>
@@ -1323,7 +1324,7 @@ avtSliceFilter::ExecuteData_VTK(avtDataRepresentation *in_dr)
 avtDataRepresentation *
 avtSliceFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr)
 {
-#ifndef HAVE_LIBVTKM
+#ifndef HAVE_VTKM
     return NULL;
 #else
     //

@@ -10,6 +10,9 @@
 #   Kathleen Biagas, Thu Jan 7, 2021
 #   Only process if VISIT_ICET_DIR is set.
 #
+#   Kathleen Biagas, Wed April 9, 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
 # Ice-T provides an ICETConfig.cmake file that we could include but it appears
@@ -19,9 +22,7 @@
 #    INCLUDE(${VISIT_ICET_DIR}/lib/ICETConfig.cmake)
 #ENDIF(VISIT_ICET_DIR)
 
-# Use the ICET_DIR hint from the config-site .cmake file
+# Uses the ICET_DIR hint from the config-site .cmake file
 
-if(VISIT_ICET_DIR)
-    SET_UP_THIRD_PARTY(ICET LIBS IceTCore IceTGL IceTMPI)
-endif()
+visit_import_third_party(ICET LIBS IceTCore IceTGL IceTMPI)
 

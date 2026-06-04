@@ -4,25 +4,19 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Thu Oct 3, 2024
+#   Utilize visit_add_library.
 #
 #****************************************************************************
 
-SET(MDSERVERPROXY_SOURCES
-MDServerProxy.C
-MDServerManager.C
-)
+visit_add_library(
+    NAME        mdserverproxy
+    SOURCES     MDServerProxy.C
+                MDServerManager.C
+    HEADERS     MDServerProxy.h
+                MDServerManager.h
+                mdsproxy_exports.h
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/mdserver/proxy>
+    DEPENDS_ON  visitcommon avtdbatts mdserverrpc)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/mdserver/rpc
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-)
-
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-ADD_LIBRARY(mdserverproxy ${MDSERVERPROXY_SOURCES})
-TARGET_LINK_LIBRARIES(mdserverproxy mdserverrpc visitcommon avtdbatts)
-
-VISIT_INSTALL_TARGETS(mdserverproxy)
