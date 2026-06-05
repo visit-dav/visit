@@ -598,6 +598,8 @@ avtPixieFileFormat::Initialize()
 //    isCoord to TraversalInfo and VarInfo to track if a variable is a
 //    coordinate array so that the decomposition can be done correctly.
 //
+//    Mark C. Miller, Fri Jun  5 15:38:06 PDT 2026
+//    Applied same fix as Eric, above, for other mesh case.
 // ****************************************************************************
 
 void
