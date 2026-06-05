@@ -167,7 +167,7 @@ add_subdirectory(ui)
 if(APPLE)
     set(VIEWER_ICON_FILE VisItIcon.icns)
     set(VISIT_VIEWER_RESOURCE_FILE ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
-    set_source_file_properties(${VISIT_VIEWER_RESOURCE_FILE} PROPERTIES
+    set_source_files_properties(${VISIT_VIEWER_RESOURCE_FILE} PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
