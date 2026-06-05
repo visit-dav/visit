@@ -18,9 +18,6 @@
 // which describes the pattern's we use for handling
 // the python callbacks implemented here.
 
-// helper
-template<typename T> static T *del(T *obj){ delete obj; return NULL; }
-
 // A container for callback objects that need to have
 // their ref count decremented during a disconnect event
 // or during shutdown.
@@ -41,7 +38,7 @@ public:
     // delete all of the callback data.
     void Clear()
     {
-        std::for_each(Data.begin(), Data.end(), std::ptr_fun(del<simV2_CallbackData>));
+        std::for_each(Data.begin(), Data.end(), [](simV2_CallbackData *obj) { delete obj; });
         Data.clear();
     }
 private:

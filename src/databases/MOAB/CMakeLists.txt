@@ -2,5 +2,6 @@
 
 visit_add_database_plugin(
     DNAME      MOAB
-    LIBS       moab)
+    LIBS       moab
+               ${HDF5_LIB})
 
