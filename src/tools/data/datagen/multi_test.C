@@ -66,7 +66,7 @@ using std::vector;
     if (HASEXT != 0)                                        \
        DBAddOption(optlist, DBOPT_HAS_EXTERNAL_ZONES, HASEXT)
 
-#define SPRINTF(fmt, ...) snprintf(fmt, sizeof(fmt), __VA_ARGS__)
+#define SNPRINTF(fmt, ...) snprintf(fmt, sizeof(fmt), __VA_ARGS__)
 
 #ifdef DOUBLE_PRECISION
 #define CLANG_TYPE double
@@ -1762,9 +1762,9 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
 
         char varname[256];
         char matname[32];
-        SPRINTF(matname, "%d", matno);
+        SNPRINTF(matname, "%d", matno);
         char *matnamelist[] = {matname, 0};
-        SPRINTF(varname, "m%dvf_on_mats_%d", matno, matno);
+        SNPRINTF(varname, "m%dvf_on_mats_%d", matno, matno);
         vars[0] = p2z;
         varnames[0] = varname; 
         DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist);
@@ -2438,9 +2438,9 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
             {
                 char tmpName[256];
                 if (block < nblocks_x * nblocks_y * nblocks_z / 2)
-                    SPRINTF(tmpName, "%s_back", meshname);
+                    SNPRINTF(tmpName, "%s_back", meshname);
                 else
-                    SPRINTF(tmpName, "%s_front", meshname);
+                    SNPRINTF(tmpName, "%s_front", meshname);
 
                 if (nfaces > 0)
                     DBPutUcdmesh(dbfile, tmpName, 3, coordnames, coords,
@@ -2480,13 +2480,13 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
             char tmpMeshName[256];
             if (block < nblocks_x * nblocks_y * nblocks_z / 2)
             {
-                SPRINTF(tmpMeshName, "%s_back", meshname);
-                SPRINTF(tmpVarName, "%s_back", var1name);
+                SNPRINTF(tmpMeshName, "%s_back", meshname);
+                SNPRINTF(tmpVarName, "%s_back", var1name);
             }
             else
             {
-                SPRINTF(tmpMeshName, "%s_front", meshname);
-                SPRINTF(tmpVarName, "%s_front", var1name);
+                SNPRINTF(tmpMeshName, "%s_front", meshname);
+                SNPRINTF(tmpVarName, "%s_front", var1name);
             }
             DBPutUcdvar(dbfile, tmpVarName, tmpMeshName, 1, varnames, vars,
                     nnodes, NULL, 0, SILO_TYPE, DB_NODECENT, optlist);
@@ -2543,13 +2543,13 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
             char tmpMeshName[256];
             if (block < nblocks_x * nblocks_y * nblocks_z / 2)
             {
-                SPRINTF(tmpMeshName, "%s_back", meshname);
-                SPRINTF(tmpVarName, "%s_back", var6name);
+                SNPRINTF(tmpMeshName, "%s_back", meshname);
+                SNPRINTF(tmpVarName, "%s_back", var6name);
             }
             else
             {
-                SPRINTF(tmpMeshName, "%s_front", meshname);
-                SPRINTF(tmpVarName, "%s_front", var6name);
+                SNPRINTF(tmpMeshName, "%s_front", meshname);
+                SNPRINTF(tmpVarName, "%s_front", var6name);
             }
             DBPutUcdvar(dbfile, tmpVarName, tmpMeshName, 1, varnames, vars,
                     nzones-hi_off, NULL, 0, SILO_TYPE, DB_ZONECENT, optlist);
@@ -3036,36 +3036,36 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     for (i = 0; i < nblocks; i++)
     {
         if (iteration > 100)
-            SPRINTF(names[i], "multi_ucd3d_ti_base:/block%d/mesh1", i);
+            SNPRINTF(names[i], "multi_ucd3d_ti_base:/block%d/mesh1", i);
         else
-            SPRINTF(names[i], "/block%d/mesh1", i);
+            SNPRINTF(names[i], "/block%d/mesh1", i);
         meshnames[i] = names[i];
         meshtypes[i] = meshtype;
 
-        SPRINTF(names1[i], "/block%d/d", i);
-        SPRINTF(names2[i], "/block%d/p", i);
-        SPRINTF(names3[i], "/block%d/u", i);
-        SPRINTF(names4[i], "/block%d/v", i);
-        SPRINTF(names5[i], "/block%d/w", i);
-        SPRINTF(names6[i], "/block%d/hist", i);
+        SNPRINTF(names1[i], "/block%d/d", i);
+        SNPRINTF(names2[i], "/block%d/p", i);
+        SNPRINTF(names3[i], "/block%d/u", i);
+        SNPRINTF(names4[i], "/block%d/v", i);
+        SNPRINTF(names5[i], "/block%d/w", i);
+        SNPRINTF(names6[i], "/block%d/hist", i);
         if (i == 0 || i == 2 || i == 9 || i == 11 ||
             i == 24 || i == 26 || i == 33 || i == 35)
         {
-            SPRINTF(names7[i], "EMPTY");
-            SPRINTF(names9[i], "EMPTY");
+            SNPRINTF(names7[i], "EMPTY");
+            SNPRINTF(names9[i], "EMPTY");
         }
         else
         {
-            SPRINTF(names7[i], "/block%d/p_on_mats_2", i);
-            SPRINTF(names9[i], "/block%d/m2vf_on_mats_2", i);
+            SNPRINTF(names7[i], "/block%d/p_on_mats_2", i);
+            SNPRINTF(names9[i], "/block%d/m2vf_on_mats_2", i);
         }
         if (i == 4 || i == 7 || (i >= 15 && i <= 20) ||
             i == 28 || i == 31)
-            SPRINTF(names10[i], "/block%d/m3vf_on_mats_3", i);
+            SNPRINTF(names10[i], "/block%d/m3vf_on_mats_3", i);
         else
-            SPRINTF(names10[i], "EMPTY");
-        SPRINTF(names8[i], "/block%d/d_on_mats_1_3", i);
-        SPRINTF(names11[i], "/block%d/m1vf_on_mats_1", i);
+            SNPRINTF(names10[i], "EMPTY");
+        SNPRINTF(names8[i], "/block%d/d_on_mats_1_3", i);
+        SNPRINTF(names11[i], "/block%d/m1vf_on_mats_1", i);
         var1names[i] = names1[i];
         var2names[i] = names2[i];
         var3names[i] = names3[i];
@@ -3079,47 +3079,47 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         var11names[i] = names11[i];
         vartypes[i] = vartype;
 
-        SPRINTF(names0[i], "/block%d/mat1", i);
+        SNPRINTF(names0[i], "/block%d/mat1", i);
         matnames[i] = names0[i];
 
         if (!noDups)
         {
             if (i < iteration)
             {
-                SPRINTF(namesdup[i], "/block%d/mesh1_dup", i);
+                SNPRINTF(namesdup[i], "/block%d/mesh1_dup", i);
                 meshnamesdup[i] = namesdup[i];
 
-                SPRINTF(names1dup[i], "/block%d/d_dup", i);
-                SPRINTF(names3dup[i], "/block%d/u_dup", i);
-                SPRINTF(names4dup[i], "/block%d/v_dup", i);
-                SPRINTF(names5dup[i], "/block%d/w_dup", i);
-                SPRINTF(names6dup[i], "/block%d/hist_dup", i);
+                SNPRINTF(names1dup[i], "/block%d/d_dup", i);
+                SNPRINTF(names3dup[i], "/block%d/u_dup", i);
+                SNPRINTF(names4dup[i], "/block%d/v_dup", i);
+                SNPRINTF(names5dup[i], "/block%d/w_dup", i);
+                SNPRINTF(names6dup[i], "/block%d/hist_dup", i);
                 var1namesdup[i] = names1dup[i];
                 var3namesdup[i] = names3dup[i];
                 var4namesdup[i] = names4dup[i];
                 var5namesdup[i] = names5dup[i];
                 var6namesdup[i] = names6dup[i];
 
-                SPRINTF(names0dup[i], "/block%d/mat1_dup", i);
+                SNPRINTF(names0dup[i], "/block%d/mat1_dup", i);
                 matnamesdup[i] = names0dup[i];
             }
             else
             {
-                SPRINTF(namesdup[i], "EMPTY");
+                SNPRINTF(namesdup[i], "EMPTY");
                 meshnamesdup[i] = namesdup[i];
 
-                SPRINTF(names1dup[i], "EMPTY");
-                SPRINTF(names3dup[i], "EMPTY");
-                SPRINTF(names4dup[i], "EMPTY");
-                SPRINTF(names5dup[i], "EMPTY");
-                SPRINTF(names6dup[i], "EMPTY");
+                SNPRINTF(names1dup[i], "EMPTY");
+                SNPRINTF(names3dup[i], "EMPTY");
+                SNPRINTF(names4dup[i], "EMPTY");
+                SNPRINTF(names5dup[i], "EMPTY");
+                SNPRINTF(names6dup[i], "EMPTY");
                 var1namesdup[i] = names1dup[i];
                 var3namesdup[i] = names3dup[i];
                 var4namesdup[i] = names4dup[i];
                 var5namesdup[i] = names5dup[i];
                 var6namesdup[i] = names6dup[i];
 
-                SPRINTF(names0dup[i], "EMPTY");
+                SNPRINTF(names0dup[i], "EMPTY");
                 matnamesdup[i] = names0dup[i];
             }
         }
@@ -3127,7 +3127,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         //
         // make the directory for the block mesh
         //
-        SPRINTF(dirnames[i], "/block%d", i);
+        SNPRINTF(dirnames[i], "/block%d", i);
 
         if (DBMkDir(dbfile, dirnames[i]) == -1)
         {
@@ -3230,9 +3230,9 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         for (i = 0; i < nblocks; i++)
         {
             if (i < nblocks / 2)
-                SPRINTF(tmpNames[i], "/block%d/mesh1_back", i);
+                SNPRINTF(tmpNames[i], "/block%d/mesh1_back", i);
             else
-                SPRINTF(tmpNames[i], "/block%d/mesh1_front", i);
+                SNPRINTF(tmpNames[i], "/block%d/mesh1_front", i);
             tmpMeshnames[i] = tmpNames[i];
         }
         DBPutMultimesh(dbfile, "mesh1_back", nblocks / 2,
@@ -3296,11 +3296,11 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         for (i = 0; i < nblocks; i++)
         {
             if (i < nblocks / 2)
-                SPRINTF(tmpNames[i], "/block%d/d_back", i);
+                SNPRINTF(tmpNames[i], "/block%d/d_back", i);
             else
-                SPRINTF(tmpNames[i], "/block%d/d_front", i);
+                SNPRINTF(tmpNames[i], "/block%d/d_front", i);
             if (i == 0 || (rand() % 7) == 0)
-                SPRINTF(tmpNames[i], "EMPTY");
+                SNPRINTF(tmpNames[i], "EMPTY");
             tmpVarnames[i] = tmpNames[i];
         }
         DBPutMultivar(dbfile, "d_split", nblocks, tmpVarnames, vartypes, NULL);
@@ -3480,26 +3480,26 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     int    types[4];
 
     types[0] = DB_VARTYPE_SCALAR;
-    SPRINTF(vnames[0], "sum");
+    SNPRINTF(vnames[0], "sum");
     if (dim == 2)
-        SPRINTF(defns[0], "u+v");
+        SNPRINTF(defns[0], "u+v");
     else
-        SPRINTF(defns[0], "u+v+w");
+        SNPRINTF(defns[0], "u+v+w");
 
     types[1] = DB_VARTYPE_VECTOR;
-    SPRINTF(vnames[1], "vec");
+    SNPRINTF(vnames[1], "vec");
     if (dim == 2)
-        SPRINTF(defns[1], "{u,v}");
+        SNPRINTF(defns[1], "{u,v}");
     else
-        SPRINTF(defns[1], "{u,v,w}");
+        SNPRINTF(defns[1], "{u,v,w}");
 
     types[2] = DB_VARTYPE_SCALAR;
-    SPRINTF(vnames[2], "nmats");
-    SPRINTF(defns[2], "nmats(mat1)");
+    SNPRINTF(vnames[2], "nmats");
+    SNPRINTF(defns[2], "nmats(mat1)");
 
     types[3] = DB_VARTYPE_SCALAR;
-    SPRINTF(vnames[3], "mag");
-    SPRINTF(defns[3], "magnitude(vec)");
+    SNPRINTF(vnames[3], "mag");
+    SNPRINTF(defns[3], "magnitude(vec)");
 
     // Create a list of optlist objects
     DBoptlist *optlists[4];
@@ -3674,9 +3674,9 @@ main(int argc, char **argv)
         {
             char tmpName[256];
             if (noEmptys)
-                SPRINTF(tmpName, DPREFIX "histne_ucd3d_%04d", iter);
+                SNPRINTF(tmpName, DPREFIX "histne_ucd3d_%04d", iter);
             else
-                SPRINTF(tmpName, DPREFIX "hist_ucd3d_%04d", iter);
+                SNPRINTF(tmpName, DPREFIX "hist_ucd3d_%04d", iter);
             fprintf(stderr, "creating %s\n", tmpName);
 
             if ((dbfile = DBCreate(tmpName, DB_CLOBBER, DB_LOCAL,
@@ -3706,9 +3706,9 @@ main(int argc, char **argv)
         char tmpName[256];
         char tmpStr[1024];
         if (iter == 0)
-            SPRINTF(tmpName, DPREFIX "multi_ucd3d_ti_base");
+            SNPRINTF(tmpName, DPREFIX "multi_ucd3d_ti_base");
         else
-            SPRINTF(tmpName, DPREFIX "multi_ucd3d_ti_%04d", iter);
+            SNPRINTF(tmpName, DPREFIX "multi_ucd3d_ti_%04d", iter);
         fprintf(stderr, "creating %s\n", tmpName);
 
         if ((dbfile = DBCreate(tmpName, DB_CLOBBER, DB_LOCAL,
@@ -3731,10 +3731,10 @@ main(int argc, char **argv)
             {
                 DBSetDir(dbfile,"/");
                 int len;
-                SPRINTF(tmpStr, "d;p;u;v;w;hist;mat1");
+                SNPRINTF(tmpStr, "d;p;u;v;w;hist;mat1");
                 len = strlen(tmpStr);
                 DBWrite(dbfile, "MultivarToMultimeshMap_vars", tmpStr, &len, 1, DB_CHAR);
-                SPRINTF(tmpStr, "mesh1;mesh1;mesh1;mesh1;mesh1;mesh1;mesh1");
+                SNPRINTF(tmpStr, "mesh1;mesh1;mesh1;mesh1;mesh1;mesh1;mesh1");
                 len = strlen(tmpStr);
                 DBWrite(dbfile, "MultivarToMultimeshMap_meshes", tmpStr, &len, 1, DB_CHAR);
             }
