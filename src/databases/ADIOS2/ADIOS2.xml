@@ -1,19 +1,5 @@
 <?xml version="1.0"?>
   <Plugin name="ADIOS2" type="database" label="ADIOS2" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <CXXFLAGS>
-      $(ADIOS2_INCLUDE_DIR)
-    </CXXFLAGS>
-    <LDFLAGS>
-      $(ADIOS2_LIBRARY_DIR)
-    </LDFLAGS>
-    <LIBS>
-      vtkFiltersHybrid
-      vtksys
-      ${ADIOS2_LIB}
-    </LIBS>
-    <DEFINES components="EPar">
-      ADIOS2_USE_MPI
-    </DEFINES>
     <FilePatterns>
       *.bp
       *.bp.sst
@@ -21,19 +7,12 @@
       md.idx
       md.0
     </FilePatterns>
-    <Files components="M">
-      avtADIOS2FileFormat.C
-      avtMEUMMAPSFileFormat.C
-      avtGTCFileFormat.C
-      avtPixie3DFileFormat.C
-      avtADIOS2BaseFileFormat.C
-      avtADIOS2SSTFileFormat.C
-      avtLAMMPSFileFormat.C
-      avtSpecFEMFileFormat.C
-      ADIOS2HelperFuncs.C
-    </Files>
-    <Files components="E">
-      avtADIOS2FileFormat.C
+    <LIBS> 
+      vtkFiltersHybrid
+      vtksys
+      adios2
+    </LIBS>
+    <Files components="M,E">
       avtMEUMMAPSFileFormat.C
       avtGTCFileFormat.C
       avtPixie3DFileFormat.C

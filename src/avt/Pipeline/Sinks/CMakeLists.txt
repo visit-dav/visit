@@ -7,26 +7,36 @@
 #
 #****************************************************************************
 
-set(SINKS_SOURCES
-    avtDatabaseWriter.C
-    avtDataObjectSink.C
-    avtDatasetSink.C
-    avtImageSink.C
-    avtMultipleInputSink.C
-    avtNullDataSink.C
-    avtSamplePointsSink.C
-    avtTerminatingDatasetSink.C
-    avtTerminatingImageSink.C
-    avtTerminatingNullDataSink.C
-    avtTerminatingSink.C)
+visit_append_list(
+    NAME  avtpipeline_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtDatabaseWriter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDataObjectSink.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDatasetSink.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtImageSink.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputSink.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtNullDataSink.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSamplePointsSink.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTerminatingDatasetSink.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTerminatingImageSink.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTerminatingNullDataSink.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTerminatingSink.C)
 
-target_sources(avtpipeline_ser PRIVATE ${SINKS_SOURCES})
-target_include_directories(avtpipeline_ser PUBLIC .)
+visit_append_list(
+    NAME  avtpipeline_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtDatabaseWriter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDataObjectSink.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDatasetSink.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtImageSink.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMultipleInputSink.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtNullDataSink.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSamplePointsSink.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTerminatingDatasetSink.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTerminatingImageSink.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTerminatingNullDataSink.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTerminatingSink.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtpipeline_par PRIVATE ${SINKS_SOURCES})
-    target_include_directories(avtpipeline_par PUBLIC .)
-endif()
-
-unset(SINKS_SOURCES)
+visit_append_list(
+    NAME  avtpipeline_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Pipeline/Sinks>)
 

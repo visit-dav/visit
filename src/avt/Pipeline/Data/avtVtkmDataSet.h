@@ -11,7 +11,7 @@
 
 #include <visit-config.h>
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
 #include <vtkm/cont/DataSet.h>
 
 class  avtVtkmDataSet

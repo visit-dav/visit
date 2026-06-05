@@ -4,13 +4,16 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Mon Mar 31, 2025
+#   Utilize visit_import_third_party.
 #
 #****************************************************************************/
 
-# Use the TIFF_DIR hint from the config-site .cmake file
+# Uses the TIFF_DIR hint from the config-site .cmake file
 
 if(WIN32 AND VISIT_TIFF_DIR)
-    SET_UP_THIRD_PARTY(TIFF LIBS tiff)
-    set(TIFF_LIBRARY ${TIFF_LIBRARY_DIR}/${TIFF_LIB})
+    set(TIFF_DIR ${VISIT_TIFF_DIR})
+    visit_import_third_party(TIFF LIBS tiff ADD_GLOBAL_INCLUDE ADD_GLOBAL_LIBRARY)
+    add_library(TIFF::Tiff ALIAS tiff)
 endif()
 

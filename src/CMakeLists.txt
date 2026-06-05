@@ -141,6 +141,9 @@
 #    Modified VISIT_LIBRARY_DIR to use $<CONFIG> instead of
 #    ${CMAKE_CFG_INTDIR} on Windows, since the latter is deprecated.
 #
+#    Kathleen Biagas, Thu May 16, 2024
+#    Add Export package configurations.
+#
 #    Kathleen Biagas, Mon Sep 30, 2024
 #    Add build/install scripts from scripts directory to visit-dist target.
 #
@@ -357,7 +360,7 @@ set(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 # Set up placeholders for package vars: XXX_DIR
 foreach(pkg ADIOS ADIOS2 ADVIO ANARI BLOSC2 BOOST BOXLIB CFITSIO CGNS
-            CONDUIT DAMARIS EMBREE FMS GDAL GFORTRAN HDF5 H5PART ICET
+            CONDUIT DAMARIS EMBREE FMS GDAL HDF5 H5PART ICET
             ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB NEKTAR++ NETCDF
             OPENGL OPENEXR OSPRAY PIDX PYTHON QT QWT SILO SZIP TBB
             TIFF UINTAH VTK VTKM XDMF XSD ZLIB)
@@ -370,14 +373,10 @@ if(NOT WIN32)
 endif()
 
 # Set up placeholders for package vars: XXX_LIBDEP
-foreach(pkg CGNS CONDUIT FMS HDF5 H5PART MFEM NEKTAR++ NETCDF
-            SILO XDMF)
+foreach(pkg CGNS CONDUIT FMS H5PART MFEM NEKTAR++ NETCDF XDMF)
     VISIT_3RDPARTY_LIBDEP(${pkg})
 endforeach()
 
-
-# Set up placeholders for package vars: XXX_INCDEP
-VISIT_3RDPARTY_INCDEP(MFEM)
 
 # Set up placeholders misc pkg vars
 VISIT_3RDPARTY_VAR(OPENGL_LIBRARY "Path to OpenGL lib")
@@ -467,7 +466,7 @@ if(NOT WIN32)
     endif()
     #
     # Note that the last line in the EXECUTE_PROCESS command below should
-    # have a "\" before the ${CMAKE_INSTALL_PREFIX} to be truely correct.
+    # have a "\" before the ${CMAKE_INSTALL_PREFIX} to be truly correct.
     # The code creates a symbolic link from "current" to the current visit
     # version number.  Because of the coding error it succeeds when doing
     # a "make install" and fails when doing a "make package", which is
@@ -481,22 +480,17 @@ if(NOT WIN32)
     # fails in our case.
     #
     if(VISIT_INSTALL_AS_BETA)
-        install(CODE "
-          message(\"Symlinking beta to ${VISIT_VERSION}\")
-          EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
-            COMMAND \${CMAKE_COMMAND} -E create_symlink
-            \"${VISIT_VERSION}\"
-            \"${CMAKE_INSTALL_PREFIX}/beta\")
-        ")
+        set(symlink_name "beta")
     else()
-        install(CODE "
-          message(\"Symlinking current to ${VISIT_VERSION}\")
-          EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
+        set(symlink_name "current")
+    endif()
+    install(CODE "
+        message(\"Symlinking ${symlink_name} to ${VISIT_VERSION}\")
+        EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
             COMMAND \${CMAKE_COMMAND} -E create_symlink
             \"${VISIT_VERSION}\"
-            \"${CMAKE_INSTALL_PREFIX}/current\")
+            \"${CMAKE_INSTALL_PREFIX}/${symlink_name}\")
         ")
-    endif()
 endif()
 
 
@@ -534,12 +528,13 @@ endif()
 # this can be mitigated by using our Parallel first, before finding any TP libs.
 if(VISIT_PARALLEL)
     include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
+    install(FILES ${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake
+        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
     message(STATUS "PARALLEL version of VisIt")
 else()
     message(STATUS "Serial version of VisIt")
 endif()
 
-# macros/defines also needed by PluginVsInstall.cmake.in
 include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
@@ -653,9 +648,6 @@ endif()
 
 set(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
-# This include sets up vars that contains lists of include directories
-include(${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake)
-
 # macros/defines needed by CMake/VisItMacros.cmake
 if(NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
     set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
@@ -752,7 +744,6 @@ configure_file(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
 configure_file(${VISIT_SOURCE_DIR}/include/visit-version.h.in
                ${VISIT_BINARY_DIR}/include/visit-version.h @ONLY IMMEDIATE)
 
-
 #-----------------------------------------------------------------------------
 # Create common/misc/ConfigureInfo.C
 #-----------------------------------------------------------------------------
@@ -796,36 +787,6 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}"
 #-----------------------------------------------------------------------------
 # Top-level subdirectories
 #-----------------------------------------------------------------------------
-
-
-#
-# We pull in a few libs using VisIt's setup third party logic
-# that we want to use in the engine beyond the just DB plugins.
-#
-# Conduit and MFEM are examples of this.
-#
-# The the libsim runtime and engine example programs all need to follow
-# the same linking rules as the engine. Specifically, they need
-# the linking dirs for any dependencies introduced.
-# (For example, for conduit this includes conduit, hdf5, zlib, etc dirs)
-#
-# To simplify the logic needed downstream, we provide AVT_REQUIRED_LIB_DIR
-
-# Ideally in the future with proper imported cmake targets,
-# we would simply rely on cmake to propgate transitive dependency details.
-#
-
-set(__AVT_REQUIRED_LIB_DIR_LIST "")
-if(CONDUIT_FOUND)
-    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${CONDUIT_LIBRARY_DIR})
-endif()
-
-if(MFEM_FOUND)
-    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${MFEM_LIBRARY_DIR})
-endif()
-
-
-set(AVT_REQUIRED_LIB_DIR "${__AVT_REQUIRED_LIB_DIR_LIST}" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
 
 add_subdirectory(third_party_builtin)
 add_subdirectory(common)
@@ -996,7 +957,7 @@ if(VISIT_INSTALL_THIRD_PARTY)
     include(${VISIT_SOURCE_DIR}/CMake/PluginVsInstallHelpers.cmake)
 endif()
 
-
+#-------------------------------------------------------------------------
 # Create a visit-dist target, and checksums for the resultant file.
 #
 # Caution:
@@ -1030,4 +991,38 @@ add_custom_target(visit-dist
   COMMAND ${CMAKE_COMMAND} -E rm ${VISIT_SOURCE_DIR}/GIT_VERSION
   COMMAND ${CMAKE_COMMAND} -E rm -rf ${dist_name}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DR})
+
+#-------------------------------------------------------------------------
+#
+# Setup Export package configurations
+#
+#-------------------------------------------------------------------------
+
+if(VISIT_INSTALL_THIRD_PARTY)
+    include(CMakePackageConfigHelpers)
+
+    # generate the top level config file
+    configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/visitConfig.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
+        INSTALL_DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
+    # generate the version config file
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfigVersion.cmake
+        VERSION ${VISIT_VERSION}
+        COMPATIBILITY SameMinorVersion)
+
+    # install the config files
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfigVersion.cmake
+            DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
+    # install the target files
+    install(EXPORT visitTargets
+            DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
+    # install BLT
+    install(DIRECTORY ${VISIT_SOURCE_DIR}/blt
+            DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+endif()
 

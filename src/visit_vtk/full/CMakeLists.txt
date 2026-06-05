@@ -43,101 +43,156 @@
 #   building plugins against install, since we don't use the cmake targets,
 #   only lists of libraries.
 #
+#   Kathleen Biagas, Tue Jun 6, 2024
+#   Modified to use visit_add_library and blt_patch_target.
+#   Removed vtkVisItStreamline as the class is no longer used.
+#
 #   Kathleen Biagas, Tue Jan 13, 2026
 #   Renamed vtkExtractCellsByType to vtkVisItExtractCellsByType since the
 #   original name exists in VTK, and the class has been modified to subclass
 #   the original version.
 #   Added vtkVertexExtractor.
 #
-#   Kathleen Biagas, Thu Jan 15, 2026 
-#   Remove vtkSTLWriter. Rename vtkOBJWriter to vtkVisItOBJWriter. 
+#   Kathleen Biagas, Thu Jan 15, 2026
+#   Remove vtkSTLWriter. Rename vtkOBJWriter to vtkVisItOBJWriter.
 #
 #****************************************************************************/
 
-IF(OPENEXR_FOUND)
-    SET(OPENEXR_SRC vtkOpenEXRWriter.C)
-ENDIF(OPENEXR_FOUND)
 
-SET(VISIT_VTK_SOURCES
-InitVTK.C
-vtkAxisDepthSort.C
-vtkBinaryPartitionVolumeFromVolume.C
-vtkCSGCell.C
-vtkCSGGrid.C
-vtkConnectedTubeFilter.C
-vtkDataSetRemoveGhostCells.C
-vtkLineoutFilter.C
-vtkLinesFromOriginalCells.C
-vtkMergeTree.C
-vtkMultiSplitter.C
-vtkOnionPeelFilter.C
-vtkPolyDataOnionPeelFilter.C
-vtkRGBWriter.C
-vtkRectilinearGridFacelistFilter.C
-vtkRectilinearLinesNoDataFilter.C
-vtkReduceFilter.C
-vtkSlicer.C
-vtkStructuredGridFacelistFilter.C
-vtkSurfaceFilter.C
-vtkSurfaceFromVolume.C
-vtkUniqueFeatureEdges.C
-vtkUnstructuredGridRelevantPointsFilter.C
-vtkVectorGlyph.C
-vtkVertexExtractor.C
-vtkVertexFilter.C
-vtkVisItCellDataToPointData.C
-vtkVisItClipper.C
-vtkVisItContourFilter.C
-vtkVisItCutter.C
-vtkVisItDataSetWriter.C
-vtkVisItExtractCellsByType.C
-vtkVisItExtractGrid.C
-vtkVisItExtractRectilinearGrid.C
-vtkVisItFeatureEdges.C
-vtkVisItGlyph3D.C
-vtkVisItInterpolatedVelocityField.C
-vtkVisItOBJWriter.C
-vtkVisItPolyDataNormals.C
-vtkVisItPolyDataNormals2D.C
-vtkVisItStructuredGridNormals.C
-vtkVisItProbeFilter.C
-vtkVisItScalarTree.C
-vtkVisItSplitter.C
-vtkVisItTubeFilter.C
-vtkVisItTensorGlyph.C
-vtkVolumeFromCSGVolume.C
-vtkVolumeFromVolume.C
-${OPENEXR_SRC}
-)
+set(visit_vtk_SOURCES
+    InitVTK.C
+    vtkAxisDepthSort.C
+    vtkBinaryPartitionVolumeFromVolume.C
+    vtkConnectedTubeFilter.C
+    vtkCSGCell.C
+    vtkCSGGrid.C
+    vtkDataSetRemoveGhostCells.C
+    vtkLineoutFilter.C
+    vtkLinesFromOriginalCells.C
+    vtkMergeTree.C
+    vtkMultiSplitter.C
+    vtkOnionPeelFilter.C
+    vtkPolyDataOnionPeelFilter.C
+    vtkRectilinearGridFacelistFilter.C
+    vtkRectilinearLinesNoDataFilter.C
+    vtkReduceFilter.C
+    vtkRGBWriter.C
+    vtkSlicer.C
+    vtkStructuredGridFacelistFilter.C
+    vtkSurfaceFilter.C
+    vtkSurfaceFromVolume.C
+    vtkUniqueFeatureEdges.C
+    vtkUnstructuredGridRelevantPointsFilter.C
+    vtkVectorGlyph.C
+    vtkVertexExtractor.C
+    vtkVertexFilter.C
+    vtkVisItCellDataToPointData.C
+    vtkVisItClipper.C
+    vtkVisItContourFilter.C
+    vtkVisItCutter.C
+    vtkVisItDataSetWriter.C
+    vtkVisItExtractCellsByType.C
+    vtkVisItExtractGrid.C
+    vtkVisItExtractRectilinearGrid.C
+    vtkVisItFeatureEdges.C
+    vtkVisItGlyph3D.C
+    vtkVisItInterpolatedVelocityField.C
+    vtkVisItOBJWriter.C
+    vtkVisItPolyDataNormals.C
+    vtkVisItPolyDataNormals2D.C
+    vtkVisItProbeFilter.C
+    vtkVisItScalarTree.C
+    vtkVisItSplitter.C
+    vtkVisItStructuredGridNormals.C
+    vtkVisItTensorGlyph.C
+    vtkVisItTubeFilter.C
+    vtkVolumeFromCSGVolume.C
+    vtkVolumeFromVolume.C)
+
+set(visit_vtk_HEADERS
+    InitVTK.h
+    vtkAccessors.h
+    vtkAxisDepthSort.h
+    vtkBinaryPartitionVolumeFromVolume.h
+    vtkConnectedTubeFilter.h
+    vtkCreateTriangleHelpers.h
+    vtkCSGCell.h
+    vtkCSGFixedLengthBitField.h
+    vtkCSGGrid.h
+    vtkDataSetRemoveGhostCells.h
+    vtkLineoutFilter.h
+    vtkLinesFromOriginalCells.h
+    vtkMergeTree.h
+    vtkMultiSplitter.h
+    vtkOnionPeelFilter.h
+    vtkPolyDataOnionPeelFilter.h
+    vtkRectilinearGridFacelistFilter.h
+    vtkRectilinearLinesNoDataFilter.h
+    vtkReduceFilter.h
+    vtkRGBWriter.h
+    vtkSlicer.h
+    vtkStructuredGridFacelistFilter.h
+    vtkSurfaceFilter.h
+    vtkSurfaceFromVolume.h
+    vtkUniqueFeatureEdges.h
+    vtkUnstructuredGridRelevantPointsFilter.h
+    vtkVectorGlyph.h
+    vtkVertexExtractor.h
+    vtkVertexFilter.h
+    vtkVisItCellDataToPointData.h
+    vtkVisItClipper.h
+    vtkVisItContourFilter.h
+    vtkVisItCutter.h
+    vtkVisItDataSetWriter.h
+    vtkVisItExtractCellsByType.h
+    vtkVisItExtractGrid.h
+    vtkVisItExtractRectilinearGrid.h
+    vtkVisItFeatureEdges.h
+    vtkVisItGlyph3D.h
+    vtkVisItInterpolatedVelocityField.h
+    vtkVisItOBJWriter.h
+    vtkVisItPolyDataNormals.h
+    vtkVisItPolyDataNormals2D.h
+    vtkVisItProbeFilter.h
+    vtkVisItScalarTree.h
+    vtkVisItSplitter.h
+    vtkVisItStructuredGridNormals.h
+    vtkVisItTensorGlyph.h
+    vtkVisItTubeFilter.h
+    vtkVolumeFromCSGVolume.h
+    vtkVolumeFromVolume.h)
+
+if(HAVE_OPENEXR)
+    list(APPEND visit_vtk_SOURCES vtkOpenEXRWriter.C)
+    list(APPEND visit_vtk_HEADERS vtkOpenEXRWriter.h)
+endif()
+
+visit_add_library(
+    NAME        visit_vtk
+    SOURCES     ${visit_vtk_SOURCES}
+    HEADERS     ${visit_vtk_HEADERS}
+    INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/visit_vtk/full>
+    DEPENDS_ON  lightweight_visit_vtk
+                VTK::CommonExecutionModel
+                VTK::CommonMisc
+                VTK::FiltersExtraction
+                VTK::FiltersFlowPaths
+                VTK::FiltersSources
+                VTK::ImagingHybrid
+                VTK::IOImage
+                VTK::tiff
+                VTK::vtksys)
+
+target_include_directories(visit_vtk PRIVATE
+    $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/Pipeline/Data>)
+
+if(HAVE_OPENEXR)
+    target_link_libraries(visit_vtk PRIVATE openexr)
+endif()
 
 
-INCLUDE_DIRECTORIES(
-${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/include
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/common/Exceptions/Pipeline
-${VISIT_SOURCE_DIR}/common/misc
-${VISIT_SOURCE_DIR}/common/utility
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS}
-${BOOST_INCLUDE_DIR}
-${OPENEXR_INCLUDE_DIR}
-)
+if(HAVE_BOOST)
+    target_link_libraries(visit_vtk PRIVATE boost)
+endif()
 
-IF(HAVE_BOOST)
-    ADD_DEFINITIONS(-D__USE_ISOC99)
-ENDIF(HAVE_BOOST)
-
-# Add link directories needed to use our libraries and VTK.
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${OPENEXR_LIBRARY_DIR})
-
-ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
-
-set(vtklibs VTK::CommonExecutionModel VTK::CommonMisc
-        VTK::FiltersExtraction VTK::FiltersFlowPaths VTK::FiltersSources
-        VTK::ImagingHybrid VTK::IOImage VTK::tiff VTK::vtksys)
-
-target_link_libraries(visit_vtk lightweight_visit_vtk ${vtklibs} ${OPENEXR_LIB})
-
-VISIT_INSTALL_TARGETS(visit_vtk)

@@ -21,11 +21,6 @@
 #    Kathleen Biagas, Thu May 2, 2024
 #    Use VISIT_PLUGIN_DIR when setting RUNTIME_OUTPUT_DIR for plugins.
 #
-#    Eric Brugger, Mon Sep 22 16:41:58 PDT 2025
-#    I changed the logic to create the INSTALL_RPATH for parallel
-#    libraries to generate a semicolon separated list instead of a
-#    space separated list.
-#
 #*****************************************************************************
 
 if(WIN32)
@@ -35,38 +30,6 @@ if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-function(ADD_TARGET_INCLUDE target)
-      set_property(TARGET ${target}
-                   APPEND
-                   PROPERTY INCLUDE_DIRECTORIES ${ARGN})
-endfunction()
-
-function(ADD_TARGET_DEFINITIONS target newDefs)
-        set_property(TARGET ${target}
-                     APPEND
-                     PROPERTY COMPILE_DEFINITIONS ${newDefs})
-endfunction()
-
-function(ADD_PARALLEL_LIBRARY target)
-    add_library(${target} ${ARGN})
-
-    if(UNIX AND VISIT_PARALLEL_RPATH)
-        set(PAR_RPATHS "")
-        foreach(X ${CMAKE_INSTALL_RPATH})
-            list(APPEND PAR_RPATHS ${X})
-        endforeach()
-        foreach(X ${VISIT_PARALLEL_RPATH})
-            list(APPEND PAR_RPATHS ${X})
-        endforeach()
-        set_property(TARGET ${target}
-                     APPEND PROPERTY INSTALL_RPATH "${PAR_RPATHS}")
-    endif()
-    
-    target_compile_definitions(${target} PUBLIC ${VISIT_PARALLEL_DEFINES})
-    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES AND TARGET MPI::MPI_C)
-        target_link_libraries(${target} MPI::MPI_C)
-    endif()
-endfunction()
 
 macro(VISIT_PLUGIN_TARGET_OUTPUT_DIR type)
     if(WIN32)
@@ -218,4 +181,288 @@ function(ADD_CMAKE_GEN_TARGET gen_name
 
 endfunction()
 
+
+##############################################################################
+# This macro appends to a CACHE var list denoted by the NAME argument.
+# Caller is responsible for unsetting the CACHE var when no longer needed
+# to avoid polluting the CACHE.
+#
+# Designed mainly for targets whose sources live in subdirectories,
+# as a means for them to add to the parent's list of source/includes/etc
+# to prepare for a 'blt_add_library' call which requires SOURCES.
+#
+##############################################################################
+
+macro(visit_append_list)
+    cmake_parse_arguments(arg "" "NAME" "ITEMS" ${ARGN})
+    if(NOT DEFINED arg_NAME OR NOT DEFINED arg_ITEMS)
+        message(FATAL_ERROR "visit_append_list called with invalid arguments. Must supply 'NAME' (name of list) and 'ITEMS' (list of items to be added to named list.)")
+    endif()
+    set(${arg_NAME} ${${arg_NAME}} ${arg_ITEMS} CACHE STRING "" FORCE)
+endmacro()
+
+##############################################################################
+# patch a target with new sources, headers, etc:
+#
+# After visit-specific args are parsed and handled,
+# all args are passed directly to blt_patch_target.
+#
+# The visit-specific args must appear first in the caller argument list
+# before blt-specific, otherwise blt swallows them up with one of the args it
+# does understand, causing issues.
+#
+# ARGUMENTS:
+#    NAME         target name                REQUIRED
+#
+# visit-specific (not handled by blt_patch_target)
+#
+#    SOURCES      [source1 [source2 ...]]    OPTIONAL
+#    HEADERS      [header1 [header2 ...]]    OPTIONAL
+#
+# pass-through to blt_patch_target:
+#
+#    INCLUDES       [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES        [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS_ON     [dep1 ...]                 OPTIONAL
+#
+##############################################################################
+
+macro(visit_patch_target)
+    # need to parse everything that VisIt recognizes and everything that
+    # BLT recognizes, otherwise there ends up being issues.
+    set(singleValueArgs NAME)
+    set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON)
+    # parse the arguments
+    cmake_parse_arguments(vpt "" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT vpt_NAME)
+        message(FATAL_ERROR "visit_patch_target() must be called with argument NAME <name>")
+    endif()
+    if(NOT TARGET ${vpt_NAME})
+        message(FATAL_ERROR " attempting to patch ${vpt_NAME} but it is NOT a target!")
+    endif()
+    if (vpt_SOURCES OR vpt_HEADERS)
+        target_sources(${vpt_NAME} PRIVATE ${vpt_SOURCES} ${vpt_HEADERS})
+    endif()
+
+    # pass along only the args not used above
+    # enclose in quotes in case they aren't defined
+    blt_patch_target(
+        NAME       ${vpt_NAME}
+        INCLUDES   "${vpt_INCLUDES}"
+        DEFINES    "${vpt_DEFINES}"
+        DEPENDS_ON "${vpt_DEPENDS_ON}")
+endmacro()
+
+
+##############################################################################
+# Patches target with parallel specific additions common to all VisIt
+# parallel targets whether library or executable.
+#
+# ARGUMENTS:
+#    NAME         target name               REQUIRED
+#
+# Modifications:
+#   Kathleen Biagas, Thu Nov 6, 2025
+#   Use MPI::MPI_C import target instead of all the VISIT_PARALLEL flags.
+#
+##############################################################################
+
+macro(visit_patch_parallel_target)
+
+    cmake_parse_arguments(vppt "" "NAME" "" ${ARGN})
+    if(NOT vppt_NAME)
+        message(FATAL_ERROR "visit_patch_parallel_target() must be called with argument NAME <name of parallel target>")
+    endif()
+
+    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES AND TARGET MPI::MPI_C)
+        visit_patch_target(
+            NAME       ${vppt_NAME}
+            DEPENDS_ON MPI::MPI_CXX)
+    endif()
+    if(VISIT_PARALLEL_DEFINES)
+        visit_patch_target(
+            NAME      ${vppt_NAME}
+            DEFINES   ${VISIT_PARALLEL_DEFINES})
+    endif()
+    if(UNIX AND VISIT_PARALLEL_RPATH)
+        set_target_properties(${vppt_NAME} PROPERTIES
+            INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${VISIT_PARALLEL_RPATH}")
+    endif()
+endmacro()
+
+##############################################################################
+# Adds a library target.
+# calls blt_add_library
+# clears cache vars.
+#
+# ARGUMENTS:
+#    NAME         library name               REQUIRED
+#    SOURCES      [source1 [source2 ...]]    REQUIRED
+#    HEADERS      [header1 [header2 ...]]    OPTIONAL (except for header-only)
+#    INCLUDES     [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES      [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS_ON   [dep1 ...]                 OPTIONAL
+#    OUTPUT_NAME  [name]                     OPTIONAL
+#    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
+#    FOLDER       [name]                     OPTIONAL
+#    FORCE_STATIC                            OPTIONAL (visit only)
+#    SKIP_INSTALL                            OPTIONAL (visit only)
+#
+# Modifications:
+#    Kathleen Biags, Thu Oct 24, 2024
+#    Added SKIP_INSTALL to indicate the target should not be installed.
+#
+##############################################################################
+
+macro(visit_add_library)
+    set(options FORCE_STATIC SKIP_INSTALL)
+    set(singleValueArgs NAME OUTPUT_NAME FOLDER)
+    set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON FEATURES)
+
+    # parse the arguments
+    cmake_parse_arguments(val
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Sanity checks
+    if(NOT val_NAME)
+        message(FATAL_ERROR "visit_add_library() must be called with argument NAME <name>")
+    endif()
+    if (NOT val_SOURCES AND NOT val_HEADERS)
+        message(FATAL_ERROR "visit_add_library(NAME ${val_NAME} ...) called with no given sources or headers (at least one is required).")
+    endif()
+
+    if(${val_FORCE_STATIC})
+        blt_add_library(
+            NAME       ${val_NAME}
+            SOURCES    ${val_SOURCES}
+            HEADERS    ${val_HEADERS}
+            INCLUDES   ${val_INCLUDES}
+            DEFINES    ${val_DEFINES}
+            DEPENDS_ON ${val_DEPENDS_ON}
+            SHARED     OFF
+            FOLDER     ${val_FOLDER})
+    else()
+        blt_add_library(
+            NAME       ${val_NAME}
+            SOURCES    ${val_SOURCES}
+            HEADERS    ${val_HEADERS}
+            INCLUDES   ${val_INCLUDES}
+            DEFINES    ${val_DEFINES}
+            DEPENDS_ON ${val_DEPENDS_ON}
+            FOLDER     ${val_FOLDER})
+    endif()
+
+    # currently not a part of blt_add_library, and causes a CMake
+    # error if we call blt_add_library(${ARGV})
+    if (val_FEATURES)
+        target_compile_features(${val_NAME} PRIVATE ${val_FEATURES})
+    endif()
+
+    if(NOT ${val_SKIP_INSTALL})
+        visit_install_export_targets(${val_NAME})
+    endif()
+
+    # vars that may have been created by calls to visit_append_list
+    unset(${val_NAME}_SOURCES CACHE)
+    unset(${val_NAME}_HEADERS CACHE)
+    unset(${val_NAME}_INCLUDES CACHE)
+    unset(${val_NAME}_DEFINES CACHE)
+    unset(${val_NAME}_DEPENDS CACHE)
+    unset(${val_NAME}_FEATURES CACHE)
+endmacro()
+
+##############################################################################
+# Adds a parallel library target.
+# calls visit_add_library
+# calls visit_patch_parallel_target to set all the parallel options for the
+# target
+#
+# See visit_add_library for arguments.
+#
+##############################################################################
+
+macro(visit_add_parallel_library)
+    visit_add_library(${ARGV})
+    cmake_parse_arguments(vapl "" "NAME" "" ${ARGN})
+    visit_patch_parallel_target(NAME ${vapl_NAME})
+endmacro()
+
+##############################################################################
+# Adds an executable target.
+# calls blt_add_executable
+#
+# ARGUMENTS:
+#    NAME         library name               REQUIRED
+#    SOURCES      [source1 [source2 ...]]    REQUIRED
+#    HEADERS      [header1 [header2 ...]]    OPTIONAL (except for header-only)
+#    INCLUDES     [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES      [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS_ON   [dep1 ...]                 OPTIONAL
+#    OUTPUT_NAME  [name]                     OPTIONAL
+#    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
+#    FOLDER       [name]                     OPTIONAL
+#    SKIP_INSTALL                            OPTIONAL (visit only)
+#
+# Modifications:
+#
+##############################################################################
+
+macro(visit_add_executable)
+    set(options SKIP_INSTALL)
+    set(singleValueArgs NAME OUTPUT_NAME FOLDER)
+    set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON FEATURES)
+
+    # parse the arguments
+    cmake_parse_arguments(vae
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Sanity checks
+    if(NOT vae_NAME)
+        message(FATAL_ERROR "visit_add_executable() must be called with argument NAME <name>")
+    endif()
+    if (NOT vae_SOURCES)
+        message(FATAL_ERROR "visit_add_executable(NAME ${vae_NAME} ...) called with no given sources.")
+    endif()
+
+    blt_add_executable(
+        NAME        ${vae_NAME}
+        SOURCES     ${vae_SOURCES}
+        HEADERS     ${vae_HEADERS}
+        INCLUDES    ${vae_INCLUDES}
+        DEFINES     ${vae_DEFINES}
+        DEPENDS_ON  ${vae_DEPENDS_ON}
+        OUTPUT_NAME ${vae_OUTPUT_NAME}
+        FOLDER      ${vae_FOLDER})
+
+    # currently not a part of blt_add_executable, and causes a CMake
+    # error if we call blt_add_executable(${ARGV})
+    if (vae_FEATURES)
+        target_compile_features(${vae_NAME} PRIVATE ${vae_FEATURES})
+    endif()
+
+    if(VISIT_EXE_LINKER_FLAGS)
+        target_link_options(${vae_NAME} PUBLIC ${VISIT_EXE_LINKER_FLAGS})
+    endif()
+	
+    if(NOT ${vae_SKIP_INSTALL})
+        VISIT_INSTALL_TARGETS(${vae_NAME})
+    endif()
+endmacro()
+
+##############################################################################
+# Adds a parallel executable target.
+# calls visit_add_executable
+# calls visit_patch_parallel_target to set all the parallel options for the
+# target
+#
+# See visit_add_executable for arguments.
+#
+##############################################################################
+
+macro(visit_add_parallel_executable)
+    visit_add_executable(${ARGV})
+    cmake_parse_arguments(vape "" "NAME" "" ${ARGN})
+    visit_patch_parallel_target(NAME ${vape_NAME})
+endmacro()
 

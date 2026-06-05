@@ -43,21 +43,21 @@
 #
 #****************************************************************************
 
-MACRO(VISIT_TOOLS_ADD_FOLDER type)
-    IF(${ARGC} GREATER 1)
-        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER tools/${type})
-    ELSE(${ARGC} GREATER 1)
-        SET_TARGET_PROPERTIES(${type} PROPERTIES FOLDER tools/${type})
-    ENDIF(${ARGC} GREATER 1)
-ENDMACRO(VISIT_TOOLS_ADD_FOLDER)
-
-ADD_SUBDIRECTORY(data)
-
-IF(NOT (VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY))
-    ADD_SUBDIRECTORY(dev)
-    if(VISIT_ENABLE_EXAMPLES)
-        ADD_SUBDIRECTORY(examples)
+macro(VISIT_TOOLS_ADD_FOLDER type)
+    if(${ARGC} GREATER 1)
+        set_target_properties(${ARGN} PROPERTIES FOLDER tools/${type})
+    else()
+        set_target_properties(${type} PROPERTIES FOLDER tools/${type})
     endif()
-    ADD_SUBDIRECTORY(fx)
-    ADD_SUBDIRECTORY(third_party)
-ENDIF()
+endmacro()
+
+add_subdirectory(data)
+
+if(NOT (VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY))
+    add_subdirectory(dev)
+    if(VISIT_ENABLE_EXAMPLES)
+        add_subdirectory(examples)
+    endif()
+    add_subdirectory(fx)
+    add_subdirectory(third_party)
+endif()

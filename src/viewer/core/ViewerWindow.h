@@ -9,6 +9,7 @@
 #ifndef VIEWER_WINDOW_H
 #define VIEWER_WINDOW_H
 #include <viewercore_exports.h>
+#include <visit-config.h> // for HAVE_OSPRAY
 #include <ViewerBase.h>
 #include <avtActor.h>
 #include <avtDataset.h>
