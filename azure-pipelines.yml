@@ -143,10 +143,10 @@ stages:
            git lfs pull --include "**/silo*.tar.xz"
            git lfs pull --include "**/blueprint*.tar.xz"
            cd ../
-           git lfs pull  --include test/baseline/databases/silo/**
-           git lfs pull  --include test/baseline/databases/blueprint/**
-           git lfs pull  --include test/baseline/databases/blueprint_export/**
-           git lfs pull  --include test/baseline/hybrid/ddf/**
+           git lfs pull  --include="test/baseline/databases/silo/**"
+           git lfs pull  --include="test/baseline/databases/blueprint/**"
+           git lfs pull  --include="test/baseline/databases/blueprint_export/**"
+           git lfs pull  --include="test/baseline/hybrid/ddf/**"
            cd build/testdata/
            for f in ../../data/silo*.tar.xz ../../data/blueprint*.tar.xz; do
              tar xvf "$f"
