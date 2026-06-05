@@ -728,7 +728,7 @@ avtPixieFileFormat::PartitionDims()
         globalExtents[4] = 0;
         globalExtents[5] = it->second.dims[2] - 1;
         extTran->SetWholeExtent(globalExtents);
-        if (it->second.hasCoords)
+        if (it->second.hasCoords || it->second.isCoord)
             extTran->PieceToExtent();
         else
             extTran->PieceToExtentByPoints();;
@@ -742,7 +742,7 @@ avtPixieFileFormat::PartitionDims()
         it->second.count[2] = extents[5] - extents[4] + 1;
 // redo without ghost to get the strict bounds
         extTran->SetGhostLevel(0);
-        if (it->second.hasCoords)
+        if (it->second.hasCoords || it->second.isCoord)
             extTran->PieceToExtent();
         else
             extTran->PieceToExtentByPoints();
