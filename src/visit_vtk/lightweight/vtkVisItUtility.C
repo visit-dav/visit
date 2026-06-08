@@ -646,8 +646,8 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
         // it is usually because an intersection was found but for various
         // reasons the first reported cellId is discarded.  It is expected a
         // valid cellId should be found here. There has been user data with
-        // very long thin hexes with tiny spatial extetents which confounds
-        // the vtkCell::EvaluationPosisition method used above, so this next
+        // very long thin hexes with tiny spatial extents which confounds
+        // the vtkCell::EvaluatePosition method used above, so this next
         // piece of logic is a last-ditch effort to find the intersected cell.
         //
         if (found == -1)
