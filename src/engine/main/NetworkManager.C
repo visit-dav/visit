@@ -3109,6 +3109,10 @@ NetworkManager::RenderTiledInternal()
 
     int imageWidth, imageHeight; 
     viswin->GetSize(imageWidth, imageHeight);
+    int captureR0, captureC0, captureWidth, captureHeight;
+    viswin->GetCaptureRegion(captureR0, captureC0, captureWidth, captureHeight,
+        renderState.viewportedMode);
+    debug1 << "NetworkManager::RenderTiledInternal captureR0=" << captureR0 << ",captureC0=" << captureC0 << ",captureWidth=" << captureWidth << ",captureHeight=" << captureHeight << endl;
 
     //
     // Determine the tile size and number of tiles.
@@ -3130,12 +3134,15 @@ NetworkManager::RenderTiledInternal()
     debug1 << "NetworkManager::RenderTiledInternal: imageWidth=" << imageWidth << ",imageHeight=" << imageHeight << endl;
     debug1 << "NetworkManager::RenderTiledInternal: tileWidth=" << tileWidth << ",tileHheight=" << tileHeight << endl;
     debug1 << "NetworkManager::RenderTiledInternal: nxTiles=" << nxTiles << ",nyTiles=" << nyTiles << endl;
+    debug1 << "NetworkManager::RenderTiledInternal: renderState.viewportedMode=" << renderState.viewportedMode << endl;
 
     //
-    // If there is only a single tile then bypass the tiling.
+    // If there is only a single tile or we are in viewported mode then
+    // bypass the tiling.
     //
-    if (nxTiles == 1 && nyTiles == 1)
+    if ((nxTiles == 1 && nyTiles == 1) || renderState.viewportedMode)
     {
+        debug1 << "NetworkManager::RenderTiledInternal: Bypassing tiling." << endl;
         //
         // Render the tile.
         //
