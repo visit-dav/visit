@@ -91,9 +91,20 @@ For example, to install an x86_64 version of VisIt_ 3.2.2, use:
 This command will install the 3.2.2 version of VisIt_ into the ``/usr/local/visit`` directory.
 Note that when you enter the above command, the file ``visit3_2_2.linux-x86_64.tar.gz`` must be present in the current working directory.
 
-The ``visit-install`` script will prompt you to choose a network configuration.
+Starting with version 3.5.1 of VisIt_, the `1visit-install1` script will also accept the filename of the distribution tarball instead of `version` and `platform`.
+
+For example, to install from a 3.5.1 ubuntu24 distribution tarball (without renaming the file):
+
+.. code:: bash
+  
+  ./visit-install -f visit3_5_1.linux-x86_64-ubuntu24.tar.gz /usr/local/visit
+
+The `-f` option will parse the filename for `version` and `platform`.
+
+The ``visit-install`` script will prompt you to choose a network configuration, unless you pass your choice via the `-c` option.
 A network configuration is a set of VisIt_ preferences that provide information to enable VisIt_ to identify and connect to remote computers and run VisIt_ in client/server mode.
 VisIt_ includes network configuration files for several computing centers with VisIt_ users.
+The `-c` option also accepts `none` indicating no network configuration is desired.
 
 After running ``visit-install``, you can launch VisIt_ using ``bin/visit``.
 For example, if you installed to ``/usr/local/visit``, you can run using:

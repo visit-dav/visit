@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #-----------------------------------------------------------------------
 #
 # VISIT_INSTALL - Install a compressed tar file distribution of visit
@@ -8,13 +8,14 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install    [-c anl | arl | asu | awe | chombo | clemson | cscs |"
-#                         eth_zurich | llnl_open | llnl_open_rz |"
-#                         llnl_open_cz | llnl_closed | lrz | lsu | ncar |"
-#                         nersc | nics | ohio | ornl | princeton |"
-#                         sandia | umich | utah]"
-#                      [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
-#                      [-beta | -private] version platform directory"
+#    visit-install    [-c anl | arl | asu | awe | chombo | clemson | cscs |
+#                         eth_zurich | llnl_open | llnl_open_rz |
+#                         llnl_open_cz | llnl_closed | lrz | lsu | ncar |
+#                         nersc | nics | ohio | ornl | princeton |
+#                         sandia | umich | utah]
+#                      [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]
+#                      [-beta | -private] version platform directory
+#                      [-beta | -private] -f filename directory
 #
 #    The default is to install this version as the current version.
 #    The -beta flag makes this version the current beta version instead.
@@ -436,9 +437,14 @@
 #    Change logic for installing LLNL profiles to be more robust
 #    when adding or deleting profiles.
 #
+#    Kathleen Biagas, Tue June 9, 2026 
+#    Add an option to install directly from a distribution filename,
+#    deriving the version and platform from the filename.
+#    Made 'GZIP' the default compression, searching first for .tar.gz.
+#
 #-----------------------------------------------------------------------
 
-Compress=COMPRESS
+Compress=GZIP
 
 beta=false
 private=false
@@ -450,6 +456,7 @@ dir_permission=755
 file_permission=644
 dmg=false
 test=false
+install_file=""
 
 # Figure out the platform so if we're on a platform for which we need to
 # perform extra steps, we know it.
@@ -499,13 +506,18 @@ while [ "$option_found" = "true" ]; do
          test=true
          shift
          ;;
+      -f)
+         install_file=$2
+         shift
+         shift
+         ;;
       *)
          option_found=false
          ;;
    esac
 done
 
-if [ "$#" != "3" ]; then
+if [[ -z "$install_file"  &&  "$#" != "3" ]] || [[ -n "$install_file" && "$#" != "1" ]]; then
    echo "Usage: visit-install [-c anl | arl | asu | awe | chombo | clemson | cscs |"
    echo "                         eth_zurich | kaust | llnl_open | llnl_open_rz |"
    echo "                         llnl_open_cz | llnl_closed | lrz | lsu | ncar |"
@@ -513,6 +525,7 @@ if [ "$#" != "3" ]; then
    echo "                         sandia | umich | utah]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
    echo "                     [-beta | -private] version platform directory"
+   echo "                     [-beta | -private] -f filename directory"
    echo ""
    echo "This will install all of its files and subdirectories directly in"
    echo "the specified directory. (So use /usr/local/visit, not /usr/local)"
@@ -526,62 +539,107 @@ if [ "$beta" = "true" ]; then
    fi
 fi
 
-version=`echo $1 | tr "_" "."`
-base=`echo visit$version | tr "." "_"`
-platform="$2"
-dir="$3"
+if [ -z "$install_file" ]; then
+    version=`echo $1 | tr "_" "."`
+    base=`echo visit$version | tr "." "_"`
+    platform="$2"
+    dir="$3"
+    archive_source=$base.$platform.tar.gz
+    fname1=$base.$platform.tar.gz
+    if [ ! -e "$fname1" ]; then
+        Compress=COMPRESS
+        archive_source=$base.$platform.tar.Z
+        fname1=$base.$platform.tar.Z
+    fi
+    if [ ! -e "$fname1" ]; then
+        tarname=$base.$platform.tar
+        if [ -e $tarname ]; then
+            # Note: as far as I can tell, it would be fine to just
+            # accept the unzipped distribution.  But I decided that 
+            # would be a bigger change than I wanted to make.
+            # ** The purpose of the above comment is to communicate to
+            #    a developer that *was* inclined to modify this script to
+            #    accept unzipped distributions that I don't have any 
+            #    special knowledge that this is a bad idea ... I'm just
+            #    not brave enough right now to deal with any potential 
+            #    fallout. **
+            echo "It appears that you unzipped the distribution file yourself."
+            echo "That is not what this script expects."
+            echo "Please download the zipped distribution again."
+        else
+            ls -1 $base.*.tar.* > /dev/null 2>&1
+            if [ "$status" = "0" ]; then
+                echo "You specified your distribution as $platform."
+                echo "I could not locate that distribution."
+                num_dist=`ls -1 $base*.tar.* | wc -l`
+                if [ "$num_dist" = "1" ]; then
+                    echo "But I could find this distribution that you downloaded:"
+                else
+                    echo "But I could find these distributions that you downloaded:"
+                fi
+                ls -1 $base*.tar.* | sed 's/'$base'\./    /g' | sed 's/.tar.gz//g' | sed 's/.tar.Z//g'
+                if [ "$num_dist" = "1" ]; then
+                    echo "Either try specifying visit-install again with this "
+                    echo "distribution, or, if you think you specified the distribution"
+                    echo "name correctly, try downloading the file for $platform ($fname1)"
+                else
+                    echo "Either try specifying visit-install again with one of these "
+                    echo "distributions, or, if you think you specified the distribution"
+                    echo "name correctly, try downloading the file for $platform ($fname1)"
+                fi
+                echo ""
+            else
+                echo "Could not find file containing the distribution."
+                echo "(I was looking for file: $fname1)"
+            fi
+        fi
+        echo "Bailing out..."
+        exit 2
+    fi
+    fname2=$base.$platform.tar
+else
+    dir="$1"
+    install_base=`basename "$install_file"`
+    case "$install_base" in
+        visit*.tar.gz)
+            archive_root=${install_base%.tar.gz}
+            Compress=GZIP
+            ;;
+        visit*.tar.Z)
+            archive_root=${install_base%.tar.Z}
+            Compress=COMPRESS
+            ;;
+        *)
+            echo "Could not parse the distribution filename: $install_file"
+            echo "Expected a filename like visit3_5_0.linux-x86_64.tar.gz"
+            echo "Bailing out..."
+            exit 2
+            ;;
+    esac
 
-fname1=$base.$platform.tar.Z
-if [ ! -e $fname1 ]; then
-   Compress=GZIP
-   fname1=$base.$platform.tar.gz
-   if [ ! -e $fname1 ]; then
-      tarname=$base.$platform.tar
-      if [ -e $tarname ]; then
-          # Note: as far as I can tell, it would be fine to just
-          # accept the unzipped distribution.  But I decided that 
-          # would be a bigger change than I wanted to make.
-          # ** The purpose of the above comment is to communicate to
-          #    a developer that *was* inclined to modify this script to
-          #    accept unzipped distributions that I don't have any 
-          #    special knowledge that this is a bad idea ... I'm just
-          #    not brave enough right now to deal with any potential 
-          #    fallout. **
-          echo "It appears that you unzipped the distribution file yourself."
-          echo "That is not what this script expects."
-          echo "Please download the zipped distribution again."
-      else
-          ls -1 $base.*.tar.* > /dev/null 2>&1
-          if [ "$status" = "0" ]; then
-              echo "You specified your distribution as $platform."
-              echo "I could not locate that distribution."
-              num_dist=`ls -1 $base*.tar.* | wc -l`
-              if [ "$num_dist" = "1" ]; then
-                 echo "But I could find this distribution that you downloaded:"
-              else
-                 echo "But I could find these distributions that you downloaded:"
-              fi
-              ls -1 $base*.tar.* | sed 's/'$base'\./    /g' | sed 's/.tar.gz//g' | sed 's/.tar.Z//g'
-              if [ "$num_dist" = "1" ]; then
-                  echo "Either try specifying visit-install again with this "
-                  echo "distribution, or, if you think you specified the distribution"
-                  echo "name correctly, try downloading the file for $platform ($fname1)"
-              else
-                  echo "Either try specifying visit-install again with one of these "
-                  echo "distributions, or, if you think you specified the distribution"
-                  echo "name correctly, try downloading the file for $platform ($fname1)"
-              fi
-              echo ""
-          else
-              echo "Could not find file containing the distribution."
-              echo "(I was looking for file: $fname1)"
-          fi
-      fi
-      echo "Bailing out..."
-      exit 2
-   fi
+    archive_spec=${archive_root#visit}
+    version_token=${archive_spec%%.*}
+    platform=${archive_spec#*.}
+    if [ "$version_token" = "" ] || [ "$platform" = "$archive_spec" ] || [ "$platform" = "" ]; then
+        echo "Could not parse the distribution filename: $install_file"
+        echo "Expected a filename like visit3_5_0.linux-x86_64.tar.gz"
+        echo "Bailing out..."
+        exit 2
+    fi
+
+    if [ ! -e "$install_file" ]; then
+        echo "Could not find file containing the distribution."
+        echo "(I was looking for file: $install_file)"
+        echo "Bailing out..."
+        exit 2
+    fi
+
+    version=`echo "$version_token" | tr "_" "."`
+    base=visit$version_token
+    archive_source="$install_file"
+    fname1="$install_base"
+    fname2=$archive_root.tar
 fi
-fname2=$base.$platform.tar
 
 #
 # If the directory name is not an absolute path then make it one.
@@ -1010,14 +1068,14 @@ else
 fi
 rm -rf $dist
 mkdir $dist
-cp $fname1 $dist
+cp "$archive_source" "$dist"
 cd "$dist"
-if [ "$Compress" = "COMPRESS" ]; then
-   uncompress $fname1
+if [ "$Compress" = "GZIP" ]; then
+   gunzip "$fname1"
 else
-   gunzip $fname1
+   uncompress "$fname1"
 fi
-if [ ! -e $fname2 ]; then
+if [ ! -e "$fname2" ]; then
    echo ""
    echo "Unable to unzip $fname1.  The file appears to be corrupted."
    echo "This is often the case when a download has not yet completed."
@@ -1025,8 +1083,8 @@ if [ ! -e $fname2 ]; then
    echo ""
    exit 6
 fi
-tar xvbf 20 $fname2
-rm -f $fname2
+tar xvbf 20 "$fname2"
+rm -f "$fname2"
 cd ..
 
 distributiondir=distribution/`ls distribution`
