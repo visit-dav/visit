@@ -11,7 +11,9 @@ The `Node` supports hierarchical construction.
 Here is a simple example of using Conduit in Python.
 
 .. literalinclude:: data_examples/node_example.py
-      :lines: 4-12
+      :language: python
+      :start-after: begin simple example sphinx literal include tag
+      :end-before: end simple example sphinx literal include tag
 
 Here is the output.
 
@@ -24,7 +26,9 @@ Blueprint can be used to check if a Conduit Node conforms to the Blueprint speci
 Here is a simple example writing a Blueprint uniform mesh in Python.
 
 .. literalinclude:: data_examples/blueprint_example.py
-      :lines: 4-45
+      :language: python
+      :start-after: begin blueprint example sphinx leteral include tag
+      :end-before: end blueprint example sphinx leteral include tag
 
 Here is the output.
 

@@ -26,7 +26,9 @@ In this example, the values on each row are separated by commas.
 Here are the first 10 lines of an example of a file representing curves.
 
 .. literalinclude:: data_examples/curves.csv
-   :lines: 1-10
+   :language: none
+   :start-at: angle,sine,cosine
+   :end-at: 0,0.642788,0.766044
 
 Here is the Python script that created the file.
 
@@ -60,7 +62,9 @@ Here are the first 10 lines of an example of a file representing curves where th
 In this example, the values on each row are separated by commas.
 
 .. literalinclude:: data_examples/curves_nox.csv
-   :lines: 1-10
+   :language: none
+   :start-at: inverse,sqrt,quadratic
+   :end-at: 11.1111,28.2843,0.64
 
 Here is the Python script that created the file.
 
@@ -90,7 +94,9 @@ In this example, the values on each row are separated by spaces.
 Here are the first 10 lines of an example of a file representing 3D points.
 
 .. literalinclude:: data_examples/points.txt
-   :lines: 1-10
+   :language: none
+   :start-at: x y z velx vely velz temp
+   :end-at: -0.665597 0.45823 0.808081 0.808081 0.928962 1.04691 0.419192
 
 Here is the Python script that created the file.
 
