@@ -176,10 +176,11 @@ stages:
            fi
         displayName: 'Run Tests'
 
-      - task: CopyFiles@2
+      - task: PublishPipelineArtifact@1
         inputs:
-          contents: 'build/test/output/html/**'
-          targetFolder: $(Build.ArtifactStagingDirectory)
+          targetPath: 'build/test/output/html'
+          artifact: 'VisIt_Test_Outputs'
+          publishLocation: 'pipeline'
         condition: succeededOrFailed()
 
       - script: |
@@ -191,16 +192,11 @@ stages:
            make docs
         displayName: 'Docs'
 
-      - task: CopyFiles@2
+      - task: PublishPipelineArtifact@1
         inputs:
-          contents: 'build/resources/help/en_US/manual/**'
-          targetFolder: $(Build.ArtifactStagingDirectory)
-        condition: succeededOrFailed()
-
-      - task: PublishBuildArtifacts@1
-        inputs:
-          pathToPublish: $(Build.ArtifactStagingDirectory)
-          artifactName: VisIt_Test_Outputs
+          targetPath: 'build/resources/help/en_US/manual'
+          artifact: 'VisIt_Manual'
+          publishLocation: 'pipeline'
         condition: succeededOrFailed()
 
       # - script: |
