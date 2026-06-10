@@ -216,8 +216,8 @@ function build_gdal
     C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
     set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
-                CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API" \
-                CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS -DH5_USE_16_API" \
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" \
+                CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 --prefix="$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH" \
                 --with-libtiff=internal --with-gif=internal \
                 --with-png=internal --with-jpeg=internal \
@@ -258,15 +258,11 @@ function build_gdal
         #
         info "Fixing install_name of dynamic libraries for GDAL . . ."
 
-        cp .libs/libgdal.2.2.4.${SO_EXT} libgdal.${SO_EXT}
         INSTALLNAMEPATH="$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH/lib"
 
         install_name_tool -id \
                           $INSTALLNAMEPATH/libgdal.${SO_EXT} \
-                          libgdal.${SO_EXT}
-        rm "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.${SO_EXT}"
-        cp libgdal.${SO_EXT} \
-           "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.${SO_EXT}"
+                          $INSTALLNAMEPATH/libgdal.${SO_EXT}
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
