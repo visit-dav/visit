@@ -27,8 +27,8 @@ Here is a simple example writing a Blueprint uniform mesh in Python.
 
 .. literalinclude:: data_examples/blueprint_example.py
       :language: python
-      :start-after: begin blueprint example sphinx leteral include tag
-      :end-before: end blueprint example sphinx leteral include tag
+      :start-after: begin blueprint example sphinx literal include tag
+      :end-before: end blueprint example sphinx literal include tag
 
 Here is the output.
 

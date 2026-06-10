@@ -1,7 +1,7 @@
 import sys
 sys.path.append("/usr/gapps/conduit/software/ascent/0.7.1/toss_3_x86_64_ib/openmp/gnu/conduit-install/lib/python3.7/site-packages")
 
-# begin blueprint example sphinx leteral include tag
+# begin blueprint example sphinx literal include tag
 import conduit
 import conduit.relay.io
 import conduit.blueprint.mesh
@@ -44,4 +44,4 @@ if not conduit.blueprint.mesh.verify(mesh, verify_info):
 print(mesh)
 
 conduit.relay.io.blueprint.write_mesh(mesh, "blueprint_example", "json")
-# end blueprint example sphinx leteral include tag
+# end blueprint example sphinx literal include tag
