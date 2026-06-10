@@ -520,7 +520,7 @@ The following lines represent the time associated with this file.
 .. literalinclude:: data_examples/extra_metadata.vtk
    :language: none
    :start-at: TIME 1 1 double
-   :end-at: VisItExpressions 1 2 string
+   :end-before: VisItExpressions 1 2 string
 
 The following lines represent the expressions associated with this file.
 

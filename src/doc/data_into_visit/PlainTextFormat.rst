@@ -28,7 +28,7 @@ Here are the first 10 lines of an example of a file representing curves.
 .. literalinclude:: data_examples/curves.csv
    :language: none
    :start-at: angle,sine,cosine
-   :end-at: 0,0.642788,0.766044
+   :end-at: 40,0.642788,0.766044
 
 Here is the Python script that created the file.
 
