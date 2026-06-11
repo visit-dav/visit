@@ -1,5 +1,7 @@
 #!/bin/sh
 
+dashboardDir="/usr/WS1/visit/dashboard/dashboard"
+
 testEmail=""
 
 #
@@ -84,8 +86,8 @@ fi
 # Determine the revision number of the last pass.
 #
 lastpass=0
-if test -e src/tools/dev/scripts/lastpass_$host ; then
-   lastpass=`cat src/tools/dev/scripts/lastpass_$host`
+if test -e $dashboardDir/lastpass_$host ; then
+   lastpass=`cat $dashboardDir/lastpass_$host`
 fi
 
 #
