@@ -617,4 +617,87 @@ Test("ops_indexselect39")
 DeleteAllPlots()
 
 
+# ----------------------------------------------------------------------------
+#  Test IndexSelect on an unstructured line mesh, treating the cells as a
+#  1D logical index space (issue #18422).
+#
+#  This is a value-based test (no baseline image). It writes a small line
+#  mesh, applies IndexSelect in 1D mode, and verifies the resulting zone and
+#  node counts. It exercises the VTK_UNSTRUCTURED_GRID / VTK_POLY_DATA path
+#  added for #18422, including point remapping so unused points are dropped.
+#
+#  Programmer: Shistata Subedi
+#  Date:       June 2026
+# ----------------------------------------------------------------------------
+TestSection("IndexSelect on unstructured line mesh (#18422)")
+
+import os
+
+DeleteAllPlots()
+
+# Write a small unstructured line mesh: 11 points, 10 line cells in a row.
+ug_dir = out_path("current", "operators")
+if not os.path.isdir(ug_dir):
+    os.makedirs(ug_dir)
+ug_vtk = os.path.join(ug_dir, "indexselect_lines.vtk")
+ug_pts = "\n".join("%d 0 0" % i for i in range(11))
+ug_cells = "\n".join("2 %d %d" % (i, i + 1) for i in range(10))
+ug_cellids = "\n".join(str(i) for i in range(10))
+with open(ug_vtk, "w") as ug_f:
+    ug_f.write("# vtk DataFile Version 3.0\n")
+    ug_f.write("Ten line cells for IndexSelect test\n")
+    ug_f.write("ASCII\n")
+    ug_f.write("DATASET UNSTRUCTURED_GRID\n")
+    ug_f.write("POINTS 11 float\n" + ug_pts + "\n")
+    ug_f.write("CELLS 10 30\n" + ug_cells + "\n")
+    ug_f.write("CELL_TYPES 10\n" + "\n".join(["3"] * 10) + "\n")
+    ug_f.write("CELL_DATA 10\n")
+    ug_f.write("SCALARS cell_id int 1\nLOOKUP_TABLE default\n" + ug_cellids + "\n")
+
+OpenDatabase(ug_vtk)
+AddPlot("Pseudocolor", "cell_id")
+DrawPlots()
+
+# Baseline counts for the full line mesh.
+Query("NumZones")
+TestValueEQ("indexselect_ugrid_base_zones", GetQueryOutputValue(), 10)
+Query("NumNodes")
+TestValueEQ("indexselect_ugrid_base_nodes", GetQueryOutputValue(), 11)
+
+# Contiguous 1D selection of cells [xMin, xMax): cells 0..3 -> 4 cells, 5 nodes.
+isel1d = IndexSelectAttributes()
+isel1d.dim = 0  # 0 -> 1D
+isel1d.xMin = 0
+isel1d.xMax = 4
+isel1d.xIncr = 1
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1d)
+DrawPlots()
+
+Query("NumZones")
+TestValueEQ("indexselect_ugrid_contig_zones", GetQueryOutputValue(), 4)
+Query("NumNodes")
+TestValueEQ("indexselect_ugrid_contig_nodes", GetQueryOutputValue(), 5)
+
+RemoveLastOperator()
+
+# Strided 1D selection over all cells (xMax = -1): every 2nd cell -> 0,2,4,6,8.
+# 5 cells, and point remapping keeps only the 10 referenced nodes (not all 11).
+isel1ds = IndexSelectAttributes()
+isel1ds.dim = 0
+isel1ds.xMin = 0
+isel1ds.xMax = -1
+isel1ds.xIncr = 2
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1ds)
+DrawPlots()
+
+Query("NumZones")
+TestValueEQ("indexselect_ugrid_stride_zones", GetQueryOutputValue(), 5)
+Query("NumNodes")
+TestValueEQ("indexselect_ugrid_stride_nodes", GetQueryOutputValue(), 10)
+
+DeleteAllPlots()
+
+
 Exit()
