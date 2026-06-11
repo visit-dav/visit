@@ -6,7 +6,7 @@
 #define VTK_VISIT_CLIPPER_H
 #include <visit_vtk_exports.h>
 
-#include "vtkUnstructuredGridAlgorithm.h"
+#include <vtkUnstructuredGridAlgorithm.h>
 
 class vtkImplicitFunction;
 class vtkUnstructuredGrid;
@@ -73,7 +73,7 @@ class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
         KEEP_WHOLE_CELL,
     };
 
-    vtkTypeMacro(vtkVisItClipper,vtkUnstructuredGridAlgorithm);
+    vtkTypeMacro(vtkVisItClipper,vtkUnstructuredGridAlgorithm)
     void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkVisItClipper *New();
@@ -94,7 +94,7 @@ class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
 
     void SetCellList(const vtkIdType *, vtkIdType);
     void SetPrecomputeClipScalars(const bool v);
-    virtual void ModifyClip(vtkDataSet *, vtkIdType) {; };
+    virtual void ModifyClip(vtkDataSet *, vtkIdType) {; }
 
     struct FilterState
     {

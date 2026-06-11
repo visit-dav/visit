@@ -6,7 +6,7 @@
 //                           vtkDataSetFromVolume.C                          //
 // ************************************************************************* //
 
-#include <vtkDataSetFromVolume.h>
+#include "vtkDataSetFromVolume.h"
 
 #include <vtkCellData.h>
 #include <vtkPointData.h>
@@ -24,8 +24,8 @@ vtkDataSetFromVolume::PointList::PointList()
  
     list = new PointEntry*[listSize];
     list[0] = new PointEntry[pointsPerList];
-    for (int i = 1 ; i < listSize ; i++)
-        list[i] = NULL;
+    for (size_t i = 1 ; i < listSize ; i++)
+        list[i] = nullptr;
  
     currentList = 0;
     currentPoint = 0;
@@ -34,9 +34,9 @@ vtkDataSetFromVolume::PointList::PointList()
  
 vtkDataSetFromVolume::PointList::~PointList()
 {
-    for (int i = 0 ; i < listSize ; i++)
+    for (size_t i = 0 ; i < listSize ; i++)
     {
-        if (list[i] != NULL)
+        if (list[i] != nullptr)
             delete [] list[i];
         else
             break;
@@ -48,12 +48,12 @@ vtkDataSetFromVolume::PointList::~PointList()
 void
 vtkDataSetFromVolume::PointList::Clear()
 {
-    for (int i = 0 ; i < listSize ; i++)
+    for (size_t i = 0 ; i < listSize ; i++)
     {
-        if (list[i] != NULL)
+        if (list[i] != nullptr)
         {
             delete [] list[i];
-            list[i] = NULL;
+            list[i] = nullptr;
         }
         else
             break;
@@ -65,33 +65,33 @@ vtkDataSetFromVolume::PointList::Clear()
 }
 
 
-int
-vtkDataSetFromVolume::PointList::GetList(vtkIdType listId,
+size_t
+vtkDataSetFromVolume::PointList::GetList(size_t listId,
                                          const PointEntry *&outlist) const
 {
     if (listId > currentList)
     {
-        outlist = NULL;
+        outlist = nullptr;
         return 0;
     }
  
     outlist = list[listId];
-    return static_cast<int>((listId == currentList ? currentPoint : pointsPerList));
+    return (listId == currentList ? currentPoint : pointsPerList);
 }
  
  
-vtkIdType
+size_t
 vtkDataSetFromVolume::PointList::GetNumberOfLists(void) const
 {
     return currentList+1;
 }
  
  
-vtkIdType
+size_t
 vtkDataSetFromVolume::PointList::GetTotalNumberOfPoints(void) const
 {
-    vtkIdType numFullLists = currentList;  // actually currentList-1+1
-    vtkIdType numExtra = currentPoint;  // again, currentPoint-1+1
+    size_t numFullLists = currentList;  // actually currentList-1+1
+    size_t numExtra = currentPoint;  // again, currentPoint-1+1
  
     return numFullLists*pointsPerList + numExtra;
 }
@@ -101,7 +101,7 @@ vtkDataSetFromVolume::PointList::GetTotalNumberOfPoints(void) const
 //    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
 //    Fixed test for resizing list.  Initialized new entries.
 //
-vtkIdType
+size_t
 vtkDataSetFromVolume::PointList::AddPoint(vtkIdType pt0, vtkIdType pt1, float percent)
 {
     if (currentPoint >= pointsPerList)
@@ -109,10 +109,10 @@ vtkDataSetFromVolume::PointList::AddPoint(vtkIdType pt0, vtkIdType pt1, float pe
         if ((currentList+1) >= listSize)
         {
             PointEntry **tmpList = new PointEntry*[2*listSize];
-            for (vtkIdType i = 0 ; i < listSize ; i++)
+            for (size_t i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
-                tmpList[i] = NULL;
+            for (size_t i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = nullptr;
 
             listSize *= 2;
             delete [] list;
@@ -138,7 +138,7 @@ vtkDataSetFromVolume::EdgeHashEntry::EdgeHashEntry()
     id1  = 0;
     id2  = 0;
     ptId = 0;
-    next = NULL;
+    next = nullptr;
 }
  
  
@@ -148,7 +148,7 @@ vtkDataSetFromVolume::EdgeHashEntry::SetInfo(vtkIdType i1, vtkIdType i2, vtkIdTy
     id1  = i1;
     id2  = i2;
     ptId = pId;
-    next = NULL;
+    next = nullptr;
 }
 
 
@@ -186,13 +186,13 @@ vtkDataSetFromVolume::EdgeHashEntryMemoryManager
 }
 
 
-vtkDataSetFromVolume::EdgeHashTable::EdgeHashTable(int nh, PointList &p)
+vtkDataSetFromVolume::EdgeHashTable::EdgeHashTable(size_t nh, PointList &p)
     : pointlist(p)
 {
     nHashes = nh;
     hashes = new EdgeHashEntry*[nHashes];
-    for (int i = 0 ; i < nHashes ; i++)
-        hashes[i] = NULL;
+    for (size_t i = 0 ; i < nHashes ; i++)
+        hashes[i] = nullptr;
 }
  
  
@@ -207,15 +207,15 @@ vtkDataSetFromVolume::EdgeHashTable::Clear()
 {
     delete [] hashes;
     hashes = new EdgeHashEntry*[nHashes];
-    for (int i = 0 ; i < nHashes ; i++)
-        hashes[i] = NULL;
+    for (size_t i = 0 ; i < nHashes ; i++)
+        hashes[i] = nullptr;
 }
 
 
 vtkIdType
 vtkDataSetFromVolume::EdgeHashTable::GetKey(vtkIdType p1, vtkIdType p2)
 {
-    vtkIdType rv = ((p1*18457 + p2*234749) % nHashes);
+    vtkIdType rv = ((p1*18457 + p2*234749) % static_cast<vtkIdType>(nHashes));
  
     // In case of overflows and modulo with negative numbers.
     if (rv < 0)
@@ -249,7 +249,7 @@ vtkDataSetFromVolume::EdgeHashTable::AddPoint(vtkIdType ap1, vtkIdType ap2, floa
     // See if we have any matches in the current hashes.
     //
     EdgeHashEntry *cur = hashes[key];
-    while (cur != NULL)
+    while (cur != nullptr)
     {
         if (cur->IsMatch(p1, p2))
         {
@@ -266,7 +266,7 @@ vtkDataSetFromVolume::EdgeHashTable::AddPoint(vtkIdType ap1, vtkIdType ap2, floa
     //
     EdgeHashEntry *new_one = emm.GetFreeEdgeHashEntry();
  
-    vtkIdType newPt = pointlist.AddPoint(p1, p2, percent);
+    vtkIdType newPt = static_cast<vtkIdType>(pointlist.AddPoint(p1, p2, percent));
     new_one->SetInfo(p1, p2, newPt);
     new_one->SetNext(hashes[key]);
     hashes[key] = new_one;
@@ -275,12 +275,12 @@ vtkDataSetFromVolume::EdgeHashTable::AddPoint(vtkIdType ap1, vtkIdType ap2, floa
 }
 
 
-vtkDataSetFromVolume::vtkDataSetFromVolume(vtkIdType ptSizeGuess)
-   : pt_list(), edges(static_cast<int>(ptSizeGuess), pt_list), numPrevPts(0)
+vtkDataSetFromVolume::vtkDataSetFromVolume(size_t ptSizeGuess)
+   : pt_list(), edges(ptSizeGuess, pt_list), numPrevPts(0)
 {
 }
       
-vtkDataSetFromVolume::vtkDataSetFromVolume(vtkIdType nPts, vtkIdType ptSizeGuess)
-   : pt_list(), edges(static_cast<int>(ptSizeGuess), pt_list), numPrevPts(nPts)
+vtkDataSetFromVolume::vtkDataSetFromVolume(vtkIdType nPts, size_t ptSizeGuess)
+   : pt_list(), edges(ptSizeGuess, pt_list), numPrevPts(nPts)
 {
 }
