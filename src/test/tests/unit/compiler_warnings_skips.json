@@ -37,11 +37,6 @@
             "extra ';'": 0
         }
     }, 
-    "visit_vtk/full/vtkVisItSplitter.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "visit_vtk/full/vtkVisItContourFilter.C": {
         "0": {
             "extra ';'": 0
@@ -138,11 +133,6 @@
         }
     }, 
     "databases/Image/vtkStimulateReader.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "visit_vtk/full/vtkVisItSplitter.h": {
         "0": {
             "extra ';'": 0
         }
