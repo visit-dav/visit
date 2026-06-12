@@ -32,3 +32,4 @@ DeleteAllPlots()
 OpenDatabase("mass_per_slice.ultra")
 AddPlot("Curve", "mass_per_slice")
 DrawPlots()
+# end of script sphinx literal include tag
