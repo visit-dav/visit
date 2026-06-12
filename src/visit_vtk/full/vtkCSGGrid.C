@@ -17,7 +17,6 @@
 #include <vtkExtentTranslator.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
-#include <vtkImplicitBoolean.h>
 #include <vtkGenericCell.h>
 #include <vtkImplicitBoolean.h>
 #include <vtkImplicitFunctionCollection.h>
@@ -38,7 +37,6 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <vtkVisItClipper.h>
-#include <vtkVisItSplitter.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
