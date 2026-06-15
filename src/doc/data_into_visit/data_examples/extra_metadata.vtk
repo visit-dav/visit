@@ -34,7 +34,7 @@ FIELD FieldData 1
 avtGhostZones 1 12 unsigned_char
 1 0 0 1
 1 0 0 1
-1 0 0 1
+1 1 1 1
 
 POINT_DATA 20
 SCALARS u float 1
