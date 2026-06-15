@@ -62,6 +62,10 @@ avtView3D::avtView3D()
 //    I added windowValid to support adding a multi resolution display
 //    capability.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tileZoom to track the change to the image zoom for tiled
+//    rendering.
+//
 // ****************************************************************************
 
 avtView3D &
@@ -96,6 +100,7 @@ avtView3D::operator=(const avtView3D &vi)
     shear[0]            = vi.shear[0];
     shear[1]            = vi.shear[1];
     shear[2]            = vi.shear[2];
+    tileZoom            = vi.tileZoom;
     windowValid         = vi.windowValid;
 
     return *this;
@@ -129,6 +134,10 @@ avtView3D::operator=(const avtView3D &vi)
 //    Eric Brugger, Wed Jan  8 16:46:42 PST 2014
 //    I added windowValid to support adding a multi resolution display
 //    capability.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tileZoom to track the change to the image zoom for tiled
+//    rendering.
 //
 // ****************************************************************************
 
@@ -180,6 +189,7 @@ avtView3D::operator==(const avtView3D &vi)
         eyeAngle != vi.eyeAngle ||
         centerOfRotationSet != vi.centerOfRotationSet ||
         axis3DScaleFlag != vi.axis3DScaleFlag ||
+	tileZoom != vi.tileZoom ||
         windowValid != vi.windowValid)
     {
         return false;
@@ -222,6 +232,10 @@ avtView3D::operator==(const avtView3D &vi)
 //    I added windowValid to support adding a multi resolution display
 //    capability.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tileZoom to track the change to the image zoom for tiled
+//    rendering.
+//
 // ****************************************************************************
 
 void
@@ -256,6 +270,7 @@ avtView3D::SetToDefault()
     shear[0]            = 0.;
     shear[1]            = 0.;
     shear[2]            = 1.;
+    tileZoom            = 1.;
     windowValid         = false;
 }
 
@@ -412,6 +427,10 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 //    I added windowValid to support adding a multi resolution display
 //    capability.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tileZoom to track the change to the image zoom for tiled
+//    rendering.
+//
 // ****************************************************************************
 
 void
@@ -438,6 +457,7 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
     eyeAngle = view3DAtts->GetEyeAngle();
     centerOfRotationSet = view3DAtts->GetCenterOfRotationSet();
     axis3DScaleFlag = view3DAtts->GetAxis3DScaleFlag();
+    tileZoom = 1.;
     windowValid = view3DAtts->GetWindowValid();
 }
 

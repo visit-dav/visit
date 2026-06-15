@@ -3197,6 +3197,8 @@ NetworkManager::RenderTiledInternal()
     view3DTile.imagePan[1] = yPanInit;
     double foregroundPan[2];
     foregroundPan[1] = yPanInit2;
+    view3DTile.tileZoom = zoomTile;
+    viswin->SetView3D(view3DTile);
 
     View3DAttributes view3DAtts = renderState.windowInfo->windowAttributes.GetView3D();
     int size[2] = {tileWidth, tileHeight};

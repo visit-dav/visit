@@ -992,6 +992,10 @@ VisWinPlots::Stop3DMode(void)
 //    configure window for the sorting algorithm. in parallel it's
 //    handled by the NetworkManager in serial happens here.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tileZoom to account for the change to the image zoom for tiled
+//    rendering.
+//
 // ****************************************************************************
 
 void
@@ -1027,14 +1031,15 @@ VisWinPlots::UpdateView()
     // by GetCanvas routine.
     double distance = 0.003;
     double pos[3], foc[3];
-    double imageZoom;
+    double imageZoom, tileZoom;
     cam->GetPosition(pos);
     cam->GetFocalPoint(foc);
     imageZoom = cam->GetFocalDisk();
+    tileZoom = (*mediator).GetView3D().tileZoom;
     double projection[3];
-    projection[0] = distance * (pos[0] - foc[0]) / imageZoom;
-    projection[1] = distance * (pos[1] - foc[1]) / imageZoom;
-    projection[2] = distance * (pos[2] - foc[2]) / imageZoom;
+    projection[0] = distance * (pos[0] - foc[0]) / (imageZoom / tileZoom);
+    projection[1] = distance * (pos[1] - foc[1]) / (imageZoom / tileZoom);
+    projection[2] = distance * (pos[2] - foc[2]) / (imageZoom / tileZoom);
 
     ShiftPlots(projection);
     UpdateScaleFactor();
