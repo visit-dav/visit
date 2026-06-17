@@ -1,0 +1,153 @@
+name: Windows Monthly TPL CMake build
+
+on:
+  schedule:
+    - cron: '0 0 * * 22'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    defaults:
+      run:
+        shell: pwsh
+
+    env:
+      VISIT_TP_SOURCE_DIR: scripts/TPBuildsCMake
+      VISIT_TP_BUILD_DIR: build-thirdparty
+      VISIT_TP_INSTALL_ROOT: ${{ github.workspace }}\visit-thirdparty
+
+    steps:
+    - name: Disable Git autocrlf
+      run: |
+        git config --global core.autocrlf false
+        git config --global --get core.autocrlf
+
+    - name: Checkout code
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install MS-MPI
+      uses: mpi4py/setup-mpi@v1
+      with:
+        mpi: msmpi
+
+    - name: Ensure required tools are available
+      run: |
+        $ErrorActionPreference = "Stop"
+
+        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        if (-not (Test-Path $vswhere)) {
+          throw "vswhere.exe was not found on this runner."
+        }
+
+        $vsInstallPath = & $vswhere -version "[17.0,18.0)" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+        if (-not $vsInstallPath) {
+          throw "Visual Studio 2022 with C++ build tools was not found on this runner."
+        }
+
+        if (-not (Get-Command perl -ErrorAction SilentlyContinue)) {
+          choco install strawberryperl --no-progress -y
+        }
+
+        if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
+          choco install ninja --no-progress -y
+        }
+
+        if (-not (Get-Command cmake -ErrorAction SilentlyContinue)) {
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' --no-progress -y
+        }
+
+        if (-not (Get-Command nasm -ErrorAction SilentlyContinue)) {
+          choco install nasm --no-progress -y
+        }
+
+        $nasmCandidates = @()
+
+        $nasmCommand = Get-Command nasm -ErrorAction SilentlyContinue
+        if ($nasmCommand) {
+          $nasmCandidates += (Split-Path -Parent $nasmCommand.Source)
+        }
+
+        if ($env:ChocolateyInstall) {
+          $nasmCandidates += (Join-Path $env:ChocolateyInstall "bin")
+        }
+
+        $nasmCandidates += @(
+          (Join-Path $env:ProgramFiles "NASM"),
+          (Join-Path ${env:ProgramFiles(x86)} "NASM")
+        )
+
+        $nasmBin = $nasmCandidates |
+          Select-Object -Unique |
+          Where-Object { $_ -and (Test-Path (Join-Path $_ "nasm.exe")) } |
+          Select-Object -First 1
+
+        if (-not $nasmBin) {
+          throw "nasm.exe was not found after installation."
+        }
+
+        $msmpiBin = Join-Path $env:ProgramFiles "Microsoft MPI\Bin"
+        $msmpiInclude = Join-Path ${env:ProgramFiles(x86)} "Microsoft SDKs\MPI\Include"
+        $msmpiLib64 = Join-Path ${env:ProgramFiles(x86)} "Microsoft SDKs\MPI\Lib\x64"
+
+        if (
+          -not (Test-Path (Join-Path $msmpiBin "mpiexec.exe")) -or
+          -not (Test-Path (Join-Path $msmpiInclude "mpi.h")) -or
+          -not (Test-Path (Join-Path $msmpiLib64 "msmpi.lib"))
+        ) {
+          throw "MS-MPI runtime and SDK were not found after setup-mpi installation."
+        }
+
+        Add-Content -Path $env:GITHUB_PATH -Value $nasmBin
+        Add-Content -Path $env:GITHUB_PATH -Value $msmpiBin
+        Add-Content -Path $env:GITHUB_ENV -Value "NASM_BIN=$nasmBin"
+        Add-Content -Path $env:GITHUB_ENV -Value "MSMPI_BIN=$msmpiBin"
+        Add-Content -Path $env:GITHUB_ENV -Value "MSMPI_INC=$msmpiInclude"
+        Add-Content -Path $env:GITHUB_ENV -Value "MSMPI_LIB64=$msmpiLib64"
+        $env:Path = "$nasmBin;$msmpiBin;$env:Path"
+        $env:NASM_BIN = $nasmBin
+        $env:MSMPI_BIN = $msmpiBin
+        $env:MSMPI_INC = $msmpiInclude
+        $env:MSMPI_LIB64 = $msmpiLib64
+
+        $cmakeVersionLine = (& cmake --version | Select-Object -First 1)
+        if ($cmakeVersionLine -notmatch '^cmake version (\d+)\.(\d+)\.(\d+)') {
+          throw "Unable to parse CMake version from: $cmakeVersionLine"
+        }
+
+        if ([int]$Matches[1] -lt 3) {
+          throw "CMake 3.x or newer is required. Found: $cmakeVersionLine"
+        }
+
+        perl -v | Select-Object -First 2
+        ninja --version
+        cmake --version
+        nasm -v
+        & (Join-Path $msmpiBin "mpiexec.exe") -help | Select-Object -First 1
+        Write-Host "NASM bin: $nasmBin"
+        Write-Host "MS-MPI include: $msmpiInclude"
+        Write-Host "MS-MPI lib64: $msmpiLib64"
+        Write-Host "Visual Studio installation: $vsInstallPath"
+
+    - name: Configure third-party build
+      run: |
+        $ErrorActionPreference = "Stop"
+
+        $cmakeArgs = @(
+          "-G", "Visual Studio 17 2022",
+          "-A", "x64",
+          "-T", "host=x64",
+          "-S", $env:VISIT_TP_SOURCE_DIR,
+          "-B", $env:VISIT_TP_BUILD_DIR,
+          "-Dvisit_install_root:PATH=$env:VISIT_TP_INSTALL_ROOT"
+        )
+
+        & cmake @cmakeArgs
+
+    - name: Build third-party libraries
+      run: cmake --build $env:VISIT_TP_BUILD_DIR --config Release -j2
+
