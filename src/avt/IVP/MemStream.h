@@ -122,6 +122,8 @@ inline void MemStream::setPos(size_t p)
 template <typename T> inline void MemStream::read(T *pt, const size_t &num)
 {
     size_t nBytes = sizeof(T)*num;
+    if (_pos + nBytes > _len)
+        EXCEPTION0(ImproperUseException);
     memcpy(pt, &_data[_pos], nBytes);
     _pos += nBytes;
 }
