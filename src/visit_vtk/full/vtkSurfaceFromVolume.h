@@ -57,22 +57,22 @@ class TriangleList
  
     void           AddTriangle(vtkIdType, vtkIdType, vtkIdType, vtkIdType);
  
-    vtkIdType      GetTotalNumberOfTriangles(void) const;
-    vtkIdType      GetNumberOfLists(void) const;
-    int            GetList(int, const vtkIdType *&) const;
+    size_t         GetTotalNumberOfTriangles(void) const;
+    size_t         GetNumberOfLists(void) const;
+    size_t         GetList(size_t, const vtkIdType *&) const;
  
   protected:
     vtkIdType    **list;
-    vtkIdType      currentList;
-    vtkIdType      currentTriangle;
-    vtkIdType      listSize;
-    vtkIdType      trianglesPerList;
+    size_t         currentList;
+    size_t         currentTriangle;
+    size_t         listSize;
+    size_t         trianglesPerList;
 };
 
-                      vtkSurfaceFromVolume(int ptSizeGuess)
+                      vtkSurfaceFromVolume(size_t ptSizeGuess)
                            : vtkDataSetFromVolume(ptSizeGuess), tris()
-                           { ; };
-    virtual          ~vtkSurfaceFromVolume() { ; };
+                           { ; }
+    virtual          ~vtkSurfaceFromVolume() { ; }
 
     void              ConstructPolyData(vtkPointData *, vtkCellData *,
                                         vtkPolyData *, vtkPoints *);
@@ -81,10 +81,13 @@ class TriangleList
                                         vtkDataArray *, vtkDataArray *, vtkDataArray *);
 
     void              AddTriangle(vtkIdType zone, vtkIdType v0, vtkIdType v1, vtkIdType v2)
-                            { tris.AddTriangle(zone, v0, v1, v2); };
+                            { tris.AddTriangle(zone, v0, v1, v2); }
 
   protected:
     TriangleList      tris;
+
+    vtkSurfaceFromVolume(const vtkSurfaceFromVolume &) = delete;
+    void operator=(const vtkSurfaceFromVolume &) = delete;
 };
 
 
