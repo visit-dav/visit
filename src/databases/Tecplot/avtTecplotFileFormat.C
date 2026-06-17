@@ -1719,6 +1719,36 @@ avtTecplotFileFormat::ReadFile()
     file_read = true;
 
     //
+    // If we found a finite-element mesh but could not identify the coordinate
+    // variables by name, fall back to the Tecplot convention that the first
+    // nodal variables are the coordinates. This handles files with axis names
+    // like Z[m] and r[m].
+    //
+    if (topologicalDimension >= 2 &&
+        spatialDimension < topologicalDimension &&
+        (Xindex < 0 || (topologicalDimension >= 2 && Yindex < 0) ||
+                     (topologicalDimension >= 3 && Zindex < 0)))
+    {
+        vector<int> coordIndices;
+        for (size_t i = 0; i < variableCellCentered.size(); ++i)
+        {
+            if (!variableCellCentered[i])
+                coordIndices.push_back((int)i);
+        }
+
+        if ((int)coordIndices.size() >= topologicalDimension)
+        {
+            Xindex = coordIndices[0];
+            Yindex = coordIndices[1];
+            if (topologicalDimension >= 3)
+                Zindex = coordIndices[2];
+            else
+                Zindex = -1;
+            spatialDimension = topologicalDimension;
+        }
+    }
+
+    //
     // Fix up spatial and topological dimension.
     // It may be that a file reported that it had 2-d data
     // but we never found the "X" or "Y" variables, so we
