@@ -63,6 +63,7 @@
 #    Changed Pseudocolor CurrentPlot to ActualData.
 #
 # ----------------------------------------------------------------------------
+import os
 
 
 OpenDatabase(silo_data_path("rect3d.silo"))
@@ -616,5 +617,147 @@ Test("ops_indexselect39")
 
 DeleteAllPlots()
 
+TestSection("IndexSelect on unstructured mesh (#18422)")
+
+# ----------------------------------------------------------------------------
+#  Test IndexSelect on an unstructured line mesh, treating the cells as a
+#  1D logical index space (issue #18422).
+#
+#  This is a value-based test (no baseline image). It writes a small line
+#  mesh, applies IndexSelect in 1D mode, and verifies the resulting zone and
+#  node counts. It exercises the VTK_UNSTRUCTURED_GRID / VTK_POLY_DATA path
+#  added for #18422, including point remapping so unused points are dropped.
+#
+#  Programmer: Shistata Subedi
+#  Date:       June 2026
+# ----------------------------------------------------------------------------
+
+OpenDatabase(data_path("vtk_test_data/indexselect_lines.vtk"))
+AddPlot("Pseudocolor", "cell_id")
+DrawPlots()
+
+# Baseline counts for the full line mesh.
+Query("NumZones")
+TestValueEQ("indexselect_ugrid_base_zones", GetQueryOutputValue(), 10)
+Query("NumNodes")
+TestValueEQ("indexselect_ugrid_base_nodes", GetQueryOutputValue(), 11)
+
+# Contiguous 1D selection of cells [xMin, xMax): cells 0..3 -> 4 cells, 5 nodes.
+isel1d = IndexSelectAttributes()
+isel1d.dim = 0  # 0 -> 1D
+isel1d.xMin = 0
+isel1d.xMax = 4
+isel1d.xIncr = 1
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1d)
+DrawPlots()
+
+Query("NumZones")
+TestValueEQ("indexselect_ugrid_contig_zones", GetQueryOutputValue(), 4)
+Query("NumNodes")
+TestValueEQ("indexselect_ugrid_contig_nodes", GetQueryOutputValue(), 5)
+
+RemoveLastOperator()
+
+# Strided 1D selection over all cells (xMax = -1): every 2nd cell -> 0,2,4,6,8.
+# 5 cells, and point remapping keeps only the 10 referenced nodes (not all 11).
+isel1ds = IndexSelectAttributes()
+isel1ds.dim = 0
+isel1ds.xMin = 0
+isel1ds.xMax = -1
+isel1ds.xIncr = 2
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1ds)
+DrawPlots()
+
+Query("NumZones")
+TestValueEQ("indexselect_ugrid_stride_zones", GetQueryOutputValue(), 5)
+Query("NumNodes")
+TestValueEQ("indexselect_ugrid_stride_nodes", GetQueryOutputValue(), 10)
+
+DeleteAllPlots()
+
+OpenDatabase(silo_data_path("noise.silo"))
+AddPlot("Mesh", "PointMesh") # 100 points
+isel1d = IndexSelectAttributes()
+isel1d.dim = 0  # 0 -> 1D
+isel1d.xIncr = 5
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1d)
+DrawPlots()
+Query("NumZones")
+TestValueEQ("pointmesh_stride5_zones", GetQueryOutputValue(), 20)
+Query("NumNodes")
+TestValueEQ("pointmesh_stride5_nodes", GetQueryOutputValue(), 20)
+DeleteAllPlots()
+CloseDatabase(silo_data_path("noise.silo"))
+
+OpenDatabase(silo_data_path("specmix_ucd.silo"))
+AddPlot("Mesh", "Mesh") # 20 x 20 zones
+isel1d = IndexSelectAttributes()
+isel1d.dim = 0  # 0 -> 1D
+isel1d.xMin = 10 
+isel1d.xIncr = 20
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1d) # select middle "row"
+DrawPlots()
+Query("NumZones")
+TestValueEQ("specmix_ucd_stride20_zones", GetQueryOutputValue(), 20)
+isel1d.xMin = 20
+isel1d.xMax = 40
+isel1d.xIncr = 1 
+SetOperatorOptions(isel1d) # select 2nd "column"
+Query("NumZones")
+TestValueEQ("specmix_ucd_stride1_zones", GetQueryOutputValue(), 20)
+DeleteAllPlots()
+
+AddPlot("Mesh", "Mesh_3d")
+isel1d = IndexSelectAttributes()
+isel1d.dim = 0  # 0 -> 1D
+isel1d.xMin = 10 
+isel1d.xIncr = 20
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1d) # select middle "row"
+DrawPlots()
+Query("NumZones")
+TestValueEQ("specmix3d_ucd_stride20_zones", GetQueryOutputValue(), 20)
+isel1d.xMin = 20
+isel1d.xMax = 40
+isel1d.xIncr = 1 
+SetOperatorOptions(isel1d) # select 2nd "column"
+Query("NumZones")
+TestValueEQ("specmix3d_ucd_stride1_zones", GetQueryOutputValue(), 20)
+DeleteAllPlots()
+CloseDatabase(silo_data_path("specmix_ucd.silo"))
+
+# this file appears to not exist in silo_pdb_test_data
+OpenDatabase(data_path("silo_hdf5_test_data/ucd_lines2d.silo"))
+AddPlot("Mesh", "ucd_linesmesh2d")
+isel1d = IndexSelectAttributes()
+isel1d.dim = 0  # 0 -> 1D
+isel1d.xMin = 3 
+isel1d.xIncr = 3
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1d)
+DrawPlots()
+Query("NumZones")
+TestValueEQ("ucd_lines2d_zones", GetQueryOutputValue(), 5)
+DeleteAllPlots()
+CloseDatabase(data_path("silo_hdf5_test_data/ucd_lines2d.silo"))
+
+# this file appears to not exist in silo_pdb_test_data
+OpenDatabase(data_path("silo_hdf5_test_data/ucd_lines3d.silo"))
+AddPlot("Mesh", "ucd_linesmesh3d")
+isel1d = IndexSelectAttributes()
+isel1d.dim = 0  # 0 -> 1D
+isel1d.xMin = 3 
+isel1d.xIncr = 3
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1d)
+DrawPlots()
+Query("NumZones")
+TestValueEQ("ucd_lines3d_zones", GetQueryOutputValue(), 5)
+DeleteAllPlots()
+CloseDatabase(data_path("silo_hdf5_test_data/ucd_lines3d.silo"))
 
 Exit()
