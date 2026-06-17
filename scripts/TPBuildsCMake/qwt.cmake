@@ -30,7 +30,7 @@ set(QWT_ZIP_NAME "qwt-git-d3706f6e7f0351d278be2d989a4caaf92b399bbd.tar.xz")
 
 set(QWT_DEPENDS)
 if(NOT QT_PREBUILT)
-    set(QWT_DEPENDS QT)
+    set(QWT_DEPENDS QT QTSVG)
 endif()
 
 ExternalProject_Add(QWT

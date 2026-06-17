@@ -59,9 +59,7 @@ set(CONDUIT_CMAKE_OPTIONS
     -DENABLE_YAPF:BOOL=OFF
     -DZLIB_DIR:PATH=${visit_zlib_dir}
     -DHDF5_DIR:PATH=${visit_hdf5_root}
-    -DSILO_DIR:PATH=${visit_silo_root}
-    -DENABLE_PYTHON:BOOL=ON
-    -DPYTHON_EXECUTABLE:FILEPATH=${visit_python_executable})
+    -DSILO_DIR:PATH=${visit_silo_root})
 
 set(CONDUIT_DEPENDS)
 
@@ -77,8 +75,13 @@ if(NOT SILO_PREBUILT)
     list(APPEND CONDUIT_DEPENDS SILO)
 endif()
 
-if(NOT PYTHON_PREBUILT)
-    list(APPEND CONDUIT_DEPENDS PYTHON)
+if(BUILD_ALL OR ENABLE_PYTHON)
+    list(APPEND CONDUIT_CMAKE_OPTIONS
+         -DENABLE_PYTHON:BOOL=ON
+         -DPYTHON_EXECUTABLE:FILEPATH=${visit_python_executable})
+    if(NOT PYTHON_PREBUILT)
+        list(APPEND CONDUIT_DEPENDS PYTHON)
+    endif()
 endif()
 
 ExternalProject_Add(CONDUIT

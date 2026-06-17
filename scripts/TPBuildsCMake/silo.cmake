@@ -35,9 +35,7 @@ set(SILO_CMAKE_OPTIONS
     -DSILO_ENABLE_INSTALL_LITE_HEADERS:BOOL=ON
     -DSILO_ZLIB_DIR:PATH=${visit_zlib_root}
     -DSILO_ENABLE_HDF5:BOOL=ON
-    -DSILO_HDF5_DIR:PATH=${visit_hdf5_root}
-    -DSILO_ENABLE_SILEX:BOOL=ON
-    -DSILO_QT6_DIR:FILEPATH=${visit_qt_root})
+    -DSILO_HDF5_DIR:PATH=${visit_hdf5_root})
 
 set(SILO_DEPENDS)
 
@@ -49,8 +47,13 @@ if(NOT HDF5_PREBUILT)
     list(APPEND SILO_DEPENDS HDF5)
 endif()
 
-if(NOT QT_PREBUILT)
-    list(APPEND SILO_DEPENDS QT)
+if(BUILD_ALL OR ENABLE_QT)
+    list(APPEND SILO_CMAKE_OPTIONS
+         -DSILO_ENABLE_SILEX:BOOL=ON
+         -DSILO_QT6_DIR:FILEPATH=${visit_qt_root})
+    if(NOT QT_PREBUILT)
+        list(APPEND SILO_DEPENDS QT)
+    endif()
 endif()
 
 ExternalProject_Add(SILO
