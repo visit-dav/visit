@@ -24,8 +24,8 @@ vtkSurfaceFromVolume::TriangleList::TriangleList()
  
     list = new vtkIdType*[listSize];
     list[0] = new vtkIdType[4*trianglesPerList];
-    for (vtkIdType i = 1 ; i < listSize ; i++)
-        list[i] = NULL;
+    for (size_t i = 1 ; i < listSize ; i++)
+        list[i] = nullptr;
  
     currentList = 0;
     currentTriangle = 0;
@@ -34,9 +34,9 @@ vtkSurfaceFromVolume::TriangleList::TriangleList()
 
 vtkSurfaceFromVolume::TriangleList::~TriangleList()
 {
-    for (int i = 0 ; i < listSize ; i++)
+    for (size_t i = 0 ; i < listSize ; i++)
     {
-        if (list[i] != NULL)
+        if (list[i] != nullptr)
             delete [] list[i];
         else
             break;
@@ -45,13 +45,13 @@ vtkSurfaceFromVolume::TriangleList::~TriangleList()
 }
  
  
-int
-vtkSurfaceFromVolume::TriangleList::GetList(int listId, const vtkIdType *&outlist)
+size_t
+vtkSurfaceFromVolume::TriangleList::GetList(size_t listId, const vtkIdType *&outlist)
     const
 {
-    if (listId < 0 || listId > currentList)
+    if (listId > currentList)
     {
-        outlist = NULL;
+        outlist = nullptr;
         return 0;
     }
  
@@ -60,18 +60,18 @@ vtkSurfaceFromVolume::TriangleList::GetList(int listId, const vtkIdType *&outlis
 }
  
  
-vtkIdType
+size_t
 vtkSurfaceFromVolume::TriangleList::GetNumberOfLists(void) const
 {
     return currentList+1;
 }
 
 
-vtkIdType
+size_t
 vtkSurfaceFromVolume::TriangleList::GetTotalNumberOfTriangles(void) const
 {
-    vtkIdType numFullLists = currentList;  // actually currentList-1+1
-    vtkIdType numExtra = currentTriangle;  // again, currentTriangle-1+1
+    size_t numFullLists = currentList;  // actually currentList-1+1
+    size_t numExtra = currentTriangle;  // again, currentTriangle-1+1
  
     return numFullLists*trianglesPerList + numExtra;
 }
@@ -97,10 +97,10 @@ vtkSurfaceFromVolume::TriangleList::AddTriangle(vtkIdType cellId,
         if ((currentList+1) >= listSize)
         {
             vtkIdType **tmpList = new vtkIdType*[2*listSize];
-            for (vtkIdType i = 0 ; i < listSize ; i++)
+            for (size_t i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
-                tmpList[i] = NULL;
+            for (size_t i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = nullptr;
 
             listSize *= 2;
             delete [] list;
@@ -112,7 +112,7 @@ vtkSurfaceFromVolume::TriangleList::AddTriangle(vtkIdType cellId,
         currentTriangle = 0;
     }
  
-    vtkIdType idx = 4*currentTriangle;
+    size_t idx = 4*currentTriangle;
     list[currentList][idx+0] = cellId;
     list[currentList][idx+1] = v1;
     list[currentList][idx+2] = v2;
@@ -137,12 +137,10 @@ ConstructPolyDataHelper(vtkPointData *inPD, vtkCellData *inCD,
      const vtkSurfaceFromVolume::TriangleList &tris,
      int dataType, const PointGetter &pointGetter)
 {
-    vtkIdType   i, j;
-
     vtkPointData *outPD = output->GetPointData();
     vtkCellData  *outCD = output->GetCellData();
 
-    vtkIntArray *newOrigNodes = NULL;
+    vtkIntArray *newOrigNodes = nullptr;
     vtkIntArray *origNodes = vtkIntArray::SafeDownCast(
               inPD->GetArray("avtOriginalNodeNumbers"));
 
@@ -150,23 +148,23 @@ ConstructPolyDataHelper(vtkPointData *inPD, vtkCellData *inCD,
     // Set up the output points and its point data.
     //
     vtkPoints *outPts = vtkPoints::New(dataType);
-    vtkIdType nOutPts = pt_list.GetTotalNumberOfPoints();
+    vtkIdType nOutPts = static_cast<vtkIdType>(pt_list.GetTotalNumberOfPoints());
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inPD, nOutPts);
-    if (origNodes != NULL)
+    if (origNodes != nullptr)
     {
         newOrigNodes = vtkIntArray::New();
         newOrigNodes->SetNumberOfComponents(origNodes->GetNumberOfComponents());
         newOrigNodes->SetNumberOfTuples(nOutPts);
         newOrigNodes->SetName(origNodes->GetName());
     }
-    vtkIdType nLists = pt_list.GetNumberOfLists();
+    size_t nLists = pt_list.GetNumberOfLists();
     vtkIdType ptIdx = 0;
-    for (i = 0 ; i < nLists ; i++)
+    for (size_t i = 0 ; i < nLists ; i++)
     {
-        const vtkDataSetFromVolume::PointEntry *pe_list = NULL;
-        vtkIdType nPts = pt_list.GetList(i, pe_list);
-        for (j = 0 ; j < nPts ; j++)
+        const vtkDataSetFromVolume::PointEntry *pe_list = nullptr;
+        size_t nPts = pt_list.GetList(i, pe_list);
+        for (size_t j = 0 ; j < nPts ; j++)
         {
             const vtkDataSetFromVolume::PointEntry &pe = pe_list[j];
             double pt[3], pt1[3], pt2[3];
@@ -200,19 +198,19 @@ ConstructPolyDataHelper(vtkPointData *inPD, vtkCellData *inCD,
     //
     // Now set up the triangles and the cell data.
     //
-    vtkIdType ntris = tris.GetTotalNumberOfTriangles();
+    size_t ntris = tris.GetTotalNumberOfTriangles();
     vtkIdTypeArray *nlist = vtkIdTypeArray::New();
-    nlist->SetNumberOfValues(3*ntris + ntris);
+    nlist->SetNumberOfValues(static_cast<vtkIdType>(3*ntris + ntris));
     vtkIdType *nl = nlist->GetPointer(0);
 
-    outCD->CopyAllocate(inCD, ntris);
+    outCD->CopyAllocate(inCD, static_cast<vtkIdType>(ntris));
     vtkIdType cellId = 0;
-    vtkIdType nlists = tris.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
+    size_t nlists = tris.GetNumberOfLists();
+    for (size_t i = 0 ; i < nlists ; i++)
     {
         const vtkIdType *list;
-        vtkIdType listSize = tris.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
+        size_t listSize = tris.GetList(i, list);
+        for (size_t j = 0 ; j < listSize ; j++)
         {
             outCD->CopyData(inCD, list[0], cellId);
             *nl++ = 3;
@@ -224,7 +222,7 @@ ConstructPolyDataHelper(vtkPointData *inPD, vtkCellData *inCD,
         }
     }
     vtkCellArray *cells = vtkCellArray::New();
-    cells->SetCells(ntris, nlist);
+    cells->SetCells(static_cast<vtkIdType>(ntris), nlist);
     nlist->Delete();
 
     output->SetPolys(cells);

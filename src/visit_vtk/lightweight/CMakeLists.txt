@@ -18,6 +18,9 @@
 #   building plugins against install, since we don't use the cmake targets,
 #   only lists of libraries.
 #
+#   Kathleen Biagas, Mon June 15, 2026
+#   Remove vtkVisItPointDataToCellData.
+#
 #****************************************************************************/
 
 set(lightweight_SOURCES
@@ -48,7 +51,6 @@ set(lightweight_SOURCES
     vtkUnstructuredGridBoundaryFilter.C
     vtkUnstructuredGridFacelistFilter.C
     vtkVisItCellLocator.C
-    vtkVisItPointDataToCellData.C
     vtkVisItPointLocator.C
     vtkVisItUtility.C)
 
@@ -69,7 +71,6 @@ set(lightweight_HEADERS
     vtkUnstructuredGridBoundaryFilter.h
     vtkUnstructuredGridFacelistFilter.h
     vtkVisItCellLocator.h
-    vtkVisItPointDataToCellData.h
     vtkVisItPointLocator.h
     vtkVisItUtility.h)
 
