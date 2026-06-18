@@ -352,7 +352,9 @@ If the value is a `2`, it is a Z-R mesh.
 Here is an example of specifying the mesh coordinate type.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 6-7
+   :language: none
+   :start-at: MeshCoordType 1 1 int
+   :end-before: MeshName 1 1 string
 
 MeshName
 ~~~~~~~~
@@ -362,7 +364,9 @@ The mesh name is represented as a string.
 Here is an example of specifying the mesh name.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 8-9
+   :language: none
+   :start-at: MeshName 1 1 string
+   :end-before: CYCLE 1 1 int
 
 CYCLE
 ~~~~~
@@ -372,7 +376,9 @@ The cycle is specified as a single integer value.
 Here is an example of specifying the cycle.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 10-11
+   :language: none
+   :start-at: CYCLE 1 1 int
+   :end-before: TIME 1 1 double
 
 TIME
 ~~~~
@@ -382,7 +388,9 @@ The time is specified as a single double precision value.
 Here is an example of specifying the time.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 12-13
+   :language: none
+   :start-at: TIME 1 1 double
+   :end-before: VisItExpressions 1 2 string
 
 VisItExpressions
 ~~~~~~~~~~~~~~~~
@@ -395,7 +403,9 @@ The expression type consists of one of `curve`, `scalar`, `vector`, `tensor`, `a
 Here is an example of specifying the expressions.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 14-16
+   :language: none
+   :start-at: VisItExpressions 1 2 string
+   :end-at: speed;scalar;sqrt(u*u+v*v)
 
 avtGhostZones
 ~~~~~~~~~~~~~
@@ -408,7 +418,9 @@ The ghost zone metadata is stored as CELL_DATA FIELD data.
 Here is an example of specifying ghost zones.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 33-37
+   :language: none
+   :start-at: FIELD FieldData 1
+   :end-at: 1 1 1 1
 
 .. _data_into_visit_vtk_example:
 
@@ -418,46 +430,62 @@ An example VTK file
 A basic VTK file is shown here.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
-   :lines: 1-21
+   :language: none
+   :start-at: # vtk DataFile Version 3.0
+   :end-at: 1 2 3 1 2 3 1 2 3 1 2 3
 
 The line below contains the version and identifier.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
-   :lines: -1
+   :language: none
+   :start-at: # vtk DataFile Version 3.0
+   :end-at: # vtk DataFile Version 3.0
 
 The line below contains the title.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
-   :lines: 2-2
+   :language: none
+   :start-at: vtk output
+   :end-at: vtk output
 
 The line below contains the datatype, which in this case is ASCII.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
-   :lines: 3-3
+   :language: none
+   :start-at: ASCII
+   :end-at: ASCII
 
 The line below identifies the type of the mesh, which in this case is a rectilinear grid.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
-   :lines: 4-4
+   :language: none
+   :start-at: DATASET RECTILINEAR_GRID
+   :end-at: DATASET RECTILINEAR_GRID
 
 The following lines provide the coordinate information for the mesh.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
-   :lines: 5-11
+   :language: none
+   :start-at: DIMENSIONS 3 2 2
+   :end-before: CELL_DATA 2
 
 The information provides the dimensions of the coordinate arrays of the mesh along with the coordinates in each of the three directions.
 
 The following lines represent one scalar field defined on the cells.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
-   :lines: 13-16
+   :language: none
+   :start-at: CELL_DATA 2
+   :end-before: POINT_DATA 12
 
 The information tells us that there are 2 values for the cell data, that it is a scalar, that the name of the variable is `density`, that it should be read in as float values, that we should use the default lookup table, and that the values consist of `1 2`.
 
 The following lines represent one scalar field defined at the points.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
-   :lines: 18-21
+   :language: none
+   :start-at: POINT_DATA 12
+   :end-at: 1 2 3 1 2 3 1 2 3 1 2 3
 
 The information tells us that there are 12 values for the point data, that it is a scalar, that the name of the variable is `u`, that it should be read in as float values, that we should use the default lookup table, and that the values consist of `1 2 3 1 2 3 1 2 3 1 2 3`.
 
@@ -469,32 +497,44 @@ An example of a VTK file with extra metadata
 A VTK file with extra metadata is shown here.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 1-45
+   :language: none
+   :start-at: # vtk DataFile Version 3.0
+   :end-at: LOOKUP_TABLE default
 
 The following lines represent the mesh name associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 8-9
+   :language: none
+   :start-at: MeshName 1 1 string
+   :end-before: CYCLE 1 1 int
 
 The following lines represent cycle associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 10-11
+   :language: none
+   :start-at: CYCLE 1 1 int
+   :end-before: TIME 1 1 double
 
 The following lines represent the time associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 12-13
+   :language: none
+   :start-at: TIME 1 1 double
+   :end-before: VisItExpressions 1 2 string
 
 The following lines represent the expressions associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 14-16
+   :language: none
+   :start-at: VisItExpressions 1 2 string
+   :end-at: speed;scalar;sqrt(u*u+v*v)
 
 The following lines represent the ghost zones associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 33-37
+   :language: none
+   :start-at: FIELD FieldData 1
+   :end-at: 1 1 1 1
 
 .. _data_into_visit_vtk_struct_points:
 

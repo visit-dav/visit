@@ -64,8 +64,8 @@ class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVo
 
   public:
                       vtkBinaryPartitionVolumeFromVolume(vtkIdType nPts,
-                                                         vtkIdType ptSizeGuess);
-    virtual          ~vtkBinaryPartitionVolumeFromVolume() { ; };
+                                                         size_t ptSizeGuess);
+    virtual          ~vtkBinaryPartitionVolumeFromVolume() { ; }
 
     void              ConstructDataSet(vtkPointData *, vtkCellData *,
                                        vtkUnstructuredGrid *, vtkPoints *,
@@ -147,6 +147,9 @@ class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVo
     void               ComputeTags(std::vector<vtkCSGFixedLengthBitField> *oldTags,
                                    std::vector<vtkCSGFixedLengthBitField> *newTags,
                                    int newTagBit);
+
+   vtkBinaryPartitionVolumeFromVolume(const vtkBinaryPartitionVolumeFromVolume &) = delete;
+   void operator=(const vtkBinaryPartitionVolumeFromVolume &) = delete;
 };
 
 

@@ -28,7 +28,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkVisItCellDataToPointData.h>
+#include <vtkCellDataToPointData.h>
 
 #ifndef DBIO_ONLY
 #include <Tetrahedralizer.h>
@@ -947,7 +947,7 @@ void
 avtTecplotWriter::WriteDataArrays(vtkDataSet *ds1)
 {
     int npts = ds1->GetNumberOfPoints();
-    vtkVisItCellDataToPointData *c2p = vtkVisItCellDataToPointData::New();
+    vtkCellDataToPointData *c2p = vtkCellDataToPointData::New();
     c2p->SetInputData(ds1);
     c2p->Update();
     vtkUnstructuredGrid *ds2 = (vtkUnstructuredGrid*)(c2p->GetOutput());

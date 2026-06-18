@@ -87,7 +87,6 @@ suppress UMR sysctl
 suppress UMR vtkByteSwap::SwapWrite4BERange(char*,int,ostream*)
 suppress UMR vtkCoordinate::GetComputedViewportValue(vtkViewport*)
 suppress UMR vtkMesaCamera::Render(vtkRenderer*)
-suppress UMR vtkVisItCellDataToPointData::Execute(void)
 suppress UMR vtkVisItScalarTree::BuildTree(void)
 suppress UMR vtkVisItScalarTree::GetCellList(float,vector<int, allocator<int>>&)
 suppress UMR vtkVisItScalarTree::RecursiveSearch(vector<int, allocator<int>>&,int,int)

@@ -56,6 +56,12 @@
 #   Kathleen Biagas, Thu Jan 15, 2026
 #   Remove vtkSTLWriter. Rename vtkOBJWriter to vtkVisItOBJWriter.
 #
+#   Kathleen Biagas, Thu June 11, 2026
+#   Remove vtkVisItSplitter, no longer used.
+#
+#   Kathleen Biagas, Mon Jun 15, 2026
+#   Remove vtkVisItCellDataToPointData.
+#
 #****************************************************************************/
 
 
@@ -86,7 +92,6 @@ set(visit_vtk_SOURCES
     vtkVectorGlyph.C
     vtkVertexExtractor.C
     vtkVertexFilter.C
-    vtkVisItCellDataToPointData.C
     vtkVisItClipper.C
     vtkVisItContourFilter.C
     vtkVisItCutter.C
@@ -102,7 +107,6 @@ set(visit_vtk_SOURCES
     vtkVisItPolyDataNormals2D.C
     vtkVisItProbeFilter.C
     vtkVisItScalarTree.C
-    vtkVisItSplitter.C
     vtkVisItStructuredGridNormals.C
     vtkVisItTensorGlyph.C
     vtkVisItTubeFilter.C
@@ -139,7 +143,6 @@ set(visit_vtk_HEADERS
     vtkVectorGlyph.h
     vtkVertexExtractor.h
     vtkVertexFilter.h
-    vtkVisItCellDataToPointData.h
     vtkVisItClipper.h
     vtkVisItContourFilter.h
     vtkVisItCutter.h
@@ -155,7 +158,6 @@ set(visit_vtk_HEADERS
     vtkVisItPolyDataNormals2D.h
     vtkVisItProbeFilter.h
     vtkVisItScalarTree.h
-    vtkVisItSplitter.h
     vtkVisItStructuredGridNormals.h
     vtkVisItTensorGlyph.h
     vtkVisItTubeFilter.h
