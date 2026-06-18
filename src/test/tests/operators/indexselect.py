@@ -669,14 +669,13 @@ isel1ds.xIncr = 2
 AddOperator("IndexSelect")
 SetOperatorOptions(isel1ds)
 DrawPlots()
-
 Query("NumZones")
 TestValueEQ("indexselect_ugrid_stride_zones", GetQueryOutputValue(), 5)
 Query("NumNodes")
 TestValueEQ("indexselect_ugrid_stride_nodes", GetQueryOutputValue(), 10)
-
 DeleteAllPlots()
 
+# Test a point mesh
 OpenDatabase(silo_data_path("noise.silo"))
 AddPlot("Mesh", "PointMesh") # 100 points
 isel1d = IndexSelectAttributes()
@@ -692,6 +691,7 @@ TestValueEQ("pointmesh_stride5_nodes", GetQueryOutputValue(), 20)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("noise.silo"))
 
+# Test ucd mesh in 2D and 3D
 OpenDatabase(silo_data_path("specmix_ucd.silo"))
 AddPlot("Mesh", "Mesh") # 20 x 20 zones
 isel1d = IndexSelectAttributes()
@@ -730,7 +730,8 @@ TestValueEQ("specmix3d_ucd_stride1_zones", GetQueryOutputValue(), 20)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("specmix_ucd.silo"))
 
-# this file appears to not exist in silo_pdb_test_data
+# Test 2D and 3D lines mesh from Silo
+#   This test file appears to not exist in silo_pdb_test_data
 OpenDatabase(data_path("silo_hdf5_test_data/ucd_lines2d.silo"))
 AddPlot("Mesh", "ucd_linesmesh2d")
 isel1d = IndexSelectAttributes()
@@ -745,7 +746,6 @@ TestValueEQ("ucd_lines2d_zones", GetQueryOutputValue(), 5)
 DeleteAllPlots()
 CloseDatabase(data_path("silo_hdf5_test_data/ucd_lines2d.silo"))
 
-# this file appears to not exist in silo_pdb_test_data
 OpenDatabase(data_path("silo_hdf5_test_data/ucd_lines3d.silo"))
 AddPlot("Mesh", "ucd_linesmesh3d")
 isel1d = IndexSelectAttributes()
@@ -759,5 +759,22 @@ Query("NumZones")
 TestValueEQ("ucd_lines3d_zones", GetQueryOutputValue(), 5)
 DeleteAllPlots()
 CloseDatabase(data_path("silo_hdf5_test_data/ucd_lines3d.silo"))
+
+# Test on a curve too
+OpenDatabase(data_path("curve_test_data/c053.curve"))
+AddPlot("Curve", "parabolic")
+isel1d = IndexSelectAttributes()
+isel1d.dim = 0  # 0 -> 1D
+isel1d.xMin = 31
+isel1d.xMax = 70
+isel1d.xIncr = 4
+AddOperator("IndexSelect")
+SetOperatorOptions(isel1d)
+DrawPlots()
+Query("NumZones")
+TestValueEQ("curve_zones", GetQueryOutputValue(), 10)
+DeleteAllPlots()
+CloseDatabase(data_path("curve_test_data/c053.curve"))
+
 
 Exit()
