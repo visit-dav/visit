@@ -1,0 +1,17 @@
+--- libsrc\XdmfHex125Generator.h	2011-03-10 17:45:29.000000000 -0800
++++ libsrc\XdmfHex125Generator.h	2021-03-04 16:20:29.000000000 -0800
+@@ -29,13 +29,13 @@
+ 
+ /*!
+  * @brief XdmfHex125Generator generates a 125-noded tri-quartic hexahedron
+  *        mesh from an XdmfGrid containing linear hexahedron elements.
+  */
+ 
+-class XdmfHex125Generator
++class XDMF_EXPORT XdmfHex125Generator
+ {
+ public:
+ 
+     enum Type { Normal, Spectral };
+ 
+     /*!

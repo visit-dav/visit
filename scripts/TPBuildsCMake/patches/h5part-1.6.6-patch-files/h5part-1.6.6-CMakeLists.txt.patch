@@ -1,0 +1,61 @@
+--- 
++++ CMakeLists.txt	2026-02-09 10:14:10.000000000 -0800
+@@ -0,0 +1,58 @@
++cmake_minimum_required(VERSION 3.24)
++
++project(H5Part)
++
++add_library(h5part SHARED
++    src/H5Block.c
++    src/H5BlockReadWrite.c
++    src/H5MultiBlock.c
++    src/H5MultiBlockReadWrite.c
++    src/H5Part.c
++    src/H5PartAttrib.c)
++
++
++target_include_directories(h5part PUBLIC src)
++target_compile_definitions(h5part PUBLIC
++     H5_BUILT_AS_DYNAMIC_LIB
++    _CRT_SECURE_NO_DEPRECATE
++    _CRT_NONSTDC_NO_DEPRECATE
++    _SCL_NO_DEPRECATE)
++
++# simple route to hdf5 
++# best route would be find_package but this CMakeLists.txt is just
++# for a simple build, not for creating a proper exportable package
++if(NOT (HDF5_INCLUDE_DIR AND HDF5_LIBRARY))
++    message("Please set HDF5_INCLUDE_DIR and HDF5_LIBRARY")
++endif()
++
++# this is an HDF5 transitive dependency,
++if(NOT (ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY))
++    message("Please set ZLIB_INCLUDE_DIR and ZLIB_LIBRARY")
++endif()
++
++target_link_libraries(h5part PUBLIC ${HDF5_LIBRARY} ${ZLIB_LIBRARY})
++target_include_directories(h5part PUBLIC ${HDF5_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
++
++install(FILES src/H5Block.h
++              src/H5BlockErrors.h
++              src/H5BlockPrivate.h
++              src/H5BlockReadWrite.h
++              src/H5BlockTypes.h
++              src/H5MultiBlock.h
++              src/H5MultiBlockErrors.h
++              src/H5MultiBlockPrivate.h
++              src/H5MultiBlockReadWrite.h
++              src/H5MultiBlockTypes.h
++              src/H5Part.h
++              src/h5part_exports.h
++              src/H5PartAttrib.h
++              src/H5PartErrors.h
++              src/H5PartF.h
++              src/H5PartPrivate.h
++              src/H5PartTypes.h
++              src/Underscore.h
++        DESTINATION include)
++
++install(TARGETS h5part DESTINATION lib)
++
++

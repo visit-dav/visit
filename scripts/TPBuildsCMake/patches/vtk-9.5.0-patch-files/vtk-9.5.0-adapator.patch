@@ -1,0 +1,20 @@
+--- GUISupport\Qt\QVTKInteractorAdapter.cxx	2025-06-23 11:12:36.000000000 -0800
++++ GUISupport\Qt\QVTKInteractorAdapter.cxx	2026-01-26 10:54:58.000000000 -0800
+@@ -30,13 +30,16 @@
+ static const char* ascii_to_key_sym(int);
+ // function to get VTK keysyms from Qt keys
+ static const char* qt_key_to_key_sym(Qt::Key, Qt::KeyboardModifiers modifiers);
+ 
+ // Tolerance used when truncating the device pixel ratio scaled
+ // window size in calls to SetSize.
+-const double QVTKInteractorAdapter::DevicePixelRatioTolerance = 1e-5;
++
++// KSB: Not sure why this patch is necessary. Should investigate.
++// Is it an attempt to fix #19544?
++const double QVTKInteractorAdapter::DevicePixelRatioTolerance = 0.; //1e-5;
+ 
+ QVTKInteractorAdapter::QVTKInteractorAdapter(QObject* parentObject)
+   : QObject(parentObject)
+   , AccumulatedDelta(0)
+   , DevicePixelRatio(1.0)
+ {

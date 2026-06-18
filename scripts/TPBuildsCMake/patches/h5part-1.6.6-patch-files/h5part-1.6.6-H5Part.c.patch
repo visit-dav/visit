@@ -1,0 +1,345 @@
+--- src\H5Part.c	2012-02-05 17:01:42.000000000 -0800
++++ src\H5Part.c	2026-02-24 19:19:58.000000000 -0800
+@@ -137,13 +137,15 @@
+ /*========== File Opening/Closing ===============*/
+ 
+ static H5PartFile*
+ _H5Part_open_file (
+ 	const char *filename,	/*!< [in] The name of the data file to open. */
+ 	const char flags,	/*!< [in] The access mode for the file. */
++#ifdef PARALLEL_IO
+ 	MPI_Comm comm,		/*!< [in] MPI communicator */
++#endif	
+ 	int f_parallel,		/*!< [in] 0 for serial io otherwise parallel */
+ 	h5part_int64_t align	/*!< [in] Number of bytes for setting alignment,
+ 					  metadata block size, etc.
+ 					  Set to 0 to disable. */
+ 	) {
+ 
+@@ -163,12 +165,14 @@
+ 	strncpy ( f->groupname_step, H5PART_GROUPNAME_STEP, H5PART_STEPNAME_LEN );
+ 	f->stepno_width = 0;
+ 
+ 	f->xfer_prop = f->dcreate_prop = f->fcreate_prop = H5P_DEFAULT;
+ 
+ 	f->access_prop = H5Pcreate (H5P_FILE_ACCESS);
++        H5Pset_fclose_degree(f->access_prop, H5F_CLOSE_SEMI);
++	
+ 	if (f->access_prop < 0) {
+ 		HANDLE_H5P_CREATE_ERR;
+ 		goto error_cleanup;
+ 	}
+ 
+ 	if ( f_parallel ) {
+@@ -279,13 +283,15 @@
+ 		}
+ 
+ 		f->comm = comm;
+ #endif // PARALLEL_IO
+ 	} else {
+ 		_is_root_proc = 1;
++#ifdef PARALLEL_IO
+ 		f->comm = 0;
++#endif		
+ 		f->nprocs = 1;
+ 		f->myproc = 0;
+ 		f->pnparticles = 
+ 			(h5part_int64_t*) malloc (f->nprocs * sizeof (h5part_int64_t));
+ 	}
+ 
+@@ -478,17 +484,17 @@
+ 	const char *filename,	/*!< [in] The name of the data file to open. */
+ 	const char flags	/*!< [in] The access mode for the file. */
+ 	) {
+ 	INIT
+ 	SET_FNAME ( "H5PartOpenFile" );
+ 
+-	MPI_Comm comm = 0;	/* dummy */
++	/* MPI_Comm comm = 0;	/\* dummy *\/ */
+ 	int f_parallel = 0;	/* serial open */
+ 	int align = 0;		/* no tuning parameters */
+ 
+-	return _H5Part_open_file ( filename, flags, comm, f_parallel, align );
++	return _H5Part_open_file ( filename, flags, /*comm,*/ f_parallel, align );
+ }
+ 
+ /*!
+   \ingroup h5part_open
+ 
+   Opens file with specified filename, and also specifices an alignment
+@@ -516,16 +522,16 @@
+ 	const char flags,	/*!< [in] The access mode for the file. */
+ 	h5part_int64_t align	/*!< [in] Alignment size in bytes. */
+ ) {
+ 	INIT
+ 	SET_FNAME ( "H5PartOpenFileAlign" );
+ 
+-	MPI_Comm comm = 0;	/* dummy */
++	/* MPI_Comm comm = 0;	/\* dummy *\/ */
+ 	int f_parallel = 0;	/* serial open */
+ 
+-	return _H5Part_open_file ( filename, flags, comm, f_parallel, align );
++	return _H5Part_open_file ( filename, flags, /*comm,*/ f_parallel, align );
+ }
+ 
+ /*!
+   Checks if a file was successfully opened.
+ 
+   \return	\c H5PART_SUCCESS or error code
+@@ -1274,12 +1280,211 @@
+ 	herr = _write_data ( f, name, (void*)array, H5T_NATIVE_INT32 );
+ 	if ( herr < 0 ) return herr;
+ 
+ 	return H5PART_SUCCESS;
+ }
+ 
++static h5part_int64_t
++_append_data (
++        H5PartFile *f,          /*!< IN: Handle to open file */
++        const char *name,       /*!< IN: Name to associate array with */
++        const void *array,      /*!< IN: Array to commit to disk */
++        const hid_t type        /*!< IN: Type of data */
++        ) {
++
++        herr_t herr;
++        hid_t dataset_id;
++
++        char name2[H5PART_DATANAME_LEN];
++        _normalize_dataset_name ( name, name2 );
++
++        _H5Part_print_debug (
++                     "Create a dataset[%s] mounted on "
++                     "timestep %lld",
++                     name2, (long long)f->timestep );
++
++        if ( f->shape == H5S_ALL ) {
++                _H5Part_print_warn (
++                     "The view is unset or invalid: please "
++                     "set the view or specify a number of particles." );
++                return HANDLE_H5PART_BAD_VIEW_ERR ( f->viewstart, f->viewend );
++          return -1;
++        }
++
++        H5E_BEGIN_TRY
++        dataset_id = H5Dopen ( f->timegroup, name2
++#ifndef H5_USE_16_API
++                , H5P_DEFAULT
++#endif
++                );
++        H5E_END_TRY
++
++        hid_t dataspace_id, filespace_id;
++
++        if ( dataset_id > 0 ) {
++
++          hsize_t dims[1] = {f->nparticles}; // dataset dimensions
++          hsize_t dims_in[1] = {0};          // incoming dimensions
++          hsize_t dims_out[1] = {0};         // outgoing dimensions
++
++          // Get the original dataspace.
++          dataspace_id = H5Dget_space(dataset_id);
++          if ( dataspace_id < 0 )
++            return HANDLE_H5D_CREATE_ERR ( name2, f->timestep );
++          herr = H5Sget_simple_extent_dims(dataspace_id, dims_in, NULL);
++
++          // Extend the dataset
++          dims_out[0] = dims_in[0] + dims[0];
++          herr = H5Dset_extent(dataset_id, dims_out);
++
++          // Create the hyperslab
++          filespace_id = H5Dget_space(dataset_id);
++          if ( filespace_id < 0 )
++            return HANDLE_H5D_CREATE_ERR ( name2, f->timestep );
++          herr = H5Sselect_hyperslab(filespace_id, H5S_SELECT_SET,
++                                     dims_in, NULL, dims, NULL);
++
++          // Define the memory space
++          dataspace_id = H5Screate_simple(1, dims, NULL);
++          if ( dataspace_id < 0 )
++            return HANDLE_H5D_CREATE_ERR ( name2, f->timestep );
++          
++          if ( herr < 0 )
++            return HANDLE_H5D_CREATE_ERR ( name2, f->timestep );
++        } else {          
++                dataset_id = H5Dcreate (
++                        f->timegroup,
++                        name2,
++                        type,
++			// Use the memshape because it has unlimited bounds
++                        f->memshape, //f->shape,
++#ifndef H5_USE_16_API
++                        H5P_DEFAULT,
++                        f->dcreate_prop,
++                        H5P_DEFAULT
++#else
++                        f->dcreate_prop
++#endif
++               );
++                if ( dataset_id < 0 )
++                        return HANDLE_H5D_CREATE_ERR ( name2, f->timestep );
++
++                // Create the hyperslab
++                dataspace_id = f->memshape;
++                filespace_id = f->diskshape;
++        }
++
++#ifdef PARALLEL_IO
++        herr = _H5Part_start_throttle ( f );
++        if ( herr < 0 ) return herr;
++#endif
++
++        herr = H5Dwrite(dataset_id,
++                        type,
++                        dataspace_id,   // f->memshape,
++                        filespace_id,   // f->diskshape,
++                        f->xfer_prop,
++                        array);
++
++#ifdef PARALLEL_IO
++        herr = _H5Part_end_throttle ( f );
++        if ( herr < 0 ) return herr;
++#endif
++
++        if ( herr < 0 ) return HANDLE_H5D_WRITE_ERR ( name2, f->timestep );
++
++        herr = H5Dclose ( dataset_id );
++        if ( herr < 0 ) return HANDLE_H5D_CLOSE_ERR;
++
++        f->empty = 0;
++
++        return H5PART_SUCCESS;
++}
++
++h5part_int64_t
++H5PartAppendDataFloat32 (
++        H5PartFile *f,          /*!< [in] Handle to open file */
++        const char *name,       /*!< [in] Name to associate array with */
++        const h5part_float32_t *array   /*!< [in] Array to commit to disk */
++        ) {
++
++        SET_FNAME ( "H5PartWriteDataFloat64" );
++        h5part_int64_t herr;
++
++        CHECK_FILEHANDLE ( f );
++        CHECK_WRITABLE_MODE( f );
++        CHECK_TIMEGROUP( f );
++
++        herr = _append_data ( f, name, (void*)array, H5T_NATIVE_FLOAT );
++        if ( herr < 0 ) return herr;
++
++        return H5PART_SUCCESS;
++}
++
++h5part_int64_t
++H5PartAppendDataFloat64 (
++        H5PartFile *f,          /*!< [in] Handle to open file */
++        const char *name,       /*!< [in] Name to associate array with */
++        const h5part_float64_t *array   /*!< [in] Array to commit to disk */
++        ) {
++
++        SET_FNAME ( "H5PartWriteDataFloat64" );
++        h5part_int64_t herr;
++
++        CHECK_FILEHANDLE ( f );
++        CHECK_WRITABLE_MODE( f );
++        CHECK_TIMEGROUP( f );
++
++        herr = _append_data ( f, name, (void*)array, H5T_NATIVE_DOUBLE );
++        if ( herr < 0 ) return herr;
++
++        return H5PART_SUCCESS;
++}
++
++
++h5part_int64_t
++H5PartAppendDataInt32 (
++        H5PartFile *f,          /*!< [in] Handle to open file */
++        const char *name,       /*!< [in] Name to associate array with */
++        const h5part_int32_t *array   /*!< [in] Array to commit to disk */
++        ) {
++
++        SET_FNAME ( "H5PartWriteDataInt64" );
++        h5part_int64_t herr;
++
++        CHECK_FILEHANDLE ( f );
++        CHECK_WRITABLE_MODE( f );
++        CHECK_TIMEGROUP( f );
++
++        herr = _append_data ( f, name, (void*)array, H5T_NATIVE_INT32 );
++        if ( herr < 0 ) return herr;
++
++        return H5PART_SUCCESS;
++}
++
++h5part_int64_t
++H5PartAppendDataInt64 (
++        H5PartFile *f,          /*!< [in] Handle to open file */
++        const char *name,       /*!< [in] Name to associate array with */
++        const h5part_int64_t *array   /*!< [in] Array to commit to disk */
++        ) {
++
++        SET_FNAME ( "H5PartWriteDataInt64" );
++        h5part_int64_t herr;
++
++        CHECK_FILEHANDLE ( f );
++        CHECK_WRITABLE_MODE( f );
++        CHECK_TIMEGROUP( f );
++
++        herr = _append_data ( f, name, (void*)array, H5T_NATIVE_INT64 );
++        if ( herr < 0 ) return herr;
++
++        return H5PART_SUCCESS;
++}
++
++
+ /********************** reading and writing attribute ************************/
+ 
+ /********************** private functions to handle attributes ***************/
+ 
+ /*!
+   \ingroup h5partkernel
+@@ -2089,13 +2294,13 @@
+ 	) {
+ 
+   switch (linfo->type) {
+     case H5L_TYPE_HARD: {
+ 
+       H5O_info_t objinfo;
+-      if( H5Oget_info_by_name( group_id, member_name, &objinfo, H5P_DEFAULT ) < 0 ) {
++      if( H5Oget_info_by_name( group_id, member_name, &objinfo, H5O_INFO_ALL, H5P_DEFAULT ) < 0 ) {
+ 	return (herr_t)HANDLE_H5G_GET_OBJINFO_ERR ( member_name );
+       }
+ 
+       switch(objinfo.type)
+       {
+         case H5O_TYPE_GROUP:
+@@ -2139,13 +2344,13 @@
+           // Open the linked object. 
+           H5O_info_t objinfo;
+           hid_t obj_id = H5Oopen(group_id, member_name, H5P_DEFAULT);
+           if ( obj_id < 0 ) {
+ 	    return (herr_t)HANDLE_H5G_OPEN_ERR ( member_name );
+           }
+-          else if ( H5Oget_info ( obj_id, &objinfo ) < 0 ) {
++          else if ( H5Oget_info ( obj_id, &objinfo, H5P_DEFAULT ) < 0 ) {
+ 	    return (herr_t)HANDLE_H5G_GET_OBJINFO_ERR ( member_name );
+           }
+           else {
+ 	    
+ 	    H5Oclose( obj_id );
+ 
+@@ -2204,13 +2409,13 @@
+ 		H5O_info_t objinfo;
+ 
+ 		hid_t obj_id = H5Oopen(group_id, member_name, H5P_DEFAULT);
+ 		if ( obj_id < 0 )
+ 			return (herr_t)HANDLE_H5G_OPEN_ERR ( member_name );
+ 
+-		herr = H5Oget_info ( obj_id, &objinfo );
++		herr = H5Oget_info ( obj_id, &objinfo, H5P_DEFAULT );
+ 		if ( herr < 0 )
+ 			return (herr_t)HANDLE_H5G_GET_OBJINFO_ERR ( member_name );
+ 
+ 		H5Oclose( obj_id );
+ #else
+ 		H5G_stat_t objinfo;

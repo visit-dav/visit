@@ -1,0 +1,93 @@
+--- libsrc\XdmfH5Driver.cxx	2011-03-10 17:45:29.000000000 -0800
++++ libsrc\XdmfH5Driver.cxx	2026-02-09 13:45:48.000000000 -0800
+@@ -30,12 +30,13 @@
+  *    Derived from the "core" driver.
+  */
+ #include "XdmfH5Driver.h"
+ #include "XdmfDsmBuffer.h"
+ #include "XdmfDsmComm.h"
+ #include "assert.h"
++#define H5_USE_18_API
+ #include "hdf5.h"
+ 
+ #include <cstring>
+ #include <stdlib.h>
+ 
+ #define HDF_IO_DEBUG 1
+@@ -133,28 +134,31 @@
+ static herr_t H5FD_dsm_flush(H5FD_t *_file);
+ #endif
+ static int H5FD_dsm_cmp(const H5FD_t *_f1, const H5FD_t *_f2);
+ #if (H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=8))
+ static haddr_t H5FD_dsm_get_eoa(const H5FD_t *_file, H5FD_mem_t type);
+ static herr_t H5FD_dsm_set_eoa(H5FD_t *_file, H5FD_mem_t type, haddr_t addr);
+-static haddr_t H5FD_dsm_get_eof(const H5FD_t *_file);
++static haddr_t H5FD_dsm_get_eof(const H5FD_t *_file, H5FD_mem_t type);
+ #else
+ static haddr_t H5FD_dsm_get_eoa(H5FD_t *_file);
+ static herr_t H5FD_dsm_set_eoa(H5FD_t *_file, haddr_t addr);
+ static haddr_t H5FD_dsm_get_eof(H5FD_t *_file);
+ #endif
+ static herr_t H5FD_dsm_read(H5FD_t *_file, H5FD_mem_t type, hid_t fapl_id, haddr_t addr,
+            DSM_HSIZE_T size, void *buf);
+ static herr_t H5FD_dsm_write(H5FD_t *_file, H5FD_mem_t type, hid_t fapl_id, haddr_t addr,
+             DSM_HSIZE_T size, const void *buf);
+ }
+ 
+ static const H5FD_class_t H5FD_dsm_g = {
++    0,                          /*version       */
++    H5_VFD_RESERVED + 0xd3f2,   /*value         */
+     "dsm",                      /*name          */
+     MAXADDR,                    /*maxaddr       */
+     H5F_CLOSE_WEAK,             /*fc_degree     */
++    NULL,                       /*terminate     */
+     NULL,                       /*sb_size       */
+     NULL,                       /*sb_encode     */
+     NULL,                       /*sb_decode     */
+     sizeof(H5FD_dsm_fapl_t),    /*fapl_size     */
+     H5FD_dsm_fapl_get,          /*fapl_get      */
+     NULL,                       /*fapl_copy     */
+@@ -174,18 +178,24 @@
+     H5FD_dsm_get_eoa,           /*get_eoa       */
+     H5FD_dsm_set_eoa,           /*set_eoa       */
+     H5FD_dsm_get_eof,           /*get_eof       */
+     NULL,                       /*get_handle    */
+     H5FD_dsm_read,              /*read          */
+     H5FD_dsm_write,             /*write         */
++    NULL,                       /*read_vector     */
++    NULL,                       /*write_vector    */
++    NULL,                       /*read_selection  */
++    NULL,                       /*write_selection */
+     NULL,                       /*flush         */
+ #if (H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=8))
+     NULL,                       /* truncate     */
+ #endif
+     NULL,                       /*lock          */
+     NULL,                       /*unlock        */
++    NULL,                       /*del           */
++    NULL,                       /*ctl           */
+     H5FD_FLMAP_SINGLE           /*fl_map        */
+ };
+ 
+ 
+ #define WORD_CMP(a, b)    ((b) == NULL ? 1 : strncmp((a), (b), strlen(b)))
+ 
+@@ -681,17 +691,13 @@
+  *
+  * Modifications:
+  *
+  *-------------------------------------------------------------------------
+  */
+ static haddr_t
+-#if (H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=8))
+-H5FD_dsm_get_eof(const H5FD_t *_file)
+-#else
+-H5FD_dsm_get_eof(H5FD_t *_file)
+-#endif
++H5FD_dsm_get_eof(const H5FD_t *_file, H5FD_mem_t type)
+ {
+     H5FD_dsm_t  *file = (H5FD_dsm_t*)_file;
+ 
+ #ifdef HDF_IO_DEBUG
+ // printf("H5FD_dsm_get_eoa Called %ld \n", MAX(file->eof, file->eoa) );
+ #endif

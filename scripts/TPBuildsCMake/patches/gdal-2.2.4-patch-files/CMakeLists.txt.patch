@@ -1,0 +1,36 @@
+--- CMakeLists.txt	2026-02-10 13:39:05.000000000 -0800
++++ CMakeLists.txt	2026-02-10 14:13:22.000000000 -0800
+@@ -0,0 +1,33 @@
++cmake_minimum_required(VERSION 3.24)
++
++project(GDAL VERSION 2.2.4)
++
++execute_process(COMMAND ${GDAL_SOURCE_DIR}/generate_vcxproj.bat 17.0 64 buildit
++                WORKING_DIRECTORY ${GDAL_SOURCE_DIR})
++execute_process(COMMAND msbuild -p:Configuration=Release -p:Platform=x64 buildit.vcxproj
++                WORKING_DIRECTORY ${GDAL_SOURCE_DIR})
++
++string(REPLACE "." "" gdal_dll_version ${GDAL_VERSION})
++install(FILES ${GDAL_SOURCE_DIR}/gdal${gdal_dll_version}.dll
++              ${GDAL_SOURCE_DIR}/gdal_i.lib
++        DESTINATION lib)
++
++install(FILES ${GDAL_SOURCE_DIR}/gcore/gdal.h
++              ${GDAL_SOURCE_DIR}/gcore/gdal_frmts.h
++              ${GDAL_SOURCE_DIR}/gcore/gdal_priv.h
++              ${GDAL_SOURCE_DIR}/gcore/gdal_version.h
++              ${GDAL_SOURCE_DIR}/ogr/ogr_api.h
++              ${GDAL_SOURCE_DIR}/ogr/ogr_core.h
++              ${GDAL_SOURCE_DIR}/port/cpl_atomic_ops.h
++              ${GDAL_SOURCE_DIR}/port/cpl_config.h
++              ${GDAL_SOURCE_DIR}/port/cpl_conv.h
++              ${GDAL_SOURCE_DIR}/port/cpl_error.h
++              ${GDAL_SOURCE_DIR}/port/cpl_minixml.h
++              ${GDAL_SOURCE_DIR}/port/cpl_multiproc.h
++              ${GDAL_SOURCE_DIR}/port/cpl_port.h
++              ${GDAL_SOURCE_DIR}/port/cpl_progress.h
++              ${GDAL_SOURCE_DIR}/port/cpl_string.h
++              ${GDAL_SOURCE_DIR}/port/cpl_virtualmem.h
++              ${GDAL_SOURCE_DIR}/port/cpl_vsi.h
++        DESTINATION include)
++
