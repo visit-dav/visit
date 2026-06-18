@@ -6,7 +6,7 @@
 //                         vtkVolumeFromCSGVolume.C                          //
 // ************************************************************************* //
 
-#include <vtkVolumeFromCSGVolume.h>
+#include "vtkVolumeFromCSGVolume.h"
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -31,7 +31,7 @@ using std::vector;
 //
 // ****************************************************************************
 
-vtkVolumeFromCSGVolume::vtkVolumeFromCSGVolume(int nPts, int ptSizeGuess)
+vtkVolumeFromCSGVolume::vtkVolumeFromCSGVolume(vtkIdType nPts, size_t ptSizeGuess)
     : vtkVolumeFromVolume(nPts, ptSizeGuess)
 {
     shapeTags[0] = &tetTags;
@@ -51,6 +51,17 @@ vtkVolumeFromCSGVolume::vtkVolumeFromCSGVolume(int nPts, int ptSizeGuess)
     triTags.reserve(ptSizeGuess / 20);
     lineTags.reserve(ptSizeGuess / 20);
     vertexTags.reserve(ptSizeGuess / 20);
+
+    curTags = nullptr;
+
+    ishape = 0;
+    for (size_t i = 0; i < 8; ++i)
+        shapeCnt[i] = 0;
+    curShapes = nullptr;
+    curShapeCnt = 0;
+    curShapeSize = 0;
+    curShapeVTKType = VTK_EMPTY_CELL;
+    curShape = 0;
 }
 
 // ****************************************************************************
@@ -95,21 +106,21 @@ vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
     // Create the output shapes and cell data.
     //
     int ncells = 0;
-    int conn_size = 0;
-    for (int i = 0 ; i < nshapes ; i++)
+    vtkIdType conn_size = 0;
+    for (size_t i = 0 ; i < nshapes ; i++)
     {
         const vtkIdType *list;
-        int nlists = shapes[i]->GetNumberOfLists();
-        int shapesize = shapes[i]->GetShapeSize();
-        for (vtkIdType j = 0 ; j < nlists ; j++)
+        size_t nlists = shapes[i]->GetNumberOfLists();
+        size_t shapesize = shapes[i]->GetShapeSize();
+        for (size_t j = 0 ; j < nlists ; j++)
         {
-            int listSize = shapes[i]->GetList(j, list);
-            for (int k = 0 ; k < listSize ; k++)
+            size_t listSize = shapes[i]->GetList(j, list);
+            for (size_t k = 0 ; k < listSize ; k++)
             {
                 if (list[0] != -1)
                 {
                     ncells++;
-                    conn_size += shapesize+1;
+                    conn_size += static_cast<vtkIdType>(shapesize+1);
                 }
                 list += shapesize+1;
             }
@@ -132,17 +143,17 @@ vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
 
     vtkIdType ids[1024]; // 8 (for hex) should be max, but...
     int cellId = 0;
-    int current_index = 0;
-    for (int i = 0 ; i < nshapes ; i++)
+    vtkIdType current_index = 0;
+    for (size_t i = 0 ; i < nshapes ; i++)
     {
         const vtkIdType *list;
-        int nlists = shapes[i]->GetNumberOfLists();
-        int shapesize = shapes[i]->GetShapeSize();
-        int vtk_type = shapes[i]->GetVTKType();
-        for (vtkIdType j = 0 ; j < nlists ; j++)
+        size_t nlists = shapes[i]->GetNumberOfLists();
+        size_t shapesize = shapes[i]->GetShapeSize();
+        unsigned char vtk_type = shapes[i]->GetVTKType();
+        for (size_t j = 0 ; j < nlists ; j++)
         {
-            int listSize = shapes[i]->GetList(j, list);
-            for (int k = 0 ; k < listSize ; k++)
+            size_t listSize = shapes[i]->GetList(j, list);
+            for (size_t k = 0 ; k < listSize ; k++)
             {
                 if (list[0] == -1)
                 {
@@ -150,17 +161,17 @@ vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
                     continue;
                 }
                 outCD->CopyData(inCD, list[0], cellId);
-                for (int l = 0 ; l < shapesize ; l++)
+                for (size_t l = 0 ; l < shapesize ; l++)
                 {
                     ids[l] = list[l+1];
                 }
                 list += shapesize+1;
-                *nl++ = shapesize;
+                *nl++ = static_cast<vtkIdType>(shapesize);
                 *cl++ = current_index;
                 *ct++ = vtk_type;
-                for (int l = 0 ; l < shapesize ; l++)
+                for (size_t l = 0 ; l < shapesize ; l++)
                     *nl++ = ids[l];
-                current_index += shapesize+1;
+                current_index += static_cast<vtkIdType>(shapesize+1);
                 cellId++;
             }
         }
@@ -179,7 +190,7 @@ vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
     // Create the output tags.
     //
     tags->clear();
-    for (int i = 0 ; i < nshapes ; i++)
+    for (size_t i = 0 ; i < nshapes ; i++)
     {
         vector<vtkCSGFixedLengthBitField> *tagList = shapeTags[i];
         for (size_t j = 0; j < tagList->size(); j++)
@@ -206,7 +217,7 @@ vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
 void
 vtkVolumeFromCSGVolume::InitTraversal()
 {
-    for (int i = 0; i < nshapes; i++)
+    for (size_t i = 0; i < nshapes; i++)
         shapeCnt[i] = shapes[i]->GetTotalNumberOfShapes();
 
     ishape = 0;
@@ -222,11 +233,11 @@ vtkVolumeFromCSGVolume::InitTraversal()
     }
     else
     {
-        curShapes = NULL;
+        curShapes = nullptr;
         curShapeCnt = 0;
         curShapeSize = 0;
         curShapeVTKType = 0;
-        curTags = NULL;
+        curTags = nullptr;
     }
     curShape = 0;
 }
@@ -247,11 +258,11 @@ vtkVolumeFromCSGVolume::InitTraversal()
 //
 // ****************************************************************************
 
-vtkIdType
+size_t
 vtkVolumeFromCSGVolume::GetNumberOfCells() const
 {
-    vtkIdType nCells = 0;
-    for (int i = 0; i < nshapes; i++)
+    size_t nCells = 0;
+    for (size_t i = 0; i < nshapes; i++)
         nCells += shapeCnt[i];
     return nCells;
 }
@@ -302,7 +313,7 @@ const vtkIdType *
 vtkVolumeFromCSGVolume::GetCell()
 {
     const vtkIdType *list;
-    vtkIdType ilist = curShape / 1024;
+    size_t ilist = curShape / 1024;
     curShapes->GetList(ilist, list);
     return (&(list[(curShape % 1024)*curShapeSize]));
 }
@@ -342,14 +353,14 @@ vtkVolumeFromCSGVolume::GetTag()
 //    
 // ****************************************************************************
 
-int
+size_t
 vtkVolumeFromCSGVolume::GetCellSize() const
 {
     return curShapeSize - 1;
 }
 
 // ****************************************************************************
-//  Method: vtkVolumeFromCSGVolume::GetCellSize
+//  Method: vtkVolumeFromCSGVolume::GetCellVTKType
 //
 //  Purpose:
 //    Get the VTK cell type of the current cell.
@@ -361,7 +372,7 @@ vtkVolumeFromCSGVolume::GetCellSize() const
 //    
 // ****************************************************************************
 
-int
+unsigned char
 vtkVolumeFromCSGVolume::GetCellVTKType() const
 {
     return curShapeVTKType;
@@ -384,7 +395,7 @@ void
 vtkVolumeFromCSGVolume::SetId(int id)
 {
     vtkIdType *list;
-    vtkIdType ilist = curShape / 1024;
+    size_t ilist = curShape / 1024;
     curShapes->GetList(ilist, list);
     list[(curShape % 1024)*curShapeSize] = id;
 }
@@ -450,34 +461,34 @@ vtkVolumeFromCSGVolume::UpdatePoints(vector<float> &pts)
     //
     // Determine if no shapes have been added and exit early if so.
     //
-    int ishape = 0;
-    while (ishape < nshapes &&
-           shapeCnt[ishape] == shapes[ishape]->GetTotalNumberOfShapes())
-        ishape++;
-    if (ishape >= nshapes)
+    size_t ishape2 = 0;
+    while (ishape2 < nshapes &&
+           shapeCnt[ishape2] == shapes[ishape2]->GetTotalNumberOfShapes())
+        ishape2++;
+    if (ishape2 >= nshapes)
         return;
 
     //
     // Construct all the points that are along edges and add them to
     // the points list.
     //
-    int nLists = pt_list.GetNumberOfLists();
-    for (int i = 0 ; i < nLists ; i++)
+    size_t nLists = pt_list.GetNumberOfLists();
+    for (size_t i = 0 ; i < nLists ; i++)
     {
-        const PointEntry *pe_list = NULL;
-        const int nPts = pt_list.GetList(i, pe_list);
-        for (int j = 0 ; j < nPts ; j++)
+        const PointEntry *pe_list = nullptr;
+        const size_t nPts = pt_list.GetList(i, pe_list);
+        for (size_t j = 0 ; j < nPts ; j++)
         {
             const PointEntry &pe = pe_list[j];
-            const int idx1 = pe.ptIds[0];
-            const int idx2 = pe.ptIds[1];
+            const vtkIdType idx1 = pe.ptIds[0];
+            const vtkIdType idx2 = pe.ptIds[1];
 
-            const float *pt1 = &pts[3*idx1];
-            const float *pt2 = &pts[3*idx2];
+            const float *pt1 = &pts[size_t(3*idx1)];
+            const float *pt2 = &pts[size_t(3*idx2)];
 
             // Now that we have the original points, calculate the new one.
             const float p  = pe.percent;
-            const float bp = 1. - p;
+            const float bp = 1.f - p;
             float pt[3];
             pt[0] = pt1[0]*p + pt2[0]*bp;
             pt[1] = pt1[1]*p + pt2[1]*bp;
@@ -494,22 +505,22 @@ vtkVolumeFromCSGVolume::UpdatePoints(vector<float> &pts)
     //
     // Construct all the centroid points and add them to the points list.
     //
-    const int centroidStart = (int)pts.size() / 3;
+    const int centroidStart = static_cast<int>(pts.size()) / 3;
     nLists = centroid_list.GetNumberOfLists();
-    for (int i = 0 ; i < nLists ; i++)
+    for (size_t i = 0 ; i < nLists ; i++)
     {
-        const CentroidPointEntry *ce_list = NULL;
-        const int nPts = centroid_list.GetList(i, ce_list);
-        for (int j = 0 ; j < nPts ; j++)
+        const CentroidPointEntry *ce_list = nullptr;
+        const size_t nPts = centroid_list.GetList(i, ce_list);
+        for (size_t j = 0 ; j < nPts ; j++)
         {
             const CentroidPointEntry &ce = ce_list[j];
-            const float weight_factor = 1. / ce.nPts;
-            float pt[3] = {0., 0., 0.};
-            for (int k = 0 ; k < ce.nPts ; k++)
+            const float weight_factor = 1.f / float(ce.nPts);
+            float pt[3] = {0.f, 0.f, 0.f};
+            for (size_t k = 0 ; k < ce.nPts ; k++)
             {
-                pt[0] += pts[ce.ptIds[k]*3];
-                pt[1] += pts[ce.ptIds[k]*3+1];
-                pt[2] += pts[ce.ptIds[k]*3+2];
+                pt[0] += pts[size_t(ce.ptIds[k]*3)];
+                pt[1] += pts[size_t(ce.ptIds[k]*3+1)];
+                pt[2] += pts[size_t(ce.ptIds[k]*3+2)];
             }
             pt[0] *= weight_factor;
             pt[1] *= weight_factor;
@@ -521,24 +532,24 @@ vtkVolumeFromCSGVolume::UpdatePoints(vector<float> &pts)
         }
     }
     centroid_list.Clear();
-    numPrevPts = pts.size() / 3;
+    numPrevPts = vtkIdType(pts.size() / 3);
 
     //
     // Update the shape data.
     //
-    for (int i = 0 ; i < nshapes ; i++)
+    for (size_t i = 0 ; i < nshapes ; i++)
     {
         vtkIdType *list;
         nLists = shapes[i]->GetNumberOfLists();
-        int shapesize = shapes[i]->GetShapeSize();
-        for (vtkIdType j = 0 ; j < nLists ; j++)
+        size_t shapesize = shapes[i]->GetShapeSize();
+        for (size_t j = 0 ; j < nLists ; j++)
         {
-            int listSize = shapes[i]->GetList(j, list);
-            for (int k = 0 ; k < listSize ; k++)
+            size_t listSize = shapes[i]->GetList(j, list);
+            for (size_t k = 0 ; k < listSize ; k++)
             {
                 if (list[0] != -1)
                 {
-                    for (int l = 0 ; l < shapesize ; l++)
+                    for (size_t l = 0 ; l < shapesize ; l++)
                     {
                         if (list[l+1] < 0)
                             list[l+1] = centroidStart-1 - list[l+1];

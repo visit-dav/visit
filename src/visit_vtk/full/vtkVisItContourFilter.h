@@ -22,13 +22,13 @@
 #define __vtkVisItContourFilter_h
 
 #include <visit_vtk_exports.h>
-#include "vtkPolyDataAlgorithm.h"
+#include <vtkPolyDataAlgorithm.h>
 
 
 class VISIT_VTK_API vtkVisItContourFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVisItContourFilter,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkVisItContourFilter,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
@@ -69,8 +69,8 @@ protected:
   vtkDataArray *GetPointScalars(vtkDataSet*);
   
 private:
-  vtkVisItContourFilter(const vtkVisItContourFilter&);  // Not implemented.
-  void operator=(const vtkVisItContourFilter&);  // Not implemented.
+  vtkVisItContourFilter(const vtkVisItContourFilter&) = delete;  // Not implemented.
+  void operator=(const vtkVisItContourFilter&) = delete;
 };
 
 
