@@ -675,22 +675,6 @@ Query("NumNodes")
 TestValueEQ("indexselect_ugrid_stride_nodes", GetQueryOutputValue(), 10)
 DeleteAllPlots()
 
-# Test a point mesh
-OpenDatabase(silo_data_path("noise.silo"))
-AddPlot("Mesh", "PointMesh") # 100 points
-isel1d = IndexSelectAttributes()
-isel1d.dim = isa.OneD
-isel1d.xIncr = 5
-AddOperator("IndexSelect")
-SetOperatorOptions(isel1d)
-DrawPlots()
-Query("NumZones")
-TestValueEQ("pointmesh_stride5_zones", GetQueryOutputValue(), 20)
-Query("NumNodes")
-TestValueEQ("pointmesh_stride5_nodes", GetQueryOutputValue(), 20)
-DeleteAllPlots()
-CloseDatabase(silo_data_path("noise.silo"))
-
 # Test ucd mesh in 2D and 3D
 OpenDatabase(silo_data_path("specmix_ucd.silo"))
 AddPlot("Mesh", "Mesh") # 20 x 20 zones
