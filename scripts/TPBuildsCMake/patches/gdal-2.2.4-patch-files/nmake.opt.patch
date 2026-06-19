@@ -1,0 +1,21 @@
+﻿--- nmake.opt	2026-02-23 09:37:09.000000000 -0800
++++ nmake.opt	2026-02-23 09:37:39.000000000 -0800
+@@ -213,15 +213,15 @@
+ # comment out the following and add -DCPL_DISABLE_STDCALL in OPTFLAGS.
+ # This option has no effect on 64-bit windows.
+ STDCALL=YES
+ 
+ # Version number embedded in DLL name. 
+ # If GDAL version is X.Y.Z, VERSION = X * 100 + Y
+-!IFNDEF VERSION
+-VERSION =	202
+-!ENDIF
++#!IFNDEF VERSION
++VERSION=224
++#!ENDIF
+ 
+ # Comment the following out if you want PAM supported disabled
+ # by default.  
+ PAM_SETTING=-DPAM_ENABLED
+ 
+ # Uncomment the following to link OGR utilities against main GDAL DLL

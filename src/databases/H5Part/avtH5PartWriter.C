@@ -34,7 +34,7 @@
 #include <vtkCellTypes.h>
 #include <vtkCellArray.h>
 #include <vtkPointData.h>
-#include <vtkVisItCellDataToPointData.h>
+#include <vtkCellDataToPointData.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
@@ -438,7 +438,7 @@ avtH5PartWriter::WriteDataArrays(vtkDataSet *ds1)
 
     H5PartSetNumParticles( file, nparticles );
 
-    vtkVisItCellDataToPointData *c2p = vtkVisItCellDataToPointData::New();
+    vtkCellDataToPointData *c2p = vtkCellDataToPointData::New();
     c2p->SetInputData(ds1);
     c2p->Update();
     vtkUnstructuredGrid *ds2 = (vtkUnstructuredGrid*)(c2p->GetOutput());

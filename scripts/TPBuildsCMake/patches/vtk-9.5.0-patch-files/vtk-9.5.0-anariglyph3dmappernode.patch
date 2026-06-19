@@ -1,0 +1,32 @@
+--- Rendering\ANARI\vtkAnariGlyph3DMapperNode.cxx	2026-02-26 12:51:15.000000000 -0800
++++ Rendering\ANARI\vtkAnariGlyph3DMapperNode.cxx	2026-02-26 13:22:45.000000000 -0800
+@@ -274,13 +274,13 @@
+   int GetSurfaceRepresentation(vtkProperty* property) const override;
+   ParameterFlags GetBaseUpdateResponsibility() const override;
+ 
+   anari::Geometry InitializeSpheres(vtkPolyData* polyData, vtkProperty* property,
+     std::vector<vec3>& vertices, std::vector<uint32_t>& indexArray, double pointSize,
+     vtkDataArray* radiusArray, vtkPiecewiseFunction* scaleFunction,
+-    std::vector<vec2>& textureCoords, std::vector<float>& pointValueTextureCoords,
++    std::vector<vec2>& textureCoords, std::vector<vec2>& pointValueTextureCoords,
+     std::vector<vec4>& pointColors, int cellFlag) override;
+ 
+   const char* GetSpheresPostfix() const override;
+ 
+   void SetIndexArray(
+     anari::Geometry& glyphGeometry, std::vector<uint32_t>& indexArray, size_t numPoints);
+@@ -329,13 +329,13 @@
+ }
+ 
+ //----------------------------------------------------------------------------
+ anari::Geometry vtkAnariGlyph3DMapperInheritInterface::InitializeSpheres(vtkPolyData* polyData,
+   vtkProperty* property, std::vector<vec3>& vertices, std::vector<uint32_t>& indexArray,
+   double pointSize, vtkDataArray* radiusArray, vtkPiecewiseFunction* scaleFunction,
+-  std::vector<vec2>& textureCoords, std::vector<float>& pointValueTextureCoords,
++  std::vector<vec2>& textureCoords, std::vector<vec2>& pointValueTextureCoords,
+   std::vector<vec4>& pointColors, int cellFlag)
+ {
+   using MapperInternals = vtkAnariGlyph3DMapperNodeInternals;
+ 
+   anari::Geometry glyphGeometry = nullptr;
+ 

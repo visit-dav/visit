@@ -2,19 +2,14 @@
 # file: VisIt Scripting Tutorial Listing 8
 ###########################################
 #
-# 1) Run visit from the CLI as described below.
-#
-
-
-
-####################
 # Example that demonstrates looping over a dataset
 # to extract an aggregate value at each timestep.
 #
-#  visit -nowin -cli -s listing_8_extracting_aggregate_values.py wave.visit pressure wave_pressure_out
-####################
- 
-import sys
+# 1) Run visit from the CLI as shown below.
+#
+#    visit -nowin -cli -s listing_8_extracting_aggregate_values.py wave.visit pressure wave_pressure_out
+#
+
 from visit_utils import *
  
 def setup_plot(dbname,varname, materials = None):

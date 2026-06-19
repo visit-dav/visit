@@ -1,0 +1,35 @@
+--- Rendering\RayTracing\vtkOSPRayPass.h	2025-06-23 11:12:36.000000000 -0800
++++ Rendering\RayTracing\vtkOSPRayPass.h	2025-06-03 07:37:27.000000000 -0800
+@@ -36,12 +36,14 @@
+ class vtkOSPRayPassInternals;
+ class vtkOSPRayRendererNode;
+ class vtkOverlayPass;
+ class vtkRenderPassCollection;
+ class vtkSequencePass;
+ class vtkVolumetricPass;
++// Used by VisIt
++class vtkViewNodeFactory;
+ 
+ class VTKRENDERINGRAYTRACING_EXPORT vtkOSPRayPass : public vtkRenderPass
+ {
+ public:
+   static vtkOSPRayPass* New();
+   vtkTypeMacro(vtkOSPRayPass, vtkRenderPass);
+@@ -61,12 +63,17 @@
+   ///@}
+ 
+   /**
+    * Called by the internals of this class
+    */
+   virtual void RenderInternal(const vtkRenderState* s);
++
++  /**
++   * Called by VisIt
++   */
++  virtual vtkViewNodeFactory* GetViewNodeFactory();
+ 
+   ///@{
+   /**
+    * Wrapper around ospray's init and shutdown that protect
+    * with a reference count.
+    */

@@ -1,0 +1,16 @@
+--- CMakeLists.txt	2011-03-10 17:45:29.000000000 -0800
++++ CMakeLists.txt	2024-01-23 15:54:51.000000000 -0800
+@@ -302,12 +302,13 @@
+ ENDIF(XDMF_BUILD_MPI)
+ 
+ #############################################################################
+ # HDF5 LIBRARY
+ OPTION(XDMF_SYSTEM_HDF5 "Use system HDF5" OFF)
+ IF(XDMF_SYSTEM_HDF5)
++  add_definitions(-DH5_BUILT_AS_DYNAMIC_LIB)
+   OPTION(XDMF_SYSTEM_HDF5_IS_PARALLEL "HDF5 Built for MPI" OFF)
+   IF (XDMF_SYSTEM_HDF5_IS_PARALLEL)
+   ENDIF (XDMF_SYSTEM_HDF5_IS_PARALLEL)
+   FIND_LIBRARY(HDF5_LIBRARY
+     hdf5
+     /usr/lib

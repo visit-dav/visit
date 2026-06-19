@@ -1,0 +1,19 @@
+--- IO\Legacy\vtkDataWriter.cxx	2025-06-23 11:12:36.000000000 -0800
++++ IO\Legacy\vtkDataWriter.cxx	2026-01-26 11:15:20.000000000 -0800
+@@ -1118,13 +1118,15 @@
+           }
+         }
+       }
+       else
+       {
+         unsigned char* cptr = static_cast<vtkBitArray*>(data)->GetPointer(0);
+-        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num - 1) / 8 + 1));
++        // Fix a bug when writing a vtkBitArray, use the same calculation as the reader.
++	// VTK bug ticket #19625.
++        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num*numComp+7)/8));
+       }
+       *fp << "\n";
+     }
+     break;
+ 
+     case VTK_CHAR:
