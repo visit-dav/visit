@@ -644,7 +644,7 @@ TestValueEQ("indexselect_ugrid_base_nodes", GetQueryOutputValue(), 11)
 
 # Contiguous 1D selection of cells [xMin, xMax): cells 0..3 -> 4 cells, 5 nodes.
 isel1d = IndexSelectAttributes()
-isel1d.dim = 0  # 0 -> 1D
+isel1d.dim = isa.OneD
 isel1d.xMin = 0
 isel1d.xMax = 4
 isel1d.xIncr = 1
@@ -662,7 +662,7 @@ RemoveLastOperator()
 # Strided 1D selection over all cells (xMax = -1): every 2nd cell -> 0,2,4,6,8.
 # 5 cells, and point remapping keeps only the 10 referenced nodes (not all 11).
 isel1ds = IndexSelectAttributes()
-isel1ds.dim = 0
+isel1ds.dim = isa.OneD
 isel1ds.xMin = 0
 isel1ds.xMax = -1
 isel1ds.xIncr = 2
@@ -679,7 +679,7 @@ DeleteAllPlots()
 OpenDatabase(silo_data_path("noise.silo"))
 AddPlot("Mesh", "PointMesh") # 100 points
 isel1d = IndexSelectAttributes()
-isel1d.dim = 0  # 0 -> 1D
+isel1d.dim = isa.OneD
 isel1d.xIncr = 5
 AddOperator("IndexSelect")
 SetOperatorOptions(isel1d)
@@ -695,7 +695,7 @@ CloseDatabase(silo_data_path("noise.silo"))
 OpenDatabase(silo_data_path("specmix_ucd.silo"))
 AddPlot("Mesh", "Mesh") # 20 x 20 zones
 isel1d = IndexSelectAttributes()
-isel1d.dim = 0  # 0 -> 1D
+isel1d.dim = isa.OneD
 isel1d.xMin = 10 
 isel1d.xIncr = 20
 AddOperator("IndexSelect")
@@ -713,7 +713,7 @@ DeleteAllPlots()
 
 AddPlot("Mesh", "Mesh_3d")
 isel1d = IndexSelectAttributes()
-isel1d.dim = 0  # 0 -> 1D
+isel1d.dim = isa.OneD
 isel1d.xMin = 10 
 isel1d.xIncr = 20
 AddOperator("IndexSelect")
@@ -735,7 +735,7 @@ CloseDatabase(silo_data_path("specmix_ucd.silo"))
 OpenDatabase(data_path("silo_hdf5_test_data/ucd_lines2d.silo"))
 AddPlot("Mesh", "ucd_linesmesh2d")
 isel1d = IndexSelectAttributes()
-isel1d.dim = 0  # 0 -> 1D
+isel1d.dim = isa.OneD
 isel1d.xMin = 3 
 isel1d.xIncr = 3
 AddOperator("IndexSelect")
@@ -749,7 +749,7 @@ CloseDatabase(data_path("silo_hdf5_test_data/ucd_lines2d.silo"))
 OpenDatabase(data_path("silo_hdf5_test_data/ucd_lines3d.silo"))
 AddPlot("Mesh", "ucd_linesmesh3d")
 isel1d = IndexSelectAttributes()
-isel1d.dim = 0  # 0 -> 1D
+isel1d.dim = isa.OneD
 isel1d.xMin = 3 
 isel1d.xIncr = 3
 AddOperator("IndexSelect")
@@ -764,7 +764,7 @@ CloseDatabase(data_path("silo_hdf5_test_data/ucd_lines3d.silo"))
 OpenDatabase(data_path("curve_test_data/c053.curve"))
 AddPlot("Curve", "parabolic")
 isel1d = IndexSelectAttributes()
-isel1d.dim = 0  # 0 -> 1D
+isel1d.dim = isa.OneD
 isel1d.xMin = 31
 isel1d.xMax = 70
 isel1d.xIncr = 4
