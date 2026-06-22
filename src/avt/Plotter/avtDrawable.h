@@ -84,6 +84,10 @@ class     avtTransparencyActor;
 //    Kathleen Biagas, Thu Aug 28 15:28:06 PDT 2025
 //    Remove SetSurfaceRepresentation, no longer used.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added SetTileZoom to pass the tile zoom to the mapper to support
+//    tiled rendering.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtDrawable
@@ -104,6 +108,8 @@ class PLOTTER_API avtDrawable
     virtual void               ShiftByVector(const double [3]) = 0;
     virtual void               ScaleByVector(const double [3]) = 0;
     virtual void               UpdateScaleFactor(void) = 0;
+    virtual void               SetTileZoom(const double) {;}
+
 
     virtual void               TurnLightingOn(void) = 0;
     virtual void               TurnLightingOff(void) = 0;

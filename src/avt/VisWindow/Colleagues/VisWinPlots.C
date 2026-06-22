@@ -1043,6 +1043,7 @@ VisWinPlots::UpdateView()
 
     ShiftPlots(projection);
     UpdateScaleFactor();
+    UpdateTileZoom(tileZoom);
 }
 
 
@@ -1550,10 +1551,10 @@ VisWinPlots::ScalePlots(const double vec[3])
 //  Method: VisWinPlots::UpdateScaleFactor
 //
 //  Purpose:
-//      Allows decoration actors to update their scale factor. 
+//      Allows decoration actors to update their scale factor.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 19, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 19, 2002
 //
 // ****************************************************************************
 
@@ -1564,6 +1565,28 @@ VisWinPlots::UpdateScaleFactor()
     for (it = plots.begin() ; it != plots.end() ; it++)
     {
         (*it)->UpdateScaleFactor();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::UpdateTileZoom
+//
+//  Purpose:
+//      Allows plots to update their tile zoom.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// ****************************************************************************
+
+void
+VisWinPlots::UpdateTileZoom(const double tileZoom)
+{
+    std::vector< avtActor_p >::iterator it;
+    for (it = plots.begin() ; it != plots.end() ; it++)
+    {
+        (*it)->SetTileZoom(tileZoom);
     }
 }
 

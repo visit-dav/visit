@@ -69,6 +69,10 @@ LabelVerticalJustificationToVTK(LabelAttributes::LabelVerticalAlignment v)
 //   Brad Whitlock, Mon Aug 8 17:35:11 PST 2005
 //   Added zbuffer stuff.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added SetTileZoom to pass the tile zoom to the mapper to support
+//   tiled rendering.
+//
 // ****************************************************************************
 
 vtkLabelMapperBase::vtkLabelMapperBase() : 
@@ -101,6 +105,7 @@ vtkLabelMapperBase::vtkLabelMapperBase() :
     this->SpatialExtents[5] = 0.;
     this->UseGlobalLabel = false;
     this->RendererAction = 0;
+    this->TileZoom = 1.;
 
     this->numXBins = 0;
     this->numYBins = 0;
@@ -322,6 +327,9 @@ void vtkLabelMapperBase::PrintSelf(ostream& os, vtkIndent indent)
 // Creation:   Thu Aug 4 10:33:05 PDT 2005
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added SetTileZoom to pass the tile zoom to the mapper to support
+//   tiled rendering.
 //   
 // ****************************************************************************
 
@@ -330,6 +338,7 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
 {
     double rgb[3];
     int *sz = vp->GetSize();
+    double fontScale = 0.01 * sz[1] * TileZoom;
     if(atts.GetVarType() == LabelAttributes::LABEL_VT_MESH)
     {
         // Node font atts
@@ -344,7 +353,7 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             this->NodeLabelProperty->SetColor(rgb);
         }
 
-        this->NodeLabelProperty->SetFontSize(nodeFA.GetScale()*0.01*sz[1]);
+        this->NodeLabelProperty->SetFontSize(nodeFA.GetScale() * fontScale);
         this->NodeLabelProperty->SetFontFamily((int)nodeFA.GetFont());
         this->NodeLabelProperty->SetBold(nodeFA.GetBold());
         this->NodeLabelProperty->SetItalic(nodeFA.GetItalic());
@@ -360,7 +369,7 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             cellFA.GetColor().GetRgb(rgb);
             this->CellLabelProperty->SetColor(rgb);
         }
-        this->CellLabelProperty->SetFontSize(cellFA.GetScale()*0.01*sz[1]);
+        this->CellLabelProperty->SetFontSize(cellFA.GetScale() * fontScale);
         this->CellLabelProperty->SetFontFamily((int)cellFA.GetFont());
         this->CellLabelProperty->SetBold(cellFA.GetBold());
         this->CellLabelProperty->SetItalic(cellFA.GetItalic());
@@ -381,11 +390,11 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             this->NodeLabelProperty->SetColor(rgb);
             this->CellLabelProperty->SetColor(rgb);
         }
-        this->NodeLabelProperty->SetFontSize(labelFA.GetScale()*0.01*sz[1]);
+        this->NodeLabelProperty->SetFontSize(labelFA.GetScale() * fontScale);
         this->NodeLabelProperty->SetFontFamily((int)labelFA.GetFont());
         this->NodeLabelProperty->SetBold(labelFA.GetBold());
         this->NodeLabelProperty->SetItalic(labelFA.GetItalic());
-        this->CellLabelProperty->SetFontSize(labelFA.GetScale()*0.01*sz[1]);
+        this->CellLabelProperty->SetFontSize(labelFA.GetScale() * fontScale);
         this->CellLabelProperty->SetFontFamily((int)labelFA.GetFont());
         this->CellLabelProperty->SetBold(labelFA.GetBold());
         this->CellLabelProperty->SetItalic(labelFA.GetItalic());

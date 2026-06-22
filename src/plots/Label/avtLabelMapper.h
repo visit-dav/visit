@@ -31,6 +31,10 @@
 //    Alister Maguire, Fri May 21 15:11:53 PDT 2021
 //    Added SetFullFrameScaling.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added SetTileZoom to pass the tile zoom to the vtk label mapper to
+//    support tiled rendering.
+//
 // ****************************************************************************
 
 class avtLabelMapper : public avtMapper2D
@@ -51,6 +55,7 @@ class avtLabelMapper : public avtMapper2D
     void                       SetCellOrigin(vtkIdType);
     void                       SetNodeOrigin(vtkIdType);
     bool                       SetFullFrameScaling(bool, const double *);
+    bool                       SetTileZoom(const double);
 
   protected:
     virtual vtkMapper2D       *CreateMapper2D(void);
