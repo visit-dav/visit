@@ -219,11 +219,25 @@ bool CompareViews(avtViewInfo a, avtViewInfo b)
        mod = true;
     else if(a.camera[2] != b.camera[2])
        mod = true;
+    else if(a.focus[0] != b.focus[0])
+       mod = true;
+    else if(a.focus[1] != b.focus[1])
+       mod = true;
+    else if(a.focus[2] != b.focus[2])
+       mod = true;
     else if(a.viewUp[0] != b.viewUp[0])
        mod = true;
     else if(a.viewUp[1] != b.viewUp[1])
        mod = true;
     else if(a.viewUp[2] != b.viewUp[2])
+       mod = true;
+    else if(a.parallelScale != b.parallelScale)
+       mod = true;
+    else if(a.imagePan[0] != b.imagePan[0])
+       mod = true;
+    else if(a.imagePan[1] != b.imagePan[1])
+       mod = true;
+    else if(a.imageZoom != b.imageZoom)
        mod = true;
     return mod;
 }
