@@ -257,6 +257,9 @@ avtViewInfo::SetToDefault()
 //    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //    Add shear for oblique projection support.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Add imagePan and imageZoom.
+//
 // ****************************************************************************
 
 void
@@ -274,6 +277,8 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
     viewAngle = vtkcam->GetViewAngle();
     eyeAngle  = vtkcam->GetEyeAngle();
     parallelScale = vtkcam->GetParallelScale();
+    vtkcam->GetWindowCenter(imagePan);
+    imageZoom = vtkcam->GetFocalDisk();
     orthographic = (vtkcam->GetParallelProjection() != 0 ? true : false);
     vtkcam->GetViewShear(shear);
 }
