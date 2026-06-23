@@ -40,5 +40,7 @@ ExternalProject_Add(ZLIB
     INSTALL_DIR      ${visit_zlib_root}
     CMAKE_CACHE_ARGS ${ZLIB_CMAKE_OPTIONS}
     ${LOGGING_OPTIONS}
-    PATCH_COMMAND    ${CMAKE_COMMAND} -DZLIB_VERSION:STRING=${ZLIB_VERSION} -DPATCH_DIR:PATH=${visit_tp_patches} -P ${visit_tp_patches}/zlib-patch.cmake )
+    PATCH_COMMAND    ${CMAKE_COMMAND} -DZLIB_VERSION:STRING=${ZLIB_VERSION}
+                                      -DPATCH_DIR:PATH=${visit_tp_patches}
+                                      -P ${visit_tp_patches}/zlib-patch.cmake )
 
