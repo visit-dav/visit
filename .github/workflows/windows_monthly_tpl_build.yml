@@ -2,7 +2,8 @@ name: Windows Monthly TPL CMake build
 
 on:
   schedule:
-    - cron: '0 0 * * 22'
+    - cron: '0 0 24 * *'
+      timezone: 'US/Pacific'
   workflow_dispatch:
 
 permissions:
