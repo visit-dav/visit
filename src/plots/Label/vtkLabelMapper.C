@@ -11,6 +11,7 @@
 #include <vtkDataArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkTransform.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -1064,6 +1065,10 @@ vtkLabelMapper::PopulateBinsWithCellLabels3D(vtkDataSet *input, vtkRenderer *ren
 //   Alister Maguire, Mon May 24 10:06:23 PDT 2021
 //   If we're in full frame mode, we need to perform some scaling.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I added logic to do the binning across the entire image when doing
+//   tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -1119,11 +1124,37 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
 
     //
     // Initialize the transformation matrix that we'll use to transform points
-    // into normalized device space.
+    // into normalized device space. This is done using the whole image and
+    // not individual tiles. We save the pan and zoom from the current tile,
+    // then set the pan and zoom to the whole image, then get the model view
+    // and projection matrices, and then restore the pan and zoom for the
+    // current tile.
     //
+
+    // Save the pan and zoom from the current tile.
+    double windowCenter[2];
+    vtkHomogeneousTransform *izt = ren->GetActiveCamera()->GetUserTransform();
+    if (izt)
+        izt->Register(this);
+    ren->GetActiveCamera()->GetWindowCenter(windowCenter);
+
+    // Set the pan and zoom to the untiled image.
+    ren->GetActiveCamera()->SetUserTransform(NULL);
+    ren->GetActiveCamera()->SetWindowCenter(0., 0.);
+
+    // Get the model view and projection matrices for the untiled image.
     double modelview[4][4], projection[4][4], mtmp[4][4];
     vtkMatrix4x4 *mvtm = ren->GetActiveCamera()->GetModelViewTransformMatrix();
     vtkMatrix4x4 *ptm = ren->GetActiveCamera()->GetProjectionTransformMatrix(ren);
+
+    // Restore the pan and zoom to the current tile.
+    if (izt)
+    {
+        ren->GetActiveCamera()->SetUserTransform(izt);
+        izt->Delete();
+    }
+    ren->GetActiveCamera()->SetWindowCenter(windowCenter[0], windowCenter[1]);
+
     if (mvtm)
     {
         for (int i = 0; i < 4; ++i)
@@ -1139,6 +1170,7 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
             for (int j = 0; j < 4; ++j)
                 projection[i][j] = ptm->GetElement(i, j);
     }
+
     const double tonormdev[4][4] = {{0.5,0,0,0},{0,0.5,0,0},{0,0,0.5,0},{0.5,0.5,0.5,1}};
     matrix_mul(mtmp, modelview, projection);
     matrix_mul(pointXForm, mtmp, tonormdev);
