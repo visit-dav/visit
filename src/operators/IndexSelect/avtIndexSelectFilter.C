@@ -406,6 +406,8 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    variables for thread safety; added amrMesh for thread safety; added
 //    mutex locks where necessary.  
 //
+//    Shistata Subedi, Wed Jun 17 13:23:51 PDT 2026
+//    Add support for unstructured grids using 1D selection.
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -504,7 +506,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                 if (!haveIssuedWarning)
                 {
                     avtCallback::IssueWarning("An internal error occurred and "
-                            "the index select operator was not applied.");
+                            "the Index Select operator was not applied.");
                     VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
                     haveIssuedWarning = true;
                     VisitMutexUnlock("avtIndexSelectFilter::ThreadSafeExecuteData");
@@ -518,8 +520,9 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
         }
         PrepareFilters(ind, amri, curvilinearFilter, rectilinearFilter, 
                        pointsFilter);
-    
+
         vtkDataSet *rv = NULL;
+        bool rvOwned = false;
         int dstype = ds->GetDataObjectType();
         if (dstype == VTK_STRUCTURED_GRID)
         {
@@ -540,13 +543,107 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
             pointsFilter->Update();
             rv = pointsFilter->GetOutput();
         }
+        else if (atts.GetDim() == IndexSelectAttributes::OneD &&
+                 (dstype == VTK_POLY_DATA || dstype == VTK_UNSTRUCTURED_GRID))
+        {
+            vtkUnstructuredGrid *out_ug = vtkUnstructuredGrid::New();
+            vtkPoints *out_pts = vtkPoints::New();
+            out_ug->SetPoints(out_pts);
+            out_pts->Delete();
+
+            vtkCellData *out_cd = out_ug->GetCellData();
+            vtkCellData *in_cd = ds->GetCellData();
+            out_cd->CopyAllocate(in_cd);
+
+            vtkPointData *out_pd = out_ug->GetPointData();
+            vtkPointData *in_pd = ds->GetPointData();
+            out_pd->CopyAllocate(in_pd);
+
+            int ncells = ds->GetNumberOfCells();
+            int npoints = ds->GetNumberOfPoints();
+            vector<vtkIdType> ptMap(npoints, -1);
+            vector<vtkIdType> outCellPts;
+            out_ug->Allocate(ncells);
+
+            int xmin = atts.GetXMin();
+            int xmax = atts.GetXMax();
+            xmax = (xmax < 0 ? ncells : xmax);
+            int xincr = atts.GetXIncr();
+            if (xincr <= 0)
+                xincr = 1;
+            int out_cell = 0;
+            for (int i = 0; i < ncells; ++i)
+            {
+                if (i < xmin || i >= xmax)
+                    continue;
+                if (((i - xmin) % xincr) != 0)
+                    continue;
+
+                vtkCell *cell = ds->GetCell(i);
+                vtkIdList *list = cell->GetPointIds();
+                int ncellpts = list->GetNumberOfIds();
+                outCellPts.resize(ncellpts);
+                for (int j = 0; j < ncellpts; ++j)
+                {
+                    vtkIdType oldPtId = list->GetId(j);
+                    vtkIdType newPtId = ptMap[oldPtId];
+                    if (newPtId < 0)
+                    {
+                        double pt[3];
+                        ds->GetPoint(oldPtId, pt);
+                        newPtId = out_pts->InsertNextPoint(pt);
+                        out_pd->CopyData(in_pd, oldPtId, newPtId);
+                        ptMap[oldPtId] = newPtId;
+                    }
+                    outCellPts[j] = newPtId;
+                }
+                out_ug->InsertNextCell(ds->GetCellType(i), ncellpts,
+                                       &outCellPts[0]);
+                out_cd->CopyData(in_cd, i, out_cell++);
+            }
+
+            if (dstype == VTK_POLY_DATA)
+            {
+                vtkPolyData *out_pd = vtkPolyData::New();
+                out_pd->SetPoints(out_ug->GetPoints());
+                out_pd->GetPointData()->ShallowCopy(out_ug->GetPointData());
+                out_pd->GetCellData()->ShallowCopy(out_ug->GetCellData());
+                out_pd->Allocate(out_ug->GetNumberOfCells());
+                for (int i = 0; i < out_ug->GetNumberOfCells(); ++i)
+                {
+                    int celltype = out_ug->GetCellType(i);
+                    vtkIdType npts;
+                    const vtkIdType *pts;
+                    out_ug->GetCellPoints(i, npts, pts);
+                    out_pd->InsertNextCell(celltype, npts, pts);
+                }
+                out_ug->Delete();
+                rv = out_pd;
+            }
+            else
+            {
+                rv = out_ug;
+            }
+            rvOwned = true;
+        }
         else
         {
             if (!haveIssuedWarning)
             {
-                avtCallback::IssueWarning("The index select operator was "
-                            "applied to a non-structured mesh.  It is not "
+                if (dstype == VTK_UNSTRUCTURED_GRID || dstype == VTK_POLY_DATA)
+                {
+                    avtCallback::IssueWarning("The Index Select operator was "
+                            "applied in 2D or 3D mode to an unstructured or "
+                            "polydata mesh, which supports only 1D index "
+                            "selection.  Switch the operator to 1D mode to use "
+                            "it on this mesh.  It is not being applied.");
+                }
+                else
+                {
+                    avtCallback::IssueWarning("The Index Select operator was "
+                            "applied to an unsupported mesh type.  It is not "
                             "being applied.");
+                }
                 VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
                 haveIssuedWarning = true; 
                 VisitMutexUnlock("avtIndexSelectFilter::ThreadSafeExecuteData");
@@ -561,11 +658,15 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
 
         if (rv->GetNumberOfPoints() <= 0 || rv->GetNumberOfCells() <= 0)
         {
+            if (rvOwned)
+                rv->Delete();
             return NULL;
         }
 
         out_ds = (vtkDataSet *) rv->NewInstance();
         out_ds->ShallowCopy(rv);
+        if (rvOwned)
+            rv->Delete();
     }
     else
     {
@@ -582,7 +683,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
             if (!haveIssuedWarning)
             {
                 avtCallback::IssueWarning("An internal error occurred and the "
-                                          "index select operator was not "
+                                          "Index Select operator was not "
                                           "applied.");
                 VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
                 haveIssuedWarning = true;
@@ -599,7 +700,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
             if (!haveIssuedWarning)
             {
                 avtCallback::IssueWarning("An internal error occurred and the "
-                                          "index select operator was not "
+                                          "Index Select operator was not "
                                           "applied.");
                 VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
                 haveIssuedWarning = true; 
@@ -1045,7 +1146,7 @@ avtIndexSelectFilter::PreExecute(void)
         if (atts.GetXIncr()!=1 || atts.GetYIncr()!=1 || atts.GetZIncr()!=1)
         {
             avtCallback::IssueWarning("The data was already modified "
-                           "before the index select operator was applied."
+                           "before the Index Select operator was applied."
                            "  It is only possible to do increments of 1.");
         }
     }
@@ -2029,4 +2130,3 @@ avtIndexSelectFilter::LogicalSpaces::MatchesMaxAt(int idx, int _max)
 {
     return idx < 3 && idx >= 0 && maxs[idx] == _max;
 }
-
