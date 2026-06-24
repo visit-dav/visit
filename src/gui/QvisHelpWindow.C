@@ -68,6 +68,9 @@
 //   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
 //   Added manualPath for accessing the sphinx manual.
 //
+//   Kathleen Biagas, Wed June 24, 2026
+//   Initialize startOptsPath.
+//
 // ****************************************************************************
 
 QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
@@ -79,6 +82,12 @@ QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
     // Create a path to locate the manual from the helpPath.
     manualPath = QString("manual") + QString(VISIT_SLASH_STRING) +
         QString("index.html");
+
+    startOptsPath = QString("manual") +
+                  QString(VISIT_SLASH_STRING) +
+                  QString("getting_started") +
+                  QString(VISIT_SLASH_STRING) +
+                  QString("Startup_Options.html");
 
     firstShow = true;
     activeTab = 0;
@@ -372,6 +381,11 @@ QvisHelpWindow::ReleaseNotesFile() const
 //   Kathleen Biagas, Tue Mar 18, 2025
 //   Removed ultrawrapper document.
 //
+//   Kathleen Biagas, Wed June 24, 2026
+//   Changed 'argsPage' data from 'args.html' to 'startOptsPath'. The new
+//   data points to a page in our local manual.
+//   Removed faqPage.
+//
 // ****************************************************************************
 
 void
@@ -395,14 +409,8 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
     QTreeWidgetItem *argsPage = new QTreeWidgetItem(
         helpContents, 0);
     argsPage->setText(0, tr("Command line arguments"));
-    argsPage->setData(0, Qt::UserRole, QVariant("args.html"));
+    argsPage->setData(0, Qt::UserRole, QVariant(startOptsPath));
     argsPage->setIcon(0, helpIcon);
-
-    QTreeWidgetItem *faqPage = new QTreeWidgetItem(
-        helpContents, 0);
-    faqPage->setText(0, tr("Frequently asked questions"));
-    faqPage->setData(0, Qt::UserRole, QVariant("faq.html"));
-    faqPage->setIcon(0, helpIcon);
 
     QTreeWidgetItem *copyrightPage = new QTreeWidgetItem(
         helpContents, 0);
@@ -517,6 +525,9 @@ QvisHelpWindow::BuildContents(QTreeWidgetItem *parentItem,
 //   Kathleen Biagas, Tue Mar 18, 2025
 //   Removed ultrawrapper document.
 //
+//   Kathleen Biagas, Wed June 24, 2026
+//   Removed faq.
+//
 // ****************************************************************************
 
 void
@@ -525,8 +536,6 @@ QvisHelpWindow::BuildIndex()
     // Add a few more items to the index.
     AddToIndex(tr("Copyright"), "copyright.html");
     AddToIndex(tr("Command line arguments"), "args.html");
-    AddToIndex(tr("Frequently asked questions"), "faq.html");
-    AddToIndex(tr("FAQ"), "faq.html");
     AddToIndex(tr("VisIt"), "home.html");
     AddToIndex(tr("Release notes"), ReleaseNotesFile());
     AddToIndex(tr("VisIt Manuals"), manualPath);
@@ -1001,6 +1010,11 @@ QvisHelpWindow::activateBookmarkTab()
 //   Brad Whitlock, Thu Jun 19 16:27:10 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Wed June 24, 2026
+//   For manual and command line args, add displayTitle and a call to
+//   displayPage that sets externalBrowser to true so that content is opened
+//   in external browser for better viewing.
+//
 // ****************************************************************************
 
 void
@@ -1009,11 +1023,24 @@ QvisHelpWindow::openHelp(QTreeWidgetItem *item)
     if(item)
     {
         QString document(item->data(0, Qt::UserRole).toString());
-
         if(!document.isEmpty())
-            displayPage(document);
+        {
+            QString itemText(item->text(0));
+            if((itemText == QString("VisIt Manuals")) ||
+               (itemText == QString("Command line arguments")))
+            {
+                displayTitle(item->text(0), QString("opens in external browser"));
+                displayPage(document, true);
+            }
+            else
+            {
+                displayPage(document);
+            }
+        }
         else
+        {
             displayTitle(item->text(0));
+        }
     }
 }
 
@@ -1050,7 +1077,8 @@ static int DepthOfModelIndex(QModelIndex mi)
 void
 QvisHelpWindow::openHelp(const QString& entry)
 {
-    if(!isCreated) {
+    if(!isCreated)
+    {
         CreateEntireWindow();
     }
 
@@ -1241,6 +1269,18 @@ QvisHelpWindow::displayTitle(const QString &title)
     helpFile = "none";
 }
 
+void
+QvisHelpWindow::displayTitle(const QString &title, const QString &title2)
+{
+    QString html = QString("<html><body background=\"#ffffff\"><center><b><h2>") +
+                   title +
+                   QString("</h2></b><h3>") +
+                   title2 +
+                   QString("<h3></center></body></html>");
+    helpBrowser->setText(html);
+    helpFile = "none";
+}
+
 // ****************************************************************************
 // Method: QvisHelpWindow::displayCopyright
 //
@@ -1391,7 +1431,7 @@ QvisHelpWindow::displayHome()
 //
 // Arguments:
 //   page   : The name of the page to display.
-//   reload : Whether or not to force the page to reload.
+//   externalBrowser : Whether or not to force the page to load in external browser.
 //
 // Returns:   This method return true if the page is displayed; false otherwise.
 //
@@ -1408,19 +1448,25 @@ QvisHelpWindow::displayHome()
 //   Kathleen Bonnell, Thu Apr  8 17:20:52 PST 2010
 //   Convert file to url so it will work on windows.
 //
+//   Kathleen Biagas, Wed June 24, 2026
+//   Removed no-longer-used 'reload' arg. Added 'externalBrowswer' arg.
+//
 // ****************************************************************************
 
 bool
-QvisHelpWindow::displayPage(const QString &page, bool reload)
+QvisHelpWindow::displayPage(const QString &page, bool externalBrowser)
 {
     bool retval = false;
 
-    if(page != helpFile || reload)
+    if(page != helpFile)
     {
         QString file(CompleteFileName(page));
         if(QFile(file).exists())
         {
-            helpBrowser->setSource(QUrl::fromLocalFile(file));
+            if(externalBrowser)
+                QDesktopServices::openUrl(file);
+            else
+                helpBrowser->setSource(QUrl::fromLocalFile(file));
             helpFile = page;
             retval = true;
         }

@@ -58,6 +58,11 @@ class QWidget;
 //   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
 //   Added manualPath.
 //
+//   Kathleen Biagas, Wed June 24, 2026
+//   Replaced 'reload' with 'externalBrowser' argument to displayPage as the
+//   reload arg not being used. Added a second displayTitle method and new
+//   startOptsPath ivar.
+//
 // ****************************************************************************
 
 class GUI_API QvisHelpWindow : public QvisDelayedWindow
@@ -89,8 +94,9 @@ private slots:
     void topicCollapsed(QTreeWidgetItem *);
     void displayNoHelp();
     void displayTitle(const QString &title);
+    void displayTitle(const QString &title, const QString &title2);
     void displayHome();
-    bool displayPage(const QString &page, bool reload = false);
+    bool displayPage(const QString &page, bool externalBrowser = false);
     void increaseFontSize();
     void decreaseFontSize();
     void displayIndexTopic();
@@ -139,6 +145,7 @@ private:
     QString      helpFile;
     QString      helpPath;
     QString      manualPath;
+    QString      startOptsPath;
     bool         firstShow;
     int          activeTab;
     IndexMap     index;
