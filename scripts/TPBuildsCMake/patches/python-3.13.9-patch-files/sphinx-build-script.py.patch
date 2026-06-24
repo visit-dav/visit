@@ -1,0 +1,11 @@
+--- sphinx-build-script.py	2026-02-17 09:17:48.000000000 -0800
++++ sphinx-build-script.py	2025-11-20 16:44:43.000000000 -0800
+@@ -0,0 +1,8 @@
++#!python.exe
++import sys
++from sphinx.cmd.build import main
++if __name__ == '__main__':
++    if sys.argv[0].endswith('.exe'):
++        sys.argv[0] = sys.argv[0][:-4]
++    sys.exit(main())
++

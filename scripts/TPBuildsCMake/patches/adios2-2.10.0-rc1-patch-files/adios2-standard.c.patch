@@ -1,0 +1,30 @@
+--- thirdparty\ffs\ffs\cod\standard.c	2026-02-09 08:05:55.000000000 -0800
++++ thirdparty\ffs\ffs\cod\standard.c	2024-01-23 11:13:44.000000000 -0800
+@@ -549,12 +549,13 @@
+ 
+ 
+ #include <math.h>
+ 
+ static cod_extern_entry math_externs[] = 
+ {
++#ifndef _MSC_VER
+     {"acos", sym(acos)},
+     {"asin", sym(asin)},
+     {"atan", sym(atan)},
+     {"atan2", sym(atan2)},
+     {"cos", sym(cos)},
+     {"sin", sym(sin)},
+@@ -598,12 +599,13 @@
+     {"trunc", sym(trunc)},
+     {"fmod", sym(fmod)},
+     {"remainder", sym(remainder)},
+     {"remquo", sym(remquo)},
+     {"copysign", sym(copysign)},
+     {"nan", sym(nan)},
++#endif
+     {NULL, NULL}
+ };
+ 
+ static char math_extern_string[] = "\n\
+ double acos(double a);\n\
+ double asin(double a);\n\

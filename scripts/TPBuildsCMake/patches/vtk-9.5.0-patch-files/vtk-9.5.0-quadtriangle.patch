@@ -1,0 +1,34 @@
+--- Common\DataModel\vtkQuadraticTriangle.cxx	2025-06-23 11:12:36.000000000 -0800
++++ Common\DataModel\vtkQuadraticTriangle.cxx	2026-01-26 10:53:22.000000000 -0800
+@@ -234,13 +234,31 @@
+ 
+ //------------------------------------------------------------------------------
+ int vtkQuadraticTriangle::TriangulateLocalIds(int vtkNotUsed(index), vtkIdList* ptIds)
+ {
+   // Create four linear triangles
+   ptIds->SetNumberOfIds(12);
++#if 0
++  // This call to std::copy on Windows does not yield proper results.
++  // Perhaps due to column-major/row-major differences?
+   std::copy(&LinearTris[0][0], &LinearTris[0][0] + 12, ptIds->begin());
++#else
++  // Use a possibly slower but sure way.
++  ptIds->SetId( 0, LinearTris[0][0]);
++  ptIds->SetId( 1, LinearTris[0][1]);
++  ptIds->SetId( 2, LinearTris[0][2]);
++  ptIds->SetId( 3, LinearTris[1][0]);
++  ptIds->SetId( 4, LinearTris[1][1]);
++  ptIds->SetId( 5, LinearTris[1][2]);
++  ptIds->SetId( 6, LinearTris[2][0]);
++  ptIds->SetId( 7, LinearTris[2][1]);
++  ptIds->SetId( 8, LinearTris[2][2]);
++  ptIds->SetId( 9, LinearTris[3][0]);
++  ptIds->SetId(10, LinearTris[3][1]);
++  ptIds->SetId(11, LinearTris[3][2]);
++#endif
+   return 1;
+ }
+ 
+ //------------------------------------------------------------------------------
+ void vtkQuadraticTriangle::Derivatives(
+   int vtkNotUsed(subId), const double pcoords[3], const double* values, int dim, double* derivs)
