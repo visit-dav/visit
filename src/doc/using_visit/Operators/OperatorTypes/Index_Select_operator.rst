@@ -3,18 +3,13 @@
 Index Select operator
 ~~~~~~~~~~~~~~~~~~~~~
 
-The Index Select operator selects a subset of a 2D or 3D structured mesh based 
-on ranges of cell indices. Structured meshes have an implied connectivity that 
-allows each cell in the mesh to be specified by an i,j or i,j,k index depending 
-on the dimension of the mesh. The Index Select operator allows you to specify 
-different ranges for each mesh dimension. The ranges are used to select a brick 
-of cells from the mesh. In addition to indices, the Index Select operator uses 
-stride to select cells from the mesh. Stride is a value that allows the operator
-to count by 2's, 3's, etc. when iterating through the range indices. Stride is 
-set to 1 by default. When higher values are used, the resulting mesh is more 
-coarse since it contains fewer cells in each dimension. The Index Select 
-operator attempts to preserve the size of the mesh when non-unity stride values 
-are used. An example of the Index Select operator appears in :numref:`Figure %s <indexselect>`.
+The **IndexSelect** operator selects a subset of a mesh based on ranges of cell indices.
+Structured meshes have a logical 2D (i,j) or 3D (i,j,k) arrangement of cells.
+Curves, point meshes, line meshes and other unstructured meshes have a logical 1D (i) arrangement of cells.
+The **IndexSelect** operator allows the user to specify different ranges and strides for each logical dimension.
+When strides greater than 1 are used, the resulting mesh is effectively *coarsened* because it contains fewer cells.
+However, the **IndexSelect** operator attempts to preserve the spatial extents and rough shape of the mesh when stride is greater than 1.
+An example of the **IndexSelect** operator appears in :numref:`Figure %s <indexselect>`.
 
 .. _indexselect:
 
