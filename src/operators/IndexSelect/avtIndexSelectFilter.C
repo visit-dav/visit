@@ -506,7 +506,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                 if (!haveIssuedWarning)
                 {
                     avtCallback::IssueWarning("An internal error occurred and "
-                            "the index select operator was not applied.");
+                            "the Index Select operator was not applied.");
                     VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
                     haveIssuedWarning = true;
                     VisitMutexUnlock("avtIndexSelectFilter::ThreadSafeExecuteData");
@@ -640,8 +640,8 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                 }
                 else
                 {
-                    avtCallback::IssueWarning("The index select operator was "
-                            "applied to a non-structured mesh.  It is not "
+                    avtCallback::IssueWarning("The Index Select operator was "
+                            "applied to an unsupported mesh type.  It is not "
                             "being applied.");
                 }
                 VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
@@ -683,7 +683,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
             if (!haveIssuedWarning)
             {
                 avtCallback::IssueWarning("An internal error occurred and the "
-                                          "index select operator was not "
+                                          "Index Select operator was not "
                                           "applied.");
                 VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
                 haveIssuedWarning = true;
@@ -700,7 +700,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
             if (!haveIssuedWarning)
             {
                 avtCallback::IssueWarning("An internal error occurred and the "
-                                          "index select operator was not "
+                                          "Index Select operator was not "
                                           "applied.");
                 VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
                 haveIssuedWarning = true; 
@@ -1146,7 +1146,7 @@ avtIndexSelectFilter::PreExecute(void)
         if (atts.GetXIncr()!=1 || atts.GetYIncr()!=1 || atts.GetZIncr()!=1)
         {
             avtCallback::IssueWarning("The data was already modified "
-                           "before the index select operator was applied."
+                           "before the Index Select operator was applied."
                            "  It is only possible to do increments of 1.");
         }
     }
