@@ -388,9 +388,6 @@ function initialize_build_visit()
         elif [[ ${VER_MAJOR} == 24 ]] ; then
             # keep 13 (ventura)
             export MACOSX_DEPLOYMENT_TARGET=13.0
-        elif [[ ${VER_MAJOR} == 25 ]] ; then
-            # keep 13 (ventura)
-            export MACOSX_DEPLOYMENT_TARGET=13.0
         else
             echo "Unsupported Darwin major version, ${VER_MAJOR}."
             echo "Maybe add a new case for MACOSX_DEPLOYMENT_TARGET"

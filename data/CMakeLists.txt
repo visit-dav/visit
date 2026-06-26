@@ -155,14 +155,14 @@ SET(ARCHIVE_FILES {AFILES})
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive3_create
-    COMMAND python3 -c "import sys,tarfile\; tf=tarfile.open(sys.argv[1],'w:xz',preset=9)\; [tf.add(x) for x in sys.argv[2:]]\; tf.close()" ${CMAKE_CURRENT_SOURCE_DIR}/$${ARCHIVE_NAME} $${ARCHIVE_FILES}
+    COMMAND python3 -c \"import sys,tarfile\try:\  tf=tarfile.open\(sys.argv[1],'w:xz',preset=9\)\  [tf.add\(x\) for x in sys.argv[2:]]\except:\  print\('\\n\\n\\n***archive target failed, try archive target***\\n\\n\\n'\)\" ${CMAKE_CURRENT_SOURCE_DIR}/$${ARCHIVE_NAME} $${ARCHIVE_FILES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(archive3 DEPENDS _archive3_create)
 
 # Try same with normal python
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_create
-    COMMAND python -c "import sys,tarfile\; tf=tarfile.open(sys.argv[1],'w:xz',preset=9)\; [tf.add(x) for x in sys.argv[2:]]\; tf.close()" ${CMAKE_CURRENT_SOURCE_DIR}/$${ARCHIVE_NAME} $${ARCHIVE_FILES}
+    COMMAND python -c \"import sys,tarfile\try:\  tf=tarfile.open\(sys.argv[1],'w:xz',preset=9\)\  [tf.add\(x\) for x in sys.argv[2:]]\except:\  print\('\\n\\n\\n***archive target failed, use fbarchive target***\\n\\n\\n'\)\" ${CMAKE_CURRENT_SOURCE_DIR}/$${ARCHIVE_NAME} $${ARCHIVE_FILES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(archive DEPENDS _archive_create)
 
