@@ -8,7 +8,7 @@
 // avtScalarMetaData objects and an expression for the whole array
 //#define USE_DECOMPOSE
 
-#include <MaterialEncoder.h>
+#include <avtMaterialEncoder.h>
 
 #include <InvalidVariableException.h>
 #include <InvalidCellTypeException.h>
@@ -3683,7 +3683,7 @@ FindGhostMaterial(const int *ireg, int kmax, int lmax)
 // ****************************************************************************
 
 static void
-AddCleanMaterials(MaterialEncoder &mats, const int *ireg, int kmax, int lmax,
+AddCleanMaterials(avtMaterialEncoder &mats, const int *ireg, int kmax, int lmax,
     bool wantRevolvedMaterial, int nSteps)
 {
     //
@@ -3755,7 +3755,7 @@ AddCleanMaterials(MaterialEncoder &mats, const int *ireg, int kmax, int lmax,
 // ****************************************************************************
 
 static void
-AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
+AddMixedMaterials(avtMaterialEncoder &mats, const int *ireg, const int *iregmm,
     const int *nummm, const int *ilamm, const float *volfmm, int kmax,
     int lmax, bool wantRevolvedMaterial, int nSteps)
 {
@@ -3924,15 +3924,15 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
                 }
 
                 //
-                // Create a MaterialEncoder object and define materials.
+                // Create an avtMaterialEncoder object and define materials.
                 //
-                MaterialEncoder mats;
+                avtMaterialEncoder mats;
                 mats.AllocClean(nCleanZones);
                 for(size_t i = 0; i < materialNames.size(); ++i)
                     mats.AddMaterial(materialNames[i]);
 
                 //
-                // Populate the MaterialEncoder object and define materials.
+                // Populate the avtMaterialEncoder object and define materials.
                 //
                 if(assumeMixedMaterialsPresent)
                 {
@@ -4016,7 +4016,7 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
                 }
 
                 //
-                // Create an avtMaterial using the MaterialEncoder object.
+                // Create an avtMaterial using the avtMaterialEncoder object.
                 //
                 if(wantRevolvedMaterial)
                 {
