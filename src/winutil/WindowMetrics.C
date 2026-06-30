@@ -3,16 +3,18 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "WindowMetrics.h"
-#include <visitstream.h>
 #include <QApplication>
 #include <QRect>
 #include <QScreen>
+#include <visitstream.h>
 
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #elif defined(Q_OS_LINUX)
+#if !defined(VISIT_NO_X11)
 #include <X11/Xlib.h>
 static Window GetParent(Display *dpy, Window win, Window *root_ret=NULL);
+#endif
 #endif
 
 //
@@ -197,6 +199,10 @@ void
 WindowMetrics::MeasureScreen(bool waitForWM)
 {
 #if defined(Q_OS_LINUX)
+
+#if defined(VISIT_NO_X11)
+    return;
+#else
     //
     // Create the test window
     //
@@ -267,6 +273,7 @@ WindowMetrics::MeasureScreen(bool waitForWM)
     preshiftY += (borderT - shiftY);
 
     testWindow->hide();
+#endif
 #else
     //
     // Calculate the metrics
@@ -466,10 +473,14 @@ WindowMetrics::CalculateBorders(QWidget *win,
                                 int &borderT, int &borderB,
                                 int &borderL, int &borderR)
 {
+#if defined(VISIT_NO_X11)
+    return;
+#else
     unsigned int nchildren;
     Window root, parent_window, *children=NULL;
     XWindowAttributes leaf_attributes;
     XWindowAttributes parent_attributes;
+
 
     // Get the display pointer and window Id from the main window.
     auto x11NativeInterface = qApp->nativeInterface<QNativeInterface::QX11Application>();
@@ -579,6 +590,7 @@ WindowMetrics::CalculateBorders(QWidget *win,
         if (borderL < 0) borderL = 0;
         if (borderR < 0) borderR = 0;
     }
+#endif
 }
 
 // ****************************************************************************
@@ -646,10 +658,15 @@ WindowMetrics::WaitForWindowManagerToMoveWindow(QWidget *win)
 void
 WindowMetrics::CalculateTopLeft(QWidget *wid, int &X, int &Y)
 {
+#if defined(VISIT_NO_X11)
+    return;
+#else
+
     Window root, parent;
     XWindowAttributes atts;
 
     // Get the display pointer and window Id from the widget.
+
     auto x11NativeInterface = qApp->nativeInterface<QNativeInterface::QX11Application>();
     if(x11NativeInterface == NULL)
     {
@@ -677,6 +694,7 @@ WindowMetrics::CalculateTopLeft(QWidget *wid, int &X, int &Y)
     XGetWindowAttributes(dpy, window, &atts);
     X = atts.x;
     Y = atts.y;
+#endif
 }
 
 // ****************************************************************************
@@ -692,6 +710,7 @@ WindowMetrics::CalculateTopLeft(QWidget *wid, int &X, int &Y)
 //  Modifications:
 //
 // ****************************************************************************
+#if !defined(VISIT_NO_X11)
 static Window
 GetParent(Display *dpy, Window win, Window *root_ret)
 {
@@ -706,4 +725,5 @@ GetParent(Display *dpy, Window win, Window *root_ret)
 
     return parent;
 }
+#endif
 #endif
