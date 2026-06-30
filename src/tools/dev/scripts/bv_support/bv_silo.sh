@@ -444,7 +444,7 @@ function build_silo
     #
     # Prepare build dir
     #
-    prepare_build_dir $SILO_BUILD_DIR $SILO_FILE
+    prepare_build_dir $SILO_BUILD_DIR $SILO_FILE sha256 $SILO_SHA256_CHECKSUM
     untarred_silo=$?
     if [[ $untarred_silo == -1 ]] ; then
         warn "Unable to prepare Silo build directory. Giving Up!"
