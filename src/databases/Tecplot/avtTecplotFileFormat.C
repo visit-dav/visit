@@ -108,6 +108,37 @@ static string SimplifyWhitespace(const std::string &s)
     return s.substr(first, last-first+1);
 }
 
+static bool HasExactCoord(const vector<string> &varNames, int index, int axis)
+{
+    if (index < 0 || index >= (int)varNames.size())
+        return false;
+
+    return GetCoord(SimplifyWhitespace(varNames[index])) == axis;
+}
+
+static int GetZoneSpatialDimension(const string &format, const string &elemType,
+                                   int numI, int numJ, int numK)
+{
+    if (format == "FEBLOCK" || format == "FEPOINT")
+    {
+        if (elemType == "BRICK" || elemType == "FEBRICK" ||
+            elemType == "TETRAHEDRON" || elemType == "FETETRAHEDRON")
+            return 3;
+
+        if (elemType == "TRIANGLE" || elemType == "FETRIANGLE" ||
+            elemType == "QUADRILATERAL" || elemType == "FEQUADRILATERAL")
+            return 2;
+
+        return 1;
+    }
+
+    if (numK > 1)
+        return 3;
+    if (numJ > 1)
+        return 2;
+    return 1;
+}
+
 // ****************************************************************************
 //  Method:  avtTecplotFileFormat::PushBackToken
 //
@@ -1065,6 +1096,11 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Added support for FILETYPE. We only support FULL, so throw an
 //    exception if not.
 //
+//    Kathleen Biagas (with help from Codex), Thu Jun 18 17:32:34 PDT 2026
+//    Attempt a better fallback when Axis var names haven't been specified/
+//    guessed for FEBLOCK and FEPOINT: use the first variables, similar to
+//    how the binary reader does it.
+//
 // ****************************************************************************
 
 void
@@ -1261,10 +1297,16 @@ avtTecplotFileFormat::ReadFile()
             variableShareMap.clear();
             variableShareMap.resize(numTotalVars, -1);
 
-            // If we didn't find an exact match for coordinate axis vars, guess
-            if (Xindex < 0) Xindex = guessedXindex;
-            if (Yindex < 0) Yindex = guessedYindex;
-            if (Zindex < 0) Zindex = guessedZindex;
+            // If we didn't find an exact match for coordinate axis vars, guess.
+            // Only accept guessed axes when they form a contiguous X/Y(/Z) set;
+            // otherwise leave them unresolved and let zone parsing fall back to
+            // the first variables, matching the binary reader's behavior.
+            if (Xindex < 0 && guessedXindex >= 0)
+                Xindex = guessedXindex;
+            if (Yindex < 0 && Xindex >= 0 && guessedYindex >= 0)
+                Yindex = guessedYindex;
+            if (Zindex < 0 && Xindex >= 0 && Yindex >= 0 && guessedZindex >= 0)
+                Zindex = guessedZindex;
 
             // If the user specified, override any coordinate axis guessing
             if (userSpecifiedAxisVars)
@@ -1284,7 +1326,6 @@ avtTecplotFileFormat::ReadFile()
                 else
                     Zindex = userSpecifiedZ;
             }
-
             // Based on how many spatial coords we got, guess the spatial dim
             if (Xindex >= 0)
             {
@@ -1598,6 +1639,27 @@ avtTecplotFileFormat::ReadFile()
                     format = "FEPOINT";
                 if (format == "BLOCK")
                     format = "FEBLOCK";
+            }
+
+            if (!userSpecifiedAxisVars)
+            {
+                const bool isFEZone = (format == "FEBLOCK" || format == "FEPOINT");
+                const int zoneSpatialDimension =
+                    GetZoneSpatialDimension(format, elemType, numI, numJ, numK);
+                const bool haveExactCoordSet =
+                    HasExactCoord(variableNames, Xindex, 0) &&
+                    (zoneSpatialDimension < 2 || HasExactCoord(variableNames, Yindex, 1)) &&
+                    (zoneSpatialDimension < 3 || HasExactCoord(variableNames, Zindex, 2));
+
+                if (isFEZone && zoneSpatialDimension > 1 && !haveExactCoordSet)
+                {
+                    // Match the binary reader: for spatial meshes without exact
+                    // coordinate names, use the first variables in file order.
+                    Xindex = (numTotalVars > 0 ? 0 : -1);
+                    Yindex = (numTotalVars > 1 ? 1 : -1);
+                    Zindex = (zoneSpatialDimension > 2 && numTotalVars > 2 ? 2 : -1);
+                    spatialDimension = std::min(zoneSpatialDimension, numTotalVars);
+                }
             }
 
             zoneTitles.push_back(zoneTitle);

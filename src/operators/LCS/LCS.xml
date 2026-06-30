@@ -7,7 +7,6 @@
       ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
     </LDFLAGS>
     <Files components="E">
-      avtLCSFilter.C
       avtLCSFilterFTLE.C
       avtLCSFilterFSLE.C
     </Files>

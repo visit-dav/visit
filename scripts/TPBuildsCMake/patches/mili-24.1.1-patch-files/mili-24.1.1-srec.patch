@@ -1,0 +1,20 @@
+--- src\srec.c	2025-02-19 13:31:48.000000000 -0800
++++ src\srec.c	2025-12-17 11:12:10.000000000 -0800
+@@ -3110,13 +3110,17 @@
+ 
+     /* flush and fsync state file so we guarantee the state data is completely written before updating
+      * the state maps with the new state. This prevents issues when xmilics/griz try to read
+      * a database while it is being written.
+      */
+     fflush( fam->cur_st_file ); // Flush buffered state data to OS
++#ifdef _WIN32
++    FlushFileBuffers(fam->cur_st_file);
++#else
+     fsync( fileno(fam->cur_st_file) ); // Tell OS to write the data to disk
++#endif
+ 
+     /* Add a new entry in the state map. */
+     state_qty = fam->state_qty;
+     if ( fam->char_header[DIR_VERSION_IDX] > 1 )
+     {
+         fam->state_dirty = 0;

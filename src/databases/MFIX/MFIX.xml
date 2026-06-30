@@ -3,14 +3,7 @@
     <FilePatterns>
       .RES
     </FilePatterns>
-    <Files components="M">
-      avtMFIXFileFormat.C
-      avtMFIXOptions.C
-      vtkMFIXReader.C
-    </Files>
-    <Files components="E">
-      avtMFIXFileFormat.C
-      avtMFIXOptions.C
+    <Files components="M,E">
       vtkMFIXReader.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

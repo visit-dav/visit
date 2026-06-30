@@ -39,6 +39,11 @@ set(CMAKE_DISABLE_FIND_PACKAGE_PythonInterp ON)
 ################################################################
 set(ENABLE_TESTS OFF CACHE BOOL "")
 
+################################################################
+# Enable FOLDERS
+################################################################
+set(ENABLE_FOLDERS ON CACHE BOOL "")
+
 
 ################################################################
 # init blt using BLT_SOURCE_DIR

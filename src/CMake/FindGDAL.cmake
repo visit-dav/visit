@@ -14,30 +14,28 @@
 #   Brad Whitlock, Fri Oct 14 10:56:28 PDT 2011
 #   GDAL changed again on Mac.
 #
-#   Kathleen Biagas, Wed Mar 4, 2026
-#   Reduce version check on Windows.
+#   Kathleen Biagas, Mon Mar 24, 2025
+#   Utilize visit_import_third_party
 #
 #****************************************************************************/
 
-# Use the GDAL_DIR hint from the config-site .cmake file
+# Uses the GDAL_DIR hint from the config-site .cmake file
+
+visit_import_third_party(GDAL LIBNAMES gdal gdal_i)
 
 if(WIN32)
-    SET_UP_THIRD_PARTY(GDAL LIBS gdal_i)
-    # normally handled in InstallThirdParty.cmake, but gdal has a weird
-    # naming convention on windows
-    if(EXISTS ${GDAL_LIBRARY_DIR}/gdal224.dll)
+    # dll name doesn't match import library name, so it must
+    # be handled separately from the visit_import_third_party call.
+
+    if(EXISTS ${VISIT_GDAL_DIR}/lib/gdal224.dll)
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                ${GDAL_LIBRARY_DIR}/gdal224.dll
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-        install(FILES ${GDAL_LIBRARY_DIR}/gdal224.dll
+            ${VISIT_GDAL_DIR}/lib/gdal224.dll
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        install(FILES ${VISIT_GDAL_DIR}/lib/gdal224.dll
                 DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                            WORLD_READ WORLD_EXECUTE)
-    else()
-        message(WARNING "Could not find gdal 224 dll")
+                            WORLD_READ             WORLD_EXECUTE)
     endif()
-else()
-    SET_UP_THIRD_PARTY(GDAL LIBS gdal)
 endif()
 

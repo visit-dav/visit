@@ -4,19 +4,7 @@
       *.3df.*
       *.mer.*
     </FilePatterns>
-    <Files components="M">
-      avtGGCMFileFormat.C
-      avtGGCMOptions.C
-      ggcm_grid.C
-      ggcm_grid_gse.C
-      ggcm_field_matrix.C
-      ggcm_mhd_gse.C
-      ggcm_read_mhd.C
-      matrix.C
-    </Files>
-    <Files components="E">
-      avtGGCMFileFormat.C
-      avtGGCMOptions.C
+    <Files components="M,E">
       ggcm_grid.C
       ggcm_grid_gse.C
       ggcm_field_matrix.C

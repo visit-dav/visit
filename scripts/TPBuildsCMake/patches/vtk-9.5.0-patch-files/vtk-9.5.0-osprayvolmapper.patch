@@ -1,0 +1,19 @@
+--- Rendering\RayTracing\vtkOSPRayVolumeMapper.cxx	2025-06-23 11:12:36.000000000 -0800
++++ Rendering\RayTracing\vtkOSPRayVolumeMapper.cxx	2025-06-03 07:39:02.000000000 -0800
+@@ -58,12 +58,16 @@
+     return;
+   }
+   if (!this->Initialized)
+   {
+     this->Init();
+   }
++  vtkOSPRayRendererNode::SetSamplesPerPixel(
++    vtkOSPRayRendererNode::GetSamplesPerPixel(ren), this->InternalRenderer);
++  vtkOSPRayRendererNode::SetAmbientSamples(
++    vtkOSPRayRendererNode::GetAmbientSamples(ren), this->InternalRenderer);
+   this->InternalRenderer->SetRenderWindow(ren->GetRenderWindow());
+   this->InternalRenderer->SetActiveCamera(ren->GetActiveCamera());
+   this->InternalRenderer->SetBackground(ren->GetBackground());
+   if (!this->InternalRenderer->HasViewProp(vol))
+   {
+     this->InternalRenderer->RemoveAllViewProps();

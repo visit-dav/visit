@@ -1,0 +1,172 @@
+--- install_python_packages.cmake	2026-02-11 16:15:11.000000000 -0800
++++ install_python_packages.cmake	2026-02-17 11:00:01.000000000 -0800
+@@ -0,0 +1,169 @@
++# pass PYCMD as -DPYCMD:FILPATH- from cmake
++message("PYCMD: ${PYCMD}")
++message("CMAKE_COMMAND: ${CMAKE_COMMAND}")
++message("URL: ${URL}")
++message("JPEG_DIR: ${JPEG_DIR}")
++message("ZLIB_DIR: ${ZLIB_DIR}")
++message("TIFF_: ${TIFF_DIR}")
++set(WD ${CMAKE_CURRENT_LIST_DIR})
++
++cmake_path(GET PYCMD PARENT_PATH PYDIR)
++# some packages need pythons Scripts dir in the path so set it up and
++# pass it to the 'pip install' command in installPythonMod macro
++set(ep "${PYDIR}/Scripts;$ENV{PATH}")
++
++macro(downloadVerifyUntar pkg expectedHash)
++    message("downloading ${pkg}")
++
++    # should be able to use CMake's file(DOWNLOAD ...) but I had problems
++    # with that failing on a number of occasions, so using a windows-specific
++    # solution for now
++    execute_process(COMMAND powershell.exe -Command Invoke-WebRequest -Outfile ./${pkg}.tar.gz ${URL}/${pkg}.tar.gz
++       WORKING_DIRECTORY ${WD})
++
++    message("verifying checkshum")
++    execute_process(COMMAND sha256sum ${pkg}.tar.gz
++       WORKING_DIRECTORY ${WD}
++       OUTPUT_VARIABLE ${pkg}_hash)
++
++    # remove the extra info after the actual hash # 
++    string(SUBSTRING ${${pkg}_hash} 0 64 ${pkg}_hash)
++
++    if(NOT "${${pkg}_hash}" STREQUAL "${expectedHash}")
++        message(FATAL_ERROR "Could not verify ${pkg}.tar.gz")
++    endif()
++
++    message("Untarring ${pkg}.tar.gz")
++    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ${pkg}.tar.gz
++       WORKING_DIRECTORY ${WD})
++endmacro()
++
++macro(installPythonMod pkg)
++    message("installing ${pkg}")
++    set(ICMD ${PYCMD} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation --no-binary :all: .)
++    execute_process(COMMAND ${CMAKE_COMMAND} -E env "PATH=${ep}" ${ICMD}
++       WORKING_DIRECTORY ${WD}/${pkg}
++       RESULT_VARIABLE res)
++    message("exec_proc res var: ${res}")
++    if(NOT ${res} EQUAL 0)
++        message(FATAL_ERROR "Could not install ${pkg}.tar.gz")
++    endif()
++endmacro()
++
++function(doNormalInstall pkg hash)
++    downloadVerifyUntar(${pkg} ${hash})
++    installPythonMod(${pkg})
++endfunction()
++
++#------
++#- first ensure pip is installed
++#------
++message("installing pip")
++execute_process(COMMAND ${PYCMD} -m ensurepip --upgrade)
++
++#------
++#- basics
++#------
++doNormalInstall("flit_core-3.12.0" "18f63100d6f94385c6ed57a72073443e1a71a4acb4339491615d0f16d6ff01b2")
++
++doNormalInstall("wheel-0.45.1" "661e1abd9198507b1409a20c02106d9670b2576e916d58f520316666abca6729")
++
++doNormalInstall("setuptools-80.9.0" "f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c")
++
++
++#------
++#- numpy and dependencies
++#------
++doNormalInstall("cython-3.2.1" "2be1e4d0cbdf7f4cd4d9b8284a034e1989b59fd060f6bd4d24bf3729394d2ed8")
++doNormalInstall("packaging-25.0" "d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f")
++doNormalInstall("pyproject_metadata-0.9.1" "b8b2253dd1b7062b78cf949a115f02ba7fa4114aabe63fa10528e9e1a954a816")
++doNormalInstall("meson-1.9.1" "4e076606f2afff7881d195574bddcd8d89286f35a17b4977a216f535dc0c74ac")
++doNormalInstall("meson_python-0.18.0" "c56a99ec9df669a40662fe46960321af6e4b14106c14db228709c1628e23848d")
++doNormalInstall("numpy-2.3.4" "a7d018bfedb375a8d979ac758b120ba846a7fe764911a64465fd87b8729f4a6a")
++
++
++#------
++#- pillow and dependencies
++#------
++doNormalInstall("pathspec-0.12.1" "a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712")
++doNormalInstall("pluggy-1.6.0" "7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3")
++doNormalInstall("trove_classifiers-2025.9.11.17" "931ca9841a5e9c9408bc2ae67b50d28acf85bef56219b56860876dd1f2d024dd")
++doNormalInstall("hatchling-1.27.0" "971c296d9819abb3811112fc52c7a9751c8d381898f36533bb16f9791e941fd6")
++doNormalInstall("hatch_vcs-0.5.0" "0395fa126940340215090c344a2bf4e2a77bcbe7daab16f41b37b98c95809ff9")
++doNormalInstall("setuptools_scm-9.2.2" "1c674ab4665686a0887d7e24c03ab25f24201c213e82ea689d2f3e169ef7ef57")
++doNormalInstall("scikit_build_core-0.11.6" "5982ccd839735be99cfd3b92a8847c6c196692f476c215da84b79d2ad12f9f1b")
++doNormalInstall("pybind11-3.0.1" "9c0f40056a016da59bab516efb523089139fcc6f2ba7e4930854c61efb932051")
++
++#----
++#- pillow needs more args, so don't use the doNormalInstall function
++#----
++downloadVerifyUntar("pillow-12.0.0" "87d4f8125c9988bfbed67af47dd7a953e2fc7b0cc1e7800ec6d2080d490bb353")
++set(pillow_build ${PYCMD} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation --no-binary :all: -C webp=disable -C freetype=disable -C lcms=disable -C xcb=disable -C jpeg2000=disable .)
++
++set(pillow_env_inc "${TIFF_DIR}/include;${JPEG_DIR}/include;${ZLIB_DIR}/include;%INCLUDE%")
++set(pillow_env_inclib "${TIFF_DIR}/lib;${JPEG_DIR}/lib;${ZLIB_DIR}/lib")
++set(pillow_env_lib "${TIFF_DIR}/lib;${JPEG_DIR}/lib;${ZLIB_DIR}/lib;%LIB%")
++
++message("Installing pillow-12.0.0")
++execute_process(COMMAND ${CMAKE_COMMAND} -E env "PATH=${ep}" "INCLUDE=${pillow_env_inc}" "INCLIB=${pillow_env_inclib}" "LIB=${pillow_env_lib}"
++                ${pillow_build}
++                WORKING_DIRECTORY ${WD}/pillow-12.0.0
++                RESULT_VARIABLE pillow_res)
++if(NOT ${pillow_res} EQUAL 0)
++    message(FATAL_ERROR "could not install pillow")
++endif()
++
++#------
++#- mpi4py need to check if new version avail
++#------
++doNormalInstall("mpi4py-4.1.1" "eb2c8489bdbc47fdc6b26ca7576e927a11b070b6de196a443132766b3d0a2a22")
++
++#------
++#- requests (needed by sphinx) and dependencies 
++#------
++doNormalInstall("certifi-2025.11.12" "d8ab5478f2ecd78af242878415affce761ca6bc54a22a27e026d7c25357c3316")
++doNormalInstall("toml-0.10.2" "b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f")
++doNormalInstall("tomli-2.3.0" "64be704a875d2a59753d80ee8a533c3fe183e3f06807ff7dc2232938ccb01549")
++doNormalInstall("calver-2025.10.20" "c98b376c2424642224d456b2f70c51402343e008c63d204634665e1a2a2835f5")
++doNormalInstall("editables-0.5" "309627d9b5c4adc0e668d8c6fa7bac1ba7c8c5d415c2d27f60f081f8e80d1de2")
++doNormalInstall("urllib3-2.5.0" "3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760")
++doNormalInstall("idna-3.11" "795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902")
++doNormalInstall("charset_normalizer-3.4.4" "94537985111c35f28720e43603b8e7b43a6ecfb2ce1d3058bbe955b73404e21a")
++doNormalInstall("requests-2.32.5" "dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf")
++
++
++#------
++#- sphinx and dependencies
++#------
++
++doNormalInstall("imagesize-1.4.1" "69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a")
++doNormalInstall("alabaster-1.0.0" "c00dca57bca26fa62a6d7d0a9fcce65f3e026e9bfe33e9c538fd3fbb2144fd9e")
++doNormalInstall("babel-2.17.0" "0c54cffb19f690cdcc52a3b50bcbf71e07a808d1c80d549f2459b9d2cf0afb9d")
++doNormalInstall("colorama-0.4.6" "08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44")
++doNormalInstall("roman_numerals-3.1.0" "384e36fc1e8d4bd361bdb3672841faae7a345b3f708aae9895d074c878332551")
++doNormalInstall("snowballstemmer-3.0.1" "6d5eeeec8e9f84d4d56b847692bacf79bc2c8e90c7f80ca4444ff8b6f2e52895")
++doNormalInstall("docutils-0.21.2" "3a6b18732edf182daa3cd12775bbb338cf5691468f91eeeb109deff6ebfa986f")
++doNormalInstall("pygments-2.19.1" "61c16d2a8576dc0649d9f39e089b5f02bcd27fba10d8fb4dcc28173f7a45151f")
++doNormalInstall("jinja2-3.1.6" "0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d")
++doNormalInstall("sphinxcontrib_qthelp-2.0.0" "4fe7d0ac8fc171045be623aba3e2a8f613f8682731f9153bb2e40ece16b9bbab")
++doNormalInstall("sphinxcontrib_serializinghtml-2.0.0" "e9d912827f872c029017a53f0ef2180b327c3f7fd23c87229f7a8e8b70031d4d")
++doNormalInstall("sphinxcontrib_htmlhelp-2.1.0" "c9e2916ace8aad64cc13a0d233ee22317f2b9025b9cf3295249fa985cc7082e9")
++doNormalInstall("sphinxcontrib-jsmath-1.0.1" "a9925e4a4587247ed2191a22df5f6970656cb8ca2bd6284309578f2153e0c4b8")
++doNormalInstall("sphinxcontrib_devhelp-2.0.0" "411f5d96d445d1d73bb5d52133377b4248ec79db5c793ce7dbe59e074b4dd1ad")
++doNormalInstall("sphinxcontrib_applehelp-2.0.0" "2f29ef331735ce958efa4734873f084941970894c6090408b079c61b2e1c06d1")
++doNormalInstall("markupsafe-3.0.3" "722695808f4b6457b320fdc131280796bdceb04ab50fe1795cd540799ebe1698")
++doNormalInstall("zipp-3.23.0" "a07157588a12518c9d4034df3fbbee09c814741a33ff63c05fa29d26a2404166")
++doNormalInstall("importlib_metadata-8.7.0" "d13b81ad223b890aa16c5471f2ac3056cf76c5f10f82d6f9292f0b415f389000")
++doNormalInstall("sphinx-8.2.3" "398ad29dee7f63a75888314e9424d40f52ce5a6a87ae88e7071e80af296ec348")
++
++#------
++#- sphinx_rtd_theme and dependencies
++#------
++doNormalInstall("sphinxcontrib-jquery-4.1" "1620739f04e36a2c779f1a131a2dfd49b2fd07351bf1968ced074365933abc7a")
++doNormalInstall("sphinx_rtd_theme-3.0.2" "b7457bc25dda723b20b086a670b9953c859eab60a2a03ee8eb2bb23e176e5f85")
++
++#------
++#- sphinx_tabs and dependencies
++#------
++doNormalInstall("sphinx-tabs-3.4.7" "991ad4a424ff54119799ba1491701aa8130dd43509474aef45a81c42d889784d")
++

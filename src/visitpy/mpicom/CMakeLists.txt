@@ -20,41 +20,43 @@
 #  For PYTHON_ADD_PIP_SETUP change DEST_DIR from lib/site-packages to
 #  simply site-packages. The lib part handled in PYTHON_ADD_PIP_SETUP.
 #
+#  Kathleen Biagas, Thu Nov 6, 2025
+#  Use MPI::MPI_C target for linking with mpi.
+#
 #****************************************************************************
 
-SET(MPICOM_PY_SOURCES py_src/__init__.py
+set(MPICOM_PY_SOURCES py_src/__init__.py
                       py_src/mpistub.py)
 
 # if we have a parallel build - create the mpicom python C module.
-IF(VISIT_PARALLEL)
-    SET(MPICOM_SOURCES
+if(VISIT_PARALLEL)
+    set(MPICOM_SOURCES
         src/mpicom.C
         src/Buffer.C)
-
-    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/
-                        ${PYTHON_INCLUDE_PATH})
-
-    LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
 
     # Create the mpicom
     PYTHON_ADD_HYBRID_MODULE(NAME mpicom
                              DEST_DIR site-packages
                              PY_MODULE_DIR mpicom
                              PY_SETUP_FILE setup.py
-                             PY_SOURCES "${MPICOM_PY_SOURCES}"
+                             PY_SOURCES ${MPICOM_PY_SOURCES}
                              SOURCES ${MPICOM_SOURCES})
 
-    IF(UNIX)
-        SET_TARGET_PROPERTIES(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
-    ENDIF(UNIX)
+    target_include_directories(mpicom PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
+        $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/visitpy/common>)
+
+    if(UNIX)
+        set_target_properties(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
+    endif()
 
     target_compile_definitions(mpicom PUBLIC ${VISIT_PARALLEL_DEFINES})
-    TARGET_LINK_LIBRARIES(mpicom PRIVATE
+
+    target_link_libraries(mpicom PRIVATE
                           ${PYTHON_LIBRARY}
                           MPI::MPI_C)
 
-ELSE(VISIT_PARALLEL)
+else()
     # we still need to build the module w/ the mpi stub
     PYTHON_ADD_PIP_SETUP(NAME mpicom_py_setup
                          DEST_DIR site-packages
@@ -63,5 +65,5 @@ ELSE(VISIT_PARALLEL)
                          PY_SOURCES ${MPICOM_PY_SOURCES})
 
 # add to main target?
-ENDIF(VISIT_PARALLEL)
+endif()
 

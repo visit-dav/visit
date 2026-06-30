@@ -16,7 +16,7 @@ The following example builds a parallel version using MPICH.
 
 .. code:: bash
 
-  ./build_visit3_0_1 --mpich
+  ./build_visit3_5_0 --mpich
 
 If your system already has MPI installed on it, which is typically the case with a large system at a computer center, you can set several environment variables that specify the location of the MPI libraries and header files.
 The following example uses a system installed MPI library.
@@ -27,7 +27,7 @@ The following example uses a system installed MPI library.
        PAR_COMPILER_CXX=/usr/packages/mvapich2/bin/mpicxx \
        PAR_INCLUDE=-I/usr/packages/mvapich2/include \
        PAR_LIBS=-lmpl \
-  ./build_visit3_0_1 --parallel
+  ./build_visit3_5_0 --parallel
 
 When running in parallel, the user will typically use scalable rendering for rendering images in parallel.
 VisIt_ does this through the use of the Mesa 3D graphics library.
@@ -36,7 +36,7 @@ In the following example we have included building with the Mesa 3D library.
 
 .. code:: bash
 
-  ./build_visit3_0_1 --mpich --osmesa
+  ./build_visit3_5_0 --mpich --osmesa
 
 Building with Mesa as the OpenGL implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,7 +49,7 @@ In the following example we use Mesa 3D instead of the system OpenGL.
 
 .. code:: bash
 
-  ./build_visit3_0_1 --mesagl
+  ./build_visit3_5_0 --mesagl
 
 The difference between ``--mesagl`` and ``--osmesa``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,6 +59,18 @@ When you specify ``--osmesa`` VTK is built against the system OpenGL and the Mes
 If you specify ``--mesagl`` then ``--osmesa`` is unnecessary and ignored if specified.
 
 
+Building on a system without XCB or xkbcommon
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some large parallel systems install a mimimal set of libraries and may not include the development environment for XCB or xkbcommon, which are needed for building the graphical user interface.
+``build_visit`` can optionally provide those libraries.
+Those libraries are not built by default since this is one of the rare instances where the system versions of those libraries is the best choice.
+The following example will build those libraries in addition to the required libraries.
+
+.. code:: bash
+
+  ./build_visit3_5_0 --meson --ninja --xcb --xkbcommon
+
 Building Server only
 ~~~~~~~~~~~~~~~~~~~~
 Sometimes a special version of VisIt_ is needed for a remote server, one that only processes data and does not include any GUI elements.
@@ -67,7 +79,7 @@ Then you can run client/server from a desktop system running the GUI locally, an
 
 .. code:: bash
 
-  env PAR_COMPILER=mpicc ./build_visit3_3_3 --server-components-only --mesa --icet
+  env PAR_COMPILER=mpicc ./build_visit3_5_0 --server-components-only --mesa --icet
 
 This will do a basic build, but will probably not include the IO libraries you need (unless you only need VTK).
 You can specify any needed libraries individually, e.g.  ``--hdf5 --netcdf --conduit --mfem`` to add HDF5, NetCDF, Conduit and Mfem IO libraries.
@@ -130,13 +142,13 @@ The following example downloads the optional libraries, mpich and osmesa.
 
 .. code:: bash
 
-  ./build_visit3_4_2 --optional --mpich --osmesa --download-only
+  ./build_visit3_5_0 --optional --mpich --osmesa --download-only
 
 
 Different versions of ``build_visit``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When you use a version of ``build_visit`` that has a version number in it, for example ``build_visit3_0_1`` then it builds that tagged version of VisIt_.
+When you use a version of ``build_visit`` that has a version number in it, for example ``build_visit3_5_0`` then it builds that tagged version of VisIt_.
 If the version of ``build_visit`` was from the develop branch of VisIt_, then it will grab the latest version of VisIt_ from the devlop branch.
 If the version of ``build_visit`` came from a release candidate branch, for example the v3.0 branch, then it will grab the latest version of VisIt_ from that branch.
 
@@ -144,19 +156,25 @@ Troubleshooting ``build_visit`` failures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When ``build_visit`` runs, it generates a log file with ``_log`` added to the name of the script.
-For example, if you are running ``build_visit3_0_1`` then the log file will be named ``build_visit3_0_1_log``.
+For example, if you are running ``build_visit3_5_0`` then the log file will be named ``build_visit3_5_0_log``.
 The error that caused the failure should be near the end of the log file.
 When ``build_visit`` finishes running, it will leave the directories that it used to build the packages intact.
 You can go into the directory of the package that failed and correct the issue and finish building and installing the package.
 You can then execute the ``build_visit`` command again to have it continue the build.
 
-Why can't I use the Qt, Python, VTK, Mesa/GL, etc. that came on my system?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Examples of using ``build_visit`` on several parallel systems
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As much as we might like to believe it, large, complex libraries like Qt, Python and VTK are rarely 100% compatible between newer or older versions.
-Furthermore, for large libraries like these, there are often many, many different installation options for a given platform.
-It is highly unlikely that a given installation of VTK for example, is not only of a version compatible with a given release of VisIt_ but also configured and installed on your system in exactly the way VisIt_ needs it.
-In addition, VisIt_ gets developed and thoroughly tested on specific versions and configurations of various libraries meaning that when users encounter issues in other configurations, we are not always able to reproduce them.
-In some cases, VisIt_ developers have had to workaround a bug in a library or, worse, had to patch the actual library itself to address an issue that might be specific to just one platform.
-Together, these issues result in a situation where VisIt_ often must be compiled with precisely the libraries it is released on and rarely, if ever, can take advantage of an installation that came as part of the system VisIt_ is being built on.
-Lastly, it becomes almost impossible to duplicate and diagnose issues reported by users when users are running VisIt_ in configurations substantially different from that which is being developed and routinely tested.
+There are several examples of running ``build_visit`` in the script `run-build-visit <../../../scripts/run-build-visit>`_ that runs ``build_visit`` to generate the third party libraries on several parallel systems.
+The portion of the script that runs ``build_visit`` is shown below.
+
+.. container:: collapsible
+
+    .. container:: header
+
+        **Show/Hide Code for** running ``build_visit``
+
+    .. literalinclude:: ../../../scripts/run-build-visit
+        :language: bash
+        :start-after: begin call build_visit sphinx literal include tag
+        :end-before: end call build_visit sphinx literal include tag
