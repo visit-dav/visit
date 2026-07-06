@@ -9,6 +9,8 @@
 #include <avtViewInfo.h>
 
 #include <vtkCamera.h>
+#include <vtkHomogeneousTransform.h>
+#include <vtkMatrix4x4.h>
 
 
 // ****************************************************************************
@@ -53,6 +55,10 @@ avtViewInfo::avtViewInfo()
 //    Kevin Griffin, Thu Aug 14, 2025
 //    Removed useAnari.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
+//
 // ****************************************************************************
 
 avtViewInfo &
@@ -80,6 +86,9 @@ avtViewInfo::operator=(const avtViewInfo &vi)
     shear[0]     = vi.shear[0];
     shear[1]     = vi.shear[1];
     shear[2]     = vi.shear[2];
+    tilePan[0]   = vi.tilePan[0];
+    tilePan[1]   = vi.tilePan[1];
+    tileZoom     = vi.tileZoom;
     useOSPRay    = vi.useOSPRay;
     return *this;
 }
@@ -112,6 +121,10 @@ avtViewInfo::operator=(const avtViewInfo &vi)
 //
 //    Kevin Griffin, Thu Aug 14, 2025
 //    Removed useAnari.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
 //
 // ****************************************************************************
 
@@ -173,6 +186,12 @@ avtViewInfo::operator==(const avtViewInfo &vi)
         return false;
     }
 
+    if (tilePan[0] != vi.tilePan[0] || tilePan[1] != vi.tilePan[1] ||
+        tileZoom != vi.tileZoom)
+    {
+        return false;
+    }
+
     if (useOSPRay != vi.useOSPRay)
     {
         return false;
@@ -210,6 +229,10 @@ avtViewInfo::operator==(const avtViewInfo &vi)
 //    Kevin Griffin, Thu Aug 14, 2025
 //    Removed useAnari.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -237,6 +260,9 @@ avtViewInfo::SetToDefault()
     shear[0]     =  0.;
     shear[1]     =  0.;
     shear[2]     =  1.;
+    tilePan[0]   = 0.;
+    tilePan[1]   = 0.;
+    tileZoom     = 1.;
     useOSPRay    = false;
 }
 
@@ -258,7 +284,8 @@ avtViewInfo::SetToDefault()
 //    Add shear for oblique projection support.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    Add imagePan and imageZoom.
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
 //
 // ****************************************************************************
 
@@ -276,11 +303,26 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 
     viewAngle = vtkcam->GetViewAngle();
     eyeAngle  = vtkcam->GetEyeAngle();
+
     parallelScale = vtkcam->GetParallelScale();
-    vtkcam->GetWindowCenter(imagePan);
-    imageZoom = vtkcam->GetFocalDisk();
+    imageZoom = 1.;
+    vtkHomogeneousTransform *izt = vtkcam->GetUserTransform();
+    if (izt)
+    {
+        vtkMatrix4x4 *izm = vtkMatrix4x4::New();
+        izt->GetMatrix(izm);
+        imageZoom = izm->GetElement(0,0);
+        izm->Delete();
+    }
+
     orthographic = (vtkcam->GetParallelProjection() != 0 ? true : false);
     vtkcam->GetViewShear(shear);
+
+    double tilePan3[3];
+    vtkcam->GetEyePosition(tilePan3);
+    tilePan[0] = tilePan3[0];
+    tilePan[1] = tilePan3[1];
+    tileZoom = vtkcam->GetFocalDisk();
 }
 
 
@@ -325,6 +367,10 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    Removed useAnari. ANARI rendering supports the SetUserTransform used by
 //    the VTK camera. No longer need to zoom the camera instead of the image.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
+//
 // ****************************************************************************
 #include<vtkMatrix4x4.h>
 #include<vtkTransform.h>
@@ -345,7 +391,6 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetPosition(camera);
     vtkcam->SetViewUp(viewUp);
     vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
-    vtkcam->SetFocalDisk(imageZoom);
 
     if (useOSPRay)
     {
@@ -373,5 +418,12 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
         {
             vtkcam->SetUserTransform(NULL);
         }
-   }
+    }
+
+    double tilePan3[3];
+    tilePan3[0] = tilePan[0];
+    tilePan3[1] = tilePan[1];
+    tilePan3[2] = 0.;
+    vtkcam->SetEyePosition(tilePan3);
+    vtkcam->SetFocalDisk(tileZoom);
 }

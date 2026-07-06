@@ -3190,19 +3190,22 @@ NetworkManager::RenderTiledInternal()
     //
     // Loop over tiles adjusting the X and Y pan factors for each tile.
     //
+    viswin->SetSize(tileWidth, tileHeight);
     avtView3D view3DTile = view3D;
     view3DTile.imageZoom = zoomUser * zoomTile;
-    viswin->SetSize(tileWidth, tileHeight);
-    int remainingNyCanvas = imageHeight;
+    view3DTile.imagePan[0] = xPanInit;
     view3DTile.imagePan[1] = yPanInit;
+    view3DTile.tileZoom = zoomTile;
+    view3DTile.tilePan[0] = xPanInit - xPanUser;
+    view3DTile.tilePan[1] = yPanInit - yPanUser;
+    viswin->SetView3D(view3DTile);
+    int remainingNyCanvas = imageHeight;
     double foregroundPan[2];
     foregroundPan[1] = yPanInit2;
-    view3DTile.tileZoom = zoomTile;
-    viswin->SetView3D(view3DTile);
 
-    View3DAttributes view3DAtts = renderState.windowInfo->windowAttributes.GetView3D();
     int size[2] = {tileWidth, tileHeight};
     renderState.windowInfo->windowAttributes.SetSize(size);
+    View3DAttributes view3DAtts = renderState.windowInfo->windowAttributes.GetView3D();
     double pan[2] = {xPanInit, yPanInit};
     view3DAtts.SetImagePan(pan);
     view3DAtts.SetImageZoom(zoomUser * zoomTile);
@@ -3214,6 +3217,7 @@ NetworkManager::RenderTiledInternal()
     for (int iyTile = 0; iyTile < nyTiles; iyTile++)
     {
         view3DTile.imagePan[0] = xPanInit;
+        view3DTile.tilePan[0] = xPanInit - xPanUser;
         foregroundPan[0] = xPanInit2;
         int remainingNxCanvas = imageWidth;
         for (int ixTile = 0; ixTile < nxTiles; ixTile++)
@@ -3254,10 +3258,12 @@ NetworkManager::RenderTiledInternal()
 
             remainingNxCanvas -= tileWidth;
             view3DTile.imagePan[0] -= xPanDelta;
+            view3DTile.tilePan[0] -= xPanUser;
             foregroundPan[0] -= xPanDelta2;
         }
         remainingNyCanvas -= tileHeight;
         view3DTile.imagePan[1] -= yPanDelta;
+        view3DTile.tilePan[1] -= yPanDelta;
         foregroundPan[1] -= yPanDelta2;
     }
 

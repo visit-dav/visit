@@ -63,8 +63,8 @@ avtView3D::avtView3D()
 //    capability.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    I added tileZoom to track the change to the image zoom for tiled
-//    rendering.
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
 //
 // ****************************************************************************
 
@@ -100,6 +100,8 @@ avtView3D::operator=(const avtView3D &vi)
     shear[0]            = vi.shear[0];
     shear[1]            = vi.shear[1];
     shear[2]            = vi.shear[2];
+    tilePan[0]          = vi.tilePan[0];
+    tilePan[1]          = vi.tilePan[1];
     tileZoom            = vi.tileZoom;
     windowValid         = vi.windowValid;
 
@@ -136,8 +138,8 @@ avtView3D::operator=(const avtView3D &vi)
 //    capability.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    I added tileZoom to track the change to the image zoom for tiled
-//    rendering.
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
 //
 // ****************************************************************************
 
@@ -189,6 +191,7 @@ avtView3D::operator==(const avtView3D &vi)
         eyeAngle != vi.eyeAngle ||
         centerOfRotationSet != vi.centerOfRotationSet ||
         axis3DScaleFlag != vi.axis3DScaleFlag ||
+        tilePan[0] != vi.tilePan[0] || tilePan[1] != vi.tilePan[1] ||
 	tileZoom != vi.tileZoom ||
         windowValid != vi.windowValid)
     {
@@ -233,8 +236,8 @@ avtView3D::operator==(const avtView3D &vi)
 //    capability.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    I added tileZoom to track the change to the image zoom for tiled
-//    rendering.
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
 //
 // ****************************************************************************
 
@@ -270,6 +273,8 @@ avtView3D::SetToDefault()
     shear[0]            = 0.;
     shear[1]            = 0.;
     shear[2]            = 1.;
+    tilePan[0]          = 0.;
+    tilePan[1]          = 0.;
     tileZoom            = 1.;
     windowValid         = false;
 }
@@ -320,6 +325,10 @@ avtView3D::SetToDefault()
 //
 //    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //    Add shear for oblique projection support.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
 //
 // ****************************************************************************
 
@@ -393,6 +402,13 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     viewInfo.shear[0] = shear[0];
     viewInfo.shear[1] = shear[1];
     viewInfo.shear[2] = shear[2];
+
+    //
+    // Set the tile pan and zoom.
+    //
+    viewInfo.tilePan[0] = tilePan[0];
+    viewInfo.tilePan[1] = tilePan[1];
+    viewInfo.tileZoom = tileZoom;
 }
 
 // ****************************************************************************
@@ -428,8 +444,8 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 //    capability.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    I added tileZoom to track the change to the image zoom for tiled
-//    rendering.
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
 //
 // ****************************************************************************
 
@@ -457,6 +473,8 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
     eyeAngle = view3DAtts->GetEyeAngle();
     centerOfRotationSet = view3DAtts->GetCenterOfRotationSet();
     axis3DScaleFlag = view3DAtts->GetAxis3DScaleFlag();
+    tilePan[0] = 0.;
+    tilePan[1] = 0.;
     tileZoom = 1.;
     windowValid = view3DAtts->GetWindowValid();
 }

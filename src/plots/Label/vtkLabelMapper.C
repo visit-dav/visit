@@ -1131,16 +1131,54 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
     // current tile.
     //
 
-    // Save the pan and zoom from the current tile.
+    // Save the pan and zoom from the current tile. The window center is
+    // used for panning and the user transform is used for zooming.
     double windowCenter[2];
+    ren->GetActiveCamera()->GetWindowCenter(windowCenter);
     vtkHomogeneousTransform *izt = ren->GetActiveCamera()->GetUserTransform();
     if (izt)
         izt->Register(this);
-    ren->GetActiveCamera()->GetWindowCenter(windowCenter);
+
+    // Get the image zoom and tile zoom. The image zoom comes from the
+    // user transform and the tile zoom comes from the focal disk.
+    double imageZoom = 1.;
+    if (izt)
+    {
+        vtkMatrix4x4 *izm = vtkMatrix4x4::New();
+        izt->GetMatrix(izm);
+        imageZoom = izm->GetElement(0,0);
+        izm->Delete();
+    }
+    double tileZoom = ren->GetActiveCamera()->GetFocalDisk();
+
+    // Get the image pan and tile pan. The image pan comes from the
+    // window center and the tile pan comes from the eye position.
+    double imagePan[2];
+    ren->GetActiveCamera()->GetWindowCenter(imagePan);
+    double tilePan[3];
+    ren->GetActiveCamera()->GetEyePosition(tilePan);
 
     // Set the pan and zoom to the untiled image.
-    ren->GetActiveCamera()->SetUserTransform(NULL);
-    ren->GetActiveCamera()->SetWindowCenter(0., 0.);
+    double origPan[2];
+    origPan[0] = imagePan[0] + tilePan[0] * tileZoom;
+    origPan[1] = imagePan[1] + tilePan[1] * tileZoom;
+    ren->GetActiveCamera()->SetWindowCenter(origPan[0], origPan[1]);
+    if (imageZoom != tileZoom)
+    {
+        double matrix[4][4];
+        vtkMatrix4x4::Identity(*matrix);
+
+        matrix[0][0] = imageZoom / tileZoom;
+        matrix[1][1] = imageZoom / tileZoom;
+        vtkTransform *trans = vtkTransform::New();
+        trans->SetMatrix(*matrix);
+        ren->GetActiveCamera()->SetUserTransform(trans);
+        trans->Delete();
+    }
+    else
+    {
+        ren->GetActiveCamera()->SetUserTransform(NULL);
+    }
 
     // Get the model view and projection matrices for the untiled image.
     double modelview[4][4], projection[4][4], mtmp[4][4];
