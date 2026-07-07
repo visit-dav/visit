@@ -583,6 +583,13 @@ View3DAttributes::ResetView(const double *bbox)
     view3D.shear[1] = 0.;
     view3D.shear[2] = 1.;
 
+    //
+    // Reset the tile pan and image zoom.
+    //
+    view3D.tilePan[0] = 0.;
+    view3D.tilePan[1] = 0.;
+    view3D.tileZoom = 1.;
+
     // Copy the object into this.
     *this = view3D;
 }
@@ -702,6 +709,10 @@ View3DAttributes_Add(PyObject *v, PyObject *w)
                                   b->GetCenterOfRotation()[1];
     c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] +
                                   b->GetCenterOfRotation()[2];
+
+    c->GetTilePan()[0] = a->GetTilePan()[0] + b->GetTilePan()[0];
+    c->GetTilePan()[1] = a->GetTilePan()[1] + b->GetTilePan()[1];
+    c->SetTileZoom(a->GetTileZoom() + b->GetTileZoom());
     return retval;
 }
 
@@ -782,6 +793,10 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
         c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] * val;
         c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] * val;
         c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] * val;
+
+        c->GetTilePan()[0] = a->GetTilePan()[0] * val;
+        c->GetTilePan()[1] = a->GetTilePan()[1] * val;
+        c->SetTileZoom(a->GetTileZoom() * val);
     }
 
     return retval;
