@@ -12,6 +12,8 @@
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkHomogeneousTransform.h>
+#include <vtkMatrix4x4.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkPolyDataNormals.h>
@@ -876,7 +878,9 @@ VisitPointTool::GetGuidePoints(avtVector *pts)
 // Creation:   Fri Apr  3 14:19:58 PDT 2009
 //
 // Modifications:
-//   
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the code to get the imageZoom from the user transform.
+//
 // ****************************************************************************
 
 void
@@ -900,8 +904,17 @@ VisitPointTool::UpdateSphere()
     if(ren != 0)
     {
         vtkCamera *camera = ren->GetActiveCamera();
+        double imageZoom = 1.;
+        vtkHomogeneousTransform *izt = camera->GetUserTransform();
+        if(izt)
+        {
+            vtkMatrix4x4 *izm = vtkMatrix4x4::New();
+            izt->GetMatrix(izm);
+            imageZoom = izm->GetElement(0,0);
+            izm->Delete();
+        }
         if(camera != 0)
-            radius /= camera->GetFocalDisk();
+            radius /= imageZoom;
     }
     source->SetRadius(radius);
     source->SetLatLongTessellation(1);

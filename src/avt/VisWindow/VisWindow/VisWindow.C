@@ -20,6 +20,7 @@
 #include <vtkCommand.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkHomogeneousTransform.h>
 #include <vtkMapper.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
@@ -4946,6 +4947,9 @@ VisWindow::ProcessResizeEvent(void *data)
 //  With VTK 5.0, DisplayToView no longer uses Aspect in caluclation of
 //  ViewPoint, so do the calculation of ViewPoint after retrieval.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the code to get the imageZoom from the user transform.
+//
 // ****************************************************************************
 
 void
@@ -5027,11 +5031,19 @@ VisWindow::Pick(int x, int y)
 
     // Compensate for window centering and scaling.
     double *windowCenter = cam->GetWindowCenter();
-    double focalDisk = cam->GetFocalDisk();
+    double imageZoom = 1.;
+    vtkHomogeneousTransform *izt = cam->GetUserTransform();
+    if (izt)
+    {
+        vtkMatrix4x4 *izm = vtkMatrix4x4::New();
+        izt->GetMatrix(izm);
+        imageZoom = izm->GetElement(0,0);
+        izm->Delete();
+    }
     viewPoint[0] = viewPoint[0] +
-        (aspect[0] - 1.) * windowCenter[0] * focalDisk;
+        (aspect[0] - 1.) * windowCenter[0] * imageZoom;
     viewPoint[1] = viewPoint[1] +
-        (aspect[1] - 1.) * windowCenter[1] * focalDisk;
+        (aspect[1] - 1.) * windowCenter[1] * imageZoom;
 
     //
     // Transform the point from view to world coordinates.

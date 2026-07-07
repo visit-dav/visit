@@ -994,7 +994,7 @@ VisWinPlots::Stop3DMode(void)
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //    I added tileZoom to account for the change to the image zoom for tiled
-//    rendering.
+//    rendering. I changed the code to get the imageZoom from the View3D.
 //
 // ****************************************************************************
 
@@ -1034,7 +1034,7 @@ VisWinPlots::UpdateView()
     double imageZoom, tileZoom;
     cam->GetPosition(pos);
     cam->GetFocalPoint(foc);
-    imageZoom = cam->GetFocalDisk();
+    imageZoom = (*mediator).GetView3D().imageZoom;
     tileZoom = (*mediator).GetView3D().tileZoom;
     double projection[3];
     projection[0] = distance * (pos[0] - foc[0]) / (imageZoom / tileZoom);
