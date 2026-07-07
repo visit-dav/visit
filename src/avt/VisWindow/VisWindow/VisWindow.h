@@ -463,7 +463,10 @@ class VisitInteractor;
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //    Added Set/Get TiledRenderingWidth and TiledRenderingHeight to
-//    support tiled rendering. I added TriggerPlotListUpdate.
+//    support tiled rendering. Added TriggerPlotListUpdate. Made
+//    GetBackground and GetForeground public to allow setting their
+//    cameras to support tiled rendering of background and foreground
+//    annotations.
 //
 // ****************************************************************************
 
@@ -792,6 +795,7 @@ public:
 
     void                 GetExtents(double ext[2]); // TODO: Remove with VTK8
 
+    vtkRenderer         *GetBackground(void);
     vtkRenderer         *GetForeground(void);
 
     void                 TriggerPlotListUpdate();
@@ -901,7 +905,6 @@ protected:
     void                 RecalculateRenderOrder(void);
 
     vtkRenderer         *GetCanvas(void);
-    vtkRenderer         *GetBackground(void);
 
     vtkPolyDataMapper2D *CreateRubberbandMapper();
     vtkPolyDataMapper2D *CreateXorGridMapper();

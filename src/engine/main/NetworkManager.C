@@ -3223,11 +3223,20 @@ NetworkManager::RenderTiledInternal()
         for (int ixTile = 0; ixTile < nxTiles; ixTile++)
         {
             //
-            // Set the viswin view3D and foreground camera for the tile.
+            // Set the viswin view3D, background and foreground cameras
+	    // for the tile.
             //
             viswin->SetView3D(view3DTile);
 
-            vtkCamera *cam = viswin->GetForeground()->GetActiveCamera();
+            vtkCamera *cam = viswin->GetBackground()->GetActiveCamera();
+            cam->SetFocalPoint(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 0.);
+            cam->SetPosition(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 1.);
+            cam->SetViewUp(0., 1., 0.);
+            cam->SetParallelProjection(1);
+            cam->SetParallelScale(0.5 / zoomTile);
+            viswin->GetBackground()->SetActiveCamera(cam);
+
+            cam = viswin->GetForeground()->GetActiveCamera();
             cam->SetFocalPoint(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 0.);
             cam->SetPosition(0.5 - foregroundPan[0], 0.5 - foregroundPan[1], 1.);
             cam->SetViewUp(0., 1., 0.);
@@ -3271,12 +3280,20 @@ NetworkManager::RenderTiledInternal()
         writeVTK("pass_6_tiled_image.vtk", pass2->GetImage());
 
     //
-    // Restore the viswin size, view3D and foreground camera.
+    // Restore the viswin size, view3D, background and foreground cameras.
     //
     viswin->SetSize(imageWidth, imageHeight);
     viswin->SetView3D(view3D);
 
-    vtkCamera *cam = viswin->GetForeground()->GetActiveCamera();
+    vtkCamera *cam = viswin->GetBackground()->GetActiveCamera();
+    cam->SetFocalPoint(0.5, 0.5, 0.);
+    cam->SetPosition(0.5, 0.5, 1.);
+    cam->SetViewUp(0., 1., 0.);
+    cam->SetParallelProjection(1);
+    cam->SetParallelScale(0.5);
+    viswin->GetBackground()->SetActiveCamera(cam);
+
+    cam = viswin->GetForeground()->GetActiveCamera();
     cam->SetFocalPoint(0.5, 0.5, 0.);
     cam->SetPosition(0.5, 0.5, 1.);
     cam->SetViewUp(0., 1., 0.);
