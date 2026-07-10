@@ -2,15 +2,18 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#ifndef MATERIAL_ENCODER_H
-#define MATERIAL_ENCODER_H
+#ifndef AVT_MATERIAL_ENCODER_H
+#define AVT_MATERIAL_ENCODER_H
+
+#include <pipeline_exports.h>
+
 #include <string>
 #include <vector>
 
 class avtMaterial;
 
 // ****************************************************************************
-// Class: MaterialEncoder
+// Class: avtMaterialEncoder
 //
 // Purpose:
 //   Keeps track of mixed material information.
@@ -26,11 +29,11 @@ class avtMaterial;
 //
 // ****************************************************************************
 
-class MaterialEncoder
+class PIPELINE_API avtMaterialEncoder
 {
 public:
-    MaterialEncoder();
-    ~MaterialEncoder();
+    avtMaterialEncoder();
+    ~avtMaterialEncoder();
 
     void AddMaterial(const std::string &mat);
     void AddClean(int zoneId, int matNumber);

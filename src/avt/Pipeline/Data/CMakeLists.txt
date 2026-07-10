@@ -46,6 +46,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtLightingModel.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtLogicalSelection.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMaterial.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMaterialEncoder.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMaximumIntensityProjectionRF.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMetaData.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMIPRangeRF.C
@@ -119,6 +120,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtLightingModel.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtLogicalSelection.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMaterial.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMaterialEncoder.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMaximumIntensityProjectionRF.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMetaData.h
           ${CMAKE_CURRENT_SOURCE_DIR}/avtMIPRangeRF.h
