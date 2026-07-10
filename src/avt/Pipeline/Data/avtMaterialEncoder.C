@@ -2,7 +2,7 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include <MaterialEncoder.h>
+#include "avtMaterialEncoder.h"
 #include <avtMaterial.h>
 
 //
@@ -21,7 +21,7 @@ T *remake(T *ptr, int oldsize, int size)
 }
 
 // ****************************************************************************
-// Method: MaterialEncoder::MaterialEncoder
+// Method: avtMaterialEncoder::avtMaterialEncoder
 //
 // Purpose: 
 //   Constructor
@@ -33,7 +33,7 @@ T *remake(T *ptr, int oldsize, int size)
 //   
 // ****************************************************************************
 
-MaterialEncoder::MaterialEncoder() : matNames()
+avtMaterialEncoder::avtMaterialEncoder() : matNames()
 {
     have_mixed = false;
     mix_zone = NULL;
@@ -49,7 +49,7 @@ MaterialEncoder::MaterialEncoder() : matNames()
 }
 
 // ****************************************************************************
-// Method: MaterialEncoder::~MaterialEncoder
+// Method: avtMaterialEncoder::~avtMaterialEncoder
 //
 // Purpose: 
 //   Destructor.
@@ -61,7 +61,7 @@ MaterialEncoder::MaterialEncoder() : matNames()
 //   
 // ****************************************************************************
 
-MaterialEncoder::~MaterialEncoder()
+avtMaterialEncoder::~avtMaterialEncoder()
 {
    delete [] matlist;
    if (have_mixed)
@@ -74,7 +74,7 @@ MaterialEncoder::~MaterialEncoder()
 }
 
 // ****************************************************************************
-// Method: MaterialEncoder::AddMaterial
+// Method: avtMaterialEncoder::AddMaterial
 //
 // Purpose: 
 //   Adds a material to the list of materials.
@@ -90,13 +90,13 @@ MaterialEncoder::~MaterialEncoder()
 // ****************************************************************************
 
 void
-MaterialEncoder::AddMaterial(const std::string &mat)
+avtMaterialEncoder::AddMaterial(const std::string &mat)
 {
     matNames.push_back(mat);
 }
 
 // ****************************************************************************
-// Method: MaterialEncoder::AddClean
+// Method: avtMaterialEncoder::AddClean
 //
 // Purpose: 
 //   Adds a clean zone for the specified zone.
@@ -113,13 +113,13 @@ MaterialEncoder::AddMaterial(const std::string &mat)
 // ****************************************************************************
 
 void
-MaterialEncoder::AddClean(int zoneId, int matNumber)
+avtMaterialEncoder::AddClean(int zoneId, int matNumber)
 {
     matlist[zoneId] = matNumber;
 }
 
 // ****************************************************************************
-// Method: MaterialEncoder::AddMixed
+// Method: avtMaterialEncoder::AddMixed
 //
 // Purpose: 
 //   Adds a mixed zone for the specified zone.
@@ -140,7 +140,7 @@ MaterialEncoder::AddClean(int zoneId, int matNumber)
 // ****************************************************************************
 
 void
-MaterialEncoder::AddMixed(int zoneId, const int *matNumbers,
+avtMaterialEncoder::AddMixed(int zoneId, const int *matNumbers,
     const float *matVf, int nMats)
 {
     int i;
@@ -173,7 +173,7 @@ MaterialEncoder::AddMixed(int zoneId, const int *matNumbers,
 }
 
 // ****************************************************************************
-// Method: MaterialEncoder::AllocClean
+// Method: avtMaterialEncoder::AllocClean
 //
 // Purpose: 
 //   Allocates clean zones.
@@ -189,13 +189,13 @@ MaterialEncoder::AddMixed(int zoneId, const int *matNumbers,
 // ****************************************************************************
 
 void
-MaterialEncoder::AllocClean(int nZones)
+avtMaterialEncoder::AllocClean(int nZones)
 {
     matlist = new int[nZones];
 }
 
 // ****************************************************************************
-// Method: MaterialEncoder::GetMixedSize
+// Method: avtMaterialEncoder::GetMixedSize
 //
 // Purpose: 
 //   Returns the size of the mixed arrays.
@@ -213,13 +213,13 @@ MaterialEncoder::AllocClean(int nZones)
 // ****************************************************************************
 
 int
-MaterialEncoder::GetMixedSize() const
+avtMaterialEncoder::GetMixedSize() const
 {
     return _array_index - 1;
 }
 
 // ****************************************************************************
-// Method: MaterialEncoder::CreateMaterial
+// Method: avtMaterialEncoder::CreateMaterial
 //
 // Purpose: 
 //   Creates an avtMaterial from the material information in the object.
@@ -240,7 +240,7 @@ MaterialEncoder::GetMixedSize() const
 // ****************************************************************************
 
 avtMaterial *
-MaterialEncoder::CreateMaterial(const int *dims, int ndims) const
+avtMaterialEncoder::CreateMaterial(const int *dims, int ndims) const
 {
     int *matnos = new int[matNames.size()];
     char **names = new char *[matNames.size()];
@@ -293,7 +293,7 @@ MaterialEncoder::CreateMaterial(const int *dims, int ndims) const
 }
 
 // ****************************************************************************
-// Method: MaterialEncoder::Resize
+// Method: avtMaterialEncoder::Resize
 //
 // Purpose: 
 //   Resizes the mixed material arrays so they can hold more information.
@@ -306,7 +306,7 @@ MaterialEncoder::CreateMaterial(const int *dims, int ndims) const
 // ****************************************************************************
 
 void
-MaterialEncoder::Resize(int nMats)
+avtMaterialEncoder::Resize(int nMats)
 { 
     if(_array_index + nMats >= _array_size)
     {
