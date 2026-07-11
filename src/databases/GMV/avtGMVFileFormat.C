@@ -78,7 +78,7 @@ gmverror(const char *msg)
 /// ROUTINES TO CONVERT gmv_data INTO VTK OBJECTS
 ///
 ///////////////////////////////////////////////////////////////////////////////
-#include <gmvMaterialEncoder.h>
+#include <avtMaterialEncoder.h>
 
 // ****************************************************************************
 // Method: print_gmv_data
@@ -1895,7 +1895,7 @@ avtGMVFileFormat::GetAuxiliaryData(const char *var, int domain,
             vtkDataArray *material = pos->second.material;
             if(pos != meshes.end() && material != 0)
             {
-                gmvMaterialEncoder M;
+                avtMaterialEncoder M;
                 for(size_t i = 0; i < mmd->materialNames.size(); ++i)
                     M.AddMaterial(mmd->materialNames[i]);
                 M.AllocClean(pos->second.dataset->GetNumberOfCells());
