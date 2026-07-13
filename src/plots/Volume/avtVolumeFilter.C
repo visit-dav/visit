@@ -1209,6 +1209,9 @@ avtVolumeFilter::GetNumberOfStages(const WindowAttributes &a)
 //    Brad Whitlock, Wed Sep 28 13:54:02 PDT 2011
 //    Negate the image pan to account for changes in avtView3D.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Remove negation of the image pan since this is incorrect.
+//
 // ****************************************************************************
 
 void
@@ -1232,8 +1235,8 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &viewAt
     view3d.nearPlane = viewAtts.GetNearPlane();
     view3d.farPlane = viewAtts.GetFarPlane();
     view3d.perspective = viewAtts.GetPerspective();
-    view3d.imagePan[0] = -viewAtts.GetImagePan()[0];
-    view3d.imagePan[1] = -viewAtts.GetImagePan()[1];
+    view3d.imagePan[0] = viewAtts.GetImagePan()[0];
+    view3d.imagePan[1] = viewAtts.GetImagePan()[1];
     view3d.imageZoom = viewAtts.GetImageZoom();
 
     //
