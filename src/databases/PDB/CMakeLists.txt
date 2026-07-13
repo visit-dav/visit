@@ -6,8 +6,7 @@ set(PDB_INCLUDES
 
 visit_add_database_plugin(
     DNAME      PDB
-    MSRC       MaterialEncoder.C
-               PDBFileObject.C
+    MSRC       PDBFileObject.C
                PDBReader.C
                PF3DFileFormat.C
                PP_ZFileReader.C
@@ -16,8 +15,7 @@ visit_add_database_plugin(
                LEOSFileFormat.C
                Streaker.C
                JMFileFormat.C
-    ESRC       MaterialEncoder.C
-               PDBFileObject.C
+    ESRC       PDBFileObject.C
                PDBReader.C
                PF3DFileFormat.C
                PP_ZFileReader.C
