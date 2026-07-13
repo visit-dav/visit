@@ -3209,6 +3209,10 @@ NetworkManager::RenderTiledInternal()
     double pan[2] = {xPanInit, yPanInit};
     view3DAtts.SetImagePan(pan);
     view3DAtts.SetImageZoom(zoomUser * zoomTile);
+    pan[0] -= xPanUser;
+    pan[1] -= yPanUser;
+    view3DAtts.SetTilePan(pan);
+    view3DAtts.SetTileZoom(zoomTile);
     renderState.windowInfo->windowAttributes.SetView3D(view3DAtts);
 
     avtImage_p pass2 = new avtImage(NULL);
@@ -3248,6 +3252,7 @@ NetworkManager::RenderTiledInternal()
             // Set the windowAttributes view3D for the tile.
             //
             view3DAtts.SetImagePan(view3DTile.imagePan);
+            view3DAtts.SetTilePan(view3DTile.tilePan);
             renderState.windowInfo->windowAttributes.SetView3D(view3DAtts);
 
             //
@@ -3267,7 +3272,7 @@ NetworkManager::RenderTiledInternal()
 
             remainingNxCanvas -= tileWidth;
             view3DTile.imagePan[0] -= xPanDelta;
-            view3DTile.tilePan[0] -= xPanUser;
+            view3DTile.tilePan[0] -= xPanDelta;
             foregroundPan[0] -= xPanDelta2;
         }
         remainingNyCanvas -= tileHeight;
