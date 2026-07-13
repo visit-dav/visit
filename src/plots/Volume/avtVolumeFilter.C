@@ -1210,7 +1210,8 @@ avtVolumeFilter::GetNumberOfStages(const WindowAttributes &a)
 //    Negate the image pan to account for changes in avtView3D.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    Remove negation of the image pan since this is incorrect.
+//    Remove negation of the image pan since this is incorrect. Add code
+//    to copy the tile pan and zoom.
 //
 // ****************************************************************************
 
@@ -1238,6 +1239,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &viewAt
     view3d.imagePan[0] = viewAtts.GetImagePan()[0];
     view3d.imagePan[1] = viewAtts.GetImagePan()[1];
     view3d.imageZoom = viewAtts.GetImageZoom();
+    view3d.tilePan[0] = viewAtts.GetTilePan()[0];
+    view3d.tilePan[1] = viewAtts.GetTilePan()[1];
+    view3d.tileZoom = viewAtts.GetTileZoom();
 
     //
     // Now View3D can be converted directly into avtViewInfo.
