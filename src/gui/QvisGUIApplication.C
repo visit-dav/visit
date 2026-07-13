@@ -5117,7 +5117,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 //   Added new ablitiy to load session files from a remote host.
 //
 //   Kathleen Biagas, Mon Jun 29 17:11:10 PDT 2026
-//   Use std::filesystem to determint full path location of session file.
+//   Use std::filesystem to determine full path location of session file.
 //   If it doesn't already contain full path, test cwd, then VisIt user dir
 //   and stop processing if it cannot be found.
 //   Only attempt to process .gui file if it exists.
@@ -5162,12 +5162,11 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
                 vud /= fsp;
                 if(std::filesystem::exists(vud))
                 {
-                    cerr << "  session file exists in vud" << endl;
                     filename = vud.string();
                 }
                 else
                 {
-                    QString msg = tr("Could not find session file (%1). Please provide full path if is it not in current working directory or your VisIt user directory.").arg(s.toStdString().c_str());
+                    QString msg = tr("Could not find session file (%1). Please provide full path if it is not in current working directory or your VisIt user directory.").arg(s.toStdString().c_str());
                     Error(msg);
                     restoringSession = false;
                     return;
