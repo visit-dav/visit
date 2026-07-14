@@ -1464,7 +1464,7 @@ QvisHelpWindow::displayPage(const QString &page, bool externalBrowser)
         if(QFile(file).exists())
         {
             if(externalBrowser)
-                QDesktopServices::openUrl(file);
+                QDesktopServices::openUrl(QUrl::fromLocalFile(file));
             else
                 helpBrowser->setSource(QUrl::fromLocalFile(file));
             helpFile = page;
