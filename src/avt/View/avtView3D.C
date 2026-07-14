@@ -392,6 +392,18 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     //
     // Set the image pan and image zoom.
     //
+    // The method avtView3D::SetViewInfoFromView stores the negative of
+    // the imagePan into avtViewInfo.
+    // The function CreateViewInfoFromViewAttributes in avtVolumeFilter.C
+    // also stores the negative of imagePan from View3DAttributes into
+    // avtView3D.
+    // The method avtVisItVTKRendererFilter::CreateCamera temporarily
+    // negates imagePan before calling avtViewInfo::SetCameraFromView.
+    //
+    // All this negation should probably be removed. All 3 locations need
+    // to be changed and the call to vtkCamera->SetWindowCenter in
+    // avtViewInfo::SetCameraFromView.
+    //
     viewInfo.imagePan[0] = -imagePan[0];
     viewInfo.imagePan[1] = -imagePan[1];
     viewInfo.imageZoom   = imageZoom;
