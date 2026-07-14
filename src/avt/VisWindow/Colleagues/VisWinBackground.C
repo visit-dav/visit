@@ -182,19 +182,19 @@ VisWinBackground::UpdatePlotList(std::vector<avtActor_p> &lst)
         mediator.GetSize(w, h);
         double windowScale = double(w) / double(h);
 
-	// Calculate PositionCoordinate and Position2Coordinate, where
-	// PositionCoordinate is the bottom left and Position2Coordinate is
-	// the width and height.
-	double rect[4];
-	rect[0] = 0.;
-	rect[1] = 0.;
-	rect[2] = 1.;
-	rect[3] = 1.;
-	double p0[2], p1[2];
-	p0[0] = 0.5 - windowScale / 2. + rect[0] * windowScale;
-	p0[1] = rect[1];
-	p1[0] = rect[2] * windowScale;
-	p1[1] = rect[3];
+        // Calculate PositionCoordinate and Position2Coordinate, where
+        // PositionCoordinate is the bottom left and Position2Coordinate is
+        // the width and height.
+        double rect[4];
+        rect[0] = 0.;
+        rect[1] = 0.;
+        rect[2] = 1.;
+        rect[3] = 1.;
+        double p0[2], p1[2];
+        p0[0] = 0.5 - windowScale / 2. + rect[0] * windowScale;
+        p0[1] = rect[1];
+        p1[0] = rect[2] * windowScale;
+        p1[1] = rect[3];
 
         bgActor->GetPositionCoordinate()->SetValue(p0[0], p0[1]);
         bgActor->GetPosition2Coordinate()->SetValue(p1[0], p1[1]);
