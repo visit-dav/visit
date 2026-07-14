@@ -151,8 +151,7 @@ VisWinUserInfo::SetForegroundColor(double fr, double fg, double fb)
 //    Don't add the actor if we don't want annotation.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    I changed the routine to plot the data in world coordinates instead of
-//    normalized viewport coordinates to support tiled rendering.
+//    Switched to using AddViewProp.
 //
 // ****************************************************************************
 
@@ -189,8 +188,7 @@ VisWinUserInfo::AddToWindow(void)
 //    Don't add the actor if we don't want annotation.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    I changed the routine to plot the data in world coordinates instead of
-//    normalized viewport coordinates to support tiled rendering.
+//    Switched to using RemoveViewProp.
 //
 // ****************************************************************************
 
