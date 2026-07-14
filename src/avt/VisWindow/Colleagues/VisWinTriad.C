@@ -396,8 +396,7 @@ VisWinTriad::ShouldAddTriad()
 //    Put triad on foreground instead of background.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    I changed the routine to plot the data in world coordinates instead of
-//    normalized viewport coordinates to support tiled rendering.
+//    Switched to using AddViewProp.
 //
 // ****************************************************************************
 
@@ -445,8 +444,7 @@ VisWinTriad::AddTriadToWindow(void)
 //    Put triad on foreground instead of background.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    I changed the routine to plot the data in world coordinates instead of
-//    normalized viewport coordinates to support tiled rendering.
+//    Switched to using RemoveViewProp.
 //
 // ****************************************************************************
 
