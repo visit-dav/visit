@@ -192,7 +192,7 @@ avtView3D::operator==(const avtView3D &vi)
         centerOfRotationSet != vi.centerOfRotationSet ||
         axis3DScaleFlag != vi.axis3DScaleFlag ||
         tilePan[0] != vi.tilePan[0] || tilePan[1] != vi.tilePan[1] ||
-	tileZoom != vi.tileZoom ||
+        tileZoom != vi.tileZoom ||
         windowValid != vi.windowValid)
     {
         return false;
