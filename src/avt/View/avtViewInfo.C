@@ -318,6 +318,11 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
     orthographic = (vtkcam->GetParallelProjection() != 0 ? true : false);
     vtkcam->GetViewShear(shear);
 
+    //
+    // EyePosition and FocalDisk aren't relevant to us, so we use it to
+    // store the tilePan and tileZoom. This allows us to get those values
+    // from the vtkCamera.
+    //
     double tilePan3[3];
     vtkcam->GetEyePosition(tilePan3);
     tilePan[0] = tilePan3[0];
@@ -420,6 +425,11 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
         }
     }
 
+    //
+    // EyePosition and FocalDisk aren't relevant to us, so we use it to
+    // store the tilePan and tileZoom. This allows us to get those values
+    // from the vtkCamera.
+    //
     double tilePan3[3];
     tilePan3[0] = tilePan[0];
     tilePan3[1] = tilePan[1];
