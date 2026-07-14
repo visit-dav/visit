@@ -106,6 +106,8 @@ avtText2DColleague::~avtText2DColleague()
 // Creation:   Thu Nov 6 15:52:19 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
 //   
 // ****************************************************************************
 
@@ -129,6 +131,8 @@ avtText2DColleague::AddToRenderer()
 // Creation:   Thu Nov 6 15:52:38 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
 //   
 // ****************************************************************************
 

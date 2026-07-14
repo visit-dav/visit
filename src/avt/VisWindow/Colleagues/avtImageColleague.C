@@ -142,8 +142,7 @@ avtImageColleague::CreateActorAndMapper()
 //
 // Modifications:
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//   I changed the routine to plot the data in world coordinates instead of
-//   normalized viewport coordinates to support tiled rendering.
+//   Switched to using AddViewProp.
 //
 // ****************************************************************************
 void
@@ -167,8 +166,7 @@ avtImageColleague::AddToRenderer()
 //
 // Modifications:
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//   I changed the routine to plot the data in world coordinates instead of
-//   normalized viewport coordinates to support tiled rendering.
+//   Switched to using RemoveViewProp.
 //
 // ****************************************************************************
 void
