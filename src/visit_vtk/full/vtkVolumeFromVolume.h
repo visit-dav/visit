@@ -70,7 +70,7 @@ class VISIT_VTK_API vtkVolumeFromVolume : public vtkDataSetFromVolume
 public:
 struct CentroidPointEntry
 {
-    vtkIdType     nPts;
+    size_t        nPts;
     vtkIdType     ptIds[8];
 };
 
@@ -82,38 +82,41 @@ class VISIT_VTK_API CentroidPointList
 
     void           Clear();
 
-    vtkIdType            AddPoint(vtkIdType, const vtkIdType*);
+    size_t            AddPoint(size_t, const vtkIdType*);
 
-    vtkIdType            GetTotalNumberOfPoints(void) const;
-    vtkIdType            GetNumberOfLists(void) const;
-    vtkIdType            GetList(vtkIdType, const CentroidPointEntry *&) const;
+    size_t            GetTotalNumberOfPoints(void) const;
+    size_t            GetNumberOfLists(void) const;
+    size_t            GetList(size_t, const CentroidPointEntry *&) const;
 
   protected:
     CentroidPointEntry   **list;
-    vtkIdType              currentList;
-    vtkIdType              currentPoint;
-    vtkIdType              listSize;
-    vtkIdType              pointsPerList;
+    size_t              currentList;
+    size_t              currentPoint;
+    size_t              listSize;
+    size_t              pointsPerList;
 };
 
 class ShapeList
 {
   public:
-                   ShapeList(vtkIdType size);
+                   ShapeList(size_t size);
     virtual       ~ShapeList();
-    virtual int    GetVTKType(void) const = 0;
-    int            GetShapeSize(void) const { return shapeSize; };
-    vtkIdType      GetTotalNumberOfShapes(void) const;
-    vtkIdType      GetNumberOfLists(void) const;
-    vtkIdType      GetList(vtkIdType, const vtkIdType *&) const;
-    vtkIdType      GetList(vtkIdType, vtkIdType *&) const;
+    virtual unsigned char    GetVTKType(void) const = 0;
+    size_t      GetShapeSize(void) const { return shapeSize; }
+    size_t      GetTotalNumberOfShapes(void) const;
+    size_t      GetNumberOfLists(void) const;
+    size_t      GetList(size_t, const vtkIdType *&) const;
+    size_t      GetList(size_t, vtkIdType *&) const;
   protected:
     vtkIdType    **list;
-    vtkIdType      currentList;
-    vtkIdType      currentShape;
-    vtkIdType      listSize;
-    vtkIdType      shapesPerList;
-    int            shapeSize;
+    size_t      currentList;
+    size_t      currentShape;
+    size_t      listSize;
+    size_t      shapesPerList;
+    size_t      shapeSize;
+
+    ShapeList(const ShapeList &) = delete;
+    void operator=(const ShapeList&) = delete;
 };
 
 class VISIT_VTK_API  HexList : public ShapeList
@@ -121,8 +124,10 @@ class VISIT_VTK_API  HexList : public ShapeList
   public:
                    HexList();
     virtual       ~HexList();
-    virtual int    GetVTKType(void) const override { return VTK_HEXAHEDRON; };
+    unsigned char  GetVTKType(void) const override { return VTK_HEXAHEDRON; }
     void           AddHex(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
+    HexList(const HexList &) = delete;
+    void operator=(const HexList&) = delete;
 };
 
 class VISIT_VTK_API WedgeList : public ShapeList
@@ -130,8 +135,10 @@ class VISIT_VTK_API WedgeList : public ShapeList
   public:
                    WedgeList();
     virtual       ~WedgeList();
-    virtual int    GetVTKType(void) const override { return VTK_WEDGE; };
+    unsigned char  GetVTKType(void) const override { return VTK_WEDGE; }
     void           AddWedge(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
+    WedgeList(const WedgeList &) = delete;
+    void operator=(const WedgeList&) = delete;
 };
 
 class VISIT_VTK_API PyramidList : public ShapeList
@@ -139,8 +146,10 @@ class VISIT_VTK_API PyramidList : public ShapeList
   public:
                    PyramidList();
     virtual       ~PyramidList();
-    virtual int    GetVTKType(void) const override { return VTK_PYRAMID; };
+    unsigned char  GetVTKType(void) const override { return VTK_PYRAMID; }
     void           AddPyramid(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
+    PyramidList(const PyramidList &) = delete;
+    void operator=(const PyramidList&) = delete;
 };
 
 class VISIT_VTK_API TetList : public ShapeList
@@ -148,8 +157,10 @@ class VISIT_VTK_API TetList : public ShapeList
   public:
                    TetList();
     virtual       ~TetList();
-    virtual int    GetVTKType(void) const override { return VTK_TETRA; };
+    unsigned char  GetVTKType(void) const override { return VTK_TETRA; }
     void           AddTet(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
+    TetList(const TetList &) = delete;
+    void operator=(const TetList&) = delete;
 };
 
 class VISIT_VTK_API QuadList : public ShapeList
@@ -157,8 +168,10 @@ class VISIT_VTK_API QuadList : public ShapeList
   public:
                    QuadList();
     virtual       ~QuadList();
-    virtual int    GetVTKType(void) const override { return VTK_QUAD; };
+    unsigned char  GetVTKType(void) const override { return VTK_QUAD; }
     void           AddQuad(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
+    QuadList(const QuadList &) = delete;
+    void operator=(const QuadList&) = delete;
 };
 
 class VISIT_VTK_API TriList : public ShapeList
@@ -166,8 +179,10 @@ class VISIT_VTK_API TriList : public ShapeList
   public:
                    TriList();
     virtual       ~TriList();
-    virtual int    GetVTKType(void) const override { return VTK_TRIANGLE; };
+    unsigned char  GetVTKType(void) const override { return VTK_TRIANGLE; }
     void           AddTri(vtkIdType, vtkIdType, vtkIdType, vtkIdType);
+    TriList(const TriList &) = delete;
+    void operator=(const TriList&) = delete;
 };
 
 class VISIT_VTK_API LineList : public ShapeList
@@ -175,8 +190,10 @@ class VISIT_VTK_API LineList : public ShapeList
   public:
                    LineList();
     virtual       ~LineList();
-    virtual int    GetVTKType(void) const override { return VTK_LINE; };
+    unsigned char  GetVTKType(void) const override { return VTK_LINE; }
     void           AddLine(vtkIdType, vtkIdType, vtkIdType);
+    LineList(const LineList &) = delete;
+    void operator=(const LineList&) = delete;
 };
 
 class VISIT_VTK_API VertexList : public ShapeList
@@ -184,13 +201,15 @@ class VISIT_VTK_API VertexList : public ShapeList
   public:
                    VertexList();
     virtual       ~VertexList();
-    virtual int    GetVTKType(void) const override { return VTK_VERTEX; };
+    unsigned char  GetVTKType(void) const override { return VTK_VERTEX; }
     void           AddVertex(vtkIdType, vtkIdType);
+    VertexList(const VertexList &) = delete;
+    void operator=(const VertexList&) = delete;
 };
 
   public:
-                      vtkVolumeFromVolume(vtkIdType nPts, vtkIdType ptSizeGuess);
-    virtual          ~vtkVolumeFromVolume() { ; };
+                      vtkVolumeFromVolume(vtkIdType nPts, size_t ptSizeGuess);
+    virtual          ~vtkVolumeFromVolume() { ; }
 
     void              ConstructDataSet(vtkPointData *, vtkCellData *,
                                        vtkUnstructuredGrid *, vtkPoints *);
@@ -198,8 +217,8 @@ class VISIT_VTK_API VertexList : public ShapeList
                                        vtkUnstructuredGrid *, const int *, vtkDataArray *,
                                        vtkDataArray *,vtkDataArray *);
 
-    int            AddCentroidPoint(vtkIdType n, const vtkIdType *p)
-                        { return -1 - (int)centroid_list.AddPoint(n, p); }
+    int            AddCentroidPoint(size_t n, const vtkIdType *p)
+                        { return -1 - static_cast<int>(centroid_list.AddPoint(n, p)); }
 
     void           AddHex(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3,
                           vtkIdType v4, vtkIdType v5, vtkIdType v6, vtkIdType v7)
@@ -232,7 +251,10 @@ class VISIT_VTK_API VertexList : public ShapeList
     VertexList         vertices;
 
     ShapeList         *shapes[8];
-    const int          nshapes;
+    const size_t       nshapes;
+
+    vtkVolumeFromVolume(const vtkVolumeFromVolume &) = delete;
+    void operator=(const vtkVolumeFromVolume&) = delete;
 };
 
 

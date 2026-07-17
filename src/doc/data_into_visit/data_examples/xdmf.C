@@ -1289,6 +1289,7 @@ create_multi_grid3d()
     fclose(xmf);
 }
 
+// begin create_curv2d sphinx literal include tag
 void
 create_curv2d()
 {
@@ -1334,7 +1335,9 @@ create_curv2d()
     fprintf(xmf, "</Xdmf>\n");
     fclose(xmf);
 }
+// end create_curv2d sphinx literal include tag
 
+// begin create_curv3d sphinx literal include tag
 void
 create_curv3d()
 {
@@ -1390,6 +1393,7 @@ create_curv3d()
     fprintf(xmf, "</Xdmf>\n");
     fclose(xmf);
 }
+// end create_curv3d sphinx literal include tag
 
 void
 create_xml_data()
@@ -1464,6 +1468,7 @@ create_xml_data()
     fclose(xmf);
 }
 
+// begin create_corect2d sphinx literal include tag
 void
 create_corect2d()
 {
@@ -1512,7 +1517,9 @@ create_corect2d()
     fprintf(xmf, "</Xdmf>\n");
     fclose(xmf);
 }
+// end create_corect2d sphinx literal include tag
 
+// begin create_corect3d sphinx literal include tag
 void
 create_corect3d()
 {
@@ -1561,7 +1568,9 @@ create_corect3d()
     fprintf(xmf, "</Xdmf>\n");
     fclose(xmf);
 }
+// end create_corect3d sphinx literal include tag
 
+// begin create_rect2d sphinx literal include tag
 void
 create_rect2d()
 {
@@ -1610,7 +1619,9 @@ create_rect2d()
     fprintf(xmf, "</Xdmf>\n");
     fclose(xmf);
 }
+// end create_rect2d sphinx literal include tag
 
+// begin create_rect3d sphinx literal include tag
 void
 create_rect3d()
 {
@@ -1662,7 +1673,9 @@ create_rect3d()
     fprintf(xmf, "</Xdmf>\n");
     fclose(xmf);
 }
+// end create_rect3d sphinx literal include tag
 
+// begin create_point3d sphinx literal include tag
 void
 create_point3d()
 {
@@ -1707,6 +1720,7 @@ create_point3d()
     fprintf(xmf, "</Xdmf>\n");
     fclose(xmf);
 }
+// end create_point3d sphinx literal include tag
 
 void
 create_multi_point3d()

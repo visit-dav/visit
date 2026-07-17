@@ -1,0 +1,51 @@
+--- scripts\superbuild\ospray_post_install.cmake	2026-02-18 07:11:32.000000000 -0800
++++ scripts\superbuild\ospray_post_install.cmake	2026-02-19 14:31:29.000000000 -0800
+@@ -0,0 +1,48 @@
++# pare down the ospray install to just what is needed for VisIt.
++message("ospray_post_install.cmake, prefix: ${CMAKE_INSTALL_PREFIX}")
++
++file(RENAME ${CMAKE_INSTALL_PREFIX}/ospray/bin ${CMAKE_INSTALL_PREFIX}/bin)
++file(RENAME ${CMAKE_INSTALL_PREFIX}/ospray/include ${CMAKE_INSTALL_PREFIX}/include)
++file(RENAME ${CMAKE_INSTALL_PREFIX}/ospray/lib ${CMAKE_INSTALL_PREFIX}/lib)
++
++# copy support dlls/exe 
++file(COPY ${CMAKE_INSTALL_PREFIX}/embree/bin/embree4.dll
++          ${CMAKE_INSTALL_PREFIX}/ispc/bin/ispcrt.dll
++          ${CMAKE_INSTALL_PREFIX}/ispc/bin/ispcrt_device_cpu.dll
++          ${CMAKE_INSTALL_PREFIX}/ispc/bin/ispcrt_device_gpu.dll
++          ${CMAKE_INSTALL_PREFIX}/ispc/bin/ispc.exe
++          ${CMAKE_INSTALL_PREFIX}/openvkl/bin/openvkl.dll
++          ${CMAKE_INSTALL_PREFIX}/openvkl/bin/openvkl_module_cpu_device.dll
++          ${CMAKE_INSTALL_PREFIX}/openvkl/bin/openvkl_module_cpu_device_4.dll
++          ${CMAKE_INSTALL_PREFIX}/openvkl/bin/openvkl_module_cpu_device_8.dll
++          ${CMAKE_INSTALL_PREFIX}/openvkl/bin/openvkl_module_cpu_device_16.dll
++          ${CMAKE_INSTALL_PREFIX}/rkcommon/bin/rkcommon.dll
++          ${CMAKE_INSTALL_PREFIX}/tbb/redist/intel64/vc14/tbb12.dll
++          ${CMAKE_INSTALL_PREFIX}/tbb/redist/intel64/vc14/tbbbind.dll
++          ${CMAKE_INSTALL_PREFIX}/tbb/redist/intel64/vc14/tbbbind_2_0.dll
++          ${CMAKE_INSTALL_PREFIX}/tbb/redist/intel64/vc14/tbbbind_2_5.dll
++          ${CMAKE_INSTALL_PREFIX}/tbb/redist/intel64/vc14/tbbmalloc.dll
++          ${CMAKE_INSTALL_PREFIX}/tbb/redist/intel64/vc14/tbbmalloc_proxy.dll
++     DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
++
++file(COPY ${CMAKE_INSTALL_PREFIX}/embree/lib/embree4.lib
++     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
++
++
++
++file(REMOVE_RECURSE ${CMAKE_INSTALL_PREFIX}/embree
++                    ${CMAKE_INSTALL_PREFIX}/glfw
++                    ${CMAKE_INSTALL_PREFIX}/glm
++                    ${CMAKE_INSTALL_PREFIX}/ispc
++                    ${CMAKE_INSTALL_PREFIX}/oidn
++                    ${CMAKE_INSTALL_PREFIX}/openvkl
++                    ${CMAKE_INSTALL_PREFIX}/ospray
++                    ${CMAKE_INSTALL_PREFIX}/rkcommon
++                    ${CMAKE_INSTALL_PREFIX}/tbb)
++
++# if tp-installed vcruntime dlls were allowed to remain, there would be
++# an overproliferation of them
++file(REMOVE ${CMAKE_INSTALL_PREFIX}/bin/vcruntime140.dll
++            ${CMAKE_INSTALL_PREFIX}/bin/vcruntime140_1.dll
++            ${CMAKE_INSTALL_PREFIX}/bin/msvcp140.dll)
++

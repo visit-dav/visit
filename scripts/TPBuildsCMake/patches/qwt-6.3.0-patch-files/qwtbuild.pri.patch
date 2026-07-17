@@ -1,0 +1,19 @@
+--- qwtbuild.pri	2026-02-11 07:49:31.000000000 -0800
++++ qwtbuild.pri	2026-02-11 07:48:24.000000000 -0800
+@@ -51,14 +51,14 @@
+     # On Windows you can't mix release and debug libraries.
+     # The designer is built in release mode. If you like to use it
+     # you need a release version. For your own application development you
+     # might need a debug version.
+     # Enable debug_and_release + build_all if you want to build both.
+ 
+-    CONFIG           += debug_and_release
+-    CONFIG           += build_all
++    CONFIG           += release
++    #CONFIG           += build_all
+ }
+ else {
+ 
+     CONFIG           += release
+ 
+     VER_MAJ           = $${QWT_VER_MAJ}

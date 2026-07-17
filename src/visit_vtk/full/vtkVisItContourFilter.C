@@ -40,11 +40,11 @@
 #include <vector>
 
 
-vtkStandardNewMacro(vtkVisItContourFilter);
+vtkStandardNewMacro(vtkVisItContourFilter)
 
 vtkVisItContourFilter::vtkVisItContourFilter()
 {
-  this->CellList = NULL;
+  this->CellList = nullptr;
   this->CellListSize = 0;
   this->Isovalue = 0.;
 }
@@ -60,7 +60,7 @@ void vtkVisItContourFilter::SetCellList(const vtkIdType *cl, vtkIdType size)
 }
 
 int vtkVisItContourFilter::RequestData(
-  vtkInformation *request,
+  vtkInformation *vtkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector)
 {
@@ -106,16 +106,16 @@ vtkDataArray *
 vtkVisItContourFilter::GetPointScalars(vtkDataSet *in_ds)
 {
     vtkDataArray *arr = in_ds->GetPointData()->GetScalars();
-    if (arr == NULL)
+    if (arr == nullptr)
     {
         vtkErrorMacro( << "No scalar point data.");
-        return NULL;
+        return nullptr;
     }
 
     if (arr->GetNumberOfComponents() != 1)
     {
         vtkErrorMacro( << "Scalar point data is not really scalar.");
-        return NULL;
+        return nullptr;
     }
 
     return arr;
@@ -142,10 +142,10 @@ class IsoDistanceFunction
 {
 public:
     IsoDistanceFunction(const int *pt_dims, vtkDataArray *v, T iso) : 
-        var((const T *)v->GetVoidPointer(0)), Isovalue(iso)
+        var(static_cast<const T *>(v->GetVoidPointer(0))), Isovalue(iso)
     {
-        ptstrideY = (vtkIdType)pt_dims[0];
-        ptstrideZ = (vtkIdType)(pt_dims[0] * pt_dims[1]);
+        ptstrideY = static_cast<vtkIdType>(pt_dims[0]);
+        ptstrideZ = static_cast<vtkIdType>(pt_dims[0] * pt_dims[1]);
     }
 
     inline T operator()(vtkIdType cellI,   vtkIdType cellJ,   vtkIdType cellK,
@@ -188,8 +188,8 @@ public:
     GeneralIsoDistanceFunction(const int *pt_dims, vtkDataArray *v, double iso) : 
         var(v), Isovalue(iso)
     {
-        ptstrideY = (vtkIdType)pt_dims[0];
-        ptstrideZ = (vtkIdType)(pt_dims[0] * pt_dims[1]);
+        ptstrideY = static_cast<vtkIdType>(pt_dims[0]);
+        ptstrideZ = static_cast<vtkIdType>(pt_dims[0] * pt_dims[1]);
     }
 
     inline double operator()(vtkIdType cellI,   vtkIdType cellJ,   vtkIdType cellK,
@@ -232,7 +232,7 @@ int
 vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input, 
                                              vtkPolyData *output)
 {
-    vtkStructuredGrid *sg = (vtkStructuredGrid *)input;
+    vtkStructuredGrid *sg = static_cast<vtkStructuredGrid*>(input);
     int pt_dims[3];
     sg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -243,14 +243,14 @@ vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input,
     vtkCellData       *inCD   = sg->GetCellData();
     vtkPointData      *inPD   = sg->GetPointData();
 
-    vtkIdType ptSizeGuess = (this->CellList == NULL
-                         ? (vtkIdType) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
+    size_t ptSizeGuess = (this->CellList == nullptr
+                         ? static_cast<size_t>(pow(static_cast<float>(nCells), 0.6667f)) * 5 + 100
+                         : static_cast<size_t>(CellListSize)*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
     vtkDataArray *var = GetPointScalars(input);
-    if (var == NULL)
+    if (var == nullptr)
         return 0;
 
     int accessMethod = 0;
@@ -266,7 +266,7 @@ vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input,
     {
         vtkStructuredCreateTriangles<float, IsoDistanceFunction<float> >(
             sfv, this->CellList, this->CellListSize, nCells,
-            pt_dims, IsoDistanceFunction<float>(pt_dims, var, (float)this->Isovalue));
+            pt_dims, IsoDistanceFunction<float>(pt_dims, var, static_cast<float>(this->Isovalue)));
     }
     else if(accessMethod == 2)
     {
@@ -305,7 +305,7 @@ int
 vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
                                               vtkPolyData *output)
 {
-    vtkRectilinearGrid *rg = (vtkRectilinearGrid *)input;
+    vtkRectilinearGrid *rg = static_cast<vtkRectilinearGrid*>(input);
     int pt_dims[3];
     rg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -317,21 +317,21 @@ vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
     vtkCellData  *inCD   = rg->GetCellData();
     vtkPointData *inPD   = rg->GetPointData();
 
-    vtkIdType ptSizeGuess = (this->CellList == NULL
-                         ? (vtkIdType) pow(float(nCells), 0.6667f) * 5 + 100
-                         : this->CellListSize*5 + 100);
+    size_t ptSizeGuess = (this->CellList == nullptr
+                         ? static_cast<size_t>(pow(static_cast<float>(nCells), 0.6667f)) * 5 + 100
+                         : static_cast<size_t>(this->CellListSize)*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
     vtkDataArray *var = GetPointScalars(input);
-    if (var == NULL)
+    if (var == nullptr)
         return 0;
 
     if(var->GetDataType() == VTK_FLOAT)
     {
         vtkStructuredCreateTriangles<float, IsoDistanceFunction<float> >(
             sfv, this->CellList, this->CellListSize, nCells,
-            pt_dims, IsoDistanceFunction<float>(pt_dims, var, (float)this->Isovalue));
+            pt_dims, IsoDistanceFunction<float>(pt_dims, var, static_cast<float>(this->Isovalue)));
     }
     else if(var->GetDataType() == VTK_DOUBLE)
     {
@@ -377,16 +377,16 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
     // non-zoo elements.  If all the elements are from the zoo, then just
     // contour them with no appending.
 
-    vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *)input;
+    vtkUnstructuredGrid *ug = static_cast<vtkUnstructuredGrid*>(input);
 
     vtkIdType          nCells = ug->GetNumberOfCells();
     vtkPoints         *inPts  = ug->GetPoints();
     vtkCellData       *inCD   = ug->GetCellData();
     vtkPointData      *inPD   = ug->GetPointData();
 
-    vtkIdType ptSizeGuess = (this->CellList == NULL
-                         ? (vtkIdType) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
+    size_t ptSizeGuess = (this->CellList == nullptr
+                         ? static_cast<size_t>(pow(static_cast<float>(nCells), 0.6667f)) * 5 + 100
+                         : static_cast<size_t>(CellListSize)*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
@@ -396,7 +396,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
     stuff_I_cant_contour->Allocate(nCells);
 
     vtkDataArray *arr = GetPointScalars(input);
-    if (arr == NULL)
+    if (arr == nullptr)
         return 0;
 
     int accessMethod = 0;
@@ -408,45 +408,46 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
             accessMethod = 2;
     }
 
-    int nToProcess = (CellList != NULL ? CellListSize : nCells);
+    vtkIdType nToProcess = (CellList != nullptr ? CellListSize : nCells);
     int numIcantContour = 0;
+    vtkIdList *facePtIds = vtkIdList::New();
     for (vtkIdType i = 0 ; i < nToProcess ; i++)
     {
-        vtkIdType  cellId = (CellList != NULL ? CellList[i] : i);
+        vtkIdType  cellId = (CellList != nullptr ? CellList[i] : i);
         int        cellType = ug->GetCellType(cellId);
         vtkIdType  npts;
         const vtkIdType *pts;
         ug->GetCellPoints(cellId, npts, pts);
-        const int *triangulation_table = NULL;
-        const int *vertices_from_edges = NULL;
+        const int *triangulation_table = nullptr;
+        const int *vertices_from_edges = nullptr;
         int tt_step = 0;
         bool canContour = false;
         switch (cellType)
         {
           case VTK_TETRA:
-            triangulation_table = (const int *) tetTriangulationTable;
-            vertices_from_edges = (const int *) tetVerticesFromEdges;
+            triangulation_table = const_cast<const int *>(*tetTriangulationTable);
+            vertices_from_edges = const_cast<const int *>(*tetVerticesFromEdges);
             tt_step = 7;
             canContour = true;
             break;
  
           case VTK_PYRAMID:
-            triangulation_table = (const int *) pyramidTriangulationTable;
-            vertices_from_edges = (const int *) pyramidVerticesFromEdges;
+            triangulation_table = const_cast<const int *>(*pyramidTriangulationTable);
+            vertices_from_edges = const_cast<const int *>(*pyramidVerticesFromEdges);
             tt_step = 13;
             canContour = true;
             break;
  
           case VTK_WEDGE:
-            triangulation_table = (const int *) wedgeTriangulationTable;
-            vertices_from_edges = (const int *) wedgeVerticesFromEdges;
+            triangulation_table = const_cast<const int *>(*wedgeTriangulationTable);
+            vertices_from_edges = const_cast<const int *>(*wedgeVerticesFromEdges);
             tt_step = 13;
             canContour = true;
             break;
  
           case VTK_HEXAHEDRON:
-            triangulation_table = (const int *) hexTriangulationTable;
-            vertices_from_edges = (const int *) hexVerticesFromEdges;
+            triangulation_table = const_cast<const int *>(*hexTriangulationTable);
+            vertices_from_edges = const_cast<const int *>(*hexVerticesFromEdges);
             tt_step = 16;
             canContour = true;
             break;
@@ -464,7 +465,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
                 vtkUnstructuredCreateTriangles<float, IsoDistanceFunction<float> >(
                     sfv, cellId, pts, npts,
                     triangulation_table, vertices_from_edges, tt_step,
-                    IsoDistanceFunction<float>(tmp, arr, (float)this->Isovalue)
+                    IsoDistanceFunction<float>(tmp, arr, static_cast<float>(this->Isovalue))
                 );
             }
             else if(accessMethod == 2)
@@ -487,24 +488,28 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
         else
         {
             if (numIcantContour == 0)
+            {
                 stuff_I_cant_contour->GetCellData()->
                                        CopyAllocate(ug->GetCellData(), nCells);
+            }
 
             if(cellType == VTK_POLYHEDRON)
             {
-                vtkIdType nFaces;
-                const vtkIdType *facePtIds;
-                ug->GetFaceStream(cellId, nFaces, facePtIds);
-                stuff_I_cant_contour->InsertNextCell(cellType, npts, pts, 
-                     nFaces, facePtIds);
+                facePtIds->Reset(); 
+                ug->GetFaceStream(cellId, facePtIds);
+                stuff_I_cant_contour->InsertNextCell(cellType, facePtIds);
             }
             else
+            {
                 stuff_I_cant_contour->InsertNextCell(cellType, npts, pts);
+            }
+
             stuff_I_cant_contour->GetCellData()->
                             CopyData(ug->GetCellData(), cellId, numIcantContour);
             numIcantContour++;
         }
     }
+    facePtIds->Delete(); 
 
     if (numIcantContour > 0)
     {

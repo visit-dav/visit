@@ -58,9 +58,9 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
 
 
   public:
-                      vtkVolumeFromCSGVolume(int nPts,
-                                             int ptSizeGuess);
-    virtual          ~vtkVolumeFromCSGVolume() { ; };
+                      vtkVolumeFromCSGVolume(vtkIdType  nPts,
+                                             size_t ptSizeGuess);
+    virtual          ~vtkVolumeFromCSGVolume() { ; }
 
     void              ConstructDataSet(vtkCellData *,
                           vtkUnstructuredGrid *, float *, int,
@@ -69,51 +69,58 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
     using vtkVolumeFromVolume::AddCentroidPoint;
     using vtkDataSetFromVolume::AddPoint;
 
-    void           AddHex(int z, int v0, int v1, int v2, int v3,
-                          int v4, int v5, int v6, int v7,
+    void           AddHex(vtkIdType z,  vtkIdType v0, vtkIdType v1,
+                          vtkIdType v2, vtkIdType v3, vtkIdType v4,
+                          vtkIdType v5, vtkIdType v6, vtkIdType v7,
                           vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddHex(z, v0, v1, v2, v3, v4, v5, v6, v7);
         hexTags.push_back(tag);
     }
         
-    void           AddWedge(int z,int v0,int v1,int v2,int v3,int v4,int v5,
+    void           AddWedge(vtkIdType z,  vtkIdType v0, vtkIdType v1,
+                            vtkIdType v2, vtkIdType v3, vtkIdType v4,
+                            vtkIdType v5,
                             vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddWedge(z, v0, v1, v2, v3, v4, v5);
         wedgeTags.push_back(tag);
     }
-    void           AddPyramid(int z, int v0, int v1, int v2, int v3, int v4,
+    void           AddPyramid(vtkIdType z,  vtkIdType v0, vtkIdType v1,
+                              vtkIdType v2, vtkIdType v3, vtkIdType v4,
                               vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddPyramid(z, v0, v1, v2, v3, v4); 
         pyramidTags.push_back(tag);
     }
-    void           AddTet(int z, int v0, int v1, int v2, int v3,
+    void           AddTet(vtkIdType z,  vtkIdType v0, vtkIdType v1,
+                          vtkIdType v2, vtkIdType v3,
                           vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddTet(z, v0, v1, v2, v3);
         tetTags.push_back(tag);
     }
-    void           AddQuad(int z, int v0, int v1, int v2, int v3,
+    void           AddQuad(vtkIdType z,  vtkIdType v0, vtkIdType v1,
+                           vtkIdType v2, vtkIdType v3,
                            vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddQuad(z, v0, v1, v2, v3);
         quadTags.push_back(tag);
     }
-    void           AddTri(int z, int v0, int v1, int v2,
+    void           AddTri(vtkIdType z,  vtkIdType v0, vtkIdType v1,
+                          vtkIdType v2,
                           vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddTri(z, v0, v1, v2);
         triTags.push_back(tag);
     }
-    void           AddLine(int z, int v0, int v1,
+    void           AddLine(vtkIdType z, vtkIdType v0, vtkIdType v1,
                            vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddLine(z, v0, v1);
         lineTags.push_back(tag);
     }
-    void           AddVertex(int z, int v0,
+    void           AddVertex(vtkIdType z, vtkIdType v0,
                              vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddVertex(z, v0);
@@ -122,12 +129,12 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
 
 
     void                    InitTraversal();
-    vtkIdType               GetNumberOfCells() const;
+    size_t                  GetNumberOfCells() const;
     void                    NextCell();
     const vtkIdType        *GetCell();
     vtkCSGFixedLengthBitField GetTag();
-    int                     GetCellSize() const;
-    int                     GetCellVTKType() const;
+    size_t                  GetCellSize() const;
+    unsigned char           GetCellVTKType() const;
     void                    SetId(int);
     void                    SetTagBit(int);
     void                    InvalidateCell();
@@ -146,13 +153,16 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
     std::vector<vtkCSGFixedLengthBitField>  *shapeTags[8];
     std::vector<vtkCSGFixedLengthBitField>  *curTags;
 
-    int                     ishape;
-    int                     shapeCnt[8];
-    ShapeList              *curShapes;
-    int                     curShapeCnt;
-    int                     curShapeSize;
-    int                     curShapeVTKType;
-    int                     curShape;
+    size_t               ishape;
+    size_t               shapeCnt[8];
+    ShapeList           *curShapes;
+    size_t               curShapeCnt;
+    size_t               curShapeSize;
+    unsigned char        curShapeVTKType;
+    size_t               curShape;
+
+    vtkVolumeFromCSGVolume(const vtkVolumeFromCSGVolume&) = delete;
+    void operator=(const vtkVolumeFromCSGVolume&) = delete;
 };
 
 #endif

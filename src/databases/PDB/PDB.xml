@@ -12,7 +12,6 @@
       *.r0000
     </FilePatterns>
     <Files components="M,E">
-      MaterialEncoder.C
       PDBFileObject.C
       PDBReader.C
       PF3DFileFormat.C
