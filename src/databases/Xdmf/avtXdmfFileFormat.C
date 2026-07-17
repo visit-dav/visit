@@ -87,7 +87,7 @@ avtXdmfFileFormat::avtXdmfFileFormat(const char *fname) :
     this->Stride[0] = this->Stride[1] = this->Stride[2] = 1;
 
     firstGrid = "/Xdmf/Domain/Grid";
-    numGrids = 0;
+    numTopLevelGrids = 0;
 
     //  Modifications:
     //      Eric Brugger, Wed Jan 12 14:52:54 PST 2011
@@ -95,6 +95,9 @@ avtXdmfFileFormat::avtXdmfFileFormat(const char *fname) :
     //      collection where the collection type was unset (since the default
     //      type is spatial) and in the case of a tree. I also had it set the
     //      time in the case of a single time state.
+
+    XdmfXmlNode domainElement = dom->FindElementByPath("/Xdmf/Domain");
+    int domainGridCount = dom->FindNumberOfElements("Grid", domainElement);
 
     XdmfXmlNode gridElement = dom->FindElementByPath("/Xdmf/Domain/Grid");
     XdmfGrid grid;
@@ -133,24 +136,24 @@ avtXdmfFileFormat::avtXdmfFileFormat(const char *fname) :
                 if (getTimeFromChild)
                     timesteps.push_back(childGrid.GetTime()->GetValue());
             }
-            numGrids = 1;
+            numTopLevelGrids = 1;
         }
         else if(grid.GetCollectionType() == XDMF_GRID_COLLECTION_SPATIAL ||
                 grid.GetCollectionType() == XDMF_GRID_COLLECTION_UNSET)
         {
-            numGrids = 1;
+            numTopLevelGrids = domainGridCount;
             timesteps.push_back(grid.GetTime()->GetValue());
         }
     }
     else if (grid.GetGridType() == XDMF_GRID_TREE)
     {
-        numGrids = 1;
+        numTopLevelGrids = domainGridCount;
         timesteps.push_back(grid.GetTime()->GetValue());
     }
     else
     {
         // Just throw an empty time in here because we only have one timestep
-        numGrids = dom->FindNumberOfElements("Grid", dom->FindElementByPath("/Xdmf/Domain"));
+        numTopLevelGrids = domainGridCount;
         timesteps.push_back(grid.GetTime()->GetValue());
     }
 
@@ -480,7 +483,7 @@ void avtXdmfFileFormat::FreeUpResources(void)
 XdmfAttribute * avtXdmfFileFormat::GetAttributeFromName(XdmfGrid * grid, const char * attributeName)
 {
     std::string name = attributeName;
-    if (numGrids > 1) {
+    if (numTopLevelGrids > 1) {
         name = name.substr(name.rfind("/") + 1, name.length());
     }
 
@@ -1294,7 +1297,7 @@ void avtXdmfFileFormat::GetTimes(std::vector<double> & times)
 vtkDataArray *
 avtXdmfFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-    if (numGrids > 1) {
+    if (numTopLevelGrids > 1) {
         std::string gridName = varname;
         gridName = gridName.substr(0, gridName.rfind("/"));
         this->SetCurrentGrid(timestate, gridName.c_str());
@@ -1348,7 +1351,7 @@ vtkDataArray *
 avtXdmfFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 {
 
-    if (numGrids > 1) {
+    if (numTopLevelGrids > 1) {
         std::string gridName = varname;
         gridName = gridName.substr(0, gridName.rfind("/"));
         this->SetCurrentGrid(timestate, gridName.c_str());
@@ -1608,9 +1611,9 @@ bool avtXdmfFileFormat::GetWholeExtent(XdmfGrid* grid, int extents[6])
 
 void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
-    for(int i=0; i<numGrids; ++i)
+    for(int i=0; i<numTopLevelGrids; ++i)
     {
-        XdmfGrid * grid = this->GetGrid(timeState + i);
+        XdmfGrid * grid = this->GetGrid(numTopLevelGrids > 1 ? i : timeState);
         grid->UpdateInformation();
 
         int nblocks = 1;
@@ -1683,7 +1686,7 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
             }
 
             std::stringstream attributeName;
-            if (numGrids > 1) {
+            if (numTopLevelGrids > 1) {
                 attributeName << grid->GetName() << "/";
             }
             attributeName << attribute->GetName();
