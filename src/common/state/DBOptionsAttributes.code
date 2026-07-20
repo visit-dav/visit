@@ -426,6 +426,65 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
 }
 
 Target: xml2atts
+Function: SetColor
+Declaration: void SetColor(const std::string &name, const ColorAttribute &defaultValue);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetColor
+//
+//  Purpose:
+//      Sets a color value.
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetColor(const std::string &name,
+                              const ColorAttribute &defaultValue)
+{
+    int bIndex = FindIndex(name);
+    const unsigned char *rgba = defaultValue.GetColor();
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(Color);
+        for(int i = 0; i < 4; ++i)
+            optColors.push_back((int)rgba[i]);
+    }
+    else
+    {
+        int start = bIndex * 4;
+        for(int i = 0; i < 4; ++i)
+            optColors[start + i] = (int)rgba[i];
+    }
+}
+
+Target: xml2atts
+Function: GetColor
+Declaration: ColorAttribute GetColor(const std::string &name) const;
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetColor
+//
+//  Purpose:
+//      Gets a color value.
+//
+// ****************************************************************************
+
+ColorAttribute
+DBOptionsAttributes::GetColor(const std::string &name) const
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+
+    int start = bIndex * 4;
+    return ColorAttribute(optColors[start],
+                          optColors[start + 1],
+                          optColors[start + 2],
+                          optColors[start + 3]);
+}
+
+Target: xml2atts
 Function: GetMultiLineString
 Declaration: const std::string &GetMultiLineString(const std::string &name) const;
 Definition:
@@ -642,6 +701,9 @@ DBOptionsAttributes::Merge(const DBOptionsAttributes &obj)
             case MultiLineString:
                 SetMultiLineString(name, obj.GetMultiLineString(name));
                 break;
+            case Color:
+                SetColor(name, obj.GetColor(name));
+                break;
             }
         }
     }
@@ -653,4 +715,3 @@ DBOptionsAttributes::Merge(const DBOptionsAttributes &obj)
 
     return retval;
 }
-
