@@ -1,4 +1,10 @@
 Target: xml2atts
+Code: DBOptionsAttributes.h
+Prefix:
+class ColorAttribute;
+Postfix:
+
+Target: xml2atts
 Function: FindIndex
 Declaration: int FindIndex(const std::string &name) const;
 Definition:
