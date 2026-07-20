@@ -5,8 +5,6 @@
 #include <DBOptionsAttributes.h>
 #include <DataNode.h>
 
-#include "ColorAttribute.h"
-
 //
 // Enum conversion methods for DBOptionsAttributes::OptionType
 //

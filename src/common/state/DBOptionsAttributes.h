@@ -8,8 +8,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
-class ColorAttribute;
-
+#include <ColorAttribute.h>
 
 // ****************************************************************************
 // Class: DBOptionsAttributes
