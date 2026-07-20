@@ -164,7 +164,7 @@
 #    only be used if 'data' dir does not exist peer to 'src'.
 #
 #    Kathleen Biagas, Mon July 13, 2026
-#    Removed cmake policy settings that are not longer needed. Should allow
+#    Removed cmake policy settings that are no longer needed. Should allow
 #    VisIt to be built with CMake 4.0 and newer. Update minimum CMake
 #    version to 3.26, due to requirements introduced by previous work.
 #
@@ -175,7 +175,6 @@ cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
 if(WIN32)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
-
 
 #
 # Try to capture the initial set of cmake command line args passed by
