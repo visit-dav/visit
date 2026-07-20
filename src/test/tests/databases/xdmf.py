@@ -9,6 +9,8 @@
 #  Modifications:
 #
 # ----------------------------------------------------------------------------
+import os
+
 RequiredDatabasePlugin("Xdmf")
 
 def test0(datapath):
@@ -446,6 +448,82 @@ def test9(datapath):
     DeleteAllPlots() 
     CloseDatabase(pjoin(datapath,"uniform_unit_cube.xmf"))
 
+def test10():
+    TestSection("Top-level spatial collections with different fields")
+    db = os.path.abspath("top_level_spatial_collections.xmf")
+    with open(db, "w") as f:
+        f.write("""<?xml version="1.0"?>
+<Xdmf Version="3.0">
+  <Domain>
+    <Grid Name="Barrier" GridType="Collection" CollectionType="Spatial">
+      <Time Value="0"/>
+      <Grid Name="Barrier::rank_0" GridType="Uniform">
+        <Topology TopologyType="Tetrahedron" Dimensions="1">
+          <DataItem Dimensions="4" NumberType="Int" Precision="4" Format="XML">
+            0 1 2 3
+          </DataItem>
+        </Topology>
+        <Geometry GeometryType="XYZ">
+          <DataItem Dimensions="12" NumberType="Float" Precision="8" Format="XML">
+            0 0 0 1 0 0 0 1 0 0 0 1
+          </DataItem>
+        </Geometry>
+        <Attribute Name="barrier_only" AttributeType="Scalar" Center="Cell">
+          <DataItem Dimensions="1" NumberType="Float" Precision="8" Format="XML">
+            7
+          </DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+    <Grid Name="Channel" GridType="Collection" CollectionType="Spatial">
+      <Time Value="0"/>
+      <Grid Name="Channel::rank_0" GridType="Uniform">
+        <Topology TopologyType="Tetrahedron" Dimensions="1">
+          <DataItem Dimensions="4" NumberType="Int" Precision="4" Format="XML">
+            0 1 2 3
+          </DataItem>
+        </Topology>
+        <Geometry GeometryType="XYZ">
+          <DataItem Dimensions="12" NumberType="Float" Precision="8" Format="XML">
+            2 0 0 3 0 0 2 1 0 2 0 1
+          </DataItem>
+        </Geometry>
+        <Attribute Name="phaseVolumeFraction_oil" AttributeType="Scalar" Center="Cell">
+          <DataItem Dimensions="1" NumberType="Float" Precision="8" Format="XML">
+            0.25
+          </DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+  </Domain>
+</Xdmf>
+""")
+
+    md = GetMetaData(db)
+    meshNames = sorted([md.GetMeshes(i).name for i in range(md.GetNumMeshes())])
+    scalars = {}
+    for i in range(md.GetNumScalars()):
+        smd = md.GetScalars(i)
+        scalars[smd.name] = smd.meshName
+
+    TestValueEQ("xdmf_top_level_spatial_meshes", meshNames, ["Barrier", "Channel"])
+    TestValueEQ("xdmf_top_level_spatial_barrier_var",
+                scalars.get("Barrier/barrier_only"), "Barrier")
+    TestValueEQ("xdmf_top_level_spatial_channel_var",
+                scalars.get("Channel/phaseVolumeFraction_oil"), "Channel")
+    TestValueEQ("xdmf_top_level_spatial_no_cross_var",
+                "Barrier/phaseVolumeFraction_oil" in scalars, False)
+
+    OpenDatabase(db)
+    AddPlot("Pseudocolor", "Channel/phaseVolumeFraction_oil")
+    DrawPlots()
+    Query("MinMax")
+    q = GetQueryOutputObject()
+    TestValueEQ("xdmf_top_level_spatial_channel_min", q["min"], 0.25)
+    TestValueEQ("xdmf_top_level_spatial_channel_max", q["max"], 0.25)
+    DeleteAllPlots()
+    CloseDatabase(db)
+
 def main():
     datapath = data_path("xdmf_test_data")
     test0(datapath)
@@ -459,6 +537,7 @@ def main():
     test7(datapath)
     test8(datapath)
     test9(datapath)
+    test10()
 
 main()
 Exit()
