@@ -137,8 +137,9 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
             break;
           case DBOptionsAttributes::Color:
             { // new scope
-            ColorAttribute color = atts->GetColor(name);
-            QColor qcolor(color.Red(), color.Green(), color.Blue(), color.Alpha());
+            int red, green, blue, alpha;
+            atts->GetColor(name, red, green, blue, alpha);
+            QColor qcolor(red, green, blue, alpha);
             QvisColorButton *colorButton = new QvisColorButton(this);
             colorButton->setButtonColor(qcolor);
             grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
@@ -291,9 +292,8 @@ QvisDBOptionsDialog::okayClicked()
             debug5 << mName << "Setting \"" << name.c_str() << "\" to "
                    << val.red() << "," << val.green() << ","
                    << val.blue() << "," << val.alpha() << endl;
-            atts->SetColor(name,
-                           ColorAttribute(val.red(), val.green(),
-                                          val.blue(), val.alpha()));
+            atts->SetColor(name, val.red(), val.green(),
+                           val.blue(), val.alpha());
           }
             break;
           case DBOptionsAttributes::MultiLineString:

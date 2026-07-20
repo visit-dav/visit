@@ -1245,7 +1245,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                         rgba[i] = PyInt_AS_LONG(item);
                         Py_DECREF(item);
                     }
-                    opts.SetColor(name, ColorAttribute(rgba[0], rgba[1], rgba[2], rgba[3]));
+                    opts.SetColor(name, rgba[0], rgba[1], rgba[2], rgba[3]);
                 }
                 else
                 {
@@ -1418,12 +1418,10 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             break;
           case DBOptionsAttributes::Color:
             {
-                ColorAttribute color = opts.GetColor(name);
+                int red, green, blue, alpha;
+                opts.GetColor(name, red, green, blue, alpha);
                 PyObject *tuple = Py_BuildValue("(iiii)",
-                                                color.Red(),
-                                                color.Green(),
-                                                color.Blue(),
-                                                color.Alpha());
+                                                red, green, blue, alpha);
                 PyDict_SetItemString(dict, name, tuple);
                 Py_DECREF(tuple);
             }

@@ -88,7 +88,4 @@
     </Function>
     <Function name="Merge" user="true" member="true">
     </Function>
-    <Include file="header" quoted="false">
-      ColorAttribute.h
-    </Include>
   </Attribute>

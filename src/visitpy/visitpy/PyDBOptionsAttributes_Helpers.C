@@ -56,12 +56,10 @@ PyDBOptionsAttributes_CreateDictionaryFromDBOptions(const DBOptionsAttributes &o
             break;
           case DBOptionsAttributes::Color:
             {
-                ColorAttribute color = opts.GetColor(name);
+                int red, green, blue, alpha;
+                opts.GetColor(name, red, green, blue, alpha);
                 PyObject *tuple = Py_BuildValue("(iiii)",
-                                                color.Red(),
-                                                color.Green(),
-                                                color.Blue(),
-                                                color.Alpha());
+                                                red, green, blue, alpha);
                 PyDict_SetItemString(dict, name, tuple);
                 Py_DECREF(tuple);
             }

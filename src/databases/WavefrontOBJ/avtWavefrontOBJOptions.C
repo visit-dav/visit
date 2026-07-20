@@ -9,7 +9,6 @@
 #include <avtWavefrontOBJOptions.h>
 
 #include <DBOptionsAttributes.h>
-#include <ColorAttribute.h>
 #include <avtColorTables.h>
 
 #include <string>
@@ -67,8 +66,8 @@ GetWavefrontOBJWriteOptions(void)
     rv->SetBool("Use max", false);
     rv->SetDouble("Max", 1.);
     rv->SetBool("Use below min color", false);
-    rv->SetColor("Below min color", ColorAttribute());
+    rv->SetColor("Below min color", 0, 0, 0, 255);
     rv->SetBool("Use above max color", false);
-    rv->SetColor("Above max color", ColorAttribute());
+    rv->SetColor("Above max color", 0, 0, 0, 255);
     return rv;
 }

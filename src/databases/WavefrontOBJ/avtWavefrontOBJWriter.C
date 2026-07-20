@@ -88,9 +88,17 @@ avtWavefrontOBJWriter::avtWavefrontOBJWriter(const DBOptionsAttributes *atts)
     useMax = atts->GetBool("Use max");
     maxValue = atts->GetDouble("Max");
     useBelowMinColor = atts->GetBool("Use below min color");
-    belowMinColor = atts->GetColor("Below min color");
+    {
+        int red, green, blue, alpha;
+        atts->GetColor("Below min color", red, green, blue, alpha);
+        belowMinColor = ColorAttribute(red, green, blue, alpha);
+    }
     useAboveMaxColor = atts->GetBool("Use above max color");
-    aboveMaxColor = atts->GetColor("Above max color");
+    {
+        int red, green, blue, alpha;
+        atts->GetColor("Above max color", red, green, blue, alpha);
+        aboveMaxColor = ColorAttribute(red, green, blue, alpha);
+    }
 }
 
 // ****************************************************************************

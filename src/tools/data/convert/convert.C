@@ -108,10 +108,11 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
           case DBOptionsAttributes::Color:
             if (PAR_Rank() == 0)
             {
-                ColorAttribute color = opts->GetColor(name);
+                int red, green, blue, alpha;
+                opts->GetColor(name, red, green, blue, alpha);
                 cerr << " (color as 'r g b [a]', default="
-                     << color.Red() << " " << color.Green() << " "
-                     << color.Blue() << " " << color.Alpha() << "):\n";
+                     << red << " " << green << " "
+                     << blue << " " << alpha << "):\n";
             }
             break;
           case DBOptionsAttributes::MultiLineString:
@@ -188,7 +189,7 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
                 }
                 if (!(iss >> rgba[3]))
                     rgba[3] = 255;
-                opts->SetColor(name, ColorAttribute(rgba[0], rgba[1], rgba[2], rgba[3]));
+                opts->SetColor(name, rgba[0], rgba[1], rgba[2], rgba[3]);
                 if (PAR_Rank() == 0)
                     cerr << "Set to new value " << rgba[0] << " "
                          << rgba[1] << " " << rgba[2] << " "
