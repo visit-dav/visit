@@ -8,7 +8,6 @@
 #include <string>
 #include <AttributeSubject.h>
 
-#include <ColorAttribute.h>
 
 // ****************************************************************************
 // Class: DBOptionsAttributes
@@ -158,8 +157,8 @@ public:
     void SetEnum(const std::string &name, int defaultValue);
     int GetEnum(const std::string &name) const;
     void SetEnumStrings(const std::string &name, const std::vector<std::string> &values);
-    void SetColor(const std::string &name, const ColorAttribute &defaultValue);
-    ColorAttribute GetColor(const std::string &name) const;
+    void SetColor(const std::string &name, int red, int green, int blue, int alpha = 255);
+    void GetColor(const std::string &name, int &red, int &green, int &blue, int &alpha) const;
     const std::string &GetMultiLineString(const std::string &name) const;
     void SetMultiLineString(const std::string &name, const std::string &defaultValue);
     int GetNumberOfOptions(void) const;

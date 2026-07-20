@@ -1569,22 +1569,22 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
 
 void
 DBOptionsAttributes::SetColor(const std::string &name,
-                              const ColorAttribute &defaultValue)
+                              int red, int green, int blue, int alpha)
 {
     int bIndex = FindIndex(name);
-    const unsigned char *rgba = defaultValue.GetColor();
+    int rgba[4] = {red, green, blue, alpha};
     if (bIndex < 0)
     {
         names.push_back(name);
         types.push_back(Color);
         for(int i = 0; i < 4; ++i)
-            optColors.push_back((int)rgba[i]);
+            optColors.push_back(rgba[i]);
     }
     else
     {
         int start = bIndex * 4;
         for(int i = 0; i < 4; ++i)
-            optColors[start + i] = (int)rgba[i];
+            optColors[start + i] = rgba[i];
     }
 }
 
@@ -1596,18 +1596,19 @@ DBOptionsAttributes::SetColor(const std::string &name,
 //
 // ****************************************************************************
 
-ColorAttribute
-DBOptionsAttributes::GetColor(const std::string &name) const
+void
+DBOptionsAttributes::GetColor(const std::string &name, int &red, int &green,
+                              int &blue, int &alpha) const
 {
     int bIndex = FindIndex(name);
     if (bIndex < 0)
         EXCEPTION0(BadDeclareFormatString);
 
     int start = bIndex * 4;
-    return ColorAttribute(optColors[start],
-                          optColors[start + 1],
-                          optColors[start + 2],
-                          optColors[start + 3]);
+    red = optColors[start];
+    green = optColors[start + 1];
+    blue = optColors[start + 2];
+    alpha = optColors[start + 3];
 }
 
 // ****************************************************************************
@@ -1792,7 +1793,11 @@ DBOptionsAttributes::Merge(const DBOptionsAttributes &obj)
                 SetMultiLineString(name, obj.GetMultiLineString(name));
                 break;
             case Color:
-                SetColor(name, obj.GetColor(name));
+                {
+                    int red, green, blue, alpha;
+                    obj.GetColor(name, red, green, blue, alpha);
+                    SetColor(name, red, green, blue, alpha);
+                }
                 break;
             }
         }
