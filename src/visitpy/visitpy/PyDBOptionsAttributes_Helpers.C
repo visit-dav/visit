@@ -24,6 +24,12 @@
 //    Kathleen Biagas, Tue Sep 13, 2022
 //    Support MultiLineString option type.
 //
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Now handles the new DBOptionsAttributes::Color option type. For color
+//    options, instead of ignoring them or failing, it reads the RGBA
+//    components from DBOptionsAttributes and inserts a Python 4-tuple 
+//    (r, g, b, a) into the returned dictionary.
+//
 // ****************************************************************************
 
 PyObject *

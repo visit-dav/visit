@@ -1109,6 +1109,12 @@ void PickleInit()
 //    Chris Laganella, Mon Feb 14 14:37:24 EST 2022
 //    Support MultiLineString from DBOptionsAttributes
 //
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Now accepts color-valued DB options from Python as a 3- or 4-element
+//    integer sequence. It interprets them as (r, g, b) or (r, g, b, a), 
+//    defaults alpha to 255 if omitted, and stores the result into 
+//    DBOptionsAttributes.
+//
 // ****************************************************************************
 bool
 FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
@@ -1387,6 +1393,10 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
 //
 //    Kathleen Biagas, Tue Sept 13, 2022
 //    Support MultiLineString option type.
+// 
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Now exports color-valued DB options back to Python as a 4-tuple
+//    (r, g, b, a).
 //
 // ****************************************************************************
 PyObject *
