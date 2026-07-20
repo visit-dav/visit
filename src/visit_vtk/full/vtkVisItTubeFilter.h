@@ -22,7 +22,7 @@
 class VISIT_VTK_API vtkVisItTubeFilter : public vtkTubeFilter
 {
 public:
-  vtkTypeMacro(vtkVisItTubeFilter,vtkTubeFilter);
+  vtkTypeMacro(vtkVisItTubeFilter,vtkTubeFilter)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkVisItTubeFilter *New();

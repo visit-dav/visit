@@ -41,7 +41,7 @@ struct IdPointsEqual
 
 }
 
-vtkStandardNewMacro(vtkVisItTubeFilter);
+vtkStandardNewMacro(vtkVisItTubeFilter)
 
 vtkVisItTubeFilter::vtkVisItTubeFilter()
 {
@@ -148,7 +148,7 @@ int vtkVisItTubeFilter::RequestData(vtkInformation *vtkNotUsed(request),
     newNormals->SetNumberOfComponents(3);
     newNormals->Allocate(3*numNewPts);
     newStrips = vtkCellArray::New();
-    newStrips->Allocate(newStrips->EstimateSize(1,numNewPts));
+    newStrips->AllocateEstimate(1,numNewPts);
     vtkCellArray *singlePolyline = vtkCellArray::New();
 
     // Point data: copy scalars, vectors, tcoords. Normals may be computed here.
@@ -229,14 +229,14 @@ int vtkVisItTubeFilter::RequestData(vtkInformation *vtkNotUsed(request),
     this->Theta = 2.0*vtkMath::Pi() / this->NumberOfSides;
     vtkPolyLine *lineNormalGenerator = vtkPolyLine::New();
     inCellId = input->GetNumberOfVerts();
-    int checkAbortInterval = std::min(numLines / 10 + 1, (vtkIdType)1000);
+    int checkAbortInterval = std::min(static_cast<int>(numLines) / 10 + 1, 1000);
     int progressCounter = 0;
     auto iter = vtk::TakeSmartPointer(inLines->NewIterator());
     for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal() && !abort;
          iter->GoToNextCell(), inCellId++)
     {
         iter->GetCurrentCell(npts, pts);
-        this->UpdateProgress((double)progressCounter / numLines);
+        this->UpdateProgress(static_cast<double>(progressCounter) / static_cast<double>(numLines));
         if (progressCounter % checkAbortInterval == 0 && this->CheckAbort())
         {
             abort = this->CheckAbort();
@@ -483,7 +483,7 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
         else if ( inVectors && this->VaryRadius == VTK_VARY_RADIUS_BY_VECTOR )
         {
             sFactor =
-                sqrt((double)maxSpeed/vtkMath::Norm(inVectors->GetTuple(pts[j])));
+                sqrt(maxSpeed/vtkMath::Norm(inVectors->GetTuple(pts[j])));
             if ( sFactor > this->RadiusFactor )
             {
                 sFactor = this->RadiusFactor;
@@ -515,8 +515,8 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
             {
                 for (i=0; i<3; i++)
                 {
-                    normal[i] = w[i]*cos((double)k*this->Theta) +
-                        nP[i]*sin((double)k*this->Theta);
+                    normal[i] = w[i]*cos(k*this->Theta) +
+                        nP[i]*sin(k*this->Theta);
                     s[i] = p[i] + this->Radius * sFactor * normal[i];
                 }
                 newPts->InsertPoint(ptId,s);
@@ -538,12 +538,12 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
                     // polygonal appearance, as if by flat-shading around the tube,
                     // while still allowing smooth (gouraud) shading along the
                     // tube as it bends.
-                    normal[i]  = w[i]*cos((double)(k+0.0)*this->Theta) +
-                        nP[i]*sin((double)(k+0.0)*this->Theta);
-                    n_right[i] = w[i]*cos((double)(k-0.5)*this->Theta) +
-                        nP[i]*sin((double)(k-0.5)*this->Theta);
-                    n_left[i]  = w[i]*cos((double)(k+0.5)*this->Theta) +
-                        nP[i]*sin((double)(k+0.5)*this->Theta);
+                    normal[i]  = w[i]*cos((k+0.0)*this->Theta) +
+                        nP[i]*sin((k+0.0)*this->Theta);
+                    n_right[i] = w[i]*cos((k-0.5)*this->Theta) +
+                        nP[i]*sin((k-0.5)*this->Theta);
+                    n_left[i]  = w[i]*cos((k+0.5)*this->Theta) +
+                        nP[i]*sin((k+0.5)*this->Theta);
                     s[i] = p[i] + this->Radius * sFactor * normal[i];
                 }
                 newPts->InsertPoint(ptId,s);
@@ -578,10 +578,10 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
             ptId++;
         }
         //the end cap
-        int endOffset = offset + (npts-1)*this->NumberOfSides;
+        int endOffset = static_cast<int>(offset) + (static_cast<int>(npts)-1)*this->NumberOfSides;
         if ( ! this->SidesShareVertices )
         {
-            endOffset = offset + 2*(npts-1)*this->NumberOfSides;
+            endOffset = static_cast<int>(offset) + 2*(static_cast<int>(npts)-1)*this->NumberOfSides;
         }
         for (k=0; k < numCapSides; k+=capIncr)
         {
