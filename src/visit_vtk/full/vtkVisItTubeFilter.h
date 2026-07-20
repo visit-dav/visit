@@ -5,7 +5,7 @@
 #ifndef __vtkVisItTubeFilter_h
 #define __vtkVisItTubeFilter_h
 
-#include "vtkTubeFilter.h"
+#include <vtkTubeFilter.h>
 #include <visit_vtk_exports.h>
 
 // Modifications:
@@ -14,10 +14,10 @@
 //
 //   Kathleen Biagas, Tue Aug  7 10:55:50 PDT 2012
 //   Added ScalarsForRadius var, so that a non-default scalar can be used
-//    to scale the radius.
+//   to scale the radius.
 //
-//    Kathleen Biagas, Mon July 20, 2026
-//    Inherit from vtkTubeFilter. Add comments denoting VisIt additions.
+//   Kathleen Biagas, Mon July 20, 2026
+//   Inherit from vtkTubeFilter. Add comments denoting VisIt additions.
 
 class VISIT_VTK_API vtkVisItTubeFilter : public vtkTubeFilter
 {
