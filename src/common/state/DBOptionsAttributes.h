@@ -7,8 +7,8 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
-#include <ColorAttribute.h>
 
+#include <ColorAttribute.h>
 
 // ****************************************************************************
 // Class: DBOptionsAttributes

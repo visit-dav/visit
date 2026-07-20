@@ -12,8 +12,7 @@
 static const char *OptionType_strings[] = {
 "Bool", "Int", "Float",
 "Double", "String", "Enum",
-"MultiLineString",
-"Color"};
+"MultiLineString", "Color"};
 
 std::string
 DBOptionsAttributes::OptionType_ToString(DBOptionsAttributes::OptionType t)
@@ -1560,16 +1559,20 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
     enumStringsSizes[eIndex] = values.size();
 }
 
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetColor
+//
+//  Purpose:
+//      Sets a color value.
+//
+// ****************************************************************************
+
 void
 DBOptionsAttributes::SetColor(const std::string &name,
                               const ColorAttribute &defaultValue)
 {
     int bIndex = FindIndex(name);
-    unsigned char rgba[4];
-    const unsigned char *src = defaultValue.GetColor();
-    for(int i = 0; i < 4; ++i)
-        rgba[i] = src[i];
-
+    const unsigned char *rgba = defaultValue.GetColor();
     if (bIndex < 0)
     {
         names.push_back(name);
@@ -1584,6 +1587,14 @@ DBOptionsAttributes::SetColor(const std::string &name,
             optColors[start + i] = (int)rgba[i];
     }
 }
+
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetColor
+//
+//  Purpose:
+//      Gets a color value.
+//
+// ****************************************************************************
 
 ColorAttribute
 DBOptionsAttributes::GetColor(const std::string &name) const
@@ -1777,11 +1788,11 @@ DBOptionsAttributes::Merge(const DBOptionsAttributes &obj)
                 SetEnum(name, obj.GetEnum(name));
                 SetEnumStrings(name, obj.GetEnumStrings(name));
                 break;
-            case Color:
-                SetColor(name, obj.GetColor(name));
-                break;
             case MultiLineString:
                 SetMultiLineString(name, obj.GetMultiLineString(name));
+                break;
+            case Color:
+                SetColor(name, obj.GetColor(name));
                 break;
             }
         }
@@ -1794,3 +1805,4 @@ DBOptionsAttributes::Merge(const DBOptionsAttributes &obj)
 
     return retval;
 }
+
