@@ -70,6 +70,9 @@ static void UsageAndExit(DatabasePluginManager *, const char *);
 //
 //    Kathleen Biagas, Tue Sep 13, 2022
 //    Support MultiLineString option type.
+// 
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Support Color option type.
 //
 // ****************************************************************************
 void
