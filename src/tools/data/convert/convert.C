@@ -37,6 +37,7 @@
 
 #include <VisItException.h>
 #include <visitstream.h>
+#include <sstream>
 
 #include <string>
 #include <vector>
@@ -104,6 +105,15 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
             if (PAR_Rank() == 0)
                 cerr << " (string, default='"<<opts->GetString(name)<<"'):\n";
             break;
+          case DBOptionsAttributes::Color:
+            if (PAR_Rank() == 0)
+            {
+                ColorAttribute color = opts->GetColor(name);
+                cerr << " (color as 'r g b [a]', default="
+                     << color.Red() << " " << color.Green() << " "
+                     << color.Blue() << " " << color.Alpha() << "):\n";
+            }
+            break;
           case DBOptionsAttributes::MultiLineString:
             if (PAR_Rank() == 0)
                 cerr << " (multi line string, default='"<<opts->GetMultiLineString(name)<<"'):\n";
@@ -164,6 +174,26 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
             opts->SetString(name, buff);
             if (PAR_Rank() == 0)
                 cerr << "Set to new value "<<opts->GetString(name) << endl;
+            break;
+          case DBOptionsAttributes::Color:
+            {
+                std::istringstream iss(str);
+                int rgba[4] = {0, 0, 0, 255};
+                if (!(iss >> rgba[0] >> rgba[1] >> rgba[2]))
+                {
+                    if (PAR_Rank() == 0)
+                        cerr << "Invalid color input for '" << name
+                             << "'. Expected 'r g b [a]'" << endl;
+                    break;
+                }
+                if (!(iss >> rgba[3]))
+                    rgba[3] = 255;
+                opts->SetColor(name, ColorAttribute(rgba[0], rgba[1], rgba[2], rgba[3]));
+                if (PAR_Rank() == 0)
+                    cerr << "Set to new value " << rgba[0] << " "
+                         << rgba[1] << " " << rgba[2] << " "
+                         << rgba[3] << endl;
+            }
             break;
           case DBOptionsAttributes::MultiLineString:
             opts->SetMultiLineString(name, buff);
@@ -788,5 +818,3 @@ UsageAndExit(DatabasePluginManager *dbmgr, const char *argv0)
     PAR_Exit();
     exit(EXIT_FAILURE);
 }
-
-

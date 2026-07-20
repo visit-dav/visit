@@ -11,6 +11,7 @@
 
 #include <avtDatabaseWriter.h>
 
+#include <ColorAttribute.h>
 #include <string>
 
 class DBOptionsAttributes;
@@ -65,6 +66,14 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
     bool                       doColor;
     std::string                colorTable;
     bool                       invertCT;
+    bool                       useMin;
+    double                     minValue;
+    bool                       useMax;
+    double                     maxValue;
+    bool                       useBelowMinColor;
+    ColorAttribute             belowMinColor;
+    bool                       useAboveMaxColor;
+    ColorAttribute             aboveMaxColor;
 };
 
 

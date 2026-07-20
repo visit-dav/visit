@@ -54,6 +54,18 @@ PyDBOptionsAttributes_CreateDictionaryFromDBOptions(const DBOptionsAttributes &o
           case DBOptionsAttributes::String:
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
             break;
+          case DBOptionsAttributes::Color:
+            {
+                ColorAttribute color = opts.GetColor(name);
+                PyObject *tuple = Py_BuildValue("(iiii)",
+                                                color.Red(),
+                                                color.Green(),
+                                                color.Blue(),
+                                                color.Alpha());
+                PyDict_SetItemString(dict, name, tuple);
+                Py_DECREF(tuple);
+            }
+            break;
           case DBOptionsAttributes::MultiLineString:
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetMultiLineString(name).c_str()));
             break;
@@ -108,4 +120,3 @@ PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(const DBOptionsAttribu
     Py_DECREF(py_opts_repr);
     return res;
 }
-

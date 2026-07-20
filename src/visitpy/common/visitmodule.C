@@ -1225,6 +1225,43 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                 return false;
             }
             break;
+          case DBOptionsAttributes::Color:
+            if (PyTuple_Check(value) || PyList_Check(value))
+            {
+                Py_ssize_t nvals = PySequence_Size(value);
+                if(nvals == 3 || nvals == 4)
+                {
+                    int rgba[4] = {0, 0, 0, 255};
+                    for(Py_ssize_t i = 0; i < nvals; ++i)
+                    {
+                        PyObject *item = PySequence_GetItem(value, i);
+                        if(item == NULL || !PyInt_Check(item))
+                        {
+                            Py_XDECREF(item);
+                            sprintf(msg, "Expected integer entries to set color '%s'", name.c_str());
+                            VisItErrorFunc(msg);
+                            return false;
+                        }
+                        rgba[i] = PyInt_AS_LONG(item);
+                        Py_DECREF(item);
+                    }
+                    opts.SetColor(name, ColorAttribute(rgba[0], rgba[1], rgba[2], rgba[3]));
+                }
+                else
+                {
+                    sprintf(msg, "Expected a 3- or 4-component sequence to set color '%s'",
+                            name.c_str());
+                    VisItErrorFunc(msg);
+                    return false;
+                }
+            }
+            else
+            {
+                sprintf(msg, "Expected a sequence to set color '%s'", name.c_str());
+                VisItErrorFunc(msg);
+                return false;
+            }
+            break;
           case DBOptionsAttributes::MultiLineString:
             if (PyString_Check(value))
             {
@@ -1378,6 +1415,18 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             break;
           case DBOptionsAttributes::String:
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
+            break;
+          case DBOptionsAttributes::Color:
+            {
+                ColorAttribute color = opts.GetColor(name);
+                PyObject *tuple = Py_BuildValue("(iiii)",
+                                                color.Red(),
+                                                color.Green(),
+                                                color.Blue(),
+                                                color.Alpha());
+                PyDict_SetItemString(dict, name, tuple);
+                Py_DECREF(tuple);
+            }
             break;
           case DBOptionsAttributes::MultiLineString:
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetMultiLineString(name).c_str()));

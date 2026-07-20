@@ -399,7 +399,13 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
                                    const char *label,
                                    bool writeMTL,
                                    bool MTLHasTex,
-                                   std::string texFilename)
+                                   std::string texFilename,
+                                   bool useMin,
+                                   double minValue,
+                                   bool useMax,
+                                   double maxValue,
+                                   bool useBelowMinColor,
+                                   bool useAboveMaxColor)
 {
     vtkDataSet *activeDS = ds;
 
@@ -408,6 +414,9 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
 
     double range[2];
     activeDS->GetScalarRange(range);
+    const double minRange = useMin ? minValue : range[0];
+    const double maxRange = useMax ? maxValue : range[1];
+    const double gap = (maxRange > minRange ? maxRange - minRange : 1.);
 
     //
     // The OBJ file is going to expect the dataset as having node-centered
@@ -442,32 +451,34 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
     if (scalars != NULL)
     {
         //
-        // Get some information for normalizing the variable.
-        //
-        double gap = (range[1] != range[0] ? range[1] - range[0] : 1.);
-
-        //
         // Create the actual texture coordinate.
         //
         vtkDataArray *tcoords = scalars->NewInstance();
         tcoords->SetNumberOfComponents(2);
         tcoords->SetNumberOfTuples(scalars->GetNumberOfTuples());
 
-        // What is going on here?
-        // We want to add a pixel to either end of the color table.
-        // This is to prevent unwanted behavior with the max and min texture coordinates
-        // wrapping around. If we're going to add pixels, we must adjust the texture
-        // coords. We add two pixels and scale appropriately.
-        const double ncolors = 256.0; // this must match the GetColors() function
-        const double fudge_factor = 1.0 / ncolors;
-        const double new_divisor = 1.0 + fudge_factor * 2.0;
+        // The texture contains duplicate end pixels plus dedicated below/above
+        // colors, so we reserve two pixels at each end.
+        const double ncolors = 256.0;
+        const double totalcolors = ncolors + 4.0;
+        const double minCoord = 2.0 / totalcolors;
+        const double maxCoord = (ncolors + 1.0) / totalcolors;
+        const double belowCoord = 1.0 / totalcolors;
+        const double aboveCoord = (ncolors + 2.0) / totalcolors;
 
         for (int i = 0 ; i < scalars->GetNumberOfTuples() ; i++)
         {
             double *p = scalars->GetTuple(i);
             double s[2];
-            // assuming we have ncolors colors and want to add a duplicate to either end
-            s[0] = (((*p - range[0]) / gap) + fudge_factor) / new_divisor;
+            if (*p < minRange)
+                s[0] = useBelowMinColor ? belowCoord : minCoord;
+            else if (*p > maxRange)
+                s[0] = useAboveMaxColor ? aboveCoord : maxCoord;
+            else if (maxRange <= minRange)
+                s[0] = minCoord;
+            else
+                s[0] = (2.0 + ((*p - minRange) / gap) * (ncolors - 1.0)) /
+                       totalcolors;
             s[1] = 0.;
             tcoords->SetTuple(i, s);
         }

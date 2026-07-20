@@ -4,6 +4,7 @@
 
 #include <QvisDBOptionsDialog.h>
 #include <QvisDBOptionsHelpWindow.h>
+#include <QvisColorButton.h>
 #include <QLayout>
 #include <QPushButton>
 #include <QComboBox>
@@ -134,6 +135,17 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
             comboboxes.append(cbo_box);
             }
             break;
+          case DBOptionsAttributes::Color:
+            { // new scope
+            ColorAttribute color = atts->GetColor(name);
+            QColor qcolor(color.Red(), color.Green(), color.Blue(), color.Alpha());
+            QvisColorButton *colorButton = new QvisColorButton(this);
+            colorButton->setButtonColor(qcolor);
+            grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
+            grid->addWidget(colorButton, i, 1, Qt::AlignLeft);
+            colorbuttons.append(colorButton);
+            }
+            break;
           case DBOptionsAttributes::MultiLineString:
             { // new scope
             txt = atts->GetMultiLineString(name).c_str();
@@ -219,6 +231,7 @@ QvisDBOptionsDialog::okayClicked()
     int lineedit_index = 0;
     int checkbox_index = 0;
     int combobox_index = 0;
+    int colorbutton_index = 0;
     int multiLineEditIdx = 0;
     for (int i=0; i<size; i++)
     {
@@ -270,6 +283,17 @@ QvisDBOptionsDialog::okayClicked()
             int val = comboboxes[combobox_index++]->currentIndex();
             debug5 << mName << "Setting \"" << name.c_str() << "\" to " << val << endl;
             atts->SetEnum(name, val);
+          }
+            break;
+          case DBOptionsAttributes::Color:
+          {
+            QColor val = colorbuttons[colorbutton_index++]->buttonColor();
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to "
+                   << val.red() << "," << val.green() << ","
+                   << val.blue() << "," << val.alpha() << endl;
+            atts->SetColor(name,
+                           ColorAttribute(val.red(), val.green(),
+                                          val.blue(), val.alpha()));
           }
             break;
           case DBOptionsAttributes::MultiLineString:
