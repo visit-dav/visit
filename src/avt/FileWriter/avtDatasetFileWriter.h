@@ -92,7 +92,13 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
                                     const char *, 
                                     bool writeMTL = false,
                                     bool MTLHasTex = false,
-                                    std::string texFilename = "");
+                                    std::string texFilename = "",
+                                    bool useMin = false,
+                                    double minValue = 0.,
+                                    bool useMax = false,
+                                    double maxValue = 1.,
+                                    bool useBelowMinColor = false,
+                                    bool useAboveMaxColor = false);
 
   protected:
     static const char *extensions[];
@@ -130,5 +136,4 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
 
 
 #endif
-
 

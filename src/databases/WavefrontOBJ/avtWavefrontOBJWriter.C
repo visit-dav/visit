@@ -39,6 +39,27 @@
 using     std::string;
 using     std::vector;
 
+namespace
+{
+
+void
+CopyColor(unsigned char *dest, const unsigned char *src)
+{
+    dest[0] = src[0];
+    dest[1] = src[1];
+    dest[2] = src[2];
+}
+
+void
+CopyColor(unsigned char *dest, const ColorAttribute &src)
+{
+    dest[0] = (unsigned char)src.Red();
+    dest[1] = (unsigned char)src.Green();
+    dest[2] = (unsigned char)src.Blue();
+}
+
+}
+
 
 // ****************************************************************************
 //  Method: avtWavefrontOBJWriter constructor
@@ -59,7 +80,17 @@ avtWavefrontOBJWriter::avtWavefrontOBJWriter(const DBOptionsAttributes *atts)
 {
     doColor = atts->GetBool("Output colors");
     colorTable = atts->GetString("Color table");
+    if (colorTable.empty())
+        colorTable = avtColorTables::Instance()->GetDefaultContinuousColorTable();
     invertCT = atts->GetBool("Invert color table");
+    useMin = atts->GetBool("Use min");
+    minValue = atts->GetDouble("Min");
+    useMax = atts->GetBool("Use max");
+    maxValue = atts->GetDouble("Max");
+    useBelowMinColor = atts->GetBool("Use below min color");
+    belowMinColor = atts->GetColor("Below min color");
+    useAboveMaxColor = atts->GetBool("Use above max color");
+    aboveMaxColor = atts->GetColor("Above max color");
 }
 
 // ****************************************************************************
@@ -142,14 +173,24 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
                                            nullptr, // label
                                            true, // YES writeMTL
                                            true, // YES MTLHasTex
-                                           textureFilename); // name of texture file
+                                           textureFilename, // name of texture file
+                                           useMin,
+                                           minValue,
+                                           useMax,
+                                           maxValue,
+                                           useBelowMinColor,
+                                           useAboveMaxColor);
 
         vtkImageData *image = GetColorTable();
-        vtkImageWriter *writer = vtkPNGWriter::New();
-        writer->SetFileName(textureFilename.c_str());
-        writer->SetInputData(image);
-        writer->Write();
-        writer->Delete();
+        if (image != NULL)
+        {
+            vtkImageWriter *writer = vtkPNGWriter::New();
+            writer->SetFileName(textureFilename.c_str());
+            writer->SetInputData(image);
+            writer->Write();
+            writer->Delete();
+            image->Delete();
+        }
     }
     else
     {
@@ -245,90 +286,56 @@ avtWavefrontOBJWriter::GetColorTable()
 
     if (! table)
     {
-        return nullptr;
+        colorTable = avtColorTables::Instance()->GetDefaultContinuousColorTable();
+        table = colorTables->GetColorControlPoints(colorTable);
+        if (!table)
+            return NULL;
     }
     
 
     // We don't have color tables that have this many control points,
     // so this should be a good choice for the number of colors.
     const int ncolors = 256;
+    const int ntotalcolors = ncolors + 4;
     unsigned char rgb[ncolors * 3];
     
     table->GetColors(rgb, ncolors);
 
     vtkImageData *imageData = vtkImageData::New();
 
-    // We need two extra colors, so (ncolors - 1 + 2) -> (ncolors + 1)
-    // hence x: [0, ncolors + 1], y: [0, 0], z: [0, 0]
-    // These pixels will sit on the ends and act as padding so the texture coords
-    // don't lead to strange behavior with max and min values wrapping around
-    imageData->SetExtent(0, ncolors + 1, 0, 0, 0, 0);
+    // Add duplicate edge pixels plus dedicated above/below pixels to keep
+    // texture wrapping from corrupting the end colors.
+    imageData->SetExtent(0, ntotalcolors - 1, 0, 0, 0, 0);
     imageData->SetSpacing(1., 1., 1.);
     imageData->SetOrigin(0., 0., 0.);
     imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
     unsigned char *pixels = (unsigned char *)imageData->GetScalarPointer(0, 0, 0);
-    unsigned char *ipixel = pixels;
-
-    if (invertCT)
+    unsigned char orderedRGB[ncolors * 3];
+    for (int i = 0; i < ncolors; ++i)
     {
-        // the first extra pixel will get the same color as the first real pixel
-        int last_index = ncolors * 3 - 3;
-        *ipixel = rgb[last_index];
-        ipixel ++;
-        *ipixel = rgb[last_index + 1];
-        ipixel ++;
-        *ipixel = rgb[last_index + 2];
-        ipixel ++;
-
-        // iterate through the colors in reverse
-        for (int i = ncolors * 3 - 3; i >= 0; i -= 3)
-        {
-            *ipixel = rgb[i];
-            ipixel ++;
-            *ipixel = rgb[i + 1];
-            ipixel ++;
-            *ipixel = rgb[i + 2];
-            ipixel ++;
-        }
-
-        // the second (and last) extra pixel will get the same color as the last real pixel
-        *ipixel = rgb[0];
-        ipixel ++;
-        *ipixel = rgb[1];
-        ipixel ++;
-        *ipixel = rgb[2];
-        ipixel ++;
+        int srcIndex = invertCT ? (ncolors - 1 - i) : i;
+        CopyColor(orderedRGB + i * 3, rgb + srcIndex * 3);
     }
+
+    unsigned char lowerColor[3];
+    unsigned char upperColor[3];
+    if (useBelowMinColor)
+        CopyColor(lowerColor, belowMinColor);
     else
-    {
-        // the first extra pixel will get the same color as the first real pixel
-        *ipixel = rgb[0];
-        ipixel ++;
-        *ipixel = rgb[1];
-        ipixel ++;
-        *ipixel = rgb[2];
-        ipixel ++;
+        CopyColor(lowerColor, orderedRGB);
 
-        // iterate through the colors
-        for (int i = 0; i < ncolors * 3; i += 3)
-        {
-            *ipixel = rgb[i];
-            ipixel ++;
-            *ipixel = rgb[i + 1];
-            ipixel ++;
-            *ipixel = rgb[i + 2];
-            ipixel ++;
-        }
+    int last = (ncolors - 1) * 3;
+    if (useAboveMaxColor)
+        CopyColor(upperColor, aboveMaxColor);
+    else
+        CopyColor(upperColor, orderedRGB + last);
 
-        // the second (and last) extra pixel will get the same color as the last real pixel
-        int last_index = ncolors * 3 - 3;
-        *ipixel = rgb[last_index];
-        ipixel ++;
-        *ipixel = rgb[last_index + 1];
-        ipixel ++;
-        *ipixel = rgb[last_index + 2];
-        ipixel ++;
-    }
+    CopyColor(pixels, lowerColor);
+    CopyColor(pixels + 3, lowerColor);
+    for (int i = 0; i < ncolors; ++i)
+        CopyColor(pixels + (i + 2) * 3, orderedRGB + i * 3);
+    CopyColor(pixels + (ncolors + 2) * 3, upperColor);
+    CopyColor(pixels + (ncolors + 3) * 3, upperColor);
 
     return imageData;
 }
