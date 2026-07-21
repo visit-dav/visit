@@ -11,7 +11,6 @@
 #include <vtkDataArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
-#include <vtkTransform.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -19,6 +18,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkTextMapper.h>
 #include <vtkTextProperty.h>
+#include <vtkTransform.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <DebugStream.h>
