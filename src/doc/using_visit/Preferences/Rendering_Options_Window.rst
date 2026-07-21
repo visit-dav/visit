@@ -116,8 +116,8 @@ To change the scalable rendering mode, click on either the **Auto**,
 **Always** or **Never** radio boxes under the **Use scalable rendering**
 label.
 
-Scalable rendering
-""""""""""""""""""
+Tiled rendering
+"""""""""""""""
 
 .. _Preferences-TiledRendering:
 
