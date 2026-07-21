@@ -83,20 +83,20 @@ avtWavefrontOBJWriter::avtWavefrontOBJWriter(const DBOptionsAttributes *atts)
     if (colorTable.empty())
         colorTable = avtColorTables::Instance()->GetDefaultContinuousColorTable();
     invertCT = atts->GetBool("Invert color table");
-    useMin = atts->GetBool("Use min");
-    minValue = atts->GetDouble("Min");
-    useMax = atts->GetBool("Use max");
-    maxValue = atts->GetDouble("Max");
-    useBelowMinColor = atts->GetBool("Use below min color");
+    useMin = atts->GetBool("Use minimum");
+    minValue = atts->GetDouble("Minimum");
+    useMax = atts->GetBool("Use maximum");
+    maxValue = atts->GetDouble("Maximum");
+    useBelowMinColor = atts->GetBool("Use color for values < min");
     {
         int red, green, blue, alpha;
-        atts->GetColor("Below min color", red, green, blue, alpha);
+        atts->GetColor("Color for values < min", red, green, blue, alpha);
         belowMinColor = ColorAttribute(red, green, blue, alpha);
     }
-    useAboveMaxColor = atts->GetBool("Use above max color");
+    useAboveMaxColor = atts->GetBool("Use color for values > max");
     {
         int red, green, blue, alpha;
-        atts->GetColor("Above max color", red, green, blue, alpha);
+        atts->GetColor("Color for values > max", red, green, blue, alpha);
         aboveMaxColor = ColorAttribute(red, green, blue, alpha);
     }
 }
