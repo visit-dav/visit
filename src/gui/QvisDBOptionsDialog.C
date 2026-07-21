@@ -59,6 +59,9 @@
 //    multiple lines are properly displayed. Also use a fixed-width font
 //    (Courier) and prevent tabs from being entered by setting
 //    tabChangesFocus to true.
+// 
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Handle color.
 //
 // ****************************************************************************
 
@@ -222,6 +225,9 @@ QvisDBOptionsDialog::~QvisDBOptionsDialog()
 //
 //    Chris Laganella, Tue Feb  8 18:24:35 EST 2022
 //    Add support for multi line string
+// 
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Handle color.
 // ****************************************************************************
 
 void
