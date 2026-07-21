@@ -52,12 +52,6 @@ protected:
                      double range[2], vtkDataArray *inVectors, double maxNorm,
                      vtkDataArray *inNormals);
 
-  void GenerateTextureCoords(vtkIdType offset, vtkIdType npts,
-                             const vtkIdType *pts,
-                             vtkPoints *inPts,
-                             vtkDataArray *inScalars, bool cellScalars,
-                            vtkFloatArray *newTCoords);
-
 private:
   vtkVisItTubeFilter(const vtkVisItTubeFilter&) = delete;
   void operator=(const vtkVisItTubeFilter&) = delete;
