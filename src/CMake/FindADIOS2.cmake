@@ -29,46 +29,59 @@
 #
 #   Vicente Adolfo Bolea Sanchez, Tue Nov 18 14:00:00 PDT 2025
 #   find_package(ADIOS2) to determine ADIOS2 version.
+#
+#   Kathleen Biagas, Mon May 18, 2026
+#   Utilize visit_import_third_party in order to get a single adios2 target
+#   that includes all the relevant libraries.
+#
 #****************************************************************************/
 
-# Use the ADIOS2_DIR hint from the config-site .cmake file
+# Uses the ADIOS2_DIR hint from the config-site .cmake file
+
 if(VISIT_ADIOS2_DIR)
-   file(GLOB ADIOS2_DIR "${VISIT_ADIOS2_DIR}/lib*/cmake/adios2")
-   if(NOT ADIOS2_DIR)
-     message(FATAL_ERROR "Failed to find ADIOS2 at ADIOS2_DIR=${VISIT_ADIOS2_DIR}/lib*/cmake/adios2")
-   endif()
-   include(${ADIOS2_DIR}/adios2-config.cmake)
-   find_package(ADIOS2 CONFIG REQUIRED)
-   unset(ADIOS2_DIR)
+   # Get the version
+    if(EXISTS ${VISIT_ADIOS2_DIR}/lib/cmake/adios2/adios2-config-version.cmake)
+        include(${VISIT_ADIOS2_DIR}/lib/cmake/adios2/adios2-config-version.cmake)
+    elseif(EXISTS ${VISIT_ADIOS2_DIR}/lib64/cmake/adios2/adios2-config-version.cmake)
+        include(${VISIT_ADIOS2_DIR}/lib64/cmake/adios2/adios2-config-version.cmake)
+    else()
+        message(FATAL_ERROR "Failed to find ADIOS2 at ADIOS2_DIR=${VISIT_ADIOS2_DIR}/lib*/cmake/adios2")
+    endif()
 
-   set(adios2_cxx_lib adios2_cxx)
-   set(adios2_cxx_mpi_lib adios2_cxx_mpi)
-   if(ADIOS2_VERSION VERSION_LESS_EQUAL 2.10)
-       set(adios2_cxx_lib adios2_cxx11)
-       set(adios2_cxx_mpi_lib adios2_cxx11_mpi)
-   endif()
+    if(ADIOS2_VERSION VERSION_LESS_EQUAL 2.10)
+        set(adios2_cxx_lib adios2_cxx11)
+        set(adios2_cxx_mpi_lib adios2_cxx11_mpi)
+    else()
+        set(adios2_cxx_lib adios2_cxx)
+        set(adios2_cxx_mpi_lib adios2_cxx_mpi)
+    endif()
 
-   if(VISIT_PARALLEL)
-       if(NOT WIN32)
-           SET_UP_THIRD_PARTY(ADIOS2 LIBS
-               adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
-               adios2_perfstubs ${adios2_cxx_lib} adios2_core adios2_enet
-               adios2_c_mpi ${adios2_cxx_mpi_lib} adios2_core_mpi)
-       else()
-           SET_UP_THIRD_PARTY(ADIOS2 LIBS
-               adios2_c ${adios2_cxx_lib} adios2_core
-               adios2_atl adios2_dill adios2_ffs
-               adios2_c_mpi ${adios2_cxx_mpi_lib} adios2_core_mpi)
-       endif()
-   else()
-       if(NOT WIN32)
-           SET_UP_THIRD_PARTY(ADIOS2 LIBS
-               adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
-               adios2_perfstubs ${adios2_cxx_lib} adios2_core adios2_enet)
-       else()
-           SET_UP_THIRD_PARTY(ADIOS2 LIBS
-               adios2_c ${adios2_cxx_lib} adios2_core adios2_atl
-               adios2_dill adios2_ffs )
-       endif()
-   endif()
+    set(adios2_libs
+        adios2_atl
+        adios2_c
+        adios2_core
+        adios2_dill
+        adios2_ffs
+        ${adios2_cxx_lib})
+
+    if(NOT WIN32)
+        list(APPEND adios2_libs
+             adios2_enet
+             adios2_evpath
+             adios2_perfstubs)
+    endif()
+
+    if(VISIT_PARALLEL)
+        list(APPEND adios2_libs
+             adios2_c_mpi
+             adios2_core_mpi
+             ${adios2_cxx_mpi_lib})
+    endif()
+
+    visit_import_third_party(
+         ADIOS2
+         LIBS    ${adios2_libs})
+else()
+    message(STATUS "ADIOS2 not requested")
 endif()
+

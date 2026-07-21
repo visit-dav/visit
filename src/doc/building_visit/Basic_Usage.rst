@@ -13,7 +13,7 @@ Building VisIt_ in this fashion will give you the highest probability of success
 
 .. code:: bash
 
-  ./build_visit3_0_1
+  ./build_visit3_5_0
 
 Building with multiple cores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,7 +27,7 @@ The following example specifies using 4 cores.
 
 .. code:: bash
 
-  ./build_visit3_0_1 --makeflags -j4
+  ./build_visit3_5_0 --makeflags -j4
 
 Specifying the third party library install location
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,7 +38,7 @@ The following example specifies installing the third party libraries in a anothe
 
 .. code:: bash
 
-  ./build_visit3_0_1 --thirdparty-path /usr/gapps/visit/third_party
+  ./build_visit3_5_0 --thirdparty-path /usr/gapps/visit/third_party
 
 Building with the HDF5 and Silo_ libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,7 +48,7 @@ The following example specifies building HDF5 and Silo_.
 
 .. code:: bash
 
-  ./build_visit3_0_1 --hdf5 --silo
+  ./build_visit3_5_0 --hdf5 --silo
 
 Building the stable optional libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,7 +59,7 @@ The following example specifies building the more reliable of the optional I/O l
 
 .. code:: bash
 
-  ./build_visit3_0_1 --optional
+  ./build_visit3_5_0 --optional
 
 Using a VisIt_ source code tar file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,7 +69,7 @@ The tar file should be considerably smaller than a git clone.
 The following example uses the VisIt_ source code corresponding to the official 3.0.1 release of VisIt_.
 .. code:: bash
 
-  ./build_visit3_0_1 --optional --tarball visit3.0.1.tar.gz
+  ./build_visit3_5_0 --optional --tarball visit3.5.0.tar.gz
 
 If ``build_visit`` is interrupted
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,7 +94,7 @@ if you built using a git clone.
 
 .. code:: bash
 
-  visit3.0.1/build/bin/visit
+  visit3.5.0/build/bin/visit
 
 if you built using a tar file.
 

@@ -2,22 +2,21 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-SET(VISIT_NSIS_SEARCHPATH)
+set(VISIT_NSIS_SEARCHPATH)
 
-IF (WIN32)
-    SET(PF1 "PROGRAMFILES")
-    SET(PF2 "PROGRAMFILES(X86)")
-    SET(VISIT_NSIS_SEARCHPATH "$ENV{${PF1}}/NSIS" 
+if (WIN32)
+    set(PF1 "PROGRAMFILES")
+    set(PF2 "PROGRAMFILES(X86)")
+    set(VISIT_NSIS_SEARCHPATH "$ENV{${PF1}}/NSIS"
                               "$ENV{${PF2}}/NSIS")
-    UNSET(PF1)
-    UNSET(PF2)
-ENDIF (WIN32)
+    set(PF1)
+    set(PF2)
+endif()
 
-FIND_PROGRAM(MAKENSIS
+find_program(MAKENSIS
     makensis
     PATHS ${VISIT_NSIS_SEARCHPATH}
-    DOC "Location of the NSIS executable"
-)
+    DOC "Location of the NSIS executable")
 
-STRING(COMPARE NOTEQUAL ${MAKENSIS} "MAKENSIS-NOTFOUND" MAKENSIS_FOUND)
+string(COMPARE NOTEQUAL ${MAKENSIS} "MAKENSIS-NOTFOUND" MAKENSIS_FOUND)
 

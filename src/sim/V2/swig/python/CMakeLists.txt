@@ -29,23 +29,13 @@
 #
 #****************************************************************************
 
-INCLUDE_DIRECTORIES(
-    ${VISIT_SOURCE_DIR}/sim/V2/lib
-    ${VISIT_SOURCE_DIR}/sim/V2/swig/python
-    ${VISIT_BINARY_DIR}/sim/V2/swig/python
-    ${VISIT_BINARY_DIR}/include
-    ${PYTHON_INCLUDE_PATH}
-    # for python 2 + 3 helper header
-    ${VISIT_INCLUDE_DIR}/visitpy/common
-    )
-
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindNumpy.cmake)
-SET(SIMV2_USE_NUMPY FALSE)
-IF (NUMPY_FOUND AND (NUMPY_VERSION VERSION_GREATER 1.5.0))
-    SET(SIMV2_USE_NUMPY TRUE)
+set(SIMV2_USE_NUMPY FALSE)
+if(NUMPY_FOUND AND (NUMPY_VERSION VERSION_GREATER 1.5.0))
+    set(SIMV2_USE_NUMPY TRUE)
     INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
-ENDIF()
-CONFIGURE_FILE(simV2_python_config.h.in simV2_python_config.h)
+endif()
+configure_file(simV2_python_config.h.in simV2_python_config.h)
 
 PYTHON_ADD_MODULE(pysimV2
     simV2_wrap.cxx
@@ -54,22 +44,31 @@ PYTHON_ADD_MODULE(pysimV2
     ${LIBSIM_SOURCES}
     )
 
+target_include_directories(pysimV2 PUBLIC
+    $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/sim/V2/lib>
+    $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/sim/V2/swig/python>
+    $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/sim/V2/swig/python>
+    $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${VISIT_INCLUDE_DIR}/visitpy/common>
+    $<$<BOOL:${SIMV2_USE_NUMPY}>:$<BUILD_INTERFACE:${NUMPY_INCLUDE_DIRS}>>)
+
 # We pick "pysimV2" as the target name because "simV2" is already taken by
 # libsimV2. We then reset its output name to _simV2 since that's what SWIG
 # wants us to call it.
-SET_TARGET_PROPERTIES(pysimV2 PROPERTIES PREFIX "" OUTPUT_NAME _simV2)
-TARGET_LINK_LIBRARIES(pysimV2 PRIVATE ${PYTHON_LIBRARY})
-IF(NOT APPLE)
-    SET_TARGET_PROPERTIES(pysimV2 PROPERTIES INSTALL_RPATH "$ORIGIN")
-ENDIF(NOT APPLE)
+set_target_properties(pysimV2 PROPERTIES
+     PREFIX ""
+     OUTPUT_NAME _simV2
+     LINK_LIBRARIES ${PYTHON_LIBRARY})
+
+if(NOT APPLE)
+    set_target_properties(pysimV2 PROPERTIES INSTALL_RPATH "$ORIGIN")
+endif()
 
 VISIT_INSTALL_TARGETS(pysimV2)
-INSTALL(FILES simV2.py
-    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-    )
+install(FILES simV2.py DESTINATION ${VISIT_INSTALLED_VERSION_LIB})
 
 #Copy simV2.py for use during dev work
-EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_CURRENT_SOURCE_DIR}/simV2.py
     ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/simV2.py)
 

@@ -6,6 +6,7 @@
 #define QVIS_RENDERING_WINDOW_H
 #include <QvisPostableWindowSimpleObserver.h>
 #include <gui_exports.h>
+#include <visit-config.h> // for HAVE_OSPRAY
 #include <GUIBase.h>
 
 // Forward declarations

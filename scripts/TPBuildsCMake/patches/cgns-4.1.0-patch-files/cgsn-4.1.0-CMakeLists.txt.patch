@@ -1,0 +1,23 @@
+--- CMakeLists.txt	2026-02-09 09:40:49.000000000 -0800
++++ CMakeLists.txt	2026-02-09 09:43:39.000000000 -0800
+@@ -208,17 +208,17 @@
+     if (NOT HDF5_static_C_FOUND AND NOT HDF5_shared_C_FOUND)
+       set (FIND_HDF_COMPONENTS C)
+ 
+       find_package (HDF5 NAMES ${SEARCH_PACKAGE_NAME} COMPONENTS ${FIND_HDF_COMPONENTS})
+       message (STATUS "HDF5 libs:${HDF5_FOUND} C:${HDF5_C_FOUND}")
+       set (LINK_LIBS ${LINK_LIBS} ${HDF5_LIBRARIES})
+-      if (HDF5_BUILD_SHARED_LIBS)
++      if (HDF5_PROVIDES_SHARED_LIBS)
+         add_definitions (-DH5_BUILT_AS_DYNAMIC_LIB)
+-      else (HDF5_BUILD_SHARED_LIBS)
++      else ()
+         add_definitions (-DH5_BUILT_AS_STATIC_LIB)
+-      endif (HDF5_BUILD_SHARED_LIBS)
++      endif ()
+       if (BUILD_SHARED_LIBS AND WIN32)
+         set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dumpdll")
+       else (BUILD_SHARED_LIBS AND WIN32)
+         set_property (TARGET h5dump PROPERTY IMPORTED_LOCATION "${HDF5_TOOLS_DIR}/h5dump")
+       endif (BUILD_SHARED_LIBS AND WIN32)
+     else (NOT HDF5_static_C_FOUND AND NOT HDF5_shared_C_FOUND)

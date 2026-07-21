@@ -1,0 +1,18 @@
+--- libhdf5/H5FDhttp.c	2025-02-07 13:40:00.000000000 -0800
++++ libhdf5/H5FDhttp.c	2026-01-31 16:12:50.659720000 -0800
+@@ -49,6 +49,7 @@
+ Define a simple #ifdef test for the version of H5FD_class_t we are using 
+ */
+ 
++#if 0
+ #if H5_VERS_MAJOR == 1
+ #if H5_VERS_MINOR < 10
+ #define H5FDCLASS1 1
+@@ -56,6 +57,7 @@
+ #else
+ #error "Cannot determine version of H5FD_class_t"
+ #endif
++#endif
+ 
+ #ifdef H5_HAVE_WIN32_API
+ /* The following two defines must be before any windows headers are included */

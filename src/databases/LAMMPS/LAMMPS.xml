@@ -7,13 +7,7 @@
       *.dump
       *.lammps
     </FilePatterns>
-    <Files components="M">
-      avtLAMMPSFileFormat.C
-      avtLAMMPSStructureFileFormat.C
-      avtLAMMPSDumpFileFormat.C
-    </Files>
-    <Files components="E">
-      avtLAMMPSFileFormat.C
+    <Files components="M,E">
       avtLAMMPSStructureFileFormat.C
       avtLAMMPSDumpFileFormat.C
     </Files>

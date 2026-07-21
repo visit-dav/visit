@@ -5,17 +5,6 @@
       QvisScatterPlotWizard.C
       QvisScatterPlotWizardPage.C
     </Files>
-    <Files components="V">
-      avtScatterFilter.C
-    </Files>
-    <Files components="E">
-      avtScatterFilter.C
-    </Files>
-    <Files components="W">
-      QvisScatterWidget.h
-      QvisScatterPlotWizard.h
-      QvisScatterPlotWizardPage.h
-    </Files>
     <Attribute name="ScatterAttributes" purpose="Attributes for the scatter plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Scatter.code">
       <Enum name="Scaling">
         Linear

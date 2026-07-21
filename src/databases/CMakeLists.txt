@@ -214,7 +214,7 @@
 
 include(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
-SET(THIRDPARTY_DEPENDENT_PLUGINS)
+set(THIRDPARTY_DEPENDENT_PLUGINS)
 
 
 #####
@@ -223,88 +223,87 @@ SET(THIRDPARTY_DEPENDENT_PLUGINS)
 # Using an explicit list of deps per db plugin gives us all the info we need to
 # check each db plugin with one call to this marco.
 #####
-MACRO(CHECK_THIRDPARTY_SATISFIED dbplugin dep_libs)
+macro(CHECK_THIRDPARTY_SATISFIED dbplugin dep_libs)
     # setup vars used in this macro
     # (due to the nature of cmake macros, these do leak outside of this scope)
-    SET(all_satisfied 1)
-    SET(deps_found)
-    SET(deps_not_found)
-    SET(all_deps ${dep_libs})
+    set(all_satisfied 1)
+    set(deps_found)
+    set(deps_not_found)
+    set(all_deps ${dep_libs})
     # build deps list from arguments passed to the macro
-    FOREACH (X ${ARGN})
-       LIST(APPEND all_deps ${X})
-    ENDFOREACH()
+    foreach (X ${ARGN})
+       list(APPEND all_deps ${X})
+    endforeach()
     # make sure we have found ALL of the deps
-    MESSAGE(STATUS "Checking ${dbplugin} plugin dependencies: ${all_deps}")
-    FOREACH (lib_check ${all_deps})
-    SET(dep_lib_check "${lib_check}_FOUND")
-        IF(${dep_lib_check})
-            LIST(APPEND deps_found ${lib_check})
-        ELSE()
-            SET(all_satisfied 0)
-            LIST(APPEND deps_not_found ${lib_check})
-        ENDIF()
-    ENDFOREACH()
+    message(STATUS "Checking ${dbplugin} plugin dependencies: ${all_deps}")
+    foreach (lib_check ${all_deps})
+        if(${lib_check}_FOUND OR HAVE_${lib_check})
+            list(APPEND deps_found ${lib_check})
+        else()
+            set(all_satisfied 0)
+            list(APPEND deps_not_found ${lib_check})
+        endif()
+    endforeach()
     # print out results of deps check so we have the full details
-    LIST(LENGTH deps_found num_deps_found)
-    LIST(LENGTH deps_not_found num_deps_not_found)
-    IF(num_deps_found)
-        MESSAGE(STATUS " FOUND: ${deps_found}")
-    ENDIF()
-    IF(num_deps_not_found)
-        MESSAGE(STATUS " NOT FOUND: ${deps_not_found}")
-    ENDIF()
-    IF(all_satisfied)
-        MESSAGE(STATUS "Enabling ${dbplugin}")
-        LIST(FIND THIRDPARTY_DEPENDENT_PLUGINS ${dbplugin} findVar)
-        IF(findVar EQUAL -1)
-            LIST(APPEND THIRDPARTY_DEPENDENT_PLUGINS ${dbplugin})
-        ELSE()
+    list(LENGTH deps_found num_deps_found)
+    list(LENGTH deps_not_found num_deps_not_found)
+    if(num_deps_found)
+        message(STATUS " FOUND: ${deps_found}")
+    endif()
+    if(num_deps_not_found)
+        message(STATUS " NOT FOUND: ${deps_not_found}")
+    endif()
+    if(all_satisfied)
+        message(STATUS "Enabling ${dbplugin}")
+        list(FIND THIRDPARTY_DEPENDENT_PLUGINS ${dbplugin} findVar)
+        if(findVar EQUAL -1)
+            list(APPEND THIRDPARTY_DEPENDENT_PLUGINS ${dbplugin})
+        else()
             # sanity check when we enable a plugin, we could keep a list
             # of all of the plugins and make sure we don't try to add them
             # twice, but checking at enable seems like a good enough check
-            MESSAGE(FATAL_ERROR "CHECK_THIRDPARTY_SATISFIED should be called once per database plugin with all dependencies")
-        ENDIF()
+            message(FATAL_ERROR "CHECK_THIRDPARTY_SATISFIED should be called once per database plugin with all dependencies")
+        endif()
         #
         # tracking for static linking house of cards logic
         #
-        IF(VISIT_STATIC)
-            FOREACH(lib_check ${all_deps})
-                SET(dep_lib_dir "${lib_check}_LIBRARY_DIR")
-                SET(dep_libs "${lib_check}_LIB")
-                IF(${dep_lib_dir})
-                    LIST(FIND TMP_THIRDPARTY_IO_LIB "${${dep_lib_dir}}" findVar)
-                    IF(findVar EQUAL -1)
-                        LIST(APPEND TMP_THIRDPARTY_IO_LIBRARY_DIR
+        if(VISIT_STATIC)
+            foreach(lib_check ${all_deps})
+                set(dep_lib_dir "${lib_check}_LIBRARY_DIR")
+                set(dep_libs "${lib_check}_LIB")
+                if(${dep_lib_dir})
+                    list(FIND TMP_THIRDPARTY_IO_LIB "${${dep_lib_dir}}" findVar)
+                    if(findVar EQUAL -1)
+                        list(APPEND TMP_THIRDPARTY_IO_LIBRARY_DIR
                                     ${${dep_lib_dir}})
-                    ENDIF()
-                ENDIF()
-                IF(${dep_libs})
-                    FOREACH(dep_lib ${${dep_libs}})
-                        LIST(FIND TMP_THIRDPARTY_IO_LIB ${dep_lib} findVar)
-                        IF(findVar EQUAL -1)
-                            LIST(APPEND TMP_THIRDPARTY_IO_LIB ${dep_lib})
-                        ENDIF()
-                    ENDFOREACH(lib)
-                ENDIF()
-            ENDFOREACH()
-        ENDIF(VISIT_STATIC)
-    ELSE()
-        MESSAGE(STATUS "Disabling ${dbplugin}")
+                    endif()
+                endif()
+                if(${dep_libs})
+                    foreach(dep_lib ${${dep_libs}})
+                        list(FIND TMP_THIRDPARTY_IO_LIB ${dep_lib} findVar)
+                        if(findVar EQUAL -1)
+                            list(APPEND TMP_THIRDPARTY_IO_LIB ${dep_lib})
+                        endif()
+                    endforeach(lib)
+                endif()
+            endforeach()
+        endif(VISIT_STATIC)
+    else()
+        message(STATUS "Disabling ${dbplugin}")
         VISIT_SELECTED_PLUGIN_ERROR(DATABASE ${dbplugin}
             " third party dependencies not found: ${deps_not_found}")
-    ENDIF()
-ENDMACRO()
+    endiF()
+endmacro()
 
 # These are the various targets that are optional since they depend on 3rd-
 # party I/O libraries to be present. We use CHECK_THIRDPARTY_SATISFIED to
 # check the dependencies for each db plugin. If all dependencies are
 # satisfied, db plugin is added to the mix.
 
-UNSET(TMP_THIRDPARTY_IO_LIBRARY_DIR)
-UNSET(TMP_THIRDPARTY_IO_LIB)
+unset(TMP_THIRDPARTY_IO_LIBRARY_DIR)
+unset(TMP_THIRDPARTY_IO_LIB)
 
-MESSAGE(STATUS "Checking database plugin dependencies.")
+message(STATUS "Checking database plugin dependencies.")
 
 CHECK_THIRDPARTY_SATISFIED(CGNS CGNS)
 
@@ -334,7 +333,6 @@ CHECK_THIRDPARTY_SATISFIED(CosmosPP HDF5)
 CHECK_THIRDPARTY_SATISFIED(Denovo HDF5)
 CHECK_THIRDPARTY_SATISFIED(Enzo HDF5)
 CHECK_THIRDPARTY_SATISFIED(FLASH HDF5)
-CHECK_THIRDPARTY_SATISFIED(Geqdsk HDF5)
 CHECK_THIRDPARTY_SATISFIED(GTC HDF5)
 CHECK_THIRDPARTY_SATISFIED(H5Nimrod HDF5)
 CHECK_THIRDPARTY_SATISFIED(M3D HDF5)
@@ -357,8 +355,8 @@ CHECK_THIRDPARTY_SATISFIED(ADIOS ADIOS)
 CHECK_THIRDPARTY_SATISFIED(ADIOS2 ADIOS2)
 CHECK_THIRDPARTY_SATISFIED(Adventure ADVIO)
 
-CHECK_THIRDPARTY_SATISFIED(Boxlib2D BOXLIB)
-CHECK_THIRDPARTY_SATISFIED(Boxlib3D BOXLIB)
+CHECK_THIRDPARTY_SATISFIED(Boxlib2D BOXLIB2D)
+CHECK_THIRDPARTY_SATISFIED(Boxlib3D BOXLIB3D)
 
 CHECK_THIRDPARTY_SATISFIED(FITS CFITSIO)
 CHECK_THIRDPARTY_SATISFIED(FMS FMS MFEM)
@@ -367,9 +365,9 @@ CHECK_THIRDPARTY_SATISFIED(GDAL GDAL)
 CHECK_THIRDPARTY_SATISFIED(MDSplus MDSPLUS)
 CHECK_THIRDPARTY_SATISFIED(Mili    MILI)
 CHECK_THIRDPARTY_SATISFIED(Uintah  UINTAH)
-IF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
   CHECK_THIRDPARTY_SATISFIED(IDX     PIDX)
-ENDIF()
+endif()
 CHECK_THIRDPARTY_SATISFIED(MFEM    MFEM)
 
 CHECK_THIRDPARTY_SATISFIED(OpenEXR OPENEXR)
@@ -382,10 +380,10 @@ endif()
 CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
 
 # Save the list of all library dirs and libs so the engine can use it
-IF(VISIT_STATIC)
-    SET(ALL_THIRDPARTY_IO_LIBRARY_DIR ${TMP_THIRDPARTY_IO_LIBRARY_DIR} CACHE INTERNAL "List of all I/O lib dirs")
-    SET(ALL_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} CACHE INTERNAL "List of all I/O libs")
-ENDIF(VISIT_STATIC)
+if(VISIT_STATIC)
+    set(ALL_THIRDPARTY_IO_LIBRARY_DIR ${TMP_THIRDPARTY_IO_LIBRARY_DIR} CACHE INTERNAL "List of all I/O lib dirs")
+    set(ALL_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} CACHE INTERNAL "List of all I/O libs")
+endif()
 
 # If we're not building statically, add SimV2 and XDB if enabled.
 if(NOT VISIT_STATIC)
@@ -398,7 +396,7 @@ if(NOT VISIT_STATIC)
 endif()
 
 # These are our required plugins (no external dependencies)
-SET(REQUIRED_DATABASE_PLUGINS
+set(REQUIRED_DATABASE_PLUGINS
 AMRTest
 ANALYZE
 ANSYS
@@ -423,6 +421,7 @@ GHOST
 GMV
 GULP
 Gadget
+Geqdsk
 HTG
 Image
 LAMMPS
@@ -467,94 +466,90 @@ lata
 volimage
 unv
 ${XDBPLUGIN}
-ZipWrapper
-)
+ZipWrapper)
 
 # vtkIOEnSight -> VTK8, VTK::IOEnSight -> VTK9
-IF(TARGET vtkIOEnSight OR TARGET VTK::IOEnSight)
-    LIST(APPEND REQUIRED_DATABASE_PLUGINS EnSight)
-ELSE()
-    IF(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
+if(TARGET vtkIOEnSight OR TARGET VTK::IOEnSight)
+    list(APPEND REQUIRED_DATABASE_PLUGINS EnSight)
+else()
+    if(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
         VISIT_SELECTED_PLUGIN_ERROR(DATABASE "EnSight" "EnSight plugin requires vtkIOEnSight")
-    ELSE()
-        MESSAGE(STATUS "EnSight plugin requires vtkIOEnSight")
-    ENDIF()
-ENDIF()
+    else()
+        message(STATUS "EnSight plugin requires vtkIOEnSight")
+    endif()
+endif()
 
-SET(OPTIONAL_DATABASE_PLUGINS
+set(OPTIONAL_DATABASE_PLUGINS
     PICS_Tester
-    Rect
-   )
+    Rect)
 
-IF (NOT WIN32)
-    LIST(APPEND REQUIRED_DATABASE_PLUGINS
+if(NOT WIN32)
+    list(APPEND REQUIRED_DATABASE_PLUGINS
         HDFS
         STAR
         TCGA
-        Vis5D
-    )
+        Vis5D)
     list(APPEND OPTIONAL_DATABASE_PLUGINS
         Hex
         MRTest
-        VLI
-    )
-ELSE(NOT WIN32)
+        VLI)
+else()
     VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;Hex;MRTest;VLI" "not currently buildable on Windows")
-ENDIF (NOT WIN32)
+endif()
 
 
-SET(MINIMAL_DATABASE_PLUGINS
+set(MINIMAL_DATABASE_PLUGINS
 Curve2D
 RAW
 VTK
-PICS_Tester
-)
+PICS_Tester)
 
 # Select the plugins to build
-IF(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
-    SET(BUILD_PLUGINS ${VISIT_SELECTED_DATABASE_PLUGINS})
-ELSEIF(VISIT_BUILD_ALL_PLUGINS)
-    SET(BUILD_PLUGINS ${REQUIRED_DATABASE_PLUGINS} ${THIRDPARTY_DEPENDENT_PLUGINS} ${OPTIONAL_DATABASE_PLUGINS})
-ELSE()
-    IF(VISIT_BUILD_MINIMAL_PLUGINS)
-        SET(BUILD_PLUGINS ${MINIMAL_DATABASE_PLUGINS})
-    ELSE(VISIT_BUILD_MINIMAL_PLUGINS)
-        SET(BUILD_PLUGINS ${REQUIRED_DATABASE_PLUGINS} ${THIRDPARTY_DEPENDENT_PLUGINS})
-    ENDIF(VISIT_BUILD_MINIMAL_PLUGINS)
-ENDIF()
+if(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
+    set(BUILD_PLUGINS ${VISIT_SELECTED_DATABASE_PLUGINS})
+elseif(VISIT_BUILD_ALL_PLUGINS)
+    set(BUILD_PLUGINS ${REQUIRED_DATABASE_PLUGINS} ${THIRDPARTY_DEPENDENT_PLUGINS} ${OPTIONAL_DATABASE_PLUGINS})
+else()
+    if(VISIT_BUILD_MINIMAL_PLUGINS)
+        set(BUILD_PLUGINS ${MINIMAL_DATABASE_PLUGINS})
+    else()
+        set(BUILD_PLUGINS ${REQUIRED_DATABASE_PLUGINS} ${THIRDPARTY_DEPENDENT_PLUGINS})
+    endif()
+endif()
 
 # Add the plugin directories
-FOREACH(db ${BUILD_PLUGINS})
+foreach(db ${BUILD_PLUGINS})
     # EXISTS test requires full path
-    IF(EXISTS ${VISIT_SOURCE_DIR}/databases/${db})
-        ADD_SUBDIRECTORY(${db})
-    ELSE()
-        IF(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
-            Message(FATAL_ERROR "Selected  database (${db}) does not exist.")
-        ELSEIF(VISIT_STATIC)
+    if(EXISTS ${VISIT_SOURCE_DIR}/databases/${db})
+        add_subdirectory(${db})
+    else()
+        if(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
+            message(FATAL_ERROR "Selected  database (${db}) does not exist.")
+        elseif(VISIT_STATIC)
             # for code below, remove anything we aren't actually building
-            Message("${db} removed from build because it code does not exist")
-            LIST(REMOVE_ITEM BUILD_PLUGINS ${db})
-        ENDIF()
-    ENDIF()
-ENDFOREACH(db)
+            message("${db} removed from build because it code does not exist")
+            list(REMOVE_ITEM BUILD_PLUGINS ${db})
+        endif()
+    endif()
+endforeach()
 
 # If we're building statically, make various main programs depend on plugins being built
-IF(VISIT_STATIC)
+if(VISIT_STATIC)
     # Write a file containing the list of plugins such that we can include it into C++ code.
-    FOREACH(db ${BUILD_PLUGINS})
-        SET(dbCode "${dbCode}PLUGIN_VERB(${db})\n")
-    ENDFOREACH(db)
-    FILE(WRITE ${VISIT_BINARY_DIR}/include/enabled_databases.h "${dbCode}")
+    foreach(db ${BUILD_PLUGINS})
+        set(dbCode "${dbCode}PLUGIN_VERB(${db})\n")
+    endforeach(db)
+    file(WRITE ${VISIT_BINARY_DIR}/include/enabled_databases.h "${dbCode}")
 
-    IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
         CREATE_PLUGIN_DEPENDENCIES(mdserver "I" "Database" ${BUILD_PLUGINS})
         CREATE_PLUGIN_DEPENDENCIES(mdserver "M" "Database" ${BUILD_PLUGINS})
-    ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    endif()
     CREATE_PLUGIN_DEPENDENCIES(engine_ser_exe "I" "Database" ${BUILD_PLUGINS})
     CREATE_PLUGIN_DEPENDENCIES(engine_ser_exe "E" "Database_ser" ${BUILD_PLUGINS})
-    IF(VISIT_PARALLEL)
+    if(VISIT_PARALLEL)
         CREATE_PLUGIN_DEPENDENCIES(engine_par_exe "I" "Database" ${BUILD_PLUGINS})
         CREATE_PLUGIN_DEPENDENCIES(engine_par_exe "E" "Database_par" ${BUILD_PLUGINS})
-    ENDIF(VISIT_PARALLEL)
-ENDIF(VISIT_STATIC)
+    endif()
+endif()
+

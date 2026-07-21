@@ -4,7 +4,7 @@
 
 #ifndef QVIS_COLOR_SELECTION_WIDGET_H
 #define QVIS_COLOR_SELECTION_WIDGET_H
-#include <gui_exports.h>
+
 #include <QWidget>
 
 // Forward declarations.
@@ -33,7 +33,7 @@ class QvisColorGridWidget;
 //
 // ****************************************************************************
 
-class GUI_API QvisColorSelectionWidget : public QWidget
+class QvisColorSelectionWidget : public QWidget
 {
     Q_OBJECT
 public:

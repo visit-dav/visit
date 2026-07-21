@@ -2,7 +2,7 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include <vtkMultiSplitter.h>
+#include "vtkMultiSplitter.h"
 
 #include <vtkAppendFilter.h>
 #include <vtkCellData.h>
@@ -33,7 +33,7 @@
 
 #include <TimingsManager.h>
 
-vtkStandardNewMacro(vtkMultiSplitter);
+vtkStandardNewMacro(vtkMultiSplitter)
 
 // ****************************************************************************
 //  Constructor:  vtkMultiSplitter::vtkMultiSplitter
@@ -47,9 +47,9 @@ vtkStandardNewMacro(vtkMultiSplitter);
 
 vtkMultiSplitter::vtkMultiSplitter()
 {
-    bounds  = NULL;
+    bounds  = nullptr;
     nBounds = 0;
-    newTags = NULL;
+    newTags = nullptr;
 }
 
 // ****************************************************************************
@@ -152,13 +152,13 @@ vtkMultiSplitter::RequestData(
     int        dims[3];
     rg->GetDimensions(dims);
 
-    float *X   = (float* ) rg->GetXCoordinates()->GetVoidPointer(0);
-    float *Y   = (float* ) rg->GetYCoordinates()->GetVoidPointer(0);
-    float *Z   = (float* ) rg->GetZCoordinates()->GetVoidPointer(0);
+    vtkDataArray *X = rg->GetXCoordinates();
+    vtkDataArray *Y = rg->GetYCoordinates();
+    vtkDataArray *Z = rg->GetZCoordinates();
 
     int npts = dims[0] * dims[1] * dims[2];
     std::vector<float> pts;
-    pts.reserve(npts*3);
+    pts.reserve(static_cast<size_t>(npts*3));
     int ndx = 0;
     for (int k = 0; k < dims[2]; k++)
     {
@@ -166,14 +166,14 @@ vtkMultiSplitter::RequestData(
         {
             for (int i = 0; i < dims[0]; i++)
             {
-                 pts.push_back(X[i]);
-                 pts.push_back(Y[j]);
-                 pts.push_back(Z[k]);
+                 pts.push_back(static_cast<float>(X->GetTuple1(i)));
+                 pts.push_back(static_cast<float>(Y->GetTuple1(j)));
+                 pts.push_back(static_cast<float>(Z->GetTuple1(k)));
             }
         }
     }
 
-    int ptSizeGuess = (int) pow(float(npts), 0.6667f) * 5 + 100;
+    size_t ptSizeGuess = static_cast<size_t>(pow(static_cast<float>(npts), 0.6667f)) * 5 + 100;
     vtkVolumeFromCSGVolume vfv(npts, ptSizeGuess);
 
     ndx = 0;
@@ -213,19 +213,19 @@ vtkMultiSplitter::RequestData(
         // Create the array of the clip values for the current boundary.
         //
         clipFunction->SetCoefficients(&bounds[iBnd*10]);
-        npts = (int)pts.size() / 3;
-        float *clipArray = new float[npts];
-        for (int i = 0; i < npts; i++)
+        size_t np = pts.size() / 3;
+        float *clipArray = new float[np];
+        for (size_t i = 0; i < np; i++)
         {
             float *pt = &pts[3*i];
             clipArray[i] = 
-               -clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+               -static_cast<float>(clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]));
         }
 
         vfv.InitTraversal();
     
-        int nCells = vfv.GetNumberOfCells();
-        for (int iCell = 0; iCell < nCells; iCell++)
+        size_t nCells = vfv.GetNumberOfCells();
+        for (size_t iCell = 0; iCell < nCells; iCell++)
         {
             const vtkIdType *cellPts = vfv.GetCell();
             if (cellPts[0] == -1)
@@ -233,18 +233,19 @@ vtkMultiSplitter::RequestData(
                 vfv.NextCell();
                 continue;
             }
-            int nCellPts = vfv.GetCellSize();
+            size_t nCellPts = vfv.GetCellSize();
             int out_case = outCases[nCellPts];
             int cellType = vfv.GetCellVTKType();
-            int cellId = cellPts[0];
+            vtkIdType cellId = cellPts[0];
             cellPts++;
 
             // fill the dist functions and calculate lookup case
             int lookup_case = 0;
             const int max_pts = 8;
             float dist[max_pts];
-            for (int j = nCellPts-1 ; j >= 0 ; j--)
+            for (size_t k = 0 ; k < nCellPts ; k++)
             {
+                size_t j = nCellPts -k-1;
                 float val = clipArray[cellPts[j]];
                 dist[j] = - val;
 
@@ -266,10 +267,10 @@ vtkMultiSplitter::RequestData(
                 continue;
             }
 
-            unsigned char  *splitCase = NULL;
+            unsigned char  *splitCase = nullptr;
             int             numOutput = 0;
             typedef int     edgeIndices[2];
-            edgeIndices    *vertices_from_edges = NULL;
+            edgeIndices    *vertices_from_edges = nullptr;
 
             int startIndex;
             switch (cellType)
@@ -332,7 +333,7 @@ vtkMultiSplitter::RequestData(
                 startIndex = startClipShapesVtx[lookup_case];
                 splitCase  = &clipShapesVtx[startIndex];
                 numOutput  = numClipShapesVtx[lookup_case];
-                vertices_from_edges = NULL;
+                vertices_from_edges = nullptr;
                 break;
             }
 
@@ -341,47 +342,47 @@ vtkMultiSplitter::RequestData(
             {
                 unsigned char shapeType = *splitCase++;
                 {
-                    vtkIdType npts;
+                    vtkIdType npts2;
                     int interpID = -1;
                     int color    = -1;
                     switch (shapeType)
                     {
                       case ST_HEX:
-                        npts = 8;
+                        npts2 = 8;
                         color = *splitCase++;
                         break;
                       case ST_WDG:
-                        npts = 6;
+                        npts2 = 6;
                         color = *splitCase++;
                         break;
                       case ST_PYR:
-                        npts = 5;
+                        npts2 = 5;
                         color = *splitCase++;
                         break;
                       case ST_TET:
-                        npts = 4;
+                        npts2 = 4;
                         color = *splitCase++;
                         break;
                       case ST_QUA:
-                        npts = 4;
+                        npts2 = 4;
                         color = *splitCase++;
                         break;
                       case ST_TRI:
-                        npts = 3;
+                        npts2 = 3;
                         color = *splitCase++;
                         break;
                       case ST_LIN:
-                        npts = 2;
+                        npts2 = 2;
                         color = *splitCase++;
                         break;
                       case ST_VTX:
-                        npts = 1;
+                        npts2 = 1;
                         color = *splitCase++;
                         break;
                       case ST_PNT:
                         interpID = *splitCase++;
                         color    = *splitCase++;
-                        npts     = *splitCase++;
+                        npts2     = *splitCase++;
                         break;
                       default:
                         EXCEPTION1(ImproperUseException,
@@ -392,7 +393,7 @@ vtkMultiSplitter::RequestData(
                     bool out = (color == COLOR0);
 
                     vtkIdType shape[8];
-                    for (int p = 0 ; p < npts ; p++)
+                    for (vtkIdType p = 0 ; p < npts2 ; p++)
                     {
                         unsigned char pt = *splitCase++;
                         if (pt <= P7)
@@ -413,15 +414,15 @@ vtkMultiSplitter::RequestData(
                                 pt1 = tmp;
                             }
                             float dir = dist[pt2] - dist[pt1];
-                            float amt = 0. - dist[pt1];
-                            float percent = 1. - (amt / dir);
+                            float amt = 0.f - dist[pt1];
+                            float percent = 1.f - (amt / dir);
 
                             // We may have physically (though not logically)
                             // degenerate cells if percent==0 or percent==1.
                             // We could pretty easily and mostly safely clamp
                             // percent to the range [1e-4, 1. - 1e-4] here.
-                            int ptId1 = cellPts[pt1];
-                            int ptId2 = cellPts[pt2];
+                            vtkIdType ptId1 = cellPts[pt1];
+                            vtkIdType ptId2 = cellPts[pt2];
 
                             shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
                         }
@@ -476,7 +477,7 @@ vtkMultiSplitter::RequestData(
                         vfv.AddVertex(cellId, shape[0], bf);
                         break;
                       case ST_PNT:
-                        interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
+                        interpIDs[interpID] = vfv.AddCentroidPoint(static_cast<size_t>(npts2), shape);
                         break;
                     }
                 }
@@ -488,7 +489,7 @@ vtkMultiSplitter::RequestData(
         vfv.UpdatePoints(pts);
     }
 
-    vfv.ConstructDataSet(inCD, output, &pts[0], (int)pts.size()/3, newTags);
+    vfv.ConstructDataSet(inCD, output, &pts[0], static_cast<int>(pts.size())/3, newTags);
 
     return 1;
 }

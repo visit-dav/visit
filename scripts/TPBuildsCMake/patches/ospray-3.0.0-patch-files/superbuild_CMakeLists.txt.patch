@@ -1,0 +1,12 @@
+--- scripts\superbuild\CMakeLists.txt	2026-02-17 14:44:39.000000000 -0800
++++ scripts\superbuild\CMakeLists.txt	2026-02-18 07:10:23.000000000 -0800
+@@ -282,6 +282,9 @@
+ ## Build main projects ##
+ set(DEFAULT_BUILD_COMMAND ${CMAKE_COMMAND} --build . --config ${CMAKE_BUILD_TYPE} ${PARALLEL_JOBS_OPTS})
+ 
+ if (NOT BUILD_DEPENDENCIES_ONLY)
+   include(build_ospray.cmake)
+ endif()
++
++install(SCRIPT ospray_post_install.cmake)
++

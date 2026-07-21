@@ -1,0 +1,26 @@
+--- src\H5Block.c	2011-10-30 09:27:11.000000000 -0800
++++ src\H5Block.c	2026-02-24 19:19:58.000000000 -0800
+@@ -1042,20 +1042,20 @@
+ 	h5part_int64_t h5err = _open_block_group ( f );
+ 	if ( h5err < 0 ) return h5err;
+ 
+ 	if ( ! _H5Part_have_group ( b->blockgroup, name ) )
+ 		return HANDLE_H5PART_NOENT_ERR ( name );
+ 
+-	herr_t herr = H5Gopen ( b->blockgroup, name
++	hid_t gid = H5Gopen ( b->blockgroup, name
+ #ifndef H5_USE_16_API
+ 		, H5P_DEFAULT
+ #endif
+ 		);
+-	if ( herr < 0 ) return HANDLE_H5G_OPEN_ERR ( name );
++	if ( gid < 0 ) return HANDLE_H5G_OPEN_ERR ( name );
+ 
+-	b->field_group_id = herr;
++	b->field_group_id = gid;
+ 
+ 	return H5PART_SUCCESS;
+ }
+ 
+ /*!
+   \ingroup h5block_private

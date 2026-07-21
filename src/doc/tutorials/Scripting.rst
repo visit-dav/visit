@@ -93,7 +93,8 @@ Pseudocolor plot
 
 .. literalinclude:: tutorial_examples/scripting/listing_1_setting_attributes.py
    :language: python
-   :lines: 10-
+   :start-at: DeleteAllPlots()
+   :end-at: SetPlotOptions(p)
 
 Animating an isosurface
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,7 +104,8 @@ display of a range of isovalues from "example.silo".
 
 .. literalinclude:: tutorial_examples/scripting/listing_2_animating_an_isosurface.py
    :language: python
-   :lines: 10-
+   :start-at: DeleteAllPlots()
+   :end-at: # SaveWindow()
 
 Using all of VisIt_'s building blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,7 +123,8 @@ that case delete all the plots and execute the script again.
 
 .. literalinclude:: tutorial_examples/scripting/listing_3_using_visits_building_blocks.py
    :language: python
-   :lines: 10-
+   :start-at: # Clear any previous plots
+   :end-before: # end of script sphinx literal include tag
 
 
 Creating a movie of animated streamline paths
@@ -137,7 +140,8 @@ This example extends the "Using all of VisIt_'s Building Blocks" example by
 
 .. literalinclude:: tutorial_examples/scripting/listing_4_creating_a_movie_of_animated_streamline_paths.py
    :language: python
-   :lines: 10-
+   :start-at: # import visit_utils, we will use it to help encode our movie
+   :end-at: encoding.encode(input_pattern,output_movie,fdup=4)
 
 Rendering each timestep of a dataset to a movie
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,7 +154,8 @@ This example assumes the "aneurysm.visit" is already opened.
 
 .. literalinclude:: tutorial_examples/scripting/listing_5_rendering_a_dataset_to_a_movie.py
    :language: python
-   :lines: 10-
+   :start-at: # import visit_utils, we will use it to help encode our movie
+   :end-at: encoding.encode(input_pattern,output_movie,fdup=4)
 
 
 Animating the camera
@@ -158,14 +163,16 @@ Animating the camera
 
 .. literalinclude:: tutorial_examples/scripting/listing_6_animating_the_camera.py
    :language: python
-   :lines: 10-
+   :start-at: def fly():
+   :end-before: # end of script sphinx literal include tag
 
 Automating data analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. literalinclude:: tutorial_examples/scripting/listing_7_automating_data_analysis.py
    :language: python
-   :lines: 10-
+   :start-at: def TakeMassPerSlice():
+   :end-before: # end of script sphinx literal include tag
 
 
 Extracting a per-material aggregate value at each timestep
@@ -173,7 +180,8 @@ Extracting a per-material aggregate value at each timestep
 
 .. literalinclude:: tutorial_examples/scripting/listing_8_extracting_aggregate_values.py
    :language: python
-   :lines: 10-
+   :start-at: from visit_utils import *
+   :end-at: sys.exit(0)
 
 
 .. _Recording_GUI_actions_to_Python_scripts:

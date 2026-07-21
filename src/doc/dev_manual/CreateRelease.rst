@@ -88,7 +88,7 @@ Enter ``v3.3.3`` for the title and add the description as shown below.
 
    Describing the release.
 
-At this point you can go to the bottom of the window and click on *Publish release*.
+At this point you can go to the bottom of the window and click on *Save draft*.
 
 Your newly created release will now appear.
 
@@ -100,14 +100,15 @@ Now you can edit the release and add the unified ``build_visit`` script and the 
 Do not *Publish* the release as you add assets.
 You should just *Save* the release.
 If you publish the release, a notification will go out to everyone watching the VisIt_ repository and it will show up as the latest release on the releases tab.
-You should wait until you have most, if not all, of the assets before publishing the release.
+You should wait until you have all of the assets before publishing the release.
+You should also wait until you have the website updates (described next) ready to go so that you can update it after publishing the release.
 
 Updating the VisIt_ website
 ---------------------------
 
 Once you have created the release you will need to update the VisIt_ website.
 It is in the repository ``visit-dav/visit-website``.
-Changes are typically made to the VisIt_ website repository directly on the master branch.
+Changes are typically made to the VisIt_ website repository directly on the main `gh-pages` branch.
 
 Creating the release notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -118,7 +119,7 @@ The release notes are located in ``pages/releases``.
 Copy one of the release notes files that is closest to the type of release you are making, either a patch release or a minor release, as a starting point.
 Remove or update any version specific content from the new release notes file.
 Copy the raw html from the VisIt_ repository release notes into the Markdown release notes file and convert the raw html into Markdown.
-Commit the changes when you are finished.
+Commit the changes when you are finished, but don't push them to GitHub yet or they will become live.
 
 Updating the release table
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,7 +134,8 @@ Each release also has a series of shortcuts for each of the release assets.
 You can copy an existing series of shortcuts and update them for the current release.
 If you don't have all of the release assets added to the release you should use *Coming soon!* as a substitute for the link.
 If you don't do this, people will follow the broken links and report it to you.
-You should only commit the changes once the release has been published so that the links actually point to something.
+Commit the changes when you are finished.
+Once the release has been published you can push the changes to GitHib so that the links actually point to something.
 
 Creating a blog entry for the new release
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -146,7 +148,9 @@ Patch releases list the number of bug fixes and enhancements along with a teaser
 Minor releases also contain a teaser followed by the two or three major enhancements in the release.
 Three major enhancements is prefereable to two and sometimes you will need to aggregate multiple enhancements into a major enhancement.
 Use the existing posts as examples.
-You should only commit the new blog post once the release has been published.
+Commit the changes when you are finished.
+You should only push the changes to GitHub once the release has been published and the other website changes have been pushed to GitHub.
+You can push all the website changes in a single push.
 
 Updating the Spack ``package.py`` file
 --------------------------------------

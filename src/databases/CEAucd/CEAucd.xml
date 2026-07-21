@@ -6,13 +6,7 @@
       UCD_#*
       UCD_#*_#*
     </FilePatterns>
-    <Files components="M">
-      avtCEAucdFileFormat.C
-      vtkCEAucdReader.C
-      FichierU.C
-    </Files>
-    <Files components="E">
-      avtCEAucdFileFormat.C
+    <Files components="M,E">
       vtkCEAucdReader.C
       FichierU.C
     </Files>

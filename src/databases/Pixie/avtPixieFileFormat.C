@@ -598,6 +598,9 @@ avtPixieFileFormat::Initialize()
 //    isCoord to TraversalInfo and VarInfo to track if a variable is a
 //    coordinate array so that the decomposition can be done correctly.
 //
+//    Mark C. Miller, Fri Jun  5 15:38:06 PDT 2026
+//    Applied same fix as Eric, above, for other mesh case.
+//
 // ****************************************************************************
 
 void
@@ -728,7 +731,7 @@ avtPixieFileFormat::PartitionDims()
         globalExtents[4] = 0;
         globalExtents[5] = it->second.dims[2] - 1;
         extTran->SetWholeExtent(globalExtents);
-        if (it->second.hasCoords)
+        if (it->second.hasCoords || it->second.isCoord)
             extTran->PieceToExtent();
         else
             extTran->PieceToExtentByPoints();;
@@ -742,7 +745,7 @@ avtPixieFileFormat::PartitionDims()
         it->second.count[2] = extents[5] - extents[4] + 1;
 // redo without ghost to get the strict bounds
         extTran->SetGhostLevel(0);
-        if (it->second.hasCoords)
+        if (it->second.hasCoords || it->second.isCoord)
             extTran->PieceToExtent();
         else
             extTran->PieceToExtentByPoints();

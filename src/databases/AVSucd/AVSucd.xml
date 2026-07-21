@@ -3,12 +3,7 @@
     <FilePatterns>
       *.inp
     </FilePatterns>
-    <Files components="M">
-      avtAVSucdFileFormat.C
-      VisItAVSucdReader.C
-    </Files>
-    <Files components="E">
-      avtAVSucdFileFormat.C
+    <Files components="M,E">
       VisItAVSucdReader.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="false" exportAPI="" exportInclude="">

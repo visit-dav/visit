@@ -17,48 +17,48 @@
 #   
 #****************************************************************************
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_BINARY_DIR}/include
-${SILO_INCLUDE_DIR}
-)
 
-
-FUNCTION(ADD_EXAMPLE target)
-    ADD_EXECUTABLE(example_${target} ${ARGN})
-    TARGET_LINK_LIBRARIES(example_${target} m)
-    SET_TARGET_PROPERTIES(example_${target} PROPERTIES
+function(ADD_EXAMPLE target)
+    visit_add_executable(
+        NAME        example_${target}
+        SOURCES     ${ARGN}
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${VISIT_BINARY_DIR}/include
+        DEPENDS_ON  m
         OUTPUT_NAME ${target}
-        RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatible
-        FOLDER tools/DataManualExamples/CreatingCompatible
-    )
-ENDFUNCTION(ADD_EXAMPLE)
+        FOLDER      tools/DataManualExamples/CreatingCompatible
+        SKIP_INSTALL)
+
+    set_target_properties(example_${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatible)
+endfunction()
 
 # We add stdc++ because Silo contains C++. We can't use a C++ linker because
 # we might be linking Fortran so it's easiest to just link with the C++ lib.
-FUNCTION(ADD_SILO_EXAMPLE target)
-    ADD_EXECUTABLE(example_${target} ${ARGN})
-    TARGET_LINK_LIBRARIES(example_${target} ${SILO_LIB} stdc++ m)
-    SET_TARGET_PROPERTIES(example_${target} PROPERTIES
+function(ADD_SILO_EXAMPLE target)
+    visit_add_executable(
+        NAME        example_${target}
+        SOURCES     ${ARGN}
+        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${VISIT_BINARY_DIR}/include
+        DEPENDS_ON  silo stdc++ m
         OUTPUT_NAME ${target}
-        RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatible
         FOLDER tools/DataManualExamples/CreatingCompatible
-    )
-ENDFUNCTION(ADD_SILO_EXAMPLE)
+        SKIP_INSTALL)
+
+    set_target_properties(example_${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatible)
+endfunction()
 
 ##
 ## BOV examples
 ##
 ADD_EXAMPLE(bov bov.c)
-IF(VISIT_FORTRAN)
+if(VISIT_FORTRAN)
     ADD_EXAMPLE(fbov fbov.f)
-ENDIF(VISIT_FORTRAN)
+endif()
 
-IF(SILO_FOUND)
-    INCLUDE_DIRECTORIES(${SILO_INCLUDE_DIR})
-
-    LINK_DIRECTORIES(${SILO_LIBRARY_DIR})
-
+if(HAVE_SILO)
     ##
     ## Silo examples
     ##
@@ -84,7 +84,7 @@ IF(SILO_FOUND)
     ##
     ## Silo fortran examples
     ##
-    IF(VISIT_FORTRAN)
+    if(VISIT_FORTRAN)
         ADD_SILO_EXAMPLE(fbasic fbasic.f)
         ADD_SILO_EXAMPLE(fcurv2d fcurv2d.f)
         ADD_SILO_EXAMPLE(fcurv3d fcurv3d.f)
@@ -102,8 +102,8 @@ IF(SILO_FOUND)
         ADD_SILO_EXAMPLE(fucd2d fucd2d.f)
         ADD_SILO_EXAMPLE(fucd3d fucd3d.f)
         ADD_SILO_EXAMPLE(fucdvar2d fucdvar2d.f)
-    ENDIF(VISIT_FORTRAN)
-ENDIF(SILO_FOUND)
+    endif()
+endif()
 
 ##
 ## visit_writer examples
@@ -114,3 +114,4 @@ ADD_EXAMPLE(vwrect2d  vwrect2d.c  visit_writer.c)
 ADD_EXAMPLE(vwrect3d  vwrect3d.c  visit_writer.c)
 ADD_EXAMPLE(vwregmesh vwregmesh.c visit_writer.c)
 ADD_EXAMPLE(vwucd2d   vwucd2d.c   visit_writer.c)
+

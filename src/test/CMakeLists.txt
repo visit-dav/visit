@@ -13,9 +13,9 @@
 #
 #****************************************************************************
 
-IF(WIN32)
-    PROJECT(VISIT_TEST)
-ENDIF(WIN32)
+if(WIN32)
+    project(VISIT_TEST)
+endif()
 
 #-----------------------------------------------------------------------------
 # If this directory exists the root CMakeLists.txt adds this directory as a
@@ -23,23 +23,33 @@ ENDIF(WIN32)
 #
 # Prevent users from running cmake directy in this directory.
 #-----------------------------------------------------------------------------
-IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-    MESSAGE(FATAL_ERROR "VisIt's \"test\" directory cannot be configured "
+if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+    message(FATAL_ERROR "VisIt's \"test\" directory cannot be configured "
                     "independently from the main \"src\" directory. Please "
                     "run cmake on VisIt's \"src\" directory.")
-ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
 
 
-IF(NOT PYTHON_FOUND)
-    MESSAGE(STATUS "Skipping build of VisIt Testing Python Module (PYTHON_FOUND=FALSE)")
+if(NOT PYTHON_FOUND)
+    message(STATUS "Skipping build of VisIt Testing Python Module (PYTHON_FOUND=FALSE)")
 else()
-    MESSAGE(STATUS "Configuring VisIt Testing Python Module")
+    message(STATUS "Configuring VisIt Testing Python Module")
 
     #
     # generate helper script that has params, like data dir, baseline dir, etc
     # populated to help run test suite out of source easily
     #
     if(NOT WIN32)
+        # for pluginVsInstall tests, need path to MPI that VisIt is using.
+        # It will be used to set CMAKE_PREFIX_PATH in the run_visit_test_suite
+        # script so that CMake can find the right MPI.
+        if(VISIT_MPI_COMPILER)
+            cmake_path(GET VISIT_MPI_COMPILER PARENT_PATH MPI_ROOT)
+            cmake_path(SET MPI_ROOT NORMALIZE ${MPI_ROOT}/../)
+        elseif(VISIT_MPI_HOME)
+            cmake_path(SET MPI_ROOT NORMALIZE ${VISIT_MPI_HOME})
+        endif()
+
         configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/run_visit_test_suite.sh.in"
                         "${CMAKE_CURRENT_BINARY_DIR}/tmp/run_visit_test_suite.sh")
 

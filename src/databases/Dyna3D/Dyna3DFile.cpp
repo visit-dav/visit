@@ -326,6 +326,7 @@ Dyna3DFile::ReadControlCardsNewFormat(ifstream &ifile)
 void
 Dyna3DFile::GetLine(ifstream &ifile)
 {
+    line[0] = '\0';
     ifile.getline(line, 1024);
 }
 
@@ -553,7 +554,7 @@ Dyna3DFile::ReadControlCard9(ifstream &ifile)
             if(strncmp(line, "endfree", 7) == 0)
                 break;
             GetLine(ifile);
-        } while(!ifile.good());
+        } while(ifile.good());
     }
 }
 
@@ -676,6 +677,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
         {
             DEBUG_READER(debug5 << "We must have been past " << matCardHeader
                    << ". Reset and try again" << endl;)
+            ifile.clear();
             ifile.seekg(0, ios::beg);
             if(!SkipToSection(ifile, matCardHeader))
             {
@@ -757,7 +759,8 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
 
         // Read until we have the proper number of materials or we
         // run inth the "NODE DEFINITIONS" section.
-        keepReading = ((int)materialCards.size() < cards.card2.nMaterials) &&
+        keepReading = ifile.good() &&
+                      ((int)materialCards.size() < cards.card2.nMaterials) &&
                       (strstr(line, "NODE DEFINITIONS") == NULL);
     } while(keepReading);
 
@@ -881,6 +884,7 @@ Dyna3DFile::ReadFile(const std::string &name, int nLines)
         // Close and reopen the file and skip to the NODE DEFINITIONS section. This
         // prevents us from messing up the nodes if we happened to mess up the 
         // materials.
+        ifile.clear();
         ifile.seekg(0, ios::beg);
         SkipToSection(ifile, "NODE DEFINITIONS");
 

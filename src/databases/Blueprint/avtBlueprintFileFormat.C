@@ -58,7 +58,7 @@
 //-----------------------------------------------------------------------------
 // mfem includes
 //-----------------------------------------------------------------------------
-#ifdef HAVE_LIBMFEM
+#ifdef HAVE_MFEM
 #include "mfem.hpp"
 #endif
 
@@ -81,7 +81,7 @@
 
 using std::string;
 using namespace conduit;
-#ifdef HAVE_LIBMFEM
+#ifdef HAVE_MFEM
 using namespace mfem;
 #endif
 
@@ -1162,7 +1162,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
         if(n_topo.has_child("grid_function"))
         {
-#ifdef HAVE_LIBMFEM
+#ifdef HAVE_MFEM
             BP_PLUGIN_INFO(mesh_topo_name << " is an mfem mesh");
             is_mfem_mesh = true;
             topo_names_to_gf_names[topo_name] = n_topo["grid_function"].as_string();
@@ -1266,7 +1266,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         // check for assocated quad func meshes
         if(topos_to_quad_func_topos.count(topo_name) )
         {
-#ifdef HAVE_LIBMFEM
+#ifdef HAVE_MFEM
             BP_PLUGIN_INFO("Adding quadrature function meshes for topology: " << topo_name );
             // loop over all qf topos assoc'd with this main topo
             // add a mesh for each
@@ -1291,10 +1291,10 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
         if(is_mfem_mesh)
         {
-#ifndef HAVE_LIBMFEM
+#ifndef HAVE_MFEM
             std::ostringstream err_oss;
             err_oss << "avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata: "
-                        << "detected an mfem mesh when mfem is disabled"
+                        << "detected an mfem mesh when mfem is disabled";
             BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
 #endif
             // if we have a mfem mesh, add extra element_color variable
@@ -1392,7 +1392,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             }
             else if (n_field.has_child("basis"))
             {
-#ifdef HAVE_LIBMFEM
+#ifdef HAVE_MFEM
                 // if any of the fields are mfem grid funcs, we may have to
                 // treat the mesh as an mfem mesh, even if it lacks a basis func
                 m_mfem_mesh_map[var_topo_name] = true;

@@ -1,0 +1,77 @@
+--- CMakeLists.txt	2026-02-09 11:21:31.000000000 -0800
++++ CMakeLists.txt	2026-02-09 11:31:28.000000000 -0800
+@@ -1574,13 +1574,13 @@
+ 
+ endif()
+ 
+ # Subdirectory CMakeLists.txt files should specify their own
+ # 'install' files.
+ # Including 'CPack' kicks everything off.
+-include(InstallRequiredSystemLibraries)
++#include(InstallRequiredSystemLibraries)
+ configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/FixBundle.cmake.in
+   ${CMAKE_CURRENT_BINARY_DIR}/FixBundle.cmake
+   @ONLY
+   )
+ 
+@@ -1633,15 +1633,16 @@
+ 
+ 
+ if(NOT IS_DIRECTORY ${netCDF_BINARY_DIR}/tmp)
+   file(MAKE_DIRECTORY ${netCDF_BINARY_DIR}/tmp)
+ endif()
+ 
+-install(FILES ${netCDF_BINARY_DIR}/netcdf.pc
+-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+-  COMPONENT utilities)
++# contains hard-coded paths, don't want
++#install(FILES ${netCDF_BINARY_DIR}/netcdf.pc
++#  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
++#  COMPONENT utilities)
+ 
+ ###
+ # End pkgconfig file creation.
+ ###
+ 
+ ##
+@@ -1784,15 +1785,16 @@
+ 
+ if(DEFINED DEPR_OPT)
+   message(WARNING "Warning! Deprecated Options used. Please migrate your build system as follows:\n${DEPR_OPT}" )
+ endif()
+   # Install libnetcdf.settings file into same location
+ # as the libraries.
+-install(FILES "${netCDF_BINARY_DIR}/libnetcdf.settings"
+-  DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+-  COMPONENT libraries)
++# contains hard-coded paths, don't want
++#install(FILES "${netCDF_BINARY_DIR}/libnetcdf.settings"
++#  DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++#  COMPONENT libraries)
+ 
+ #####
+ # End libnetcdf.settings section.
+ #####
+ 
+ #####
+@@ -1802,15 +1804,16 @@
+   "${netCDF_BINARY_DIR}/tmp/nc-config" @ONLY
+   NEWLINE_STYLE LF)
+ file(COPY "${netCDF_BINARY_DIR}/tmp/nc-config"
+   DESTINATION ${netCDF_BINARY_DIR}/
+   FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+ 
+-install(PROGRAMS ${netCDF_BINARY_DIR}/nc-config
+-  DESTINATION ${CMAKE_INSTALL_BINDIR}
+-  COMPONENT utilities)
++# contains hard-coded paths, don't want
++#install(PROGRAMS ${netCDF_BINARY_DIR}/nc-config
++#  DESTINATION ${CMAKE_INSTALL_BINDIR}
++#  COMPONENT utilities)
+ 
+ #####
+ # Create 'netcdf_meta.h' include file.
+ #####
+ configure_file(
+   ${netCDF_SOURCE_DIR}/include/netcdf_meta.h.in

@@ -9,7 +9,7 @@
 #include <vtkFloatArray.h>
 #include <vtkCellData.h>
 #include <vtkPointData.h>
-#include <vtkVisItPointDataToCellData.h>
+#include <vtkPointDataToCellData.h>
 #include <vtkAppendFilter.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkIntArray.h>
@@ -149,7 +149,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
 
     // recenter the gradient!
     int th_recenter = visitTimer->StartTimer();
-    vtkVisItPointDataToCellData *pd2cd = vtkVisItPointDataToCellData::New();
+    vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
     pd2cd->SetInputData(ds);
     pd2cd->Update();
     ds = pd2cd->GetOutput();
