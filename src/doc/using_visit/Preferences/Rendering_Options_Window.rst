@@ -135,7 +135,7 @@ There are a few limitations of tiled rendering.
   When using FXAA (Fast Approximate Anti-Aliasing), each tile will be independently anti-aliased resulting in artifacts along tile boundaries.
   Typically, those artifacts are not visible.
 * Points may not extend across tile boundaries when using the "Point" point type.
-  All other point types should work fine.
+  All other point types work fine.
 * Horizontal or vertical lines that align exactly with tile boundaries may not be visible.
 * Points that are exactly on tile boundaries may not be visible.
 * Any rendering that involves OSPRay doesn't work properly with tiled rendering.
