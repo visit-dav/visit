@@ -162,6 +162,9 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //    Eric Brugger, Tue Aug 19 09:45:37 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Tue July 21, 2026
+//    Fix potential leak with ugridAsPD.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -193,7 +196,7 @@ avtTubeFilter::ExecuteData(avtDataRepresentation *in_dr)
     if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
-        vtkPolyData *ugridAsPD = vtkPolyData::New();
+        ugridAsPD = vtkPolyData::New();
         ugridAsPD->SetPoints(ugrid->GetPoints());
         ugridAsPD->GetPointData()->ShallowCopy(ugrid->GetPointData());
         ugridAsPD->GetCellData()->ShallowCopy(ugrid->GetCellData());

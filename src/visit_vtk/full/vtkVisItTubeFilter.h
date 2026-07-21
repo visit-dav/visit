@@ -8,6 +8,11 @@
 #include <vtkTubeFilter.h>
 #include <visit_vtk_exports.h>
 
+//****************************************************************************
+// Purpose:  a Tube filter that expands vtkTubeFilter to allow scaling by
+//           cell scalars, and specification by name of the scalars to be
+//           used for scaling radius.
+//
 // Modifications:
 //   Jeremy Meredith, Wed May 26 14:52:29 EDT 2010
 //   Allow cell scalars for tube radius.
