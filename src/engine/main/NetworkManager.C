@@ -97,13 +97,13 @@
 //#define NetworkManagerTIME
 #include <ProgrammableCompositer.h>
 
+#include <vtkCamera.h>
+#include <vtkCellData.h>
+#include <vtkDataSetWriter.h>
+#include <vtkFloatArray.h>
 #include <vtkImageData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkFloatArray.h>
-#include <vtkDataSetWriter.h>
-#include <vtkCellData.h>
 #include <vtkRenderer.h>
-#include <vtkCamera.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -3056,7 +3056,6 @@ NetworkManager::CopyTileToImage(int imageWidth, int imageHeight,
             pass2->SetImage(avtImageRepresentation(image, zbuffer));
         else
             pass2->SetImage(avtImageRepresentation(image));
-
     }
 
     rgbImage = pass2->GetImage().GetRGBBuffer();
@@ -3170,7 +3169,7 @@ NetworkManager::RenderTiledInternal()
     debug5 << "NetworkManager::RenderTiledInternal: zoomUser=" << zoomUser << ",xPanUser=" << xPanUser << ",yPanUser=" << yPanUser << endl;
     debug5 << "NetworkManager::RenderTiledInternal: zoomTile=" << zoomTile << endl;
 
-    // Calculate the fraction of the last tile that is each direction.
+    // Calculate the fraction of the last tile that is in each direction.
     const double nxExtra = double((nxTiles * tileWidth) - imageWidth) / double(tileWidth);
     const double nyExtra= double((nyTiles * tileHeight) - imageHeight) / double(tileHeight);
 
@@ -3228,7 +3227,7 @@ NetworkManager::RenderTiledInternal()
         {
             //
             // Set the viswin view3D, background and foreground cameras
-	    // for the tile.
+            // for the tile.
             //
             viswin->SetView3D(view3DTile);
 
