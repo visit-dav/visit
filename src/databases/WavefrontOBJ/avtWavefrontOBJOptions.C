@@ -50,6 +50,9 @@ GetWavefrontOBJReadOptions(void)
 //    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
 //    Added "Invert color table" option.
 //
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Added new options for controlling limits.
+//
 // ****************************************************************************
 
 DBOptionsAttributes *
