@@ -13,6 +13,8 @@
 
 #include <vtkImageData.h>
 
+#include <visit-config.h> // HAVE_ICET
+
 #if defined(PARALLEL) && defined(HAVE_ICET)
     #include <IceT.h>
     #include <IceTMPI.h>

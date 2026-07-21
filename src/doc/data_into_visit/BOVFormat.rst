@@ -23,7 +23,9 @@ This is the origin of your grid.
 Here is an example of specifying the origin of your grid.
 
 .. literalinclude:: data_examples/density.bov
-   :lines: 8-8
+   :language: none
+   :start-at: BRICK_ORIGIN
+   :end-at: BRICK_ORIGIN
 
 BRICK_SIZE
 ~~~~~~~~~~
@@ -33,7 +35,9 @@ This is the size of your grid.
 Here is an example of specifying the size of your grid.
 
 .. literalinclude:: data_examples/density.bov
-   :lines: 9-9
+   :language: none
+   :start-at: BRICK_SIZE
+   :end-at: BRICK_SIZE
 
 The `i` component varies the fastest, then `j`, then `k`. 
 This means that if `BRICK_SIZE` is `2. 2. 2.`, the first float in the data file corresponds to `[0,0,0]`, the second to `[1,0,0]`, the third to `[0,1,0]`, the fourth to `[1,1,0]`, the fifth to `[0,0,1]`, and so on.
@@ -59,7 +63,9 @@ Valid values are `ZONAL` and `NODAL`.
 Here is an example of specifying the centering of your variable.
 
 .. literalinclude:: data_examples/density.bov
-   :lines: 7-7
+   :language: none
+   :start-at: CENTERING
+   :end-at: CENTERING
 
 DATA_BRICKLETS
 ~~~~~~~~~~~~~~
@@ -95,7 +101,9 @@ Data from Intel processors is `LITTLE`, while most other processors are `BIG`.
 Here is an example of specifying the Endian representation of your variable.
 
 .. literalinclude:: data_examples/density.bov
-   :lines: 6-6
+   :language: none
+   :start-at: DATA_ENDIAN
+   :end-at: DATA_ENDIAN
 
 DATA_FILE
 ~~~~~~~~~
@@ -105,7 +113,9 @@ This is the name of the file with the binary data.
 Here is an example of specifying the name of the data file.
 
 .. literalinclude:: data_examples/density.bov
-   :lines: 2-2
+   :language: none
+   :start-at: DATA_FILE
+   :end-at: DATA_FILE
 
 DATA_FORMAT
 ~~~~~~~~~~~
@@ -116,7 +126,9 @@ Valid values are `BYTE`, `SHORT`, `INT`, `FLOAT` and `DOUBLE`.
 Here is an example of specifying the type of your variable.
 
 .. literalinclude:: data_examples/density.bov
-   :lines: 4-4
+   :language: none
+   :start-at: DATA_FORMAT
+   :end-at: DATA_FORMAT
 
 DATA_SIZE
 ~~~~~~~~~
@@ -126,7 +138,9 @@ These are the dimensions of your variable.
 Here is an example of specifying the dimensions of your variable.
 
 .. literalinclude:: data_examples/density.bov
-   :lines: 3-3
+   :language: none
+   :start-at: DATA_SIZE
+   :end-at: DATA_SIZE
 
 DIVIDE_BRICK
 ~~~~~~~~~~~~
@@ -147,7 +161,9 @@ This is the time associated with the variable.
 Here is an example of specifying the time.
 
 .. literalinclude:: data_examples/density.bov
-   :lines: 1-1
+   :language: none
+   :start-at: TIME
+   :end-at: TIME
 
 VARIABLE
 ~~~~~~~~
@@ -157,7 +173,9 @@ This is the name of your variable.
 Here is an example of specifying the name of your variable.
 
 .. literalinclude:: data_examples/density.bov
-   :lines: 5-5
+   :language: none
+   :start-at: VARIABLE
+   :end-at: VARIABLE
 
 An example of a BOV file
 ------------------------

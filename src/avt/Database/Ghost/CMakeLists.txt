@@ -7,26 +7,36 @@
 #
 #****************************************************************************
 
-set(GHOST_SOURCES
-    avtDomainBoundaries.C
-    avtGhostNodeGenerator.C
-    avtIsenburgSGG.C
-    avtLocalStructuredDomainBoundaries.C
-    avtNekDomainBoundaries.C
-    avtStreamingGhostGenerator.C
-    avtStructuredDomainBoundaries.C
-    avtStructuredDomainNesting.C
-    avtUnstructuredDomainBoundaries.C
-    avtUnstructuredPointBoundaries.C
-    StructuredBoundary.C)
+visit_append_list(
+    NAME  avtdatabase_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtDomainBoundaries.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGhostNodeGenerator.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtIsenburgSGG.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLocalStructuredDomainBoundaries.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtNekDomainBoundaries.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtStreamingGhostGenerator.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtStructuredDomainBoundaries.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtStructuredDomainNesting.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtUnstructuredDomainBoundaries.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtUnstructuredPointBoundaries.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/StructuredBoundary.C)
 
-target_sources(avtdatabase_ser PRIVATE ${GHOST_SOURCES})
-target_include_directories(avtdatabase_ser PUBLIC .)
+visit_append_list(
+    NAME  avtdatabase_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtDomainBoundaries.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDomainNesting.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtGhostNodeGenerator.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtIsenburgSGG.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLocalStructuredDomainBoundaries.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtNekDomainBoundaries.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtStreamingGhostGenerator.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtStructuredDomainBoundaries.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtStructuredDomainNesting.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtUnstructuredDomainBoundaries.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtUnstructuredPointBoundaries.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtdatabase_par PRIVATE ${GHOST_SOURCES})
-    target_include_directories(avtdatabase_par PUBLIC .)
-endif()
-
-unset(GHOST_SOURCES)
+visit_append_list(
+    NAME  avtdatabase_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Database/Ghost>)
 

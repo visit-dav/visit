@@ -80,10 +80,8 @@ function bv_nektarpp_host_profile
                 "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR \${VISITHOME}/nektar++/\${NEKTAR++_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF
 
-            ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
-
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+                "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP zlib TYPE STRING)" \
                 >> $HOSTCONF
         fi
     fi

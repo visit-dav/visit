@@ -49,3 +49,4 @@ patts.endPointRadiusBBox = 0.01
 SetPlotOptions(patts)
 
 DrawPlots()
+# end of script sphinx literal include tag

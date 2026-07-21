@@ -4,22 +4,10 @@
       ${VXDB_INCLUDE_DIR}
       ${XDBLIB_INCLUDE_DIR}
     </CXXFLAGS>
-    <LIBS components="M">
-      ${VXDB_LIB_SER}
-      ${XDBLIB_LIB}
+    <LIBS components="M,E">
+      ${VXDB_LIBRARY_DIR}/${VXDB_LIB_SER}
+      ${XDBLIB_LIBRARY_DIR}/${XDBLIB_LIB}
     </LIBS>
-    <LIBS components="ESer">
-      ${VXDB_LIB_SER}
-      ${XDBLIB_LIB}
-    </LIBS>
-    <LIBS components="EPar">
-      ${VXDB_LIB_PAR}
-      ${XDBLIB_LIB}
-    </LIBS>
-    <LDFLAGS>
-      ${VXDB_LIBRARY_DIR}
-      ${XDBLIB_LIBRARY_DIR}
-    </LDFLAGS>
     <FilePatterns>
       *.xdb
     </FilePatterns>

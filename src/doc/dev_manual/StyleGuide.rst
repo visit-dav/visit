@@ -646,20 +646,119 @@ CMake Conventions
 
 Starting with VisIt_ version 3.4, new more modern CMake conventions will be adopted, and `BLT <https://llnl-blt.readthedocs.io/en/develop/index.html>`_ will be used whenever feasible.
 
+With VisIt_ version 3.5.1, the CMake logic has been completely rewritten in order to reduce code duplication.
+
+All libraries/executables are now added to the build using macros that handle most of the CMake logic for adding dependencies, flags, etc.
+
+`blt` macros are wrapped by similary named `visit` macros in order to handle specialized needs more cleanly and consistently.
+
+VisIt_ macros for adding targets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following functions for adding targets have options that match the similarly named BLT macros and which are passed directly to BLT.
+Options only used by VisIt_ are specified as such.
+
+.. code-block:: cmake
+
+    visit_add_library(NAME         <target name>
+                      SOURCES      [source1 [source2 ...]]
+                      HEADERS      [header1 [header2 ...]]
+                      INCLUDES     [dir1 [dir2 ...]]
+                      DEFINES      [define1 [define2 ...]]
+                      DEPENDS_ON   [dep1 ...]
+                      OUTPUT_NAME  [name]
+                      FEATURES     [feat1 [feat2 ...]]
+                      FOLDER       [name]
+                      FORCE_STATIC
+                      SKIP_INSTALL)
+
+NAME:         Required
+   The target name.
+
+SOURCES:      Required
+   List of source files.
+
+HEADERS:      Optional  (except for header-only)
+   List of header files.
+
+INCLUDES:     Optional
+   List of include directories.
+
+DEFINES:      Optional
+   List of compile definitions.
+
+DEPENDS_ON:   Optional
+   List of targets the new target depends upon.
+
+OUTPUT_NAME:  Optional
+   Override the built file name of the library.
+
+FEATURES:     Optional
+   List of compile features.
+
+FOLDER:       Optional
+   Folder for IDE's that support it, such as Visual Studio
+
+FORCE_STATIC: Optional (visit only, visit_add_library only)
+    Force the library to be static, even if ``BUILD_SHARED_LIBS`` is ON.
+
+SKIP_INSTALL: Optional (visit only)
+    Skip the ``INSTALL`` command.
+
+
+``visit_add_executable`` has the same arguments as ``visit_add_library`` with the exception of FORCE_STATIC.
+
+``visit_add_parallel_library`` and ``visit_add_parallel_executable`` have the same arguments, but will also add necessary parallel flags and options.
+
+.. code-block:: cmake
+
+    visit_patch_target(NAME         <target name>
+                       SOURCES      [source1 [source2 ...]]
+                       HEADERS      [header1 [header2 ...]]
+                       INCLUDES     [dir1 [dir2 ...]]
+                       DEFINES      [define1 [define2 ...]]
+                       DEPENDS_ON   [dep1 ...]
+
+
+NAME: Required
+    Name of target to be patched.
+
+SOURCES: Optional
+    Additional sources to be added.
+
+HEADERS: Optional
+    Additional headers to be added.
+
+INCLUDES: Optional
+    Additional include directories to be added.
+
+DEFINES: Optional
+    Additional compile definitions to be added.
+
+DEPENDS_ON: Optional
+    Additional dependencies.
+
+
+Adds more information to the given target.
+Useful if the information is conditional on platform or build options.
+Wraps `blt_patch_target` to handle certain options not yet handled by BLT.
+
+
 Handling subdirectories
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Each subdirectory should have its own CMakeLists.txt which either creates a new target or adds sources to a target defined in a parent directory's CMakeLists.txt.
-If a given target has source files spread out across multiple subdirectories, the `add_library` or `add_executable` calls should be in the CMakeLists.txt of the topmost directory, along with the `add_subdirectory` and any common `target_include_directories` or `target_link_libraries` calls.
-The subdirectory will add its sources to the parent's target via `target_sources`.
+If a given target has source files spread out across multiple subdirectories, the `visit_add_library` or `visit_add_executable` calls should be in the CMakeLists.txt of the topmost directory, along with the `add_subdirectory` calls.
+The `add_subdirectory` calls should come before `visit_add_library` as the subdirs will be filling in lists needed by the call.
 
 
-Here's an example from src/avt/DBAtts and src/avt/DBAtts/SIL:
+The subdirectory will add its sources, headers, include directories and compile definitions to lists that will then be used by parent's call to `visit_add_library`.
 
-.. literalinclude:: ../../avt/DBAtts/CMakeLists.txt
+The lists will be created/added to via calls to `visit_append_list`.
+The list names will have the target and the type of list encoded into the name, such as, for visitcommon library, `visitcommon_SOURCES`, `visitcommon_HEADERS`, `visitcommon_INCLUDES` and `visitcommon_DEFINES` (if needed).
+
+The ``INCLUDES`` list should contain both a ``BUILD_INTERFACE`` and ``INSTALL_INTERFACE`` item, as demonstrated by src/common/proxybase:
+
+.. literalinclude:: ../../common/proxybase/CMakeLists.txt
     :language: CMake
-    :start-at: add_library(avtdbatts)
-
-.. literalinclude:: ../../avt/DBAtts/SIL/CMakeLists.txt
-    :language: CMake
-    :start-at: target_sources(avtdbatts PRIVATE
+    :start-at: visit_append_list(

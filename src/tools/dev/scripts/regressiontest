@@ -354,7 +354,11 @@ fi
 #
 # Run the script to checkout/update the source code.
 #
-$scriptDir/regressiontest_checkout $subTag $branch $revision > $checkoutLogFile 2>&1
+# make sure we have the latest script before we run it, in case the checkout
+# doesn't already exist.
+wget https://raw.githubusercontent.com/visit-dav/visit/develop/src/tools/dev/scripts/regressiontest_checkout
+chmod 755 regressiontest_checkout
+./regressiontest_checkout $subTag $branch $revision > $checkoutLogFile 2>&1
 
 rm -f $runFinishedFile
 

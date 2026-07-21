@@ -12,7 +12,8 @@
 #include <float.h>
 #include <vector>
 
-#ifdef HAVE_LIBVTKM
+#include <visit-config.h> // for HAVE_VTKM
+#ifdef HAVE_VTKM
 #include <avtVtkmDataSet.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/filter/contour/Contour.h>
@@ -20,7 +21,7 @@
 #endif
 
 #include <vtkCellData.h>
-#include <vtkVisItCellDataToPointData.h>
+#include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
 #include <vtkExecutive.h>
 #include <vtkFloatArray.h>
@@ -772,7 +773,7 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
         vtkDataSet *new_in_ds = (vtkDataSet *) in_ds->NewInstance();
         new_in_ds->CopyStructure(in_ds);
         new_in_ds->GetCellData()->AddArray(cellVar);
-        vtkVisItCellDataToPointData *cd2pd = vtkVisItCellDataToPointData::New();
+        vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInputData(new_in_ds);
         cd2pd->GetExecutive()->SetOutputData(0, toBeContoured);
         cd2pd->Update();
@@ -963,7 +964,7 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 avtDataTree_p
 avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 {
-#ifndef HAVE_LIBVTKM
+#ifndef HAVE_VTKM
     return NULL;
 #else
     //

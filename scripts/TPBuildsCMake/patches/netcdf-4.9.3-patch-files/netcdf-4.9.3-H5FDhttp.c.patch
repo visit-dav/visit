@@ -1,0 +1,11 @@
+--- libhdf5/H5FDhttp.h	2025-02-07 13:40:00.000000000 -0800
++++ libhdf5/H5FDhttp.h	2026-01-31 16:22:30.395734000 -0800
+@@ -31,7 +31,7 @@
+ 
+ #if H5_VERSION_GE(1,13,2)
+ #define H5_VFD_HTTP     ((H5FD_class_value_t)(514))
+-#define H5FD_HTTP	(H5FDperform_init(H5FD_http_init))
++#define H5FD_HTTP	(H5OPEN H5FD_HTTP_g)
+ #else
+ #define H5FD_HTTP	(H5FD_http_init())
+ #endif

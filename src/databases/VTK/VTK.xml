@@ -21,23 +21,10 @@
       *.pvtu
       *.pvd
     </FilePatterns>
-    <Files components="M">
+    <Files components="M,E">
       avtGEOSFileReader.C
       avtPVDFileReader.C
-      avtVTKFileFormat.C
       avtVTKFileReader.C
-      avtVTKOptions.C
-      vtkVisItXMLPDataReader.C
-      PVTKParser.C
-      VTMParser.C
-    </Files>
-    <Files components="E">
-      avtGEOSFileReader.C
-      avtPVDFileReader.C
-      avtVTKFileFormat.C
-      avtVTKFileReader.C
-      avtVTKOptions.C
-      avtVTKWriter.C
       vtkVisItXMLPDataReader.C
       PVTKParser.C
       VTMParser.C

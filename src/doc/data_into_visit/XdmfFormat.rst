@@ -238,7 +238,9 @@ It is defined by a ``Polyvertex`` topology.
 Here is the code that writes a 3D point mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1666-1709
+      :language: c
+      :start-after: begin create_point3d sphinx literal include tag
+      :end-before: end create_point3d sphinx literal include tag
 
 Here is the resultant Xdmf file.
 
@@ -254,7 +256,9 @@ It is defined by a ``2DCoRectMesh`` or ``3DCoRectMesh`` topology.
 Here is the code that writes a 3D regular mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1516-1563
+      :language: c
+      :start-after: begin create_corect3d sphinx literal include tag
+      :end-before: end create_corect3d sphinx literal include tag
 
 Here is the resultant Xdmf file.
 
@@ -263,7 +267,9 @@ Here is the resultant Xdmf file.
 Here is the code that writes a 2D regular mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1467-1514
+      :language: c
+      :start-after: begin create_corect2d sphinx literal include tag
+      :end-before: end create_corect2d sphinx literal include tag
 
 Here is the resultant Xdmf file.
 
@@ -279,7 +285,9 @@ It is defined by a ``2DRectMesh`` or ``3DRectMesh`` topology.
 Here is the code that writes a 3D rectilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1614-1664
+      :language: c
+      :start-after: begin create_rect3d sphinx literal include tag
+      :end-before: end create_rect3d sphinx literal include tag
 
 Here is the resultant Xdmf file.
 
@@ -288,7 +296,9 @@ Here is the resultant Xdmf file.
 Here is the code that writes a 2D rectilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1565-1612
+      :language: c
+      :start-after: begin create_rect2d sphinx literal include tag
+      :end-before: end create_rect2d sphinx literal include tag
 
 Here is the resultant Xdmf file.
 
@@ -304,7 +314,9 @@ It is defined by a ``2DSMesh`` or ``3DSMesh`` topology.
 Here is the code that writes a 3D curvilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1338-1392
+      :language: c
+      :start-after: begin create_curv3d sphinx literal include tag
+      :end-before: end create_curv3d sphinx literal include tag
 
 Here is the resultant Xdmf file.
 
@@ -313,7 +325,9 @@ Here is the resultant Xdmf file.
 Here is the code that writes a 2D curvilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1292-1336
+      :language: c
+      :start-after: begin create_curv2d sphinx literal include tag
+      :end-before: end create_curv2d sphinx literal include tag
 
 Here is the resultant Xdmf file.
 

@@ -11,7 +11,6 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkVersion.h>
-#include <vtkVisItCellDataToPointData.h>
 #include <visit-config.h>
 
 
@@ -35,7 +34,6 @@ class vtkVisItObjectFactory : public vtkObjectFactory
 //
 // Necessary for each object that will override a vtkObject.
 //
-VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
 
 #include <vtkVisItDataSetWriter.h>
 VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetWriter);
@@ -65,14 +63,12 @@ vtkVisItObjectFactory::GetVTKSourceVersion()
 //    Dave Bremer, Mon Jun 18 17:44:43 PDT 2007
 //    Reinstantiated use of vtkVisItStructuredGrid and vtkVisItRectilinearGrid.
 //
+//    Kathleen Biagas, Thu Jan 15, 2026
+//    Remove vtkVisItCellDataToPointData.
+//
 //
 vtkVisItObjectFactory::vtkVisItObjectFactory()
 {
-  this->RegisterOverride("vtkCellDataToPointData", "vtkVisItCellDataToPointData",
-                         "vtkVisItCellDataToPointData override vtkCellDataToPointData",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItCellDataToPointData);
-
   this->RegisterOverride("vtkDataSetWriter", "vtkVisItDataSetWriter",
                          "vtkVisItDataSetWriter override vtkDataSetWriter",
                          1,

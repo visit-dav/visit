@@ -1,0 +1,17 @@
+--- PCbuild\build.bat.orig	2026-07-14 11:09:56.000000000 -0700
++++ PCbuild\build.bat	2026-07-14 11:11:04.000000000 -0700
+@@ -123,13 +123,13 @@
+ if not exist "%GIT%" echo Cannot find Git on PATH & set GITProperty=
+ 
+ rem Setup the environment
+ call "%dir%find_msbuild.bat" %MSBUILD%
+ if ERRORLEVEL 1 (echo Cannot locate MSBuild.exe on PATH or as MSBUILD variable & exit /b 2)
+ 
+-call "%dir%find_python.bat" %PYTHON%
++call "%dir%find_python.bat" "%PYTHON%"
+ if ERRORLEVEL 1 (echo Cannot locate python.exe on PATH or as PYTHON variable & exit /b 3)
+ set PythonForBuild=%PYTHON%
+ 
+ if "%kill%"=="true" call :Kill
+ if ERRORLEVEL 1 exit /B %ERRORLEVEL%
+ 

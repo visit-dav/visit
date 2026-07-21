@@ -16,12 +16,14 @@
 #
 #****************************************************************************
 
-PROJECT(thirdparty_builtins)
+project(thirdparty_builtins)
 
-ADD_SUBDIRECTORY(verdict)
-ADD_SUBDIRECTORY(tess2)
-IF(VISIT_PARALLEL)
-    ADD_SUBDIRECTORY(cognomen)
-ENDIF(VISIT_PARALLEL)
-ADD_SUBDIRECTORY(bow)
-ADD_SUBDIRECTORY(nek5000/jl)
+add_subdirectory(bow)
+add_subdirectory(nek5000/jl)
+add_subdirectory(rapidjson)
+add_subdirectory(tess2)
+add_subdirectory(verdict)
+
+if(VISIT_PARALLEL)
+    add_subdirectory(cognomen)
+endif()

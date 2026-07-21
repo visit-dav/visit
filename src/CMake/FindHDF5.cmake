@@ -23,7 +23,8 @@
 #
 #****************************************************************************/
 
-# Use the HDF5_DIR hint from the config-site .cmake file
+# Uses the HDF5_DIR hint from the config-site .cmake file
+
 
 if(EXISTS ${VISIT_HDF5_DIR}/cmake)
   set(HDF5_DIR ${VISIT_HDF5_DIR}/cmake)
@@ -32,8 +33,11 @@ endif()
 find_package(HDF5 CONFIG PATHS ${HDF5_DIR} NO_DEFAULT_PATH)
 
 if(TARGET hdf5-shared)
+    # We use CMake vars for HDF5 pointing to the actual target.
+    # Should ease maintenance if actual library name changes.
+    # For example: hdf5-shared vs hdf5-static.
     set(HDF5_LIB hdf5-shared)
-    set(HAVE_LIBHDF5 TRUE CACHE BOOL "Have HDF5 libraries")
+    set(HAVE_HDF5 TRUE CACHE BOOL "Have HDF5 libraries")
     if(WIN32)
         get_target_property(hdf5_locr hdf5-shared IMPORTED_IMPLIB_RELEASE)
     else()
@@ -44,7 +48,7 @@ if(TARGET hdf5-shared)
 
     if(TARGET hdf5_hl-shared)
         set(HDF5_HL_LIB hdf5_hl-shared)
-        set(HAVE_LIBHDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
+        set(HAVE_HDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
         if(WIN32)
             get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_IMPLIB_RELEASE)
         else()
@@ -58,13 +62,13 @@ if(TARGET hdf5-shared)
     # for plugin vs install
     # write SetupHDF5.cmake for our export sets.
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
-    create_lib_setup_cmake(KIT "HDF5"
+    create_lib_setup_cmake(NAME "HDF5"
                            NAMESPACE "hdf5"
-                           INCBASE "hdf5/include"
+                           INCBASE "hdf5"
                            ITEMS ${HDF5_LIB} ${HDF5_HL_LIB}
                            SIMPLE_INCLUDE true)
 
-    # need a few extras in the Setup file.
+    # Add the needed CMake vars to the setup file.
     set(fname ${VISIT_BINARY_DIR}/SetupHDF5.cmake)
     file(APPEND ${fname} "\nset(HDF5_LIB ${HDF5_LIB})\n")
     file(APPEND ${fname} "\nset(HDF5_HL_LIB ${HDF5_HL_LIB})\n")

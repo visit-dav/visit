@@ -81,9 +81,9 @@ if(anari_FOUND)
 
     # Install Headers
     if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
-      install(DIRECTORY ${VISIT_ANARI_DIR}/include/anari
+      install(DIRECTORY ${VISIT_ANARI_DIR}/include/
         DESTINATION
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/anari
         FILE_PERMISSIONS OWNER_WRITE OWNER_READ
                          GROUP_WRITE GROUP_READ
                          WORLD_READ
@@ -102,6 +102,7 @@ if(anari_FOUND)
     else()
         file(GLOB ANARI_LIBRARIES ${VISIT_ANARI_DIR}/${anari_libdir}/lib*)
     endif()
+
     # Install libs
     foreach(l ${ANARI_LIBRARIES})
       get_filename_component(_name_ ${l} NAME_WE)
@@ -141,5 +142,14 @@ if(anari_FOUND)
                                          WORLD_READ WORLD_EXECUTE
             FOLLOW_SYMLINK_CHAIN)
     endif()
+
+    # write SetupAnari.cmake for our export sets.
+    include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
+    set(target_list anari::anari)
+    create_lib_setup_cmake(NAME "ANARI"
+                           NAMESPACE "anari::"
+                           INCBASE "anari"
+                           ITEMS ${target_list})
+    unset(target_list)
 endif()
 

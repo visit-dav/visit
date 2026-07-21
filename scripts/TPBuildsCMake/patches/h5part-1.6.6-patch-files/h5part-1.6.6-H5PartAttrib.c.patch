@@ -1,0 +1,125 @@
+--- src\H5PartAttrib.c	2026-02-09 10:11:42.000000000 -0800
++++ src\H5PartAttrib.c	2011-10-13 09:46:49.000000000 -0800
+@@ -26,13 +26,13 @@
+ 
+ 	SET_FNAME ( "H5PartWriteFileAttribFloat64" );
+ 
+ 	CHECK_FILEHANDLE ( f );
+ 	CHECK_WRITABLE_MODE( f );
+ 
+-	h5part_int64_t herr = _H5Part_write_file_attrib (
++	h5part_int64_t herr = H5PartWriteFileAttrib (
+ 		f,
+ 		name,
+                 H5T_NATIVE_DOUBLE,
+                 (void*)&value,
+ 		1 );
+ 	if ( herr < 0 ) return herr;
+@@ -58,13 +58,13 @@
+ 
+ 	SET_FNAME ( "H5PartWriteFileAttribFloat32" );
+ 
+ 	CHECK_FILEHANDLE ( f );
+ 	CHECK_WRITABLE_MODE( f );
+ 
+-	h5part_int64_t herr = _H5Part_write_file_attrib (
++	h5part_int64_t herr = H5PartWriteFileAttrib (
+ 		f,
+ 		name,
+                 H5T_NATIVE_FLOAT,
+                 (void*)&value,
+ 		1 );
+ 	if ( herr < 0 ) return herr;
+@@ -90,13 +90,13 @@
+ 
+ 	SET_FNAME ( "H5PartWriteFileAttribInt64" );
+ 
+ 	CHECK_FILEHANDLE ( f );
+ 	CHECK_WRITABLE_MODE( f );
+ 
+-	h5part_int64_t herr = _H5Part_write_file_attrib (
++	h5part_int64_t herr = H5PartWriteFileAttrib (
+ 		f,
+ 		name,
+                 H5T_NATIVE_INT64,
+                 (void*)&value,
+ 		1 );
+ 	if ( herr < 0 ) return herr;
+@@ -122,13 +122,13 @@
+ 
+ 	SET_FNAME ( "H5PartWriteFileAttribInt32" );
+ 
+ 	CHECK_FILEHANDLE ( f );
+ 	CHECK_WRITABLE_MODE( f );
+ 
+-	h5part_int64_t herr = _H5Part_write_file_attrib (
++	h5part_int64_t herr = H5PartWriteFileAttrib (
+ 		f,
+ 		name,
+                 H5T_NATIVE_INT32,
+                 (void*)&value,
+ 		1 );
+ 	if ( herr < 0 ) return herr;
+@@ -154,13 +154,13 @@
+ 
+ 	SET_FNAME ( "H5PartWriteStepAttribFloat64" );
+ 
+ 	CHECK_FILEHANDLE ( f );
+ 	CHECK_WRITABLE_MODE( f );
+ 
+-	h5part_int64_t herr = _H5Part_write_step_attrib (
++	h5part_int64_t herr = H5PartWriteStepAttrib (
+ 		f,
+ 		name,
+                 H5T_NATIVE_DOUBLE,
+                 (void*)&value,
+ 		1 );
+ 	if ( herr < 0 ) return herr;
+@@ -186,13 +186,13 @@
+ 
+ 	SET_FNAME ( "H5PartWriteStepAttribFloat32" );
+ 
+ 	CHECK_FILEHANDLE ( f );
+ 	CHECK_WRITABLE_MODE( f );
+ 
+-	h5part_int64_t herr = _H5Part_write_step_attrib (
++	h5part_int64_t herr = H5PartWriteStepAttrib (
+ 		f,
+ 		name,
+                 H5T_NATIVE_FLOAT,
+                 (void*)&value,
+ 		1 );
+ 	if ( herr < 0 ) return herr;
+@@ -218,13 +218,13 @@
+ 
+ 	SET_FNAME ( "H5PartWriteStepAttribInt64" );
+ 
+ 	CHECK_FILEHANDLE ( f );
+ 	CHECK_WRITABLE_MODE( f );
+ 
+-	h5part_int64_t herr = _H5Part_write_step_attrib (
++	h5part_int64_t herr = H5PartWriteStepAttrib (
+ 		f,
+ 		name,
+                 H5T_NATIVE_INT64,
+                 (void*)&value,
+ 		1 );
+ 	if ( herr < 0 ) return herr;
+@@ -250,16 +250,16 @@
+ 
+ 	SET_FNAME ( "H5PartWriteStepAttribInt32" );
+ 
+ 	CHECK_FILEHANDLE ( f );
+ 	CHECK_WRITABLE_MODE( f );
+ 
+-	h5part_int64_t herr = _H5Part_write_step_attrib (
++	h5part_int64_t herr = H5PartWriteStepAttrib (
+ 		f,
+ 		name,
+                 H5T_NATIVE_INT32,
+                 (void*)&value,
+ 		1 );
+ 	if ( herr < 0 ) return herr;
+ 
+ 	return H5PART_SUCCESS;
+ }

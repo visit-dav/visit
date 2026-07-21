@@ -2155,6 +2155,36 @@ EOF
     fi
 }
 
+function apply_vtk95_vtk_convex_point_set_patch
+{
+    # patch vtkConvexPointSet to fix a contouring bug.
+    patch -p0 << \EOF
+--- Common/DataModel/vtkConvexPointSet.cxx.orig	2026-05-19 14:58:47.244708000 -0700
++++ Common/DataModel/vtkConvexPointSet.cxx	2026-05-19 15:01:39.993741000 -0700
+@@ -59,7 +59,13 @@
+   if (numPts < 1)
+     return;
+
+-  this->Triangulate(0, this->TetraIds, this->TetraPoints);
++  this->TriangulateLocalIds(0, this->TetraIds);
++
++  this->TetraPoints->SetNumberOfPoints(this->TetraIds->GetNumberOfIds());
++  for (int i = 0; i < this->TetraIds->GetNumberOfIds(); i++)
++  {
++    this->TetraPoints->SetPoint(i, this->Points->GetPoint(this->TetraIds->GetId(i)));
++  }
+ }
+
+ //------------------------------------------------------------------------------
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkConvexPointSet.cxx failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_vtk_patch
 {
     if [[ ${VTK_VERSION} == 9.5.0 ]] ; then
@@ -2193,6 +2223,12 @@ function apply_vtk_patch
         apply_vtk95_texture_anari_patches
         if [[ $? != 0 ]] ; then
             return 1    
+        fi
+
+        # should submit a MR to kitware
+        apply_vtk95_vtk_convex_point_set_patch
+        if [[ $? != 0 ]] ; then
+           return 1
         fi
     fi
 

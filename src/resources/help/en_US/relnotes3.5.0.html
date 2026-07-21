@@ -43,7 +43,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added '-python-log-file' command line option to control the name of the file used to log python methods (default='visitlog.py').</li>
   <li>Add individual stress components to the PVLD plugin metadata.</li>
   <li>Refactored how to import visit into a stand alone python module. This is now done via the 'visit_launcher' module, avoiding module namespace issues.</li>
-  <li>Antialiasing is no longer an on/off option, there are two modes: MSAA (when available) and FXAA. The default is still no antialiasing.</li>
+  <li>Antialiasing is no longer an on/off option, there are two modes: MSAA (when available) and FXAA. The default is still no antialiasing. (Due to a crash discovered during the final hours of 3.5.0 release creation, MSAA is disabled for now.)</li>
   <li>Added environment variable logging to VisIt's debug vlog files.</li>
   <li>Fix bug in PVLD reader that caused some files to not open.</li>
   <li>Updated Python to 3.13.9, support for Python 2 was removed.</li>
@@ -167,7 +167,7 @@ enhancements and bug-fixes that were added to this release.</p>
       <li>Fixed memory leaks in all the plots.</li>
     <ul>
   </li>
-  <li>Modified the SAMRAI reader to free most of its cached data when the timestep was changed.<li>
+  <li>Modified the SAMRAI reader to free most of its cached data when the timestep was changed.</li>
   <li>Fixed a crash with Curve plot when Curve contained more than 100000 points.</li>
   <li>Fixed a crash in the PVLD parallel test suite.</li>
   <li>Fixed a problem where the Silo plugin would not honor major_order setting for vector variables (e.g. more than one component) on 2 or 3D point- or quad- meshes.</li>
@@ -186,12 +186,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support for building <code>meson</code>, <code>ninja</code>, <code>xcb</code> and <code>xkbcommon</code> to allow building VisIt with Qt6 on systems that do not have all the <code>xcb</code> and <code>xkbcommon</code> development packages installed. <code>xcb</code> and <code>xkbcommon</code> are used by Qt6. <code>meson</code> and <code>ninja</code> are used to build <code>xkbcommon</code>. By enabling all four of these packages, Qt6 can be built on systems that don't have <code>xcb</code> and <code>xkbcommon</code> installed on them.</li>
   <li>Added a patch for building MPICH on a system that has a newer version of SLURM installed.</li>
   <li>Fixed a bug where cloning and checking out VisIt could fail silently without providing error messages.</li>
-  <li>Added support for building <code>anari</code> to allow building VisIt with ANARI renderingsupport.</li>
+  <li>Added support for building <code>anari</code> to allow building VisIt with ANARI rendering support.</li>
   <li>Updated VTK build script, <code>bv_vtk.sh</code>, to enable ANARI rendering module in VTK.</li>
   <li>The command line options <code>--all-io</code>, <code>--dbio-only</code>, <code>--nonio</code> and  <code>--advanced</code> were removed.  This was done to simplify maintenance and addition of new modules. The <code>--optional</code> option still turns on most optional libraries. The <code>--no-thirdparty</code> option still turns off the required libraries. Otherwise individual libraries can be enabled/disabled by <code>--</code> or <code>--no</code> syntax e.g. <code>--mpich --no-python</code>.  Please run <code>build_visit --help</code> for more information on available options.</li>
   <li>A patch was added for compiling Mili on RockyLinux 8 and 9.</li>
   <li>Patches were added for compiling PIDX, ADVIO and CFISTIO on Fedora40 with gcc14.</li>
-  <li>OpenEXR updated to version 3.3.4</li>
+  <li>OpenEXR updated to version 3.3.4.</li>
   <li>VTK-m updated to version 2.3.0.</li>
   <li>Added a patch to bv_vtk.sh that exposes the vtkAnariPass in the ANARI volume mapper and adds panning and zooming capabilities to the ANARI camera.</li>
   <li>Added command line options <code>--print-files</code> and <code>--print-files-html</code>. Both options list all the files that <code>build_visit</code> may download grouped by "Required", "Optional" and "Explicit". The first lists the files as text and the second lists the files as an HTML table.</li>
@@ -203,7 +203,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 3.5</font></b></p>
 <ul>
   <li>xmledit and other xml code gen tools have been fixed such that all logic in a '.code' file will be properly displayed in 'xmledit' and also saved accurately when 'save' issued from xmledit.  The 'Target' designator is now always written to the .code file, even if the target is the default 'xml2atts' target. Unix-style line endings are now always used when writing files from 'xmledit'.</li>
-  <li>Developer Change 2</li>
 </ul>
 
 <a name="TPL"></a>

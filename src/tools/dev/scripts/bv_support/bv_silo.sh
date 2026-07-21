@@ -71,16 +71,6 @@ function bv_silo_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_SILO_DIR \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
 
-        libdep=""
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            libdep="HDF5_LIB"
-        fi
-        libdep="$libdep ZLIB_LIB"
-        if [[ -n "$libdep" ]]; then
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP $libdep TYPE STRING)" \
-                >> $HOSTCONF
-        fi
     fi
 }
 
@@ -529,10 +519,10 @@ function build_silo
     fi
 
     if [[ "$PAR_LIBS" != "" ]] ; then
-        cmake_opts="${cmake_opts} -DMPI_C_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
-        cmake_opts="${cmake_opts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
-        cmake_opts="${cmake_opts} -DMPI_CXX_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
-        cmake_opts="${cmake_optss} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+        cmake_opts="${cmake_opts} -DMPI_C_LINK_FLAGS:STRING=\"${PAR_LINKER_FLAGS}\""
+        cmake_opts="${cmake_opts} -DMPI_C_LIBRARIES:STRING=\"${PAR_LIBRARY_LINKER_FLAGS}\""
+        cmake_opts="${cmake_opts} -DMPI_CXX_LINK_FLAGS:STRING=\"${PAR_LINKER_FLAGS}\""
+        cmake_opts="${cmake_opts} -DMPI_CXX_LIBRARIES:STRING=\"${PAR_LIBRARY_LINKER_FLAGS}\""
     fi
 
     info "CMake'ing Silo"

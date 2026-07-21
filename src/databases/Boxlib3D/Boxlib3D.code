@@ -1,4 +1,0 @@
-Target: xml2cmake
-Condition: WIN32
-Definitions: ${BOXLIB_WIN32_DEFINES}
-

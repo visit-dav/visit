@@ -7,6 +7,6 @@
 #
 #****************************************************************************
 
-IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
-    ADD_SUBDIRECTORY(python)
-ENDIF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
+if(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
+    add_subdirectory(python)
+endif()
