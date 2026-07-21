@@ -35,8 +35,9 @@ vtkVisItTensorGlyph::~vtkVisItTensorGlyph() = default;
 //   Incorporate fix from Seth Johnson of UMich for scaling.
 //
 //   Kathleen Biagas, Tue June 16, 2026
-//   Inherit from vtkTensorGlyph. Perform necessary VisIt modifications after
-//   parent class finishes processing.
+//   Now inherits from vtkTensorGlyph, call superlass method first.
+//   Perform necessary VisIt modifications after parent class finishes
+//   processing.
 //
 // ****************************************************************************
 
@@ -159,3 +160,4 @@ vtkVisItTensorGlyph::RequestData(vtkInformation *request,
 
   return retval;
 }
+
