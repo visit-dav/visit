@@ -2249,7 +2249,7 @@ function build_vtk
     #
     # Prepare the build dir using src file.
     #
-    prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
+    prepare_build_dir $VTK_BUILD_DIR $VTK_FILE sha256 $VTK_SHA256_CHECKSUM
     untarred_vtk=$?
     # 0, already exists, 1 untarred src, 2 error
 

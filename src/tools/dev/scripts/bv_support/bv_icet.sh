@@ -117,7 +117,7 @@ function build_icet
     #
     CMAKE_BIN="${CMAKE_COMMAND}"
 
-    prepare_build_dir $ICET_BUILD_DIR $ICET_FILE
+    prepare_build_dir $ICET_BUILD_DIR $ICET_FILE sha256 $ICET_SHA256_CHECKSUM
     untarred_icet=$?
     if [[ $untarred_icet == -1 ]] ; then
         warn "Unable to prepare IceT build directory. Giving Up!"

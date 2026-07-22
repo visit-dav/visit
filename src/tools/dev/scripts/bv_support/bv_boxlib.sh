@@ -247,7 +247,7 @@ function build_boxlib
     #
     # Prepare build dir
     #
-    prepare_build_dir $BOXLIB_BUILD_DIR $BOXLIB_FILE
+    prepare_build_dir $BOXLIB_BUILD_DIR $BOXLIB_FILE sha256 $BOXLIB_SHA256_CHECKSUM
     untarred_boxlib=$?
     if [[ $untarred_boxlib == -1 ]] ; then
         warn "Unable to prepare Boxlib Build Directory. Giving Up"
