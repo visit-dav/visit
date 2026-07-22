@@ -177,7 +177,7 @@ ReadHistoryTOC()
 
 
 void PVLD_Part_Reader::
-ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt )
+ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt, vector<int>& elmto2)
 {
     if( solid_matidx_.size()==0 )
         ReadElementIndex( fid, solid_name.c_str(),

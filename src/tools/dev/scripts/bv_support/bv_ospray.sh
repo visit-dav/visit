@@ -225,7 +225,7 @@ function build_ospray
     #
     # Uncompress the source file
     #
-    prepare_build_dir $OSPRAY_SRC_DIR $OSPRAY_FILE
+    prepare_build_dir $OSPRAY_SRC_DIR $OSPRAY_FILE sha256 $OSPRAY_SHA256_CHECKSUM
     untarred_ospray=$?
     if [[ $untarred_ospray == -1 ]] ; then
         warn "Unable to uncompress OSPRay source file. Giving Up!"

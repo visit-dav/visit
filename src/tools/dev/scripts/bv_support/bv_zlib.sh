@@ -85,7 +85,7 @@ function build_zlib
     #
     # Prepare build dir
     #
-    prepare_build_dir $ZLIB_BUILD_DIR $ZLIB_FILE
+    prepare_build_dir $ZLIB_BUILD_DIR $ZLIB_FILE sha256 $ZLIB_SHA256_CHECKSUM
     untarred_zlib=$?
     if [[ $untarred_zlib == -1 ]] ; then
         warn "Unable to prepare ZLIB build directory. Giving Up!"
