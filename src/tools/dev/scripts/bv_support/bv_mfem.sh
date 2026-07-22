@@ -143,7 +143,7 @@ function build_mfem
     #
     # Prepare build dir
     #
-    prepare_build_dir $MFEM_BUILD_DIR $MFEM_FILE
+    prepare_build_dir $MFEM_BUILD_DIR $MFEM_FILE sha256 $MFEM_SHA256_CHECKSUM
     untarred_mfem=$?
     if [[ $untarred_mfem == -1 ]] ; then
         warn "Unable to prepare mfem build directory. Giving Up!"

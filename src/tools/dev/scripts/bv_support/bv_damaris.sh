@@ -122,7 +122,7 @@ function build_damaris
     #
     # Prepare build dir for Damaris
     #
-    prepare_build_dir $DAMARIS_BUILD_DIR $DAMARIS_FILE
+    prepare_build_dir $DAMARIS_BUILD_DIR $DAMARIS_FILE sha256 $DAMARIS_SHA256_CHECKSUM
     untarred_damaris=$?
     if [[ $untarred_damaris == -1 ]] ; then
         warn "Unable to prepare Damaris build directory. Giving Up!"

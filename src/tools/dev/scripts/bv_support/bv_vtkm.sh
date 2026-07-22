@@ -143,7 +143,7 @@ function build_vtkm
     #
     # Prepare build dir
     #
-    prepare_build_dir $VTKM_BUILD_DIR $VTKM_FILE
+    prepare_build_dir $VTKM_BUILD_DIR $VTKM_FILE sha256 $VTKM_SHA256_CHECKSUM
     untarred_vtkm=$?
     # 0, already exists, 1 untarred src, 2 error
 
