@@ -567,7 +567,7 @@ function build_h5part
     #
     # Prepare build dir
     #
-    prepare_build_dir $H5PART_BUILD_DIR $H5PART_FILE
+    prepare_build_dir $H5PART_BUILD_DIR $H5PART_FILE sha256 $H5PART_SHA256_CHECKSUM
     untarred_h5part=$?
     if [[ $untarred_h5part == -1 ]] ; then
         warn "Unable to prepare H5Part Build Directory. Giving Up"

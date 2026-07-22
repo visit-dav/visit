@@ -341,7 +341,7 @@ function build_mili
     #
     # Prepare build dir
     #
-    prepare_build_dir $MILI_BUILD_DIR $MILI_FILE
+    prepare_build_dir $MILI_BUILD_DIR $MILI_FILE sha256 $MILI_SHA256_CHECKSUM
     untarred_mili=$?
     # 0, already exists, 1 untarred src, 2 error
 

@@ -271,7 +271,7 @@ function build_advio
     #
     # Prepare build dir
     #
-    prepare_build_dir $ADVIO_BUILD_DIR $ADVIO_FILE
+    prepare_build_dir $ADVIO_BUILD_DIR $ADVIO_FILE sha256 $ADVIO_SHA256_CHECKSUM
     untarred_ADVIO=$?
     # 0, already exists, 1 untarred src, 2 error
 

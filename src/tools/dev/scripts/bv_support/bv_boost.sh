@@ -151,7 +151,7 @@ function build_boost
     #
     # Prepare build dir
     #
-    prepare_build_dir $BOOST_BUILD_DIR $BOOST_FILE
+    prepare_build_dir $BOOST_BUILD_DIR $BOOST_FILE sha256 $BOOST_SHA256_CHECKSUM
     untarred_boost=$?
     # 0, already exists, 1 untarred src, 2 error
 
