@@ -33,6 +33,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>CGNS reader was enhanced to handle SIDS-style time-varying data.</li>
   <li>The visit-install scripts now accepts '-f' argument allowing specification of the distribution filename in lieu of using the 'version' and 'platform' positional arguments.</li>
   <li>IndexSelect operator was enhanced to support non-regularized grids. It can now be used in 1D mode on ucd meshes of any cell type and curves. Setting a non-unity stride can be useful, for example, in cutting down clutter in point meshes with millions of points.</li>
+  <li>Support for 10-node tetrahedrons was added to the PVLD reader.</li>
   <li>The 'Help' window has been updated to display 'VisIt Manuals' and 'Command line arguments' content in an external browser.</li>
   <li>XDMF database plugin was updated to treat multiple top-level grids as separate meshes, resolve variables by the owning grid name, avoid leaking fields between sibling grids, and guard against NULL/out-of-range grids instead of crashing. It also skips unsupported top-level grids cleanly, adds debug messages for ignored/unsupported grid cases, and fixes an XdmfGrid ownership leak in metadata population.</li>
 </ul>

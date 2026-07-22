@@ -97,7 +97,7 @@ if (VISIT_MESAGL_DIR)
   find_install_support_libs(${VISIT_MESAGL_DIR} mesagl)
 
   if (mesagl_API_LIBRARY)
-      list(APPEND OPENGL_LIBRARIES mesagl_API_LIBRARY})
+      list(APPEND OPENGL_LIBRARIES ${mesagl_API_LIBRARY})
   endif()
 
   if (mesagl_GLU_LIBRARY)
