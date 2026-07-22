@@ -96,7 +96,7 @@ function build_imath
     #
     # Prepare build dir
     #
-    prepare_build_dir $IMATH_BUILD_DIR $IMATH_FILE
+    prepare_build_dir $IMATH_BUILD_DIR $IMATH_FILE sha256 $IMATH_SHA256_CHECKSUM
     untarred_imath=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -231,7 +231,7 @@ function build_openexr
     #
     # Prepare build dir
     #
-    prepare_build_dir $OPENEXR_BUILD_DIR $OPENEXR_FILE
+    prepare_build_dir $OPENEXR_BUILD_DIR $OPENEXR_FILE sha256 $OPENEXR_SHA256_CHECKSUM
     untarred_openexr=$?
     # 0, already exists, 1 untarred src, 2 error
 

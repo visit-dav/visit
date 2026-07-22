@@ -76,7 +76,7 @@ function build_xsd
     #
     # Prepare build dir
     #
-    prepare_build_dir $XSD_BUILD_DIR $XSD_FILE
+    prepare_build_dir $XSD_BUILD_DIR $XSD_FILE sha256 $XSD_SHA256_CHECKSUM
     untarred_xsd=$?
     if [[ $untarred_xsd == -1 ]] ; then
         warn "Unable to prepare XSD build directory. Giving Up!"

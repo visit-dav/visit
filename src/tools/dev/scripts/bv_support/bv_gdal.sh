@@ -167,7 +167,7 @@ function build_gdal
     #
     # Prepare build dir
     #
-    prepare_build_dir $GDAL_BUILD_DIR $GDAL_FILE
+    prepare_build_dir $GDAL_BUILD_DIR $GDAL_FILE sha256 $GDAL_SHA256_CHECKSUM
     untarred_gdal=$?
     if [[ $untarred_gdal == -1 ]] ; then
         warn "Unable to prepare GDAL Build Directory. Giving Up"

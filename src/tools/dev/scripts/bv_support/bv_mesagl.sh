@@ -359,7 +359,7 @@ function build_mesagl
     #
     # prepare build dir
     #
-    prepare_build_dir $MESAGL_BUILD_DIR $MESAGL_FILE
+    prepare_build_dir $MESAGL_BUILD_DIR $MESAGL_FILE sha256 $MESAGL_SHA256_CHECKSUM
     untarred_mesagl=$?
     if [[ $untarred_mesagl == -1 ]] ; then
         warn "Unable to prepare MesaGL build directory. Giving Up!"
