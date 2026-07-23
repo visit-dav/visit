@@ -71,11 +71,22 @@ The following example uses the VisIt_ source code corresponding to the official 
 
   ./build_visit3_5_0 --optional --tarball visit3.5.0.tar.gz
 
+Having VisIt cleanup after itself
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, ``build_visit`` does not remove untarred source or build directories.
+You can change that behavior with the ``--cleanup`` option.
+When turned on, ``build_visit`` will remove untarred source and build directories for every library that successfully completes the build and install stages.
+Unsuccessful build or install of a library will preven that library's cleanup so that debugging the failure is easier.
+.. code:: bash
+
+  ./build_visit3_5_0 --cleanup
+
 If ``build_visit`` is interrupted
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If ``build_visit`` is interrupted while it is executing, it is suggested that you remove the directories associated with the last package it was in the process of building.
-``build_visit`` always leaves directories intact when it runs to aid with troubleshooting failures.
+``build_visit`` always leaves directories intact when it runs to aid with troubleshooting failures, unless the ``--cleanup`` option is used.
 Likewise, ``build_visit`` doesn't remove existing directories before starting to build a package.
 This can sometimes problems when ``build_visit`` is interrupted and you restart the build again.
 
