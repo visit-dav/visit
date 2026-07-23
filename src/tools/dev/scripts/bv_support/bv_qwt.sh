@@ -276,7 +276,7 @@ function build_qwt
     #
     # Prepare build dir
     #
-    prepare_build_dir $QWT_BUILD_DIR $QWT_FILE sha256 $QWT_SHA256_CHECKSUM
+    prepare_build_dir $QWT_BUILD_DIR $QWT_FILE SHA256 $QWT_SHA256_CHECKSUM
     untarred_qwt=$?
     if [[ $untarred_qwt == -1 ]] ; then
         warn "Unable to prepare Qwt build directory. Giving Up!"

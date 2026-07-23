@@ -153,7 +153,7 @@ function build_glu
     #
     # prepare build dir
     #
-    prepare_build_dir $GLU_BUILD_DIR $GLU_FILE sha256 $GLU_SHA256_CHECKSUM
+    prepare_build_dir $GLU_BUILD_DIR $GLU_FILE SHA256 $GLU_SHA256_CHECKSUM
     untarred_glu=$?
     # 0, already exists, 1 untarred src, 2 error
 

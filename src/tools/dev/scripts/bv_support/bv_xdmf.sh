@@ -350,7 +350,7 @@ function build_xdmf
     #
     # Prepare build dir
     #
-    prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE sha256 $XDMF_SHA256_CHECKSUM
+    prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE SHA256 $XDMF_SHA256_CHECKSUM
     untarred_xdmf=$?
     if [[ $untarred_xdmf == -1 ]] ; then
         warn "Unable to prepare Xdmf Build Directory. Giving up"

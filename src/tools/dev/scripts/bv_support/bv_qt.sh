@@ -417,7 +417,7 @@ EOF
 function build_qt_base
 {
     echo "Build Qt 6 base module"
-    prepare_build_dir $QT_BASE_SOURCE_DIR $QT_BASE_FILE sha256 $QTBASE_SHA256_CHECKSUM
+    prepare_build_dir $QT_BASE_SOURCE_DIR $QT_BASE_FILE SHA256 $QTBASE_SHA256_CHECKSUM
 
     untarred_qt=$?
     # 0, already exists, 1 untarred src, 2 error
