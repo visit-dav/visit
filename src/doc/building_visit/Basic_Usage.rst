@@ -77,7 +77,7 @@ Having ``build_visit`` cleanup after itself
 By default, ``build_visit`` does not remove untarred source or build directories.
 You can change that behavior with the ``--cleanup`` option.
 When turned on, ``build_visit`` will remove untarred source and build directories for every library that successfully completes the build and install stages.
-Unsuccessful build or install of a library will preven that library's cleanup so that debugging the failure is easier.
+Unsuccessful build or install of a library will prevent that library's cleanup so that debugging the failure is easier.
 .. code:: bash
 
   ./build_visit3_5_0 --cleanup
