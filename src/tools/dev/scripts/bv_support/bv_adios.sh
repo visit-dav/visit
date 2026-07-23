@@ -142,7 +142,7 @@ function build_adios
     #
     # Prepare build dir
     #
-    prepare_build_dir $ADIOS_BUILD_DIR $ADIOS_FILE sha256 $ADIOS_SHA256_CHECKSUM
+    prepare_build_dir $ADIOS_BUILD_DIR $ADIOS_FILE SHA256 $ADIOS_SHA256_CHECKSUM
     untarred_ADIOS=$?
     # 0, already exists, 1 untarred src, 2 error
 

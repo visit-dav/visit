@@ -123,7 +123,7 @@ function build_anari
     fi
 
     # Extract sources
-    prepare_build_dir $ANARI_SRC_DIR $ANARI_FILE sha256 $ANARI_SHA256_CHECKSUM
+    prepare_build_dir $ANARI_SRC_DIR $ANARI_FILE SHA256 $ANARI_SHA256_CHECKSUM
     untarred_anari=$?
     # -1 on failure, 0 for success without untar
     #  1 for success with untar, 2 for failure with checksum

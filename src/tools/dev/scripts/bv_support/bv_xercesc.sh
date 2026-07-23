@@ -71,7 +71,7 @@ function build_xercesc
     #
     # Prepare build dir
     #
-    prepare_build_dir $XERCESC_BUILD_DIR $XERCESC_FILE sha256 $XERCESC_SHA256_CHECKSUM
+    prepare_build_dir $XERCESC_BUILD_DIR $XERCESC_FILE SHA256 $XERCESC_SHA256_CHECKSUM
     untarred_xc=$?
     if [[ $untarred_xc == -1 ]] ; then
         warn "Unable to prepare Xerces-C build directory. Giving Up!"

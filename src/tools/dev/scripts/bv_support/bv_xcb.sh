@@ -195,7 +195,7 @@ function build_xcb
     #
     # Prepare build dir
     #
-    prepare_build_dir $XORG_MACROS_BUILD_DIR $XORG_MACROS_FILE sha256 $XORG_MACROS_SHA256_CHECKSUM
+    prepare_build_dir $XORG_MACROS_BUILD_DIR $XORG_MACROS_FILE SHA256 $XORG_MACROS_SHA256_CHECKSUM
     untarred_xcb=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -220,7 +220,7 @@ function build_xcb
     #
     # Prepare build dir
     #
-    prepare_build_dir $XCB_M4_BUILD_DIR $XCB_M4_FILE sha256 $XCB_M4_SHA256_CHECKSUM
+    prepare_build_dir $XCB_M4_BUILD_DIR $XCB_M4_FILE SHA256 $XCB_M4_SHA256_CHECKSUM
     untarred_xcb=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -239,7 +239,7 @@ function build_xcb
     #
     # Prepare build dir
     #
-    prepare_build_dir $XCB_UTIL_BUILD_DIR $XCB_UTIL_FILE sha256 $XCB_UTIL_SHA256_CHECKSUM
+    prepare_build_dir $XCB_UTIL_BUILD_DIR $XCB_UTIL_FILE SHA256 $XCB_UTIL_SHA256_CHECKSUM
     untarred_xcb=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -273,7 +273,7 @@ function build_xcb
     #
     # Prepare build dir
     #
-    prepare_build_dir $XCB_IMAGE_BUILD_DIR $XCB_IMAGE_FILE sha256 $XCB_IMAGE_SHA256_CHECKSUM
+    prepare_build_dir $XCB_IMAGE_BUILD_DIR $XCB_IMAGE_FILE SHA256 $XCB_IMAGE_SHA256_CHECKSUM
     untarred_xcb=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -302,7 +302,7 @@ function build_xcb
     #
     # Prepare build dir
     #
-    prepare_build_dir $XCB_KEYSYMS_BUILD_DIR $XCB_KEYSYMS_FILE sha256 $XCB_KEYSYMS_SHA256_CHECKSUM
+    prepare_build_dir $XCB_KEYSYMS_BUILD_DIR $XCB_KEYSYMS_FILE SHA256 $XCB_KEYSYMS_SHA256_CHECKSUM
     untarred_xcb=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -331,7 +331,7 @@ function build_xcb
     #
     # Prepare build dir
     #
-    prepare_build_dir $XCB_WM_BUILD_DIR $XCB_WM_FILE sha256 $XCB_WM_SHA256_CHECKSUM
+    prepare_build_dir $XCB_WM_BUILD_DIR $XCB_WM_FILE SHA256 $XCB_WM_SHA256_CHECKSUM
     untarred_xcb=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -360,7 +360,7 @@ function build_xcb
     #
     # Prepare build dir
     #
-    prepare_build_dir $XCB_RENDERUTIL_BUILD_DIR $XCB_RENDERUTIL_FILE sha256 $XCB_RENDERUTIL_SHA256_CHECKSUM
+    prepare_build_dir $XCB_RENDERUTIL_BUILD_DIR $XCB_RENDERUTIL_FILE SHA256 $XCB_RENDERUTIL_SHA256_CHECKSUM
     untarred_xcb=$?
     # 0, already exists, 1 untarred src, 2 error
 

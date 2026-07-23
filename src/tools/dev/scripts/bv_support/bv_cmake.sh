@@ -146,7 +146,7 @@ function build_cmake
     #
     # Prepare cmake build directory
     #
-    prepare_build_dir $CMAKE_BUILD_DIR $CMAKE_FILE sha256 $CMAKE_SHA256_CHECKSUM
+    prepare_build_dir $CMAKE_BUILD_DIR $CMAKE_FILE SHA256 $CMAKE_SHA256_CHECKSUM
     untarred_cmake=$?
     # 0, already exists, 1 untarred src, 2 error
 

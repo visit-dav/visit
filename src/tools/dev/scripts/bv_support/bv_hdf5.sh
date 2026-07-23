@@ -108,7 +108,7 @@ function build_hdf5
     #
     # Prepare build dir
     #
-    prepare_build_dir $HDF5_BUILD_DIR $HDF5_FILE sha256 $HDF5_SHA256_CHECKSUM
+    prepare_build_dir $HDF5_BUILD_DIR $HDF5_FILE SHA256 $HDF5_SHA256_CHECKSUM
     untarred_hdf5=$?
     # 0, already exists, 1 untarred src, 2 error
 

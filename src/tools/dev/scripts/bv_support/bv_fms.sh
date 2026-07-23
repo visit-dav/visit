@@ -82,7 +82,7 @@ function build_fms
     #
     # Prepare build dir
     #
-    prepare_build_dir $FMS_BUILD_DIR $FMS_FILE sha256 $FMS_SHA256_CHECKSUM
+    prepare_build_dir $FMS_BUILD_DIR $FMS_FILE SHA256 $FMS_SHA256_CHECKSUM
     untarred_fms=$?
     if [[ $untarred_fms == -1 ]] ; then
         warn "Unable to prepare FMS build directory. Giving Up!"

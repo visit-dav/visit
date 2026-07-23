@@ -359,7 +359,7 @@ function build_osmesa
     #
     # prepare build dir
     #
-    prepare_build_dir $OSMESA_BUILD_DIR $OSMESA_FILE sha256 $OSMESA_SHA256_CHECKSUM
+    prepare_build_dir $OSMESA_BUILD_DIR $OSMESA_FILE SHA256 $OSMESA_SHA256_CHECKSUM
     untarred_osmesa=$?
     if [[ $untarred_osmesa == -1 ]] ; then
         warn "Unable to prepare Mesa build directory. Giving Up!"

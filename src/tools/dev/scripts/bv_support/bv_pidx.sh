@@ -157,7 +157,7 @@ function build_pidx
     #
     # Prepare build dir
     #
-    prepare_build_dir $PIDX_BUILD_DIR $PIDX_FILE sha256 $PIDX_SHA256_CHECKSUM
+    prepare_build_dir $PIDX_BUILD_DIR $PIDX_FILE SHA256 $PIDX_SHA256_CHECKSUM
     untarred_pidx=$?
     # 0, already exists, 1 untarred src, 2 error
 
