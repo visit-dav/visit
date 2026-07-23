@@ -368,10 +368,10 @@ function build_nektarpp
 
     #    mv ${nektar_plus_plus_inst_path}/lib64/* ${nektar_plus_plus_inst_path}/lib
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/nektar++"
-        chgrp -R ${GROUP} "$VISITDIR/nektar++"
-    fi
+    cleanup_build_dirs $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_SRC_DIR
+
+    change_install_dir_perms  "$VISITDIR/nektar++"
+
     cd "$START_DIR"
     info "Done with Nektar++"
     return 0

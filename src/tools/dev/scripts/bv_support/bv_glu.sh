@@ -217,10 +217,10 @@ function build_glu
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/glu"
-        chgrp -R ${GROUP} "$VISITDIR/glu"
-    fi
+    cleanup_build_dirs $GLU_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/glu"
+
     cd "$START_DIR"
     info "Done with GLU"
     return 0

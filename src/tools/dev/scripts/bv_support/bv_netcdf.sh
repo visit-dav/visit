@@ -299,10 +299,10 @@ function build_netcdf
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/netcdf"
-        chgrp -R ${GROUP} "$VISITDIR/netcdf"
-    fi
+    cleanup_build_dirs $NETCDF_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/netcdf"
+
     cd "$START_DIR"
     info "Done with NetCDF"
     return 0

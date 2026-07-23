@@ -180,6 +180,12 @@ function build_damaris
         return 1
     fi
 
+    cleanup_build_dirs $DAMARIS_BUILD_DIR
+
+    change_install_dir_perms $VISITDIR/damaris
+
+    cd $START_DIR
+
     return 0
 }
 

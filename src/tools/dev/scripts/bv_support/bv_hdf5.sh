@@ -233,10 +233,10 @@ function build_hdf5
     #    echo "endif()" >> $targetsfile
     #fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/hdf5"
-        chgrp -R ${GROUP} "$VISITDIR/hdf5"
-    fi
+    cleanup_build_dirs $HDF5_BUILD_DIR $HDF5_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/hdf5"
+
     popd > /dev/null
     info "Done with HDF5"
     return 0

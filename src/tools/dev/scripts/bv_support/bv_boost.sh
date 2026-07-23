@@ -316,10 +316,10 @@ function build_boost
         fi
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/boost"
-        chgrp -R ${GROUP} "$VISITDIR/boost"
-    fi
+    cleanup_build_dirs $BOOST_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/boost"
+
     cd "$START_DIR"
     info "Done with BOOST"
     return 0

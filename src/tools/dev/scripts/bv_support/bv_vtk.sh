@@ -2560,15 +2560,15 @@ function build_vtk
     info "Installing VTK . . . "
     ${CMAKE_COMMAND} --install . || error "VTK did not install correctly."
 
+    cleanup_build_dirs $VTK_BUILD_DIR $VTK_SRC_DIR
+
     # Filter out an include that references the user's VTK build directory
     configdir="${vtk_inst_path}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
     cat ${configdir}/VTKConfig.cmake | grep -v "vtkTestingMacros" > ${configdir}/VTKConfig.cmake.new
     mv ${configdir}/VTKConfig.cmake.new ${configdir}/VTKConfig.cmake
 
-    chmod -R ug+w,a+rX ${VISITDIR}/${VTK_INSTALL_DIR}
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chgrp -R ${GROUP} "$VISITDIR/${VTK_INSTALL_DIR}"
-    fi
+    change_install_dir_perms ${VISITDIR}/${VTK_INSTALL_DIR}
+
     cd "$START_DIR"
     info "Done with VTK"
     return 0

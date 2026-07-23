@@ -112,10 +112,9 @@ function build_blosc2
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/blosc2"
-        chgrp -R ${GROUP} "$VISITDIR/blosc2"
-    fi
+    cleanup_build_dirs $BLOSC2_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/blosc2"
 
     cd "$START_DIR"
     info "Done with Blosc2"
