@@ -71,8 +71,8 @@ The following example uses the VisIt_ source code corresponding to the official 
 
   ./build_visit3_5_0 --optional --tarball visit3.5.0.tar.gz
 
-Having VisIt cleanup after itself
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Having ``build_visit`` cleanup after itself
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, ``build_visit`` does not remove untarred source or build directories.
 You can change that behavior with the ``--cleanup`` option.
