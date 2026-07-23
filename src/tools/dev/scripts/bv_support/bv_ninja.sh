@@ -87,7 +87,7 @@ function build_ninja
     #
     # Prepare build dir
     #
-    prepare_build_dir $NINJA_BUILD_DIR $NINJA_FILE
+    prepare_build_dir $NINJA_BUILD_DIR $NINJA_FILE sha256 $NINJA_SHA256_CHECKSUM
     untarred_ninja=$?
     # 0, already exists, 1 untarred src, 2 error
 

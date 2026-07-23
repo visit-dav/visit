@@ -667,7 +667,7 @@ function apply_python_patch
 
 function build_python
 {
-    prepare_build_dir $PYTHON_BUILD_DIR $PYTHON_FILE
+    prepare_build_dir $PYTHON_BUILD_DIR $PYTHON_FILE sha256 $PYTHON_SHA256_CHECKSUM
     untarred_python=$?
     # 0, already exists, 1 untarred src, 2 error
 

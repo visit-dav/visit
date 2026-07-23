@@ -131,7 +131,7 @@ function build_adios2
     #
     # Prepare build dir
     #
-    prepare_build_dir $ADIOS2_BUILD_DIR $ADIOS2_FILE
+    prepare_build_dir $ADIOS2_BUILD_DIR $ADIOS2_FILE sha256 $ADIOS2_SHA256_CHECKSUM
     untarred_ADIOS2=$?
     if [[ $untarred_ADIOS2 == -1 ]] ; then
         warn "Unable to prepare ADIOS2 Build Directory. Giving Up"

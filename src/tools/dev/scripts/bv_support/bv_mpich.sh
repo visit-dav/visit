@@ -151,7 +151,7 @@ function build_mpich
     #
     # Prepare build dir
     #
-    prepare_build_dir $MPICH_BUILD_DIR $MPICH_FILE
+    prepare_build_dir $MPICH_BUILD_DIR $MPICH_FILE sha256 $MPICH_SHA256_CHECKSUM
     untarred_mpich=$?
     if [[ $untarred_mpich == -1 ]] ; then
         warn "Unable to prepare MPICH build directory. Giving Up!"

@@ -252,7 +252,7 @@ function build_uintah
     #
     # Prepare build dir
     #
-    prepare_build_dir $UINTAH_BUILD_DIR $UINTAH_FILE
+    prepare_build_dir $UINTAH_BUILD_DIR $UINTAH_FILE sha256 $UINTAH_SHA256_CHECKSUM
     untarred_uintah=$?
     if [[ $untarred_uintah == -1 ]] ; then
         warn "Unable to prepare UINTAH Build Directory. Giving Up"

@@ -1,52 +1,50 @@
-/*=========================================================================
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
-Program:   Visualization Toolkit
-Module:    $RCSfile: vtkVisItTubeFilter.cxx,v $
-
-Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-All rights reserved.
-See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-This software is distributed WITHOUT ANY WARRANTY; without even
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
 #include "vtkVisItTubeFilter.h"
-#include "vtkCellArray.h"
-#include "vtkCellArrayIterator.h"
-#include "vtkCellData.h"
-#include "vtkFloatArray.h"
-#include "vtkMath.h"
-#include "vtkInformation.h"
-#include "vtkInformationVector.h"
-#include "vtkObjectFactory.h"
-#include "vtkPointData.h"
-#include "vtkPolyData.h"
-#include "vtkPolyLine.h"
+#include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
+#include <vtkCellData.h>
+#include <vtkFloatArray.h>
+#include <vtkMath.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkPolyLine.h>
 
-vtkStandardNewMacro(vtkVisItTubeFilter);
+#include <algorithm>
+#include <vector>
 
-// Construct object with radius 0.5, radius variation turned off, the number
-// of sides set to 3, and radius factor of 10.
+namespace
+{
+
+struct IdPointsEqual
+{
+    IdPointsEqual(vtkPoints *points)
+        : Points(points)
+    {
+    }
+
+    bool operator()(vtkIdType id1, vtkIdType id2) const
+    {
+        double p1[3], p2[3];
+        this->Points->GetPoint(id1, p1);
+        this->Points->GetPoint(id2, p2);
+        return (p1[0] == p2[0] && p1[1] == p2[1] && p1[2] == p2[2]);
+    }
+
+    vtkPoints *Points;
+};
+
+}
+
+vtkStandardNewMacro(vtkVisItTubeFilter)
+
 vtkVisItTubeFilter::vtkVisItTubeFilter()
 {
-    this->Radius = 0.5;
-    this->VaryRadius = VTK_VARY_RADIUS_OFF;
-    this->NumberOfSides = 3;
-    this->RadiusFactor = 10;
-
-    this->DefaultNormal[0] = this->DefaultNormal[1] = 0.0;
-    this->DefaultNormal[2] = 1.0;
-
-    this->UseDefaultNormal = false;
-    this->SidesShareVertices = true;
-    this->Capping = false;
-    this->OnRatio = 1;
-    this->Offset = 0;
-
-    this->GenerateTCoords = VTK_TCOORDS_OFF;
-    this->TextureLength = 1.0;
     this->ScalarsForRadius = nullptr;
 }
 
@@ -65,9 +63,11 @@ vtkVisItTubeFilter::~vtkVisItTubeFilter()
 //    Kathleen Biagas, Thu Aug 11, 2022
 //    Support VTK9, use vtkCellArrayIterator and const for pts.
 //
+//    Kathleen Biagas, Mon July 20, 2026
+//    Update with improvements/changes from vtk9.5 version of vtkTubeFilter.
+//
 
-int vtkVisItTubeFilter::RequestData(
-                                    vtkInformation *vtkNotUsed(request),
+int vtkVisItTubeFilter::RequestData(vtkInformation *vtkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector)
 {
@@ -77,9 +77,9 @@ int vtkVisItTubeFilter::RequestData(
 
     // get the input and ouptut
     vtkPolyData *input = vtkPolyData::SafeDownCast(
-                                                   inInfo->Get(vtkDataObject::DATA_OBJECT()));
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
     vtkPolyData *output = vtkPolyData::SafeDownCast(
-                                                    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     vtkPointData *pd=input->GetPointData();
     vtkPointData *outPD=output->GetPointData();
@@ -87,6 +87,7 @@ int vtkVisItTubeFilter::RequestData(
     vtkCellData *outCD=output->GetCellData();
     vtkCellArray *inLines;
     vtkDataArray *inNormals;
+// begin VisIt change (handle cell scalars)
     vtkDataArray *inScalars = pd->GetScalars(this->ScalarsForRadius);
 
     bool cellScalars = false;
@@ -96,6 +97,7 @@ int vtkVisItTubeFilter::RequestData(
         inScalars = cd->GetScalars(this->ScalarsForRadius);
     }
     vtkDataArray *inVectors=pd->GetVectors();
+// end VisIt Change
 
     vtkPoints *inPts;
     vtkIdType numPts;
@@ -108,10 +110,10 @@ int vtkVisItTubeFilter::RequestData(
     double range[2], maxSpeed=0;
     vtkCellArray *newStrips;
     vtkIdType npts=0;
-    const vtkIdType *pts=nullptr;
+    const vtkIdType* ptsOrig = nullptr;
     vtkIdType offset=0;
     vtkFloatArray *newTCoords=nullptr;
-    int abort=0;
+    bool abort = false;
     vtkIdType inCellId;
     double oldRadius=1.0;
 
@@ -129,19 +131,33 @@ int vtkVisItTubeFilter::RequestData(
 
     // Create the geometry and topology
     numNewPts = numPts * this->NumberOfSides;
-    newPts = vtkPoints::New(inPts->GetDataType());
+    newPts = vtkPoints::New();
+    if (this->OutputPointsPrecision == vtkAlgorithm::DEFAULT_PRECISION)
+    {
+        newPts->SetDataType(inPts->GetDataType());
+    }
+    else if (this->OutputPointsPrecision == vtkAlgorithm::SINGLE_PRECISION)
+    {
+        newPts->SetDataType(VTK_FLOAT);
+    }
+    else if (this->OutputPointsPrecision == vtkAlgorithm::DOUBLE_PRECISION)
+    {
+        newPts->SetDataType(VTK_DOUBLE);
+    }
     newPts->Allocate(numNewPts);
     newNormals = vtkFloatArray::New();
     newNormals->SetName("TubeNormals");
     newNormals->SetNumberOfComponents(3);
     newNormals->Allocate(3*numNewPts);
     newStrips = vtkCellArray::New();
-    newStrips->Allocate(newStrips->EstimateSize(1,numNewPts));
+    newStrips->AllocateEstimate(1,numNewPts);
     vtkCellArray *singlePolyline = vtkCellArray::New();
 
     // Point data: copy scalars, vectors, tcoords. Normals may be computed here.
     outPD->CopyNormalsOff();
-    if ( (this->GenerateTCoords == VTK_TCOORDS_FROM_SCALARS && inScalars) ||
+// begin VisIt change ( add cellScalars test)
+    if ( (this->GenerateTCoords == VTK_TCOORDS_FROM_SCALARS && inScalars && !cellScalars) ||
+// end VisIt change
          this->GenerateTCoords == VTK_TCOORDS_FROM_LENGTH ||
          this->GenerateTCoords == VTK_TCOORDS_FROM_NORMALIZED_LENGTH )
     {
@@ -180,7 +196,9 @@ int vtkVisItTubeFilter::RequestData(
     //
     if ( inScalars )
     {
+// begin VisIt change
         inScalars->GetRange(range,0);
+// end VisIt change
         if ((range[1] - range[0]) == 0.0)
         {
             if (this->VaryRadius == VTK_VARY_RADIUS_BY_SCALAR )
@@ -216,13 +234,19 @@ int vtkVisItTubeFilter::RequestData(
     //
     this->Theta = 2.0*vtkMath::Pi() / this->NumberOfSides;
     vtkPolyLine *lineNormalGenerator = vtkPolyLine::New();
-    auto iter = vtk::TakeSmartPointer(inLines->NewIterator());
-    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal() && !abort; iter->GoToNextCell())
+    // the line cellIds start after the last vert cellId
+    inCellId = input->GetNumberOfVerts();
+    int checkAbortInterval = std::min(static_cast<int>(numLines) / 10 + 1, 1000);
+    int progressCounter = 0;
+    for (inLines->InitTraversal(); inLines->GetNextCell(npts, ptsOrig) && !abort; inCellId++)
     {
-        inCellId = iter->GetCurrentCellId();
-        iter->GetCurrentCell(npts, pts);
-        this->UpdateProgress((double)inCellId/numLines);
-        abort = this->GetAbortExecute();
+        this->UpdateProgress(static_cast<double>(progressCounter) / static_cast<double>(numLines));
+        if (progressCounter % checkAbortInterval == 0 && this->CheckAbort())
+        {
+            abort = this->CheckAbort();
+            break;
+        }
+        progressCounter++;
 
         if (npts < 2)
         {
@@ -230,30 +254,36 @@ int vtkVisItTubeFilter::RequestData(
             continue; //skip tubing this polyline
         }
 
+        std::vector<vtkIdType> ptsCopy(ptsOrig, ptsOrig + npts);
+        vtkIdType* pts = ptsCopy.data();
+
+        // remove degenerate lines to avoid warnings
+        npts = static_cast<vtkIdType>(std::unique(pts, pts + npts, IdPointsEqual(inPts)) - pts);
+        if (npts < 2)
+        {
+            continue; // skip tubing this polyline
+        }
+
         // If necessary calculate normals, each polyline calculates its
         // normals independently, avoiding conflicts at shared vertices.
         if (generateNormals)
         {
             singlePolyline->Reset(); //avoid instantiation
-            singlePolyline->InsertNextCell(npts,pts);
-            if ( !lineNormalGenerator->GenerateSlidingNormals(inPts,singlePolyline,
-                                                              inNormals) )
-            {
-                vtkWarningMacro("Could not generate normals for line. "
-                                "Skipping to next.");
-                continue; //skip tubing this polyline
-            }
+            singlePolyline->InsertNextCell(npts, pts);
+            vtkPolyLine::GenerateSlidingNormals(inPts, singlePolyline, inNormals);
         }
 
         // Generate the points around the polyline. The tube is not stripped
         // if the polyline is bad.
         //
+// begin VisIt change (addition of inCellId, cellScalars)
         if ( !this->GeneratePoints(offset,inCellId,
                                    npts,pts,inPts,newPts,pd,outPD,
                                    newNormals,
                                    inScalars, cellScalars,
                                    range,inVectors,
                                    maxSpeed,inNormals) )
+// end VisIt change
         {
             vtkWarningMacro(<< "Could not generate points!");
             continue; //skip tubing this polyline
@@ -268,7 +298,7 @@ int vtkVisItTubeFilter::RequestData(
         if ( newTCoords )
         {
             this->GenerateTextureCoords(offset,npts,pts,inPts,
-                                        inScalars,cellScalars,
+                                        inScalars,
                                         newTCoords);
         }
 
@@ -323,6 +353,7 @@ int vtkVisItTubeFilter::RequestData(
 //    Support VTK9, change pts arg to const.
 //
 
+// begin VisIt change (add inCellId, cellScalars)
 int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
                                        vtkIdType npts, const vtkIdType *pts,
                                        vtkPoints *inPts, vtkPoints *newPts,
@@ -332,12 +363,13 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
                                        double range[2],
                                        vtkDataArray *inVectors, double maxSpeed,
                                        vtkDataArray *inNormals)
+// end VisIt change
 {
     vtkIdType j;
     int i, k;
     double p[3];
     double pNext[3];
-    double sNext[3] = {0., 0., 0};
+    double sNext[3] = { 0.0, 0.0, 0.0 };
     double sPrev[3];
     double startCapNorm[3], endCapNorm[3];
     double n[3];
@@ -443,6 +475,7 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
         // Compute a scale factor based on scalars or vectors
         if ( inScalars && this->VaryRadius == VTK_VARY_RADIUS_BY_SCALAR )
         {
+// begin VisIt change (handle cellScalars)
             double value = (cellScalars ?
                             inScalars->GetComponent(inCellId,0) :
                             inScalars->GetComponent(pts[j],0));
@@ -450,22 +483,30 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
             sFactor = 1.0 + ((this->RadiusFactor - 1.0) *
                              (value - range[0])
                              / (range[1]-range[0]));
+// end VisIt change
         }
         else if ( inVectors && this->VaryRadius == VTK_VARY_RADIUS_BY_VECTOR )
         {
-            sFactor =
-                sqrt((double)maxSpeed/vtkMath::Norm(inVectors->GetTuple(pts[j])));
+            sFactor = sqrt(maxSpeed / vtkMath::Norm(inVectors->GetTuple(pts[j])));
             if ( sFactor > this->RadiusFactor )
             {
                 sFactor = this->RadiusFactor;
             }
         }
+        else if ( inVectors && this->VaryRadius == VTK_VARY_RADIUS_BY_VECTOR_NORM )
+        {
+            sFactor = 1.0 + ((this->RadiusFactor - 1.0) *
+                             vtkMath::Norm(inVectors->GetTuple(pts[j])) /
+                             maxSpeed);
+        }
         else if ( inScalars &&
                   this->VaryRadius == VTK_VARY_RADIUS_BY_ABSOLUTE_SCALAR )
         {
+// begin VisIt change (handle cell scalars)
             sFactor = (cellScalars ?
                        inScalars->GetComponent(inCellId,0) :
                        inScalars->GetComponent(pts[j],0));
+// end VisIt change
             if (sFactor < 0.0)
             {
                 vtkWarningMacro(<<"Scalar value less than zero, skipping line");
@@ -480,8 +521,7 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
             {
                 for (i=0; i<3; i++)
                 {
-                    normal[i] = w[i]*cos((double)k*this->Theta) +
-                        nP[i]*sin((double)k*this->Theta);
+                    normal[i] = w[i]*cos(k*this->Theta) + nP[i]*sin(k*this->Theta);
                     s[i] = p[i] + this->Radius * sFactor * normal[i];
                 }
                 newPts->InsertPoint(ptId,s);
@@ -503,12 +543,12 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
                     // polygonal appearance, as if by flat-shading around the tube,
                     // while still allowing smooth (gouraud) shading along the
                     // tube as it bends.
-                    normal[i]  = w[i]*cos((double)(k+0.0)*this->Theta) +
-                        nP[i]*sin((double)(k+0.0)*this->Theta);
-                    n_right[i] = w[i]*cos((double)(k-0.5)*this->Theta) +
-                        nP[i]*sin((double)(k-0.5)*this->Theta);
-                    n_left[i]  = w[i]*cos((double)(k+0.5)*this->Theta) +
-                        nP[i]*sin((double)(k+0.5)*this->Theta);
+                    normal[i]  = w[i]*cos((k+0.0)*this->Theta) +
+                        nP[i]*sin((k+0.0)*this->Theta);
+                    n_right[i] = w[i]*cos((k-0.5)*this->Theta) +
+                        nP[i]*sin((k-0.5)*this->Theta);
+                    n_left[i]  = w[i]*cos((k+0.5)*this->Theta) +
+                        nP[i]*sin((k+0.5)*this->Theta);
                     s[i] = p[i] + this->Radius * sFactor * normal[i];
                 }
                 newPts->InsertPoint(ptId,s);
@@ -543,10 +583,10 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
             ptId++;
         }
         //the end cap
-        int endOffset = offset + (npts-1)*this->NumberOfSides;
+        int endOffset = static_cast<int>(offset) + (static_cast<int>(npts)-1)*this->NumberOfSides;
         if ( ! this->SidesShareVertices )
         {
-            endOffset = offset + 2*(npts-1)*this->NumberOfSides;
+            endOffset = static_cast<int>(offset) + 2*(static_cast<int>(npts)-1)*this->NumberOfSides;
         }
         for (k=0; k < numCapSides; k+=capIncr)
         {
@@ -561,306 +601,9 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
     return 1;
 }
 
-//
-// Modifications:
-//    Kathleen Biagas, Thu Aug 11, 2022
-//    Support VTK9, change pts arg to const.
-//
-void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts,
-                                        const vtkIdType* vtkNotUsed(pts),
-                                        vtkIdType inCellId,
-                                        vtkCellData *cd, vtkCellData *outCD,
-                                        vtkCellArray *newStrips)
-{
-    vtkIdType i, outCellId;
-    int k;
-    int i1, i2, i3;
-
-    if (this->SidesShareVertices)
-    {
-        for (k=this->Offset; k<(this->NumberOfSides+this->Offset);
-             k+=this->OnRatio)
-        {
-            i1 = k % this->NumberOfSides;
-            i2 = (k+1) % this->NumberOfSides;
-            outCellId = newStrips->InsertNextCell(npts*2);
-            outCD->CopyData(cd,inCellId,outCellId);
-            for (i=0; i < npts; i++)
-            {
-                i3 = i*this->NumberOfSides;
-                newStrips->InsertCellPoint(offset+i2+i3);
-                newStrips->InsertCellPoint(offset+i1+i3);
-            }
-        } //for each side of the tube
-    }
-    else
-    {
-        for (k=this->Offset; k<(this->NumberOfSides+this->Offset);
-             k+=this->OnRatio)
-        {
-            i1 = 2*(k % this->NumberOfSides) + 1;
-            i2 = 2*((k+1) % this->NumberOfSides);
-            outCellId = newStrips->InsertNextCell(npts*2);
-            outCD->CopyData(cd,inCellId,outCellId);
-            for (i=0; i < npts; i++)
-            {
-                i3 = i*2*this->NumberOfSides;
-                newStrips->InsertCellPoint(offset+i2+i3);
-                newStrips->InsertCellPoint(offset+i1+i3);
-            }
-        } //for each side of the tube
-    }
-
-    // Take care of capping. The caps are n-sided polygons that can be
-    // easily triangle stripped.
-    if (this->Capping)
-    {
-        vtkIdType startIdx = offset + npts*this->NumberOfSides;
-        vtkIdType idx;
-
-        if ( ! this->SidesShareVertices )
-        {
-            startIdx = offset + 2*npts*this->NumberOfSides;
-        }
-
-        //The start cap
-        outCellId = newStrips->InsertNextCell(this->NumberOfSides);
-        outCD->CopyData(cd,inCellId,outCellId);
-        newStrips->InsertCellPoint(startIdx);
-        newStrips->InsertCellPoint(startIdx+1);
-        for (i1=this->NumberOfSides-1, i2=2, k=0; k<(this->NumberOfSides-2); k++)
-        {
-            if ( (k%2) )
-            {
-                idx = startIdx + i2;
-                newStrips->InsertCellPoint(idx);
-                i2++;
-            }
-            else
-            {
-                idx = startIdx + i1;
-                newStrips->InsertCellPoint(idx);
-                i1--;
-            }
-        }
-
-        //The end cap - reversed order to be consistent with normal
-        startIdx += this->NumberOfSides;
-        outCellId = newStrips->InsertNextCell(this->NumberOfSides);
-        outCD->CopyData(cd,inCellId,outCellId);
-        newStrips->InsertCellPoint(startIdx);
-        newStrips->InsertCellPoint(startIdx+this->NumberOfSides-1);
-        for (i1=this->NumberOfSides-2, i2=1, k=0; k<(this->NumberOfSides-2); k++)
-        {
-            if ( (k%2) )
-            {
-                idx = startIdx + i1;
-                newStrips->InsertCellPoint(idx);
-                i1--;
-            }
-            else
-            {
-                idx = startIdx + i2;
-                newStrips->InsertCellPoint(idx);
-                i2++;
-            }
-        }
-    }
-}
-
-//   Jeremy Meredith, Wed May 26 14:52:29 EDT 2010
-//   Allow cell scalars for tube radius.
-//   We don't support them for texture coordinates, but we need to
-//   know if inScalars is point- or cell-based so we know if we
-//   should ignore them.
-//
-//   Kathleen Biagas, Thu Aug 11, 2022
-//   Support VTK9, change pts arg to const.
-//
-void vtkVisItTubeFilter::GenerateTextureCoords(vtkIdType offset,
-                                               vtkIdType npts, const vtkIdType *pts,
-                                               vtkPoints *inPts,
-                                               vtkDataArray *inScalars_,
-                                               bool cellScalars,
-                                               vtkFloatArray *newTCoords)
-{
-    vtkIdType i;
-    int k;
-    double tc=0.0;
-
-    // We only handle point-centered scalars
-    vtkDataArray *inScalars = cellScalars ? nullptr : inScalars_;
-
-    int numSides = this->NumberOfSides;
-    if ( ! this->SidesShareVertices )
-    {
-        numSides = 2 * this->NumberOfSides;
-    }
-
-    double s0, s;
-    //The first texture coordinate is always 0.
-    for ( k=0; k < numSides; k++)
-    {
-        newTCoords->InsertTuple2(offset+k,0.0,0.0);
-    }
-    if ( this->GenerateTCoords == VTK_TCOORDS_FROM_SCALARS )
-    {
-        s0 = inScalars->GetTuple1(pts[0]);
-        for (i=1; i < npts; i++)
-        {
-            s = inScalars->GetTuple1(pts[i]);
-            tc = (s - s0) / this->TextureLength;
-            for ( k=0; k < numSides; k++)
-            {
-                newTCoords->InsertTuple2(offset+i*numSides+k,tc,0.0);
-            }
-        }
-    }
-    else if ( this->GenerateTCoords == VTK_TCOORDS_FROM_LENGTH )
-    {
-        double xPrev[3], x[3], len=0.0;
-        inPts->GetPoint(pts[0],xPrev);
-        for (i=1; i < npts; i++)
-        {
-            inPts->GetPoint(pts[i],x);
-            len += sqrt(vtkMath::Distance2BetweenPoints(x,xPrev));
-            tc = len / this->TextureLength;
-            for ( k=0; k < numSides; k++)
-            {
-                newTCoords->InsertTuple2(offset+i*numSides+k,tc,0.0);
-            }
-            xPrev[0]=x[0]; xPrev[1]=x[1]; xPrev[2]=x[2];
-        }
-    }
-    else if ( this->GenerateTCoords == VTK_TCOORDS_FROM_NORMALIZED_LENGTH )
-    {
-        double xPrev[3], x[3], length=0.0, len=0.0;
-        inPts->GetPoint(pts[0],xPrev);
-        for (i=1; i < npts; i++)
-        {
-            inPts->GetPoint(pts[i],x);
-            length += sqrt(vtkMath::Distance2BetweenPoints(x,xPrev));
-            xPrev[0]=x[0]; xPrev[1]=x[1]; xPrev[2]=x[2];
-        }
-
-        inPts->GetPoint(pts[0],xPrev);
-        for (i=1; i < npts; i++)
-        {
-            inPts->GetPoint(pts[i],x);
-            len += sqrt(vtkMath::Distance2BetweenPoints(x,xPrev));
-            tc = len / length;
-            for ( k=0; k < numSides; k++)
-            {
-                newTCoords->InsertTuple2(offset+i*2+k,tc,0.0);
-            }
-            xPrev[0]=x[0]; xPrev[1]=x[1]; xPrev[2]=x[2];
-        }
-    }
-
-    // Capping, set the endpoints as appropriate
-    if ( this->Capping )
-    {
-        int ik;
-        vtkIdType startIdx = offset + npts*numSides;
-
-        //start cap
-        for (ik=0; ik < this->NumberOfSides; ik++)
-        {
-            newTCoords->InsertTuple2(startIdx+ik,0.0,0.0);
-        }
-
-        //end cap
-        for (ik=0; ik < this->NumberOfSides; ik++)
-        {
-            newTCoords->InsertTuple2(startIdx+this->NumberOfSides+ik,tc,0.0);
-        }
-    }
-}
-
-// Compute the number of points in this tube
-vtkIdType vtkVisItTubeFilter::ComputeOffset(vtkIdType offset, vtkIdType npts)
-{
-    if ( this->SidesShareVertices )
-    {
-        offset += this->NumberOfSides * npts;
-    }
-    else
-    {
-        offset += 2 * this->NumberOfSides * npts; //points are duplicated
-    }
-
-    if ( this->Capping )
-    {
-        offset += 2*this->NumberOfSides; //cap points are duplicated
-    }
-
-    return offset;
-}
-
-// Description:
-// Return the method of varying tube radius descriptive character string.
-const char *vtkVisItTubeFilter::GetVaryRadiusAsString(void)
-{
-    if ( this->VaryRadius == VTK_VARY_RADIUS_OFF )
-    {
-        return "VaryRadiusOff";
-    }
-    else if ( this->VaryRadius == VTK_VARY_RADIUS_BY_SCALAR )
-    {
-        return "VaryRadiusByScalar";
-    }
-    else if ( this->VaryRadius == VTK_VARY_RADIUS_BY_ABSOLUTE_SCALAR )
-    {
-        return "VaryRadiusByAbsoluteScalar";
-    }
-    else
-    {
-        return "VaryRadiusByVector";
-    }
-}
-
-// Description:
-// Return the method of generating the texture coordinates.
-const char *vtkVisItTubeFilter::GetGenerateTCoordsAsString(void)
-{
-    if ( this->GenerateTCoords == VTK_TCOORDS_OFF )
-    {
-        return "GenerateTCoordsOff";
-    }
-    else if ( this->GenerateTCoords == VTK_TCOORDS_FROM_SCALARS )
-    {
-        return "GenerateTCoordsFromScalar";
-    }
-    else if ( this->GenerateTCoords == VTK_TCOORDS_FROM_LENGTH )
-    {
-        return "GenerateTCoordsFromLength";
-    }
-    else
-    {
-        return "GenerateTCoordsFromNormalizedLength";
-    }
-}
-
 void vtkVisItTubeFilter::PrintSelf(ostream& os, vtkIndent indent)
 {
     this->Superclass::PrintSelf(os,indent);
-
-    os << indent << "Radius: " << this->Radius << "\n";
-    os << indent << "Vary Radius: " << this->GetVaryRadiusAsString() << endl;
-    os << indent << "Radius Factor: " << this->RadiusFactor << "\n";
-    os << indent << "Number Of Sides: " << this->NumberOfSides << "\n";
-    os << indent << "On Ratio: " << this->OnRatio << "\n";
-    os << indent << "Offset: " << this->Offset << "\n";
-
-    os << indent << "Use Default Normal: "
-       << (this->UseDefaultNormal ? "On\n" : "Off\n");
-    os << indent << "Sides Share Vertices: "
-       << (this->SidesShareVertices ? "On\n" : "Off\n");
-    os << indent << "Default Normal: " << "( " << this->DefaultNormal[0] <<
-        ", " << this->DefaultNormal[1] << ", " << this->DefaultNormal[2] <<
-        " )\n";
-    os << indent << "Capping: " << (this->Capping ? "On\n" : "Off\n");
-    os << indent << "Generate TCoords: "
-       << this->GetGenerateTCoordsAsString() << endl;
-    os << indent << "Texture Length: " << this->TextureLength << endl;
+    os << indent << "Scalars For Radius: "
+       << (this->ScalarsForRadius ? this->ScalarsForRadius : "(none)") << endl;
 }

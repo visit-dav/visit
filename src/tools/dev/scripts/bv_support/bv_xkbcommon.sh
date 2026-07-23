@@ -79,7 +79,7 @@ function build_xkbcommon
     #
     # Prepare build dir
     #
-    prepare_build_dir $XKBCOMMON_BUILD_DIR $XKBCOMMON_FILE
+    prepare_build_dir $XKBCOMMON_BUILD_DIR $XKBCOMMON_FILE sha256 $XKBCOMMON_SHA256_CHECKSUM
     untarred_xkbcommon=$?
     # 0, already exists, 1 untarred src, 2 error
 
