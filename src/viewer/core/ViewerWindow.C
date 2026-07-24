@@ -2214,6 +2214,9 @@ ViewerWindow::UpdatesEnabled() const
 //    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002
 //    Added ClearRefLines.
 //
+//    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
+//    Added ResetAnariScene.
+//
 // ****************************************************************************
 
 void
@@ -2222,6 +2225,9 @@ ViewerWindow::ClearWindow(bool clearAllPlots)
     ClearRefLines();
     ClearPickPoints();
     GetPlotList()->ClearPlots(clearAllPlots);
+#ifdef HAVE_ANARI
+    ResetAnariScene();
+#endif
 }
 
 // ****************************************************************************
@@ -8845,6 +8851,12 @@ const AnariAttributes &
 ViewerWindow::GetAnariAttributes() const
 {
     return visWindow->GetAnariAttributes();
+}
+
+void
+ViewerWindow::ResetAnariScene()
+{
+    return visWindow->ResetAnariScene();
 }
 #endif
 

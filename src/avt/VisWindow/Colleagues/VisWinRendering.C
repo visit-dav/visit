@@ -27,6 +27,9 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnsignedCharArray.h>
 
+// TODO: Remove
+#include <vtkRendererCollection.h>
+
 #include <RenderingAttributes.h>
 
 #include <VisWindow.h>
@@ -1361,7 +1364,6 @@ VisWinRendering::RenderRenderWindow(void)
     GetRenderWindow()->Render();
 
     debug1 << "VisWinRendering, vtkRenderWindow classname: " << GetRenderWindow()->GetClassName() << endl;
-
 }
 
 // ****************************************************************************
@@ -3757,5 +3759,30 @@ VisWinRendering::CreateAnariPass()
         vtkAnariVisItViewNodeFactory::axis_act_maker);
 
     return anariPass;
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::ResetAnariScene
+//
+// Purpose:
+//   Force a full ANARI scene graph rebuild
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Jul 24 11:46:21 AM CDT 2026
+//
+// ****************************************************************************
+
+void
+VisWinRendering::ResetAnariScene()
+{
+    if (anariPass != nullptr)
+    {
+        auto* sceneGraph = vtkAnariSceneGraph::SafeDownCast(anariPass->GetSceneGraph());
+
+        if (sceneGraph)
+        {
+            sceneGraph->InvalidateSceneStructure();
+        }
+    }
 }
 #endif
