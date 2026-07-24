@@ -174,7 +174,7 @@ function build_netcdf
 {
     # Prepare build dir
     #
-    prepare_build_dir $NETCDF_BUILD_DIR $NETCDF_FILE sha256 $NETCDF_SHA256_CHECKSUM
+    prepare_build_dir $NETCDF_BUILD_DIR $NETCDF_FILE SHA256 $NETCDF_SHA256_CHECKSUM
     untarred_netcdf=$?
     # 0, already exists, 1 untarred src, 2 error
 

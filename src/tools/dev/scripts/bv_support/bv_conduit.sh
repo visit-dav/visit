@@ -130,7 +130,7 @@ function build_conduit
     #
     # Prepare build dir
     #
-    prepare_build_dir $CONDUIT_BUILD_DIR $CONDUIT_FILE sha256 $CONDUIT_SHA256_CHECKSUM
+    prepare_build_dir $CONDUIT_BUILD_DIR $CONDUIT_FILE SHA256 $CONDUIT_SHA256_CHECKSUM
     untarred_conduit=$?
     if [[ $untarred_conduit == -1 ]] ; then
         warn "Unable to prepare Conduit build directory. Giving Up!"

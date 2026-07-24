@@ -62,7 +62,7 @@ function build_blosc2
     #
     # Prepare build dir
     #
-    prepare_build_dir $BLOSC2_BUILD_DIR $BLOSC2_FILE sha256 $BLOSC2_SHA256_CHECKSUM
+    prepare_build_dir $BLOSC2_BUILD_DIR $BLOSC2_FILE SHA256 $BLOSC2_SHA256_CHECKSUM
     untarred_blosc2=$?
     if [[ $untarred_blosc2 == -1 ]] ; then
         warn "Unable to prepare Blosc2 build directory. Giving Up!"

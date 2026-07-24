@@ -212,7 +212,7 @@ function build_nektarpp
     #
     # Prepare build dir
     #
-    prepare_build_dir $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE sha256 $NEKTAR_PLUS_PLUS_SHA256_CHECKSUM
+    prepare_build_dir $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE SHA256 $NEKTAR_PLUS_PLUS_SHA256_CHECKSUM
     untarred_nektar_plus_plus=$?
     # 0, already exists, 1 untarred src, 2 error
 
