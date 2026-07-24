@@ -27,9 +27,6 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnsignedCharArray.h>
 
-// TODO: Remove
-#include <vtkRendererCollection.h>
-
 #include <RenderingAttributes.h>
 
 #include <VisWindow.h>
