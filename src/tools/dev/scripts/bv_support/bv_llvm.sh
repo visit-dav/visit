@@ -109,7 +109,7 @@ function build_llvm
     #
     # prepare build dir
     #
-    prepare_build_dir $BV_LLVM_BUILD_DIR $BV_LLVM_FILE sha256 $BV_LLVM_SHA256_CHECKSUM
+    prepare_build_dir $BV_LLVM_BUILD_DIR $BV_LLVM_FILE SHA256 $BV_LLVM_SHA256_CHECKSUM
     untarred_llvm=$?
     if [[ $untarred_llvm == -1 ]] ; then
         warn "Unable to prepare LLVM build directory. Giving Up!"

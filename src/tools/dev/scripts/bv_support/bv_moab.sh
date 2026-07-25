@@ -76,7 +76,7 @@ function build_moab
     #
     # Prepare build dir
     #
-    prepare_build_dir $MOAB_BUILD_DIR $MOAB_FILE sha256 $MOAB_SHA256_CHECKSUM
+    prepare_build_dir $MOAB_BUILD_DIR $MOAB_FILE SHA256 $MOAB_SHA256_CHECKSUM
     untarred_moab=$?
     if [[ $untarred_moab == -1 ]] ; then
         warn "Unable to prepare moab build directory. Giving Up!"

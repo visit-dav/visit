@@ -197,7 +197,7 @@ function build_cgns
     #
     # Prepare build dir
     #
-    prepare_build_dir $CGNS_BUILD_DIR $CGNS_FILE sha256 $CGNS_SHA256_CHECKSUM
+    prepare_build_dir $CGNS_BUILD_DIR $CGNS_FILE SHA256 $CGNS_SHA256_CHECKSUM
     untarred_cgns=$?
     # 0, already exists, 1 untarred src, 2 error
 

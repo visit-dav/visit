@@ -101,7 +101,7 @@ function build_stripack
     #
     # Prepare build dir
     #
-    prepare_build_dir $STRIPACK_BUILD_DIR $STRIPACK_FILE sha256 $STRIPACK_SHA256_CHECKSUM
+    prepare_build_dir $STRIPACK_BUILD_DIR $STRIPACK_FILE SHA256 $STRIPACK_SHA256_CHECKSUM
     untarred_stripack=$?
     if [[ $untarred_stripack == -1 ]] ; then
         warn "Unable to prepare stripack Build Directory. Giving Up"

@@ -84,7 +84,7 @@ function build_cfitsio
     #
     # Prepare build dir
     #
-    prepare_build_dir $CFITSIO_BUILD_DIR $CFITSIO_FILE sha256 $CFITSIO_SHA256_CHECKSUM
+    prepare_build_dir $CFITSIO_BUILD_DIR $CFITSIO_FILE SHA256 $CFITSIO_SHA256_CHECKSUM
     untarred_cfitsio=$?
     if [[ $untarred_cfitsio == -1 ]] ; then
         warn "Unable to prepare CFITSIO Build Directory. Giving Up"
