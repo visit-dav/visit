@@ -5,7 +5,7 @@ Tutorial History
 
 We have presented VisIt User Tutorials to many communities since the project was founded:
 
-*  ATPESC 2026, St. Charles, IL, August 2026
+*  ATPESC 2026, St. Charles, IL, July 2026
 *  ATPESC 2025, St. Charles, IL, August 2025
 *  ATPESC 2024, St. Charles, IL, August 2024
 *  ATPESC 2023, St. Charles, IL, August 2023
