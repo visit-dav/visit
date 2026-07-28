@@ -184,6 +184,9 @@ avtVolumePlot::ManagesOwnTransparency(void)
 //    Hank Childs, Mon Sep 11 14:50:28 PDT 2006
 //    Add support for the integration ray function.
 //
+//    Kevin Griffin, Tue Jul 28 05:29:03 PM CDT 2026
+//    Add VolumeAttributes::ANARI to the return condition.
+//
 // ****************************************************************************
 
 bool
@@ -192,7 +195,8 @@ avtVolumePlot::PlotIsImageBased(void)
     return (atts.GetRendererType() == VolumeAttributes::Composite ||
             atts.GetRendererType() == VolumeAttributes::Integration ||
             atts.GetRendererType() == VolumeAttributes::SLIVR ||
-            atts.GetRendererType() == VolumeAttributes::Parallel);
+            atts.GetRendererType() == VolumeAttributes::Parallel ||
+            atts.GetRendererType() == VolumeAttributes::ANARI);
 }
 
 
