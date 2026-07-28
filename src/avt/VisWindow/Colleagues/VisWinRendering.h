@@ -246,6 +246,9 @@ class VisWindowColleagueProxy;
 //    that it could be explicitly deleted since it wasn't getting deleted
 //    using a vtkSmartPointer.
 //
+//    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
+//    Added ResetAnariScene
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -446,7 +449,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 #endif
 #ifdef HAVE_ANARI
     void                    SetAnariAttributes(const AnariAttributes &);
-    const AnariAttributes   &GetAnariAttributes() const { return anariAttributes; }    
+    const AnariAttributes   &GetAnariAttributes() const { return anariAttributes; } 
+    void                    ResetAnariScene();   
 #endif
 
     virtual void            *CreateToolbar(const char *) { return 0; };
