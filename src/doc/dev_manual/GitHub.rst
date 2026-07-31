@@ -163,7 +163,7 @@ Doing VisIt_ development on multiple branches *simultaneously* can be challengin
 Frequently switching between branches in a single clone can involve significant productivity hits especially if the branches diverge substantially from one another.
 Maintaining multiple clones is possible but requires a lot of disk space, especially given all of the LFS content in VisIt_.
 
-Another approach is to use git `worktrees <https://git-scm.com/docs/git-worktree?utm_source=chatgpt.com>`__.
+Another approach is to use git `worktrees <https://git-scm.com/docs/git-worktree>`__.
 Worktrees are like multiple clones except they all share a common, single ``.git`` repository database.
 
 To maintain two independent branches of development for ``develop`` and ``3.5RC`` in two directory peers named ``visit`` and ``3.5RC``, do the following::
