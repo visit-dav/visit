@@ -204,6 +204,8 @@ To remove a worktree::
     cd visit
     git worktree remove ../visit2
 
+Read more about the advantages of worktrees on `bssw.io <https://bssw.io/items/working-within-multiple-git-branches-simultaneously>`__.
+
 CMake Build System 
 -------------------
 
