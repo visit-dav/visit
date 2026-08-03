@@ -166,7 +166,7 @@ Maintaining multiple clones is possible but requires a lot of disk space, especi
 Another approach is to use git `worktrees <https://git-scm.com/docs/git-worktree>`__.
 Worktrees are like multiple clones except they all share a common, single ``.git`` repository database.
 
-To maintain two independent branches of development for ``develop`` and ``3.5RC`` in two directory peers named ``visit`` and ``3.5RC``, do the following::
+To maintain worktrees two *existing* branches of development, ``develop`` and ``3.5RC``, in two directory peers named ``visit`` and ``3.5RC``, do the following::
 
     git clone --recursive https://github.com/visit-dav/visit.git
     cd visit
@@ -174,18 +174,18 @@ To maintain two independent branches of development for ``develop`` and ``3.5RC`
     cd ../3.5RC
     git submodule update --init --recursive
 
-The clone is given the *default* directory of ``develop``.
-The worktree command will create a worktree directory that is peer to ``visit`` and will check out that worktree to ``3.5RC``.
-Work can proceed in either ``visit``  or ``3.5RC`` totally independently.
-Also, whenever you *add* a worktree, you need to initialize any submodules.
+The clone is given the *default* directory name and branch of ``develop``.
+The worktree command will create a worktree directory that is peer to ``visit`` and will check out that worktree to the *existing* ``3.5RC`` branch.
+Work can proceed in either ``visit``  or ``3.5RC`` directories totally independently.
+Also, be aware that when a worktree is *added*, any submodules need to be initialized.
 
-If instead, you want to create a worktree for a new feature, then while in the ``visit`` directory::
+If instead, the goal is to create a worktree for a new feature, then while in the ``visit`` directory::
 
     git worktree add ../feature-xyz -b feature-xyz origin/feature-xyz
     cd ../feature-xyz
     git submodule update --init --recursive
 
-This will create a worktree directory, ``feature-xyz``, which is peer to ``visit``.
+This will create a worktree directory, ``feature-xyz``, which is peer to ``visit`` and check it out to the *new* branch, ``feature-xyz``.
 Because a new worktree is being *added* here, any of its submodules must also be initialized.
 
 Alternatively, one can just maintain worktrees representing a *second* and a *third* copy of VisIt_ and do whatever development is desired in either copy::
@@ -193,13 +193,12 @@ Alternatively, one can just maintain worktrees representing a *second* and a *th
     cd visit
     git worktree add --detach ../visit2
     cd ../visit2
-    git submodule update --init --recursive
     git checkout exisiting-branch
     cd ../visit
     git worktree add --detach ../visit3
     cd ../visit3
-    git submodule update --init --recursive
     git checkout -b new-branch
+    git submodule update --init --recursive
 
 The ``--detach`` argument will create a worktree directory in a detached head state.
 A normal ``git checkout`` command can be used within that worktree directory to set it to whatever branch is needed.
@@ -212,8 +211,8 @@ To remove a worktree::
     cd visit
     git worktree remove ../visit2
 
-When worktrees were first introduced to `git`, they were considered experimental and did not work on repos with submodules. 
-In versions of `git` newer than 2.30, those limitations have been removed.
+When worktrees were first introduced to ``git``, they were considered experimental and did not work on repos with submodules. 
+In versions of ``git`` newer than 2.30, those limitations have been removed.
 Read more about the advantages of worktrees on `bssw.io <https://bssw.io/items/working-within-multiple-git-branches-simultaneously>`__.
 
 CMake Build System 
