@@ -467,10 +467,10 @@ function build_osmesa
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/osmesa"
-        chgrp -R ${GROUP} "$VISITDIR/osmesa"
-    fi
+    cleanup_build_dirs $OSMESA_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/osmesa"
+
     cd "$START_DIR"
     info "Done with OSMesa"
     return 0

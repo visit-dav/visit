@@ -116,10 +116,10 @@ function build_xercesc
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/xerces-c"
-        chgrp -R ${GROUP} "$VISITDIR/xerces-c"
-    fi
+    cleanup_build_dirs $XERCESC_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/xerces-c"
+
     cd "$START_DIR"
     return 0
 }

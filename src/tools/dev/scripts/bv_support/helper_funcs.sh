@@ -918,6 +918,60 @@ function prepare_build_dir
     return $untarred_src
 }
 
+# *************************************************************************** #
+# Function: cleanup_build_dirs                                                #
+#                                                                             #
+# Purpose: Helper that deletes a build directory                              #
+#                                                                             #
+# Returns:                                                                    #
+#           0 for success with deletion                                       #
+#           1 for failure with deletion                                       #
+#                                                                             #
+# Programmer: Kathleen Biagas                                                 #
+# Date: Wed Jul 15, 2026                                                      #
+#                                                                             #
+# Modifications:                                                              #
+#                                                                             #
+# *************************************************************************** #
+function cleanup_build_dirs
+{
+    if [[ "$CLEANUP" == "no" ]] ; then
+        info "Not performing cleanup of build dirs"
+        return 0
+    fi
+
+    cd "$START_DIR"
+
+    info "deleting $1"
+    rm -rf $1
+
+    if [[ $? != 0 ]] ; then
+        warn "Unable to delete $1."
+        return 1
+    fi
+
+    if [[ $# == 2 ]]; then
+        info "deleting $2"
+        rm -rf $2
+
+        if [[ $? != 0 ]] ; then
+            warn "Unable to delete $2."
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+function change_install_dir_perms
+{
+    chmod -R ug+w,a+rX "$1"
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chgrp -R ${GROUP} "$1"
+    fi
+}
+
+
 # *************************************************************************** 
 # check_3rdparty
 # --------------------------------------------------------------------------- 
@@ -1763,6 +1817,7 @@ function usage
     printf "\n"
 
     printf "%-20s %s [%s]\n" "--bv-debug"   "Enable debugging for this script" "no"
+    printf "%-20s %s [%s]\n" "--cleanup" "Cleanup (delete) src and build dirs upon successful compile and install." "no"
     printf "%-20s %s [%s]\n" "--download-only" "Only download the specified packages" "no"
     printf "%-20s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
     printf "%-20s %s [%s]\n" "-h, --help" "Display this help message." "no"

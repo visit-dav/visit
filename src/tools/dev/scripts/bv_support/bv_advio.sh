@@ -349,10 +349,9 @@ function build_advio
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/AdvIO"
-        chgrp -R ${GROUP} "$VISITDIR/AdvIO"
-    fi
+    cleanup_build_dirs $ADVIO_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/AdvIO"
 
     cd "$START_DIR"
     info "Done with AdvIO"

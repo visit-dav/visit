@@ -162,10 +162,10 @@ function build_cfitsio
     info "Installing CFITSIO . . ."
     ${CMAKE_COMMAND} --install . || error "CFITSIO did not install correctly. Giving up."
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/cfitsio"
-        chgrp -R ${GROUP} "$VISITDIR/cfitsio"
-    fi
+    cleanup_build_dirs $CFITSIO_BUILD_SUBDIR $CFITSIO_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/cfitsio"
+
     cd "$START_DIR"
     info "Done with CFITSIO"
     return 0

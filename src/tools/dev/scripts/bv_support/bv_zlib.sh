@@ -137,10 +137,10 @@ function build_zlib
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/zlib"
-        chgrp -R ${GROUP} "$VISITDIR/zlib"
-    fi
+    cleanup_build_dirs $ZLIB_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/zlib"
+
     cd "$START_DIR"
     info "Done with ZLIB"
     return 0

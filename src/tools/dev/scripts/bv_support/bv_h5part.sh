@@ -676,10 +676,10 @@ function build_h5part
         info "Creating dynamic libraries for H5Part . . ."
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/h5part"
-        chgrp -R ${GROUP} "$VISITDIR/h5part"
-    fi
+    cleanup_build_dirs $H5PART_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/h5part"
+
     cd "$START_DIR"
     info "Done with H5Part"
     return 0
