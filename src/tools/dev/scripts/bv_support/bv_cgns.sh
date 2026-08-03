@@ -307,10 +307,10 @@ function build_cgns
 
     ${CMAKE_COMMAND} --install . || error "CGNS did not install correctly. Giving up."
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/cgns"
-        chgrp -R ${GROUP} "$VISITDIR/cgns"
-    fi
+    cleanup_build_dirs $CGNS_BUILD_SUBDIR $CGNS_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/cgns"
+
     cd "$START_DIR"
     info "Done with CGNS"
     return 0

@@ -273,6 +273,7 @@ function build_uintah
     #
     info "Configuring UINTAH . . ."
 
+    UINTAH_SRC_DIR="${UINTAH_BUILD_DIR}"
     UINTAH_BUILD_DIR="${UINTAH_BUILD_DIR}/optimized"
     if [[ ! -d $UINTAH_BUILD_DIR ]] ; then
         echo "Making build directory $UINTAH_BUILD_DIR"
@@ -395,10 +396,11 @@ function build_uintah
         done
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/uintah"
-        chgrp -R ${GROUP} "$VISITDIR/uintah"
-    fi
+    # build dir is a subdir for SRC, so only need to delete SRC
+    cleanup_build_dirs $UINTAH_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/uintah"
+
     cd "$START_DIR"
     info "Done with UINTAH"
     return 0

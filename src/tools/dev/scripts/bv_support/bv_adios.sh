@@ -266,10 +266,9 @@ function build_adios
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/ADIOS"
-        chgrp -R ${GROUP} "$VISITDIR/ADIOS"
-    fi
+    cleanup_build_dirs $ADIOS_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/adios"
 
     cd "$START_DIR"
     info "Done with ADIOS"

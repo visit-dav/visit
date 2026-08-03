@@ -90,10 +90,10 @@ function build_xsd
     mkdir -p $VISITDIR/xsd/$XSD_VERSION/$VISITARCH/include
     cp -r libxsd/xsd $VISITDIR/xsd/$XSD_VERSION/$VISITARCH/include/
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/xsd"
-        chgrp -R ${GROUP} "$VISITDIR/xsd"
-    fi
+    cleanup_build_dirs $XSD_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/xsd"
+
     cd "$START_DIR"
     return 0
 }

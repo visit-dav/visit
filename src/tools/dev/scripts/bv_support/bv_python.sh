@@ -75,15 +75,14 @@ function install_py_module
     fi
     popd > /dev/null
 
+    cleanup_build_dirs $MOD_DIR
+
     return 0
 }
 
 function fix_py_permissions
 {
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/python"
-        chgrp -R ${GROUP} "$VISITDIR/python"
-    fi
+    change_install_dir_perms "$VISITDIR/python"
     return 0
 }
 
@@ -763,6 +762,8 @@ function build_python
         return 1
     fi
 
+    cleanup_build_dirs $PYTHON_BUILD_DIR
+
     cd "$START_DIR"
     info "Done with Python"
 
@@ -1000,6 +1001,7 @@ function build_pillow
     # Simply re-execute the python perms command.
     fix_py_permissions
 
+    cleanup_build_dirs $PY_PILLOW_BUILD_DIR
     info "Done with Pillow."
     return 0
 }

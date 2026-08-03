@@ -193,10 +193,9 @@ function build_icet
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/icet"
-        chgrp -R ${GROUP} "$VISITDIR/icet"
-    fi
+    cleanup_build_dirs $ICET_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/icet"
 
     cd "$START_DIR"
     echo "Done with IceT"

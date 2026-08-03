@@ -145,11 +145,14 @@ function build_moab
     #
     info "Installing moab"
     $MAKE install
-
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/moab"
-        chgrp -R ${GROUP} "$VISITDIR/moab"
+    if [[ $? != 0 ]] ; then
+        warn "moab install failed.  Giving up"
+        return 1
     fi
+
+    cleanup_build_dirs $MOAB_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/moab"
 
     cd "$START_DIR"
     info "Done with moab"

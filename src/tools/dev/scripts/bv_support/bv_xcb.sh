@@ -383,10 +383,17 @@ function build_xcb
     make install
     cd ..
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/xcb"
-        chgrp -R ${GROUP} "$VISITDIR/xcb"
-    fi
+
+    cleanup_build_dirs $XCB_IMAGE_BUILD_DIR
+    cleanup_build_dirs $XCB_KEYSYMS_BUILD_DIR
+    cleanup_build_dirs $XCB_M4_BUILD_DIR
+    cleanup_build_dirs $XCB_RENDERUTIL_BUILD_DIR
+    cleanup_build_dirs $XCB_UTIL_BUILD_DIR
+    cleanup_build_dirs $XCB_WM_BUILD_DIR
+    cleanup_build_dirs $XORG_MACROS_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/xcb"
+
     cd "$START_DIR"
     info "Done with xcb"
     return 0

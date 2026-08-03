@@ -468,10 +468,10 @@ function build_mesagl
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/mesagl"
-        chgrp -R ${GROUP} "$VISITDIR/mesagl"
-    fi
+    cleanup_build_dirs $MESAGL_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/mesagl"
+
     cd "$START_DIR"
     info "Done with MesaGL"
     return 0

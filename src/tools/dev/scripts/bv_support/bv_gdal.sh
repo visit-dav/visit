@@ -265,10 +265,10 @@ function build_gdal
                           $INSTALLNAMEPATH/libgdal.${SO_EXT}
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/gdal"
-        chgrp -R ${GROUP} "$VISITDIR/gdal"
-    fi
+    cleanup_build_dirs $GDAL_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/gdal"
+
     cd "$START_DIR"
     info "Done with GDAL"
     return 0

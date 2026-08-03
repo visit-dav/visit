@@ -152,11 +152,15 @@ function build_fms
     #
     info "Installing FMS"
     ${CMAKE_COMMAND} --install .
-
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/fms"
-        chgrp -R ${GROUP} "$VISITDIR/fms"
+    if [[ $? != 0 ]] ; then
+        warn "FMS install failed.  Giving up"
+        return 1
     fi
+
+    cleanup_build_dirs $FMS_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/fms"
+
     cd "$START_DIR"    
     info "Done with FMS"
     return 0

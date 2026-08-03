@@ -255,10 +255,10 @@ function build_mpich
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/mpich"
-        chgrp -R ${GROUP} "$VISITDIR/mpich"
-    fi
+    cleanup_build_dirs $MPICH_BUILD_DIR
+
+    change_install_dir_perms  "$VISITDIR/mpich"
+
     cd "$START_DIR"
     info "Done with MPICH"
     return 0

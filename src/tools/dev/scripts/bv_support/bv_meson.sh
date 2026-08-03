@@ -129,10 +129,10 @@ function build_meson
 
     chmod 700 $MESON_CMD
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/meson"
-        chgrp -R ${GROUP} "$VISITDIR/meson"
-    fi
+    cleanup_build_dirs $MESON_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/meson"
+
     cd "$START_DIR"
     info "Done with meson"
     return 0
