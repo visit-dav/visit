@@ -192,14 +192,20 @@ function build_cmake
         warn "Cannot build cmake, giving up."
         return 1
     fi
+    info "Successfully built CMake"
 
     info "Installing CMake . . ."
     $MAKE install
-    info "Successfully built CMake"
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/cmake"
-        chgrp -R ${GROUP} "$VISITDIR/cmake"
+
+    if [[ $? != 0 ]] ; then
+        warn "Install for CMake failed."
+        return 1
     fi
+
+    cleanup_build_dirs $CMAKE_BUILD_DIR
+
+    change_install_dir_perms $VISITDIR/cmake
+
     cd "$START_DIR"
     info "Done with CMake"
 }

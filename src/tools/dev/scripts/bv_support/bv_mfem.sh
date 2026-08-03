@@ -243,11 +243,15 @@ function build_mfem
     #
     info "Installing mfem"
     ${CMAKE_COMMAND} --install .
-
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/mfem"
-        chgrp -R ${GROUP} "$VISITDIR/mfem"
+    if [[ $? != 0 ]] ; then
+        warn "mfem instsll failed.  Giving up"
+        return 1
     fi
+
+    cleanup_build_dirs $MFEM_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/mfem"
+
     cd "$START_DIR"
     info "Done with mfem"
     return 0

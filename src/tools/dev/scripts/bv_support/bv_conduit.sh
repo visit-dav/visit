@@ -309,10 +309,10 @@ function build_conduit
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/conduit"
-        chgrp -R ${GROUP} "$VISITDIR/conduit"
-    fi
+    cleanup_build_dirs $CONDUIT_BUILD_DIR $CONDUIT_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/conduit"
+
     cd "$START_DIR"
     info "Done with Conduit"
     return 0

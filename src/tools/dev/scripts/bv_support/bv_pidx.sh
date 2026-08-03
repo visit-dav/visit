@@ -303,10 +303,10 @@ function build_pidx
 
 #    mv ${pidx_inst_path}/lib64/* ${pidx_inst_path}/lib
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/pidx"
-        chgrp -R ${GROUP} "$VISITDIR/pidx"
-    fi
+    cleanup_build_dirs $PIDX_BUILD_DIR $PIDX_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/pidx"
+
     cd "$START_DIR"
     info "Done with pidx"
     return 0
