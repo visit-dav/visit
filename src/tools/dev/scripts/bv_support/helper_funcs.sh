@@ -931,12 +931,13 @@ function prepare_build_dir
 # Date: Wed Jul 15, 2026                                                      #
 #                                                                             #
 # Modifications:                                                              #
-#                                                                             #
+#   Kathleen Biagas, Tue Aug 3, 2026                                          #
+#   Removed 'Not performing cleanup of build dirs' info message. Seemed a bit #
+#   excessive to be printed for every library.                                #
 # *************************************************************************** #
 function cleanup_build_dirs
 {
     if [[ "$CLEANUP" == "no" ]] ; then
-        info "Not performing cleanup of build dirs"
         return 0
     fi
 
