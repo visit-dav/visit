@@ -174,7 +174,7 @@ To maintain worktrees two *existing* branches of development, ``develop`` and ``
     cd ../3.5RC
     git submodule update --init --recursive
 
-The clone is given the *default* directory name and branch of ``develop``.
+The clone is checked out to the *default* branch, ``develop``.
 The worktree command will create a worktree directory that is peer to ``visit`` and will check out that worktree to the *existing* ``3.5RC`` branch.
 Work can proceed in either ``visit``  or ``3.5RC`` directories totally independently.
 Also, be aware that when a worktree is *added*, any submodules need to be initialized.
