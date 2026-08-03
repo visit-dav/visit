@@ -166,7 +166,7 @@ Maintaining multiple clones is possible but requires a lot of disk space, especi
 Another approach is to use git `worktrees <https://git-scm.com/docs/git-worktree>`__.
 Worktrees are like multiple clones except they all share a common, single ``.git`` repository database.
 
-To maintain worktrees two *existing* branches of development, ``develop`` and ``3.5RC``, in two directory peers named ``visit`` and ``3.5RC``, do the following::
+To maintain worktrees for two *existing* branches of development, ``develop`` and ``3.5RC``, in two directory peers named ``visit`` and ``3.5RC``, do the following::
 
     git clone --recursive https://github.com/visit-dav/visit.git
     cd visit
