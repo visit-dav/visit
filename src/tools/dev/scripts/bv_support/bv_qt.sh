@@ -417,7 +417,7 @@ EOF
 function build_qt_base
 {
     echo "Build Qt 6 base module"
-    prepare_build_dir $QT_BASE_SOURCE_DIR $QT_BASE_FILE SHA256 $QTBASE_SHA256_CHECKSUM
+    prepare_build_dir $QT_BASE_SOURCE_DIR $QT_BASE_FILE SHA256 $QT_BASE_SHA256_CHECKSUM
 
     untarred_qt=$?
     # 0, already exists, 1 untarred src, 2 error
@@ -603,22 +603,14 @@ function build_qt_tools
 {
     cd "$START_DIR"
     echo "Build Qt 6 tools module"
+    prepare_build_dir $QT_TOOLS_SOURCE_DIR $QT_TOOLS_FILE SHA256 $QT_TOOLS_SHA256_CHECKSUM
 
-    if ! test -f ${QT_TOOLS_FILE} ; then
-        download_file ${QT_TOOLS_FILE} ${QT_URL}
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${QT_TOOLS_FILE}"
-            return 1
-        fi
-    fi
+    untarred_qt=$?
+    # 0, already exists, 1 untarred src, 2 error
 
-    if ! test -d ${QT_TOOLS_SOURCE_DIR} ; then
-        info "Extracting qt tools ..."
-        uncompress_untar ${QT_TOOLS_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${QT_TOOLS_FILE}"
-            return 1
-        fi
+    if [[ $untarred_qt == -1 ]] ; then
+        warn "Unable to prepare Qt 6 tools directory. Giving Up!"
+        return 1
     fi
 
     # Make a build directory for an out-of-source build.
@@ -654,22 +646,14 @@ function build_qt_svg
 {
     cd "$START_DIR"
     echo "Build Qt 6 svg module"
+    prepare_build_dir $QT_SVG_SOURCE_DIR $QT_SVG_FILE SHA256 $QT_SVG_SHA256_CHECKSUM
 
-    if ! test -f ${QT_SVG_FILE} ; then
-        download_file ${QT_SVG_FILE} ${QT_URL}
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${QT_SVG_FILE}"
-            return 1
-        fi
-    fi
+    untarred_qt=$?
+    # 0, already exists, 1 untarred src, 2 error
 
-    if ! test -d ${QT_SVG_SOURCE_DIR} ; then
-        info "Extracting qt svg ..."
-        uncompress_untar ${QT_SVG_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${QT_SVG_FILE}"
-            return 1
-        fi
+    if [[ $untarred_qt == -1 ]] ; then
+        warn "Unable to prepare Qt 6 svg directory. Giving Up!"
+        return 1
     fi
 
     # Make a build directory for an out-of-source build.
