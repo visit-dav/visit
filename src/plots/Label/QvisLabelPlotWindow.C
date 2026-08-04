@@ -114,6 +114,11 @@ QvisLabelPlotWindow::~QvisLabelPlotWindow()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Kathleen Biagas, Tue Aug 4 2026
+//   Modify 'Draw labels that face' third option from 'Front or Back' to
+//   'Front and Back' to match the attribute entry ('FrontAndBack') and to
+//   be consistent with cli and actual behavior.
+//
 // ****************************************************************************
 
 void
@@ -156,7 +161,7 @@ QvisLabelPlotWindow::CreateWindowContents()
     drawLabelsFacingComboBox = new QComboBox(selectionGroupBox);
     drawLabelsFacingComboBox->addItem(tr("Front"));
     drawLabelsFacingComboBox->addItem(tr("Back"));
-    drawLabelsFacingComboBox->addItem(tr("Front or Back"));
+    drawLabelsFacingComboBox->addItem(tr("Front and Back"));
     connect(drawLabelsFacingComboBox, SIGNAL(activated(int)),
             this, SLOT(drawLabelsFacingChanged(int)));
     selLayout->addWidget(drawLabelsFacingComboBox, 2, 2);

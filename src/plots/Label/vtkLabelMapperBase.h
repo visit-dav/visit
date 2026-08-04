@@ -16,6 +16,7 @@
 #include <avtViewInfo.h>
 
 #include <string>
+#include <vector>
 
 class vtkDataSet;
 class vtkDoubleArray;
@@ -27,17 +28,25 @@ class vtkTextProperty;
 // Class: vtkLabelMapperBase
 //
 // Purpose:  vtk mapper for labels
-//   
 //
-// Programmer: Kathleen Biagas 
+//
+// Programmer: Kathleen Biagas
 // Creation:   April 13, 2017
 //
 // Modifications:
 //
-//     Alister Maguire, Fri May 21 15:11:53 PDT 2021
-//     Inherit from vtkVistFullFrameMapper2d instead of vtkMapper2D. This
-//     allows us to easily interact with full frame mode in the VisIt
-//     pipeline.
+//  Alister Maguire, Fri May 21 15:11:53 PDT 2021
+//  Inherit from vtkVistFullFrameMapper2d instead of vtkMapper2D. This
+//  allows us to easily interact with full frame mode in the VisIt
+//  pipeline.
+//
+//  Kathleen Biagas, Tue Aug 4, 2026
+//  To fix labels drawn interior to mesh:
+//    Add methods AddRenderedLabel, ClearRenderedLabels, and RenderLabelsVTK.
+//    Add RenderedLabelInfo struct, RenderedLabels. Remove LabelPositions.
+//  To fix issues with zooming/panning:
+//    Add HaveLastViewState, LastModelViewMatric, LastProjectionMatrix,
+//    LastViewportSize.
 //
 // ****************************************************************************
 
@@ -54,7 +63,7 @@ public:
 
     void RenderOpaqueGeometry(vtkViewport* viewport, vtkActor2D* actor) override;
     void RenderOverlay(vtkViewport* viewport, vtkActor2D* actor) override;
- 
+
     void ReleaseGraphicsResources(vtkWindow *) override;
 
     vtkMTimeType GetMTime() override;
@@ -95,6 +104,9 @@ protected:
     virtual void BuildLabelsInternal(vtkDataSet*, vtkRenderer*) = 0;
 
     void SetTextAtts(vtkViewport *);
+    void AddRenderedLabel(const double *, const char *, int);
+    void ClearRenderedLabels();
+    void RenderLabelsVTK(vtkViewport *, vtkActor2D *);
 
 
 
@@ -102,7 +114,7 @@ protected:
 protected:
     struct LabelInfo
     {
-        LabelInfo(); 
+        LabelInfo();
         ~LabelInfo();
 
         double screenPoint[3];
@@ -110,12 +122,20 @@ protected:
         int   type;
         const char *label;
     };
+    struct RenderedLabelInfo
+    {
+        RenderedLabelInfo(const double *, const char *, int);
+
+        double point[3];
+        std::string label;
+        int type;
+    };
 
     void CreateCachedCellLabels(vtkDataSet *input);
     void CreateCachedNodeLabels(vtkDataSet *input);
     void ClearLabelCaches();
     void ResetLabelBins();
-    bool AllowLabelInBin(const double *screenPoint, 
+    bool AllowLabelInBin(const double *screenPoint,
                          const char *labelString, int t,
                          const double *realPoint);
 
@@ -153,14 +173,18 @@ protected:
     // Visible point lookup
     bool                   visiblePoint[256];
 
-    // from vtkLabeledDataMapper
-    std::vector<vtkSmartPointer<vtkTextMapper> > TextMappers;
-    std::vector<double> LabelPositions;
+    std::vector<RenderedLabelInfo> RenderedLabels;
+
+    vtkSmartPointer<vtkTextMapper> LabelTextMapper;
 
     vtkSmartPointer<vtkTextProperty> NodeLabelProperty;
     vtkSmartPointer<vtkTextProperty> CellLabelProperty;
 
-    avtViewInfo            visit_view; 
+    avtViewInfo            visit_view;
+    bool                   HaveLastViewState;
+    double                 LastModelViewMatrix[16];
+    double                 LastProjectionMatrix[16];
+    int                    LastViewportSize[2];
 
 private:
     vtkLabelMapperBase(const vtkLabelMapperBase&) = delete;
