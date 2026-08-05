@@ -5,13 +5,14 @@
       *.foam
     </FilePatterns>
     <Files components="M,E">
-      visit_vtkOpenFOAMReader.cxx
-      visit_vtkPOpenFOAMReader.cxx
+      visit_vtkOpenFOAMReader.C
+      avtOpenFOAMMetaDataHelper.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
     <LIBS>
       vtkCommonSystem
+      vtkIOGeometry
       vtksys
     </LIBS>
   </Plugin>

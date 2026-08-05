@@ -2,10 +2,11 @@
 
 visit_add_database_plugin(
     DNAME      OpenFOAM
-    MSRC       visit_vtkOpenFOAMReader.cxx
-               visit_vtkPOpenFOAMReader.cxx
-    ESRC       visit_vtkOpenFOAMReader.cxx
-               visit_vtkPOpenFOAMReader.cxx
+    MSRC       visit_vtkOpenFOAMReader.C
+               avtOpenFOAMMetaDataHelper.C
+    ESRC       visit_vtkOpenFOAMReader.C
+               avtOpenFOAMMetaDataHelper.C
     LIBS       VTK::CommonSystem
+               VTK::IOGeometry
                VTK::vtksys)
 
