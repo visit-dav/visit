@@ -211,6 +211,89 @@ EOF
       return 1
     fi
     return 0;
+}
+
+function apply_vtk95_vtkopenfoamreader_patch
+{
+  # patch vtkOpenFOAMReader to correctly handle dynamic-meshes with
+  # inactive faces. 
+   patch -p0 << \EOF
+--- IO/Geometry/vtkOpenFOAMReader.cxx	2025-06-23 12:12:36.000000000 -0700
++++ IO/Geometry/vtkOpenFOAMReader.cxx	2026-07-24 15:12:54.833824000 -0700
+@@ -6840,7 +6840,24 @@
+ 
+     // Store owner faces
+     this->FaceOwner = ownerDict.ReleasePtr<vtkDataArray>();
+-    const vtkIdType nFaces = this->FaceOwner->GetNumberOfTuples();
++    vtkIdType nFaces = this->FaceOwner->GetNumberOfTuples();
++
++    // Some dynamic meshes pad trailing inactive faces with -1 owner labels.
++    // Trim these entries the same way neighbour padding is handled below.
++    vtkIdType nActiveFaces = nFaces;
++    for (vtkIdType facei = 0; facei < nFaces; ++facei)
++    {
++      if (GetLabelValue(this->FaceOwner, facei, use64BitLabels) < 0)
++      {
++        nActiveFaces = facei;
++        break;
++      }
++    }
++    if (nActiveFaces < nFaces)
++    {
++      this->FaceOwner->Resize(nActiveFaces);
++      nFaces = nActiveFaces;
++    }
+ 
+     // Check for max cell, check validity
+     for (vtkIdType facei = 0; facei < nFaces; ++facei)
+@@ -6912,27 +6929,26 @@
+ 
+     // Store neighbour faces
+     this->FaceNeigh = neighDict.ReleasePtr<vtkDataArray>();
+-    const vtkIdType nFaces = this->FaceOwner->GetNumberOfTuples();
++    vtkIdType nNeighbourFaces = this->FaceNeigh->GetNumberOfTuples();
+ 
+-    if (nFaces == this->FaceNeigh->GetNumberOfTuples())
++    // Some meshes pad trailing inactive entries in neighbour with -1 values.
++    // Trim these entries regardless of whether owner/neighbour lengths match.
++    vtkIdType nInternalFaces = nNeighbourFaces;
++    for (vtkIdType facei = 0; facei < nNeighbourFaces; ++facei)
+     {
+-      // Extremely old meshes had identical size for owner/neighbour and -1 padding
+-      vtkIdType nInternalFaces = 0;
+-      for (vtkIdType facei = 0; facei < nFaces; ++facei)
++      if (GetLabelValue(this->FaceNeigh, facei, use64BitLabels) < 0)
+       {
+-        if (GetLabelValue(this->FaceNeigh, facei, use64BitLabels) < 0)
+-        {
+-          break;
+-        }
+-        else
+-        {
+-          ++nInternalFaces;
+-        }
++        nInternalFaces = facei;
++        break;
+       }
++    }
++    if (nInternalFaces < nNeighbourFaces)
++    {
+       this->FaceNeigh->Resize(nInternalFaces);
++      nNeighbourFaces = nInternalFaces;
+     }
+ 
+-    const vtkIdType nInternalFaces = this->FaceNeigh->GetNumberOfTuples();
++    nInternalFaces = this->FaceNeigh->GetNumberOfTuples();
+ 
+     // Check for max cell, check validity
+     for (vtkIdType facei = 0; facei < nInternalFaces; ++facei)
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenFOAMReader.cxx failed."
+      return 1
+    fi
+    return 0;
 
 }
 
@@ -2199,6 +2282,11 @@ function apply_vtk_patch
         fi
 
         apply_vtk95_vtkdatawriter_patch
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
+
+        apply_vtk95_vtkopenfoamreader_patch
         if [[ $? != 0 ]] ; then
            return 1
         fi
