@@ -71,6 +71,149 @@ matrix_mul_point(double out[4], const double M[4][4], const double pt[4])
     out[3] = pt[0]*M[0][3] + pt[1]*M[1][3] + pt[2]*M[2][3] + pt[3]*M[3][3];
 }
 
+//--------------------------------------------------------------------------
+// Depth / ZBuffer helpers
+
+static bool
+LabelPointToZBufferPixel(vtkRenderer *ren, const double *normalizedPoint,
+    int zBufferWidth, int zBufferHeight, int &sx, int &sy)
+{
+    if(ren == NULL || normalizedPoint == NULL ||
+       zBufferWidth <= 0 || zBufferHeight <= 0 ||
+       !std::isfinite(normalizedPoint[0]) ||
+       !std::isfinite(normalizedPoint[1]) ||
+       !std::isfinite(normalizedPoint[2]))
+    {
+        return false;
+    }
+
+    double x = normalizedPoint[0];
+    double y = normalizedPoint[1];
+    ren->NormalizedDisplayToDisplay(x, y);
+
+    // Points exactly on the right/top render-window edge map to width/height.
+    // Clamp those to the last valid depth-buffer pixel instead of rejecting
+    // visible labels at data-set bounds.
+    const double eps = 1.e-6;
+    if(x < -eps || x > double(zBufferWidth) + eps ||
+       y < -eps || y > double(zBufferHeight) + eps)
+    {
+        return false;
+    }
+
+    if(x < 0.)
+        x = 0.;
+    else if(x >= double(zBufferWidth))
+        x = double(zBufferWidth - 1);
+
+    if(y < 0.)
+        y = 0.;
+    else if(y >= double(zBufferHeight))
+        y = double(zBufferHeight - 1);
+
+    sx = int(x);
+    sy = int(y);
+    return true;
+}
+
+static bool
+LabelDepthPassesZBufferValue(double labelDepth, float zValue,
+    float zTolerance)
+{
+    return std::isfinite(labelDepth) && std::isfinite(zValue) &&
+           labelDepth <= double(zValue) + double(zTolerance);
+}
+
+static bool
+LabelDepthPassesZBuffer(const float *zBuffer, int zBufferWidth,
+    int zBufferHeight, int sx, int sy, double labelDepth, float zTolerance)
+{
+    if(zBuffer == NULL || sx < 0 || sx >= zBufferWidth ||
+       sy < 0 || sy >= zBufferHeight)
+    {
+        return false;
+    }
+
+    if(LabelDepthPassesZBufferValue(labelDepth,
+        zBuffer[sy * zBufferWidth + sx], zTolerance))
+    {
+        return true;
+    }
+
+    // A thin decoration or outline can occupy the exact anchor pixel
+    // even when the label's data point is visible.  Use the farthest
+    // non-background neighboring depth as a fallback so such lines do not
+    // make labels at data bounds disappear.
+    const int neighborRadius = 4;
+    float farthestNeighbor = -1.f;
+    for(int yy = sy - neighborRadius; yy <= sy + neighborRadius; ++yy)
+    {
+        if(yy < 0 || yy >= zBufferHeight)
+            continue;
+
+        for(int xx = sx - neighborRadius; xx <= sx + neighborRadius; ++xx)
+        {
+            if(xx < 0 || xx >= zBufferWidth || (xx == sx && yy == sy))
+                continue;
+
+            float zValue = zBuffer[yy * zBufferWidth + xx];
+            if(std::isfinite(zValue) && zValue < 1.f &&
+               zValue > farthestNeighbor)
+            {
+                farthestNeighbor = zValue;
+            }
+        }
+    }
+
+    return farthestNeighbor >= 0.f &&
+           LabelDepthPassesZBufferValue(labelDepth, farthestNeighbor,
+               zTolerance);
+}
+
+static bool
+LabelDepthPassesZBuffer(vtkRenderer *ren, int zBufferWidth,
+    int zBufferHeight, int sx, int sy, double labelDepth, float zTolerance)
+{
+    if(ren == NULL || sx < 0 || sx >= zBufferWidth ||
+       sy < 0 || sy >= zBufferHeight)
+    {
+        return false;
+    }
+
+    if(LabelDepthPassesZBufferValue(labelDepth, ren->GetZ(sx, sy),
+        zTolerance))
+    {
+        return true;
+    }
+
+    const int neighborRadius = 4;
+    float farthestNeighbor = -1.f;
+    for(int yy = sy - neighborRadius; yy <= sy + neighborRadius; ++yy)
+    {
+        if(yy < 0 || yy >= zBufferHeight)
+            continue;
+
+        for(int xx = sx - neighborRadius; xx <= sx + neighborRadius; ++xx)
+        {
+            if(xx < 0 || xx >= zBufferWidth || (xx == sx && yy == sy))
+                continue;
+
+            float zValue = ren->GetZ(xx, yy);
+            if(std::isfinite(zValue) && zValue < 1.f &&
+               zValue > farthestNeighbor)
+            {
+                farthestNeighbor = zValue;
+            }
+        }
+    }
+
+    return farthestNeighbor >= 0.f &&
+           LabelDepthPassesZBufferValue(labelDepth, farthestNeighbor,
+               zTolerance);
+}
+
+//--------------------------------------------------------------------------
+
 vtkLabelMapper *
 vtkLabelMapper::New()
 {
@@ -690,6 +833,9 @@ vtkLabelMapper::TransformPoints(T inputPoints,
 //   Brad Whitlock, Sat Apr 21 21:32:21 PDT 2012
 //   Pass points as doubles.
 //
+//   Kathleen Biagas, Wed Aug 5, 2026
+//   Use new Depth/Zbuffer helpers.
+//
 // ****************************************************************************
 
 void
@@ -709,12 +855,13 @@ vtkLabelMapper::PopulateBinsHelper(vtkRenderer *ren, const unsigned char *
             {
                 if(visiblePoint[quantizedNormalIndices[i]])
                 {
-                    int sx = int(double(zBufferWidth) * transformedPoint[0]);
-                    int sy = int(double(zBufferHeight) * transformedPoint[1]);
-
-                    if(sx >= 0 && sx < zBufferWidth &&
-                       sy >= 0 && sy < zBufferHeight &&
-                       transformedPoint[2] <= zBuffer[sy * zBufferWidth + sx]+zTolerance)
+                    int sx = 0;
+                    int sy = 0;
+                    if(LabelPointToZBufferPixel(ren, transformedPoint,
+                           zBufferWidth, zBufferHeight, sx, sy) &&
+                       LabelDepthPassesZBuffer(zBuffer, zBufferWidth,
+                           zBufferHeight, sx, sy, transformedPoint[2],
+                           zTolerance))
                     {
                         AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
                     }
@@ -731,11 +878,13 @@ vtkLabelMapper::PopulateBinsHelper(vtkRenderer *ren, const unsigned char *
             //
             for(vtkIdType i = 0; i < n; ++i)
             {
-                int sx = int(double(zBufferWidth) * transformedPoint[0]);
-                int sy = int(double(zBufferHeight) * transformedPoint[1]);
-                if(sx >= 0 && sx < zBufferWidth &&
-                   sy >= 0 && sy < zBufferHeight &&
-                  transformedPoint[2] <= zBuffer[sy * zBufferWidth + sx]+zTolerance)
+                int sx = 0;
+                int sy = 0;
+                if(LabelPointToZBufferPixel(ren, transformedPoint,
+                       zBufferWidth, zBufferHeight, sx, sy) &&
+                   LabelDepthPassesZBuffer(zBuffer, zBufferWidth,
+                       zBufferHeight, sx, sy, transformedPoint[2],
+                       zTolerance))
                 {
                     AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
                 }
@@ -756,14 +905,15 @@ vtkLabelMapper::PopulateBinsHelper(vtkRenderer *ren, const unsigned char *
             {
                 if(visiblePoint[quantizedNormalIndices[i]])
                 {
-                    int sx = int(double(zBufferWidth) * transformedPoint[0]);
-                    int sy = int(double(zBufferHeight) * transformedPoint[1]);
-                    if(sx >= 0 && sx < zBufferWidth &&
-                       sy >= 0 && sy < zBufferHeight)
+                    int sx = 0;
+                    int sy = 0;
+                    if(LabelPointToZBufferPixel(ren, transformedPoint,
+                           zBufferWidth, zBufferHeight, sx, sy) &&
+                       LabelDepthPassesZBuffer(ren, zBufferWidth,
+                           zBufferHeight, sx, sy, transformedPoint[2],
+                           zTolerance))
                     {
-                        float Z = ren->GetZ(sx, sy);
-                        if(transformedPoint[2] <= Z+zTolerance)
-                            AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
+                        AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
                     }
                 }
                 transformedPoint += 3;
@@ -778,14 +928,14 @@ vtkLabelMapper::PopulateBinsHelper(vtkRenderer *ren, const unsigned char *
             //
             for(vtkIdType i = 0; i < n; ++i)
             {
-                int sx = int(double(zBufferWidth) * transformedPoint[0]);
-                int sy = int(double(zBufferHeight) * transformedPoint[1]);
-                if(sx >= 0 && sx < zBufferWidth &&
-                   sy >= 0 && sy < zBufferHeight)
+                int sx = 0;
+                int sy = 0;
+                if(LabelPointToZBufferPixel(ren, transformedPoint,
+                       zBufferWidth, zBufferHeight, sx, sy) &&
+                   LabelDepthPassesZBuffer(ren, zBufferWidth, zBufferHeight,
+                       sx, sy, transformedPoint[2], zTolerance))
                 {
-                    float Z = ren->GetZ(sx,sy);
-                    if(transformedPoint[2] <= Z+zTolerance)
-                        AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
+                    AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
                 }
                 transformedPoint += 3;
                 realPoint += 3;
@@ -1483,6 +1633,9 @@ vtkLabelMapper::GetPositionScale(double *scale)
 //   Kathleen Biagas, Tue Aug 4, 2026
 //   Modified to use AddRenderedLabel.
 //
+//   Kathleen Biagas, Wed Aug 5, 2026
+//   Use new Depth/Zbuffer helpers.
+//
 // ****************************************************************************
 
 
@@ -1555,14 +1708,13 @@ vtkLabelMapper::DrawAllCellLabels3D(vtkDataSet *input, vtkRenderer *ren)
     // should be plotted.
     //
 #define ZBUFFER_PREDICATE_START \
-                          double sx = vprime[0];\
-                          double sy = vprime[1];\
-                          ren->NormalizedDisplayToDisplay(sx, sy);\
-                          int isx = int(sx);\
-                          int isy = int(sy);\
-                          if(isx >= 0 && isx < zBufferWidth &&\
-                             isy >= 0 && isy < zBufferHeight &&\
-                             vprime[2] <= zBuffer[isy*zBufferWidth+isx]+zTolerance)\
+                          int isx = 0;\
+                          int isy = 0;\
+                          if(LabelPointToZBufferPixel(ren, vprime,\
+                                 zBufferWidth, zBufferHeight, isx, isy) &&\
+                             LabelDepthPassesZBuffer(zBuffer, zBufferWidth,\
+                                 zBufferHeight, isx, isy, vprime[2],\
+                                 zTolerance))\
                           {
 #define ZBUFFER_PREDICATE_END }
         if(quantizedNormalIndices == 0)
@@ -1586,19 +1738,15 @@ vtkLabelMapper::DrawAllCellLabels3D(vtkDataSet *input, vtkRenderer *ren)
     // Query the zbuffer one pixel at a time to avoid having to read it
     // all at once.
     //
-#define ZBUFFER_PREDICATE_START float Z = 0.;\
-                          double sx = vprime[0];\
-                          double sy = vprime[1];\
-                          ren->NormalizedDisplayToDisplay(sx, sy);\
-                          int isx = int(sx);\
-                          int isy = int(sy);\
-                          if(isx >= 0 && isx < zBufferWidth &&\
-                             isy >= 0 && isy < zBufferHeight)\
-                          {\
-                              Z = ren->GetZ(isx, isy); \
-                              if(vprime[2] <= Z+zTolerance)\
+#define ZBUFFER_PREDICATE_START int isx = 0;\
+                          int isy = 0;\
+                          if(LabelPointToZBufferPixel(ren, vprime,\
+                                 zBufferWidth, zBufferHeight, isx, isy) &&\
+                             LabelDepthPassesZBuffer(ren, zBufferWidth,\
+                                 zBufferHeight, isx, isy, vprime[2],\
+                                 zTolerance))\
                               {
-#define ZBUFFER_PREDICATE_END }}
+#define ZBUFFER_PREDICATE_END }
         if(quantizedNormalIndices == 0)
         {
 #define VISIBLE_POINT_PREDICATE
@@ -1667,6 +1815,9 @@ vtkLabelMapper::DrawAllCellLabels3D(vtkDataSet *input, vtkRenderer *ren)
 //   Brad Whitlock, Tue Apr 25 10:26:22 PDT 2006
 //   I made it use our own transformation matrix to transform the points.
 //
+//   Kathleen Biagas, Wed Aug 5, 2026
+//   Use new Depth/Zbuffer helpers.
+//
 // ****************************************************************************
 
 #define BEGIN_LABEL labelString = this->NodeLabelsCache + this->MaxLabelSize*id; if(!nodeLabelsCached) {
@@ -1712,14 +1863,13 @@ vtkLabelMapper::DrawAllNodeLabels3D(vtkDataSet *input, vtkRenderer *ren)
         // should be plotted.
         //
 #define ZBUFFER_PREDICATE_START \
-                          double sx = vprime[0];\
-                          double sy = vprime[1];\
-                          ren->NormalizedDisplayToDisplay(sx, sy);\
-                          int isx = int(sx);\
-                          int isy = int(sy);\
-                          if(isx >= 0 && isx < zBufferWidth &&\
-                             isy >= 0 && isy < zBufferHeight &&\
-                             vprime[2] <= zBuffer[isy*zBufferWidth+isx]+zTolerance)\
+                          int isx = 0;\
+                          int isy = 0;\
+                          if(LabelPointToZBufferPixel(ren, vprime,\
+                                 zBufferWidth, zBufferHeight, isx, isy) &&\
+                             LabelDepthPassesZBuffer(zBuffer, zBufferWidth,\
+                                 zBufferHeight, isx, isy, vprime[2],\
+                                 zTolerance))\
                           {
 #define ZBUFFER_PREDICATE_END }
         if(quantizedNormalIndices == 0)
@@ -1745,19 +1895,15 @@ vtkLabelMapper::DrawAllNodeLabels3D(vtkDataSet *input, vtkRenderer *ren)
         // Query the zbuffer one pixel at a time to avoid having to read it
         // all at once.
         //
-#define ZBUFFER_PREDICATE_START float Z = 0.;\
-                          double sx = vprime[0];\
-                          double sy = vprime[1];\
-                          ren->NormalizedDisplayToDisplay(sx, sy);\
-                          int isx = int(sx);\
-                          int isy = int(sy);\
-                          if(isx >= 0 && isx < zBufferWidth &&\
-                             isy >= 0 && isy < zBufferHeight)\
-                          {\
-                              Z=ren->GetZ(isx, isy);\
-                              if(vprime[2] <= Z+zTolerance)\
+#define ZBUFFER_PREDICATE_START int isx = 0;\
+                          int isy = 0;\
+                          if(LabelPointToZBufferPixel(ren, vprime,\
+                                 zBufferWidth, zBufferHeight, isx, isy) &&\
+                             LabelDepthPassesZBuffer(ren, zBufferWidth,\
+                                 zBufferHeight, isx, isy, vprime[2],\
+                                 zTolerance))\
                               {
-#define ZBUFFER_PREDICATE_END }}
+#define ZBUFFER_PREDICATE_END }
         if(quantizedNormalIndices == 0)
         {
 #define VISIBLE_POINT_PREDICATE
