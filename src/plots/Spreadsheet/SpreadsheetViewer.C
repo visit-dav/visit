@@ -638,9 +638,13 @@ SpreadsheetViewer::setColorTable(const char *ctName)
 
     if(colorTableChanged)
     {
-        // Send a paint event to the currently visible page so its cells update
-        if(zTabs->currentWidget() != 0)
-            zTabs->currentWidget()->update();
+        // Send paint events to the table viewports so their delegates remap
+        // cell text colors using the updated lookup table.
+        for(int i = 0; i < nTables; ++i)
+        {
+            if(tables[i] != 0 && tables[i]->viewport() != 0)
+                tables[i]->viewport()->update();
+        }
     }
 
     return colorTableChanged;
@@ -780,7 +784,10 @@ SpreadsheetViewer::Update(Subject *)
 
             // If we've changed then we need to update the spreadsheet.
             if(cachedAtts.GetColorTableName() != plotAtts->GetColorTableName())
-                 needsUpdate = true;
+            {
+                setColorTable(plotAtts->GetColorTableName().c_str());
+                needsUpdate = true;
+            }
             break;
         case SpreadsheetAttributes::ID_showTracerPlane:
             tracerCheckBox->blockSignals(true);
