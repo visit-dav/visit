@@ -7,10 +7,12 @@
 #include <string>
 #include <QTableView>
 #include <list>
+#include <vector>
 
 #include <vtkDataArray.h>
 
 class avtLookupTable;
+class QResizeEvent;
 class vtkRectilinearGrid;
 
 // ****************************************************************************
@@ -20,7 +22,7 @@ class vtkRectilinearGrid;
 //   Subclass of QTable that can directly display VTK data without needing
 //   its own internal representation.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 20 11:15:35 PDT 2007
@@ -44,6 +46,10 @@ class vtkRectilinearGrid;
 //   Brad Whitlock, Thu Jan  5 13:47:15 PST 2012
 //   I added missing data support.
 //
+//   Kathleen Biagas, Thu Aug 6, 2026
+//   Add resizeEvent, add bool to updateColumnWidths. All to ensure cell
+//   values and column headings are readable.
+//
 // ****************************************************************************
 
 class SpreadsheetTable : public QTableView
@@ -61,8 +67,8 @@ public:
 
     void setCurveData(vtkRectilinearGrid *rgrid);
 
-    void setDataArray(vtkDataArray *arr, 
-                      vtkDataArray *ghosts, vtkDataArray *missingData,
+    void setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
+                      vtkDataArray *missingData,
                       int d[3], DisplayMode dm, int sliceindex,
                       int base_index[3]);
     void clearDataArray();
@@ -84,7 +90,11 @@ public slots:
     void selectAll();
     void selectNone();
 protected:
-    void updateColumnWidths();
+    virtual void resizeEvent(QResizeEvent *);
+    void updateColumnWidths(bool recalculate = true);
+private:
+    std::vector<int> columnMinimumWidths;
+    int              minimumRowHeight;
 };
 
 #endif

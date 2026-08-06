@@ -12,7 +12,7 @@
 
 #include <avtCallback.h>
 
-#include <avtOpenGLSpreadsheetTraceRenderer.h>
+#include <avtSpreadsheetTraceRenderer.h>
 
 // ****************************************************************************
 // Method: avtSpreadsheetRenderer::avtSpreadsheetRenderer
@@ -81,7 +81,10 @@ avtSpreadsheetRenderer::New(void)
 // Creation:   Wed Feb 21 09:48:14 PDT 2007
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Aug  6, 2026
+//   Added guard for VTKRen and VTKRen->GetRenderWindows.
+//   Call ReleaseGraphicsResources.
+//
 // ****************************************************************************
 
 void
@@ -89,7 +92,12 @@ avtSpreadsheetRenderer::ReleaseGraphicsResources()
 {
     if (rendererImplementation != 0)
     {
-        VTKRen->GetRenderWindow()->MakeCurrent();
+        if(VTKRen != 0 && VTKRen->GetRenderWindow() != 0)
+        {
+            VTKRen->GetRenderWindow()->MakeCurrent();
+            rendererImplementation->ReleaseGraphicsResources(
+                VTKRen->GetRenderWindow());
+        }
         delete rendererImplementation;
         rendererImplementation = 0;
     }
@@ -182,6 +190,10 @@ avtSpreadsheetRenderer::SetForegroundColor(const double *fg)
 //   Kathleen Biagas, Tue Oct 16 15:14:42 MST 2012
 //   Create vtkDoubleArray for bounds, that's how avtOriginalBounds is created.
 //
+//   Kathleen Biagas, Thu Aug  6, 2026
+//   Pass VTKRen to Render call.
+//   rendererImplemation is now just avtSpreadsheetTraceRenderer.
+//
 // ****************************************************************************
 
 void
@@ -204,11 +216,11 @@ avtSpreadsheetRenderer::RenderTracePlane(vtkDataSet *ds)
     {
         if(rendererImplementation == 0)
         {
-            rendererImplementation = new avtOpenGLSpreadsheetTraceRenderer;
+            rendererImplementation = new avtSpreadsheetTraceRenderer;
         }
          
         if(rendererImplementation != 0)
-             rendererImplementation->Render(ds, bounds, atts, fgColor);
+             rendererImplementation->Render(ds, bounds, VTKRen, atts, fgColor);
     }
 
     if (mustDeleteBounds) bounds->Delete();
