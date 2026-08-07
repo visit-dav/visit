@@ -646,7 +646,7 @@ avtImageColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
         mediator.GetSize(w, h);
         double windowScale = double(w) / double(h);
 
-	double p0[2];
+	    double p0[2];
         p0[0] = 0.5 - windowScale / 2. + imagePosition[0] * windowScale;
         p0[1] = imagePosition[1];
 
