@@ -375,8 +375,7 @@ avtLine2DColleague::AddToRenderer()
 //
 // Modifications:
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//   I changed the routine to plot the data in world coordinates instead of
-//   normalized viewport coordinates to support tiled rendering.
+//   Switched to using RemoveViewProp.
 //   
 // ****************************************************************************
 void
@@ -384,7 +383,7 @@ avtLine2DColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor(actor);
+        mediator.GetForeground()->RemoveViewProp(actor);
         addedToRenderer = false;
     }
 }
