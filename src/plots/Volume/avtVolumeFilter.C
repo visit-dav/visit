@@ -635,13 +635,18 @@ avtVolumeFilter::GetRenderVariables( int &primIndex,
 //    Alister Maguire, Wed Oct  7 16:30:23 PDT 2020
 //    Removed the calls to SetDistance as they are no longer needed.
 //
+//    Kevin Griffin, Tue Jul 28 05:29:03 PM CDT 2026
+//    Route ANARI to RenderImageVTK() to execute the ANARI volume rendering 
+//    without any conflicting global render pass.
+//
 // ****************************************************************************
 
 avtImage_p
 avtVolumeFilter::RenderImage(avtImage_p opaque_image,
                              const WindowAttributes &window)
 {
-    if (atts.GetRendererType() == VolumeAttributes::Parallel)
+    if (atts.GetRendererType() == VolumeAttributes::Parallel ||
+        atts.GetRendererType() == VolumeAttributes::ANARI)
     {
         return RenderImageVTK(opaque_image, window);
     }

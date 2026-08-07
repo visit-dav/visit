@@ -489,6 +489,9 @@ class ViewerPlotList;
 //    Added Set/Get TiledRenderingWidth and TiledRenderingHeight 
 //    to support tiled rendering.
 //
+//    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
+//    Added ResetAnariScene
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -772,6 +775,7 @@ public:
 #ifdef HAVE_ANARI
     void                  SetAnariAttributes(const AnariAttributes &);
     const AnariAttributes &GetAnariAttributes() const;
+    void  ResetAnariScene();
 #endif
 
     void Lineout(const bool);

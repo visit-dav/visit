@@ -79,7 +79,7 @@ function build_xkbcommon
     #
     # Prepare build dir
     #
-    prepare_build_dir $XKBCOMMON_BUILD_DIR $XKBCOMMON_FILE
+    prepare_build_dir $XKBCOMMON_BUILD_DIR $XKBCOMMON_FILE SHA256 $XKBCOMMON_SHA256_CHECKSUM
     untarred_xkbcommon=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -138,10 +138,11 @@ function build_xkbcommon
     cp build/meson-private/xkbcommon-x11.pc ${XKBCOMMON_INSTALL_DIR}/lib/pkgconfig
     cp build/meson-private/xkbregistry.pc ${XKBCOMMON_INSTALL_DIR}/lib/pkgconfig
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/xkbcommon"
-        chgrp -R ${GROUP} "$VISITDIR/xkbcommon"
-    fi
+
+    cleanup_build_dirs $XKBCOMMON_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/xkbcommon"
+
     cd "$START_DIR"
     info "Done with xkbcommon"
     return 0

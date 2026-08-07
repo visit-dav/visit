@@ -30,9 +30,9 @@ function bv_llvm_info
     export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
     export BV_LLVM_SHA256_CHECKSUM="b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2"
 
-    export BV_CLANG_FILE="cfe-${BV_LLVM_VERSION}.src.tar.xz"
-    export BV_CLANG_BUILD_DIR="cfe-${BV_LLVM_VERSION}.src"
-    export BV_CLANG_SHA256_CHECKSUM="7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667"
+    export BV_LLVM_CLANG_FILE="cfe-${BV_LLVM_VERSION}.src.tar.xz"
+    export BV_LLVM_CLANG_BUILD_DIR="cfe-${BV_LLVM_VERSION}.src"
+    export BV_LLVM_CLANG_SHA256_CHECKSUM="7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667"
 }
 
 function bv_llvm_print
@@ -89,7 +89,7 @@ function bv_llvm_ensure
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_LLVM" == "yes" ]] ; then
             if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
-                download_file ${BV_CLANG_FILE} ${BV_CLANG_URL}
+                download_file ${BV_LLVM_CLANG_FILE} ${BV_LLVM_CLANG_URL}
             fi
             ensure_built_or_ready "llvm"   $BV_LLVM_VERSION   $BV_LLVM_BUILD_DIR   $BV_LLVM_FILE $BV_LLVM_URL
             if [[ $? != 0 ]] ; then
@@ -109,7 +109,7 @@ function build_llvm
     #
     # prepare build dir
     #
-    prepare_build_dir $BV_LLVM_BUILD_DIR $BV_LLVM_FILE
+    prepare_build_dir $BV_LLVM_BUILD_DIR $BV_LLVM_FILE SHA256 $BV_LLVM_SHA256_CHECKSUM
     untarred_llvm=$?
     if [[ $untarred_llvm == -1 ]] ; then
         warn "Unable to prepare LLVM build directory. Giving Up!"
@@ -117,10 +117,10 @@ function build_llvm
     fi
 
     # download clang
-    if ! test -f ${BV_CLANG_FILE} ; then
-        download_file ${BV_CLANG_FILE} ${BV_CLANG_URL}
+    if ! test -f ${BV_LLVM_CLANG_FILE} ; then
+        download_file ${BV_LLVM_CLANG_FILE} ${BV_LLVM_CLANG_URL}
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${BV_CLANG_FILE}"
+            warn "Could not download ${BV_LLVM_CLANG_FILE}"
             return 1
         fi
     fi
@@ -128,13 +128,13 @@ function build_llvm
     # extract clang
     if ! test -d clang ; then
         info "Extracting clang ..."
-        uncompress_untar ${BV_CLANG_FILE}
+        uncompress_untar ${BV_LLVM_CLANG_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${BV_CLANG_FILE}"
+            warn "Could not extract ${BV_LLVM_CLANG_FILE}"
             return 1
         fi
         # llvm build system expects the directory to be named clang
-        mv ${BV_CLANG_BUILD_DIR} clang
+        mv ${BV_LLVM_CLANG_BUILD_DIR} clang
     fi
 
     #
@@ -265,10 +265,11 @@ function build_llvm
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/llvm"
-        chgrp -R ${GROUP} "$VISITDIR/llvm"
-    fi
+    cleanup_build_dirs $BV_LLVM_BUILD_DIR $BV_LLVM_SRC_DIR
+    cleanup_build_dirs clang
+
+    change_install_dir_perms "$VISITDIR/llvm"
+
     cd "$START_DIR"
     info "Done with LLVM"
     return 0

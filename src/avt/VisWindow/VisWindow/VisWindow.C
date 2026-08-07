@@ -7162,6 +7162,23 @@ VisWindow::GetAnariAttributes() const
 {
     return rendering->GetAnariAttributes();
 }
+
+// ****************************************************************************
+// Method: VisWindow::ResetAnariScene
+//
+// Purpose:
+//   Force a full scene graph rebuild
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Jul 24 11:46:21 AM CDT 2026
+//
+// ****************************************************************************
+
+void 
+VisWindow::ResetAnariScene()
+{
+    return rendering->ResetAnariScene();
+}
 #endif
 
 // ****************************************************************************

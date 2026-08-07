@@ -23,6 +23,7 @@ function bv_boxlib_info
     export BOXLIB_VERSION=${BOXLIB_VERSION:-"1.3.5"}
     export BOXLIB_FILE=${BOXLIB_FILE:-"ccse-${BOXLIB_VERSION}.tar.gz"}
     export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"1.3.5"}
+    export BOXLIB_SRC_DIR=${BOXLIB_SRC_DIR:-"ccse-${BOXLIB_VERSION}"}
     export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"ccse-${BOXLIB_VERSION}/Src/C_BaseLib"}
     export BOXLIB_SHA256_CHECKSUM="2dd2496d27dc84d9171be06b44e3968fa481867d936174e7d49a547da5f6f755"
 }
@@ -247,7 +248,7 @@ function build_boxlib
     #
     # Prepare build dir
     #
-    prepare_build_dir $BOXLIB_BUILD_DIR $BOXLIB_FILE
+    prepare_build_dir $BOXLIB_BUILD_DIR $BOXLIB_FILE SHA256 $BOXLIB_SHA256_CHECKSUM
     untarred_boxlib=$?
     if [[ $untarred_boxlib == -1 ]] ; then
         warn "Unable to prepare Boxlib Build Directory. Giving Up"
@@ -348,10 +349,10 @@ function build_boxlib
     cp *.H "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include" || \
         error "Boxlib install failed. Giving up!"
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/boxlib"
-        chgrp -R ${GROUP} "$VISITDIR/boxlib"
-    fi
+
+    cleanup_build_dirs $BOXLIB_BUILD_DIR $BOXLIB_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/boxlib"
 
     cd "$START_DIR"
     info "Done with BoxLib"

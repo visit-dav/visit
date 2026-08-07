@@ -359,7 +359,7 @@ function build_mesagl
     #
     # prepare build dir
     #
-    prepare_build_dir $MESAGL_BUILD_DIR $MESAGL_FILE
+    prepare_build_dir $MESAGL_BUILD_DIR $MESAGL_FILE SHA256 $MESAGL_SHA256_CHECKSUM
     untarred_mesagl=$?
     if [[ $untarred_mesagl == -1 ]] ; then
         warn "Unable to prepare MesaGL build directory. Giving Up!"
@@ -468,10 +468,10 @@ function build_mesagl
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/mesagl"
-        chgrp -R ${GROUP} "$VISITDIR/mesagl"
-    fi
+    cleanup_build_dirs $MESAGL_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/mesagl"
+
     cd "$START_DIR"
     info "Done with MesaGL"
     return 0

@@ -157,7 +157,7 @@ function build_pidx
     #
     # Prepare build dir
     #
-    prepare_build_dir $PIDX_BUILD_DIR $PIDX_FILE
+    prepare_build_dir $PIDX_BUILD_DIR $PIDX_FILE SHA256 $PIDX_SHA256_CHECKSUM
     untarred_pidx=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -303,10 +303,10 @@ function build_pidx
 
 #    mv ${pidx_inst_path}/lib64/* ${pidx_inst_path}/lib
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/pidx"
-        chgrp -R ${GROUP} "$VISITDIR/pidx"
-    fi
+    cleanup_build_dirs $PIDX_BUILD_DIR $PIDX_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/pidx"
+
     cd "$START_DIR"
     info "Done with pidx"
     return 0

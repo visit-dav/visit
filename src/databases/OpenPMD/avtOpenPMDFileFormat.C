@@ -1675,9 +1675,6 @@ avtOpenPMDFileFormat::GetVar(int timestate, int domain, const char *varname)
     string  buffer;
     char    xCompBuffer[128];
     char    yCompBuffer[128];
-    hid_t   datasetId;
-    hid_t   datasetType;
-    hid_t   datasetSpace;
     int     ndims;
     float * array;
     float   factor;

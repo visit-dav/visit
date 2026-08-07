@@ -24,7 +24,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed a bug where slicing or contouring an unstructured mesh with VTK_CONVEX_POINT_SET cells caused a crash.</li>
   <li>Fixed a bug with Zone-Pick on an extremely zoomed-in plot containing extremely long thin hexes.</li>
+  <li>Fixed a bug preventing VisIt from being built with CMake 4.0.</li>
   <li>VisIt will now open a session file passed on the command line with '-sessionfile' even if the corresponding .gui component file does not exist.</li>
+  <li>Fixed a bug with the Viewer window not clearing deleted plots when ANARI rendering is enabled. </li>
+  <li>Fixed ANARI volume rendering broken by global ANARI surface pass.</li>
 </ul>
 
 <a name="Enhancements"></a>

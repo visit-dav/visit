@@ -85,7 +85,7 @@ function build_zlib
     #
     # Prepare build dir
     #
-    prepare_build_dir $ZLIB_BUILD_DIR $ZLIB_FILE
+    prepare_build_dir $ZLIB_BUILD_DIR $ZLIB_FILE SHA256 $ZLIB_SHA256_CHECKSUM
     untarred_zlib=$?
     if [[ $untarred_zlib == -1 ]] ; then
         warn "Unable to prepare ZLIB build directory. Giving Up!"
@@ -137,10 +137,10 @@ function build_zlib
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/zlib"
-        chgrp -R ${GROUP} "$VISITDIR/zlib"
-    fi
+    cleanup_build_dirs $ZLIB_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/zlib"
+
     cd "$START_DIR"
     info "Done with ZLIB"
     return 0

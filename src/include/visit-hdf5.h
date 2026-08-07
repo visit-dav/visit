@@ -47,20 +47,10 @@ static void VisIt_IssueH5Warning(int phase, char const *_file_)
     static bool haveIssuedOpenWarning = false;
     static bool haveIssuedCloseWarning = false;
     char msg[512];
-    if (phase == 0 && !haveIssuedOpenWarning)
+    if (phase == 1 && !haveIssuedCloseWarning)
     {
-#ifndef NDEBUG
-        snprintf(msg, sizeof(msg), "Correcting open of HDF5 file without H5F_CLOSE_SEMI in \"%s\".\n"
+        snprintf(msg, sizeof(msg), "An attempt to close an HDF5 file failed in \"%s\", incidating a bug in the plugin.\n"
             "Please contact VisIt developers to have this issue fixed.", ShortenPath(_file_));
-        haveIssuedOpenWarning = true;
-        if (!avtCallback::IssueWarning(msg))
-           cerr << msg << endl;
-#endif
-    }
-    else if (phase == 1 && !haveIssuedCloseWarning)
-    {
-        snprintf(msg, sizeof(msg), "An attempt to close an HDF5 file failed, incidating a bug in the plugin.\n"
-            "Please contact VisIt developers to have this issue fixed.");
         haveIssuedCloseWarning = true;
         if (!avtCallback::IssueWarning(msg))
            cerr << msg << endl;

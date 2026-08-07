@@ -76,7 +76,7 @@ function build_xsd
     #
     # Prepare build dir
     #
-    prepare_build_dir $XSD_BUILD_DIR $XSD_FILE
+    prepare_build_dir $XSD_BUILD_DIR $XSD_FILE SHA256 $XSD_SHA256_CHECKSUM
     untarred_xsd=$?
     if [[ $untarred_xsd == -1 ]] ; then
         warn "Unable to prepare XSD build directory. Giving Up!"
@@ -90,10 +90,10 @@ function build_xsd
     mkdir -p $VISITDIR/xsd/$XSD_VERSION/$VISITARCH/include
     cp -r libxsd/xsd $VISITDIR/xsd/$XSD_VERSION/$VISITARCH/include/
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/xsd"
-        chgrp -R ${GROUP} "$VISITDIR/xsd"
-    fi
+    cleanup_build_dirs $XSD_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/xsd"
+
     cd "$START_DIR"
     return 0
 }

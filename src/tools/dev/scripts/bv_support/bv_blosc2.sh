@@ -62,7 +62,7 @@ function build_blosc2
     #
     # Prepare build dir
     #
-    prepare_build_dir $BLOSC2_BUILD_DIR $BLOSC2_FILE
+    prepare_build_dir $BLOSC2_BUILD_DIR $BLOSC2_FILE SHA256 $BLOSC2_SHA256_CHECKSUM
     untarred_blosc2=$?
     if [[ $untarred_blosc2 == -1 ]] ; then
         warn "Unable to prepare Blosc2 build directory. Giving Up!"
@@ -112,10 +112,9 @@ function build_blosc2
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/blosc2"
-        chgrp -R ${GROUP} "$VISITDIR/blosc2"
-    fi
+    cleanup_build_dirs $BLOSC2_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/blosc2"
 
     cd "$START_DIR"
     info "Done with Blosc2"
