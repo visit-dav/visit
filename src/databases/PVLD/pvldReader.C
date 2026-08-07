@@ -1,3 +1,4 @@
+#include <visit-hdf5.h>
 
 #ifndef _WIN32
 #include <dirent.h>
