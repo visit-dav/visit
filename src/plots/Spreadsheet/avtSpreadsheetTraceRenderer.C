@@ -342,6 +342,22 @@ AddBoundingBox(vtkPolyData *pd, vtkDataArray *bounds)
 }
 }
 
+// ****************************************************************************
+// Method: avtSpreadsheetTraceRenderer::avtSpreadsheetTraceRenderer
+//
+// Purpose:
+//   Constructor for the avtSpreadsheetTraceRenderer class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 09:17:47 PDT 2007
+//
+// Modifications:
+//   Kathleen Biagas, Thu Aug  6, 2026
+//   Initialize the VTK mappers and actors used to render the tracer plane and
+//   outlines.
+//
+// ****************************************************************************
+
 avtSpreadsheetTraceRenderer::avtSpreadsheetTraceRenderer()
 {
     surfaceMapper = vtkPolyDataMapper::New();
@@ -376,6 +392,21 @@ avtSpreadsheetTraceRenderer::avtSpreadsheetTraceRenderer()
     currentLineActor->GetProperty()->SetLineWidth(3.);
 }
 
+// ****************************************************************************
+// Method: avtSpreadsheetTraceRenderer::~avtSpreadsheetTraceRenderer
+//
+// Purpose:
+//   Destructor for the avtSpreadsheetTraceRenderer class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 09:17:47 PDT 2007
+//
+// Modifications:
+//   Kathleen Biagas, Thu Aug  6, 2026
+//   Delete the VTK mappers and actors used for rendering.
+//
+// ****************************************************************************
+
 avtSpreadsheetTraceRenderer::~avtSpreadsheetTraceRenderer()
 {
     surfaceActor->Delete();
@@ -387,6 +418,22 @@ avtSpreadsheetTraceRenderer::~avtSpreadsheetTraceRenderer()
     currentLineActor->Delete();
     currentLineMapper->Delete();
 }
+
+// ****************************************************************************
+// Method: avtSpreadsheetTraceRenderer::ReleaseGraphicsResources
+//
+// Purpose:
+//   Releases graphics resources owned by the renderer's VTK objects.
+//
+// Arguments:
+//   win : The VTK window whose resources should be released.
+//
+// Programmer: Kathleen Biagas
+// Creation:   Thu Aug  6, 2026
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void
 avtSpreadsheetTraceRenderer::ReleaseGraphicsResources(vtkWindow *win)
@@ -400,6 +447,29 @@ avtSpreadsheetTraceRenderer::ReleaseGraphicsResources(vtkWindow *win)
     currentLineActor->ReleaseGraphicsResources(win);
     currentLineMapper->ReleaseGraphicsResources(win);
 }
+
+// ****************************************************************************
+// Method: avtSpreadsheetTraceRenderer::Render
+//
+// Purpose:
+//   Builds and renders the tracer plane, patch outline, and current cell
+//   outline for the input dataset.
+//
+// Arguments:
+//   ds       : The dataset to render.
+//   bounds   : The bounds of the dataset.
+//   renderer : The VTK renderer to draw into.
+//   atts     : The Spreadsheet plot's attributes.
+//   fgColor  : The foreground color.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 20 14:33:14 PST 2007
+//
+// Modifications:
+//   Kathleen Biagas, Thu Aug  6, 2026
+//   Use VTK poly data and actors instead of direct OpenGL calls.
+//
+// ****************************************************************************
 
 void
 avtSpreadsheetTraceRenderer::Render(vtkDataSet *ds, vtkDataArray *bounds,
@@ -506,6 +576,27 @@ avtSpreadsheetTraceRenderer::Render(vtkDataSet *ds, vtkDataArray *bounds,
     foregroundLines->Delete();
     currentLines->Delete();
 }
+
+// ****************************************************************************
+// Method: avtSpreadsheetTraceRenderer::DrawRectilinearGrid
+//
+// Purpose:
+//   Adds tracer plane and outline geometry for a rectilinear grid.
+//
+// Arguments:
+//   rgrid   : The rectilinear grid to render.
+//   bounds  : The bounds of the dataset.
+//   atts    : The Spreadsheet plot's attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 20 14:33:14 PST 2007
+//
+// Modifications:
+//   Kathleen Biagas, Thu Aug  6, 2026
+//   Use VTK poly data instead of direct OpenGL calls and derive current cell
+//   outlines from the pick type.
+//
+// ****************************************************************************
 
 void
 avtSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid,
@@ -646,6 +737,27 @@ avtSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid,
     }
 }
 
+// ****************************************************************************
+// Method: avtSpreadsheetTraceRenderer::DrawStructuredGrid
+//
+// Purpose:
+//   Adds tracer plane and outline geometry for a structured grid.
+//
+// Arguments:
+//   sgrid  : The structured grid to render.
+//   bounds : The bounds of the dataset.
+//   atts   : The Spreadsheet plot's attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 20 14:33:14 PST 2007
+//
+// Modifications:
+//   Kathleen Biagas, Thu Aug  6, 2026
+//   Use VTK poly data instead of direct OpenGL calls and derive current cell
+//   outlines from the pick type.
+//
+// ****************************************************************************
+
 void
 avtSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
     vtkDataArray *bounds, const SpreadsheetAttributes &atts,
@@ -769,12 +881,48 @@ avtSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
     }
 }
 
+// ****************************************************************************
+// Method: avtSpreadsheetTraceRenderer::DrawBoundingBox
+//
+// Purpose:
+//   Adds bounding box line geometry for the input bounds.
+//
+// Arguments:
+//   bounds : The bounds of the dataset.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 20 14:33:14 PST 2007
+//
+// Modifications:
+//   Kathleen Biagas, Thu Aug  6, 2026
+//   Use VTK poly data instead of direct OpenGL calls.
+//
+// ****************************************************************************
+
 void
 avtSpreadsheetTraceRenderer::DrawBoundingBox(vtkDataArray *bounds,
     const double *)
 {
     AddBoundingBox(foregroundLineMapper->GetInput(), bounds);
 }
+
+// ****************************************************************************
+// Method: avtSpreadsheetTraceRenderer::DrawCell
+//
+// Purpose:
+//   Adds line geometry for the edges of the current cell.
+//
+// Arguments:
+//   cell : The cell to outline.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 20 14:33:14 PST 2007
+//
+// Modifications:
+//   Kathleen Biagas, Thu Aug  6, 2026
+//   Use VTK poly data instead of direct OpenGL calls.
+//
+// ****************************************************************************
 
 void
 avtSpreadsheetTraceRenderer::DrawCell(vtkCell *cell, const double *)

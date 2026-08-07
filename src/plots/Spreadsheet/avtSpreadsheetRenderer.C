@@ -83,7 +83,7 @@ avtSpreadsheetRenderer::New(void)
 // Modifications:
 //   Kathleen Biagas, Thu Aug  6, 2026
 //   Added guard for VTKRen and VTKRen->GetRenderWindows.
-//   Call ReleaseGraphicsResources.
+//   Call ReleaseGraphicsResources on rendererImplementation.
 //
 // ****************************************************************************
 
