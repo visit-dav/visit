@@ -351,8 +351,7 @@ avtLine2DColleague::updateArrows(vtkPolyData *a0, vtkPolyData *a1,
 //
 // Modifications:
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//   I changed the routine to plot the data in world coordinates instead of
-//   normalized viewport coordinates to support tiled rendering.
+//   Switched to using AddViewProp.
 //   
 // ****************************************************************************
 void 
@@ -360,7 +359,7 @@ avtLine2DColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor(actor);
+        mediator.GetForeground()->AddViewProp(actor);
         addedToRenderer = true;
     }
 }
