@@ -96,7 +96,7 @@ function build_imath
     #
     # Prepare build dir
     #
-    prepare_build_dir $IMATH_BUILD_DIR $IMATH_FILE
+    prepare_build_dir $IMATH_BUILD_DIR $IMATH_FILE SHA256 $IMATH_SHA256_CHECKSUM
     untarred_imath=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -167,10 +167,11 @@ function build_imath
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/openexr"
-        chgrp -R ${GROUP} "$VISITDIR/openexr"
-    fi
+
+    cleanup_build_dirs $IMATH_BUILD_DIR $IMATH_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/openexr"
+
     cd "$START_DIR"
     info "Done with Imath"
     return 0
@@ -231,7 +232,7 @@ function build_openexr
     #
     # Prepare build dir
     #
-    prepare_build_dir $OPENEXR_BUILD_DIR $OPENEXR_FILE
+    prepare_build_dir $OPENEXR_BUILD_DIR $OPENEXR_FILE SHA256 $OPENEXR_SHA256_CHECKSUM
     untarred_openexr=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -273,7 +274,7 @@ function build_openexr
     #
     # Configure OpenEXR
     #
-    cd $OPENEXR_BUILD_DIR || error "Can't cd to Imath build dir."
+    cd $OPENEXR_BUILD_DIR || error "Can't cd to OpenEXR build dir."
 
     #
     # Remove the CMakeCache.txt files ... existing files sometimes prevent
@@ -334,10 +335,10 @@ function build_openexr
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/openexr"
-        chgrp -R ${GROUP} "$VISITDIR/openexr"
-    fi
+    cleanup_build_dirs $OPENEXR_BUILD_DIR $OPENEXR_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/openexr"
+
     cd "$START_DIR"
     info "Done with OpenEXR"
     return 0

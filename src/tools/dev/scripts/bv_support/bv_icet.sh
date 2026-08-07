@@ -117,7 +117,7 @@ function build_icet
     #
     CMAKE_BIN="${CMAKE_COMMAND}"
 
-    prepare_build_dir $ICET_BUILD_DIR $ICET_FILE
+    prepare_build_dir $ICET_BUILD_DIR $ICET_FILE SHA256 $ICET_SHA256_CHECKSUM
     untarred_icet=$?
     if [[ $untarred_icet == -1 ]] ; then
         warn "Unable to prepare IceT build directory. Giving Up!"
@@ -193,10 +193,9 @@ function build_icet
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/icet"
-        chgrp -R ${GROUP} "$VISITDIR/icet"
-    fi
+    cleanup_build_dirs $ICET_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/icet"
 
     cd "$START_DIR"
     echo "Done with IceT"

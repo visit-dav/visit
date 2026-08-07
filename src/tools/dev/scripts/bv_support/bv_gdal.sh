@@ -167,7 +167,7 @@ function build_gdal
     #
     # Prepare build dir
     #
-    prepare_build_dir $GDAL_BUILD_DIR $GDAL_FILE
+    prepare_build_dir $GDAL_BUILD_DIR $GDAL_FILE SHA256 $GDAL_SHA256_CHECKSUM
     untarred_gdal=$?
     if [[ $untarred_gdal == -1 ]] ; then
         warn "Unable to prepare GDAL Build Directory. Giving Up"
@@ -265,10 +265,10 @@ function build_gdal
                           $INSTALLNAMEPATH/libgdal.${SO_EXT}
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/gdal"
-        chgrp -R ${GROUP} "$VISITDIR/gdal"
-    fi
+    cleanup_build_dirs $GDAL_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/gdal"
+
     cd "$START_DIR"
     info "Done with GDAL"
     return 0

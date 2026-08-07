@@ -143,7 +143,7 @@ function build_mfem
     #
     # Prepare build dir
     #
-    prepare_build_dir $MFEM_BUILD_DIR $MFEM_FILE
+    prepare_build_dir $MFEM_BUILD_DIR $MFEM_FILE SHA256 $MFEM_SHA256_CHECKSUM
     untarred_mfem=$?
     if [[ $untarred_mfem == -1 ]] ; then
         warn "Unable to prepare mfem build directory. Giving Up!"
@@ -243,11 +243,15 @@ function build_mfem
     #
     info "Installing mfem"
     ${CMAKE_COMMAND} --install .
-
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/mfem"
-        chgrp -R ${GROUP} "$VISITDIR/mfem"
+    if [[ $? != 0 ]] ; then
+        warn "mfem instsll failed.  Giving up"
+        return 1
     fi
+
+    cleanup_build_dirs $MFEM_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/mfem"
+
     cd "$START_DIR"
     info "Done with mfem"
     return 0

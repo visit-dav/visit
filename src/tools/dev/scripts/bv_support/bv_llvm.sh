@@ -109,7 +109,7 @@ function build_llvm
     #
     # prepare build dir
     #
-    prepare_build_dir $BV_LLVM_BUILD_DIR $BV_LLVM_FILE
+    prepare_build_dir $BV_LLVM_BUILD_DIR $BV_LLVM_FILE SHA256 $BV_LLVM_SHA256_CHECKSUM
     untarred_llvm=$?
     if [[ $untarred_llvm == -1 ]] ; then
         warn "Unable to prepare LLVM build directory. Giving Up!"
@@ -265,10 +265,11 @@ function build_llvm
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/llvm"
-        chgrp -R ${GROUP} "$VISITDIR/llvm"
-    fi
+    cleanup_build_dirs $BV_LLVM_BUILD_DIR $BV_LLVM_SRC_DIR
+    cleanup_build_dirs clang
+
+    change_install_dir_perms "$VISITDIR/llvm"
+
     cd "$START_DIR"
     info "Done with LLVM"
     return 0

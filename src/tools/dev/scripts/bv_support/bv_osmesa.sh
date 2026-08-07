@@ -359,7 +359,7 @@ function build_osmesa
     #
     # prepare build dir
     #
-    prepare_build_dir $OSMESA_BUILD_DIR $OSMESA_FILE
+    prepare_build_dir $OSMESA_BUILD_DIR $OSMESA_FILE SHA256 $OSMESA_SHA256_CHECKSUM
     untarred_osmesa=$?
     if [[ $untarred_osmesa == -1 ]] ; then
         warn "Unable to prepare Mesa build directory. Giving Up!"
@@ -467,10 +467,10 @@ function build_osmesa
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/osmesa"
-        chgrp -R ${GROUP} "$VISITDIR/osmesa"
-    fi
+    cleanup_build_dirs $OSMESA_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/osmesa"
+
     cd "$START_DIR"
     info "Done with OSMesa"
     return 0

@@ -42,5 +42,6 @@ ExternalProject_Add(ZLIB
     ${LOGGING_OPTIONS}
     PATCH_COMMAND    ${CMAKE_COMMAND} -DZLIB_VERSION:STRING=${ZLIB_VERSION}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
+                                      -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/zlib-patch.cmake )
 

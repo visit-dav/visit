@@ -119,7 +119,6 @@ set(mdserver_DEPENDS
     ${vtktiff_LIBRARIES}
     ${vtkpng_LIBRARIES}
     ${vtkjpeg_LIBRARIES}
-    ${ZLIB_LIB}
     Threads::Threads
     ${DL_LIB})
 

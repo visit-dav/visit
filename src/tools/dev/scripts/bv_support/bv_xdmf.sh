@@ -350,7 +350,7 @@ function build_xdmf
     #
     # Prepare build dir
     #
-    prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE
+    prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE SHA256 $XDMF_SHA256_CHECKSUM
     untarred_xdmf=$?
     if [[ $untarred_xdmf == -1 ]] ; then
         warn "Unable to prepare Xdmf Build Directory. Giving up"
@@ -488,11 +488,9 @@ function build_xdmf
         install_name_tool -id $LIBDIR/libXdmf.dylib $LIBDIR/libXdmf.dylib
     fi
 
+    cleanup_build_dirs $XDMF_BUILD_DIR Xdmf
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/Xdmf"
-        chgrp -R ${GROUP} "$VISITDIR/Xdmf"
-    fi
+    change_install_dir_perms "$VISITDIR/Xdmf"
 
     cd "$START_DIR"
     info "Done with Xdmf"

@@ -151,7 +151,7 @@ function build_boost
     #
     # Prepare build dir
     #
-    prepare_build_dir $BOOST_BUILD_DIR $BOOST_FILE
+    prepare_build_dir $BOOST_BUILD_DIR $BOOST_FILE SHA256 $BOOST_SHA256_CHECKSUM
     untarred_boost=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -316,10 +316,10 @@ function build_boost
         fi
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/boost"
-        chgrp -R ${GROUP} "$VISITDIR/boost"
-    fi
+    cleanup_build_dirs $BOOST_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/boost"
+
     cd "$START_DIR"
     info "Done with BOOST"
     return 0

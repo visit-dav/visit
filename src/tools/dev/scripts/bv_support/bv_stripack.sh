@@ -101,7 +101,7 @@ function build_stripack
     #
     # Prepare build dir
     #
-    prepare_build_dir $STRIPACK_BUILD_DIR $STRIPACK_FILE
+    prepare_build_dir $STRIPACK_BUILD_DIR $STRIPACK_FILE SHA256 $STRIPACK_SHA256_CHECKSUM
     untarred_stripack=$?
     if [[ $untarred_stripack == -1 ]] ; then
         warn "Unable to prepare stripack Build Directory. Giving Up"
@@ -117,10 +117,10 @@ function build_stripack
    
     info "Installing stripack. . ."
     cp libstripack.so $STRIPACK_INSTALL_DIR
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$STRIPACK_INSTALL_DIR/libstripack.so"
-        chgrp -R ${GROUP} "$STRIPACK_INSTALL_DIR/libstripack.so"
-    fi
+
+    cleanup_build_dirs $STRIPACK_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/sripack"
 
     cd "$START_DIR"
     echo "Done with stripack"
