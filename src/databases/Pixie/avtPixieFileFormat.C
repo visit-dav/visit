@@ -15,7 +15,6 @@
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
-#include <vtkExtentTranslator.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkDoubleArray.h>
@@ -26,6 +25,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtParallel.h>
 #include <DebugStream.h>
@@ -579,6 +579,151 @@ avtPixieFileFormat::Initialize()
     }
 }
 
+void
+avtPixieFileFormat::SetFullExtents(VarInfo &info) const
+{
+    for(int d = 0; d < 3; ++d)
+    {
+        info.start[d] = 0;
+        info.count[d] = info.dims[d];
+        info.start_no_ghost[d] = 0;
+        info.count_no_ghost[d] = info.dims[d];
+    }
+}
+
+bool
+avtPixieFileFormat::IsNodal(const VarInfo &info) const
+{
+    if(info.hasCoords || info.isCoord)
+        return true;
+
+    int nSpatialDims = 0;
+    DetermineVarDimensions(info, 0, 0, nSpatialDims);
+    if(nSpatialDims < 2)
+        return false;
+
+    bool active[3] = {info.dims[0] > 1, info.dims[1] > 1, info.dims[2] > 1};
+    for(VarInfoMap::const_iterator it = variables.begin();
+        it != variables.end(); ++it)
+    {
+        if(&it->second == &info)
+            continue;
+
+        bool match = true;
+        bool anyActive = false;
+        for(int d = 0; d < 3; ++d)
+        {
+            bool otherActive = it->second.dims[d] > 1;
+            if(active[d] != otherActive)
+            {
+                match = false;
+                break;
+            }
+            if(active[d])
+            {
+                anyActive = true;
+                if(info.dims[d] != it->second.dims[d] + 1)
+                {
+                    match = false;
+                    break;
+                }
+            }
+        }
+        if(match && anyActive)
+            return true;
+    }
+
+    return false;
+}
+
+void
+avtPixieFileFormat::PartitionVarInfo(VarInfo &info) const
+{
+    SetFullExtents(info);
+
+    int nSpatialDims = 0;
+    DetermineVarDimensions(info, 0, 0, nSpatialDims);
+    if(nSpatialDims == 0)
+        return;
+
+    bool nodal = IsNodal(info);
+    int size1D = info.hasCoords ? 2 : 1;
+    int hdfZoneDims[3] = {1, 1, 1};
+    bool active[3] = {false, false, false};
+    for(int d = 0; d < 3; ++d)
+    {
+        active[d] = info.dims[d] > (size_t)size1D;
+        if(active[d])
+            hdfZoneDims[d] = int(info.dims[d]) - (nodal ? 1 : 0);
+    }
+
+    int domCount[3] = {1, 1, 1};
+    int domLogicalCoords[3] = {0, 0, 0};
+    switch(partitioning)
+    {
+    case PixieDBOptions::XSLAB:
+        domCount[2] = PAR_Size();
+        domLogicalCoords[2] = PAR_Rank();
+        break;
+    case PixieDBOptions::YSLAB:
+        domCount[1] = PAR_Size();
+        domLogicalCoords[1] = PAR_Rank();
+        break;
+    case PixieDBOptions::ZSLAB:
+        domCount[0] = PAR_Size();
+        domLogicalCoords[0] = PAR_Rank();
+        break;
+    case PixieDBOptions::KDTREE:
+    {
+        int xyzZoneDims[3] = {hdfZoneDims[2], hdfZoneDims[1], hdfZoneDims[0]};
+        int xyzDomCount[3] = {1, 1, 1};
+        int xyzDomLogicalCoords[3] = {0, 0, 0};
+        avtDatabase::ComputeRectilinearDecomposition(nSpatialDims, PAR_Size(),
+            xyzZoneDims[0], xyzZoneDims[1], xyzZoneDims[2],
+            &xyzDomCount[0], &xyzDomCount[1], &xyzDomCount[2]);
+        avtDatabase::ComputeDomainLogicalCoords(nSpatialDims, xyzDomCount,
+            PAR_Rank(), xyzDomLogicalCoords);
+        domCount[0] = xyzDomCount[2];
+        domCount[1] = xyzDomCount[1];
+        domCount[2] = xyzDomCount[0];
+        domLogicalCoords[0] = xyzDomLogicalCoords[2];
+        domLogicalCoords[1] = xyzDomLogicalCoords[1];
+        domLogicalCoords[2] = xyzDomLogicalCoords[0];
+        break;
+    }
+    }
+
+    for(int d = 0; d < 3; ++d)
+    {
+        if(!active[d])
+            continue;
+
+        int baseZoneCount = hdfZoneDims[d] / domCount[d];
+        int extraZones = hdfZoneDims[d] % domCount[d];
+        int realZoneCount = baseZoneCount +
+            (domLogicalCoords[d] < extraZones ? 1 : 0);
+        int realZoneStart = domLogicalCoords[d] * baseZoneCount +
+            std::min(domLogicalCoords[d], extraZones);
+        int ghostZoneStart = std::max(0, realZoneStart - 1);
+        int realZoneEnd = realZoneStart + realZoneCount - 1;
+        int ghostZoneEnd = std::min(hdfZoneDims[d] - 1, realZoneEnd + 1);
+        int ghostZoneCount = ghostZoneEnd - ghostZoneStart + 1;
+
+        info.start[d] = ghostZoneStart;
+        info.start_no_ghost[d] = realZoneStart;
+        if(nodal)
+        {
+            info.count[d] = ghostZoneCount + 1;
+            info.count_no_ghost[d] = realZoneCount + 1;
+        }
+        else
+        {
+            info.count[d] = ghostZoneCount;
+            info.count_no_ghost[d] = realZoneCount;
+        }
+    }
+}
+
 // ****************************************************************************
 // Method: avtPixieFileFormat::PartitionDims
 //
@@ -601,93 +746,63 @@ avtPixieFileFormat::Initialize()
 //    Mark C. Miller, Fri Jun  5 15:38:06 PDT 2026
 //    Applied same fix as Eric, above, for other mesh case.
 //
+//    Mark C. Miller, Thu Aug  6 11:45:00 PDT 2026
+//    Use avtDatabase's rectilinear decomposition helpers for k-d tree
+//    partitioning and derive HDF5 hyperslabs from zone extents according
+//    to variable centering.
+//
 // ****************************************************************************
 
 void
 avtPixieFileFormat::PartitionDims()
 {
-    if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
+    VarInfoMap::iterator it;
+    for(it = variables.begin(); it != variables.end(); ++it)
     {
-      VarInfoMap::iterator it;
-      for(it = variables.begin(); it != variables.end(); ++it)
-      {
-        it->second.count[0] = it->second.dims[0];
-        it->second.count[1] = it->second.dims[1];
-        it->second.count[2] = it->second.dims[2];
-        it->second.start[0] = 0;
-        it->second.start[1] = 0;
-        it->second.start[2] = 0;
-      }
-      for(it = meshes.begin(); it != meshes.end(); ++it)
-      {
-        it->second.count[0] = it->second.dims[0];
-        it->second.count[1] = it->second.dims[1];
-        it->second.count[2] = it->second.dims[2];
-        it->second.start[0] = 0;
-        it->second.start[1] = 0;
-        it->second.start[2] = 0;
-      }
+        if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
+            SetFullExtents(it->second);
+        else
+            PartitionVarInfo(it->second);
+        if(!PAR_Rank())
+        {
+            debug4 << PAR_Rank() << " : " << it->second.fileVarName
+                   /*
+                                      << " e=["<< extents[0]
+                                      << ","<< extents[1]
+                                      << ","<< extents[2]
+                                      << " ,"<< extents[3]
+                                      << ","<< extents[4]
+                                      << ","<< extents[5] << "]"
+                   */
+                   << " d=["<< it->second.dims[0]
+                   << "x"<< it->second.dims[1]
+                   << "x"<< it->second.dims[2] <<"]"
+
+                   << " c=["<< it->second.count[0]
+                   << "x"<< it->second.count[1]
+                   << "x"<< it->second.count[2] <<"]"
+
+                   << " s=["<< it->second.start[0]
+                   << "x"<< it->second.start[1]
+                   << "x"<< it->second.start[2] << "]"
+
+                   << " c0=["<< it->second.count_no_ghost[0]
+                   << "x"<< it->second.count_no_ghost[1]
+                   << "x"<< it->second.count_no_ghost[2] <<"]"
+
+                   << " s0=["<< it->second.start_no_ghost[0]
+                   << "x"<< it->second.start_no_ghost[1]
+                   << "x"<< it->second.start_no_ghost[2] << "]"
+                   <<"\n";
+        }
     }
-    else
+
+    for(it = meshes.begin(); it != meshes.end(); ++it)
     {
-      int extents[6], globalExtents[6];
-      vtkExtentTranslator *extTran = vtkExtentTranslator::New();
-
-      switch(partitioning)
-        {
-        case PixieDBOptions::XSLAB:
-          extTran->SetSplitModeToXSlab();
-          break;
-        case PixieDBOptions::YSLAB:
-          extTran->SetSplitModeToYSlab();
-          break;
-        case PixieDBOptions::ZSLAB:
-          extTran->SetSplitModeToZSlab();
-          break;
-        case PixieDBOptions::KDTREE:
-          extTran->SetSplitModeToBlock();
-          break;
-        }
-      extTran->SetNumberOfPieces(PAR_Size());
-      extTran->SetPiece(PAR_Rank());
-
-      VarInfoMap::iterator it;
-      for(it = variables.begin(); it != variables.end(); ++it)
-      {
-        extTran->SetGhostLevel(1);
-        globalExtents[0] = 0;
-        globalExtents[1] = it->second.dims[0] - 1;
-        globalExtents[2] = 0;
-        globalExtents[3] = it->second.dims[1] - 1;
-        globalExtents[4] = 0;
-        globalExtents[5] = it->second.dims[2] - 1;
-        extTran->SetWholeExtent(globalExtents);
-        if (it->second.hasCoords || it->second.isCoord)
-            extTran->PieceToExtent();
+        if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
+            SetFullExtents(it->second);
         else
-            extTran->PieceToExtentByPoints();
-// get each proc's extents including one ghost zone
-        extTran->GetExtent(extents);
-        it->second.start[0] = extents[0];
-        it->second.start[1] = extents[2];
-        it->second.start[2] = extents[4];
-        it->second.count[0] = extents[1] - extents[0] + 1;
-        it->second.count[1] = extents[3] - extents[2] + 1;
-        it->second.count[2] = extents[5] - extents[4] + 1;
-// redo without ghost to get the strict bounds
-        extTran->SetGhostLevel(0);
-        if (it->second.hasCoords || it->second.isCoord)
-            extTran->PieceToExtent();
-        else
-            extTran->PieceToExtentByPoints();
-        extTran->GetExtent(extents);
-        it->second.start_no_ghost[0] = extents[0];
-        it->second.start_no_ghost[1] = extents[2];
-        it->second.start_no_ghost[2] = extents[4];
-        it->second.count_no_ghost[0] = extents[1] - extents[0] + 1;
-        it->second.count_no_ghost[1] = extents[3] - extents[2] + 1;
-        it->second.count_no_ghost[2] = extents[5] - extents[4] + 1;
-
+            PartitionVarInfo(it->second);
         if(!PAR_Rank())
         {
             debug4 << PAR_Rank() << " : " << it->second.fileVarName
@@ -720,77 +835,6 @@ avtPixieFileFormat::PartitionDims()
                    << "x"<< it->second.start_no_ghost[2] << "]"
                    <<"\n";
         }
-      } // end of loop
-      for(it = meshes.begin(); it != meshes.end(); ++it)
-      {
-        extTran->SetGhostLevel(1);
-        globalExtents[0] = 0;
-        globalExtents[1] = it->second.dims[0] - 1;
-        globalExtents[2] = 0;
-        globalExtents[3] = it->second.dims[1] - 1;
-        globalExtents[4] = 0;
-        globalExtents[5] = it->second.dims[2] - 1;
-        extTran->SetWholeExtent(globalExtents);
-        if (it->second.hasCoords || it->second.isCoord)
-            extTran->PieceToExtent();
-        else
-            extTran->PieceToExtentByPoints();;
-// get each proc's extents including one ghost zone
-        extTran->GetExtent(extents);
-        it->second.start[0] = extents[0];
-        it->second.start[1] = extents[2];
-        it->second.start[2] = extents[4];
-        it->second.count[0] = extents[1] - extents[0] + 1;
-        it->second.count[1] = extents[3] - extents[2] + 1;
-        it->second.count[2] = extents[5] - extents[4] + 1;
-// redo without ghost to get the strict bounds
-        extTran->SetGhostLevel(0);
-        if (it->second.hasCoords || it->second.isCoord)
-            extTran->PieceToExtent();
-        else
-            extTran->PieceToExtentByPoints();
-        extTran->GetExtent(extents);
-        it->second.start_no_ghost[0] = extents[0];
-        it->second.start_no_ghost[1] = extents[2];
-        it->second.start_no_ghost[2] = extents[4];
-        it->second.count_no_ghost[0] = extents[1] - extents[0] + 1;
-        it->second.count_no_ghost[1] = extents[3] - extents[2] + 1;
-        it->second.count_no_ghost[2] = extents[5] - extents[4] + 1;
-
-        if(!PAR_Rank())
-        {
-            debug4 << PAR_Rank() << " : " << it->second.fileVarName
-                   /*
-                                      << " e=["<< extents[0]
-                                      << ","<< extents[1]
-                                      << ","<< extents[2]
-                                      << " ,"<< extents[3]
-                                      << ","<< extents[4]
-                                      << ","<< extents[5] << "]"
-                   */
-                   << " d=["<< it->second.dims[0]
-                   << "x"<< it->second.dims[1]
-                   << "x"<< it->second.dims[2] <<"]"
-
-                   << " c=["<< it->second.count[0]
-                   << "x"<< it->second.count[1]
-                   << "x"<< it->second.count[2] <<"]"
-
-                   << " s=["<< it->second.start[0]
-                   << "x"<< it->second.start[1]
-                   << "x"<< it->second.start[2] << "]"
-
-                   << " c0=["<< it->second.count_no_ghost[0]
-                   << "x"<< it->second.count_no_ghost[1]
-                   << "x"<< it->second.count_no_ghost[2] <<"]"
-
-                   << " s0=["<< it->second.start_no_ghost[0]
-                   << "x"<< it->second.start_no_ghost[1]
-                   << "x"<< it->second.start_no_ghost[2] << "]"
-                   <<"\n";
-        }
-      } // end of loop
-      extTran->Delete();
     }
 }
 
@@ -1004,6 +1048,10 @@ avtPixieFileFormat::MeshIsCurvilinear(const std::string &name) const
 //
 //    Jean Favre, Fri Dec 23 16:17:18 CET 2011
 //    Added SetFormatCanDoDomainDecomposition(true) and mmd->numBlocks = 1
+//
+//    Mark C. Miller, Thu Aug  6 12:10:00 PDT 2026
+//    Mark arrays matching the larger-by-one mesh as node-centered.
+//
 // ****************************************************************************
 
 void
@@ -1089,8 +1137,8 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                  int(it->second.dims[1]),
                  int(it->second.dims[0]));
 
-        // Add a zonal scalar to the metadata.
-        if (it->second.hasCoords)
+        // Add the scalar to the metadata.
+        if (IsNodal(it->second))
             AddScalarVarToMetaData(md, it->first, tmp, AVT_NODECENT);
         else
             AddScalarVarToMetaData(md, it->first, tmp, AVT_ZONECENT);
@@ -1247,13 +1295,17 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
     if(retval == 0)
     {
         //
-        // Add 1 so we have the number of nodes instead of #cells.
+        // Zonal arrays need one more node than cell in each active dimension.
+        // Coordinate arrays and data with explicit coordinates are already
+        // nodal, so adding one here creates overlapping zones between pieces.
         //
-
-        ++hyperslabDims[0];
-        ++hyperslabDims[1];
-        if(nVarDims == 3)
-            ++hyperslabDims[2];
+        if(!IsNodal(it->second))
+        {
+            ++hyperslabDims[0];
+            ++hyperslabDims[1];
+            if(nVarDims == 3)
+                ++hyperslabDims[2];
+        }
 
         // Reverse X,Z dimensions so the mesh is drawn properly.
         if(nVarDims == 3)
@@ -2489,7 +2541,7 @@ avtPixieFileFormat::AddGhostCellInfo(const VarInfo &info, vtkDataSet *ds)
       avtGhostData::AddGhostZoneType(ghostVal, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
       vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
       ghostCells->SetName("avtGhostZones");
-      if (info.hasCoords)
+      if (IsNodal(info))
       {
         nx = info.count[2]-1;
         ny = info.count[1]-1;
@@ -2595,15 +2647,26 @@ debug4 << "Ymin: " << info.start[1] << " < " << info.start_no_ghost[1] << endl;
       vtkIntArray *realDims = vtkIntArray::New();
       realDims->SetName("avtRealDims");
       realDims->SetNumberOfValues(6);
+      bool nodal = IsNodal(info);
+      int size1D = info.hasCoords ? 2 : 1;
+      bool active[3] = {info.dims[0] > (size_t)size1D,
+                        info.dims[1] > (size_t)size1D,
+                        info.dims[2] > (size_t)size1D};
       
       realDims->SetValue(0, info.start_no_ghost[2]-info.start[2]);
-      realDims->SetValue(1, info.count[2]-1);
+      realDims->SetValue(1, active[2] ?
+                         info.start_no_ghost[2]-info.start[2] +
+                         info.count_no_ghost[2] - (nodal ? 1 : 0) : 0);
 
       realDims->SetValue(2, info.start_no_ghost[1]-info.start[1]);
-      realDims->SetValue(3, info.count[1]-1);
+      realDims->SetValue(3, active[1] ?
+                         info.start_no_ghost[1]-info.start[1] +
+                         info.count_no_ghost[1] - (nodal ? 1 : 0) : 0);
       
       realDims->SetValue(4, info.start_no_ghost[0]-info.start[0]);
-      realDims->SetValue(5, info.count[0]-1);
+      realDims->SetValue(5, active[0] ?
+                         info.start_no_ghost[0]-info.start[0] +
+                         info.count_no_ghost[0] - (nodal ? 1 : 0) : 0);
       
       debug5 << "adding avtRealDims (" <<
         realDims->GetValue(0) << ", " <<

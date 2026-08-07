@@ -150,6 +150,9 @@ protected:
                                                 void *dest) const;
 
     void                   AddGhostCellInfo(const VarInfo &info, vtkDataSet *ds);
+    bool                   IsNodal(const VarInfo &info) const;
+    void                   SetFullExtents(VarInfo &info) const;
+    void                   PartitionVarInfo(VarInfo &info) const;
     void                   PartitionDims();
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
