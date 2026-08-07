@@ -131,7 +131,7 @@ function build_adios2
     #
     # Prepare build dir
     #
-    prepare_build_dir $ADIOS2_BUILD_DIR $ADIOS2_FILE
+    prepare_build_dir $ADIOS2_BUILD_DIR $ADIOS2_FILE SHA256 $ADIOS2_SHA256_CHECKSUM
     untarred_ADIOS2=$?
     if [[ $untarred_ADIOS2 == -1 ]] ; then
         warn "Unable to prepare ADIOS2 Build Directory. Giving Up"
@@ -275,14 +275,13 @@ function build_adios2
             return 1
         fi
 
-        if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/adios2"
-            chgrp -R ${GROUP} "$VISITDIR/adios2"
-        fi
-
         cd "$START_DIR"
     done
 
+    # the build dirs are located inside the src, so only need to delete src
+    cleanup_build_dirs $ADIOS2_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/adios2"
     cd "$START_DIR"
     info "Done with ADIOS2"
     return 0

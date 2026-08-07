@@ -89,10 +89,6 @@ else()
     visit_append_list(NAME visitcommon_DEPENDS ITEMS Threads::Threads ${DL_LIB})
 endif()
 
-visit_append_list(
-    NAME visitcommon_DEPENDS
-    ITEMS ${ZLIB_LIB})
-
 visit_add_library(
     NAME       visitcommon
     SOURCES    ${visitcommon_SOURCES}

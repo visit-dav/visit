@@ -163,25 +163,18 @@
 #    Allow test data dir to be specified by VISIT_DATA_DIR var, which will
 #    only be used if 'data' dir does not exist peer to 'src'.
 #
+#    Kathleen Biagas, Mon July 13, 2026
+#    Removed cmake policy settings that are no longer needed. Should allow
+#    VisIt to be built with CMake 4.0 and newer. Update minimum CMake
+#    version to 3.26, due to requirements introduced by previous work.
+#
 #****************************************************************************
 
-cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
 
-if(COMMAND cmake_policy)
-    cmake_policy(SET CMP0033 OLD)
-    if(WIN32)
-        # don't automatically link with qtmain
-        cmake_policy(SET CMP0020 OLD)
-        if(POLICY CMP0091) # introduced in cmake 3.15
-            # Tell CMake to always use /MD, even for debug builds.
-            # Done because prebuilt TP libraries are built with /MD and
-            # if debug build of VisIt uses /MDd there are runtime issues.
-            cmake_policy(SET CMP0091 NEW) # MSVC_RUNTIME_LIBRARY
-            set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-        endif()
-    endif()
+if(WIN32)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
-
 
 #
 # Try to capture the initial set of cmake command line args passed by

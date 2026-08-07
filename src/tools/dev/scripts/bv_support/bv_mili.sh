@@ -341,7 +341,7 @@ function build_mili
     #
     # Prepare build dir
     #
-    prepare_build_dir $MILI_BUILD_DIR $MILI_FILE
+    prepare_build_dir $MILI_BUILD_DIR $MILI_FILE SHA256 $MILI_SHA256_CHECKSUM
     untarred_mili=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -448,10 +448,10 @@ EOF
         cp lib_opt/libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/mili"
-        chgrp -R ${GROUP} "$VISITDIR/mili"
-    fi
+    cleanup_build_dirs $MILI_BUILD_DIR
+
+    change_install_dir_perms  "$VISITDIR/mili"
+
     cd "$START_DIR"
     info "Done with Mili"
     return 0

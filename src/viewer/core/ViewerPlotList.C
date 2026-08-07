@@ -3859,6 +3859,10 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    Updated the call to UpdateExpressionList use the considerPlots
 //    argument.
 //
+//    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
+//    Invalidate the ANARI scene graph after deleting plots so the viewer
+//    window is cleared when ANARI rendering is active.
+//
 // ****************************************************************************
 
 void
@@ -3957,6 +3961,14 @@ ViewerPlotList::DeleteActivePlots(bool doUpdates, bool considerPlots)
                 UpdateDBPluginInfo(plots[0].plot->GetHostName());
         }
     }
+
+    //
+    // Invalidate the ANARI scene graph so deleted plot geometry is cleared
+    // from the viewer window before the next render.
+    //
+#ifdef HAVE_ANARI
+    window->ResetAnariScene();
+#endif
 
     //
     // Update the frame.

@@ -128,7 +128,7 @@ protected:
 
     vtkPoints *MakePoints(std::vector<float> &crd);
 
-    vtkUnstructuredGrid* GenerateSolidMesh( std::vector<float>& crd, const std::vector<int>& elm );
+    vtkUnstructuredGrid* GenerateSolidMesh( std::vector<float>& crd, const std::vector<int>& elm, const std::vector<int>& elmo2 );
     vtkUnstructuredGrid* GenerateShellMesh( std::vector<float>& crd, const std::vector<int>& elm );
     vtkUnstructuredGrid* GenerateBeamMesh(  std::vector<float>& crd, const std::vector<int>& elm );
     vtkUnstructuredGrid* GenerateSphMesh( std::vector<float>& crd, const std::vector<int>& elm );

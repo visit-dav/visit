@@ -402,7 +402,7 @@ public:
   void ReadDEBlockHistoryData( hid_t fid, int blkInd, int varInd, vector<int>& dims, vector<float>& data );
 
 
-    void ReadSolidBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
+    void ReadSolidBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt, std::vector<int>& elmto2 );
     bool ReadSolidBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data, std::vector<int>& idata );
     virtual
     void ReadSolidMaterial();
@@ -498,7 +498,7 @@ protected:
 
     virtual
     void ReadSolidBlockMesh( hid_t file_id, int blkInd,
-                             std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
+                             std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt, std::vector<int>& elmto2 );
     virtual
     void ReadSolidBlockData( hid_t file_id, int varInd, int blkInd,
                              std::vector<int>& dims, std::vector<float>& edat );

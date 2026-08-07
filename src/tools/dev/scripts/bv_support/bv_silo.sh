@@ -42,6 +42,7 @@ function bv_silo_info
     export SILO_VERSION=${SILO_VERSION:-"4.12.0"}
     export SILO_FILE=${SILO_FILE:-"Silo-${SILO_VERSION}.tar.xz"}
     export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.12.0"}
+    export SILO_SRC_DIR=${SILO_SRC_DIR:-"Silo-${SILO_VERSION}"}
     export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"Silo-${SILO_VERSION}-build"}
     export SILO_SHA256_CHECKSUM="bde1685e4547d5dd7416bd6215b41f837efef0e4934d938ba776957afbebdff0"
 }
@@ -51,6 +52,7 @@ function bv_silo_print
     printf "%s%s\n" "SILO_FILE=" "${SILO_FILE}"
     printf "%s%s\n" "SILO_VERSION=" "${SILO_VERSION}"
     printf "%s%s\n" "SILO_COMPATIBILITY_VERSION=" "${SILO_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "SILO_SRC_DIR=" "${SILO_SRC_DIR}"
     printf "%s%s\n" "SILO_BUILD_DIR=" "${SILO_BUILD_DIR}"
 }
 
@@ -77,7 +79,7 @@ function bv_silo_host_profile
 function bv_silo_ensure
 {
     if [[ "$DO_SILO" == "yes" ]] ; then
-        ensure_built_or_ready "silo" $SILO_VERSION $SILO_BUILD_DIR $SILO_FILE $SILO_URL
+        ensure_built_or_ready "silo" $SILO_VERSION $SILO_SRC_DIR $SILO_FILE $SILO_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_SILO="no"
@@ -444,7 +446,7 @@ function build_silo
     #
     # Prepare build dir
     #
-    prepare_build_dir $SILO_BUILD_DIR $SILO_FILE
+    prepare_build_dir $SILO_SRC_DIR $SILO_FILE SHA256 $SILO_SHA256_CHECKSUM
     untarred_silo=$?
     if [[ $untarred_silo == -1 ]] ; then
         warn "Unable to prepare Silo build directory. Giving Up!"
@@ -540,7 +542,7 @@ function build_silo
     #
 
     rm -f bv_run_cmake.sh
-    echo "\"${CMAKE_BIN}\"" ${cmake_opts} ../Silo-${SILO_VERSION} > bv_run_cmake.sh
+    echo "\"${CMAKE_BIN}\"" ${cmake_opts} ../${SILO_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh
 
@@ -569,10 +571,10 @@ function build_silo
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/silo"
-        chgrp -R ${GROUP} "$VISITDIR/silo"
-    fi
+    cleanup_build_dirs $SILO_BUILD_DIR $SILO_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/silo"
+
     cd "$START_DIR"
     info "Done with Silo"
     return 0

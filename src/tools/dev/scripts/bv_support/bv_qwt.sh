@@ -276,7 +276,7 @@ function build_qwt
     #
     # Prepare build dir
     #
-    prepare_build_dir $QWT_BUILD_DIR $QWT_FILE
+    prepare_build_dir $QWT_BUILD_DIR $QWT_FILE SHA256 $QWT_SHA256_CHECKSUM
     untarred_qwt=$?
     if [[ $untarred_qwt == -1 ]] ; then
         warn "Unable to prepare Qwt build directory. Giving Up!"
@@ -352,10 +352,10 @@ function build_qwt
         fi
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/qwt"
-        chgrp -R ${GROUP} "$VISITDIR/qwt"
-    fi
+    cleanup_build_dirs $QWT_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/qwt"
+
     cd "$START_DIR"
     info "Done with Qwt"
     return 0

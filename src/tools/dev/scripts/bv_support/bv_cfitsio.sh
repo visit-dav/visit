@@ -84,7 +84,7 @@ function build_cfitsio
     #
     # Prepare build dir
     #
-    prepare_build_dir $CFITSIO_BUILD_DIR $CFITSIO_FILE sha256 $CFITSIO_SHA256_CHECKSUM
+    prepare_build_dir $CFITSIO_BUILD_DIR $CFITSIO_FILE SHA256 $CFITSIO_SHA256_CHECKSUM
     untarred_cfitsio=$?
     if [[ $untarred_cfitsio == -1 ]] ; then
         warn "Unable to prepare CFITSIO Build Directory. Giving Up"
@@ -162,10 +162,10 @@ function build_cfitsio
     info "Installing CFITSIO . . ."
     ${CMAKE_COMMAND} --install . || error "CFITSIO did not install correctly. Giving up."
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/cfitsio"
-        chgrp -R ${GROUP} "$VISITDIR/cfitsio"
-    fi
+    cleanup_build_dirs $CFITSIO_BUILD_SUBDIR $CFITSIO_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/cfitsio"
+
     cd "$START_DIR"
     info "Done with CFITSIO"
     return 0

@@ -417,7 +417,7 @@ EOF
 function build_qt_base
 {
     echo "Build Qt 6 base module"
-    prepare_build_dir $QT_BASE_SOURCE_DIR $QT_BASE_FILE
+    prepare_build_dir $QT_BASE_SOURCE_DIR $QT_BASE_FILE SHA256 $QTBASE_SHA256_CHECKSUM
 
     untarred_qt=$?
     # 0, already exists, 1 untarred src, 2 error
@@ -562,7 +562,7 @@ function build_qt_base
     # Build Qt. Config options above make sure we only build the libs & tools.
     #
     info "Building Qt6 base . . . "
-    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "QtBase did not build correctly."
 
     if [[ $? != 0 ]] ; then
         warn "Qt base build failed.  Giving up"
@@ -570,14 +570,14 @@ function build_qt_base
     fi
 
     info "Installing Qt  base . . . "
-    ${CMAKE_COMMAND} --install .
+    ${CMAKE_COMMAND} --install . || error "QtBase did not install correctly."
+
+    cleanup_build_dirs $QT_BASE_BUILD_DIR $QT_BASE_SOURCE_DIR
 
     # Qt screws up permissions in some cases.  Try to fix that.
     chmod -R a+rX ${VISITDIR}/qt/${QT_VERSION}
-   if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/qt"
-        chgrp -R ${GROUP} "$VISITDIR/qt"
-    fi
+
+    change_install_dir_perms "$VISITDIR/qt"
 
     cd "$START_DIR"
     info "Done with Qt base "
@@ -638,10 +638,14 @@ function build_qt_tools
         ${qt_module_cmake_flags}
 
     info "Building Qt6 tools . . . "
-    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "QtTools did not build correctly."
 
     info "Installing Qt tools . . . "
-    ${CMAKE_COMMAND} --install .
+    ${CMAKE_COMMAND} --install . || error "QtTools did not install correctly."
+
+    cleanup_build_dirs $QT_TOOLS_BUILD_DIR $QT_TOOLS_SOURCE_DIR
+
+    change_install_dir_perms "$VISITDIR/qt"
 
     return 0;
 }
@@ -685,10 +689,14 @@ function build_qt_svg
         ${qt_module_cmake_flags}
 
     info "Building Qt6 svg . . . "
-    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "QtSVG did not build correctly."
 
     info "Installing Qt svg . . . "
-    ${CMAKE_COMMAND} --install .
+    ${CMAKE_COMMAND} --install .  || error "QtSVG did not install correctly."
+
+    cleanup_build_dirs $QT_SVG_BUILD_DIR $QT_SVG_SOURCE_DIR
+
+    change_install_dir_perms "$VISITDIR/qt"
 
     return 0;
 }

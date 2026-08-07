@@ -153,7 +153,7 @@ function build_glu
     #
     # prepare build dir
     #
-    prepare_build_dir $GLU_BUILD_DIR $GLU_FILE
+    prepare_build_dir $GLU_BUILD_DIR $GLU_FILE SHA256 $GLU_SHA256_CHECKSUM
     untarred_glu=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -217,10 +217,10 @@ function build_glu
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/glu"
-        chgrp -R ${GROUP} "$VISITDIR/glu"
-    fi
+    cleanup_build_dirs $GLU_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/glu"
+
     cd "$START_DIR"
     info "Done with GLU"
     return 0

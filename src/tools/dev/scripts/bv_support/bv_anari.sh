@@ -123,7 +123,7 @@ function build_anari
     fi
 
     # Extract sources
-    prepare_build_dir $ANARI_SRC_DIR $ANARI_FILE
+    prepare_build_dir $ANARI_SRC_DIR $ANARI_FILE SHA256 $ANARI_SHA256_CHECKSUM
     untarred_anari=$?
     # -1 on failure, 0 for success without untar
     #  1 for success with untar, 2 for failure with checksum
@@ -204,11 +204,9 @@ function build_anari
     info "Installing ANARI . . . "
     ${CMAKE_COMMAND} --install . || error "ANARI did not install correctly."
 
-    chmod -R ug+w,a+rX ${VISITDIR}/${ANARI_INSTALL_DIR}
+    cleanup_build_dirs $ANARI_BUILD_DIR $ANARI_SRC_DIR
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chgrp -R ${GROUP} "$VISITDIR/${ANARI_INSTALL_DIR}"
-    fi
+    change_install_dir_perms ${VISITDIR}/${ANARI_INSTALL_DIR}
 
     cd "$START_DIR"
     return 0

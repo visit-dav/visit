@@ -146,7 +146,7 @@ function build_cmake
     #
     # Prepare cmake build directory
     #
-    prepare_build_dir $CMAKE_BUILD_DIR $CMAKE_FILE
+    prepare_build_dir $CMAKE_BUILD_DIR $CMAKE_FILE SHA256 $CMAKE_SHA256_CHECKSUM
     untarred_cmake=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -192,14 +192,20 @@ function build_cmake
         warn "Cannot build cmake, giving up."
         return 1
     fi
+    info "Successfully built CMake"
 
     info "Installing CMake . . ."
     $MAKE install
-    info "Successfully built CMake"
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/cmake"
-        chgrp -R ${GROUP} "$VISITDIR/cmake"
+
+    if [[ $? != 0 ]] ; then
+        warn "Install for CMake failed."
+        return 1
     fi
+
+    cleanup_build_dirs $CMAKE_BUILD_DIR
+
+    change_install_dir_perms $VISITDIR/cmake
+
     cd "$START_DIR"
     info "Done with CMake"
 }

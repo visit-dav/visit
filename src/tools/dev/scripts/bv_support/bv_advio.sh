@@ -271,7 +271,7 @@ function build_advio
     #
     # Prepare build dir
     #
-    prepare_build_dir $ADVIO_BUILD_DIR $ADVIO_FILE
+    prepare_build_dir $ADVIO_BUILD_DIR $ADVIO_FILE SHA256 $ADVIO_SHA256_CHECKSUM
     untarred_ADVIO=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -349,10 +349,9 @@ function build_advio
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/AdvIO"
-        chgrp -R ${GROUP} "$VISITDIR/AdvIO"
-    fi
+    cleanup_build_dirs $ADVIO_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/AdvIO"
 
     cd "$START_DIR"
     info "Done with AdvIO"

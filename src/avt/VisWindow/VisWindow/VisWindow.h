@@ -462,6 +462,9 @@ class VisitInteractor;
 //    Kevin Griffin, Tue Sep 9, 2025
 //    Added Set/Get AnariAttributes when built with ANARI support.
 //
+//    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
+//    Added ResetAnariScene
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -748,6 +751,7 @@ public:
 #ifdef HAVE_ANARI
     void                 SetAnariAttributes(const AnariAttributes &);
     const AnariAttributes &GetAnariAttributes() const;
+    void                 ResetAnariScene();
 #endif
     void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);
