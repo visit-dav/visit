@@ -39,27 +39,6 @@
 using     std::string;
 using     std::vector;
 
-namespace
-{
-
-void
-CopyColor(unsigned char *dest, const unsigned char *src)
-{
-    dest[0] = src[0];
-    dest[1] = src[1];
-    dest[2] = src[2];
-}
-
-void
-CopyColor(unsigned char *dest, const ColorAttribute &src)
-{
-    dest[0] = (unsigned char)src.Red();
-    dest[1] = (unsigned char)src.Green();
-    dest[2] = (unsigned char)src.Blue();
-}
-
-}
-
 
 // ****************************************************************************
 //  Method: avtWavefrontOBJWriter constructor
@@ -334,28 +313,60 @@ avtWavefrontOBJWriter::GetColorTable()
     for (int i = 0; i < ncolors; ++i)
     {
         int srcIndex = invertCT ? (ncolors - 1 - i) : i;
-        CopyColor(orderedRGB + i * 3, rgb + srcIndex * 3);
+        orderedRGB[i * 3] = rgb[srcIndex * 3];
+        orderedRGB[i * 3 + 1] = rgb[srcIndex * 3 + 1];
+        orderedRGB[i * 3 + 2] = rgb[srcIndex * 3 + 2];
     }
 
     unsigned char lowerColor[3];
     unsigned char upperColor[3];
     if (useBelowMinColor)
-        CopyColor(lowerColor, belowMinColor);
+    {
+        lowerColor[0] = (unsigned char)belowMinColor.Red();
+        lowerColor[1] = (unsigned char)belowMinColor.Green();
+        lowerColor[2] = (unsigned char)belowMinColor.Blue();
+    }
     else
-        CopyColor(lowerColor, orderedRGB);
+    {
+        lowerColor[0] = orderedRGB[0];
+        lowerColor[1] = orderedRGB[1];
+        lowerColor[2] = orderedRGB[2];
+    }
 
     int last = (ncolors - 1) * 3;
     if (useAboveMaxColor)
-        CopyColor(upperColor, aboveMaxColor);
+    {
+        upperColor[0] = (unsigned char)aboveMaxColor.Red();
+        upperColor[1] = (unsigned char)aboveMaxColor.Green();
+        upperColor[2] = (unsigned char)aboveMaxColor.Blue();
+    }
     else
-        CopyColor(upperColor, orderedRGB + last);
+    {
+        upperColor[0] = orderedRGB[last];
+        upperColor[1] = orderedRGB[last + 1];
+        upperColor[2] = orderedRGB[last + 2];
+    }
 
-    CopyColor(pixels, lowerColor);
-    CopyColor(pixels + 3, lowerColor);
+    pixels[0] = lowerColor[0];
+    pixels[1] = lowerColor[1];
+    pixels[2] = lowerColor[2];
+    pixels[3] = lowerColor[0];
+    pixels[4] = lowerColor[1];
+    pixels[5] = lowerColor[2];
     for (int i = 0; i < ncolors; ++i)
-        CopyColor(pixels + (i + 2) * 3, orderedRGB + i * 3);
-    CopyColor(pixels + (ncolors + 2) * 3, upperColor);
-    CopyColor(pixels + (ncolors + 3) * 3, upperColor);
+    {
+        int pixelIndex = (i + 2) * 3;
+        int colorIndex = i * 3;
+        pixels[pixelIndex] = orderedRGB[colorIndex];
+        pixels[pixelIndex + 1] = orderedRGB[colorIndex + 1];
+        pixels[pixelIndex + 2] = orderedRGB[colorIndex + 2];
+    }
+    pixels[(ncolors + 2) * 3] = upperColor[0];
+    pixels[(ncolors + 2) * 3 + 1] = upperColor[1];
+    pixels[(ncolors + 2) * 3 + 2] = upperColor[2];
+    pixels[(ncolors + 3) * 3] = upperColor[0];
+    pixels[(ncolors + 3) * 3 + 1] = upperColor[1];
+    pixels[(ncolors + 3) * 3 + 2] = upperColor[2];
 
     return imageData;
 }
