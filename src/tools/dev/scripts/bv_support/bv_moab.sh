@@ -22,10 +22,10 @@ function bv_moab_depends_on
 
 function bv_moab_info
 {
-    export MOAB_VERSION=${MOAB_VERSION:-"5.5.0"}
+    export MOAB_VERSION=${MOAB_VERSION:-"5.6.0"}
     export MOAB_FILE=${MOAB_FILE:-"moab-${MOAB_VERSION}.tar.gz"}
-    export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-5.5.0"}
-    export MOAB_SHA256_CHECKSUM="58969f8a1b209ec9036c08c53a6b7078b368eb3bf99d0368a4de5a2f2a8db678"
+    export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-${MOAB_VERSION}"}
+    export MOAB_SHA256_CHECKSUM="8d24a38619eb9fd326c7bdf9fdb01466149a0ab7dc3ef1caffda728858bf5a85"
 }
 
 function bv_moab_print
@@ -99,7 +99,9 @@ function build_moab
     fi
 
     cf_prefix_arg="--prefix=$VISITDIR/moab/$MOAB_VERSION/$VISITARCH"
-    cf_common_args="--with-pic --disable-fortran --disable-imesh --disable-cgns"
+    cf_common_args="--with-pic --disable-fortran --without-cgns"
+    # MOAB's configure falls back to system Eigen3 paths unless forced to a bad path.
+    cf_common_args="${cf_common_args} --disable-blaslapack --with-eigen3=/no/such/eigen3"
 
     if [[ "DO_STATIC_BUILD" == "yes" ]]; then
         cf_static_args="--enable-static --disable-shared"
@@ -108,9 +110,16 @@ function build_moab
     fi
 
     cf_hdf5_ldflags_arg=""
+    cf_ldflags_arg=""
     cf_zlib_arg=""
     cf_hdf5_arg="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
     cf_zlib_arg="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+    cf_hdf5_libdir="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
+    cf_zlib_libdir="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
+    cf_ldflags_arg="-L$cf_hdf5_libdir -L$cf_zlib_libdir"
+    if [[ "$OPSYS" != "Darwin" ]]; then
+        cf_ldflags_arg="$cf_ldflags_arg -Wl,-rpath-link,$cf_hdf5_libdir -Wl,-rpath-link,$cf_zlib_libdir"
+    fi
     cf_hdf5_ldflags_arg="$cf_hdf5_ldflags_arg -lz"
     if [[ -n "$cf_hdf5_ldflags_arg" ]]; then
         cf_hdf5_ldflags_arg="--with-hdf5-ldflags=\"$cf_hdf5_ldflags_arg\""
@@ -121,6 +130,7 @@ function build_moab
     sh -c "./configure \
         CXX=\"$cf_cxx_compiler\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $hdf5_consumer_uses_mpi_flag\" \
         CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS $hdf5_consumer_uses_mpi_flag\" \
+        LDFLAGS=\"$LDFLAGS $cf_ldflags_arg\" \
         ${cf_prefix_arg} ${cf_mpi_arg} ${cf_common_args} ${cf_static_args} \
         ${cf_hdf5_arg} ${cf_hdf5_ldflags_arg} \
         ${cf_zlib_arg}"

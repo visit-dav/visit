@@ -6,6 +6,7 @@
 //                            avtXGCFileFormat.C                           //
 // ************************************************************************* //
 
+#include <visit-hdf5.h>
 #include <avtXGCFileFormat.h>
 
 #include <avtDatabaseMetaData.h>

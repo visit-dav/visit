@@ -6,6 +6,7 @@
 //                            avtSXRISFileFormat.C                           //
 // ************************************************************************* //
 
+#include <visit-hdf5.h>
 #include <avtSXRISFileFormat.h>
 #include <string>
 

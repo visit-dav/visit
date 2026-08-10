@@ -16,6 +16,8 @@
 #include <TimingsManager.h>
 #include <InvalidFilesException.h>
 #include "FileFunctions.h"
+#include <visit-hdf5.h>
+
 //-----------------------------------------------------------------------------
 // std lib includes
 //-----------------------------------------------------------------------------
