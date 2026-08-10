@@ -52,10 +52,10 @@ function bv_xcb_info
     export XCB_WM_FILE=${XCB_WM_FILE:-"libxcb-wm-xcb-util-wm-${XCB_WM_VERSION}.tar.gz"}
     export XCB_WM_BUILD_DIR=${XCB_WM_BUILD_DIR:-"libxcb-wm-xcb-util-wm-${XCB_WM_VERSION}"}
     export XCB_WM_SHA256_CHECKSUM="c1b792306874c36b535413a33edc71a0ac46e78adcf6ddb1a34090a07393d717"
-    export XORG_MACROS_VERSION=${XORG_MACROS_VERSION:-"1.20.2"}
-    export XORG_MACROS_FILE=${XORG_MACROS_FILE:-"macros-util-macros-${XORG_MACROS_VERSION}.tar.gz"}
-    export XORG_MACROS_BUILD_DIR=${XORG_MACROS_BUILD_DIR:-"macros-util-macros-${XORG_MACROS_VERSION}"}
-    export XORG_MACROS_SHA256_CHECKSUM="beac7e00e5996bd0c9d9bd8cf62704583b22dbe8613bd768626b95fcac955744"
+    export XCB_XORG_MACROS_VERSION=${XCB_XORG_MACROS_VERSION:-"1.20.2"}
+    export XCB_XORG_MACROS_FILE=${XCB_XORG_MACROS_FILE:-"macros-util-macros-${XCB_XORG_MACROS_VERSION}.tar.gz"}
+    export XCB_XORG_MACROS_BUILD_DIR=${XCB_XORG_MACROS_BUILD_DIR:-"macros-util-macros-${XCB_XORG_MACROS_VERSION}"}
+    export XCB_XORG_MACROS_SHA256_CHECKSUM="beac7e00e5996bd0c9d9bd8cf62704583b22dbe8613bd768626b95fcac955744"
 }
 
 function bv_xcb_print
@@ -79,9 +79,9 @@ function bv_xcb_print
     printf "%s%s\n" "XCB_WM_FILE=" "${XCB_WM_FILE}"
     printf "%s%s\n" "XCB_WM_VERSION=" "${XCB_WM_VERSION}"
     printf "%s%s\n" "XCB_WM_BUILD_DIR=" "${XCB_WM_BUILD_DIR}"
-    printf "%s%s\n" "XORG_MACROS_FILE=" "${XORG_MACROS_FILE}"
-    printf "%s%s\n" "XORG_MACROS_VERSION=" "${XORG_MACROS_VERSION}"
-    printf "%s%s\n" "XORG_MACROS_BUILD_DIR=" "${XORG_MACROS_BUILD_DIR}"
+    printf "%s%s\n" "XCB_XORG_MACROS_FILE=" "${XCB_XORG_MACROS_FILE}"
+    printf "%s%s\n" "XCB_XORG_MACROS_VERSION=" "${XCB_XORG_MACROS_VERSION}"
+    printf "%s%s\n" "XCB_XORG_MACROS_BUILD_DIR=" "${XCB_XORG_MACROS_BUILD_DIR}"
 }
 
 function bv_xcb_print_usage
@@ -149,8 +149,8 @@ function bv_xcb_ensure
 
         # if XCB_IMAGE_FILE was downloaded, assume we need the utils as well
         if [[ -e ${XCB_IMAGE_FILE} ]] ; then
-            if [[ ! -e ${XORG_MACROS_FILE} ]] ; then
-                download_file $XORG_MACROS_FILE
+            if [[ ! -e ${XCB_XORG_MACROS_FILE} ]] ; then
+                download_file $XCB_XORG_MACROS_FILE
             fi
             if [[ ! -e ${XCB_M4_FILE} ]] ; then
                 download_file $XCB_M4_FILE
@@ -195,7 +195,7 @@ function build_xcb
     #
     # Prepare build dir
     #
-    prepare_build_dir $XORG_MACROS_BUILD_DIR $XORG_MACROS_FILE SHA256 $XORG_MACROS_SHA256_CHECKSUM
+    prepare_build_dir $XCB_XORG_MACROS_BUILD_DIR $XCB_XORG_MACROS_FILE SHA256 $XCB_XORG_MACROS_SHA256_CHECKSUM
     untarred_xcb=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -208,7 +208,7 @@ function build_xcb
     # Configure and install
     #
     info "Configuring and installing xorg macros . . . (~1 minute)"
-    cd $XORG_MACROS_BUILD_DIR || error "Can't cd to xorg macros build dir."
+    cd $XCB_XORG_MACROS_BUILD_DIR || error "Can't cd to xorg macros build dir."
 
     ./autogen.sh
 
@@ -390,7 +390,7 @@ function build_xcb
     cleanup_build_dirs $XCB_RENDERUTIL_BUILD_DIR
     cleanup_build_dirs $XCB_UTIL_BUILD_DIR
     cleanup_build_dirs $XCB_WM_BUILD_DIR
-    cleanup_build_dirs $XORG_MACROS_BUILD_DIR
+    cleanup_build_dirs $XCB_XORG_MACROS_BUILD_DIR
 
     change_install_dir_perms "$VISITDIR/xcb"
 
