@@ -73,6 +73,9 @@ CopyColor(unsigned char *dest, const ColorAttribute &src)
 // 
 //    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
 //    Grab whether or not we want the color table inverted.
+// 
+//    Justin Privitera, Mon Aug 10 15:22:35 PDT 2026
+//    Handle min, max, below color, above color, and toggles for these options.
 //
 // ****************************************************************************
 
@@ -81,7 +84,9 @@ avtWavefrontOBJWriter::avtWavefrontOBJWriter(const DBOptionsAttributes *atts)
     doColor = atts->GetBool("Output colors");
     colorTable = atts->GetString("Color table");
     if (colorTable.empty())
+    {
         colorTable = avtColorTables::Instance()->GetDefaultContinuousColorTable();
+    }
     invertCT = atts->GetBool("Invert color table");
     useMin = atts->GetBool("Use minimum");
     minValue = atts->GetDouble("Minimum");
@@ -156,6 +161,10 @@ avtWavefrontOBJWriter::WriteHeaders(const avtDatabaseMetaData *md,
 // 
 //    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
 //    Added ability to write out mtllib and texture.
+// 
+//    Justin Privitera, Mon Aug 10 15:22:35 PDT 2026
+//    Send min, max, below color, above color, and toggles to the dataset file
+//    writer and be more careful about null color tables and memory leaks.
 //
 // ****************************************************************************
 
@@ -170,7 +179,9 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
         filename = stem + ext;
     }
     else
+    {
         filename = stem + ".obj";
+    }
 
     if (doColor)
     {
@@ -182,15 +193,15 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
                                            true, // YES writeMTL
                                            true, // YES MTLHasTex
                                            textureFilename, // name of texture file
-                                           useMin,
-                                           minValue,
-                                           useMax,
-                                           maxValue,
-                                           useBelowMinColor,
-                                           useAboveMaxColor);
+                                           useMin, // whether or not we should use a min
+                                           minValue, // the min value
+                                           useMax, // whether or not we should use a max
+                                           maxValue, // the max value
+                                           useBelowMinColor, // the color to use below min
+                                           useAboveMaxColor); // the color to use above max
 
         vtkImageData *image = GetColorTable();
-        if (image != NULL)
+        if (image != nullptr)
         {
             vtkImageWriter *writer = vtkPNGWriter::New();
             writer->SetFileName(textureFilename.c_str());
@@ -296,10 +307,11 @@ avtWavefrontOBJWriter::GetColorTable()
     {
         colorTable = avtColorTables::Instance()->GetDefaultContinuousColorTable();
         table = colorTables->GetColorControlPoints(colorTable);
-        if (!table)
-            return NULL;
+        if (! table)
+        {
+            return nullptr;
+        }
     }
-    
 
     // We don't have color tables that have this many control points,
     // so this should be a good choice for the number of colors.
