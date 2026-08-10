@@ -12,6 +12,8 @@
 #include <avtMTMDFileFormat.h>
 #include <avtSpatialBoxSelection.h>
 
+#include <visit-hdf5.h> // for H5Fclose() call here
+
 #include <hdf5.h>
 
 #include <string>
