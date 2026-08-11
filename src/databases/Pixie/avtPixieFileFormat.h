@@ -88,6 +88,7 @@ class avtPixieFileFormat : public avtMTSDFileFormat
         std::string        coordX;
         std::string        coordY;
         std::string        coordZ;
+        int                cycle;
     };
 
     struct VarInfo
@@ -105,9 +106,34 @@ class avtPixieFileFormat : public avtMTSDFileFormat
         std::string coordX;
         std::string coordY;
         std::string coordZ;
+        std::string meshName;
     };
 
     typedef std::map<std::string, VarInfo> VarInfoMap;
+    typedef std::map<int, VarInfoMap> StateVarInfoMap;
+
+    struct MeshKey
+    {
+        bool        curvilinear;
+        hsize_t     dims[3];
+        std::string coordX;
+        std::string coordY;
+        std::string coordZ;
+
+        bool operator<(const MeshKey &rhs) const
+        {
+            if(curvilinear != rhs.curvilinear)
+                return curvilinear < rhs.curvilinear;
+
+            for(int d = 0; d < 3; ++d)
+                if(dims[d] != rhs.dims[d])
+                    return dims[d] < rhs.dims[d];
+
+            if(coordX != rhs.coordX) return coordX < rhs.coordX;
+            if(coordY != rhs.coordY) return coordY < rhs.coordY;
+            return coordZ < rhs.coordZ;
+        }
+    };
 public:
                        avtPixieFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtPixieFileFormat();
@@ -131,6 +157,12 @@ protected:
                                                   int *varDims,
                                                   int &nVarDims) const;
     bool                   MeshIsCurvilinear(const std::string &) const;
+    VarInfoMap             GetVariablesForTimestep(int) const;
+    void                   BuildMeshesForTimestep(VarInfoMap &, VarInfoMap &) const;
+    MeshKey                GetMeshKey(const VarInfo &, const VarInfoMap &) const;
+    bool                   IsNodal(const VarInfo &, const VarInfoMap &) const;
+    bool                   SameSchema(const VarInfoMap &, const VarInfoMap &) const;
+    void                   PrepareTimestepInfo(int);
     vtkDataSet            *CreatePointMesh(int timestate, const VarInfo &,
                                            const hsize_t *hyperslabDims,
                                            const int *varDims,
@@ -160,8 +192,10 @@ protected:
     hid_t                  fileId;
     VarInfoMap             variables;
     VarInfoMap             meshes;
+    VarInfoMap             staticVariables;
+    StateVarInfoMap        stateVariables;
     int                    nTimeStates;
-    bool                   haveMeshCoords;
+    bool                   metadataIsTimeInvariant;
     std::string            rawExpressionString;
     std::string            timeStatePrefix;
     std::vector<int>       cycles;

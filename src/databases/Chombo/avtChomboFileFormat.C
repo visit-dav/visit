@@ -431,7 +431,7 @@ avtChomboFileFormat::InitializeReader(void)
     H5E_auto_t h5e_autofunc;
     void* h5e_clientdata;
     H5Eget_auto(&h5e_autofunc, &h5e_clientdata);
-    H5Eset_auto(0, 0);
+    H5Eset_auto(NULL, NULL);
 
     //
     // Open file

@@ -62,7 +62,7 @@ avtXolotlFileFormat::avtXolotlFileFormat(const char *fn, const DBOptionsAttribut
     //
     Initialize();
 
-    H5Eset_auto(H5E_DEFAULT,0,0);
+    H5Eset_auto(H5E_DEFAULT,NULL,NULL);
 }
 
 

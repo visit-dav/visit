@@ -69,7 +69,7 @@ avtCarpetHDF5FileFormat::avtCarpetHDF5FileFormat(const char *filename)
   : avtMTMDFileFormat(filename), data_file(0), xcoord_file(0), ycoord_file(0), zcoord_file(0)
 {
     // Turn off error message printing.
-    H5Eset_auto2(0,0,0);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     // INITIALIZE DATA MEMBERS
     open_all_files(filename);

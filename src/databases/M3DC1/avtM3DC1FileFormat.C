@@ -2197,7 +2197,7 @@ avtM3DC1FileFormat::LoadFile()
 
     // Init HDF5 and turn off error message printing.
     H5open();
-    H5Eset_auto( 0, NULL, NULL ); ///TODO: 1st arg should not be NULL 
+    H5Eset_auto( H5E_DEFAULT, NULL, NULL ); ///TODO: 1st arg should not be NULL 
 
     // Check for a valid M3D C1 file
     if( H5Fis_hdf5( m_filename.c_str() ) < 0 )

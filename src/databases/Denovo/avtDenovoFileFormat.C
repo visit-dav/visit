@@ -150,7 +150,7 @@ avtDenovoFileFormat::LoadFile()
     coordMetaData.resize(0);
     varMetaData.resize(0);
 
-    fileId = H5Fopen(GetFilename(), H5F_ACC_RDONLY, 0);
+    fileId = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT);
     if (fileId < 0)
         EXCEPTION1(InvalidFilesException, GetFilename());
 
