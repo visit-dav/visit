@@ -93,6 +93,7 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
                                     bool writeMTL = false,
                                     bool MTLHasTex = false,
                                     std::string texFilename = "",
+                                    const int ncolors = 256,
                                     bool useMin = false,
                                     double minValue = 0.,
                                     bool useMax = false,

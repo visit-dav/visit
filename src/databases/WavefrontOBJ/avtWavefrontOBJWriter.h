@@ -61,7 +61,7 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
     virtual CombineMode   GetCombineMode(const std::string &plotName) const;
 
   private:
-    vtkImageData   *GetColorTable();
+    vtkImageData   *GetColorTable(const int ncolors);
     
     bool                       doColor;
     std::string                colorTable;
