@@ -441,17 +441,17 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
     // We are going to stuff the data into the texture coordinates, since that
     // is what is transferable between Maya, the TSB, and VisIt.
     //
-    // I am converting the variable to the first component of a texture
-    // coordinates.  The second is all 0 until I can think of something
+    // I am converting the variable to the first component of texture
+    // coordinates. The second is all 0 until I can think of something
     // better to do with it.
     //
     vtkDataArray *scalars = activeDS->GetPointData()->GetScalars();
-    if (scalars != NULL)
+    if (scalars != nullptr)
     {
         //
         // Get some information for normalizing the variable.
         //
-        double gap = (range[1] != range[0] ? range[1] - range[0] : 1.);
+        const double gap = (range[1] != range[0] ? range[1] - range[0] : 1.);
 
         //
         // Create the actual texture coordinate.
@@ -460,23 +460,74 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
         tcoords->SetNumberOfComponents(2);
         tcoords->SetNumberOfTuples(scalars->GetNumberOfTuples());
 
-        // What is going on here?
-        // We want to add a pixel to either end of the color table.
-        // This is to prevent unwanted behavior with the max and min texture coordinates
-        // wrapping around. If we're going to add pixels, we must adjust the texture
-        // coords. We add two pixels and scale appropriately.
-        const double ncolors = 256.0; // this must match the GetColors() function
-        const double fudge_factor = 1.0 / ncolors;
-        const double new_divisor = 1.0 + fudge_factor * 2.0;
+        // let's say we have 4 colors and the upper color is U and the lower color is L.
+        // then our texture will look like this:
+        // 112344UULL
+        // the first and last colors are duplicated, as are the upper and lower colors
+        // we duplicate the first and last colors to prevent texture wrapping from
+        // harming our colors. If a value in a plot is at the minimum value, then it
+        // will map to a texture coordinate of 0.0, which will cause texture wrapping
+        // to color it a blend of the color at position 0.0 and 1.0. If a texture coordinate
+        // is on a pixel boundary, it gets the colors of both pixels on either side of
+        // the boundary. So we pad the ends so that max and min values will get the correct
+        // color. We also include duplicated upper and lower colors so that there is no
+        // blending when those colors are selected.
 
-        for (int i = 0 ; i < scalars->GetNumberOfTuples() ; i++)
+
+        // Let's say to access our color table we must provide a value in the range [0, 1].
+        // So to translate from field value space to color space we must go from
+        //   [min, max] -> [0, 1].
+        // We call the color space value the `color_coeff`.
+        // color_coeff = (field_value - data_min) / (data_max - data_min)
+
+        // The color_coeff needs to be translated to our texture space. Imagine we have
+        // 4 colors: "1234".
+        // These colors are embedded in the 1D texture like so:
+        // 
+        //     112344UULL
+        //      ^^^^
+        //
+        // If we have Nc colors (4 in our example), then the formula
+        // 
+        //      color_coeff * Nc + 1
+        //    -------------------------
+        //             Nc + 6
+        // 
+        // Gives us the resulting value translated to texture space. Why?
+        // color_coeff * Nc brings us into pixel space, and then adding 1 moves us up one pixel
+        // (because the first pixel is duplicated). Then we divide by (Nc + 6) to take us back
+        // out of pixel space and into texture space, since (Nc + 6) is the total number of 
+        // pixels.
+
+        const double num_extra_pixels = 6.0;
+        const double ncolors_dbl = static_cast<double>(ncolors);
+        // we are 3 positions from the end (so we are in between the two low val pixels)
+        const double lowval_tex_coord = (ncolors_dbl + num_extra_pixels - 3.0) / (ncolors_dbl + num_extra_pixels);
+        // we are 1 position from the end (so we are in between the two high val pixels)
+        const double hival_tex_coord = (ncolors_dbl + num_extra_pixels - 1.0) / (ncolors_dbl + num_extra_pixels);
+
+        for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
         {
-            double *p = scalars->GetTuple(i);
+            double *p = scalars->GetTuple(scalar_idx);
             double s[2];
-            // assuming we have ncolors colors and want to add a duplicate to either end
-            s[0] = (((*p - range[0]) / gap) + fudge_factor) / new_divisor;
+            const double field_value = *p;
+            if (useMin && field_value < minValue)
+            {
+                s[0] = lowval_tex_coord;
+            }
+            else if (useMax && field_value > maxValue)
+            {
+                s[0] = hival_tex_coord;
+            }
+            else
+            {
+                const double color_coeff = (field_value - range[0]) / gap;
+                const double tex_coord = (color_coeff * ncolors_dbl + 1.0) / (ncolors_dbl + num_extra_pixels)
+                s[0] = tex_coord;
+            }
+
             s[1] = 0.;
-            tcoords->SetTuple(i, s);
+            tcoords->SetTuple(scalar_idx, s);
         }
         toBeWritten->GetPointData()->SetTCoords(tcoords);
         tcoords->Delete();
@@ -486,9 +537,13 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
     std::string basename;
     auto pos = filename.find_last_of(".");
     if (filename.substr(pos + 1) == "obj")
+    {
         basename = filename.substr(0, pos);
+    }
     else
+    {
         basename = filename;
+    }
 
     vtkVisItOBJWriter *writer = vtkVisItOBJWriter::New();
     if (label != NULL && strlen(label) > 0)

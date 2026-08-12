@@ -303,9 +303,9 @@ avtWavefrontOBJWriter::GetColorTable(const int ncolors)
 
     vtkImageData *imageData = vtkImageData::New();
 
-    // let's say we have 5 colors and the upper color is U and the lower color is L.
+    // let's say we have 4 colors and the upper color is U and the lower color is L.
     // then our texture will look like this:
-    // 0012344UULL
+    // 112344UULL
     // the first and last colors are duplicated, as are the upper and lower colors
     // we duplicate the first and last colors to prevent texture wrapping from
     // harming our colors. If a value in a plot is at the minimum value, then it
