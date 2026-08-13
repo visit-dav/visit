@@ -1476,6 +1476,13 @@ class GDBDebugger(Debugger):
 #
 # Modifications:
 #
+#   Mark C. Miller, Wed Aug 12 17:21:07 PDT 2026
+#   Fix for launching on arm64 macOS. lldb there uses python and so it is
+#   necessary to unset VisIt's python dirs in the env before launching lldb
+#   and then set the debugger's target env. to use VisIt's python env. The
+#   `env -u VAR1 -u VAR2` part unsets the relevant python vars in the env.
+#   while the `-o settings set target.env-vars` sets the debugger's target
+#   env.
 ###############################################################################
 
 class LLDBDebugger(Debugger):
@@ -1490,9 +1497,32 @@ class LLDBDebugger(Debugger):
             return ["lldb"]
 
     def CreateCommand(self, args):
-        #lldb_args = ["process","launch","--tty","--"]
         lldb_args = ["--"]
-        return self.Executable() + lldb_args + [args[0]] + self.DebuggerArguments() + args[1:]
+        cmd = self.Executable()
+
+        pythonhome = os.environ.get("PYTHONHOME")
+        pythonpath = os.environ.get("PYTHONPATH")
+        if pythonhome and pythonpath:
+                cmd = ["env", "-u", "PYTHONHOME", "-u", "PYTHONPATH"] + cmd
+                lldb_args = [
+                    "-o",
+                    "settings set target.env-vars PYTHONHOME=%s PYTHONPATH=%s" % (pythonhome, pythonpath)
+                ] + lldb_args
+        elif pythonhome:
+                cmd = ["env", "-u", "PYTHONHOME"] + cmd
+                lldb_args = [
+                    "-o",
+                    "settings set target.env-vars PYTHONHOME=%s" % pythonhome
+                ] + lldb_args
+        elif pythonpath:
+                cmd = ["env", "-u", "PYTHONPATH"] + cmd
+                lldb_args = [
+                    "-o",
+                    "settings set target.env-vars PYTHONPATH=%s" % pythonpath
+                ] + lldb_args
+
+        return cmd + lldb_args + [args[0]] + \
+               self.DebuggerArguments() + args[1:]
 
 
 ###############################################################################
@@ -3574,7 +3604,7 @@ class MainLauncher(object):
                     # The Apple terminal is launching our command.
                     args = []
                 elif "xterm" in GETENV("TERM") and GETENV("DISPLAY") != "":
-                    args = self.xterm + ["-title", title, "-e"] + args
+                    args = self.xterm + ["-l", "-title", title, "-e"] + args
                 else:
                     self.warning("""
 VisIt does not recognize your terminal application so it will ignore the -newconsole argument.""")
