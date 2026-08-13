@@ -501,10 +501,33 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
 
         const double num_extra_pixels = 6.0;
         const double ncolors_dbl = static_cast<double>(ncolors);
-        // we are 3 positions from the end (so we are in between the two low val pixels)
-        const double lowval_tex_coord = (ncolors_dbl + num_extra_pixels - 3.0) / (ncolors_dbl + num_extra_pixels);
-        // we are 1 position from the end (so we are in between the two high val pixels)
-        const double hival_tex_coord = (ncolors_dbl + num_extra_pixels - 1.0) / (ncolors_dbl + num_extra_pixels);
+        const double lowval_tex_coord = [&]() -> double
+        {
+            if (useBelowMinColor)
+            {
+                // we are 3 positions from the end (so we are in between the two low val pixels)
+                return (ncolors_dbl + num_extra_pixels - 3.0) / (ncolors_dbl + num_extra_pixels);
+            }
+            else
+            {
+                // we are 1 position from the beginning (so we are in between the two min val pixels)
+                return 1.0 / (ncolors_dbl + num_extra_pixels);
+            }
+        }();
+
+        const double hival_tex_coord = [&]() -> double
+        {
+            if (useAboveMaxColor)
+            {
+                // we are 1 position from the end (so we are in between the two high val pixels)
+                return (ncolors_dbl + num_extra_pixels - 1.0) / (ncolors_dbl + num_extra_pixels);
+            }
+            else
+            {
+                // we are 5 positions from the end (so we are in between the two max val pixels)
+                return (ncolors_dbl + num_extra_pixels - 5.0) / (ncolors_dbl + num_extra_pixels);
+            }
+        }();
 
         // this formula is given above
         auto compute_texcoord = [&](const double field_value) -> double
