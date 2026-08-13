@@ -66,6 +66,7 @@ avtWavefrontOBJWriter::avtWavefrontOBJWriter(const DBOptionsAttributes *atts)
     {
         colorTable = avtColorTables::Instance()->GetDefaultContinuousColorTable();
     }
+    ncolors = atts->GetInt("Number of colors");
     invertCT = atts->GetBool("Invert color table");
     useMin = atts->GetBool("Use minimum");
     minValue = atts->GetDouble("Minimum");

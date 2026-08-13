@@ -90,16 +90,16 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
     static void        WriteOBJFile(vtkDataSet *, 
                                     const char *, 
                                     const char *, 
-                                    bool writeMTL = false,
-                                    bool MTLHasTex = false,
-                                    std::string texFilename = "",
+                                    const bool writeMTL = false,
+                                    const bool MTLHasTex = false,
+                                    const std::string texFilename = "",
                                     const int ncolors = 256,
-                                    bool useMin = false,
-                                    double minValue = 0.,
-                                    bool useMax = false,
-                                    double maxValue = 1.,
-                                    bool useBelowMinColor = false,
-                                    bool useAboveMaxColor = false);
+                                    const bool useMin = false,
+                                    const double minValue = 0.,
+                                    const bool useMax = false,
+                                    const double maxValue = 1.,
+                                    const bool useBelowMinColor = false,
+                                    const bool useAboveMaxColor = false);
 
   protected:
     static const char *extensions[];

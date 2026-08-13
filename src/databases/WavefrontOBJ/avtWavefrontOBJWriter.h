@@ -66,6 +66,7 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
     bool                       doColor;
     std::string                colorTable;
     bool                       invertCT;
+    int                        ncolors;
     bool                       useMin;
     double                     minValue;
     bool                       useMax;

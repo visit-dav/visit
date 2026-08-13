@@ -61,6 +61,7 @@ GetWavefrontOBJWriteOptions(void)
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetBool("Output colors", false);
     rv->SetString("Color table", "hot");
+    rv->SetInt("Number of colors", 256);
     rv->SetBool("Invert color table", false);
     rv->SetBool("Use minimum", false);
     rv->SetDouble("Minimum", 0.);

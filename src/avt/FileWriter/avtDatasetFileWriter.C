@@ -397,16 +397,16 @@ void
 avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
                                    const char *fname,
                                    const char *label,
-                                   bool writeMTL,
-                                   bool MTLHasTex,
-                                   std::string texFilename,
-                                   const int ncolors, //TODO
-                                   bool useMin,
-                                   double minValue,
-                                   bool useMax,
-                                   double maxValue,
-                                   bool useBelowMinColor,
-                                   bool useAboveMaxColor)
+                                   const bool writeMTL,
+                                   const bool MTLHasTex,
+                                   const std::string texFilename,
+                                   const int ncolors,
+                                   const bool useMin,
+                                   const double minValue,
+                                   const bool useMax,
+                                   const double maxValue,
+                                   const bool useBelowMinColor,
+                                   const bool useAboveMaxColor)
 {
     vtkDataSet *activeDS = ds;
 
@@ -506,29 +506,88 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
         // we are 1 position from the end (so we are in between the two high val pixels)
         const double hival_tex_coord = (ncolors_dbl + num_extra_pixels - 1.0) / (ncolors_dbl + num_extra_pixels);
 
-        for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
+        // this formula is given above
+        auto compute_texcoord = [&](const double field_value) -> double
         {
-            double *p = scalars->GetTuple(scalar_idx);
-            double s[2];
-            const double field_value = *p;
-            if (useMin && field_value < minValue)
-            {
-                s[0] = lowval_tex_coord;
-            }
-            else if (useMax && field_value > maxValue)
-            {
-                s[0] = hival_tex_coord;
-            }
-            else
-            {
-                const double color_coeff = (field_value - range[0]) / gap;
-                const double tex_coord = (color_coeff * ncolors_dbl + 1.0) / (ncolors_dbl + num_extra_pixels)
-                s[0] = tex_coord;
-            }
+            const double color_coeff = (field_value - range[0]) / gap;
+            return (color_coeff * ncolors_dbl + 1.0) / (ncolors_dbl + num_extra_pixels);
+        };
 
-            s[1] = 0.;
-            tcoords->SetTuple(scalar_idx, s);
+        // The loop case is reproduced 4X because we want to minimize branching within.
+        if (useMin && useMax)
+        {
+            for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
+            {
+                double *p = scalars->GetTuple(scalar_idx);
+                double s[2];
+                const double field_value = *p;
+                if (field_value < minValue)
+                {
+                    s[0] = lowval_tex_coord;
+                }
+                else if (field_value > maxValue)
+                {
+                    s[0] = hival_tex_coord;
+                }
+                else
+                {
+                    s[0] = compute_texcoord(field_value);
+                }
+                s[1] = 0.;
+                tcoords->SetTuple(scalar_idx, s);
+            }
         }
+        else if (!useMin && useMax)
+        {
+            for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
+            {
+                double *p = scalars->GetTuple(scalar_idx);
+                double s[2];
+                const double field_value = *p;
+                if (field_value > maxValue)
+                {
+                    s[0] = hival_tex_coord;
+                }
+                else
+                {
+                    s[0] = compute_texcoord(field_value);
+                }
+                s[1] = 0.;
+                tcoords->SetTuple(scalar_idx, s);
+            }
+        }
+        else if (useMin && !useMax)
+        {
+            for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
+            {
+                double *p = scalars->GetTuple(scalar_idx);
+                double s[2];
+                const double field_value = *p;
+                if (field_value < minValue)
+                {
+                    s[0] = lowval_tex_coord;
+                }
+                else
+                {
+                    s[0] = compute_texcoord(field_value);
+                }
+                s[1] = 0.;
+                tcoords->SetTuple(scalar_idx, s);
+            }
+        }
+        else // (!useMin && !useMax)
+        {
+            for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
+            {
+                double *p = scalars->GetTuple(scalar_idx);
+                double s[2];
+                const double field_value = *p;
+                s[0] = compute_texcoord(field_value);
+                s[1] = 0.;
+                tcoords->SetTuple(scalar_idx, s);
+            }
+        }
+        
         toBeWritten->GetPointData()->SetTCoords(tcoords);
         tcoords->Delete();
     }
