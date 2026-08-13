@@ -7,6 +7,7 @@
 #include <Interpolator.h>
 #include <Connection.h>
 #include <MapNode.h>
+#include <VisItInit.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -374,7 +375,7 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
             ConstInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
             break;
           default:
-            cerr << "UNKNOWN TYPE IN AttributeGroup::InterpolateConst\n";
+            cerr << "In \"" << VisItInit::GetComponentName() << "\" UNKNOWN TYPE \"" << GetFieldTypeName(GetFieldType(i)) << "\" for member at index " << (int) GetFieldType(i) << " in AttributeGroup::InterpolateConst\n";
             break;
         }
     }
@@ -554,7 +555,7 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
             ConstInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
             break;
           default:
-            cerr << "UNKNOWN TYPE IN AttributeGroup::InterpolateLinear\n";
+            cerr << "In \"" << VisItInit::GetComponentName() << "\" UNKNOWN TYPE \"" << GetFieldTypeName(GetFieldType(i)) << "\" for member at index " << (int) GetFieldType(i) << " in AttributeGroup::InterpolateLinear\n";
             break;
         }
     }
@@ -736,7 +737,7 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
                return false;
             break;
           default:
-            cerr << "UNKNOWN TYPE IN AttributeGroup::EqualTo\n";
+            cerr << "In \"" << VisItInit::GetComponentName() << "\" UNKNOWN TYPE \"" << GetFieldTypeName(GetFieldType(i)) << "\" for member at index " << (int) GetFieldType(i) << " in AttributeGroup::EqualTo\n";
             return false;
         }
     }
