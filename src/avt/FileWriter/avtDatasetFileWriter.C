@@ -408,6 +408,8 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
                                    const bool useBelowMinColor,
                                    const bool useAboveMaxColor)
 {
+    // TODO exception if the min and max are set and min > max
+
     vtkDataSet *activeDS = ds;
 
     // Make sure that we have polydata.
@@ -451,7 +453,9 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
         //
         // Get some information for normalizing the variable.
         //
-        const double gap = (range[1] != range[0] ? range[1] - range[0] : 1.);
+        const double rangeMin = useMin ? minValue : range[0];
+        const double rangeMax = useMax ? maxValue : range[1];
+        const double gap = (rangeMax != rangeMin ? rangeMax - rangeMin : 1.);
 
         //
         // Create the actual texture coordinate.
@@ -514,7 +518,6 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
                 return 1.0 / (ncolors_dbl + num_extra_pixels);
             }
         }();
-
         const double hival_tex_coord = [&]() -> double
         {
             if (useAboveMaxColor)
@@ -532,7 +535,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
         // this formula is given above
         auto compute_texcoord = [&](const double field_value) -> double
         {
-            const double color_coeff = (field_value - range[0]) / gap;
+            const double color_coeff = (field_value - rangeMin) / gap;
             return (color_coeff * ncolors_dbl + 1.0) / (ncolors_dbl + num_extra_pixels);
         };
 
