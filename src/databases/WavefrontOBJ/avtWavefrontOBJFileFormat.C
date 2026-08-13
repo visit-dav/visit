@@ -439,6 +439,8 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
         ds->GetCellData()->GetAbstractArray("_vtkVisItOBJReader_AggregateGroupColors"));
     vtkStringArray *groupNamesTmp = vtkStringArray::SafeDownCast(
         ds->GetCellData()->GetAbstractArray("_vtkVisItOBJReader_AggregateGroupNames"));
+    if (!groupColors || !groupNamesTmp) return;
+
     vtkStringArray *groupNames = vtkStringArray::New();
     for (int n = 0; n < (int) groupNamesTmp->GetNumberOfTuples(); n++)
     {
@@ -447,8 +449,11 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
         groupNames->InsertNextValue(str);
     }
 
-    if (!groupColors || !groupNames) return;
-    if (groupColors->GetNumberOfTuples() != groupNames->GetNumberOfTuples()) return;
+    if (groupColors->GetNumberOfTuples() != groupNames->GetNumberOfTuples())
+    {
+        groupNames->Delete();
+        return;
+    }
 
     vtkStringArray *colorNames = vtkStringArray::SafeDownCast(
         ds->GetCellData()->GetAbstractArray("_vtkVisItOBJReader_ColorNames"));
@@ -460,7 +465,7 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
     for (std::set<std::string>::const_iterator cit = aggregatedGroupNames.begin();
         cit != aggregatedGroupNames.end(); cit++)
     {
-        char const *hchars = "0123456789ABCDEFabcdef#";
+        char const *hchars = "0123456789ABCDEFabcdef";
 
         /* specify material names in order of their existence in aggregatedGroupNames */
         matnames.push_back(*cit);
@@ -470,6 +475,7 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
             debug5 << "Invalidating material object due to negative "
                    << "index for group name \"" << *cit << "\"" << endl;
             valid = false;
+            matcolors.push_back("");
             continue;
         }
 
@@ -477,19 +483,31 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
            is of the form '#HHHHHH' where 'H' is a hex digit, then treat it as the
            rgb value itself */
         std::string groupColor = groupColors->GetValue(groupIndex);
-        if (groupColor[0] == '#' && groupColor.find_first_not_of(hchars) == std::string::npos)
+        if (groupColor.size() == 7 && groupColor[0] == '#' &&
+            groupColor.find_first_not_of(hchars, 1) == std::string::npos)
         {
             matcolors.push_back(groupColor);
             continue;
         }
 
+        if (!colorNames || !colorValues)
+        {
+            debug5 << "Invalidating material object due to missing color "
+                   << "lookup arrays" << endl;
+            valid = false;
+            matcolors.push_back("");
+            continue;
+        }
+
         /* Given the name of the color, lookit up in the colorNames array and get its index */
         int colorIndex = (int) colorNames->LookupValue(groupColors->GetValue(groupIndex));
-        if (colorIndex < 0)
+        if (colorIndex < 0 || colorIndex >= colorValues->GetNumberOfTuples() ||
+            colorValues->GetNumberOfComponents() < 3)
         {
-            debug5 << "Invalidating material object due to negative "
-                   << "index for color name \"" << groupColors->GetValue(groupIndex)<< "\"" << endl;
+            debug5 << "Invalidating material object due to invalid "
+                   << "RGB data for color name \"" << groupColors->GetValue(groupIndex)<< "\"" << endl;
             valid = false;
+            matcolors.push_back("");
             continue;
         }
 

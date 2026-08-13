@@ -29,6 +29,7 @@
 #include "vtkStringArray.h"
 
 #include <cstring>
+#include <string>
 
 vtkStandardNewMacro(vtkVisItOBJReader);
 
@@ -113,6 +114,23 @@ int is_whitespace(char c)
     return 0;
 }
 
+static char *
+skip_whitespace(char *c)
+{
+  while (*c != '\0' && is_whitespace(*c))
+    c++;
+  return c;
+}
+
+static void
+strip_trailing_whitespace(char *c)
+{
+  char *end = c + strlen(c);
+  while (end > c && is_whitespace(*(end-1)))
+    end--;
+  *end = '\0';
+}
+
 // Parse an OBJ material file for material "names" and
 // coloration. Only the ambient color (Ka) is examined.
 static int
@@ -124,6 +142,7 @@ ParseMTLFile(char const *objFileName, char const *mtlFileName,
   float rgb[3];
   int everything_ok = 1;
   FILE *in;
+  std::string currentMaterial;
 
   if (mtlFileName[0] == '/') // abs path case
     {
@@ -139,18 +158,24 @@ ParseMTLFile(char const *objFileName, char const *mtlFileName,
   if (!in) return 0;
   while (everything_ok && fgets(line,MAX_LINE,in)!=NULL)
     {
-    if (strncmp(line,"newmtl ",7)==0)
+    char *lineStart = skip_whitespace(line);
+    if (strncmp(lineStart,"newmtl",6)==0 && is_whitespace(lineStart[6]))
       {
-      int len = (int) strlen(line);
-      line[len-1] = '\0'; // chop off newline char
-      colorNames->InsertNextValue(&line[7]);
+      char *materialName = skip_whitespace(lineStart+6);
+      strip_trailing_whitespace(materialName);
+      currentMaterial = materialName;
       }
-    else if (strncmp(line,"Ka ",3)==0)
+    else if (strncmp(lineStart,"Ka",2)==0 && is_whitespace(lineStart[2]))
       {
       // this is ambient color definition, expect three floats, separated by whitespace:
-      if (sscanf(line, "Ka %f %f %f", &rgb[0], &rgb[1], &rgb[2])==3)
+      if (sscanf(lineStart+2, "%f %f %f", &rgb[0], &rgb[1], &rgb[2])==3)
         {
-        rgbValues->InsertNextTypedTuple(rgb);
+        if (!currentMaterial.empty())
+          {
+          colorNames->InsertNextValue(currentMaterial.c_str());
+          rgbValues->InsertNextTypedTuple(rgb);
+          currentMaterial.clear();
+          }
         }
       else
         {
