@@ -503,6 +503,8 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
         // out of pixel space and into texture space, since (Nc + 6) is the total number of 
         // pixels.
 
+        // we have 6 extra pixels, the duplicated min/max as well as 2 for below min color
+        // and 2 for above max color.
         const double num_extra_pixels = 6.0;
         const double ncolors_dbl = static_cast<double>(ncolors);
         const double lowval_tex_coord = [&]() -> double
