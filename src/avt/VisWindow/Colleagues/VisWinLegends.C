@@ -8,6 +8,7 @@
 
 #include <VisWinLegends.h>
 
+#include <vtkCamera.h>
 #include <vtkRenderer.h>
 #include <vtkTextProperty.h>
 #include <vtkTextMapper.h>
@@ -338,6 +339,10 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
 //    now. This has the effect of making the text a little smaller than before
 //    yet letting it be scalable.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -384,6 +389,16 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
     vtkRenderer *foreground = mediator.GetForeground();
     if (!lst.empty() && homogeneous && dbInfoVisible)
     {
+        // The zoomTile calculation assumes that the parallel scale for the
+        // foreground renderer is 0.5.
+        double zoomTile =
+            0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
+        // Get the width and height of the tile to determine the amount
+        // to scale the width by.
+        int w, h;
+        mediator.GetSize(w, h);
+        double windowScale = double(w) / double(h);
+
         avtBehavior_p b = lst[0]->GetBehavior();
         avtDataAttributes &atts = b->GetInfo().GetAttributes();
 
@@ -411,16 +426,16 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         }
         CreateDatabaseInfo(info,dbname,atts);
         dbInfoActor->SetInput(info);
-        dbInfoActor->SetTextHeight(dbInfoHeight * dbInfoTextAttributes.scale);
+        dbInfoActor->SetTextHeight(dbInfoHeight * dbInfoTextAttributes.scale * zoomTile);
         
-        double x = leftColumnPosition;
+        double x = 0.5 - windowScale / 2. + leftColumnPosition * windowScale;
         double y = 0.98 - dbInfoVOffset;
         vtkCoordinate *c = dbInfoActor->GetPositionCoordinate();
-        c->SetCoordinateSystemToNormalizedViewport();
+        c->SetCoordinateSystemToWorld();
         c->SetValue(x, y);
         if (!dbInfoIsAdded)
         {
-            foreground->AddActor2D(dbInfoActor);
+            foreground->AddViewProp(dbInfoActor);
             dbInfoIsAdded = true;
         }
     }
@@ -428,7 +443,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
     {
         if (dbInfoIsAdded)
         {
-            foreground->RemoveActor2D(dbInfoActor);
+            foreground->RemoveViewProp(dbInfoActor);
             dbInfoIsAdded = false;
         }
     }

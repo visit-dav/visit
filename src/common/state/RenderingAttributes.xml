@@ -66,6 +66,12 @@
     <Field name="notifyForEachRender" label="notifyForEachRender" type="bool">
       false
     </Field>
+    <Field name="tiledRenderingWidth" label="tiledRenderingWidth" type="int">
+      2048
+    </Field>
+    <Field name="tiledRenderingHeight" label="tiledRenderingHeight" type="int">
+      2048
+    </Field>
     <Field name="scalableActivationMode" label="scalableActivationMode" type="enum" subtype="TriStateMode">
       Auto
     </Field>

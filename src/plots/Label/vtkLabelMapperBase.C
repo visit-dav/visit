@@ -69,6 +69,10 @@ LabelVerticalJustificationToVTK(LabelAttributes::LabelVerticalAlignment v)
 //   Brad Whitlock, Mon Aug 8 17:35:11 PST 2005
 //   Added zbuffer stuff.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added SetTileZoom to pass the tile zoom to the mapper to support
+//   tiled rendering.
+//
 // ****************************************************************************
 
 vtkLabelMapperBase::vtkLabelMapperBase() : 
@@ -101,6 +105,7 @@ vtkLabelMapperBase::vtkLabelMapperBase() :
     this->SpatialExtents[5] = 0.;
     this->UseGlobalLabel = false;
     this->RendererAction = 0;
+    this->TileZoom = 1.;
 
     this->numXBins = 0;
     this->numYBins = 0;
@@ -214,11 +219,25 @@ bool CompareViews(avtViewInfo a, avtViewInfo b)
        mod = true;
     else if(a.camera[2] != b.camera[2])
        mod = true;
+    else if(a.focus[0] != b.focus[0])
+       mod = true;
+    else if(a.focus[1] != b.focus[1])
+       mod = true;
+    else if(a.focus[2] != b.focus[2])
+       mod = true;
     else if(a.viewUp[0] != b.viewUp[0])
        mod = true;
     else if(a.viewUp[1] != b.viewUp[1])
        mod = true;
     else if(a.viewUp[2] != b.viewUp[2])
+       mod = true;
+    else if(a.parallelScale != b.parallelScale)
+       mod = true;
+    else if(a.imagePan[0] != b.imagePan[0])
+       mod = true;
+    else if(a.imagePan[1] != b.imagePan[1])
+       mod = true;
+    else if(a.imageZoom != b.imageZoom)
        mod = true;
     return mod;
 }
@@ -322,6 +341,9 @@ void vtkLabelMapperBase::PrintSelf(ostream& os, vtkIndent indent)
 // Creation:   Thu Aug 4 10:33:05 PDT 2005
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added SetTileZoom to pass the tile zoom to the mapper to support
+//   tiled rendering.
 //   
 // ****************************************************************************
 
@@ -330,6 +352,7 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
 {
     double rgb[3];
     int *sz = vp->GetSize();
+    double fontScale = 0.01 * sz[1] * TileZoom;
     if(atts.GetVarType() == LabelAttributes::LABEL_VT_MESH)
     {
         // Node font atts
@@ -344,7 +367,7 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             this->NodeLabelProperty->SetColor(rgb);
         }
 
-        this->NodeLabelProperty->SetFontSize(nodeFA.GetScale()*0.01*sz[1]);
+        this->NodeLabelProperty->SetFontSize(nodeFA.GetScale() * fontScale);
         this->NodeLabelProperty->SetFontFamily((int)nodeFA.GetFont());
         this->NodeLabelProperty->SetBold(nodeFA.GetBold());
         this->NodeLabelProperty->SetItalic(nodeFA.GetItalic());
@@ -360,7 +383,7 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             cellFA.GetColor().GetRgb(rgb);
             this->CellLabelProperty->SetColor(rgb);
         }
-        this->CellLabelProperty->SetFontSize(cellFA.GetScale()*0.01*sz[1]);
+        this->CellLabelProperty->SetFontSize(cellFA.GetScale() * fontScale);
         this->CellLabelProperty->SetFontFamily((int)cellFA.GetFont());
         this->CellLabelProperty->SetBold(cellFA.GetBold());
         this->CellLabelProperty->SetItalic(cellFA.GetItalic());
@@ -381,11 +404,11 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             this->NodeLabelProperty->SetColor(rgb);
             this->CellLabelProperty->SetColor(rgb);
         }
-        this->NodeLabelProperty->SetFontSize(labelFA.GetScale()*0.01*sz[1]);
+        this->NodeLabelProperty->SetFontSize(labelFA.GetScale() * fontScale);
         this->NodeLabelProperty->SetFontFamily((int)labelFA.GetFont());
         this->NodeLabelProperty->SetBold(labelFA.GetBold());
         this->NodeLabelProperty->SetItalic(labelFA.GetItalic());
-        this->CellLabelProperty->SetFontSize(labelFA.GetScale()*0.01*sz[1]);
+        this->CellLabelProperty->SetFontSize(labelFA.GetScale() * fontScale);
         this->CellLabelProperty->SetFontFamily((int)labelFA.GetFont());
         this->CellLabelProperty->SetBold(labelFA.GetBold());
         this->CellLabelProperty->SetItalic(labelFA.GetItalic());
@@ -726,6 +749,9 @@ vtkLabelMapperBase::ClearLabelCaches()
 // Creation:   Mon Oct 25 09:03:34 PDT 2004
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I corrected the bin calculation. The logic was a little off and it
+//   could end up putting points that were out of range in a bin.
 //   
 // ****************************************************************************
 
@@ -736,37 +762,35 @@ vtkLabelMapperBase::AllowLabelInBin(const double *screenPoint,
     bool retval = false;
 
     //
-    // If the point is on the screen then consider it for binning.
+    // Return if off the screen.
     //
-    int binx = int(screenPoint[0] * numXBins);
-    int biny = int(screenPoint[1] * numYBins);
+    if (screenPoint[0] < 0. || screenPoint[0] > 1. ||
+        screenPoint[1] < 0. || screenPoint[1] > 1.)
+        return false;
 
-    if(binx >= 0 && binx < numXBins &&
-       biny >= 0 && biny < numYBins)
-    {
-        int index = biny * numXBins + binx;
-        LabelInfo *info = this->LabelBins + index;
+    //
+    // Calculate the bin and consider adding it.
+    //
+    int binx = std::min(static_cast<int>(std::floor(screenPoint[0] * numXBins)), numXBins - 1);
+    int biny = std::min(static_cast<int>(std::floor(screenPoint[1] * numYBins)), numYBins - 1);
 
-        //
-        // The point is on the screen but is it closer than the point that is
-        // already in the bin?
-        //
-        if(screenPoint[2] < info->screenPoint[2] || info->label == 0)
-        {
-            info->screenPoint[0] = screenPoint[0];
-            info->screenPoint[1] = screenPoint[1];
-            info->screenPoint[2] = screenPoint[2];
-            info->realPoint[0] = realPoint[0];
-            info->realPoint[1] = realPoint[1];
-            info->realPoint[2] = realPoint[2];
-            retval = true;
-            info->label = labelString;
-            info->type = t;
-        }
-    }
-    else
+    int index = biny * numXBins + binx;
+    LabelInfo *info = this->LabelBins + index;
+
+    //
+    // Is the point closer than the point that is already in the bin?
+    //
+    if(screenPoint[2] < info->screenPoint[2] || info->label == 0)
     {
-        debug5 << "BAD binx or biny. binx=" << binx << ", biny=" << biny << endl;
+        info->screenPoint[0] = screenPoint[0];
+        info->screenPoint[1] = screenPoint[1];
+        info->screenPoint[2] = screenPoint[2];
+        info->realPoint[0] = realPoint[0];
+        info->realPoint[1] = realPoint[1];
+        info->realPoint[2] = realPoint[2];
+        retval = true;
+        info->label = labelString;
+        info->type = t;
     }
 
     return retval;

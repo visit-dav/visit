@@ -308,6 +308,9 @@ VisWinAxes::SetViewport(double vl, double vb, double vr, double vt)
 //    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
 //    Utilize new vtkAxesActor2D.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
@@ -319,7 +322,7 @@ VisWinAxes::AddAxesToWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->AddActor2D(axes);
+    foreground->AddViewProp(axes);
 
     addedAxes = true;
 }
@@ -342,6 +345,9 @@ VisWinAxes::AddAxesToWindow(void)
 //    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
 //    Utilize new vtkAxesActor2D.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
@@ -353,7 +359,7 @@ VisWinAxes::RemoveAxesFromWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->RemoveActor2D(axes);
+    foreground->RemoveViewProp(axes);
 
     addedAxes = false;
 }

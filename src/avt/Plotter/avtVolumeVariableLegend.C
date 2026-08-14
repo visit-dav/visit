@@ -38,6 +38,10 @@
 //   Moved call to SetLegendPosition() to bottom of constructor. Without this
 //   we can wind up invoking methods on the object we are constructing here
 //   before all its state variables have been initialized.
+//
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Initialize scale and zoom.
+//
 // ****************************************************************************
 
 avtVolumeVariableLegend::avtVolumeVariableLegend() : avtVariableLegend(1)
@@ -46,6 +50,9 @@ avtVolumeVariableLegend::avtVolumeVariableLegend() : avtVariableLegend(1)
     sBar->SetShadow(0);
     sBar->SetLookupTable(lut);
 
+    scale[0] = 1.;
+    scale[1] = 1.;
+    zoom = 1.;
     size[0] = 0.08;
     size[1] = 0.26;
     sBar->SetPosition2(size[0], size[1]);

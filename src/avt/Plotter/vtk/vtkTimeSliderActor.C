@@ -193,6 +193,10 @@ vtkTimeSliderActor::AddEndCapCells(int center, vtkCellArray *polys)
 //   Modify the interpretation of Position2 to the more standard vtk
 //   interpretation where the coordinate is relative to Position.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -201,11 +205,6 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
     double BL[2] = {this->GetPosition()[0], this->GetPosition()[1]};
     double TR[2] = {this->GetPosition()[0] + this->GetPosition2()[0],
                    this->GetPosition()[1] + this->GetPosition2()[1]};
-
-#ifdef CREATE_POLYDATA_IN_SCREEN_SPACE
-    viewport->NormalizedDisplayToDisplay(BL[0], BL[1]);
-    viewport->NormalizedDisplayToDisplay(TR[0], TR[1]);
-#endif
 
     //
     // If we're drawing endcaps, move the bar in a little to make room.
@@ -453,15 +452,12 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
     //
     this->SliderMapper = vtkPolyDataMapper2D::New();
     this->SliderMapper->SetInputData(this->SliderPolyData);
-#ifndef CREATE_POLYDATA_IN_SCREEN_SPACE
-    // If we're not creating the polydata in screen space then we're defining it
-    // once in viewport coordinates. Set the transform coordinate so the mapper
-    // knows to convert the points to display points before rendering.
+    // Set the transform coordinate so the mapper knows to convert the
+    // points to display points before rendering.
     vtkCoordinate *transformCoord = vtkCoordinate::New();
-    transformCoord->SetCoordinateSystemToNormalizedViewport();
+    transformCoord->SetCoordinateSystemToWorld();
     this->SliderMapper->SetTransformCoordinate(transformCoord);
     transformCoord->Delete();
-#endif
 
     this->SliderActor = vtkActor2D::New();
     this->SliderActor->SetMapper(this->SliderMapper);
@@ -484,6 +480,9 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
 // Creation:   Tue Oct 28 11:29:59 PDT 2003
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 
@@ -492,14 +491,7 @@ vtkTimeSliderActor::RenderOverlay(vtkViewport *viewport)
 {
     bool stateChanged = false;
     if(this->SliderActor != 0)
-        stateChanged = this->GetMTime() > this->SliderActor->GetMTime()
-#ifdef CREATE_POLYDATA_IN_SCREEN_SPACE
-        // If we created the polydata in screen space then we need to recreate it
-        // each time the viewport changes.
-                       || viewport->GetMTime() > this->GetMTime();
-#else
-        ;
-#endif
+        stateChanged = this->GetMTime() > this->SliderActor->GetMTime();
 
     if(stateChanged || this->SliderActor == NULL)
     {

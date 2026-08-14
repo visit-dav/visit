@@ -99,6 +99,10 @@ class   ColorAttribute;
 //    Kathleen Biagas, Thu Aug 28 15:31:22 PDT 2025
 //    Remove SetSurfaceRepresentation.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added SetTileZoom to pass the tile zoom to the mapper to support
+//    tiled rendering.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapperBase : public avtTerminatingDatasetSink
@@ -136,6 +140,8 @@ class PLOTTER_API avtMapperBase : public avtTerminatingDatasetSink
                                    { return false; };
 
     virtual bool               SetViewScale(const double) { return false; };
+
+    virtual bool               SetTileZoom(const double) { return false; }
 
     virtual void               SetAlternateDisplay(void *) {; }
 
