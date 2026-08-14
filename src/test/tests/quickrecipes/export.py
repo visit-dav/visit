@@ -120,8 +120,8 @@ def export_to_obj():
   ExportDatabase(eatts, opts)
   # exportToOBJ }
   TestValueEQ("qr_export_to_obj",os.path.isfile("my_obj_export.obj"),True)
-  TestValueEQ("qr_export_to_obj",os.path.isfile("my_obj_export.mtl"),True)
-  TestValueEQ("qr_export_to_obj",os.path.isfile("my_obj_export.png"),True)
+  TestValueEQ("qr_export_to_obj_mtl",os.path.isfile("my_obj_export.mtl"),True)
+  TestValueEQ("qr_export_to_obj_png",os.path.isfile("my_obj_export.png"),True)
   DeleteAllPlots()
 
 
