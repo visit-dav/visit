@@ -71,6 +71,9 @@ typedef enum
 //    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
 //    Made WriteOBJFile static and public and added some new arguments with
 //    default parameters.
+// 
+//    Justin Privitera, Fri Aug 14 15:52:42 PDT 2026
+//    WriteOBJFile takes additional parameters to control coloring settings.
 //
 // ****************************************************************************
 

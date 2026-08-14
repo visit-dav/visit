@@ -51,7 +51,8 @@ GetWavefrontOBJReadOptions(void)
 //    Added "Invert color table" option.
 //
 //    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
-//    Added new options for controlling limits.
+//    Added new options for controlling limits and turned on Output colors by
+//    default.
 //
 // ****************************************************************************
 

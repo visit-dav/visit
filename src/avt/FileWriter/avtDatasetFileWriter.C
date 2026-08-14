@@ -390,6 +390,10 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    Kathleen Biagas, Thu Jan 15, 2026
 //    Use vtkVisItOBJWriter (renamed from vtkOBJWriter to avoid conflict
 //    with VTK version).
+// 
+//    Justin Privitera, Fri Aug 14 15:52:42 PDT 2026
+//    Added support for below min color and above max color; rewrote parts of
+//    the function.
 //
 // ****************************************************************************
 
@@ -408,7 +412,14 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
                                    const bool useBelowMinColor,
                                    const bool useAboveMaxColor)
 {
-    // TODO exception if the min and max are set and min > max
+    if (useMin && useMax)
+    {
+        if (minValue > maxValue)
+        {
+            debug1 << "OBJ Writer: Minimum cannot be greater than maximum." << endl;
+            EXCEPTION1(ImproperUseException, "OBJ Writer: Minimum cannot be greater than maximum.");
+        }
+    }
 
     vtkDataSet *activeDS = ds;
 
@@ -444,8 +455,8 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
     // is what is transferable between Maya, the TSB, and VisIt.
     //
     // I am converting the variable to the first component of texture
-    // coordinates. The second is all 0 until I can think of something
-    // better to do with it.
+    // coordinates. The second component is always 0 since the texture
+    // is a 1D strip.
     //
     vtkDataArray *scalars = activeDS->GetPointData()->GetScalars();
     if (scalars != nullptr)

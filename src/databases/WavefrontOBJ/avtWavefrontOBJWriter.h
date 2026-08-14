@@ -36,6 +36,9 @@ class vtkImageData;
 // 
 //    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
 //    Added invert color table option.
+// 
+//    Justin Privitera, Fri Aug 14 15:52:42 PDT 2026
+//    Added more color controls.
 //
 // ****************************************************************************
 

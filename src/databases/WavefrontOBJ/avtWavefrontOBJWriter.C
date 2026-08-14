@@ -165,10 +165,6 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     if (doColor)
     {
-        // We don't have color tables that have this many control points,
-        // so this should be a good choice for the number of colors.
-        const int ncolors = 256;
-
         std::string textureFilename = stem + ".png";
 
         avtDatasetFileWriter::WriteOBJFile(ds, // dataset to write
@@ -279,6 +275,9 @@ avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 // 
 //    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
 //    We now handle the inverted color table case.
+// 
+//    Justin Privitera, Fri Aug 14 15:52:42 PDT 2026
+//    Add below min color and above max color; new comments and cleanup.
 //
 //****************************************************************************
 
@@ -316,8 +315,6 @@ avtWavefrontOBJWriter::GetColorTable(const int ncolors)
     // the boundary. So we pad the ends so that max and min values will get the correct
     // color. We also include duplicated upper and lower colors so that there is no
     // blending when those colors are selected.
-
-    // TODO EXPOSE NCOLORS AS AN OPTION
 
     // we have the duplicated end pixels plus the 2 pixels for below lower bound and
     // the 2 pixels for above upper bound
