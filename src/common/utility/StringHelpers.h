@@ -35,6 +35,13 @@ namespace StringHelpers
 
     enum FindResult {FindNone = -1, FindError = -2};
 
+    struct UTILITY_API REStringGroup
+    {
+        std::string name;
+        std::vector<std::string> strings;
+        std::vector<std::string> ids;
+    };
+
     void UTILITY_API GroupStrings(std::vector<std::string> stringList,
                        std::vector<std::vector<std::string> > &stringGroups,
                        std::vector<std::string> &groupNames,
@@ -55,6 +62,12 @@ namespace StringHelpers
                        const CIStringSet &stringList,
                        int numGroups,
                        CIStringSetVector &stringGroups);
+    bool UTILITY_API GroupStringsByRE(
+                       const std::vector<std::string> &stringList,
+                       const std::string &re,
+                       int groupNameSubexp,
+                       int memberIdSubexp,
+                       std::vector<REStringGroup> &groups);
 
     int UTILITY_API FindRE(const std::string &s, const std::string &re);
     int UTILITY_API FindRE(const char *stringToSearch, const char *re);

@@ -398,12 +398,155 @@ int main(int argc, char **argv)
     CHECK_CYCLE_REGEX("foo002.h5m", 2);
     CHECK_CYCLE_REGEX("foo010.h5m", 10);
 
+    //
+    // Test GroupStringsByRE
+    //
+    int group_strings_by_re_errors = 0;
+    {
+        vector<string> names;
+        names.push_back("rho");
+        names.push_back("B^3");
+        names.push_back("E^1");
+        names.push_back("B^1");
+        names.push_back("temperature");
+        names.push_back("E^2");
+        names.push_back("B^2");
+
+        vector<REStringGroup> groups;
+
+        bool okay = GroupStringsByRE(
+            names,
+            "^(.+)\\^([0-9]+)$",
+            1, 2, groups);
+
+        if (!okay)
+        {
+            cerr << "GroupStringsByRE unexpectedly failed" << endl;
+            group_strings_by_re_errors++;
+        }
+        else if (groups.size() != 2)
+        {
+            cerr << "GroupStringsByRE produced " << groups.size()
+                 << " groups, expected 2" << endl;
+            group_strings_by_re_errors++;
+        }
+        else
+        {
+            //
+            // Groups are alphabetized by group name.
+            //
+            if (groups[0].name != "B" ||
+                groups[0].strings.size() != 3 ||
+                groups[0].ids.size() != 3)
+            {
+                cerr << "Problem grouping B components" << endl;
+                group_strings_by_re_errors++;
+            }
+            else if (groups[0].strings[0] != "B^3" ||
+                     groups[0].strings[1] != "B^1" ||
+                     groups[0].strings[2] != "B^2" ||
+                     groups[0].ids[0] != "3" ||
+                     groups[0].ids[1] != "1" ||
+                     groups[0].ids[2] != "2")
+            {
+                cerr << "Problem with B component members or ids" << endl;
+                group_strings_by_re_errors++;
+            }
+
+            if (groups[1].name != "E" ||
+                groups[1].strings.size() != 2 ||
+                groups[1].ids.size() != 2)
+            {
+                cerr << "Problem grouping E components" << endl;
+                group_strings_by_re_errors++;
+            }
+            else if (groups[1].strings[0] != "E^1" ||
+                     groups[1].strings[1] != "E^2" ||
+                     groups[1].ids[0] != "1" ||
+                     groups[1].ids[1] != "2")
+            {
+                cerr << "Problem with E component members or ids" << endl;
+                group_strings_by_re_errors++;
+            }
+        }
+    }
+
+    //
+    // Verify that another component naming convention can be handled
+    // simply by changing the regular expression.
+    //
+    {
+        vector<string> names;
+        names.push_back("velocity_x");
+        names.push_back("pressure");
+        names.push_back("velocity_z");
+        names.push_back("velocity_y");
+
+        vector<REStringGroup> groups;
+
+        bool okay = GroupStringsByRE(
+            names,
+            "^(.+)_([xyz])$",
+            1, 2, groups);
+
+        if (!okay ||
+            groups.size() != 1 ||
+            groups[0].name != "velocity" ||
+            groups[0].strings.size() != 3 ||
+            groups[0].ids.size() != 3 ||
+            groups[0].ids[0] != "x" ||
+            groups[0].ids[1] != "z" ||
+            groups[0].ids[2] != "y")
+        {
+            cerr << "Problem grouping x/y/z components" << endl;
+            group_strings_by_re_errors++;
+        }
+    }
+
+    //
+    // A malformed RE should fail cleanly and leave no groups.
+    //
+    {
+        vector<string> names;
+        names.push_back("B^1");
+
+        vector<REStringGroup> groups;
+
+        if (GroupStringsByRE(names, "([", 1, 2, groups) ||
+            !groups.empty())
+        {
+            cerr << "GroupStringsByRE failed to reject bad RE" << endl;
+            group_strings_by_re_errors++;
+        }
+    }
+
+    //
+    // Invalid capture indices should also fail cleanly.
+    //
+    {
+        vector<string> names;
+        names.push_back("B^1");
+
+        vector<REStringGroup> groups;
+
+        if (GroupStringsByRE(names,
+                             "^(.+)\\^([0-9]+)$",
+                             1, 3, groups) ||
+            !groups.empty())
+        {
+            cerr << "GroupStringsByRE failed to reject bad subexpression"
+                 << endl;
+            group_strings_by_re_errors++;
+        }
+    }
+
     int all_errors = falseNegatives.size() +
                      falsePositives.size() +
                      pluralizing_errors +
                      extract_substr_errors +
                      pathname_errors +
-                     cycregex_errors;
+                     cycregex_errors +
+                     group_strings_by_re_errors;
 
     return all_errors > 0;
 }
