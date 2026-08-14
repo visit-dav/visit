@@ -817,6 +817,27 @@ avtActor::UpdateScaleFactor()
 
 
 // ****************************************************************************
+//  Method: avtActor::SetTileZoom
+//
+//  Purpose:
+//      Set the tile zoom in the drawable.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// ****************************************************************************
+
+void
+avtActor::SetTileZoom(const double tileZoom)
+{
+    if (*(drawable) != NULL)
+    {
+        drawable->SetTileZoom(tileZoom);
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtActor::TurnLightingOn
 //
 //  Purpose:

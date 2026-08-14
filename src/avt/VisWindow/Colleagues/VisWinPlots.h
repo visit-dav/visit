@@ -173,6 +173,10 @@ class avtTransparencyActor;
 //    Kathleen Biagas, Thu Aug 28 15:33:26 PDT 2025
 //    Remove SetSurfaceRepresentation, no longer used.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added UpdateTileZoom to pass the tile zoom to the plots to support
+//    tiled rendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -271,6 +275,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          SetBoundingBox(double *);
     void                          ShiftPlots(double [3]);
     void                          UpdateScaleFactor(void);
+    void                          UpdateTileZoom(const double);
 };
 
 #endif

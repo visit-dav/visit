@@ -955,15 +955,18 @@ VisitPlaneTool::DeleteTextActors()
 //   Brad Whitlock, Tue Feb 12 11:08:46 PDT 2002
 //   Added upAxis actors.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
 VisitPlaneTool::AddText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->AddActor2D(normalTextActor);
-    proxy.GetForeground()->AddActor2D(originTextActor);
-    proxy.GetForeground()->AddActor2D(upAxisTextActor);
+    proxy.GetForeground()->AddViewProp(normalTextActor);
+    proxy.GetForeground()->AddViewProp(originTextActor);
+    proxy.GetForeground()->AddViewProp(upAxisTextActor);
 #endif
 }
 
@@ -977,6 +980,8 @@ VisitPlaneTool::AddText()
 // Creation:   Fri Oct 18 15:19:37 PST 2002
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp.
 //
 // ****************************************************************************
 
@@ -984,7 +989,7 @@ void
 VisitPlaneTool::AddRadiusText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->AddActor2D(radiusTextActor);
+    proxy.GetForeground()->AddViewProp(radiusTextActor);
 #endif
 }
 
@@ -1001,15 +1006,18 @@ VisitPlaneTool::AddRadiusText()
 //   Brad Whitlock, Tue Feb 12 11:08:46 PDT 2002
 //   Added upAxis actors.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
 VisitPlaneTool::RemoveText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->RemoveActor2D(normalTextActor);
-    proxy.GetForeground()->RemoveActor2D(originTextActor);
-    proxy.GetForeground()->RemoveActor2D(upAxisTextActor);
+    proxy.GetForeground()->RemoveViewProp(normalTextActor);
+    proxy.GetForeground()->RemoveViewProp(originTextActor);
+    proxy.GetForeground()->RemoveViewProp(upAxisTextActor);
 #endif
 }
 
@@ -1023,6 +1031,8 @@ VisitPlaneTool::RemoveText()
 // Creation:   Fri Oct 18 15:20:11 PST 2002
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
 //
 // ****************************************************************************
 
@@ -1030,7 +1040,7 @@ void
 VisitPlaneTool::RemoveRadiusText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->RemoveActor2D(radiusTextActor);
+    proxy.GetForeground()->RemoveViewProp(radiusTextActor);
 #endif
 }
 

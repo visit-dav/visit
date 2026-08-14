@@ -57,6 +57,10 @@ class View3DAttributes;
 //    I deleted GetFrustum. I added GetCompositeProjectionTransformMatrix
 //    and CalculateExtentsAndArea.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView3D
@@ -77,6 +81,8 @@ struct AVTVIEW_API avtView3D
     bool     axis3DScaleFlag;
     double   axis3DScales[3];
     double   shear[3];
+    double   tilePan[2];
+    double   tileZoom;
     bool     windowValid;
 
   public:

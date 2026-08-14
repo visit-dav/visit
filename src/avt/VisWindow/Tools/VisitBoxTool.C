@@ -596,15 +596,18 @@ VisitBoxTool::DeleteTextActors()
 //   Brad Whitlock, Tue Jul 13 14:35:50 PST 2004
 //   Changed number of actors.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
 VisitBoxTool::AddText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->AddActor2D(originTextActor);
+    proxy.GetForeground()->AddViewProp(originTextActor);
     for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
-        proxy.GetForeground()->AddActor2D(labelTextActor[i]);
+        proxy.GetForeground()->AddViewProp(labelTextActor[i]);
 #endif
 }
 
@@ -621,15 +624,18 @@ VisitBoxTool::AddText()
 //   Brad Whitlock, Tue Jul 13 14:35:50 PST 2004
 //   Changed number of actors.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
 VisitBoxTool::RemoveText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->RemoveActor2D(originTextActor);
+    proxy.GetForeground()->RemoveViewProp(originTextActor);
     for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
-        proxy.GetForeground()->RemoveActor2D(labelTextActor[i]);
+        proxy.GetForeground()->RemoveViewProp(labelTextActor[i]);
 #endif
 }
 
@@ -864,6 +870,8 @@ VisitBoxTool::DeleteOutline()
 // Creation:   Wed Oct 30 12:24:42 PDT 2002
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp.
 //   
 // ****************************************************************************
 
@@ -881,7 +889,7 @@ VisitBoxTool::AddOutline()
 
 #ifndef NO_ANNOTATIONS
         for(i = 0; n == 2 && i < 4; ++i)
-            proxy.GetForeground()->AddActor2D(outlineTextActor[i]);
+            proxy.GetForeground()->AddViewProp(outlineTextActor[i]);
 #endif
     }
     else
@@ -900,6 +908,8 @@ VisitBoxTool::AddOutline()
 // Creation:   Wed Oct 30 12:25:00 PDT 2002
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
 //   
 // ****************************************************************************
 
@@ -915,7 +925,7 @@ VisitBoxTool::RemoveOutline()
 
 #ifndef NO_ANNOTATIONS
         for(i = 0; n == 2 && i < 4; ++i)
-            proxy.GetForeground()->RemoveActor2D(outlineTextActor[i]);
+            proxy.GetForeground()->RemoveViewProp(outlineTextActor[i]);
 #endif
     }
     addedOutline = false;

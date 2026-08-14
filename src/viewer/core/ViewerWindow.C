@@ -2166,12 +2166,16 @@ ViewerWindow::UpdateColorTable(const std::string &ctName)
 // Creation:   Fri Jun 15 13:23:56 PST 2001
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I added a call to TriggerPlotListUpdate to update annotations on a
+//   redraw.
 //
 // ****************************************************************************
 
 void
 ViewerWindow::RedrawWindow()
 {
+    visWindow->TriggerPlotListUpdate();
     visWindow->EnableUpdates();
     visWindow->Render();
 }
@@ -2390,6 +2394,10 @@ ViewerWindow::InvertBackgroundColor()
 //   Kathleen Biagas, Thu Aug 28 15:46:01 PDT 2025
 //   Removed call to SetSurfaceRepresentation, no longer used.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added TiledRenderingWidth and TiledRenderingHeight to support
+//   tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -2416,6 +2424,8 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetNumberOfPeels(source->GetNumberOfPeels());
     SetMultiresolutionMode(source->GetMultiresolutionMode());
     SetMultiresolutionCellSize(source->GetMultiresolutionCellSize());
+    SetTiledRenderingWidth(source->GetTiledRenderingWidth());
+    SetTiledRenderingHeight(source->GetTiledRenderingHeight());
     SetStereoRendering(source->GetStereo(), source->GetStereoType());
     SetNotifyForEachRender(source->GetNotifyForEachRender());
     SetScalableAutoThreshold(source->GetScalableAutoThreshold());
@@ -6491,8 +6501,12 @@ RotateAroundY(const avtView3D &curView, double angle,
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
-//    Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
-//    Removed renderAtts.SetGeometryRepresentation, it no longer exists.
+//   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//   Removed renderAtts.SetGeometryRepresentation, it no longer exists.
+//
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added TiledRenderingWidth and TiledRenderingHeight to support
+//   tiled rendering.
 //
 // ****************************************************************************
 
@@ -6593,6 +6607,9 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 
     renderAtts.SetMultiresolutionMode(GetMultiresolutionMode());
     renderAtts.SetMultiresolutionCellSize(GetMultiresolutionCellSize());
+
+    renderAtts.SetTiledRenderingWidth(GetTiledRenderingWidth());
+    renderAtts.SetTiledRenderingHeight(GetTiledRenderingHeight());
 
     renderAtts.SetSpecularFlag(GetSpecularFlag());
     renderAtts.SetSpecularCoeff(GetSpecularCoeff());
@@ -7801,6 +7818,88 @@ ViewerWindow::GetMultiresolutionCellSize() const
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::SetTiledRenderingWidth
+//
+// Purpose:
+//   Sets the window's tiled rendering width.
+//
+// Arguments:
+//   width   : The tiled rendering width.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetTiledRenderingWidth(int width)
+{
+    visWindow->SetTiledRenderingWidth(width);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetTiledRenderingWidth
+//
+// Purpose:
+//   Returns the window's tiled rendering width.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetTiledRenderingWidth() const
+{
+    return visWindow->GetTiledRenderingWidth();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetTiledRenderingHeight
+//
+// Purpose:
+//   Sets the window's tiled rendering height.
+//
+// Arguments:
+//   height  : The tiled rendering height.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetTiledRenderingHeight(int height)
+{
+    visWindow->SetTiledRenderingHeight(height);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetTiledRenderingHeight
+//
+// Purpose:
+//   Returns the window's tiled rendering height.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetTiledRenderingHeight() const
+{
+    return visWindow->GetTiledRenderingHeight();
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::GetRenderTimes
 //
 // Purpose:
@@ -8963,6 +9062,10 @@ ViewerWindow::ResetAnariScene()
 //   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
 //   Removed surfaceRepresentation, no longer used.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added TiledRenderingWidth and TiledRenderingHeight to support
+//   tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -9061,6 +9164,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("numberOfPeels", GetNumberOfPeels()));
         windowNode->AddNode(new DataNode("multiresolutionMode", GetMultiresolutionMode()));
         windowNode->AddNode(new DataNode("multiresolutionCellSize", GetMultiresolutionCellSize()));
+
+        windowNode->AddNode(new DataNode("tiledRenderingWidth", GetTiledRenderingWidth()));
+        windowNode->AddNode(new DataNode("tiledRenderingHeight", GetTiledRenderingHeight()));
 
         windowNode->AddNode(new DataNode("stereoRendering", GetStereo()));
         windowNode->AddNode(new DataNode("stereoType", GetStereoType()));
@@ -9302,6 +9408,10 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
 //   Removed surfaceRepresentation, no longer used.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added TiledRenderingWidth and TiledRenderingHeight to support
+//   tiled rendering.
+//
 // ****************************************************************************
 
 bool
@@ -9465,6 +9575,10 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetMultiresolutionMode(node->AsBool());
     if((node = windowNode->GetNode("multiresolutionCellSize")) != 0)
         SetMultiresolutionCellSize(node->AsDouble());
+    if((node = windowNode->GetNode("tiledRenderingWidth")) != 0)
+        SetTiledRenderingWidth(node->AsInt());
+    if((node = windowNode->GetNode("tiledRenderingHeight")) != 0)
+        SetTiledRenderingHeight(node->AsInt());
     int stereoType = 0;
     if((node = windowNode->GetNode("stereoType")) != 0)
         stereoType = node->AsInt();

@@ -501,3 +501,31 @@ avtLabelMapper::SetFullFrameScaling(bool useScale, const double *s)
     }
     return retval;
 }
+
+
+// ****************************************************************************
+//  Method: avtLabelMapper::SetTileZoom
+//
+//  Purpose:
+//    Sets the tile zoom in the vtk label mapper.
+//
+//  Arguments:
+//    tileZoom  : The tile zoom.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtLabelMapper::SetTileZoom(const double tileZoom)
+{
+    for (int i = 0; i < nMappers; ++i)
+    {
+        if (mappers[i] != NULL)
+           ((vtkLabelMapper*)mappers[i])->SetTileZoom(tileZoom);
+    }
+    return true;
+}

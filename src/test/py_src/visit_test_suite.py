@@ -37,7 +37,7 @@ from .visit_test_ctest import *
 
 
 def known_mode_keys():
-    return ['serial','parallel','scalable','dlb','pdb','hdf5','icet']
+    return ['serial','parallel','scalable','tiled','dlb','pdb','hdf5','icet']
 
 # ----------------------------------------------------------------------------
 #  Method: visit_root
@@ -167,6 +167,9 @@ def parse_test_specific_limit(test_file):
 #    Utilize cleanup_delay when cleaning up run_dir when test finishes.
 #    Fixes issue of run_dir not being completely removed when run on Windows.
 #
+#    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+#    Added tiled mode.
+#
 # ----------------------------------------------------------------------------
 def launch_visit_test(args):
     """
@@ -224,6 +227,10 @@ def launch_visit_test(args):
             if len(modes) > 0:
                 modes +=","
             modes +="icet"
+        if "tiled" in modes_list:
+            if len(modes) > 0:
+                modes +=","
+            modes +="tiled"
     if "pdb" in modes_list:
         if modes == "":
             modes = "pdb"

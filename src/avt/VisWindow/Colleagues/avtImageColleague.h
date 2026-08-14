@@ -29,6 +29,9 @@ class vtkImageResample;
 // Creation:   Thu Jul 15 08:04:46 PDT 2004
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 
@@ -51,6 +54,7 @@ public:
     // Methods that are called in response to vis window events.
     virtual void HasPlots(void);
     virtual void NoPlots(void);
+    virtual void UpdatePlotList(std::vector<avtActor_p> &lst);
 
 protected:
     void CreateActorAndMapper();
@@ -67,6 +71,8 @@ protected:
 
     bool                        useOpacityColor;
     ColorAttribute              opacityColor;
+
+    double                      imagePosition[3];
 
     bool                        maintainAspectRatio;
 
