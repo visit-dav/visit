@@ -2,6 +2,10 @@
 #  CLASSES: nightly
 #
 #  Cyrus Harrison, Tue Sep 16 11:19:26 PDT 2025
+# 
+#  Modifications:
+#    Justin Privitera, Fri Aug 14 15:52:42 PDT 2026
+#    Added OBJ export quickrecipe.
 # ----------------------------------------------------------------------------
 
 from os.path import join as pjoin
