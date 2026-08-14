@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="AnariAttributes" purpose="ANARI parameters and state" persistent="true" keyframe="false" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="AnariAttributes" purpose="ANARI parameters and state" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Field name="anariRendering" label="ANARI Rendering" type="bool">
       false
     </Field>
