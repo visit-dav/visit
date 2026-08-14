@@ -415,6 +415,99 @@ StringHelpers::GroupStringsFixedAlpha(
     }
 }
 
+// ****************************************************************************
+//  Function: GroupStringsByRE
+//
+//  Purpose:
+//      Groups strings according to a subexpression of a regular expression.
+//      A second subexpression identifies each member within its group.
+//
+//      Strings which do not match the regular expression are ignored.
+//
+//      For example, given
+//
+//          B^1 B^2 B^3 E^1 E^2 rho
+//
+//      the regular expression
+//
+//          ^(.+)\^([0-9]+)$
+//
+//      with groupNameSubexp=1 and memberIdSubexp=2 produces groups named
+//      "B" and "E", with member ids "1", "2", etc.
+//
+//      Group names are returned in lexical order. Members within each group
+//      retain their order from stringList.
+//
+//  Returns:
+//      true on success. false if the regular expression is invalid or either
+//      requested subexpression does not exist.
+//
+//  Programmer: ChatGPT as prompted by Mark C. Miller
+//  Creation:   August 13, 2026
+//
+// ****************************************************************************
+
+bool
+StringHelpers::GroupStringsByRE(
+    const vector<string> &stringList,
+    const string &re,
+    int groupNameSubexp,
+    int memberIdSubexp,
+    vector<REStringGroup> &groups)
+{
+    groups.clear();
+
+    std::regex cre;
+    try
+    {
+        cre = std::regex(re, std::regex::extended);
+    }
+    catch (std::regex_error&)
+    {
+        return false;
+    }
+
+    if (groupNameSubexp < 0 ||
+        memberIdSubexp < 0 ||
+        static_cast<size_t>(groupNameSubexp) > cre.mark_count() ||
+        static_cast<size_t>(memberIdSubexp) > cre.mark_count())
+    {
+        return false;
+    }
+
+    map<string, REStringGroup> groupMap;
+
+    for (size_t i = 0; i < stringList.size(); ++i)
+    {
+        std::smatch m;
+
+        if (!std::regex_match(stringList[i], m, cre))
+            continue;
+
+        if (!m[groupNameSubexp].matched ||
+            !m[memberIdSubexp].matched)
+            continue;
+
+        string groupName = m[groupNameSubexp].str();
+        string memberId  = m[memberIdSubexp].str();
+
+        REStringGroup &group = groupMap[groupName];
+
+        if (group.strings.empty())
+            group.name = groupName;
+
+        group.strings.push_back(stringList[i]);
+        group.ids.push_back(memberId);
+    }
+
+    for (map<string, REStringGroup>::const_iterator it = groupMap.begin();
+         it != groupMap.end(); ++it)
+    {
+        groups.push_back(it->second);
+    }
+
+    return true;
+}
 
 // ****************************************************************************
 //  Function: FindRE
