@@ -26,6 +26,45 @@ CommonDatabasePluginInfo::CommonDatabasePluginInfo()
     pluginManager = 0;
 }
 
+// ****************************************************************************
+//  Method: GeneralDatabasePluginInfo::GetDefaultScalarComponentREs
+//
+//  Purpose:
+//      Return default REs for identifying scalar components of aggregates.
+//      Capture group 1 is the aggregate base name; group 2 is component id.
+//      Will recognize candidate scalar component name strings with 2 or more
+//      characters in the basename and of the forms...
+//
+//         foo1 foo2 foo3
+//         foo_1 foo_2 foo_3
+//         foo.1 foo.2 foo.3
+//
+//         foox fooy fooz          fooX fooY fooZ
+//         foo_x foo_y foo_z       foo_X foo_Y foo_Z
+//         foo.x foo.y foo.z       foo.X foo.Y foo.Z
+//
+//         foou foov foow          fooU fooV fooW
+//         foo_u foo_v foo_w       foo_U foo_V foo_W
+//         foo.u foo.v foo.w       foo.U foo.V foo.W
+//
+//  ChatGPT via Mark C. Miller, Fri Aug 14 17:50:57 PDT 2026
+// ****************************************************************************
+std::vector<std::string>
+GeneralDatabasePluginInfo::GetDefaultScalarComponentREs() const
+{
+    std::vector<std::string> result;
+    result.push_back("^(.{2,})([123])$");
+    result.push_back("^(.{2,})_([123])$");
+    result.push_back("^(.{2,})\\.([123])$");
+    result.push_back("^(.{2,})_([xyzXYZ])$");
+    result.push_back("^(.{2,})\\.([xyzXYZ])$");
+    result.push_back("^(.{2,})([xyzXYZ])$");
+    result.push_back("^(.{2,})_([uvwUVW])$");
+    result.push_back("^(.{2,})\\.([uvwUVW])$");
+    result.push_back("^(.{2,})([uvwUVW])$");
+    return result;
+}
+
 
 // ****************************************************************************
 //  Method: CommonDatabasePluginInfo destructor
