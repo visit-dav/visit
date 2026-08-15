@@ -11,6 +11,7 @@
 
 #include <AnnotationObject.h>
 
+#include <vtkCamera.h>
 #include <vtkRenderer.h>
 #include <vtkVisItTextActor.h>
 #include <vtkTextProperty.h>
@@ -37,6 +38,10 @@
 //    Cyrus Harrison, Wed Nov 19 11:45:59 PST 2025
 //    Change default text annot size to 4% (to match old 3% with 4/3 scaling)
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m) 
@@ -48,13 +53,13 @@ avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m)
     //
     // Create and position the actor.
     //
+    textPosition[0] = 0.5;
+    textPosition[1] = 0.5;
+    textPosition[2] = 0.;
+    textHeight = 0.04;
     textActor = vtkVisItTextActor::New();
     textActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_VIEWPORT);
-    textActor->SetTextHeight(0.04);
     SetText("2D text annotation");
-    vtkCoordinate *pos = textActor->GetPositionCoordinate();
-    pos->SetCoordinateSystemToNormalizedViewport();
-    pos->SetValue(0.5, 0.5, 0.);
 
     // Make sure that the actor initially has the right fg color.
     double fgColor[3];
@@ -101,6 +106,8 @@ avtText2DColleague::~avtText2DColleague()
 // Creation:   Thu Nov 6 15:52:19 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
 //   
 // ****************************************************************************
 
@@ -109,7 +116,7 @@ avtText2DColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor2D(textActor);
+        mediator.GetForeground()->AddViewProp(textActor);
         addedToRenderer = true;
     }
 }
@@ -124,6 +131,8 @@ avtText2DColleague::AddToRenderer()
 // Creation:   Thu Nov 6 15:52:38 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
 //   
 // ****************************************************************************
 
@@ -132,7 +141,7 @@ avtText2DColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor2D(textActor);
+        mediator.GetForeground()->RemoveViewProp(textActor);
         addedToRenderer = false;
     }
 }
@@ -199,6 +208,10 @@ avtText2DColleague::ShouldBeAddedToRenderer() const
 //
 //    Brad Whitlock, Thu Mar 22 15:02:23 PST 2007
 //    Changed FieldsEqual due to state object changes.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
 //
 // ****************************************************************************
 
@@ -286,12 +299,10 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
     if(!currentOptions.FieldsEqual(4, &annot) ||
        !currentOptions.FieldsEqual(5, &annot) || textChanged)
     {
-        const double *p1 = annot.GetPosition();
-        const double *p2 = annot.GetPosition2();
-        vtkCoordinate *pos = textActor->GetPositionCoordinate();
-        pos->SetCoordinateSystemToNormalizedViewport();
-        pos->SetValue(p1[0], p1[1], 0.);
-        textActor->SetTextHeight(p2[0]);
+        textPosition[0] = annot.GetPosition()[0];
+        textPosition[1] = annot.GetPosition()[1];
+        textPosition[2] = annot.GetPosition()[2];
+        textHeight = annot.GetPosition2()[0];
     }
 
     //
@@ -321,6 +332,9 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
 // Creation:   Thu Oct 30 14:13:21 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 
@@ -331,13 +345,13 @@ avtText2DColleague::GetOptions(AnnotationObject &annot)
     annot.SetVisible(GetVisible());
     annot.SetActive(GetActive());
 
-    annot.SetPosition(textActor->GetPosition());
-    // Store the width and height in position2.
-    double p2wh[3];
-    p2wh[0] = textActor->GetTextHeight();
-    p2wh[1] = 0.;
-    p2wh[2] = 0.;
-    annot.SetPosition2(p2wh);
+    annot.SetPosition(textPosition);
+    // Store the height in position2.
+    double posh[3];
+    posh[0] = textHeight;
+    posh[1] = 0.;
+    posh[2] = 0.;
+    annot.SetPosition2(posh);
 
     // Store the text color and opacity.
     annot.SetTextColor(textColor);
@@ -377,6 +391,9 @@ avtText2DColleague::GetOptions(AnnotationObject &annot)
 // Creation:   Wed Nov 5 14:18:20 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 
@@ -384,7 +401,10 @@ void
 avtText2DColleague::SetForegroundColor(double r, double g, double b)
 {
     if(useForegroundForTextColor)
+    {
+        textColor.SetRgb(int(r * 255.), int(g * 255.), int(b * 255.));  
         textActor->GetTextProperty()->SetColor(r, g, b);
+    }
 }
 
 // ****************************************************************************
@@ -447,6 +467,10 @@ avtText2DColleague::NoPlots(void)
 //    Brad Whitlock, Mon Dec 10 11:41:13 PST 2012
 //    Set initial values from the current values.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//   
 // ****************************************************************************
 
 void
@@ -454,8 +478,25 @@ avtText2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
     if (lst.size() > 0 && textFormatString != 0)
     {
+        // The zoomTile calculation assumes that the parallel scale for the
+        // foreground renderer is 0.5.
+        double zoomTile =
+            0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
+        // Get the width and height of the tile to determine the amount
+        // to scale the width by.
+        int w, h;
+        mediator.GetSize(w, h);
+        double windowScale = double(w) / double(h);
+
         avtAnnotationWithTextColleague::UpdatePlotList(lst);
         SetText(textFormatString);
+
+        double x = 0.5 - windowScale / 2. + textPosition[0] * windowScale;
+        double y = textPosition[1];
+        vtkCoordinate *c = textActor->GetPositionCoordinate();
+        c->SetCoordinateSystemToWorld();
+        c->SetValue(x, y);
+        textActor->SetTextHeight(textHeight * zoomTile);
     }
 }
 

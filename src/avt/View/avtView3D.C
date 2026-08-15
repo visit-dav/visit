@@ -62,6 +62,10 @@ avtView3D::avtView3D()
 //    I added windowValid to support adding a multi resolution display
 //    capability.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
+//
 // ****************************************************************************
 
 avtView3D &
@@ -96,6 +100,9 @@ avtView3D::operator=(const avtView3D &vi)
     shear[0]            = vi.shear[0];
     shear[1]            = vi.shear[1];
     shear[2]            = vi.shear[2];
+    tilePan[0]          = vi.tilePan[0];
+    tilePan[1]          = vi.tilePan[1];
+    tileZoom            = vi.tileZoom;
     windowValid         = vi.windowValid;
 
     return *this;
@@ -129,6 +136,10 @@ avtView3D::operator=(const avtView3D &vi)
 //    Eric Brugger, Wed Jan  8 16:46:42 PST 2014
 //    I added windowValid to support adding a multi resolution display
 //    capability.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
 //
 // ****************************************************************************
 
@@ -180,6 +191,8 @@ avtView3D::operator==(const avtView3D &vi)
         eyeAngle != vi.eyeAngle ||
         centerOfRotationSet != vi.centerOfRotationSet ||
         axis3DScaleFlag != vi.axis3DScaleFlag ||
+        tilePan[0] != vi.tilePan[0] || tilePan[1] != vi.tilePan[1] ||
+        tileZoom != vi.tileZoom ||
         windowValid != vi.windowValid)
     {
         return false;
@@ -222,6 +235,10 @@ avtView3D::operator==(const avtView3D &vi)
 //    I added windowValid to support adding a multi resolution display
 //    capability.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -256,6 +273,9 @@ avtView3D::SetToDefault()
     shear[0]            = 0.;
     shear[1]            = 0.;
     shear[2]            = 1.;
+    tilePan[0]          = 0.;
+    tilePan[1]          = 0.;
+    tileZoom            = 1.;
     windowValid         = false;
 }
 
@@ -305,6 +325,10 @@ avtView3D::SetToDefault()
 //
 //    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //    Add shear for oblique projection support.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
 //
 // ****************************************************************************
 
@@ -368,6 +392,18 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     //
     // Set the image pan and image zoom.
     //
+    // The method avtView3D::SetViewInfoFromView stores the negative of
+    // the imagePan into avtViewInfo.
+    // The function CreateViewInfoFromViewAttributes in avtVolumeFilter.C
+    // also stores the negative of imagePan from View3DAttributes into
+    // avtView3D.
+    // The method avtVisItVTKRendererFilter::CreateCamera temporarily
+    // negates imagePan before calling avtViewInfo::SetCameraFromView.
+    //
+    // All this negation should probably be removed. All 3 locations need
+    // to be changed and the call to vtkCamera->SetWindowCenter in
+    // avtViewInfo::SetCameraFromView.
+    //
     viewInfo.imagePan[0] = -imagePan[0];
     viewInfo.imagePan[1] = -imagePan[1];
     viewInfo.imageZoom   = imageZoom;
@@ -378,6 +414,13 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     viewInfo.shear[0] = shear[0];
     viewInfo.shear[1] = shear[1];
     viewInfo.shear[2] = shear[2];
+
+    //
+    // Set the tile pan and zoom.
+    //
+    viewInfo.tilePan[0] = tilePan[0];
+    viewInfo.tilePan[1] = tilePan[1];
+    viewInfo.tileZoom = tileZoom;
 }
 
 // ****************************************************************************
@@ -412,6 +455,10 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 //    I added windowValid to support adding a multi resolution display
 //    capability.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tilePan and tileZoom to track the changes to the image pan
+//    and zoom for tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -438,6 +485,9 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
     eyeAngle = view3DAtts->GetEyeAngle();
     centerOfRotationSet = view3DAtts->GetCenterOfRotationSet();
     axis3DScaleFlag = view3DAtts->GetAxis3DScaleFlag();
+    tilePan[0] = 0.;
+    tilePan[1] = 0.;
+    tileZoom = 1.;
     windowValid = view3DAtts->GetWindowValid();
 }
 

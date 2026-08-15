@@ -30,6 +30,9 @@ class  vtkLineLegend;
 //    Brad Whitlock, Thu Mar 22 00:03:26 PDT 2007
 //    Added methods for controlling some more properties.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Add SetLegendZoom.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtCurveLegend : public avtLegend
@@ -44,6 +47,7 @@ class PLOTTER_API avtCurveLegend : public avtLegend
     virtual bool               GetTitleVisibility() const;
 
     virtual void               SetLegendScale(double xScale, double yScale);
+    virtual void               SetLegendZoom(double _zoom);
     virtual void               SetBoundingBoxVisibility(bool);
     virtual void               SetBoundingBoxColor(const double *);
     virtual void               SetFont(int family, bool bold, bool italic, bool shadow);
@@ -55,6 +59,7 @@ class PLOTTER_API avtCurveLegend : public avtLegend
   protected:
     vtkLineLegend             *lineLegend;
     double                     scale[2];
+    double                     zoom;
     bool                       titleVisibility;
 
     virtual void               ChangePosition(double, double);

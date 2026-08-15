@@ -61,6 +61,13 @@
       0
       1
     </Field>
+    <Field name="tilePan" label="tilePan" type="doubleArray" length="2">
+      0
+      0
+    </Field>
+    <Field name="tileZoom" label="tileZoom" type="double">
+      1
+    </Field>
     <Field name="windowValid" label="windowValid" type="bool">
       false
     </Field>

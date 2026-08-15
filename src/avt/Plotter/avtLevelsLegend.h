@@ -78,6 +78,9 @@ class  vtkLookupTable;
 //    Added methods and ivars that allow more user control of tick marks
 //    and tick labels.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Add SetLegendZoom.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtLevelsLegend : public avtLegend
@@ -96,6 +99,7 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
     virtual bool    GetMinMaxVisibility() const;
 
     virtual void    SetLegendScale(double xScale, double yScale);
+    virtual void    SetLegendZoom(double _zoom);
     virtual void    SetBoundingBoxVisibility(bool);
     virtual void    SetBoundingBoxColor(const double *);
     virtual void    SetOrientation(LegendOrientation);
@@ -123,6 +127,7 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
     double                     min, max;
     int                        nLevels;
     double                     scale[2];
+    double                     zoom;
     double                     maxScale;
     bool                       setMaxScale;
 

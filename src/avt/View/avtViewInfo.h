@@ -52,6 +52,10 @@ class vtkCamera;
 //   Kevin Griffin, Wed Aug 13, 2025
 //   Removed useAnari.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I added tilePan and tileZoom to track the changes to the image pan
+//   and zoom for tiled rendering.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtViewInfo
@@ -69,6 +73,8 @@ struct AVTVIEW_API avtViewInfo
     double   imageZoom;
     bool     orthographic;
     double   shear[3];
+    double   tilePan[2];
+    double   tileZoom;
 
     bool     useOSPRay;
 

@@ -49,6 +49,9 @@
 //    Hank Childs, Fri Jan 23 15:43:43 PST 2009
 //    Initialize minmaxVisibility.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Initialize zoom.
+//
 // ****************************************************************************
 
 avtLevelsLegend::avtLevelsLegend()
@@ -56,6 +59,7 @@ avtLevelsLegend::avtLevelsLegend()
     min = 0.;
     max = 1.;
     scale[0] = scale[1] = 1.;
+    zoom = 1.;
     maxScale = 1.;
     setMaxScale = true;
 
@@ -387,6 +391,34 @@ avtLevelsLegend::SetLegendScale(double xScale, double yScale)
     // Save the scales.
     scale[0] = xScale;
     scale[1] = yScale;
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetLegendZoom
+//
+// Purpose: 
+//   Set the legend zoom.
+//
+// Arguments:
+//   _zoom : The zoom factor.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetLegendZoom(double _zoom)
+{
+    // Scale the color bar
+    double colorBarScale = sBar->GetBarWidth() / zoom;
+    colorBarScale *= _zoom;
+    sBar->SetBarWidth(colorBarScale);
+
+    // Save the zoom.
+    zoom = _zoom;
 }
 
 // ****************************************************************************
@@ -740,12 +772,16 @@ avtLevelsLegend::SetVarRange(double nmin, double nmax)
 //    Brad Whitlock, Wed Mar 21 21:46:36 PST 2007
 //    Set position2.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
 avtLevelsLegend::ChangePosition(double x, double y)
 {
-    sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
+    sBar->GetPositionCoordinate()->SetCoordinateSystemToWorld();
     sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
 
     // Set the position 2, incorporating the scale.
