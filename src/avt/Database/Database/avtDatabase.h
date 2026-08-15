@@ -284,6 +284,8 @@ typedef struct {
 //   Alister Maguire, Mon Sep 23 15:11:40 MST 2019
 //   Added GetCycles and GetTimes. 
 //
+//   Mark C. Miller, Fri Aug 14 17:48:47 PDT 2026
+//   Add support for scalar component expression generation.
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -352,6 +354,8 @@ class DATABASE_API avtDatabase
                                       { fileFormat = ff; };
     const std::string          &GetFileFormat(void) const 
                                       { return fileFormat; };
+    void SetScalarComponentREs(const std::vector<std::string> &res)
+                                      { scalarComponentREs = res; };
 
     void                        ClearMetaDataAndSILCache();
 
@@ -388,6 +392,7 @@ class DATABASE_API avtDatabase
     static bool                            onlyServeUpMetaData;
     std::string                            fileFormat;
     std::string                            fullDBName;
+    std::vector<std::string>               scalarComponentREs;
 
     static unsigned int                    mdMaxCacheSize;
     static unsigned int                    silMaxCacheSize;
@@ -405,6 +410,7 @@ class DATABASE_API avtDatabase
     void                        AddMeshQualityExpressions(avtDatabaseMetaData *);
     void                        AddTimeDerivativeExpressions(avtDatabaseMetaData *);
     void                        AddVectorMagnitudeExpressions(avtDatabaseMetaData *);
+    void                        AddScalarComponentExpressions(avtDatabaseMetaData *);
     void                        Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *);
     
     virtual bool                HasInvariantMetaData(void) const = 0;

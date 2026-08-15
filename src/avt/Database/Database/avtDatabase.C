@@ -39,11 +39,13 @@
 #include <InvalidDimensionsException.h>
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
+#include <StringHelpers.h>
 
 #include <avtExecutionManager.h>
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -1306,6 +1308,8 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
         if (avtDatabaseFactory::GetCreateTimeDerivativeExpressions())
             AddTimeDerivativeExpressions(md);
 
+        AddScalarComponentExpressions(md);
+
         if (avtDatabaseFactory::GetCreateVectorMagnitudeExpressions())
             AddVectorMagnitudeExpressions(md);
     }
@@ -1807,6 +1811,124 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                  }
              }
          }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::AddScalarComponentExpressions
+//
+//  Purpose:
+//      Infer vector expressions from scalar components matching plugin-provided
+//      regular expressions. Capture 1 is base name; capture 2 is component id.
+//      Scalars are bucketed by mesh and centering before grouping.
+//
+//  ChatGTP as prompted by Mark C. Miller, Fri Aug 14 17:49:13 PDT 2026
+// ****************************************************************************
+void
+avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
+{
+    if (scalarComponentREs.empty())
+        return;
+
+    struct BucketKey
+    {
+        string meshName;
+        int centering;
+        bool operator<(const BucketKey &rhs) const
+        {
+            if (meshName < rhs.meshName) return true;
+            if (meshName > rhs.meshName) return false;
+            return centering < rhs.centering;
+        }
+    };
+
+    map<string, int> meshDims;
+    for (int i = 0; i < md->GetNumMeshes(); ++i)
+    {
+        const avtMeshMetaData *mmd = md->GetMesh(i);
+        meshDims[mmd->name] = mmd->spatialDimension;
+    }
+
+    map<BucketKey, vector<string> > buckets;
+    std::set<string> existingNames;
+    for (int i = 0; i < md->GetNumScalars(); ++i)
+    {
+        const avtScalarMetaData *smd = md->GetScalar(i);
+        existingNames.insert(smd->name);
+        if (!smd->validVariable)
+            continue;
+        BucketKey key;
+        key.meshName = smd->meshName;
+        key.centering = (int)smd->centering;
+        buckets[key].push_back(smd->name);
+    }
+
+    for (int i = 0; i < md->GetNumVectors(); ++i)
+        existingNames.insert(md->GetVectors(i).name);
+
+    ExpressionList const &elist = md->GetExprList();
+    for (int i = 0; i < elist.GetNumExpressions(); ++i)
+        existingNames.insert(elist[i].GetName());
+
+    for (map<BucketKey, vector<string> >::const_iterator bit = buckets.begin();
+         bit != buckets.end(); ++bit)
+    {
+        map<string, int>::const_iterator mit = meshDims.find(bit->first.meshName);
+        if (mit == meshDims.end())
+            continue;
+        int spatialDimension = mit->second;
+        if (spatialDimension < 2 || spatialDimension > 3)
+            continue;
+
+        for (size_t r = 0; r < scalarComponentREs.size(); ++r)
+        {
+            vector<StringHelpers::REStringGroup> groups;
+            if (!StringHelpers::GroupStringsByRE(bit->second,
+                    scalarComponentREs[r], 1, 2, groups))
+                continue;
+
+            for (size_t g = 0; g < groups.size(); ++g)
+            {
+                if (existingNames.count(groups[g].name))
+                    continue;
+
+                string component[3];
+                bool bad = false;
+                for (size_t j = 0; j < groups[g].strings.size(); ++j)
+                {
+                    int idx = groups[g].ids[j] == "1" ? 0 :
+                              groups[g].ids[j] == "2" ? 1 :
+                              groups[g].ids[j] == "3" ? 2 : -1;
+                    if (idx < 0 || !component[idx].empty())
+                    { bad = true; break; }
+                    component[idx] = groups[g].strings[j];
+                }
+                if (bad) continue;
+
+                int ncomps = (!component[0].empty() && !component[1].empty() &&
+                              !component[2].empty()) ? 3 :
+                             (!component[0].empty() && !component[1].empty() &&
+                               component[2].empty()) ? 2 : 0;
+                if (ncomps < spatialDimension)
+                    continue;
+
+                string def = "{";
+                for (int c = 0; c < ncomps; ++c)
+                {
+                    if (c) def += ",";
+                    def += "<" + component[c] + ">";
+                }
+                def += "}";
+
+                Expression e;
+                e.SetName(groups[g].name);
+                e.SetDefinition(def);
+                e.SetType(Expression::VectorMeshVar);
+                e.SetAutoExpression(true);
+                md->AddExpression(&e);
+                existingNames.insert(groups[g].name);
+            }
+        }
     }
 }
 
