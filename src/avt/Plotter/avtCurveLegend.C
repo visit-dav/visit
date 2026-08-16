@@ -22,6 +22,9 @@
 //    Brad Whitlock, Thu Mar 22 00:12:00 PDT 2007
 //    Initialize scale and titleVisibility.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Initialize zoom.
+//
 // ****************************************************************************
 
 avtCurveLegend::avtCurveLegend()
@@ -31,6 +34,7 @@ avtCurveLegend::avtCurveLegend()
 
     scale[0] = 1.;
     scale[1] = 1.;
+    zoom = 1.;
     size[0] = 0.08;
     size[1] = 0.26;
     titleVisibility = true;
@@ -173,6 +177,34 @@ avtCurveLegend::SetLegendScale(double xScale, double yScale)
 }
 
 // ****************************************************************************
+// Method: avtCurveLegend::SetLegendZoom
+//
+// Purpose:
+//   Set the legend zoom.
+//
+// Arguments:
+//   _zoom : The zoom factor.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveLegend::SetLegendZoom(double _zoom)
+{
+    // Scale the color bar
+    double colorBarScale = lineLegend->GetBarWidth() / zoom;
+    colorBarScale *= _zoom;
+    lineLegend->SetBarWidth(colorBarScale);
+
+    // Save the zoom.
+    zoom = _zoom;
+}
+
+// ****************************************************************************
 // Method: avtCurveLegend::SetBoundingBoxVisibility
 //
 // Purpose: 
@@ -263,12 +295,16 @@ avtCurveLegend::SetFont(int family, bool bold, bool italic, bool shadow)
 //    Brad Whitlock, Thu Mar 22 00:15:01 PDT 2007
 //    Set the position2.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
 avtCurveLegend::ChangePosition(double x, double y)
 {
-    lineLegend->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
+    lineLegend->GetPositionCoordinate()->SetCoordinateSystemToWorld();
     lineLegend->GetPositionCoordinate()->SetValue(x, y, 0.);
 
     // Set the position 2, incorporating the scale.

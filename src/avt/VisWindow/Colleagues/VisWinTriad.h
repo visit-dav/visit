@@ -43,6 +43,9 @@ class VisWindowColleagueProxy;
 //    Alister Maguire, Thu Mar  1 16:08:42 PST 2018
 //    Added SetLineWidth, SetFontFamily, SetBold, and SetItalic. 
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added UpdatePlotList to support tiled rendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinTriad : public VisWinColleague
@@ -62,6 +65,7 @@ class VISWINDOW_API VisWinTriad : public VisWinColleague
 
     virtual void              HasPlots(void);
     virtual void              NoPlots(void);
+    virtual void              UpdatePlotList(std::vector<avtActor_p> &);
 
     void                      SetVisibility(bool);
 

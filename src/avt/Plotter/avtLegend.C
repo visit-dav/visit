@@ -122,6 +122,9 @@ avtLegend::~avtLegend()
 //    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004
 //    Only add if globalVisibility is true.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
@@ -129,7 +132,7 @@ avtLegend::Add(vtkRenderer *ren)
 {
     if (globalVisibility && legendOn && !currentlyDrawn)
     {
-        ren->AddActor2D(legend);
+        ren->AddViewProp(legend);
         currentlyDrawn = true;
     }
     renderer = ren;
@@ -145,6 +148,10 @@ avtLegend::Add(vtkRenderer *ren)
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2000
 //
+//  Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
@@ -152,7 +159,7 @@ avtLegend::Remove(void)
 {
     if (currentlyDrawn)
     {
-        renderer->RemoveActor2D(legend);
+        renderer->RemoveViewProp(legend);
         renderer = NULL;
         currentlyDrawn = false;
     }
@@ -451,6 +458,22 @@ avtLegend::SetNumberFormat(const char *)
 
 void
 avtLegend::SetLegendScale(double xScale, double yScale)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::SetLegendZoom
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtLegend::SetLegendZoom(double zoom)
 {
     // Do nothing
 }

@@ -84,6 +84,9 @@ class  vtkLookupTable;
 //    Alister Maguire, Wed Jan 23 11:04:08 PST 2019
 //    Added nanColor and setter. 
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Add SetLegendZoom.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtVariableLegend : public avtLegend
@@ -104,6 +107,7 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     virtual void               SetNumberFormat(const char *);
 
     virtual void               SetLegendScale(double xScale, double yScale);
+    virtual void               SetLegendZoom(double zoom);
     virtual void               SetBoundingBoxVisibility(bool);
     virtual void               SetBoundingBoxColor(const double *);
     virtual void               SetOrientation(LegendOrientation);
@@ -140,6 +144,7 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     vtkLookupTable            *lut;
 
     double                     scale[2];
+    double                     zoom;
     double                     nanColor[4];
     bool                       barVisibility;
     bool                       rangeVisibility;

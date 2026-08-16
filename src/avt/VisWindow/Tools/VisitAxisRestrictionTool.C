@@ -325,6 +325,8 @@ VisitAxisRestrictionTool::DeleteTextActors()
 // Creation:   February  1, 2008
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp.
 //
 // ****************************************************************************
 
@@ -337,7 +339,7 @@ VisitAxisRestrictionTool::AddText()
 #ifndef NO_ANNOTATIONS
     for(size_t i = 0; i < posTextActors.size(); ++i)
     {
-        proxy.GetForeground()->AddActor2D(posTextActors[i]);
+        proxy.GetForeground()->AddViewProp(posTextActors[i]);
     }
 #endif
 
@@ -354,6 +356,8 @@ VisitAxisRestrictionTool::AddText()
 // Creation:   February  1, 2008
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
 //
 // ****************************************************************************
 
@@ -366,7 +370,7 @@ VisitAxisRestrictionTool::RemoveText()
 #ifndef NO_ANNOTATIONS
     for(size_t i = 0; i < posTextActors.size(); ++i)
     {
-        proxy.GetForeground()->RemoveActor2D(posTextActors[i]);
+        proxy.GetForeground()->RemoveViewProp(posTextActors[i]);
     }
 #endif
 

@@ -65,6 +65,9 @@
 //    Alister Maguire, Wed Jan 23 11:04:08 PST 2019
 //    Initialized nanColor. 
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Initialize zoom.
+//
 // ****************************************************************************
 
 avtVariableLegend::avtVariableLegend()
@@ -79,6 +82,7 @@ avtVariableLegend::avtVariableLegend()
 
     scale[0] = 1.;
     scale[1] = 1.;
+    zoom = 1.;
     size[0] = 0.08;
     size[1] = 0.26;
     sBar->SetPosition2(size[0], size[1]);
@@ -470,6 +474,35 @@ avtVariableLegend::SetLegendScale(double xScale, double yScale)
 }
 
 // ****************************************************************************
+// Method: avtVariableLegend::SetLegendZoom
+//
+// Purpose: 
+//   Set the legend zoom.
+//
+// Arguments:
+//   zoom : The zoom factor.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetLegendZoom(double _zoom)
+{
+
+    // Scale the color bar
+    double colorBarScale = sBar->GetBarWidth() / zoom;
+    colorBarScale *= _zoom;
+    sBar->SetBarWidth(colorBarScale);
+
+    // Save the zoom.
+    zoom = _zoom;
+}
+
+// ****************************************************************************
 // Method: avtVariableLegend::SetBoundingBoxVisibility
 //
 // Purpose: 
@@ -828,12 +861,16 @@ avtVariableLegend::SetVarRange(double nmin, double nmax)
 //    Brad Whitlock, Wed Mar 21 20:20:40 PST 2007
 //    I made it set position2.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::ChangePosition(double x, double y)
 {
-    sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
+    sBar->GetPositionCoordinate()->SetCoordinateSystemToWorld();
     sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
 
     // Set the position 2, incorporating the scale.

@@ -133,6 +133,10 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     else
         snprintf(tmpStr, 1000, "%snotifyForEachRender = 0\n", prefix);
     str += tmpStr;
+    snprintf(tmpStr, 1000, "%stiledRenderingWidth = %d\n", prefix, atts->GetTiledRenderingWidth());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%stiledRenderingHeight = %d\n", prefix, atts->GetTiledRenderingHeight());
+    str += tmpStr;
     const char *scalableActivationMode_names = "Never, Always, Auto";
     switch (atts->GetScalableActivationMode())
     {
@@ -1286,6 +1290,126 @@ RenderingAttributes_GetNotifyForEachRender(PyObject *self, PyObject *args)
 {
     PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetNotifyForEachRender()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetTiledRenderingWidth(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the tiledRenderingWidth in the object.
+    obj->data->SetTiledRenderingWidth(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetTiledRenderingWidth(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTiledRenderingWidth()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetTiledRenderingHeight(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the tiledRenderingHeight in the object.
+    obj->data->SetTiledRenderingHeight(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetTiledRenderingHeight(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTiledRenderingHeight()));
     return retval;
 }
 
@@ -2635,6 +2759,10 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"GetStereoType", RenderingAttributes_GetStereoType, METH_VARARGS},
     {"SetNotifyForEachRender", RenderingAttributes_SetNotifyForEachRender, METH_VARARGS},
     {"GetNotifyForEachRender", RenderingAttributes_GetNotifyForEachRender, METH_VARARGS},
+    {"SetTiledRenderingWidth", RenderingAttributes_SetTiledRenderingWidth, METH_VARARGS},
+    {"GetTiledRenderingWidth", RenderingAttributes_GetTiledRenderingWidth, METH_VARARGS},
+    {"SetTiledRenderingHeight", RenderingAttributes_SetTiledRenderingHeight, METH_VARARGS},
+    {"GetTiledRenderingHeight", RenderingAttributes_GetTiledRenderingHeight, METH_VARARGS},
     {"SetScalableActivationMode", RenderingAttributes_SetScalableActivationMode, METH_VARARGS},
     {"GetScalableActivationMode", RenderingAttributes_GetScalableActivationMode, METH_VARARGS},
     {"SetScalableAutoThreshold", RenderingAttributes_SetScalableAutoThreshold, METH_VARARGS},
@@ -2752,6 +2880,10 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
 
     if(strcmp(name, "notifyForEachRender") == 0)
         return RenderingAttributes_GetNotifyForEachRender(self, NULL);
+    if(strcmp(name, "tiledRenderingWidth") == 0)
+        return RenderingAttributes_GetTiledRenderingWidth(self, NULL);
+    if(strcmp(name, "tiledRenderingHeight") == 0)
+        return RenderingAttributes_GetTiledRenderingHeight(self, NULL);
     if(strcmp(name, "scalableActivationMode") == 0)
         return RenderingAttributes_GetScalableActivationMode(self, NULL);
     if(strcmp(name, "Never") == 0)
@@ -2880,6 +3012,10 @@ PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
         obj = RenderingAttributes_SetStereoType(self, args);
     else if(strcmp(name, "notifyForEachRender") == 0)
         obj = RenderingAttributes_SetNotifyForEachRender(self, args);
+    else if(strcmp(name, "tiledRenderingWidth") == 0)
+        obj = RenderingAttributes_SetTiledRenderingWidth(self, args);
+    else if(strcmp(name, "tiledRenderingHeight") == 0)
+        obj = RenderingAttributes_SetTiledRenderingHeight(self, args);
     else if(strcmp(name, "scalableActivationMode") == 0)
         obj = RenderingAttributes_SetScalableActivationMode(self, args);
     else if(strcmp(name, "scalableAutoThreshold") == 0)
