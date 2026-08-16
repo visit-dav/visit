@@ -53,15 +53,17 @@ std::vector<std::string>
 GeneralDatabasePluginInfo::GetDefaultScalarComponentREs() const
 {
     std::vector<std::string> result;
-    result.push_back("^(.{2,})([123])$");
-    result.push_back("^(.{2,})_([123])$");
-    result.push_back("^(.{2,})\\.([123])$");
-    result.push_back("^(.{2,})_([xyzXYZ])$");
-    result.push_back("^(.{2,})\\.([xyzXYZ])$");
-    result.push_back("^(.{2,})([xyzXYZ])$");
-    result.push_back("^(.{2,})_([uvwUVW])$");
-    result.push_back("^(.{2,})\\.([uvwUVW])$");
-    result.push_back("^(.{2,})([uvwUVW])$");
+
+    // Vector candidates
+    result.push_back("^(.{2,})_([123xyzXYZ])$");
+    result.push_back("^(.{2,})\\.([123xyzXYZ])$");
+    result.push_back("^(.{1,}[^_.])([123xyzXYZ])$");
+
+    // Tensor candidates
+    result.push_back("^(.{2,})_([123xyzXYZuvwUVW]{2})$");
+    result.push_back("^(.{2,})\\.([123xyzXYZuvwUVW]{2})$");
+    result.push_back("^(.{1,}[^_.])([123xyzXYZuvwUVW]{2})$");
+
     return result;
 }
 

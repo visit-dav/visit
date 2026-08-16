@@ -69,6 +69,295 @@ ConvertSlashes(char *str)
     }
 }
 
+// ****************************************************************************
+// Purpose: Helper function for adding expressions based on scalar components
+// Uses a variable's "component" identifier to infer the index of the component
+// in the aggregate type.
+//
+// ChatGPT via Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
+// ****************************************************************************
+static int
+ScalarComponentIndex(char c)
+{
+    switch (c)
+    {
+        case '1':
+        case 'x': case 'X':
+        case 'u': case 'U':
+            return 0;
+
+        case '2':
+        case 'y': case 'Y':
+        case 'v': case 'V':
+            return 1;
+
+        case '3':
+        case 'z': case 'Z':
+        case 'w': case 'W':
+            return 2;
+    }
+
+    return -1;
+}
+
+// ****************************************************************************
+// Purpose: Helper function for adding expressions based on scalar components
+// Defines vector expressions from candidate scalar component groupings.
+// The candidate groupings are constructed in the caller according to 
+// scalar component name RE matching and whether all candidates share the same
+// mesh, centering.
+//
+// ChatGPT via Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
+// ****************************************************************************
+static bool
+AddScalarComponentVectorExpression(
+    const StringHelpers::REStringGroup &grp,
+    int spatialDimension,
+    avtDatabaseMetaData *md)
+{
+    if (grp.ids.empty())
+        return false;
+
+    string comp[3];
+
+    for (size_t i = 0; i < grp.ids.size(); ++i)
+    {
+        if (grp.ids[i].size() != 1)
+            return false;
+
+        int c = ScalarComponentIndex(grp.ids[i][0]);
+
+        if (c < 0)
+            return false;
+
+        //
+        // Multiple variables claiming the same logical component means this
+        // group is ambiguous.
+        //
+        if (!comp[c].empty())
+            return false;
+
+        comp[c] = grp.strings[i];
+    }
+
+    int ncomps = 0;
+
+    if (!comp[0].empty() &&
+        !comp[1].empty() &&
+        !comp[2].empty())
+    {
+        ncomps = 3;
+    }
+    else if (!comp[0].empty() &&
+             !comp[1].empty() &&
+              comp[2].empty())
+    {
+        ncomps = 2;
+    }
+
+    //
+    // A 2D mesh may have either a 2- or 3-component vector.
+    // A 3D mesh requires all three components.
+    //
+    if (ncomps < spatialDimension)
+        return false;
+
+    string def = "{";
+
+    for (int c = 0; c < ncomps; ++c)
+    {
+        if (c > 0)
+            def += ",";
+
+        def += "<";
+        def += comp[c];
+        def += ">";
+    }
+
+    def += "}";
+
+    Expression e;
+    e.SetName(grp.name);
+    e.SetDefinition(def);
+    e.SetType(Expression::VectorMeshVar);
+    e.SetAutoExpression(true);
+
+    md->AddExpression(&e);
+
+    return true;
+}
+
+// ****************************************************************************
+// Purpose: Helper function for adding expressions based on scalar components
+// Defines tensor expressions from candidate scalar component groupings.
+// The candidate groupings are constructed in the caller according to 
+// scalar component name RE matching and whether all candidates share the same
+// mesh, centering.
+//
+// ChatGPT via Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
+// ****************************************************************************
+static bool
+AddScalarComponentTensorExpression(
+    const StringHelpers::REStringGroup &grp,
+    int spatialDimension,
+    avtDatabaseMetaData *md)
+{
+    if (grp.ids.empty())
+        return false;
+
+    string comp[3][3];
+
+    for (size_t i = 0; i < grp.ids.size(); ++i)
+    {
+        if (grp.ids[i].size() != 2)
+            return false;
+
+        int r = ScalarComponentIndex(grp.ids[i][0]);
+        int c = ScalarComponentIndex(grp.ids[i][1]);
+
+        if (r < 0 || c < 0)
+            return false;
+
+        //
+        // Components outside the dimensionality of the mesh do not qualify.
+        //
+        if (r >= spatialDimension || c >= spatialDimension)
+            return false;
+
+        if (!comp[r][c].empty())
+            return false;
+
+        comp[r][c] = grp.strings[i];
+    }
+
+    //
+    // First test for a complete general tensor.
+    //
+    bool full = true;
+
+    for (int r = 0; r < spatialDimension; ++r)
+    {
+        for (int c = 0; c < spatialDimension; ++c)
+        {
+            if (comp[r][c].empty())
+                full = false;
+        }
+    }
+
+    if (full)
+    {
+        string def = "{";
+
+        for (int r = 0; r < spatialDimension; ++r)
+        {
+            if (r > 0)
+                def += ",";
+
+            def += "{";
+
+            for (int c = 0; c < spatialDimension; ++c)
+            {
+                if (c > 0)
+                    def += ",";
+
+                def += "<";
+                def += comp[r][c];
+                def += ">";
+            }
+
+            def += "}";
+        }
+
+        def += "}";
+
+        Expression e;
+        e.SetName(grp.name);
+        e.SetDefinition(def);
+        e.SetType(Expression::TensorMeshVar);
+        e.SetAutoExpression(true);
+
+        md->AddExpression(&e);
+
+        return true;
+    }
+
+    //
+    // Otherwise see whether the group represents one complete triangular
+    // half of a symmetric tensor.
+    //
+    bool upper = true;
+    bool lower = true;
+
+    for (int r = 0; r < spatialDimension; ++r)
+    {
+        for (int c = 0; c < spatialDimension; ++c)
+        {
+            if (c >= r && comp[r][c].empty())
+                upper = false;
+
+            if (c <= r && comp[r][c].empty())
+                lower = false;
+        }
+    }
+
+    if (!upper && !lower)
+        return false;
+
+    //
+    // Reject extra entries from the opposite triangular half.  A symmetric
+    // tensor candidate should contain exactly the independent components,
+    // not an arbitrary mixture.
+    //
+    const int expected =
+        spatialDimension * (spatialDimension + 1) / 2;
+
+    int actual = 0;
+
+    for (int r = 0; r < spatialDimension; ++r)
+        for (int c = 0; c < spatialDimension; ++c)
+            if (!comp[r][c].empty())
+                ++actual;
+
+    if (actual != expected)
+        return false;
+
+    string def = "{";
+
+    for (int r = 0; r < spatialDimension; ++r)
+    {
+        if (r > 0)
+            def += ",";
+
+        def += "{";
+
+        for (int c = 0; c < spatialDimension; ++c)
+        {
+            if (c > 0)
+                def += ",";
+
+            const string &v =
+                !comp[r][c].empty() ? comp[r][c] : comp[c][r];
+
+            def += "<";
+            def += v;
+            def += ">";
+        }
+
+        def += "}";
+    }
+
+    def += "}";
+
+    Expression e;
+    e.SetName(grp.name);
+    e.SetDefinition(def);
+    e.SetType(Expression::SymmetricTensorMeshVar);
+    e.SetAutoExpression(true);
+
+    md->AddExpression(&e);
+
+    return true;
+}
 
 // size of MD/SIL caches
 unsigned int avtDatabase::mdMaxCacheSize   = 20;
@@ -79,7 +368,7 @@ bool      avtDatabase::onlyServeUpMetaData = false;
 
 // ****************************************************************************
 // The following methods are convenience methods to help database plugins
-// do dynamic domain decomposion for rectilinear grids. There are four 
+// do dynamic domain decomposition for rectilinear grids. There are four 
 // methods...
 //
 // 1 DetermineRectilinearDecomposition: Used to compute a domain decomposition
@@ -1819,8 +2108,9 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
 //
 //  Purpose:
 //      Infer vector expressions from scalar components matching plugin-provided
-//      regular expressions. Capture 1 is base name; capture 2 is component id.
-//      Scalars are bucketed by mesh and centering before grouping.
+//      regular expressions. Candidate scalars are bucketed by mesh and centering
+//      before grouping. In addition no new expression will be defined if it
+//      collides with any existing variable or expression.
 //
 //  ChatGTP as prompted by Mark C. Miller, Fri Aug 14 17:49:13 PDT 2026
 // ****************************************************************************
@@ -1842,6 +2132,25 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
         }
     };
 
+    std::set<string> occupiedNames;
+
+    for (int i = 0; i < md->GetNumScalars(); ++i)
+        occupiedNames.insert(md->GetScalars(i).name);
+
+    for (int i = 0; i < md->GetNumVectors(); ++i)
+        occupiedNames.insert(md->GetVectors(i).name);
+
+    for (int i = 0; i < md->GetNumTensors(); ++i)
+        occupiedNames.insert(md->GetTensors(i).name);
+
+    for (int i = 0; i < md->GetNumSymmTensors(); ++i)
+        occupiedNames.insert(md->GetSymmTensors(i).name);
+
+    const ExpressionList &elist = md->GetExprList();
+
+    for (int i = 0; i < elist.GetNumExpressions(); ++i)
+        occupiedNames.insert(elist[i].GetName());
+
     map<string, int> meshDims;
     for (int i = 0; i < md->GetNumMeshes(); ++i)
     {
@@ -1850,11 +2159,10 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
     }
 
     map<BucketKey, vector<string> > buckets;
-    std::set<string> existingNames;
     for (int i = 0; i < md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData *smd = md->GetScalar(i);
-        existingNames.insert(smd->name);
+        occupiedNames.insert(smd->name);
         if (!smd->validVariable)
             continue;
         BucketKey key;
@@ -1862,13 +2170,6 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
         key.centering = (int)smd->centering;
         buckets[key].push_back(smd->name);
     }
-
-    for (int i = 0; i < md->GetNumVectors(); ++i)
-        existingNames.insert(md->GetVectors(i).name);
-
-    ExpressionList const &elist = md->GetExprList();
-    for (int i = 0; i < elist.GetNumExpressions(); ++i)
-        existingNames.insert(elist[i].GetName());
 
     for (map<BucketKey, vector<string> >::const_iterator bit = buckets.begin();
          bit != buckets.end(); ++bit)
@@ -1880,53 +2181,94 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
         if (spatialDimension < 2 || spatialDimension > 3)
             continue;
 
+        //
+        // FIRST PASS: Identify every scalar name that looks like a 2-character
+        // tensor component.
+        //
+        std::set<string> tensorComponentScalarNames;
+
         for (size_t r = 0; r < scalarComponentREs.size(); ++r)
         {
             vector<StringHelpers::REStringGroup> groups;
+
             if (!StringHelpers::GroupStringsByRE(bit->second,
-                    scalarComponentREs[r], 1, 2, groups))
+                                                 scalarComponentREs[r],
+                                                 1, 2, groups))
                 continue;
 
             for (size_t g = 0; g < groups.size(); ++g)
             {
-                if (existingNames.count(groups[g].name))
+                const StringHelpers::REStringGroup &grp = groups[g];
+
+                for (size_t j = 0; j < grp.ids.size(); ++j)
+                {
+                    if (grp.ids[j].size() == 2)
+                        tensorComponentScalarNames.insert(grp.strings[j]);
+                }
+            }
+        }
+
+        //
+        // SECOND PASS: Actually create vector/tensor expressions.
+        //
+        for (size_t r = 0; r < scalarComponentREs.size(); ++r)
+        {
+            vector<StringHelpers::REStringGroup> groups;
+
+            if (!StringHelpers::GroupStringsByRE(bit->second,
+                                                 scalarComponentREs[r],
+                                                 1, 2, groups))
+            {
+                debug3 << "Invalid scalar-component regular expression \""
+                       << scalarComponentREs[r] << "\"" << endl;
+                continue;
+            }
+
+            for (size_t g = 0; g < groups.size(); ++g)
+            {
+                const StringHelpers::REStringGroup &grp = groups[g];
+
+                if (occupiedNames.find(grp.name) != occupiedNames.end())
                     continue;
 
-                string component[3];
-                bool bad = false;
-                for (size_t j = 0; j < groups[g].strings.size(); ++j)
-                {
-                    int idx = groups[g].ids[j] == "1" ? 0 :
-                              groups[g].ids[j] == "2" ? 1 :
-                              groups[g].ids[j] == "3" ? 2 : -1;
-                    if (idx < 0 || !component[idx].empty())
-                    { bad = true; break; }
-                    component[idx] = groups[g].strings[j];
-                }
-                if (bad) continue;
-
-                int ncomps = (!component[0].empty() && !component[1].empty() &&
-                              !component[2].empty()) ? 3 :
-                             (!component[0].empty() && !component[1].empty() &&
-                               component[2].empty()) ? 2 : 0;
-                if (ncomps < spatialDimension)
+                if (grp.ids.empty())
                     continue;
 
-                string def = "{";
-                for (int c = 0; c < ncomps; ++c)
-                {
-                    if (c) def += ",";
-                    def += "<" + component[c] + ">";
-                }
-                def += "}";
+                bool added = false;
 
-                Expression e;
-                e.SetName(groups[g].name);
-                e.SetDefinition(def);
-                e.SetType(Expression::VectorMeshVar);
-                e.SetAutoExpression(true);
-                md->AddExpression(&e);
-                existingNames.insert(groups[g].name);
+                if (grp.ids[0].size() == 1)
+                {
+                    //
+                    // Before treating this as a vector, make sure none
+                    // of its scalar members also looked like tensor
+                    // components during the first pass.
+                    //
+                    bool usesTensorComponent = false;
+
+                    for (size_t j = 0; j < grp.strings.size(); ++j)
+                    {
+                        if (tensorComponentScalarNames.find(grp.strings[j]) !=
+                            tensorComponentScalarNames.end())
+                        {
+                            usesTensorComponent = true;
+                            break;
+                        }
+                    }
+
+                    if (usesTensorComponent)
+                        continue;
+
+                    added = AddScalarComponentVectorExpression(
+                                grp, spatialDimension, md);
+                }
+                else if (grp.ids[0].size() == 2)
+                {
+                    added = AddScalarComponentTensorExpression(
+                                grp, spatialDimension, md);
+                }
+
+                if (added)
+                    occupiedNames.insert(grp.name);
             }
         }
     }
