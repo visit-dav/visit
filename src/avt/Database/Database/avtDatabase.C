@@ -77,21 +77,24 @@ ConvertSlashes(char *str)
 // ChatGPT via Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
 // ****************************************************************************
 static int
-ScalarComponentIndex(char c)
+ScalarComponentIndex(char c, bool zeroBasedNumeric)
 {
+    if (c >= '0' && c <= '3')
+    {
+        int idx = c - (zeroBasedNumeric ? '0' : '1');
+        return (idx >= 0 && idx <= 2) ? idx : -1;
+    }
+
     switch (c)
     {
-        case '1':
         case 'x': case 'X':
         case 'u': case 'U':
             return 0;
 
-        case '2':
         case 'y': case 'Y':
         case 'v': case 'V':
             return 1;
 
-        case '3':
         case 'z': case 'Z':
         case 'w': case 'W':
             return 2;
@@ -120,12 +123,24 @@ AddScalarComponentVectorExpression(
 
     string comp[3];
 
+    //
+    // Numeric component names may be either one-based (1,2,3) or zero-based
+    // (0,1,2). Presence of a zero unambiguously selects zero-based indexing;
+    // otherwise use the conventional one-based interpretation.
+    //
+    bool zeroBasedNumeric = false;
     for (size_t i = 0; i < grp.ids.size(); ++i)
     {
         if (grp.ids[i].size() != 1)
             return false;
 
-        int c = ScalarComponentIndex(grp.ids[i][0]);
+        if (grp.ids[i][0] == '0')
+            zeroBasedNumeric = true;
+    }
+
+    for (size_t i = 0; i < grp.ids.size(); ++i)
+    {
+        int c = ScalarComponentIndex(grp.ids[i][0], zeroBasedNumeric);
 
         if (c < 0)
             return false;
@@ -207,13 +222,25 @@ AddScalarComponentTensorExpression(
 
     string comp[3][3];
 
+    //
+    // As with vectors, numeric tensor indices may be one-based (11..33) or
+    // zero-based (00..22). A zero anywhere in a numeric component identifier
+    // selects zero-based indexing for the group.
+    //
+    bool zeroBasedNumeric = false;
     for (size_t i = 0; i < grp.ids.size(); ++i)
     {
         if (grp.ids[i].size() != 2)
             return false;
 
-        int r = ScalarComponentIndex(grp.ids[i][0]);
-        int c = ScalarComponentIndex(grp.ids[i][1]);
+        if (grp.ids[i][0] == '0' || grp.ids[i][1] == '0')
+            zeroBasedNumeric = true;
+    }
+
+    for (size_t i = 0; i < grp.ids.size(); ++i)
+    {
+        int r = ScalarComponentIndex(grp.ids[i][0], zeroBasedNumeric);
+        int c = ScalarComponentIndex(grp.ids[i][1], zeroBasedNumeric);
 
         if (r < 0 || c < 0)
             return false;
@@ -2106,13 +2133,12 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
 // ****************************************************************************
 //  Method: avtDatabase::AddScalarComponentExpressions
 //
-//  Purpose:
-//      Infer vector expressions from scalar components matching plugin-provided
-//      regular expressions. Candidate scalars are bucketed by mesh and centering
-//      before grouping. In addition no new expression will be defined if it
-//      collides with any existing variable or expression.
+//  Purpose: Infer vector expressions from scalar components matching
+//  plugin-provided regular expressions. Candidate scalars are bucketed by mesh
+//  and centering before grouping. In addition no new expression will be
+//  defined if it collides with any existing variable or expression.
 //
-//  ChatGTP as prompted by Mark C. Miller, Fri Aug 14 17:49:13 PDT 2026
+//  ChatGTP via by Mark C. Miller, Fri Aug 14 17:49:13 PDT 2026
 // ****************************************************************************
 void
 avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
@@ -2165,6 +2191,7 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
         occupiedNames.insert(smd->name);
         if (!smd->validVariable)
             continue;
+
         BucketKey key;
         key.meshName = smd->meshName;
         key.centering = (int)smd->centering;
@@ -2177,13 +2204,31 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
         map<string, int>::const_iterator mit = meshDims.find(bit->first.meshName);
         if (mit == meshDims.end())
             continue;
+
         int spatialDimension = mit->second;
         if (spatialDimension < 2 || spatialDimension > 3)
             continue;
 
         //
-        // FIRST PASS: Identify every scalar name that looks like a 2-character
-        // tensor component.
+        // FIRST PASS: Handle tensor-looking groups and establish precedence
+        // over possible vector interpretations of the same scalar names.
+        //
+        // Alphabetic tensor component identifiers (xx,xy,...,uv,...) and
+        // conventional one-based numeric identifiers (11,12,...,33) are
+        // sufficiently strong tensor syntax that their scalar names are
+        // protected from reinterpretation as vector components even when the
+        // tensor itself is incomplete. This prevents, for example,
+        // stress_xx/stress_xy from producing a bogus vector "stress_x", and
+        // partial11/partial12 from producing "partial1".
+        //
+        // Zero-based numeric identifiers are different because a family such
+        // as e000,e001,e002 has two equally plausible parses:
+        //
+        //     tensor candidate: e0 + {00,01,02}   (incomplete)
+        //     vector candidate: e00 + {0,1,2}     (complete)
+        //
+        // Therefore zero-based numeric tensor-looking groups get tensor
+        // precedence only when they actually form a tensor/symmetric tensor.
         //
         std::set<string> tensorComponentScalarNames;
 
@@ -2194,22 +2239,69 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
             if (!StringHelpers::GroupStringsByRE(bit->second,
                                                  scalarComponentREs[r],
                                                  1, 2, groups))
+            {
+                debug3 << "Invalid scalar-component regular expression \""
+                       << scalarComponentREs[r] << "\"" << endl;
                 continue;
+            }
 
             for (size_t g = 0; g < groups.size(); ++g)
             {
                 const StringHelpers::REStringGroup &grp = groups[g];
 
+                if (grp.ids.empty() || grp.ids[0].size() != 2)
+                    continue;
+
+                bool allNumeric = true;
+                bool hasZero = false;
+
                 for (size_t j = 0; j < grp.ids.size(); ++j)
                 {
-                    if (grp.ids[j].size() == 2)
+                    if (grp.ids[j].size() != 2)
+                    {
+                        allNumeric = false;
+                        break;
+                    }
+
+                    for (size_t k = 0; k < 2; ++k)
+                    {
+                        char c = grp.ids[j][k];
+
+                        if (c < '0' || c > '9')
+                            allNumeric = false;
+
+                        if (c == '0')
+                            hasZero = true;
+                    }
+                }
+
+                bool added = false;
+
+                if (occupiedNames.find(grp.name) == occupiedNames.end())
+                {
+                    added = AddScalarComponentTensorExpression(
+                                grp, spatialDimension, md);
+
+                    if (added)
+                        occupiedNames.insert(grp.name);
+                }
+
+                //
+                // Non-numeric tensor syntax, one-based numeric syntax, or an
+                // actually-created zero-based tensor all take precedence over
+                // a possible vector interpretation.
+                //
+                if (!allNumeric || !hasZero || added)
+                {
+                    for (size_t j = 0; j < grp.strings.size(); ++j)
                         tensorComponentScalarNames.insert(grp.strings[j]);
                 }
             }
         }
 
         //
-        // SECOND PASS: Actually create vector/tensor expressions.
+        // SECOND PASS: Create vectors from groups not claimed by the tensor
+        // precedence rules above.
         //
         for (size_t r = 0; r < scalarComponentREs.size(); ++r)
         {
@@ -2228,47 +2320,32 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
             {
                 const StringHelpers::REStringGroup &grp = groups[g];
 
+                if (grp.ids.empty() || grp.ids[0].size() != 1)
+                    continue;
+
                 if (occupiedNames.find(grp.name) != occupiedNames.end())
                     continue;
 
-                if (grp.ids.empty())
+                bool usesTensorComponent = false;
+
+                for (size_t j = 0; j < grp.strings.size(); ++j)
+                {
+                    if (tensorComponentScalarNames.find(grp.strings[j]) !=
+                        tensorComponentScalarNames.end())
+                    {
+                        usesTensorComponent = true;
+                        break;
+                    }
+                }
+
+                if (usesTensorComponent)
                     continue;
 
-                bool added = false;
-
-                if (grp.ids[0].size() == 1)
+                if (AddScalarComponentVectorExpression(
+                        grp, spatialDimension, md))
                 {
-                    //
-                    // Before treating this as a vector, make sure none
-                    // of its scalar members also looked like tensor
-                    // components during the first pass.
-                    //
-                    bool usesTensorComponent = false;
-
-                    for (size_t j = 0; j < grp.strings.size(); ++j)
-                    {
-                        if (tensorComponentScalarNames.find(grp.strings[j]) !=
-                            tensorComponentScalarNames.end())
-                        {
-                            usesTensorComponent = true;
-                            break;
-                        }
-                    }
-
-                    if (usesTensorComponent)
-                        continue;
-
-                    added = AddScalarComponentVectorExpression(
-                                grp, spatialDimension, md);
-                }
-                else if (grp.ids[0].size() == 2)
-                {
-                    added = AddScalarComponentTensorExpression(
-                                grp, spatialDimension, md);
-                }
-
-                if (added)
                     occupiedNames.insert(grp.name);
+                }
             }
         }
     }

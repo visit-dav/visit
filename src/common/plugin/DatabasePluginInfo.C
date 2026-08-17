@@ -29,11 +29,10 @@ CommonDatabasePluginInfo::CommonDatabasePluginInfo()
 // ****************************************************************************
 //  Method: GeneralDatabasePluginInfo::GetDefaultScalarComponentREs
 //
-//  Purpose:
-//      Return default REs for identifying scalar components of aggregates.
-//      Capture group 1 is the aggregate base name; group 2 is component id.
-//      Will recognize candidate scalar component name strings with 2 or more
-//      characters in the basename and of the forms...
+//  Purpose: Return default REs for identifying scalar components of aggregates.
+//  Capture group 1 is the aggregate base name; group 2 is component id. Will
+//  recognize candidate scalar component name strings with 2 or more characters
+//  in the basename and of the forms...
 //
 //         v1 v2 v3                foo1 foo2 foo3
 //         v_1 v_2 v_3             foo_1 foo_2 foo_3
@@ -47,6 +46,23 @@ CommonDatabasePluginInfo::CommonDatabasePluginInfo()
 //         foo_u foo_v foo_w       foo_U foo_V foo_W
 //         foo.u foo.v foo.w       foo.U foo.V foo.W
 //
+//         e000, e001, e002 (e00 vector)
+//
+//  These are the **DEFAULT** REs over all database plugins in VisIt. Each
+//  database can override these with the <ScalarComponentREs> tag in the .xml
+//  file. We already do this with Pixie.
+//
+//  We could make the REs much simpler here and just have more of them for each
+//  of the specific cases. But, there is a problem with that. Each RE is passed
+//  over all the scalar variables defined in a database. And, this work happens
+//  early on as part of a database **OPEN** operation. So, the number of REs
+//  here multiplies times the number of scalar variables in a database to size
+//  the total string matching work. For databases with a few hundered scalar
+//  variables, that is no problem. But, equation of state databases can have
+//  tens of thousands of scalar variables. We could also make the REs here part
+//  of a database's preferences and user-settable in the GUI/CLI as opposed
+//  to set at compile time (or xml2info time).
+//  
 //  ChatGPT via Mark C. Miller, Fri Aug 14 17:50:57 PDT 2026
 // ****************************************************************************
 std::vector<std::string>
@@ -76,8 +92,6 @@ GeneralDatabasePluginInfo::GetDefaultScalarComponentREs() const
 
     // No separator.  Do not allow '_' or '.' to be swallowed into the basename.
     result.push_back("^(.*[^_.])([0123xyzXYZuvwUVW]{2})$");
-
-
 
     return result;
 }
