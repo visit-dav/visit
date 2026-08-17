@@ -284,7 +284,7 @@ typedef struct {
 //   Alister Maguire, Mon Sep 23 15:11:40 MST 2019
 //   Added GetCycles and GetTimes. 
 //
-//   Mark C. Miller, Fri Aug 14 17:48:47 PDT 2026
+//   ChatGTP via Mark C. Miller, Fri Aug 14 17:48:47 PDT 2026
 //   Add support for scalar component expression generation.
 // ****************************************************************************
 
