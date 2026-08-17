@@ -75,7 +75,9 @@ GeneralDatabasePluginInfo::GetDefaultScalarComponentREs() const
     result.push_back("^(.+)\\.([0123xyzXYZuvwUVW]{2})$");
 
     // No separator.  Do not allow '_' or '.' to be swallowed into the basename.
-    result.push_back("^(.+[^_.])([0123xyzXYZuvwUVW]{2})$");
+    result.push_back("^(.*[^_.])([0123xyzXYZuvwUVW]{2})$");
+
+
 
     return result;
 }

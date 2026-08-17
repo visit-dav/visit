@@ -92,7 +92,8 @@ def test_2d_scalar_comp_exprs():
         "v"      : Expression().VectorMeshVar,
         "stress" : Expression().TensorMeshVar,
         "strain" : Expression().SymmetricTensorMeshVar,
-        "metric" : Expression().SymmetricTensorMeshVar
+        "metric" : Expression().SymmetricTensorMeshVar,
+        "q"      : Expression().TensorMeshVar
     }
 
     forbidden2d = (
@@ -149,7 +150,8 @@ def test_3d_scalar_comp_exprs():
         "v"      : Expression().VectorMeshVar,
         "stress" : Expression().TensorMeshVar,
         "strain" : Expression().SymmetricTensorMeshVar,
-        "metric" : Expression().SymmetricTensorMeshVar
+        "metric" : Expression().SymmetricTensorMeshVar,
+        "q"      : Expression().TensorMeshVar
     }
 
     forbidden3d = (
@@ -179,7 +181,11 @@ def test_3d_scalar_comp_exprs():
         # Greedy/no-separator tensor false positives.
         "metric_",
         "strain.",
-        "stress_"
+        "stress_",
+
+        # q should be seen as tensor/matrix, not vector
+        "qx",
+        "qy"
     )
 
     TestExpressionNamesAndTypes("3D automatic aggregate expressions",
