@@ -33,18 +33,26 @@ def GetExpressions(db):
 # are absent.
 #
 def TestExpressionNamesAndTypes(section, db, expected, forbidden):
-    TestSection(section)
+
+    expr_type_names = {
+        Expression().VectorMeshVar:          "VectorMeshVar",
+        Expression().TensorMeshVar:          "TensorMeshVar",
+        Expression().SymmetricTensorMeshVar: "SymmetricTensorMeshVar"
+    }
 
     exprs = GetExpressions(db)
 
+    TestSection("%s - correctly defined"%section)
     for name, expectedType in expected.items():
         TestValueEQ("%s: expression '%s' exists" % (section, name),
                     name in exprs, True)
 
         if name in exprs:
             TestValueEQ("%s: expression '%s' type" % (section, name),
-                        exprs[name], expectedType)
+                        expr_type_names.get(exprs[name]),
+                        expr_type_names.get(expectedType))
 
+    TestSection("%s - not accidentally defined"%section)
     for name in forbidden:
         TestValueEQ("%s: expression '%s' absent" % (section, name),
                     name in exprs, False)
@@ -90,6 +98,7 @@ def test_2d_scalar_comp_exprs():
         "disp"   : Expression().VectorMeshVar,
         "vel"    : Expression().VectorMeshVar,
         "v"      : Expression().VectorMeshVar,
+        "e00"    : Expression().VectorMeshVar,
         "stress" : Expression().TensorMeshVar,
         "strain" : Expression().SymmetricTensorMeshVar,
         "metric" : Expression().SymmetricTensorMeshVar,
@@ -115,7 +124,10 @@ def test_2d_scalar_comp_exprs():
         # False positives formerly produced by the no-separator tensor RE.
         "metric_",
         "strain.",
-        "stress_"
+        "stress_",
+
+        # e should be seen as e00 vector, not e0 tensor
+        "e0"
     )
 
     TestExpressionNamesAndTypes("2D automatic aggregate expressions",
@@ -148,6 +160,7 @@ def test_3d_scalar_comp_exprs():
         "disp"   : Expression().VectorMeshVar,
         "vel"    : Expression().VectorMeshVar,
         "v"      : Expression().VectorMeshVar,
+        "e00"    : Expression().VectorMeshVar,
         "stress" : Expression().TensorMeshVar,
         "strain" : Expression().SymmetricTensorMeshVar,
         "metric" : Expression().SymmetricTensorMeshVar,
@@ -185,7 +198,10 @@ def test_3d_scalar_comp_exprs():
 
         # q should be seen as tensor/matrix, not vector
         "qx",
-        "qy"
+        "qy",
+
+        # e should be seen as e00 vector, not e0 tensor
+        "e0"
     )
 
     TestExpressionNamesAndTypes("3D automatic aggregate expressions",
