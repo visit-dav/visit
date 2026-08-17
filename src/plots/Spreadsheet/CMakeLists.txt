@@ -5,13 +5,11 @@ visit_add_plot_plugin(
     VSRC       avtSpreadsheetRenderer.C
                avtSpreadsheetRenderer_Viewer.C
                avtSpreadsheetTraceRenderer.C
-               avtOpenGLSpreadsheetTraceRenderer.C
                SpreadsheetViewer.C
                SpreadsheetCurveViewer.C
                SpreadsheetTable.C
                SpreadsheetTabWidget.C
     ESRC       avtSpreadsheetRenderer.C
                avtSpreadsheetRenderer_Engine.C
-               avtSpreadsheetTraceRenderer.C
-               avtOpenGLSpreadsheetTraceRenderer.C)
+               avtSpreadsheetTraceRenderer.C)
 

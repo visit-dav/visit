@@ -9,6 +9,7 @@
 #include <avtImageColleague.h>
 
 #include <vtkActor2D.h>
+#include <vtkCamera.h>
 #include <vtkCoordinate.h>
 #include <vtkImageData.h>
 #include <vtkImageMapper.h>
@@ -46,6 +47,10 @@ using std::string;
 //   Brad Whitlock, Tue Jun 28 17:15:59 PST 2005
 //   Moved code to CreateActorAndMapper.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 avtImageColleague::avtImageColleague(VisWindowColleagueProxy &m):
@@ -57,6 +62,7 @@ avtImageColleague::avtImageColleague(VisWindowColleagueProxy &m):
     width(100),
     height(100),
     useOpacityColor(false),
+    imagePosition{0., 0., 0.},
     maintainAspectRatio(true),
     addedToRenderer(false)
 {
@@ -94,6 +100,9 @@ avtImageColleague::~avtImageColleague()
 // Creation:   Tue Jun 28 17:15:47 PST 2005
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //
 // ****************************************************************************
 
@@ -117,9 +126,9 @@ avtImageColleague::CreateActorAndMapper()
 
     // Setup coordinate system to normalized viewport.
     vtkCoordinate *pos = actor->GetPositionCoordinate();
-    pos->SetCoordinateSystemToNormalizedViewport();
+    pos->SetCoordinateSystemToWorld();
     pos = actor->GetPosition2Coordinate();
-    pos->SetCoordinateSystemToNormalizedViewport();
+    pos->SetCoordinateSystemToWorld();
 }
 
 // ****************************************************************************
@@ -132,6 +141,8 @@ avtImageColleague::CreateActorAndMapper()
 // Creation:   Thu Nov 6 15:52:19 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp.
 //
 // ****************************************************************************
 void
@@ -139,7 +150,7 @@ avtImageColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor2D(actor);
+        mediator.GetForeground()->AddViewProp(actor);
         addedToRenderer = true;
     }
 }
@@ -154,6 +165,8 @@ avtImageColleague::AddToRenderer()
 // Creation:   Thu Nov 6 15:52:38 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
 //
 // ****************************************************************************
 void
@@ -161,7 +174,7 @@ avtImageColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor2D(actor);
+        mediator.GetForeground()->RemoveViewProp(actor);
         addedToRenderer = false;
     }
 }
@@ -230,6 +243,10 @@ avtImageColleague::ShouldBeAddedToRenderer() const
 //    Kathleen Biagas, Tue Dec 18 10:59:09 PST 2018
 //    Use AllocateScalars instead of SetNumberOfScalarComponents (hasn't worked
 //    since update to vtk-6).
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
 //
 // ****************************************************************************
 void
@@ -339,8 +356,8 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
 #endif
     }
 
-    actor->SetPosition(annot.GetPosition()[0],
-                       annot.GetPosition()[1]);
+    imagePosition[0] = annot.GetPosition()[0];
+    imagePosition[1] = annot.GetPosition()[1];
 
 #ifdef TESTING_IMAGE_RESCALE_BY_MAPPER
     actor->SetPosition2(0.2,
@@ -357,7 +374,7 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
     if(iData == 0 && addedToRenderer)
     {
         debug1 << "Removing the image from the renderer because it could not be read." << endl;
-        mediator.GetForeground()->RemoveActor2D(actor);
+        mediator.GetForeground()->RemoveViewProp(actor);
         addedToRenderer = false;
 
         // Delete the actor and mapper so the image mapper does not freak.
@@ -534,6 +551,9 @@ avtImageColleague::UpdateImage(string filename)
 // Creation:   Fri Sep 03 08:59:53 PDT 2004
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //
 // ****************************************************************************
 void
@@ -549,7 +569,7 @@ avtImageColleague::GetOptions(AnnotationObject &annot)
     sv.push_back(currentImage);
     annot.SetText(sv);
 
-    annot.SetPosition(actor->GetPosition());
+    annot.SetPosition(imagePosition);
 
     double pos[] = {static_cast<double>(width),
                     static_cast<double>(height),
@@ -596,4 +616,40 @@ void
 avtImageColleague::NoPlots(void)
 {
     RemoveFromRenderer();
+}
+
+// ****************************************************************************
+// Method: avtImageColleague::UpdatePlotList
+//
+// Purpose:
+//   This method is called when the plot list changes. Its job is to make sure
+//   that the time slider always shows the right time.
+//
+// Arguments:
+//   lst : The plot list.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtImageColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
+{
+    if(lst.size() > 0 && iData)
+    {
+        // Get the width and height of the tile to determine the amount
+        // to scale the width by.
+        int w, h;
+        mediator.GetSize(w, h);
+        double windowScale = double(w) / double(h);
+
+	    double p0[2];
+        p0[0] = 0.5 - windowScale / 2. + imagePosition[0] * windowScale;
+        p0[1] = imagePosition[1];
+
+        actor->SetPosition(p0[0], p0[1]);
+    }
 }

@@ -2775,6 +2775,9 @@ def TestExpressions(name, meshQuality=True, operatorCreated=False, prefix=""):
 #    Kathleen Biagas, Thu Nov  8 10:28:37 PST 2018
 #    Assume entire category is skipped if 'file' key is missing.
 #
+#    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+#    Added tiled mode.
+#
 # ----------------------------------------------------------------------------
 class TestEnv(object):
     """
@@ -2791,6 +2794,7 @@ class TestEnv(object):
                "numdiff":     0.0,
                "serial" :     True,
                "scalable":    False,
+               "tiled":       False,
                "parallel":    False,
                "silo_mode":   "hdf5"}
     results = {"maxds":   0,
@@ -2807,6 +2811,8 @@ class TestEnv(object):
         for mode in cls.params["modes"].split(","):
             if mode == "scalable":
                 cls.params["scalable"] = True
+            if mode == "tiled":
+                cls.params["tiled"] = True
             if mode == "parallel":
                 cls.params["parallel"] = True
                 cls.params["serial"]   = False
@@ -2901,6 +2907,10 @@ def AddSkipCase(case_name):
 #
 #    Brad Whitlock, Fri Dec 12 18:03:31 PST 2014
 #    Use data_host for instead of "localhost" so we can do client/server to data.
+#
+#    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+#    Added tiled mode.
+#
 # ----------------------------------------------------------------------------
 def InitTestEnv():
     """
@@ -2927,6 +2937,9 @@ def InitTestEnv():
         ra.scalableActivationMode = ra.Always
     else:
         ra.scalableActivationMode = ra.Never
+    if TestEnv.params["tiled"]:
+        ra.tiledRenderingWidth = 150
+        ra.tiledRenderingHeight = 150
     SetRenderingAttributes(ra)
 
     # If we passed a directory to use for reading host profiles then let's 

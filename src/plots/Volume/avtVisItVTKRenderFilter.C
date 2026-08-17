@@ -116,6 +116,9 @@ avtVisItVTKRenderFilter::~avtVisItVTKRenderFilter()
 //  Creation:   30 November 2021
 //
 //  Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Temporarily negate imagePan before calling SetCameraFromView so
+//    that panning works properly.
 //
 // ****************************************************************************
 
@@ -123,7 +126,24 @@ vtkCamera *
 avtVisItVTKRenderFilter::CreateCamera()
 {
     vtkCamera *camera = vtkCamera::New();
+    //
+    // The method avtView3D::SetViewInfoFromView stores the negative of
+    // the imagePan into avtViewInfo.
+    // The function CreateViewInfoFromViewAttributes in avtVolumeFilter.C
+    // also stores the negative of imagePan from View3DAttributes into
+    // avtView3D.
+    // The method avtVisItVTKRendererFilter::CreateCamera temporarily
+    // negates imagePan before calling avtViewInfo::SetCameraFromView.
+    // 
+    // All this negation should probably be removed. All 3 locations need
+    // to be changed and the call to vtkCamera->SetWindowCenter in
+    // avtViewInfo::SetCameraFromView.
+    //
+    viewInfo.imagePan[0] = -viewInfo.imagePan[0];
+    viewInfo.imagePan[1] = -viewInfo.imagePan[1];
     viewInfo.SetCameraFromView( camera );
+    viewInfo.imagePan[0] = -viewInfo.imagePan[0];
+    viewInfo.imagePan[1] = -viewInfo.imagePan[1];
 
     return camera;
 }

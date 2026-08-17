@@ -18,6 +18,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkTextMapper.h>
 #include <vtkTextProperty.h>
+#include <vtkTransform.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <DebugStream.h>
@@ -1064,6 +1065,10 @@ vtkLabelMapper::PopulateBinsWithCellLabels3D(vtkDataSet *input, vtkRenderer *ren
 //   Alister Maguire, Mon May 24 10:06:23 PDT 2021
 //   If we're in full frame mode, we need to perform some scaling.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I added logic to do the binning across the entire image when doing
+//   tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -1119,11 +1124,75 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
 
     //
     // Initialize the transformation matrix that we'll use to transform points
-    // into normalized device space.
+    // into normalized device space. This is done using the whole image and
+    // not individual tiles. We save the pan and zoom from the current tile,
+    // then set the pan and zoom to the whole image, then get the model view
+    // and projection matrices, and then restore the pan and zoom for the
+    // current tile.
     //
+
+    // Save the pan and zoom from the current tile. The window center is
+    // used for panning and the user transform is used for zooming.
+    double windowCenter[2];
+    ren->GetActiveCamera()->GetWindowCenter(windowCenter);
+    vtkHomogeneousTransform *izt = ren->GetActiveCamera()->GetUserTransform();
+    if (izt)
+        izt->Register(this);
+
+    // Get the image zoom and tile zoom. The image zoom comes from the
+    // user transform and the tile zoom comes from the focal disk.
+    double imageZoom = 1.;
+    if (izt)
+    {
+        vtkMatrix4x4 *izm = vtkMatrix4x4::New();
+        izt->GetMatrix(izm);
+        imageZoom = izm->GetElement(0,0);
+        izm->Delete();
+    }
+    double tileZoom = ren->GetActiveCamera()->GetFocalDisk();
+
+    // Get the image pan and tile pan. The image pan comes from the
+    // window center and the tile pan comes from the eye position.
+    double imagePan[2];
+    ren->GetActiveCamera()->GetWindowCenter(imagePan);
+    double tilePan[3];
+    ren->GetActiveCamera()->GetEyePosition(tilePan);
+
+    // Set the pan and zoom to the untiled image.
+    double origPan[2];
+    origPan[0] = imagePan[0] + tilePan[0] * tileZoom;
+    origPan[1] = imagePan[1] + tilePan[1] * tileZoom;
+    ren->GetActiveCamera()->SetWindowCenter(origPan[0], origPan[1]);
+    if (imageZoom != tileZoom)
+    {
+        double matrix[4][4];
+        vtkMatrix4x4::Identity(*matrix);
+
+        matrix[0][0] = imageZoom / tileZoom;
+        matrix[1][1] = imageZoom / tileZoom;
+        vtkTransform *trans = vtkTransform::New();
+        trans->SetMatrix(*matrix);
+        ren->GetActiveCamera()->SetUserTransform(trans);
+        trans->Delete();
+    }
+    else
+    {
+        ren->GetActiveCamera()->SetUserTransform(NULL);
+    }
+
+    // Get the model view and projection matrices for the untiled image.
     double modelview[4][4], projection[4][4], mtmp[4][4];
     vtkMatrix4x4 *mvtm = ren->GetActiveCamera()->GetModelViewTransformMatrix();
     vtkMatrix4x4 *ptm = ren->GetActiveCamera()->GetProjectionTransformMatrix(ren);
+
+    // Restore the pan and zoom to the current tile.
+    if (izt)
+    {
+        ren->GetActiveCamera()->SetUserTransform(izt);
+        izt->Delete();
+    }
+    ren->GetActiveCamera()->SetWindowCenter(windowCenter[0], windowCenter[1]);
+
     if (mvtm)
     {
         for (int i = 0; i < 4; ++i)
@@ -1139,6 +1208,7 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
             for (int j = 0; j < 4; ++j)
                 projection[i][j] = ptm->GetElement(i, j);
     }
+
     const double tonormdev[4][4] = {{0.5,0,0,0},{0,0.5,0,0},{0,0,0.5,0},{0.5,0.5,0.5,1}};
     matrix_mul(mtmp, modelview, projection);
     matrix_mul(pointXForm, mtmp, tonormdev);

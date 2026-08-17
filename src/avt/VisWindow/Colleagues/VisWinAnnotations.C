@@ -17,6 +17,9 @@
 #include <avtText3DColleague.h>
 #include <avtTimeSliderColleague.h>
 
+#include <vtkCamera.h>
+#include <vtkRenderer.h>
+
 // ****************************************************************************
 // Method: VisWinAnnotations::VisWinAnnotations
 //
@@ -219,17 +222,31 @@ VisWinAnnotations::UpdatePlotList(std::vector<avtActor_p> &p)
 //    CustomizeLegend, then GetLegendSize.  ManageLayout sets the scaling
 //    factor, which is used in the other two calls.
 //   
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
 VisWinAnnotations::UpdateLegends()
 {
+    // The zoomTile calculation assumes that the parallel scale for the
+    // foreground renderer is 0.5.
+    double zoomTile =
+        0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
+    // Get the width and height of the tile to determine the amount
+    // to scale the width by.
+    int w, h;
+    mediator.GetSize(w, h);
+    double windowScale = double(w) / double(h);
+
     //
     // Manage legend layout.
     //
     std::vector<avtActor*>::iterator it;
     double yTop = 0.90;
-    double xLeft = 0.05;
+    double xLeft = 0.5 - windowScale / 2. + 0.05 * windowScale;
 
     int legendCount = 0;
     for (it = actorList.begin() ; it != actorList.end() ; it++)
@@ -272,6 +289,7 @@ VisWinAnnotations::UpdateLegends()
                         yTop -= height;
 
                         legend->SetLegendPosition(xLeft, yTop);
+                        legend->SetLegendZoom(zoomTile);
                         legend->Update();
 
                         yTop -= 0.02;
@@ -290,6 +308,7 @@ VisWinAnnotations::UpdateLegends()
                         yTop -= height;
 
                         legend->SetLegendPosition(xLeft, yTop);
+                        legend->SetLegendZoom(zoomTile);
                         legend->Update();
 
                         yTop -= 0.02;

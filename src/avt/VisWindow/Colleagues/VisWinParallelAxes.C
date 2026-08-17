@@ -1474,6 +1474,10 @@ VisWinParallelAxes::GetRange(double &min_x, double &max_x,
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
+//  Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
@@ -1487,11 +1491,11 @@ VisWinParallelAxes::AddAxesToWindow(void)
     vtkRenderer *foreground = mediator.GetForeground();
     for (size_t i=0; i < axes.size(); i++)
     {
-        foreground->AddActor2D(axes[i].axis);
+        foreground->AddViewProp(axes[i].axis);
         if (i > 0)
         {
-            foreground->AddActor2D(axes[i].axisCap1);
-            foreground->AddActor2D(axes[i].axisCap2);
+            foreground->AddViewProp(axes[i].axisCap1);
+            foreground->AddViewProp(axes[i].axisCap2);
         }
     }
 
@@ -1508,6 +1512,10 @@ VisWinParallelAxes::AddAxesToWindow(void)
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
+//  Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
@@ -1521,11 +1529,11 @@ VisWinParallelAxes::RemoveAxesFromWindow(void)
     vtkRenderer *foreground = mediator.GetForeground();
     for (size_t i=0; i < axes.size(); i++)
     {
-        foreground->RemoveActor2D(axes[i].axis);
+        foreground->RemoveViewProp(axes[i].axis);
         if (i > 0)
         {
-            foreground->RemoveActor2D(axes[i].axisCap1);
-            foreground->RemoveActor2D(axes[i].axisCap2);
+            foreground->RemoveViewProp(axes[i].axisCap1);
+            foreground->RemoveViewProp(axes[i].axisCap2);
         }
     }
 

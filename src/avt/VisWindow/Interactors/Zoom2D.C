@@ -478,6 +478,9 @@ Zoom2D::OnMouseWheelBackward()
 //    Eric Brugger, Wed Oct  2 16:54:48 PDT 2024
 //    I modified the class to use the APPLE path in all cases.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
@@ -493,7 +496,7 @@ Zoom2D::StartRubberBand(int x, int y)
         guideLinesActor->GetProperty()->SetColor(fg[0], fg[1], fg[2]);
 
         vtkRenderer *ren = proxy.GetBackground();
-        ren->AddActor2D(guideLinesActor);
+        ren->AddViewProp(guideLinesActor);
        
         UpdateRubberBand(x,y,x,y,x,y);
     }
@@ -510,13 +513,17 @@ Zoom2D::StartRubberBand(int x, int y)
 //  Programmer: Akira Haddox
 //  Creation:   July 3, 2003
 //
+//  Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
 Zoom2D::EndRubberBand()
 {
     vtkRenderer *ren = proxy.GetBackground();
-    ren->RemoveActor2D(guideLinesActor);
+    ren->RemoveViewProp(guideLinesActor);
 
     ZoomInteractor::EndRubberBand();
 }
