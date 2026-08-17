@@ -35,9 +35,9 @@ CommonDatabasePluginInfo::CommonDatabasePluginInfo()
 //      Will recognize candidate scalar component name strings with 2 or more
 //      characters in the basename and of the forms...
 //
-//         foo1 foo2 foo3
-//         foo_1 foo_2 foo_3
-//         foo.1 foo.2 foo.3
+//         v1 v2 v3                foo1 foo2 foo3
+//         v_1 v_2 v_3             foo_1 foo_2 foo_3
+//         v.1 v.2 v.3             foo.1 foo.2 foo.3
 //
 //         foox fooy fooz          fooX fooY fooZ
 //         foo_x foo_y foo_z       foo_X foo_Y foo_Z
@@ -55,14 +55,27 @@ GeneralDatabasePluginInfo::GetDefaultScalarComponentREs() const
     std::vector<std::string> result;
 
     // Vector candidates
-    result.push_back("^(.{2,})_([123xyzXYZ])$");
-    result.push_back("^(.{2,})\\.([123xyzXYZ])$");
-    result.push_back("^(.{1,}[^_.])([123xyzXYZ])$");
+
+    // Explicit underscore separator.
+    result.push_back("^(.+)_([0123xyzXYZuvwUVW])$");
+
+    // Explicit dot separator.
+    result.push_back("^(.+)\\.([0123xyzXYZuvwUVW])$");
+
+    // No separator.  Do not allow '_' or '.' to be swallowed into the basename.
+    result.push_back("^(.*[^_.])([0123xyzXYZuvwUVW])$");
+
 
     // Tensor candidates
-    result.push_back("^(.{2,})_([123xyzXYZuvwUVW]{2})$");
-    result.push_back("^(.{2,})\\.([123xyzXYZuvwUVW]{2})$");
-    result.push_back("^(.{1,}[^_.])([123xyzXYZuvwUVW]{2})$");
+
+    // Explicit underscore separator.
+    result.push_back("^(.+)_([0123xyzXYZuvwUVW]{2})$");
+
+    // Explicit dot separator.
+    result.push_back("^(.+)\\.([0123xyzXYZuvwUVW]{2})$");
+
+    // No separator.  Do not allow '_' or '.' to be swallowed into the basename.
+    result.push_back("^(.+[^_.])([0123xyzXYZuvwUVW]{2})$");
 
     return result;
 }

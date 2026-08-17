@@ -89,6 +89,7 @@ def test_2d_scalar_comp_exprs():
     expected2d = {
         "disp"   : Expression().VectorMeshVar,
         "vel"    : Expression().VectorMeshVar,
+        "v"      : Expression().VectorMeshVar,
         "stress" : Expression().TensorMeshVar,
         "strain" : Expression().SymmetricTensorMeshVar,
         "metric" : Expression().SymmetricTensorMeshVar
@@ -145,6 +146,7 @@ def test_3d_scalar_comp_exprs():
     expected3d = {
         "disp"   : Expression().VectorMeshVar,
         "vel"    : Expression().VectorMeshVar,
+        "v"      : Expression().VectorMeshVar,
         "stress" : Expression().TensorMeshVar,
         "strain" : Expression().SymmetricTensorMeshVar,
         "metric" : Expression().SymmetricTensorMeshVar
