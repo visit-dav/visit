@@ -9,6 +9,7 @@
 #include <VisWinRendering.h>
 
 #include <vtkCallbackCommand.h>
+#include <vtkCamera.h>
 #include <vtkCullerCollection.h>
 #include <vtkDataSetMapper.h>
 #include <vtkFloatArray.h>
@@ -292,6 +293,10 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   that it could be explicitly deleted since it wasn't getting deleted
 //   using a vtkSmartPointer.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to set the background and foreground cameras to
+//   support tiled rendering.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -321,6 +326,13 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     background->SetInteractive(0);
     background->SetPass(nullptr);
     background->SetLayer(0);
+    vtkCamera *cam = background->GetActiveCamera();
+    cam->SetFocalPoint(0.5, 0.5, 0.);
+    cam->SetPosition(0.5, 0.5, 1.);
+    cam->SetViewUp(0., 1., 0.);
+    cam->SetParallelProjection(1);
+    cam->SetParallelScale(0.5);
+    background->SetActiveCamera(cam);
 
     canvas = vtkRenderer::New();
     canvas->SetInteractive(1);
@@ -331,6 +343,13 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     foreground->SetInteractive(0);
     foreground->SetPass(nullptr);
     foreground->SetLayer(2);
+    cam = foreground->GetActiveCamera();
+    cam->SetFocalPoint(0.5, 0.5, 0.);
+    cam->SetPosition(0.5, 0.5, 1.);
+    cam->SetViewUp(0., 1., 0.);
+    cam->SetParallelProjection(1);
+    cam->SetParallelScale(0.5);
+    foreground->SetActiveCamera(cam);
 
     RemoveCullers(background);
     RemoveCullers(canvas);

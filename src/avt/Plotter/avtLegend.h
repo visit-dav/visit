@@ -70,6 +70,9 @@ class  vtkRenderer;
 //    Kathleen Biagas, Thu May 20, 2021
 //    Add support for custom title.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Add SetLegendZoom.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtLegend
@@ -105,6 +108,7 @@ class PLOTTER_API  avtLegend
     virtual void                  SetNumberFormat(const char *);
 
     virtual void                  SetLegendScale(double xScale, double yScale);
+    virtual void                  SetLegendZoom(double zoom);
     virtual void                  SetBoundingBoxVisibility(bool);
     virtual void                  SetBoundingBoxColor(const double *);
     virtual void                  SetOrientation(LegendOrientation);

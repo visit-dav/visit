@@ -38,6 +38,11 @@ class vtkTimeSliderActor;
 //
 //   Mark C. Miller, Thu Oct  5 15:29:27 PDT 2023
 //   Moved timeScale, timeOffset to avtAnnotationColleague
+//
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtTimeSliderColleague : public avtAnnotationWithTextColleague
@@ -78,6 +83,9 @@ private:
     bool               useForegroundForTextColor;
     bool               addedToRenderer;
     ColorAttribute     textColor;
+    double             sliderPosition[3];
+    double             sliderWidth;
+    double             sliderHeight;
 };
 
 #endif

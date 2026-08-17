@@ -471,6 +471,24 @@ avtGeometryDrawable::UpdateScaleFactor()
 
 
 // ****************************************************************************
+//  Method: avtGeometryDrawable::SetTileZoom
+//
+//  Purpose:
+//      Set the tile zoom in the mapper.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// ****************************************************************************
+
+void
+avtGeometryDrawable::SetTileZoom(const double tileZoom)
+{
+    mapper->SetTileZoom(tileZoom);
+}
+
+
+// ****************************************************************************
 //  Method: avtGeometryDrawable::TurnLightingOn
 //
 //  Purpose:

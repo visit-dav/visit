@@ -72,16 +72,18 @@ vtkStandardNewMacro(vtkVisItScalarBarActor);
 //    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
 //    Switch to vtkTextActor.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 //------------------------------------------------------------------------------
 vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubleLabels(), labelColorMap(), suppliedLabels(), suppliedValues(), calculatedValues()
 {
   this->LookupTable = NULL;
   this->Position2Coordinate = vtkCoordinate::New();
-  this->Position2Coordinate->SetCoordinateSystemToNormalizedViewport();
   this->Position2Coordinate->SetValue(0.05, 0.8);
   this->Position2Coordinate->SetReferenceCoordinate(this->PositionCoordinate);
   
-  this->PositionCoordinate->SetCoordinateSystemToNormalizedViewport();
   this->PositionCoordinate->SetValue(0.82, 0.1);
   
   this->MaximumNumberOfColors = 1024;
@@ -1851,7 +1853,6 @@ void vtkVisItScalarBarActor::SetPosition(double x[2])
 
 void vtkVisItScalarBarActor::SetPosition(double x, double y) 
 { 
-  this->PositionCoordinate->SetCoordinateSystemToNormalizedViewport(); 
   this->PositionCoordinate->SetValue(x,y); 
 } 
 
@@ -1867,7 +1868,6 @@ void vtkVisItScalarBarActor::SetPosition2(double x[2])
 
 void vtkVisItScalarBarActor::SetPosition2(double x, double y) 
 { 
-  this->Position2Coordinate->SetCoordinateSystemToNormalizedViewport(); 
   this->Position2Coordinate->SetValue(x,y); 
 } 
 

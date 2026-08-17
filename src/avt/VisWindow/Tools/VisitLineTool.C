@@ -637,15 +637,18 @@ VisitLineTool::DeleteTextActors()
 //   Kathleen Biags, Tue Jan 27, 2026
 //   Add third pointTextActor (middle hot point) to show length of line.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
 VisitLineTool::AddText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->AddActor2D(pointTextActor[0]);
-    proxy.GetForeground()->AddActor2D(pointTextActor[1]);
-    proxy.GetForeground()->AddActor2D(pointTextActor[2]);
+    proxy.GetForeground()->AddViewProp(pointTextActor[0]);
+    proxy.GetForeground()->AddViewProp(pointTextActor[1]);
+    proxy.GetForeground()->AddViewProp(pointTextActor[2]);
 #endif
 }
 
@@ -662,15 +665,18 @@ VisitLineTool::AddText()
 //   Kathleen Biags, Tue Jan 27, 2026
 //   Add third pointTextActor (middle hot point) to show length of line.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
 VisitLineTool::RemoveText()
 {
 #ifndef NO_ANNOTATIONS
-    proxy.GetForeground()->RemoveActor2D(pointTextActor[0]);
-    proxy.GetForeground()->RemoveActor2D(pointTextActor[1]);
-    proxy.GetForeground()->RemoveActor2D(pointTextActor[2]);
+    proxy.GetForeground()->RemoveViewProp(pointTextActor[0]);
+    proxy.GetForeground()->RemoveViewProp(pointTextActor[1]);
+    proxy.GetForeground()->RemoveViewProp(pointTextActor[2]);
 #endif
 }
 

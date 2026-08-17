@@ -52,6 +52,9 @@ void View3DAttributes::Init()
     shear[0] = 0;
     shear[1] = 0;
     shear[2] = 1;
+    tilePan[0] = 0;
+    tilePan[1] = 0;
+    tileZoom = 1;
     windowValid = false;
 
     View3DAttributes::SelectAll();
@@ -110,6 +113,10 @@ void View3DAttributes::Copy(const View3DAttributes &obj)
     shear[1] = obj.shear[1];
     shear[2] = obj.shear[2];
 
+    tilePan[0] = obj.tilePan[0];
+    tilePan[1] = obj.tilePan[1];
+
+    tileZoom = obj.tileZoom;
     windowValid = obj.windowValid;
 
     View3DAttributes::SelectAll();
@@ -302,6 +309,11 @@ View3DAttributes::operator == (const View3DAttributes &obj) const
     for(int i = 0; i < 3 && shear_equal; ++i)
         shear_equal = (shear[i] == obj.shear[i]);
 
+    // Compare the tilePan arrays.
+    bool tilePan_equal = true;
+    for(int i = 0; i < 2 && tilePan_equal; ++i)
+        tilePan_equal = (tilePan[i] == obj.tilePan[i]);
+
     // Create the return value
     return (viewNormal_equal &&
             focus_equal &&
@@ -319,6 +331,8 @@ View3DAttributes::operator == (const View3DAttributes &obj) const
             (axis3DScaleFlag == obj.axis3DScaleFlag) &&
             axis3DScales_equal &&
             shear_equal &&
+            tilePan_equal &&
+            (tileZoom == obj.tileZoom) &&
             (windowValid == obj.windowValid));
 }
 
@@ -479,6 +493,8 @@ View3DAttributes::SelectAll()
     Select(ID_axis3DScaleFlag,     (void *)&axis3DScaleFlag);
     Select(ID_axis3DScales,        (void *)axis3DScales, 3);
     Select(ID_shear,               (void *)shear, 3);
+    Select(ID_tilePan,             (void *)tilePan, 2);
+    Select(ID_tileZoom,            (void *)&tileZoom);
     Select(ID_windowValid,         (void *)&windowValid);
 }
 
@@ -608,6 +624,18 @@ View3DAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("shear", shear, 3));
     }
 
+    if(completeSave || !FieldsEqual(ID_tilePan, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tilePan", tilePan, 2));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tileZoom, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tileZoom", tileZoom));
+    }
+
     if(completeSave || !FieldsEqual(ID_windowValid, &defaultObject))
     {
         addToParent = true;
@@ -682,6 +710,10 @@ View3DAttributes::SetFromNode(DataNode *parentNode)
         SetAxis3DScales(node->AsDoubleArray());
     if((node = searchNode->GetNode("shear")) != 0)
         SetShear(node->AsDoubleArray());
+    if((node = searchNode->GetNode("tilePan")) != 0)
+        SetTilePan(node->AsDoubleArray());
+    if((node = searchNode->GetNode("tileZoom")) != 0)
+        SetTileZoom(node->AsDouble());
     if((node = searchNode->GetNode("windowValid")) != 0)
         SetWindowValid(node->AsBool());
 }
@@ -813,6 +845,21 @@ View3DAttributes::SetShear(const double *shear_)
     shear[1] = shear_[1];
     shear[2] = shear_[2];
     Select(ID_shear, (void *)shear, 3);
+}
+
+void
+View3DAttributes::SetTilePan(const double *tilePan_)
+{
+    tilePan[0] = tilePan_[0];
+    tilePan[1] = tilePan_[1];
+    Select(ID_tilePan, (void *)tilePan, 2);
+}
+
+void
+View3DAttributes::SetTileZoom(double tileZoom_)
+{
+    tileZoom = tileZoom_;
+    Select(ID_tileZoom, (void *)&tileZoom);
 }
 
 void
@@ -964,6 +1011,24 @@ View3DAttributes::GetShear()
     return shear;
 }
 
+const double *
+View3DAttributes::GetTilePan() const
+{
+    return tilePan;
+}
+
+double *
+View3DAttributes::GetTilePan()
+{
+    return tilePan;
+}
+
+double
+View3DAttributes::GetTileZoom() const
+{
+    return tileZoom;
+}
+
 bool
 View3DAttributes::GetWindowValid() const
 {
@@ -1016,6 +1081,12 @@ View3DAttributes::SelectShear()
     Select(ID_shear, (void *)shear, 3);
 }
 
+void
+View3DAttributes::SelectTilePan()
+{
+    Select(ID_tilePan, (void *)tilePan, 2);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1056,6 +1127,8 @@ View3DAttributes::GetFieldName(int index) const
     case ID_axis3DScaleFlag:     return "axis3DScaleFlag";
     case ID_axis3DScales:        return "axis3DScales";
     case ID_shear:               return "shear";
+    case ID_tilePan:             return "tilePan";
+    case ID_tileZoom:            return "tileZoom";
     case ID_windowValid:         return "windowValid";
     default:  return "invalid index";
     }
@@ -1097,6 +1170,8 @@ View3DAttributes::GetFieldType(int index) const
     case ID_axis3DScaleFlag:     return FieldType_bool;
     case ID_axis3DScales:        return FieldType_doubleArray;
     case ID_shear:               return FieldType_doubleArray;
+    case ID_tilePan:             return FieldType_doubleArray;
+    case ID_tileZoom:            return FieldType_double;
     case ID_windowValid:         return FieldType_bool;
     default:  return FieldType_unknown;
     }
@@ -1138,6 +1213,8 @@ View3DAttributes::GetFieldTypeName(int index) const
     case ID_axis3DScaleFlag:     return "bool";
     case ID_axis3DScales:        return "doubleArray";
     case ID_shear:               return "doubleArray";
+    case ID_tilePan:             return "doubleArray";
+    case ID_tileZoom:            return "double";
     case ID_windowValid:         return "bool";
     default:  return "invalid index";
     }
@@ -1278,6 +1355,21 @@ View3DAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             shear_equal = (shear[i] == obj.shear[i]);
 
         retval = shear_equal;
+        }
+        break;
+    case ID_tilePan:
+        {  // new scope
+        // Compare the tilePan arrays.
+        bool tilePan_equal = true;
+        for(int i = 0; i < 2 && tilePan_equal; ++i)
+            tilePan_equal = (tilePan[i] == obj.tilePan[i]);
+
+        retval = tilePan_equal;
+        }
+        break;
+    case ID_tileZoom:
+        {  // new scope
+        retval = (tileZoom == obj.tileZoom);
         }
         break;
     case ID_windowValid:
@@ -1686,6 +1778,13 @@ View3DAttributes::ResetView(const double *bbox)
     view3D.shear[0] = 0.;
     view3D.shear[1] = 0.;
     view3D.shear[2] = 1.;
+
+    //
+    // Reset the tile pan and image zoom.
+    //
+    view3D.tilePan[0] = 0.;
+    view3D.tilePan[1] = 0.;
+    view3D.tileZoom = 1.;
 
     // Copy the object into this.
     *this = view3D;

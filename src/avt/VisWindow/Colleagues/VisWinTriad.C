@@ -315,6 +315,45 @@ VisWinTriad::NoPlots(void)
 
 
 // ****************************************************************************
+// Method: VisWinTriad::UpdatePlotList
+//
+// Purpose:
+//   Updates the triad when the plot list changes.
+//
+// Arguments:
+//   p : A vector of reference pointers to plot objects.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinTriad::UpdatePlotList(std::vector<avtActor_p> &p)
+{
+    if(p.size() > 0)
+    {
+        // The zoomTile calculation assumes that the parallel scale for the
+        // foreground renderer is 0.5.
+        double zoomTile =
+            0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
+        // Get the width and height of the tile to determine the amount
+        // to scale the width by.
+        int w, h;
+        mediator.GetSize(w, h);
+        double windowScale = double(w) / double(h);
+
+        double x = 0.5 - windowScale / 2. + 0.1 * windowScale;
+        double y = 0.1;
+        triad->SetOrigin(x, y);
+        triad->SetAxisLength(0.08);
+        triad->SetFontHeight(0.02 * zoomTile);
+    }
+}
+
+// ****************************************************************************
 //  Method: VisWinTriad::ShouldAddTriad
 //
 //  Purpose:
@@ -356,6 +395,9 @@ VisWinTriad::ShouldAddTriad()
 //    Hank Childs, Fri Aug  4 14:44:32 PDT 2000
 //    Put triad on foreground instead of background.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
@@ -377,7 +419,7 @@ VisWinTriad::AddTriadToWindow(void)
     // renderer's camera -- the canvas').
     //
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->AddActor2D(triad);
+    foreground->AddViewProp(triad);
 
     addedTriad = true;
 }
@@ -401,6 +443,9 @@ VisWinTriad::AddTriadToWindow(void)
 //    Hank Childs, Fri Aug  4 14:44:32 PDT 2000
 //    Put triad on foreground instead of background.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
@@ -412,7 +457,7 @@ VisWinTriad::RemoveTriadFromWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->RemoveActor2D(triad);
+    foreground->RemoveViewProp(triad);
 
     addedTriad = false;
 }
