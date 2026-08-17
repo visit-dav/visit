@@ -94,7 +94,7 @@ def export_to_obj():
   clean_data("my_obj_export.mtl")
   clean_data("my_obj_export.png")
   # exportToOBJ {
-  # Create a Pseudocolor plot and export multiple fields
+  # Create a Pseudocolor plot and export a single field
   AddPlot("Pseudocolor", "d")
   # optional: setup operators to modify data before export
   DrawPlots()
