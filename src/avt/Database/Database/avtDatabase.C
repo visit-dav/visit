@@ -87,16 +87,19 @@ ScalarComponentIndex(char c, bool zeroBasedNumeric)
 
     switch (c)
     {
-        case 'x': case 'X':
+        case 'i': case 'I':
         case 'u': case 'U':
+        case 'x': case 'X':
             return 0;
 
-        case 'y': case 'Y':
+        case 'j': case 'J':
         case 'v': case 'V':
+        case 'y': case 'Y':
             return 1;
 
-        case 'z': case 'Z':
+        case 'k': case 'K':
         case 'w': case 'W':
+        case 'z': case 'Z':
             return 2;
     }
 
@@ -138,17 +141,41 @@ AddScalarComponentVectorExpression(
             zeroBasedNumeric = true;
     }
 
+    bool useExplicitMapping = true;
+    bool anyExplicit = false;
+    bool anyUnknown  = false;
+
     for (size_t i = 0; i < grp.ids.size(); ++i)
     {
-        int c = ScalarComponentIndex(grp.ids[i][0], zeroBasedNumeric);
+        int c = -1;
 
-        if (c < 0)
+        if (grp.ids[i].size() == 1)
+            c = ScalarComponentIndex(grp.ids[i][0], zeroBasedNumeric);
+
+        if (c >= 0)
+            anyExplicit = true;
+        else
+            anyUnknown = true;
+    }
+
+    //
+    // Either everything must be recognizable, or nothing is recognizable.
+    //
+    if (anyExplicit && anyUnknown)
+        return false;
+
+    for (size_t i = 0; i < grp.ids.size(); ++i)
+    {
+        int c;
+
+        if (useExplicitMapping)
+            c = ScalarComponentIndex(grp.ids[i][0], zeroBasedNumeric);
+        else
+            c = (int)i;
+
+        if (c < 0 || c >= 3)
             return false;
 
-        //
-        // Multiple variables claiming the same logical component means this
-        // group is ambiguous.
-        //
         if (!comp[c].empty())
             return false;
 
