@@ -1895,3 +1895,40 @@ If your plugin depends on an I/O library not already supported by VisIt_, and if
 Please see :ref:`dev_create_bv_module` for how to add a new module to build_visit.
 A CMake `Find` module will also need to be added to ``src/CMake`` and ``src/CMake/SetupThirdParty.cmake`` will need to be modified to include that module.
 See :ref:`dev_adding_find_module` for more information.
+
+Automated Expression Generation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In several database plugins, developers have opted to implment logic that will automatically define convenient expressions based on the presence of other mesh variables.
+In the `Exodus plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Exodus/avtExodusFileFormat.C#:~:text=AreSuccessiveStringsRelatedComponentNames>`__ for example, there is a function that attempts to recognize various patterns of scalar components of aggregate (vector or tensor) types and then automatically define the associated aggregate type.
+In the `Xdmf plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Xdmf/avtXdmfFileFormat.C#:~:text=AddArrayExpressions>`__ there is logic that defines expressions for each component of an array.
+There other examples in `CGNS <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CGNS/avtCGNSFileReader.C#:~:text=avtCGNSFileReader::AddVectorExpression>`__, 
+`AVSucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/AVSucd/avtAVSucdFileFormat.C#:~:text=md->AddExpression(&vecExpr);>`__, and `CEAucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CEAucd/avtCEAucdFileFormat.C#:~:text=md->AddExpression(&vec_expr);>`__.
+
+To avoid repeatedly duplicating such functionality in individual database plugins, a new feature was added.
+It is similar to the the ``<FilePatterns>`` feature.
+It is a new XML tag, ``<ScalarComponentREs>`` that allows developers to specify regular expressions that should be used to automatically *detect* patterns of scalar variables representing the components of an aggregate vector or tensor variable.
+VisIt_ defines *default* scalar component regular expressions in `GeneralDatabasePluginInfo::GetDefaultScalarComponentREs <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/common/plugin/DatabasePluginInfo.C#:~:text=GeneralDatabasePluginInfo::GetDefaultScalarComponentREs`__ which can be overridden in any database plugin using the ``<ScalarComponentREs>`` tag in the ``.xml`` file for the plugin.
+There is an example override in the `Pixie plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Pixie/Pixie.xml#:~:text=ScalarComponentREs>`__.
+
+The information needed in ``<ScalarComponentREs>`` is a list of one or more `regular expressions <https://en.cppreference.com/cpp/regex>`__.
+Each regular expression must contain two sub-expressions (e.g. capture groups).
+The first capture group identifies the common base name of a candidate aggregate variable, and the second capture group identifies the component designation.
+Component designations may use numeric indices (``0123``) or Cartesian-style component labels (``ijk``, ``uvw``, ``xyz``) including uppercase forms.
+
+For example, in the *default* scalar component regular expressions operating on ``velocity_x``, ``velocity_y``, and ``velocity_z`` should capture ``velocity`` as the common base name and ``x``, ``y``, or ``z`` as the component designations.
+Likewise, operating on ``stress_xx``, ``stress_xy``, etc. should capture ``stress`` as the base name and ``xx``, ``xy``, etc. as the component designations.
+
+A single-character component designation (e.g. `i`) identifies a candidate vector component, while a two-character designation (e.g. `ij`) identifies a candidate tensor component.
+Scalar variables having the same base name, mesh and centering are grouped together, and an aggregate expression is created only when the recognized components form a complete vector, symmetric tensor, or tensor appropriate to the spatial dimension of the mesh.
+Numeric component designations may use either zero-based or one-based numbering.
+
+If component designators cannot be interpreted using one of VisIt's recognized component designator conventions (``0123``, ``ijk``, ``uvw``, ``xyz``), they may be assigned ordinal positions according to their order of appearence in the list of scalar variables defined by the database.
+For example, ``vel_one``, ``vel_two``, ``vel_three`` do not meet the default component designation conventions.
+However, a regular expression such as ``^(.+)_(one|two|three)$`` will still capture the *group* of three strings as a *candidate* vector.
+It will then use the order of appearence of the three strings in the list of scalar variables for the database to *order* the components when forming the vector expression.
+
+.. warning::
+Although the ``<ScalarComponentREs>`` tag in a database plugin's ``.xml`` file accepts a *list* of regular expression strings, care should be taken in making the list too long.
+Each regular expression is scanned over each database's list of scalar variables.
+If the list of scalar variables is large, the string matching work is multiplied by the number of regular expression strings in ``<ScalarComponentREs>``.
