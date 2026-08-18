@@ -87,13 +87,25 @@ function bv_qt_initialize_vars
 function bv_qt_ensure
 {
     if [[ "$DO_QT" == "yes" ]]; then
-        if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
-            download_file ${QT_TOOLS_FILE} ${QT_URL}
-            download_file ${QT_SVG_FILE} ${QT_URL}
-        fi
         ensure_built_or_ready "qt"     $QT_VERSION    $QT_BASE_SOURCE_DIR    $QT_BASE_FILE    $QT_URL
+
+        # check if tools and svn have been installed/downloaded
+        INSTALL_DIR=$VISITDIR/qt/$QT_VERSION/$VISITARCH
+
+        PATTERN=(${INSTALL_DIR}/lib/*Tools*.*)
+        ensure_built_or_ready_component "qt" $QT_VERSION $QT_TOOLS_FILE $PATTERN
         if [[ $? != 0 ]] ; then
-            return 1
+            ANY_ERRORS="yes"
+            DO_QT="no"
+            error "Unable to build Qt Tools . ${QT_TOOLS_FILE} not found."
+        fi
+
+        PATTERN=(${INSTALL_DIR}/lib/*Svg*.*)
+        ensure_built_or_ready_component "qt" $QT_VERSION $QT_SVG_FILE $PATTERN
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_QT="no"
+            error "Unable to build Qt Svg. ${QT_SVG_FILE} not found."
         fi
     fi
     return 0
