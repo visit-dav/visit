@@ -1908,7 +1908,7 @@ There other examples in `CGNS <https://raw.githubusercontent.com/visit-dav/visit
 To avoid repeatedly duplicating such functionality in individual database plugins, a new feature was added.
 It is similar to the the ``<FilePatterns>`` feature.
 It is a new XML tag, ``<ScalarComponentREs>`` that allows developers to specify regular expressions that should be used to automatically *detect* patterns of scalar variables representing the components of an aggregate vector or tensor variable.
-VisIt_ defines *default* scalar component regular expressions in `GeneralDatabasePluginInfo::GetDefaultScalarComponentREs <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/common/plugin/DatabasePluginInfo.C#:~:text=GeneralDatabasePluginInfo::GetDefaultScalarComponentREs`__ which can be overridden in any database plugin using the ``<ScalarComponentREs>`` tag in the ``.xml`` file for the plugin.
+VisIt_ defines *default* scalar component regular expressions in `GeneralDatabasePluginInfo::GetDefaultScalarComponentREs <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/common/plugin/DatabasePluginInfo.C#:~:text=GeneralDatabasePluginInfo::GetDefaultScalarComponentREs>`__ which can be overridden in any database plugin using the ``<ScalarComponentREs>`` tag in the ``.xml`` file for the plugin.
 There is an example override in the `Pixie plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Pixie/Pixie.xml#:~:text=ScalarComponentREs>`__.
 
 The information needed in ``<ScalarComponentREs>`` is a list of one or more `regular expressions <https://en.cppreference.com/cpp/regex>`__.
@@ -1929,6 +1929,8 @@ However, a regular expression such as ``^(.+)_(one|two|three)$`` will still capt
 It will then use the order of appearence of the three strings in the list of scalar variables for the database to *order* the components when forming the vector expression.
 
 .. warning::
-Although the ``<ScalarComponentREs>`` tag in a database plugin's ``.xml`` file accepts a *list* of regular expression strings, care should be taken in making the list too long.
-Each regular expression is scanned over each database's list of scalar variables.
-If the list of scalar variables is large, the string matching work is multiplied by the number of regular expression strings in ``<ScalarComponentREs>``.
+
+    Although the ``<ScalarComponentREs>`` tag in a database plugin's ``.xml`` file accepts a *list* of regular expression strings, care should be taken in making the list too long.
+    Each regular expression is scanned over each database's list of scalar variables.
+    If the list of scalar variables is large, the string matching work is multiplied by the number of regular expression strings in ``<ScalarComponentREs>``.
+
