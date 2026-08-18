@@ -1903,7 +1903,7 @@ In several database plugins, developers have opted to implment logic that will a
 In the `Exodus plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Exodus/avtExodusFileFormat.C#:~:text=AreSuccessiveStringsRelatedComponentNames>`__ for example, there is a function that attempts to recognize various patterns of scalar components of aggregate (vector or tensor) types and then automatically define the associated aggregate type.
 In the `Xdmf plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Xdmf/avtXdmfFileFormat.C#:~:text=AddArrayExpressions>`__ there is logic that defines expressions for each component of an array.
 There other examples in `CGNS <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CGNS/avtCGNSFileReader.C#:~:text=avtCGNSFileReader::AddVectorExpression>`__, 
-`AVSucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/AVSucd/avtAVSucdFileFormat.C#:~:text=md->AddExpression(&vecExpr);>`__, and `CEAucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CEAucd/avtCEAucdFileFormat.C#:~:text=md->AddExpression(&vec_expr);>`__.
+`AVSucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/AVSucd/avtAVSucdFileFormat.C#:~:text=AddExpression(&vecExpr);>`__, and `CEAucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CEAucd/avtCEAucdFileFormat.C#:~:text=AddExpression(&vec_expr);>`__.
 
 To avoid repeatedly duplicating such functionality in individual database plugins, a new feature was added.
 It is similar to the the ``<FilePatterns>`` feature.
