@@ -73,25 +73,25 @@ GeneralDatabasePluginInfo::GetDefaultScalarComponentREs() const
     // Vector candidates
 
     // Explicit underscore separator.
-    result.push_back("^(.+)_([0123xyzXYZuvwUVW])$");
+    result.push_back("^(.+)_([0123xyzXYZuvwUVWijkIJK])$");
 
     // Explicit dot separator.
-    result.push_back("^(.+)\\.([0123xyzXYZuvwUVW])$");
+    result.push_back("^(.+)\\.([0123xyzXYZuvwUVWijkIJK])$");
 
     // No separator.  Do not allow '_' or '.' to be swallowed into the basename.
-    result.push_back("^(.*[^_.])([0123xyzXYZuvwUVW])$");
+    result.push_back("^(.*[^_.])([0123xyzXYZuvwUVWijkIJK])$");
 
 
     // Tensor candidates
 
     // Explicit underscore separator.
-    result.push_back("^(.+)_([0123xyzXYZuvwUVW]{2})$");
+    result.push_back("^(.+)_([0123xyzXYZuvwUVWijkIJK]{2})$");
 
     // Explicit dot separator.
-    result.push_back("^(.+)\\.([0123xyzXYZuvwUVW]{2})$");
+    result.push_back("^(.+)\\.([0123xyzXYZuvwUVWijkIJK]{2})$");
 
     // No separator.  Do not allow '_' or '.' to be swallowed into the basename.
-    result.push_back("^(.*[^_.])([0123xyzXYZuvwUVW]{2})$");
+    result.push_back("^(.*[^_.])([0123xyzXYZuvwUVWijkIJK]{2})$");
 
     return result;
 }
