@@ -49,6 +49,10 @@
 #    installation so that all the proper symlinks will be installed
 #    alongside VisIt.
 #
+#   Kathleen Biagas, Mon Aug 17, 2026
+#   Use new visit_install_thirdparty_targets function to propery install
+#   silo targets without guessing configuration type.
+#
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file
@@ -66,42 +70,22 @@ find_package(Silo PATHS ${SILO_DIR} NO_DEFAULT_PATH)
 if(TARGET silo)
     set(HAVE_SILO true)
     set(SILO_LIB silo)
+
+    set(silo_targets silo)
+
     if(WIN32)
-        get_target_property(silo_loc silo IMPORTED_IMPLIB_RELEASE)
-    else()
-        get_target_property(silo_loc silo IMPORTED_LOCATION_RELEASE)
+        if(TARGET silex)
+            list(APPEND silo_targets silex)
+        endif()
+        if(TARGET browser)
+            list(APPEND silo_targets browser)
+        endif()
     endif()
 
+    visit_install_thirdparty_targets(NAME silo TARGETS ${silo_targets})
     # include dirs aren't attached to the library in the export set
     target_include_directories(silo INTERFACE ${SILO_INCLUDE_DIR})
-    THIRD_PARTY_INSTALL_LIBRARY(${silo_loc})
     THIRD_PARTY_INSTALL_INCLUDE(silo ${SILO_INCLUDE_DIR})
-
-    if(WIN32 AND TARGET silex)
-        get_target_property(silex_loc silex IMPORTED_LOCATION_RELEASE)
-    
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-             ${silex_loc} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-
-        install(FILES ${silex_loc}
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                            WORLD_READ WORLD_EXECUTE)
-    endif()
-
-    if(WIN32 AND TARGET browser)
-        get_target_property(browser_loc browser IMPORTED_LOCATION_RELEASE)
-    
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-             ${browser_loc} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-
-        install(FILES ${browser_loc}
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                            WORLD_READ WORLD_EXECUTE)
-    endif()
 
     # We use Silo for PDB most of the time so set up additional PDB variables.
     message(STATUS "    Using PDB Lite built into Silo")

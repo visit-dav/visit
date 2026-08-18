@@ -21,6 +21,10 @@
 #   installation so that all the proper symlinks will be installed
 #   alongside VisIt.
 #
+#   Kathleen Biagas, Mon Aug 17, 2026
+#   Use new visit_install_thirdparty_targets function to propery install
+#   hdf5 targets without guessing configuration type.
+#
 #****************************************************************************/
 
 # Uses the HDF5_DIR hint from the config-site .cmake file
@@ -38,25 +42,15 @@ if(TARGET hdf5-shared)
     # For example: hdf5-shared vs hdf5-static.
     set(HDF5_LIB hdf5-shared)
     set(HAVE_HDF5 TRUE CACHE BOOL "Have HDF5 libraries")
-    if(WIN32)
-        get_target_property(hdf5_locr hdf5-shared IMPORTED_IMPLIB_RELEASE)
-    else()
-        get_target_property(hdf5_locr hdf5-shared IMPORTED_LOCATION_RELEASE)
-    endif()
-
-    THIRD_PARTY_INSTALL_LIBRARY(${hdf5_locr})
+    set(hdf5_targets hdf5-shared)
 
     if(TARGET hdf5_hl-shared)
         set(HDF5_HL_LIB hdf5_hl-shared)
         set(HAVE_HDF5_HL TRUE CACHE BOOL "Have HDF5 HL libraries")
-        if(WIN32)
-            get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_IMPLIB_RELEASE)
-        else()
-            get_target_property(hdf5_hl_locr hdf5_hl-shared IMPORTED_LOCATION_RELEASE)
-        endif()
-        THIRD_PARTY_INSTALL_LIBRARY(${hdf5_hl_locr})
+        list(APPEND hdf5_targets hdf5_hl-shared)
     endif()
 
+    visit_install_thirdparty_targets(NAME hdf5 TARGETS ${hdf5_targets})
     THIRD_PARTY_INSTALL_INCLUDE(hdf5 ${HDF5_INCLUDE_DIR})
 
     # for plugin vs install

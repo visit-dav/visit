@@ -36,6 +36,10 @@
 #   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
 #   Replace vtkm_filter with vtkm::filter.
 #
+#   Kathleen Biagas, Mon Aug 17, 2026
+#   Use new visit_install_thirdparty_targets function to propery install
+#   vtkm targets without guessing configuration type.
+#
 #****************************************************************************/
 
 if (VISIT_VTKM_DIR)
@@ -59,42 +63,37 @@ if (VISIT_VTKM_DIR)
    if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_VTKM_SKIP_INSTALL)
        set(vtkm_majmin ${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
 
-       # use the vtkm CMake properties to find locations and all interface
-       # link dependencies.
-       function(get_lib_loc_and_install _lib)
-           get_target_property(i_loc ${_lib} IMPORTED_LOCATION)
-           if (NOT i_loc)
-               get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELEASE)
-           endif()
-           if(i_loc)
-               THIRD_PARTY_INSTALL_LIBRARY(${i_loc})
-           endif()
-       endfunction()
-
+       # using a couple of main vtkm targets, find all of the link library
+       # targets for installation
+       list(APPEND vtkm_targets vtkm::filter vtkm::diy)
        get_target_property(VTKM_INT_LL vtkm::filter INTERFACE_LINK_LIBRARIES)
        # pluginVsInstall test for Slice on Windows revealed need for this module
        # and its link dependencies to be installed, too.
        get_target_property(VTKM_DIY_LL vtkm::diy INTERFACE_LINK_LIBRARIES)
        set(addl_ll)
        foreach(vtkmll ${VTKM_INT_LL} ${VTKM_DIY_LL})
-           get_lib_loc_and_install(${vtkmll})
+           # only process libraries that start with vtkm
+	   string(SUBSTRING ${vtkmll} 0 4 ll_dep_prefix)
+           if (TARGET ${vtkmll} AND "${ll_dep_prefix}" STREQUAL "vtkm")
+               list(APPEND vtkm_targets ${vtkmll})
+           endif()
+
            get_target_property(VTKM_LL_DEP ${vtkmll} INTERFACE_LINK_LIBRARIES)
            if(VTKM_LL_DEP)
                foreach(ll_dep ${VTKM_LL_DEP})
                    # only process libraries that start with vtkm
 	           string(SUBSTRING ${ll_dep} 0 4 ll_dep_prefix)
-                   if ("${ll_dep_prefix}" STREQUAL "vtkm")
-                       # don't process duplicates
-                       if (NOT ${ll_dep} IN_LIST VTKM_INT_LL AND
-                           NOT ${ll_dep} IN_LIST addl_ll)
-                           get_lib_loc_and_install(${ll_dep})
-                           list(APPEND addl_ll ${ll_dep})
-                       endif()
+                   if (TARGET ${ll_dep} AND "${ll_dep_prefix}" STREQUAL "vtkm")
+                       list(APPEND vtkm_targets ${ll_dep})
                    endif()
                endforeach()
            endif()
        endforeach()
+       list(REMOVE_DUPLICATES vtkm_targets)
        unset(addl_ll)
+
+       # install all library targets
+       visit_install_thirdparty_targets(NAME vtkm TARGETS ${vtkm_targets})
 
        if(NOT VISIT_HEADERS_SKIP_INSTALL)
            install(DIRECTORY ${VTKM_DIR}/include/vtkm-${vtkm_majmin}
@@ -107,7 +106,7 @@ if (VISIT_VTKM_DIR)
                                       WORLD_READ WORLD_EXECUTE)
        endif()
 
-        # write SetupVTKM.cmake 
+        # write SetupVTKM.cmake
         include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
         set(target_list vtkm::filter)
         create_lib_setup_cmake(NAME "VTKM"
