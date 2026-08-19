@@ -12,6 +12,7 @@ class QCheckBox;
 class QLineEdit;
 class QComboBox;
 class QPlainTextEdit;
+class QvisColorButton;
 class DBOptionsAttributes;
 
 // ****************************************************************************
@@ -36,6 +37,9 @@ class DBOptionsAttributes;
 //    Use QPlainTextEdit for MultiLineString instead of QTextEdit, so that
 //    multiple lines are properly displayed.
 //
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Added color buttons.
+//
 // ****************************************************************************
 
 class QvisDBOptionsDialog : public QDialog
@@ -54,6 +58,7 @@ private:
     QList<QCheckBox*>       checkboxes;
     QList<QLineEdit*>       lineedits;
     QList<QComboBox*>       comboboxes;
+    QList<QvisColorButton*> colorbuttons;
     QList<QPlainTextEdit*>  multiLineEdits;
 
     QPushButton         *okButton;
