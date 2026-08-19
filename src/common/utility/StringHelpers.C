@@ -416,7 +416,7 @@ StringHelpers::GroupStringsFixedAlpha(
 }
 
 // ****************************************************************************
-//  Function: GroupStringsByRE
+//  Function: GroupAndOrderStringsByRE
 //
 //  Purpose:
 //      Groups strings according to a subexpression of a regular expression.
@@ -424,31 +424,37 @@ StringHelpers::GroupStringsFixedAlpha(
 //
 //      Strings which do not match the regular expression are ignored.
 //
+//      All member identifiers in a returned group must have the same length.
+//      Members of each returned group are ordered lexicographically according
+//      to their member identifiers. Groups containing duplicate member
+//      identifiers or member identifiers of differing lengths are discarded.
+//
 //      For example, given
 //
-//          B^1 B^2 B^3 E^1 E^2 rho
+//          B^3 B^1 B^2 E^2 E^1 rho
 //
-//      the regular expression
+//      and the regular expression
 //
 //          ^(.+)\^([0-9]+)$
 //
-//      with groupNameSubexp=1 and memberIdSubexp=2 produces groups named
-//      "B" and "E", with member ids "1", "2", etc.
+//      with groupNameSubexp=1 and memberIdSubexp=2, this produces groups named
+//      "B" and "E". The B group contains B^1, B^2, B^3 in that order.
 //
-//      Group names are returned in lexical order. Members within each group
-//      retain their order from stringList.
+//      Group names themselves are returned in lexical order.
+//
+//      When member identifiers are a single character, we then also require
+//      them to to be successive numerial values (e.g. abc, xyz, QRS, etc.)
 //
 //  Returns:
 //      true on success. false if the regular expression is invalid or either
 //      requested subexpression does not exist.
 //
-//  Programmer: ChatGPT as prompted by Mark C. Miller
-//  Creation:   August 13, 2026
+//  Programmer: ChatGPT via Mark C. Miller August 13, 2026
 //
 // ****************************************************************************
 
 bool
-StringHelpers::GroupStringsByRE(
+StringHelpers::GroupAndOrderStringsByRE(
     const vector<string> &stringList,
     const string &re,
     int groupNameSubexp,
@@ -500,10 +506,83 @@ StringHelpers::GroupStringsByRE(
         group.ids.push_back(memberId);
     }
 
-    for (map<string, REStringGroup>::const_iterator it = groupMap.begin();
+    for (map<string, REStringGroup>::iterator it = groupMap.begin();
          it != groupMap.end(); ++it)
     {
-        groups.push_back(it->second);
+        REStringGroup &group = it->second;
+
+        if (group.ids.empty())
+            continue;
+
+        const size_t idLength = group.ids[0].size();
+
+        if (idLength == 0)
+            continue;
+
+        bool valid = true;
+
+        vector<std::pair<string, string> > members;
+
+        for (size_t i = 0; i < group.ids.size(); ++i)
+        {
+            if (group.ids[i].size() != idLength)
+            {
+                valid = false;
+                break;
+            }
+
+            members.push_back(
+                std::make_pair(group.ids[i], group.strings[i]));
+        }
+
+        if (!valid)
+            continue;
+
+        std::sort(members.begin(), members.end());
+
+        //
+        // Single-character member identifiers must form a contiguous lexical
+        // sequence. This prevents, for example, x,z from being interpreted as a
+        // complete 2-component vector.
+        //
+        if (idLength == 1)
+        {
+            for (size_t i = 1; i < members.size(); ++i)
+            {
+                if (members[i].first[0] != members[i-1].first[0] + 1)
+                {
+                    valid = false;
+                    break;
+                }
+            }
+        }
+
+        //
+        // Multiple strings claiming the same member identifier make the
+        // grouping ambiguous.
+        //
+        for (size_t i = 1; i < members.size(); ++i)
+        {
+            if (members[i-1].first == members[i].first)
+            {
+                valid = false;
+                break;
+            }
+        }
+
+        if (!valid)
+            continue;
+
+        group.ids.clear();
+        group.strings.clear();
+
+        for (size_t i = 0; i < members.size(); ++i)
+        {
+            group.ids.push_back(members[i].first);
+            group.strings.push_back(members[i].second);
+        }
+
+        groups.push_back(group);
     }
 
     return true;

@@ -48,10 +48,6 @@ CommonDatabasePluginInfo::CommonDatabasePluginInfo()
 //
 //         e000, e001, e002 (e00 vector)
 //
-//  These are the **DEFAULT** REs over all database plugins in VisIt. Each
-//  database can override these with the <ScalarComponentREs> tag in the .xml
-//  file. We already do this with Pixie.
-//
 //  We could make the REs much simpler here and just have more of them for each
 //  of the specific cases. But, there is a problem with that. Each RE is passed
 //  over all the scalar variables defined in a database. And, this work happens
@@ -59,43 +55,41 @@ CommonDatabasePluginInfo::CommonDatabasePluginInfo()
 //  here multiplies times the number of scalar variables in a database to size
 //  the total string matching work. For databases with a few hundered scalar
 //  variables, that is no problem. But, equation of state databases can have
-//  tens of thousands of scalar variables. We could also make the REs here part
+//  tens of thousands of scalar variables.
+//
+//  These are the **DEFAULT** REs over all database plugins in VisIt. Each
+//  database can override these with the <ScalarComponentREs> tag in the .xml
+//  file. We already do this with Pixie. We could also make the REs here part
 //  of a database's preferences and user-settable in the GUI/CLI as opposed
 //  to set at compile time (or xml2info time).
 //  
 //  ChatGPT via Mark C. Miller, Fri Aug 14 17:50:57 PDT 2026
 // ****************************************************************************
+
 std::vector<std::string>
 GeneralDatabasePluginInfo::GetDefaultScalarComponentREs() const
 {
     std::vector<std::string> result;
 
-    // Vector candidates
+    //
+    // With an explicit separator the component identifier may consist of
+    // arbitrary characters. GroupAndOrderStringsByRE requires all identifiers
+    // within a group to have the same length and orders them lexicographically.
+    //
+    result.push_back("^(.+)_([^_]+)$");
+    result.push_back("^(.+)\\.([^.]+)$");
 
-    // Explicit underscore separator.
-    result.push_back("^(.+)_([0123xyzXYZuvwUVWijkIJK])$");
-
-    // Explicit dot separator.
-    result.push_back("^(.+)\\.([0123xyzXYZuvwUVWijkIJK])$");
-
-    // No separator.  Do not allow '_' or '.' to be swallowed into the basename.
-    result.push_back("^(.*[^_.])([0123xyzXYZuvwUVWijkIJK])$");
-
-
-    // Tensor candidates
-
-    // Explicit underscore separator.
-    result.push_back("^(.+)_([0123xyzXYZuvwUVWijkIJK]{2})$");
-
-    // Explicit dot separator.
-    result.push_back("^(.+)\\.([0123xyzXYZuvwUVWijkIJK]{2})$");
-
-    // No separator.  Do not allow '_' or '.' to be swallowed into the basename.
-    result.push_back("^(.*[^_.])([0123xyzXYZuvwUVWijkIJK]{2})$");
+    //
+    // Without a separator, determining where the basename ends and the
+    // component identifier begins is inherently ambiguous. Restrict these
+    // cases to the conventional component-designator characters most commonly
+    // used by data producers.
+    //
+    result.push_back("^(.*[^_.])([0123abcABCijkIJKuvwUVWxyzXYZ])$"); // vectors
+    result.push_back("^(.*[^_.])([0123abcABCijkIJKuvwUVWxyzXYZ]{2})$"); // tensors
 
     return result;
 }
-
 
 // ****************************************************************************
 //  Method: CommonDatabasePluginInfo destructor

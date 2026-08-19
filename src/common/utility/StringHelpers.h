@@ -62,13 +62,14 @@ namespace StringHelpers
                        const CIStringSet &stringList,
                        int numGroups,
                        CIStringSetVector &stringGroups);
-    bool UTILITY_API GroupStringsByRE(
+    // Looks for related sequences of things like vel_x, vel_y, vel_z
+    // or vel_000, vel_001, vel_002 or vel_red, vel_grn, vel_blu
+    bool UTILITY_API GroupAndOrderStringsByRE(
                        const std::vector<std::string> &stringList,
                        const std::string &re,
                        int groupNameSubexp,
                        int memberIdSubexp,
                        std::vector<REStringGroup> &groups);
-
     int UTILITY_API FindRE(const std::string &s, const std::string &re);
     int UTILITY_API FindRE(const char *stringToSearch, const char *re);
     bool UTILITY_API ReplaceRE(std::string &s, const std::string &re,

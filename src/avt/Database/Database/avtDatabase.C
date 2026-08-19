@@ -70,44 +70,7 @@ ConvertSlashes(char *str)
 }
 
 // ****************************************************************************
-// Purpose: Helper function for adding expressions based on scalar components
-// Uses a variable's "component" identifier to infer the index of the component
-// in the aggregate type.
-//
-// ChatGPT via Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
-// ****************************************************************************
-static int
-ScalarComponentIndex(char c, bool zeroBasedNumeric)
-{
-    if (c >= '0' && c <= '3')
-    {
-        int idx = c - (zeroBasedNumeric ? '0' : '1');
-        return (idx >= 0 && idx <= 2) ? idx : -1;
-    }
-
-    switch (c)
-    {
-        case 'i': case 'I':
-        case 'u': case 'U':
-        case 'x': case 'X':
-            return 0;
-
-        case 'j': case 'J':
-        case 'v': case 'V':
-        case 'y': case 'Y':
-            return 1;
-
-        case 'k': case 'K':
-        case 'w': case 'W':
-        case 'z': case 'Z':
-            return 2;
-    }
-
-    return -1;
-}
-
-// ****************************************************************************
-// Purpose: Helper function for adding expressions based on scalar components
+// Purpose: Helper function for adding expressions based on scalar components.
 // Defines vector expressions from candidate scalar component groupings.
 // The candidate groupings are constructed in the caller according to 
 // scalar component name RE matching and whether all candidates share the same
@@ -115,6 +78,7 @@ ScalarComponentIndex(char c, bool zeroBasedNumeric)
 //
 // ChatGPT via Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
 // ****************************************************************************
+
 static bool
 AddScalarComponentVectorExpression(
     const StringHelpers::REStringGroup &grp,
@@ -124,84 +88,20 @@ AddScalarComponentVectorExpression(
     if (grp.ids.empty())
         return false;
 
-    string comp[3];
-
     //
-    // Numeric component names may be either one-based (1,2,3) or zero-based
-    // (0,1,2). Presence of a zero unambiguously selects zero-based indexing;
-    // otherwise use the conventional one-based interpretation.
+    // GroupAndOrderStringsByRE guarantees uniform identifier lengths and
+    // lexicographic ordering. Single-character identifiers denote vectors.
     //
-    bool zeroBasedNumeric = false;
-    for (size_t i = 0; i < grp.ids.size(); ++i)
-    {
-        if (grp.ids[i].size() != 1)
-            return false;
-
-        if (grp.ids[i][0] == '0')
-            zeroBasedNumeric = true;
-    }
-
-    bool useExplicitMapping = true;
-    bool anyExplicit = false;
-    bool anyUnknown  = false;
-
-    for (size_t i = 0; i < grp.ids.size(); ++i)
-    {
-        int c = -1;
-
-        if (grp.ids[i].size() == 1)
-            c = ScalarComponentIndex(grp.ids[i][0], zeroBasedNumeric);
-
-        if (c >= 0)
-            anyExplicit = true;
-        else
-            anyUnknown = true;
-    }
-
-    //
-    // Either everything must be recognizable, or nothing is recognizable.
-    //
-    if (anyExplicit && anyUnknown)
+    if (grp.ids[0].size() != 1)
         return false;
 
-    for (size_t i = 0; i < grp.ids.size(); ++i)
-    {
-        int c;
-
-        if (useExplicitMapping)
-            c = ScalarComponentIndex(grp.ids[i][0], zeroBasedNumeric);
-        else
-            c = (int)i;
-
-        if (c < 0 || c >= 3)
-            return false;
-
-        if (!comp[c].empty())
-            return false;
-
-        comp[c] = grp.strings[i];
-    }
-
-    int ncomps = 0;
-
-    if (!comp[0].empty() &&
-        !comp[1].empty() &&
-        !comp[2].empty())
-    {
-        ncomps = 3;
-    }
-    else if (!comp[0].empty() &&
-             !comp[1].empty() &&
-              comp[2].empty())
-    {
-        ncomps = 2;
-    }
+    const int ncomps = (int)grp.strings.size();
 
     //
     // A 2D mesh may have either a 2- or 3-component vector.
     // A 3D mesh requires all three components.
     //
-    if (ncomps < spatialDimension)
+    if (ncomps < spatialDimension || ncomps > 3)
         return false;
 
     string def = "{";
@@ -212,7 +112,7 @@ AddScalarComponentVectorExpression(
             def += ",";
 
         def += "<";
-        def += comp[c];
+        def += grp.strings[c];
         def += ">";
     }
 
@@ -238,45 +138,60 @@ AddScalarComponentVectorExpression(
 //
 // ChatGPT via Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
 // ****************************************************************************
+
 static bool
 AddScalarComponentTensorExpression(
     const StringHelpers::REStringGroup &grp,
     int spatialDimension,
     avtDatabaseMetaData *md)
 {
-    if (grp.ids.empty())
+    if (grp.ids.empty() || grp.ids[0].size() != 2)
         return false;
+
+    //
+    // Determine the logical tensor axes from the characters occurring in
+    // the two-character component identifiers. std::set gives us their
+    // lexicographic order.
+    //
+    std::set<char> axisChars;
+
+    for (size_t i = 0; i < grp.ids.size(); ++i)
+    {
+        axisChars.insert(grp.ids[i][0]);
+        axisChars.insert(grp.ids[i][1]);
+    }
+
+    if ((int)axisChars.size() != spatialDimension)
+        return false;
+
+    char prev = 0;
+    bool first = true;
+
+    for (std::set<char>::const_iterator it = axisChars.begin();
+         it != axisChars.end(); ++it)
+    {
+        if (!first && *it != prev + 1)
+            return false;
+
+        prev = *it;
+        first = false;
+    }
+
+    map<char, int> axisIndex;
+
+    int index = 0;
+    for (std::set<char>::const_iterator it = axisChars.begin();
+         it != axisChars.end(); ++it, ++index)
+    {
+        axisIndex[*it] = index;
+    }
 
     string comp[3][3];
 
-    //
-    // As with vectors, numeric tensor indices may be one-based (11..33) or
-    // zero-based (00..22). A zero anywhere in a numeric component identifier
-    // selects zero-based indexing for the group.
-    //
-    bool zeroBasedNumeric = false;
     for (size_t i = 0; i < grp.ids.size(); ++i)
     {
-        if (grp.ids[i].size() != 2)
-            return false;
-
-        if (grp.ids[i][0] == '0' || grp.ids[i][1] == '0')
-            zeroBasedNumeric = true;
-    }
-
-    for (size_t i = 0; i < grp.ids.size(); ++i)
-    {
-        int r = ScalarComponentIndex(grp.ids[i][0], zeroBasedNumeric);
-        int c = ScalarComponentIndex(grp.ids[i][1], zeroBasedNumeric);
-
-        if (r < 0 || c < 0)
-            return false;
-
-        //
-        // Components outside the dimensionality of the mesh do not qualify.
-        //
-        if (r >= spatialDimension || c >= spatialDimension)
-            return false;
+        int r = axisIndex[grp.ids[i][0]];
+        int c = axisIndex[grp.ids[i][1]];
 
         if (!comp[r][c].empty())
             return false;
@@ -290,13 +205,9 @@ AddScalarComponentTensorExpression(
     bool full = true;
 
     for (int r = 0; r < spatialDimension; ++r)
-    {
         for (int c = 0; c < spatialDimension; ++c)
-        {
             if (comp[r][c].empty())
                 full = false;
-        }
-    }
 
     if (full)
     {
@@ -336,8 +247,7 @@ AddScalarComponentTensorExpression(
     }
 
     //
-    // Otherwise see whether the group represents one complete triangular
-    // half of a symmetric tensor.
+    // Otherwise determine whether exactly one triangular half is present.
     //
     bool upper = true;
     bool lower = true;
@@ -357,22 +267,10 @@ AddScalarComponentTensorExpression(
     if (!upper && !lower)
         return false;
 
-    //
-    // Reject extra entries from the opposite triangular half.  A symmetric
-    // tensor candidate should contain exactly the independent components,
-    // not an arbitrary mixture.
-    //
     const int expected =
         spatialDimension * (spatialDimension + 1) / 2;
 
-    int actual = 0;
-
-    for (int r = 0; r < spatialDimension; ++r)
-        for (int c = 0; c < spatialDimension; ++c)
-            if (!comp[r][c].empty())
-                ++actual;
-
-    if (actual != expected)
+    if ((int)grp.strings.size() != expected)
         return false;
 
     string def = "{";
@@ -2263,7 +2161,7 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
         {
             vector<StringHelpers::REStringGroup> groups;
 
-            if (!StringHelpers::GroupStringsByRE(bit->second,
+            if (!StringHelpers::GroupAndOrderStringsByRE(bit->second,
                                                  scalarComponentREs[r],
                                                  1, 2, groups))
             {
@@ -2334,7 +2232,7 @@ avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
         {
             vector<StringHelpers::REStringGroup> groups;
 
-            if (!StringHelpers::GroupStringsByRE(bit->second,
+            if (!StringHelpers::GroupAndOrderStringsByRE(bit->second,
                                                  scalarComponentREs[r],
                                                  1, 2, groups))
             {

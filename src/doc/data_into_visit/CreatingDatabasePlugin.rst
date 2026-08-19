@@ -1905,32 +1905,50 @@ In the `Xdmf plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/head
 There other examples in `CGNS <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CGNS/avtCGNSFileReader.C#:~:text=avtCGNSFileReader::AddVectorExpression>`__, 
 `AVSucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/AVSucd/avtAVSucdFileFormat.C#:~:text=md-%3EAddExpression%28%26vecExpr%29%3B>`__, and `CEAucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CEAucd/avtCEAucdFileFormat.C#:~:text=md-%3EAddExpression%28%26vec_expr%29%3B>`__.
 
-To avoid repeatedly duplicating such functionality in individual database plugins, a new feature was added.
-It is similar to the ``<FilePatterns>`` feature.
-It is a new XML tag, ``<ScalarComponentREs>`` that allows developers to specify regular expressions that should be used to automatically *detect* patterns of scalar variables representing the components of an aggregate vector or tensor variable.
+To avoid repeatedly duplicating such functionality in individual database plugins, a new feature was added similar to the ``<FilePatterns>`` feature.
+
+It is a new XML tag, ``<ScalarComponentREs>``, that allows developers to specify regular expressions used to automatically *detect* patterns of scalar variables representing the components of an aggregate vector or tensor variable.
+
 VisIt_ defines *default* scalar component regular expressions in `GeneralDatabasePluginInfo::GetDefaultScalarComponentREs <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/common/plugin/DatabasePluginInfo.C#:~:text=GeneralDatabasePluginInfo::GetDefaultScalarComponentREs>`__ which can be overridden in any database plugin using the ``<ScalarComponentREs>`` tag in the ``.xml`` file for the plugin.
 There is an example override in the `Pixie plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Pixie/Pixie.xml#:~:text=ScalarComponentREs>`__.
 
-The information needed in ``<ScalarComponentREs>`` is a list of one or more `regular expressions <https://en.cppreference.com/cpp/regex>`__.
+The information needed in ``<ScalarComponentREs>`` is a list of one or more `regular expressions <https://en.cppreference.com/w/cpp/regex>`__.
 Each regular expression must contain two sub-expressions (e.g. capture groups).
 The first capture group identifies the common base name of a candidate aggregate variable, and the second capture group identifies the component designation.
-Component designations may use numeric indices (``0123``) or Cartesian-style component labels (``ijk``, ``uvw``, ``xyz``) including uppercase forms.
 
-For example, in the *default* scalar component regular expressions operating on ``velocity_x``, ``velocity_y``, and ``velocity_z`` should capture ``velocity`` as the common base name and ``x``, ``y``, or ``z`` as the component designations.
-Likewise, operating on ``stress_xx``, ``stress_xy``, etc. should capture ``stress`` as the base name and ``xx``, ``xy``, etc. as the component designations.
+Scalar variables having the same base name, mesh and centering are grouped together, and an aggregate expression is created only when the resulting components form a complete vector, symmetric tensor, or tensor appropriate to the spatial dimension of the mesh.
 
-A single-character component designation (e.g. `i`) identifies a candidate vector component, while a two-character designation (e.g. `ij`) identifies a candidate tensor component.
-Scalar variables having the same base name, mesh and centering are grouped together, and an aggregate expression is created only when the recognized components form a complete vector, symmetric tensor, or tensor appropriate to the spatial dimension of the mesh.
-Numeric component designations may use either zero-based or one-based numbering.
+The default regular expressions distinguish between component naming conventions that use an explicit separator between the base name and component designation and those that do not.
+When an explicit separator such as ``_`` or ``.`` is present, the separator provides an unambiguous boundary between the base name and component designation, allowing the component designation itself to use arbitrary characters subject to the ordering and consistency requirements described above.
 
-If component designators cannot be interpreted using one of VisIt's recognized component designator conventions (``0123``, ``ijk``, ``uvw``, ``xyz``), they may be assigned ordinal positions according to their order of appearence in the list of scalar variables defined by the database.
-For example, ``vel_one``, ``vel_two``, ``vel_three`` do not meet the default component designation conventions.
-However, a regular expression such as ``^(.+)_(one|two|three)$`` will still capture the *group* of three strings as a *candidate* vector.
-It will then use the order of appearance of the three strings in the list of scalar variables for the database to *order* the components when forming the vector expression.
+For example, a regular expression operating on ``velocity_comp1``, and ``velocity_comp2`` all with the same centering on a 2D mesh, VisIt_ will create the vector ``velocity`` with definition ``{velocity_comp1, velocity_comp2}``.
+Likewise, if the three scalar variables ``steel_red``, ``steel_grn`` and ``steel_blu`` are encountered all with the same centering on a 3D mesh, VisIt_ will create the vector named ``steel`` with definition ``{steel_blu, steel_grn, steel_red}``.
+Why?
+All have a common base name, ``steel``.
+All have a common-length (3 in this example) component designation.
+When the component designation is sorted lexicographically, the result is ``blu``, ``grn``, ``red``.
+
+When there is no separator, determining where the base name ends and the component designation begins is inherently ambiguous.
+VisIt_'s default regular expressions therefore restrict such component designations to commonly used numeric and Cartesian-style *single* characters such as ``0123``, ``ijk``, ``uvw``, and ``xyz``, including uppercase forms.
+
+A single-character component designation (e.g. ``i``) identifies a candidate vector component, while a two-character designation (e.g. ``ij``) identifies a candidate tensor component.
+All component designations in a candidate group must have the same length.
+
+Component designations are ordered lexicographically when constructing an aggregate expression.
+Consequently, the component designation convention used by a regular expression must be such that lexicographic ordering produces the intended component order.
+For example, ``0,1,2``, ``1,2,3``, ``i,j,k``, ``u,v,w``, and ``x,y,z`` all naturally satisfy this requirement.
+
+In addition, the characters identifying successive component directions must also be *consecutive* in lexicographic order.
+Thus, ``x,y`` is a valid pair of component directions for a two-dimensional vector while ``x,z`` is not.
+The same rule applies to the individual characters of tensor component designations.
+For example, ``xx,xy,yx,yy`` describes a valid set of two-dimensional tensor component directions, whereas ``xx,xz,zx,zz`` does not.
+
+Database plugins with naming conventions not covered by the defaults can override ``<ScalarComponentREs>``.
+For example, a plugin using single-character component designations ``a``, ``b``, and ``c`` separated from the base name could use a regular expression such as ``^(.+)_(a|b|c)$``.
+Because ``a``, ``b``, and ``c`` have equal length, are consecutive, and sort into the intended component order, they can be used without VisIt_ having any built-in knowledge of that particular naming convention.
 
 .. warning::
 
     Although the ``<ScalarComponentREs>`` tag in a database plugin's ``.xml`` file accepts a *list* of regular expression strings, care should be taken in making the list too long.
     Each regular expression is scanned over each database's list of scalar variables.
     If the list of scalar variables is large, the string matching work is multiplied by the number of regular expression strings in ``<ScalarComponentREs>``.
-
