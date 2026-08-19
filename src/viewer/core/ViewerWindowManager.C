@@ -1893,9 +1893,9 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                     TR("The window was too large to save at the requested resolution.  "
                        "The resolution has been automatically reduced."));
             }
-	    // if the total image size is too large, reduce them
-	    // proportionally.
-	    if (w * h > 536756224)
+            // if the total image size is too large, reduce them
+            // proportionally.
+            if (w * h > 536756224)
             {
                 double image_size = (double)(w * h);
                 w = (int)((double)w * std::sqrt(536756224. / image_size));
@@ -3486,6 +3486,10 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Kevin Griffin, Wed Sep 10, 2025
 //    Refactored ANARI rendering options into AnariAttributes
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added TiledRenderingWidth and TiledRenderingHeight from
+//    RenderingAttributes to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -3548,6 +3552,16 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             ratts->GetMultiresolutionCellSize())
             windows[index]->SetMultiresolutionCellSize(
             ratts->GetMultiresolutionCellSize());
+
+        if (windows[index]->GetTiledRenderingWidth() !=
+            ratts->GetTiledRenderingWidth())
+            windows[index]->SetTiledRenderingWidth(
+            ratts->GetTiledRenderingWidth());
+
+        if (windows[index]->GetTiledRenderingHeight() !=
+            ratts->GetTiledRenderingHeight())
+            windows[index]->SetTiledRenderingHeight(
+            ratts->GetTiledRenderingHeight());
 
         if ((windows[index]->GetStereo() != ratts->GetStereoRendering()) ||
             (windows[index]->GetStereoType() != (int) ratts->GetStereoType()))

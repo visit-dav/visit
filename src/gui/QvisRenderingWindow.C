@@ -604,6 +604,9 @@ QvisRenderingWindow::CreateBasicPage()
 //   Removed void* arg from SIGNAL and SLOT for QvisOpacitySlider as the arg
 //   isn't needed for these instances.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added controls for setting the tiled rendering width and height.
+//
 // ****************************************************************************
 
 QWidget *
@@ -755,6 +758,37 @@ QvisRenderingWindow::CreateAdvancedPage()
             this, SLOT(colorTexturingToggled(bool)));
     advLayout->addWidget(colorTexturingToggle, row, 0, 1, 3);
     row++;
+
+    // Create the tiled rendering widgets.
+    tiledRenderingGroup = new QGroupBox(tr("Tiled rendering"), advancedOptions);
+    tiledRenderingGroup->setCheckable(false);
+    tiledRenderingGroup->setChecked(false);
+    advLayout->addWidget(tiledRenderingGroup, row, 0, 2, 4);
+    row += 2;
+
+    QGridLayout *tiledRenderingLayout = new QGridLayout(tiledRenderingGroup);
+    tiledRenderingLayout->setContentsMargins(5,5,5,5);
+    tiledRenderingLayout->setSpacing(10);
+
+    tiledRenderingWidthLabel = new QLabel(tr("Tile width"), advancedOptions);
+    tiledRenderingLayout->addWidget(tiledRenderingWidthLabel, 0, 0);
+
+    tiledRenderingWidth = new QLineEdit("2048");
+    QIntValidator *widthValidator = new QIntValidator(100,8192);
+    tiledRenderingWidth->setValidator(widthValidator);
+    connect(tiledRenderingWidth, SIGNAL(textChanged(const QString &)),
+            this, SLOT(tiledRenderingWidthChanged(void)));
+    tiledRenderingLayout->addWidget(tiledRenderingWidth, 0, 1);
+
+    tiledRenderingHeightLabel = new QLabel(tr("Tile height"), advancedOptions);
+    tiledRenderingLayout->addWidget(tiledRenderingHeightLabel, 0, 2);
+
+    tiledRenderingHeight = new QLineEdit("2048");
+    QIntValidator *heightValidator = new QIntValidator(100,8192);
+    tiledRenderingHeight->setValidator(heightValidator);
+    connect(tiledRenderingHeight, SIGNAL(textChanged(const QString &)),
+            this, SLOT(tiledRenderingHeightChanged(void)));
+    tiledRenderingLayout->addWidget(tiledRenderingHeight, 0, 3);
 
 #ifdef HAVE_ANARI
     // Divider
@@ -1073,6 +1107,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Add handling of msaaSamples and fxaaOptions.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   Added controls for setting the tiled rendering width and height.
+//
 // ****************************************************************************
 
 void
@@ -1204,6 +1241,16 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->setChecked(renderAtts->GetNotifyForEachRender());
             renderNotifyToggle->blockSignals(false);
             break;
+        case RenderingAttributes::ID_tiledRenderingWidth:
+            tmp = IntToQString(renderAtts->GetTiledRenderingWidth());
+            tiledRenderingWidth->blockSignals(true);
+            tiledRenderingWidth->setText(tmp);
+            tiledRenderingWidth->blockSignals(false);
+        case RenderingAttributes::ID_tiledRenderingHeight:
+            tmp = IntToQString(renderAtts->GetTiledRenderingHeight());
+            tiledRenderingHeight->blockSignals(true);
+            tiledRenderingHeight->setText(tmp);
+            tiledRenderingHeight->blockSignals(false);
         case RenderingAttributes::ID_depthPeeling:
             depthPeeling->blockSignals(true);
             depthPeeling->setChecked(renderAtts->GetDepthPeeling());
@@ -2827,6 +2874,48 @@ void
 QvisRenderingWindow::colorTexturingToggled(bool val)
 {
     renderAtts->SetColorTexturingFlag(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::tiledRenderingWidthChanged
+//
+// Purpose:
+//   Update the tiled rendering width.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::tiledRenderingWidthChanged()
+{
+    renderAtts->SetTiledRenderingWidth(tiledRenderingWidth->text().toInt());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::tiledRenderingHeightChanged
+//
+// Purpose:
+//   Update the tiled rendering height.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::tiledRenderingHeightChanged()
+{
+    renderAtts->SetTiledRenderingHeight(tiledRenderingHeight->text().toInt());
     SetUpdate(false);
     Apply();
 }

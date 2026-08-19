@@ -48,6 +48,10 @@ class vtkTextProperty;
 //    Add HaveLastViewState, LastModelViewMatric, LastProjectionMatrix,
 //    LastViewportSize.
 //
+//     Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//     Added SetTileZoom to pass the tile zoom to the mapper to support
+//     tiled rendering.
+//
 // ****************************************************************************
 
 class vtkLabelMapperBase : public vtkVisItFullFrameMapper2D
@@ -89,6 +93,7 @@ public:
     vtkSetVector3Macro(ForegroundColor, double);
     vtkSetMacro(CellOrigin, vtkIdType);
     vtkSetMacro(NodeOrigin, vtkIdType);
+    vtkSetMacro(TileZoom, double);
 
 protected:
     vtkLabelMapperBase();
@@ -154,6 +159,7 @@ protected:
     std::string            GlobalLabel;
     bool                   UseGlobalLabel;
     int                    RendererAction;
+    double                 TileZoom;
 
     int                    numXBins, numYBins;
     LabelInfo             *LabelBins;

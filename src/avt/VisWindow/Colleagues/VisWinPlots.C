@@ -992,6 +992,10 @@ VisWinPlots::Stop3DMode(void)
 //    configure window for the sorting algorithm. in parallel it's
 //    handled by the NetworkManager in serial happens here.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I added tileZoom to account for the change to the image zoom for tiled
+//    rendering. I changed the code to get the imageZoom from the View3D.
+//
 // ****************************************************************************
 
 void
@@ -1027,17 +1031,19 @@ VisWinPlots::UpdateView()
     // by GetCanvas routine.
     double distance = 0.003;
     double pos[3], foc[3];
-    double imageZoom;
+    double imageZoom, tileZoom;
     cam->GetPosition(pos);
     cam->GetFocalPoint(foc);
-    imageZoom = cam->GetFocalDisk();
+    imageZoom = (*mediator).GetView3D().imageZoom;
+    tileZoom = (*mediator).GetView3D().tileZoom;
     double projection[3];
-    projection[0] = distance * (pos[0] - foc[0]) / imageZoom;
-    projection[1] = distance * (pos[1] - foc[1]) / imageZoom;
-    projection[2] = distance * (pos[2] - foc[2]) / imageZoom;
+    projection[0] = distance * (pos[0] - foc[0]) / (imageZoom / tileZoom);
+    projection[1] = distance * (pos[1] - foc[1]) / (imageZoom / tileZoom);
+    projection[2] = distance * (pos[2] - foc[2]) / (imageZoom / tileZoom);
 
     ShiftPlots(projection);
     UpdateScaleFactor();
+    UpdateTileZoom(tileZoom);
 }
 
 
@@ -1545,10 +1551,10 @@ VisWinPlots::ScalePlots(const double vec[3])
 //  Method: VisWinPlots::UpdateScaleFactor
 //
 //  Purpose:
-//      Allows decoration actors to update their scale factor. 
+//      Allows decoration actors to update their scale factor.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 19, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 19, 2002
 //
 // ****************************************************************************
 
@@ -1559,6 +1565,28 @@ VisWinPlots::UpdateScaleFactor()
     for (it = plots.begin() ; it != plots.end() ; it++)
     {
         (*it)->UpdateScaleFactor();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::UpdateTileZoom
+//
+//  Purpose:
+//      Allows plots to update their tile zoom.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon Feb  2 14:37:47 PST 2026
+//
+// ****************************************************************************
+
+void
+VisWinPlots::UpdateTileZoom(const double tileZoom)
+{
+    std::vector< avtActor_p >::iterator it;
+    for (it = plots.begin() ; it != plots.end() ; it++)
+    {
+        (*it)->SetTileZoom(tileZoom);
     }
 }
 

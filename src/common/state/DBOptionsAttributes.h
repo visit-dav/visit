@@ -35,7 +35,8 @@ public:
         Double,
         String,
         Enum,
-        MultiLineString
+        MultiLineString,
+        Color
     };
 
     // These constructors are for objects of this class
@@ -71,6 +72,7 @@ public:
     void SelectOptInts();
     void SelectOptStrings();
     void SelectOptEnums();
+    void SelectOptColors();
     void SelectOptMultiLineStrings();
     void SelectEnumStrings();
     void SelectEnumStringsSizes();
@@ -86,6 +88,7 @@ public:
     void SetOptInts(const intVector &optInts_);
     void SetOptStrings(const stringVector &optStrings_);
     void SetOptEnums(const intVector &optEnums_);
+    void SetOptColors(const intVector &optColors_);
     void SetOptMultiLineStrings(const stringVector &optMultiLineStrings_);
     void SetEnumStrings(const stringVector &enumStrings_);
     void SetEnumStringsSizes(const intVector &enumStringsSizes_);
@@ -109,6 +112,8 @@ public:
           stringVector &GetOptStrings();
     const intVector    &GetOptEnums() const;
           intVector    &GetOptEnums();
+    const intVector    &GetOptColors() const;
+          intVector    &GetOptColors();
     const stringVector &GetOptMultiLineStrings() const;
           stringVector &GetOptMultiLineStrings();
     const stringVector &GetEnumStrings() const;
@@ -152,6 +157,8 @@ public:
     void SetEnum(const std::string &name, int defaultValue);
     int GetEnum(const std::string &name) const;
     void SetEnumStrings(const std::string &name, const std::vector<std::string> &values);
+    void SetColor(const std::string &name, int red, int green, int blue, int alpha = 255);
+    void GetColor(const std::string &name, int &red, int &green, int &blue, int &alpha) const;
     const std::string &GetMultiLineString(const std::string &name) const;
     void SetMultiLineString(const std::string &name, const std::string &defaultValue);
     int GetNumberOfOptions(void) const;
@@ -172,6 +179,7 @@ public:
         ID_optInts,
         ID_optStrings,
         ID_optEnums,
+        ID_optColors,
         ID_optMultiLineStrings,
         ID_enumStrings,
         ID_enumStringsSizes,
@@ -189,6 +197,7 @@ private:
     intVector    optInts;
     stringVector optStrings;
     intVector    optEnums;
+    intVector    optColors;
     stringVector optMultiLineStrings;
     stringVector enumStrings;
     intVector    enumStringsSizes;
@@ -199,6 +208,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define DBOPTIONSATTRIBUTES_TMFS "i*s*i*d*d*i*s*i*s*s*i*s*s"
+#define DBOPTIONSATTRIBUTES_TMFS "i*s*i*d*d*i*s*i*i*s*s*i*s*s"
 
 #endif

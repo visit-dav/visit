@@ -390,6 +390,10 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    Kathleen Biagas, Thu Jan 15, 2026
 //    Use vtkVisItOBJWriter (renamed from vtkOBJWriter to avoid conflict
 //    with VTK version).
+// 
+//    Justin Privitera, Fri Aug 14 15:52:42 PDT 2026
+//    Added support for below min color and above max color; rewrote parts of
+//    the function.
 //
 // ****************************************************************************
 
@@ -397,10 +401,26 @@ void
 avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
                                    const char *fname,
                                    const char *label,
-                                   bool writeMTL,
-                                   bool MTLHasTex,
-                                   std::string texFilename)
+                                   const bool writeMTL,
+                                   const bool MTLHasTex,
+                                   const std::string texFilename,
+                                   const int ncolors,
+                                   const bool useMin,
+                                   const double minValue,
+                                   const bool useMax,
+                                   const double maxValue,
+                                   const bool useBelowMinColor,
+                                   const bool useAboveMaxColor)
 {
+    if (useMin && useMax)
+    {
+        if (minValue > maxValue)
+        {
+            debug1 << "OBJ Writer: Minimum cannot be greater than maximum." << endl;
+            EXCEPTION1(ImproperUseException, "OBJ Writer: Minimum cannot be greater than maximum.");
+        }
+    }
+
     vtkDataSet *activeDS = ds;
 
     // Make sure that we have polydata.
@@ -434,17 +454,19 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
     // We are going to stuff the data into the texture coordinates, since that
     // is what is transferable between Maya, the TSB, and VisIt.
     //
-    // I am converting the variable to the first component of a texture
-    // coordinates.  The second is all 0 until I can think of something
-    // better to do with it.
+    // I am converting the variable to the first component of texture
+    // coordinates. The second component is always 0 since the texture
+    // is a 1D strip.
     //
     vtkDataArray *scalars = activeDS->GetPointData()->GetScalars();
-    if (scalars != NULL)
+    if (scalars != nullptr)
     {
         //
         // Get some information for normalizing the variable.
         //
-        double gap = (range[1] != range[0] ? range[1] - range[0] : 1.);
+        const double rangeMin = useMin ? minValue : range[0];
+        const double rangeMax = useMax ? maxValue : range[1];
+        const double gap = (rangeMax != rangeMin ? rangeMax - rangeMin : 1.);
 
         //
         // Create the actual texture coordinate.
@@ -453,24 +475,158 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
         tcoords->SetNumberOfComponents(2);
         tcoords->SetNumberOfTuples(scalars->GetNumberOfTuples());
 
-        // What is going on here?
-        // We want to add a pixel to either end of the color table.
-        // This is to prevent unwanted behavior with the max and min texture coordinates
-        // wrapping around. If we're going to add pixels, we must adjust the texture
-        // coords. We add two pixels and scale appropriately.
-        const double ncolors = 256.0; // this must match the GetColors() function
-        const double fudge_factor = 1.0 / ncolors;
-        const double new_divisor = 1.0 + fudge_factor * 2.0;
+        // let's say we have 4 colors and the upper color is U and the lower color is L.
+        // then our texture will look like this:
+        // 112344UULL
+        // the first and last colors are duplicated, as are the upper and lower colors
+        // we duplicate the first and last colors to prevent texture wrapping from
+        // harming our colors. If a value in a plot is at the minimum value, then it
+        // will map to a texture coordinate of 0.0, which will cause texture wrapping
+        // to color it a blend of the color at position 0.0 and 1.0. If a texture coordinate
+        // is on a pixel boundary, it gets the colors of both pixels on either side of
+        // the boundary. So we pad the ends so that max and min values will get the correct
+        // color. We also include duplicated upper and lower colors so that there is no
+        // blending when those colors are selected.
 
-        for (int i = 0 ; i < scalars->GetNumberOfTuples() ; i++)
+
+        // Let's say to access our color table we must provide a value in the range [0, 1].
+        // So to translate from field value space to color space we must go from
+        //   [min, max] -> [0, 1].
+        // We call the color space value the `color_coeff`.
+        // color_coeff = (field_value - data_min) / (data_max - data_min)
+
+        // The color_coeff needs to be translated to our texture space. Imagine we have
+        // 4 colors: "1234".
+        // These colors are embedded in the 1D texture like so:
+        // 
+        //     112344UULL
+        //      ^^^^
+        //
+        // If we have Nc colors (4 in our example), then the formula
+        // 
+        //      color_coeff * Nc + 1
+        //    -------------------------
+        //             Nc + 6
+        // 
+        // Gives us the resulting value translated to texture space. Why?
+        // color_coeff * Nc brings us into pixel space, and then adding 1 moves us up one pixel
+        // (because the first pixel is duplicated). Then we divide by (Nc + 6) to take us back
+        // out of pixel space and into texture space, since (Nc + 6) is the total number of 
+        // pixels.
+
+        // we have 6 extra pixels, the duplicated min/max as well as 2 for below min color
+        // and 2 for above max color.
+        const double num_extra_pixels = 6.0;
+        const double ncolors_dbl = static_cast<double>(ncolors);
+        const double lowval_tex_coord = [&]() -> double
         {
-            double *p = scalars->GetTuple(i);
-            double s[2];
-            // assuming we have ncolors colors and want to add a duplicate to either end
-            s[0] = (((*p - range[0]) / gap) + fudge_factor) / new_divisor;
-            s[1] = 0.;
-            tcoords->SetTuple(i, s);
+            if (useBelowMinColor)
+            {
+                // we are 3 positions from the end (so we are in between the two low val pixels)
+                return (ncolors_dbl + num_extra_pixels - 3.0) / (ncolors_dbl + num_extra_pixels);
+            }
+            else
+            {
+                // we are 1 position from the beginning (so we are in between the two min val pixels)
+                return 1.0 / (ncolors_dbl + num_extra_pixels);
+            }
+        }();
+        const double hival_tex_coord = [&]() -> double
+        {
+            if (useAboveMaxColor)
+            {
+                // we are 1 position from the end (so we are in between the two high val pixels)
+                return (ncolors_dbl + num_extra_pixels - 1.0) / (ncolors_dbl + num_extra_pixels);
+            }
+            else
+            {
+                // we are 5 positions from the end (so we are in between the two max val pixels)
+                return (ncolors_dbl + num_extra_pixels - 5.0) / (ncolors_dbl + num_extra_pixels);
+            }
+        }();
+
+        // this formula is given above
+        auto compute_texcoord = [&](const double field_value) -> double
+        {
+            const double color_coeff = (field_value - rangeMin) / gap;
+            return (color_coeff * ncolors_dbl + 1.0) / (ncolors_dbl + num_extra_pixels);
+        };
+
+        // The loop case is reproduced 4X because we want to minimize branching within.
+        if (useMin && useMax)
+        {
+            for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
+            {
+                double *p = scalars->GetTuple(scalar_idx);
+                double s[2];
+                const double field_value = *p;
+                if (field_value < minValue)
+                {
+                    s[0] = lowval_tex_coord;
+                }
+                else if (field_value > maxValue)
+                {
+                    s[0] = hival_tex_coord;
+                }
+                else
+                {
+                    s[0] = compute_texcoord(field_value);
+                }
+                s[1] = 0.;
+                tcoords->SetTuple(scalar_idx, s);
+            }
         }
+        else if (!useMin && useMax)
+        {
+            for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
+            {
+                double *p = scalars->GetTuple(scalar_idx);
+                double s[2];
+                const double field_value = *p;
+                if (field_value > maxValue)
+                {
+                    s[0] = hival_tex_coord;
+                }
+                else
+                {
+                    s[0] = compute_texcoord(field_value);
+                }
+                s[1] = 0.;
+                tcoords->SetTuple(scalar_idx, s);
+            }
+        }
+        else if (useMin && !useMax)
+        {
+            for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
+            {
+                double *p = scalars->GetTuple(scalar_idx);
+                double s[2];
+                const double field_value = *p;
+                if (field_value < minValue)
+                {
+                    s[0] = lowval_tex_coord;
+                }
+                else
+                {
+                    s[0] = compute_texcoord(field_value);
+                }
+                s[1] = 0.;
+                tcoords->SetTuple(scalar_idx, s);
+            }
+        }
+        else // (!useMin && !useMax)
+        {
+            for (int scalar_idx = 0; scalar_idx < scalars->GetNumberOfTuples(); scalar_idx ++)
+            {
+                double *p = scalars->GetTuple(scalar_idx);
+                double s[2];
+                const double field_value = *p;
+                s[0] = compute_texcoord(field_value);
+                s[1] = 0.;
+                tcoords->SetTuple(scalar_idx, s);
+            }
+        }
+        
         toBeWritten->GetPointData()->SetTCoords(tcoords);
         tcoords->Delete();
     }
@@ -479,9 +635,13 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
     std::string basename;
     auto pos = filename.find_last_of(".");
     if (filename.substr(pos + 1) == "obj")
+    {
         basename = filename.substr(0, pos);
+    }
     else
+    {
         basename = filename;
+    }
 
     vtkVisItOBJWriter *writer = vtkVisItOBJWriter::New();
     if (label != NULL && strlen(label) > 0)

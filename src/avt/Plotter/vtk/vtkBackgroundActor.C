@@ -92,11 +92,20 @@ vtkBackgroundActor::DestroyBackground()
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkUnsignedCharArray
 //    for colors instead.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ***************************************************************************
 
 void
 vtkBackgroundActor::CreateBackground()
 {
+    double BL[2] = {this->GetPosition()[0], this->GetPosition()[1]};
+    double TR[2] = {this->GetPosition()[0] + this->GetPosition2()[0],
+                    this->GetPosition()[1] + this->GetPosition2()[1]};
+
     this->GradientData = vtkPolyData::New();
 
     if(this->GradientFillMode < 4)
@@ -120,17 +129,17 @@ vtkBackgroundActor::CreateBackground()
         // Add points to the vertex list.
         double coord[3];
         coord[2] = 0.0;
-        coord[0] = this->GradientCoords[0];
-        coord[1] = this->GradientCoords[1];
+        coord[0] = BL[0];
+        coord[1] = BL[1];
         pts->SetPoint(0, coord);
-        coord[0] = this->GradientCoords[2];
-        coord[1] = this->GradientCoords[1];
+        coord[0] = TR[0];
+        coord[1] = BL[1];
         pts->SetPoint(1, coord);
-        coord[0] = this->GradientCoords[2];
-        coord[1] = this->GradientCoords[3];
+        coord[0] = TR[0];
+        coord[1] = TR[1];
         pts->SetPoint(2, coord);
-        coord[0] = this->GradientCoords[0];
-        coord[1] = this->GradientCoords[3];
+        coord[0] = BL[0];
+        coord[1] = TR[1];
         pts->SetPoint(3, coord);
 
         // Add a cell to the polydata.
@@ -177,10 +186,10 @@ vtkBackgroundActor::CreateBackground()
         this->GradientData->GetPointData()->SetScalars(colors);
         pts->Delete(); polys->Delete(); colors->Delete(); 
 
-        double CenterX = (this->GradientCoords[0] + this->GradientCoords[2]) * 0.5;
-        double CenterY = (this->GradientCoords[1] + this->GradientCoords[3]) * 0.5;
-        double dX = CenterX - this->GradientCoords[0];
-        double dY = CenterY - this->GradientCoords[1];
+        double CenterX = (BL[0] + TR[0]) * 0.5;
+        double CenterY = (BL[1] + TR[1]) * 0.5;
+        double dX = CenterX - BL[0];
+        double dY = CenterY - BL[1];
         double Radius = sqrt(dX*dX + dY*dY) * 1.02;
         double dTheta = 2 * 3.14159 / double(this->NumRadialSteps);
 
@@ -250,9 +259,14 @@ vtkBackgroundActor::CreateBackground()
 
     this->GradientMapper = vtkPolyDataMapper2D::New();
     this->GradientMapper->SetInputData(this->GradientData);
+    // Set the transform coordinate so the mapper knows to convert the
+    // points to display points before rendering.
+    vtkCoordinate *transformCoord = vtkCoordinate::New();
+    transformCoord->SetCoordinateSystemToWorld();
+    this->GradientMapper->SetTransformCoordinate(transformCoord);
+    transformCoord->Delete();
 
     this->GradientActor = vtkActor2D::New();
-//    this->GradientActor->Modified();
     this->GradientActor->SetMapper(this->GradientMapper);
 }
 

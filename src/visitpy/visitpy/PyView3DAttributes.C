@@ -181,6 +181,24 @@ PyView3DAttributes_ToString(const View3DAttributes *atts, const char *prefix, co
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const double *tilePan = atts->GetTilePan();
+        snprintf(tmpStr, 1000, "%stilePan = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 2; ++i)
+        {
+            snprintf(tmpStr, 1000, "%g", tilePan[i]);
+            str += tmpStr;
+            if(i < 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    snprintf(tmpStr, 1000, "%stileZoom = %g\n", prefix, atts->GetTileZoom());
+    str += tmpStr;
     if(atts->GetWindowValid())
         snprintf(tmpStr, 1000, "%swindowValid = 1\n", prefix);
     else
@@ -1320,6 +1338,145 @@ View3DAttributes_GetShear(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+View3DAttributes_SetTilePan(PyObject *self, PyObject *args)
+{
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetTilePan();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
+    }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Mark the tilePan in the object as modified.
+    obj->data->SelectTilePan();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+View3DAttributes_GetTilePan(PyObject *self, PyObject *args)
+{
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tilePan.
+    PyObject *retval = PyTuple_New(2);
+    const double *tilePan = obj->data->GetTilePan();
+    for(int i = 0; i < 2; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(tilePan[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+View3DAttributes_SetTileZoom(PyObject *self, PyObject *args)
+{
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the tileZoom in the object.
+    obj->data->SetTileZoom(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+View3DAttributes_GetTileZoom(PyObject *self, PyObject *args)
+{
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTileZoom());
+    return retval;
+}
+
+/*static*/ PyObject *
 View3DAttributes_SetWindowValid(PyObject *self, PyObject *args)
 {
     PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
@@ -1487,6 +1644,10 @@ View3DAttributes_Add(PyObject *v, PyObject *w)
                                   b->GetCenterOfRotation()[1];
     c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] +
                                   b->GetCenterOfRotation()[2];
+
+    c->GetTilePan()[0] = a->GetTilePan()[0] + b->GetTilePan()[0];
+    c->GetTilePan()[1] = a->GetTilePan()[1] + b->GetTilePan()[1];
+    c->SetTileZoom(a->GetTileZoom() + b->GetTileZoom());
     return retval;
 }
 
@@ -1563,6 +1724,10 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
         c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] * val;
         c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] * val;
         c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] * val;
+
+        c->GetTilePan()[0] = a->GetTilePan()[0] * val;
+        c->GetTilePan()[1] = a->GetTilePan()[1] * val;
+        c->SetTileZoom(a->GetTileZoom() * val);
     }
 
     return retval;
@@ -1604,6 +1769,10 @@ PyMethodDef PyView3DAttributes_methods[VIEW3DATTRIBUTES_NMETH] = {
     {"GetAxis3DScales", View3DAttributes_GetAxis3DScales, METH_VARARGS},
     {"SetShear", View3DAttributes_SetShear, METH_VARARGS},
     {"GetShear", View3DAttributes_GetShear, METH_VARARGS},
+    {"SetTilePan", View3DAttributes_SetTilePan, METH_VARARGS},
+    {"GetTilePan", View3DAttributes_GetTilePan, METH_VARARGS},
+    {"SetTileZoom", View3DAttributes_SetTileZoom, METH_VARARGS},
+    {"GetTileZoom", View3DAttributes_GetTileZoom, METH_VARARGS},
     {"SetWindowValid", View3DAttributes_SetWindowValid, METH_VARARGS},
     {"GetWindowValid", View3DAttributes_GetWindowValid, METH_VARARGS},
     {"RotateAxis", View3DAttributes_RotateAxis, METH_VARARGS},
@@ -1665,6 +1834,10 @@ PyView3DAttributes_getattro(PyObject *self, PyObject *attr_name)
         return View3DAttributes_GetAxis3DScales(self, NULL);
     if(strcmp(name, "shear") == 0)
         return View3DAttributes_GetShear(self, NULL);
+    if(strcmp(name, "tilePan") == 0)
+        return View3DAttributes_GetTilePan(self, NULL);
+    if(strcmp(name, "tileZoom") == 0)
+        return View3DAttributes_GetTileZoom(self, NULL);
     if(strcmp(name, "windowValid") == 0)
         return View3DAttributes_GetWindowValid(self, NULL);
 
@@ -1714,6 +1887,10 @@ PyView3DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
         obj = View3DAttributes_SetAxis3DScales(self, args);
     else if(strcmp(name, "shear") == 0)
         obj = View3DAttributes_SetShear(self, args);
+    else if(strcmp(name, "tilePan") == 0)
+        obj = View3DAttributes_SetTilePan(self, args);
+    else if(strcmp(name, "tileZoom") == 0)
+        obj = View3DAttributes_SetTileZoom(self, args);
     else if(strcmp(name, "windowValid") == 0)
         obj = View3DAttributes_SetWindowValid(self, args);
 
@@ -1778,21 +1955,21 @@ typedef struct {
      unaryfunc nb_negative;
      unaryfunc nb_positive;
      unaryfunc nb_absolute;
-     inquiry nb_nonzero;       // Used by PyObject_IsTrue 
+     inquiry nb_nonzero;       // Used by PyObject_IsTrue
      unaryfunc nb_invert;
      binaryfunc nb_lshift;
      binaryfunc nb_rshift;
      binaryfunc nb_and;
      binaryfunc nb_xor;
      binaryfunc nb_or;
-     coercion nb_coerce;     // MISSING IN PYTHON 3   // Used by the coerce() function 
+     coercion nb_coerce;     // MISSING IN PYTHON 3   // Used by the coerce() function
      unaryfunc nb_int;
      unaryfunc nb_long;   // MUST BE NULL IN PYTHON 3
      unaryfunc nb_float;
      unaryfunc nb_oct;    // MISSING IN PYTHON 3
      unaryfunc nb_hex;    // MISSING IN PYTHON 3
 
-     // Added in release 2.0 
+     // Added in release 2.0
      binaryfunc nb_inplace_add;
      binaryfunc nb_inplace_subtract;
      binaryfunc nb_inplace_multiply;
@@ -1805,13 +1982,13 @@ typedef struct {
      binaryfunc nb_inplace_xor;
      binaryfunc nb_inplace_or;
 
-     // Added in release 2.2 
+     // Added in release 2.2
      binaryfunc nb_floor_divide;
      binaryfunc nb_true_divide;
      binaryfunc nb_inplace_floor_divide;
      binaryfunc nb_inplace_true_divide;
 
-     // Added in release 2.5 
+     // Added in release 2.5
      unaryfunc nb_index;
 } PyNumberMethods;
 

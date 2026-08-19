@@ -22,7 +22,7 @@ package llnl.visit;
 
 public class View3DAttributes extends AttributeSubject
 {
-    private static int View3DAttributes_numAdditionalAtts = 17;
+    private static int View3DAttributes_numAdditionalAtts = 19;
 
     public View3DAttributes()
     {
@@ -64,6 +64,10 @@ public class View3DAttributes extends AttributeSubject
         shear[0] = 0;
         shear[1] = 0;
         shear[2] = 1;
+        tilePan = new double[2];
+        tilePan[0] = 0;
+        tilePan[1] = 0;
+        tileZoom = 1;
         windowValid = false;
     }
 
@@ -107,6 +111,10 @@ public class View3DAttributes extends AttributeSubject
         shear[0] = 0;
         shear[1] = 0;
         shear[2] = 1;
+        tilePan = new double[2];
+        tilePan[0] = 0;
+        tilePan[1] = 0;
+        tileZoom = 1;
         windowValid = false;
     }
 
@@ -159,6 +167,11 @@ public class View3DAttributes extends AttributeSubject
         shear[1] = obj.shear[1];
         shear[2] = obj.shear[2];
 
+        tilePan = new double[2];
+        tilePan[0] = obj.tilePan[0];
+        tilePan[1] = obj.tilePan[1];
+
+        tileZoom = obj.tileZoom;
         windowValid = obj.windowValid;
 
         SelectAll();
@@ -213,6 +226,11 @@ public class View3DAttributes extends AttributeSubject
         for(i = 0; i < 3 && shear_equal; ++i)
             shear_equal = (shear[i] == obj.shear[i]);
 
+        // Compare the tilePan arrays.
+        boolean tilePan_equal = true;
+        for(i = 0; i < 2 && tilePan_equal; ++i)
+            tilePan_equal = (tilePan[i] == obj.tilePan[i]);
+
         // Create the return value
         return (viewNormal_equal &&
                 focus_equal &&
@@ -230,6 +248,8 @@ public class View3DAttributes extends AttributeSubject
                 (axis3DScaleFlag == obj.axis3DScaleFlag) &&
                 axis3DScales_equal &&
                 shear_equal &&
+                tilePan_equal &&
+                (tileZoom == obj.tileZoom) &&
                 (windowValid == obj.windowValid));
     }
 
@@ -398,10 +418,30 @@ public class View3DAttributes extends AttributeSubject
         Select(15);
     }
 
+    public void SetTilePan(double[] tilePan_)
+    {
+        tilePan[0] = tilePan_[0];
+        tilePan[1] = tilePan_[1];
+        Select(16);
+    }
+
+    public void SetTilePan(double e0, double e1)
+    {
+        tilePan[0] = e0;
+        tilePan[1] = e1;
+        Select(16);
+    }
+
+    public void SetTileZoom(double tileZoom_)
+    {
+        tileZoom = tileZoom_;
+        Select(17);
+    }
+
     public void SetWindowValid(boolean windowValid_)
     {
         windowValid = windowValid_;
-        Select(16);
+        Select(18);
     }
 
     // Property getting methods
@@ -421,6 +461,8 @@ public class View3DAttributes extends AttributeSubject
     public boolean  GetAxis3DScaleFlag() { return axis3DScaleFlag; }
     public double[] GetAxis3DScales() { return axis3DScales; }
     public double[] GetShear() { return shear; }
+    public double[] GetTilePan() { return tilePan; }
+    public double   GetTileZoom() { return tileZoom; }
     public boolean  GetWindowValid() { return windowValid; }
 
     // Write and read methods.
@@ -459,6 +501,10 @@ public class View3DAttributes extends AttributeSubject
         if(WriteSelect(15, buf))
             buf.WriteDoubleArray(shear);
         if(WriteSelect(16, buf))
+            buf.WriteDoubleArray(tilePan);
+        if(WriteSelect(17, buf))
+            buf.WriteDouble(tileZoom);
+        if(WriteSelect(18, buf))
             buf.WriteBool(windowValid);
     }
 
@@ -515,6 +561,12 @@ public class View3DAttributes extends AttributeSubject
             SetShear(buf.ReadDoubleArray());
             break;
         case 16:
+            SetTilePan(buf.ReadDoubleArray());
+            break;
+        case 17:
+            SetTileZoom(buf.ReadDouble());
+            break;
+        case 18:
             SetWindowValid(buf.ReadBool());
             break;
         }
@@ -539,6 +591,8 @@ public class View3DAttributes extends AttributeSubject
         str = str + boolToString("axis3DScaleFlag", axis3DScaleFlag, indent) + "\n";
         str = str + doubleArrayToString("axis3DScales", axis3DScales, indent) + "\n";
         str = str + doubleArrayToString("shear", shear, indent) + "\n";
+        str = str + doubleArrayToString("tilePan", tilePan, indent) + "\n";
+        str = str + doubleToString("tileZoom", tileZoom, indent) + "\n";
         str = str + boolToString("windowValid", windowValid, indent) + "\n";
         return str;
     }
@@ -561,6 +615,8 @@ public class View3DAttributes extends AttributeSubject
     private boolean  axis3DScaleFlag;
     private double[] axis3DScales;
     private double[] shear;
+    private double[] tilePan;
+    private double   tileZoom;
     private boolean  windowValid;
 }
 

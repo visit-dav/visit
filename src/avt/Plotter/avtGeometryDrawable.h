@@ -79,6 +79,10 @@ class     ColorAttribute;
 //    Kathleen Biagas, Thu Aug 28 15:28:06 PDT 2025
 //    Remove SetSurfaceRepresentation, no longer used.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added SetTileZoom to pass the tile zoom to the mapper to support
+//    tiled rendering.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtGeometryDrawable : public avtDrawable
@@ -102,6 +106,7 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
     virtual void                ShiftByVector(const double [3]);
     virtual void                ScaleByVector(const double [3]);
     virtual void                UpdateScaleFactor(void);
+    virtual void                SetTileZoom(const double);
 
     virtual void                TurnLightingOn(void);
     virtual void                TurnLightingOff(void);

@@ -106,6 +106,7 @@ DBOptionsAttributes_dir(PyObject *self, PyObject *args)
         if (i == 9) continue; // internal field
         if (i == 10) continue; // internal field
         if (i == 11) continue; // internal field
+        if (i == 12) continue; // internal field
         PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
     }
 
