@@ -170,7 +170,15 @@ def export_and_plot(e, v, a, count, usingWriteGroups):
         e.db_type = f
         e.db_type_fullname = f + "_1.0"
         e.filename = export_name
-        ExportDatabase(e)
+        if f is "WavefrontOBJ":
+            # this conditional can be removed when
+            # https://github.com/visit-dav/visit/issues/21108
+            # is addressed
+            opts = GetExportOptions("WavefrontOBJ")
+            opts["Output colors"] = 0 # turn colors off
+            ExportDatabase(e, opts)
+        else:
+            ExportDatabase(e)
         time.sleep(1)
 
     # now attempt to read the exported files
