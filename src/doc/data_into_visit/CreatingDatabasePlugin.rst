@@ -1926,7 +1926,7 @@ Numeric component designations may use either zero-based or one-based numbering.
 If component designators cannot be interpreted using one of VisIt's recognized component designator conventions (``0123``, ``ijk``, ``uvw``, ``xyz``), they may be assigned ordinal positions according to their order of appearence in the list of scalar variables defined by the database.
 For example, ``vel_one``, ``vel_two``, ``vel_three`` do not meet the default component designation conventions.
 However, a regular expression such as ``^(.+)_(one|two|three)$`` will still capture the *group* of three strings as a *candidate* vector.
-It will then use the order of appearence of the three strings in the list of scalar variables for the database to *order* the components when forming the vector expression.
+It will then use the order of appearance of the three strings in the list of scalar variables for the database to *order* the components when forming the vector expression.
 
 .. warning::
 
