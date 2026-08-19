@@ -1109,6 +1109,12 @@ void PickleInit()
 //    Chris Laganella, Mon Feb 14 14:37:24 EST 2022
 //    Support MultiLineString from DBOptionsAttributes
 //
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Now accepts color-valued DB options from Python as a 3- or 4-element
+//    integer sequence. It interprets them as (r, g, b) or (r, g, b, a), 
+//    defaults alpha to 255 if omitted, and stores the result into 
+//    DBOptionsAttributes.
+//
 // ****************************************************************************
 bool
 FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
@@ -1221,6 +1227,43 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
             else
             {
                 sprintf(msg, "Expected string to set '%s'", name.c_str());
+                VisItErrorFunc(msg);
+                return false;
+            }
+            break;
+          case DBOptionsAttributes::Color:
+            if (PyTuple_Check(value) || PyList_Check(value))
+            {
+                Py_ssize_t nvals = PySequence_Size(value);
+                if(nvals == 3 || nvals == 4)
+                {
+                    int rgba[4] = {0, 0, 0, 255};
+                    for(Py_ssize_t i = 0; i < nvals; ++i)
+                    {
+                        PyObject *item = PySequence_GetItem(value, i);
+                        if(item == NULL || !PyInt_Check(item))
+                        {
+                            Py_XDECREF(item);
+                            sprintf(msg, "Expected integer entries to set color '%s'", name.c_str());
+                            VisItErrorFunc(msg);
+                            return false;
+                        }
+                        rgba[i] = PyInt_AS_LONG(item);
+                        Py_DECREF(item);
+                    }
+                    opts.SetColor(name, rgba[0], rgba[1], rgba[2], rgba[3]);
+                }
+                else
+                {
+                    sprintf(msg, "Expected a 3- or 4-component sequence to set color '%s'",
+                            name.c_str());
+                    VisItErrorFunc(msg);
+                    return false;
+                }
+            }
+            else
+            {
+                sprintf(msg, "Expected a sequence to set color '%s'", name.c_str());
                 VisItErrorFunc(msg);
                 return false;
             }
@@ -1350,6 +1393,10 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
 //
 //    Kathleen Biagas, Tue Sept 13, 2022
 //    Support MultiLineString option type.
+// 
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Now exports color-valued DB options back to Python as a 4-tuple
+//    (r, g, b, a).
 //
 // ****************************************************************************
 PyObject *
@@ -1378,6 +1425,16 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             break;
           case DBOptionsAttributes::String:
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
+            break;
+          case DBOptionsAttributes::Color:
+            {
+                int red, green, blue, alpha;
+                opts.GetColor(name, red, green, blue, alpha);
+                PyObject *tuple = Py_BuildValue("(iiii)",
+                                                red, green, blue, alpha);
+                PyDict_SetItemString(dict, name, tuple);
+                Py_DECREF(tuple);
+            }
             break;
           case DBOptionsAttributes::MultiLineString:
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetMultiLineString(name).c_str()));

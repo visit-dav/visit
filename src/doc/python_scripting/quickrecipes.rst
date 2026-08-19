@@ -883,3 +883,15 @@ CSV export is an option in the Conduit Blueprint Database Exporter.
     :start-after: # exportToBlueprintCSV {
     :end-before: # exportToBlueprintCSV }
 
+
+Exporting to OBJ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+It is possible to export your mesh and a variable with its coloring to WavefrontOBJ, yielding a mesh file (``.obj``), metadata file (``.mtl``), and a texture file (``.png``).
+The resulting export can be loaded into tools like PowerPoint, which supports 3D viewing.
+To load into PowerPoint, simply drag and drop the exported ``.obj`` file, and make sure the associated ``.mtl`` and ``.png`` files are in the same directory as the ``.obj`` file.
+It is only possible to export a single variable at a time.
+
+.. literalinclude:: ../../test/tests/quickrecipes/export.py
+    :language: Python
+    :start-after: # exportToOBJ {
+    :end-before: # exportToOBJ }
