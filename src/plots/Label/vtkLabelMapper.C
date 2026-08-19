@@ -16,6 +16,7 @@
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkTransform.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <avtVector.h>
