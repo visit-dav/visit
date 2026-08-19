@@ -1899,7 +1899,7 @@ See :ref:`dev_adding_find_module` for more information.
 Automated Expression Generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In several database plugins, developers have opted to implment logic that will automatically define convenient expressions based on the presence of other mesh variables.
+In several database plugins, developers have opted to implement logic that will automatically define convenient expressions based on the presence of other mesh variables.
 In the `Exodus plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Exodus/avtExodusFileFormat.C#:~:text=AreSuccessiveStringsRelatedComponentNames>`__ for example, there is a function that attempts to recognize various patterns of scalar components of aggregate (vector or tensor) types and then automatically define the associated aggregate type.
 In the `Xdmf plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Xdmf/avtXdmfFileFormat.C#:~:text=AddArrayExpressions>`__ there is logic that defines expressions for each component of an array.
 There other examples in `CGNS <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CGNS/avtCGNSFileReader.C#:~:text=avtCGNSFileReader::AddVectorExpression>`__, 
