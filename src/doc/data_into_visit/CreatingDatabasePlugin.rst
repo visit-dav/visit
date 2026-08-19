@@ -1906,7 +1906,7 @@ There other examples in `CGNS <https://raw.githubusercontent.com/visit-dav/visit
 `AVSucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/AVSucd/avtAVSucdFileFormat.C#:~:text=md-%3EAddExpression%28%26vecExpr%29%3B>`__, and `CEAucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CEAucd/avtCEAucdFileFormat.C#:~:text=md-%3EAddExpression%28%26vec_expr%29%3B>`__.
 
 To avoid repeatedly duplicating such functionality in individual database plugins, a new feature was added.
-It is similar to the the ``<FilePatterns>`` feature.
+It is similar to the ``<FilePatterns>`` feature.
 It is a new XML tag, ``<ScalarComponentREs>`` that allows developers to specify regular expressions that should be used to automatically *detect* patterns of scalar variables representing the components of an aggregate vector or tensor variable.
 VisIt_ defines *default* scalar component regular expressions in `GeneralDatabasePluginInfo::GetDefaultScalarComponentREs <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/common/plugin/DatabasePluginInfo.C#:~:text=GeneralDatabasePluginInfo::GetDefaultScalarComponentREs>`__ which can be overridden in any database plugin using the ``<ScalarComponentREs>`` tag in the ``.xml`` file for the plugin.
 There is an example override in the `Pixie plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Pixie/Pixie.xml#:~:text=ScalarComponentREs>`__.
