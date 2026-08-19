@@ -59,6 +59,12 @@
 #
 #    Eric Brugger, Mon May 1 15:28:30 PST 2023
 #    Added HTG export test.
+# 
+#    Justin Privitera, Wed Aug 19 09:07:01 PDT 2026
+#    Now that color export was made default for the OBJ writer, I turned it
+#    off here to restore the previous behavior of this test. There is a bug
+#    currently with reading the exported colors from OBJ files written with
+#    our writer.
 #
 # ----------------------------------------------------------------------------
 import time
