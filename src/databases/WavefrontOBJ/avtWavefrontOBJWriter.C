@@ -52,6 +52,9 @@ using     std::vector;
 // 
 //    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
 //    Grab whether or not we want the color table inverted.
+// 
+//    Justin Privitera, Mon Aug 10 15:22:35 PDT 2026
+//    Handle min, max, below color, above color, and toggles for these options.
 //
 // ****************************************************************************
 
@@ -59,7 +62,28 @@ avtWavefrontOBJWriter::avtWavefrontOBJWriter(const DBOptionsAttributes *atts)
 {
     doColor = atts->GetBool("Output colors");
     colorTable = atts->GetString("Color table");
+    if (colorTable.empty())
+    {
+        colorTable = avtColorTables::Instance()->GetDefaultContinuousColorTable();
+    }
+    ncolors = atts->GetInt("Number of colors");
     invertCT = atts->GetBool("Invert color table");
+    useMin = atts->GetBool("Use minimum");
+    minValue = atts->GetDouble("Minimum");
+    useMax = atts->GetBool("Use maximum");
+    maxValue = atts->GetDouble("Maximum");
+    useBelowMinColor = atts->GetBool("Use color for values < min");
+    {
+        int red, green, blue, alpha;
+        atts->GetColor("Color for values < min", red, green, blue, alpha);
+        belowMinColor = ColorAttribute(red, green, blue, alpha);
+    }
+    useAboveMaxColor = atts->GetBool("Use color for values > max");
+    {
+        int red, green, blue, alpha;
+        atts->GetColor("Color for values > max", red, green, blue, alpha);
+        aboveMaxColor = ColorAttribute(red, green, blue, alpha);
+    }
 }
 
 // ****************************************************************************
@@ -117,6 +141,10 @@ avtWavefrontOBJWriter::WriteHeaders(const avtDatabaseMetaData *md,
 // 
 //    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
 //    Added ability to write out mtllib and texture.
+// 
+//    Justin Privitera, Mon Aug 10 15:22:35 PDT 2026
+//    Send min, max, below color, above color, and toggles to the dataset file
+//    writer and be more careful about null color tables and memory leaks.
 //
 // ****************************************************************************
 
@@ -131,7 +159,9 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
         filename = stem + ext;
     }
     else
+    {
         filename = stem + ".obj";
+    }
 
     if (doColor)
     {
@@ -142,14 +172,25 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
                                            nullptr, // label
                                            true, // YES writeMTL
                                            true, // YES MTLHasTex
-                                           textureFilename); // name of texture file
+                                           textureFilename, // name of texture file,
+                                           ncolors, // number of pixels in the texture
+                                           useMin, // whether or not we should use a min
+                                           minValue, // the min value
+                                           useMax, // whether or not we should use a max
+                                           maxValue, // the max value
+                                           useBelowMinColor, // the color to use below min
+                                           useAboveMaxColor); // the color to use above max
 
-        vtkImageData *image = GetColorTable();
-        vtkImageWriter *writer = vtkPNGWriter::New();
-        writer->SetFileName(textureFilename.c_str());
-        writer->SetInputData(image);
-        writer->Write();
-        writer->Delete();
+        vtkImageData *image = GetColorTable(ncolors);
+        if (image != nullptr)
+        {
+            vtkImageWriter *writer = vtkPNGWriter::New();
+            writer->SetFileName(textureFilename.c_str());
+            writer->SetInputData(image);
+            writer->Write();
+            writer->Delete();
+            image->Delete();
+        }
     }
     else
     {
@@ -234,101 +275,119 @@ avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 // 
 //    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
 //    We now handle the inverted color table case.
+// 
+//    Justin Privitera, Fri Aug 14 15:52:42 PDT 2026
+//    Add below min color and above max color; new comments and cleanup.
 //
 //****************************************************************************
 
 vtkImageData *
-avtWavefrontOBJWriter::GetColorTable()
+avtWavefrontOBJWriter::GetColorTable(const int ncolors)
 {
     const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
     const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
 
     if (! table)
     {
-        return nullptr;
+        colorTable = avtColorTables::Instance()->GetDefaultContinuousColorTable();
+        table = colorTables->GetColorControlPoints(colorTable);
+        if (! table)
+        {
+            return nullptr;
+        }
     }
-    
 
-    // We don't have color tables that have this many control points,
-    // so this should be a good choice for the number of colors.
-    const int ncolors = 256;
     unsigned char rgb[ncolors * 3];
     
     table->GetColors(rgb, ncolors);
 
     vtkImageData *imageData = vtkImageData::New();
 
-    // We need two extra colors, so (ncolors - 1 + 2) -> (ncolors + 1)
-    // hence x: [0, ncolors + 1], y: [0, 0], z: [0, 0]
-    // These pixels will sit on the ends and act as padding so the texture coords
-    // don't lead to strange behavior with max and min values wrapping around
-    imageData->SetExtent(0, ncolors + 1, 0, 0, 0, 0);
+    // let's say we have 4 colors and the upper color is U and the lower color is L.
+    // then our texture will look like this:
+    // 112344UULL
+    // the first and last colors are duplicated, as are the upper and lower colors
+    // we duplicate the first and last colors to prevent texture wrapping from
+    // harming our colors. If a value in a plot is at the minimum value, then it
+    // will map to a texture coordinate of 0.0, which will cause texture wrapping
+    // to color it a blend of the color at position 0.0 and 1.0. If a texture coordinate
+    // is on a pixel boundary, it gets the colors of both pixels on either side of
+    // the boundary. So we pad the ends so that max and min values will get the correct
+    // color. We also include duplicated upper and lower colors so that there is no
+    // blending when those colors are selected.
+
+    // we have the duplicated end pixels plus the 2 pixels for below lower bound and
+    // the 2 pixels for above upper bound
+    constexpr int num_extra_pixels = 6;
+    const int total_num_pixels = ncolors + num_extra_pixels;
+
+    // VTK extents are inclusive
+    // hence x: [0, total_num_pixels - 1], y: [0, 0], z: [0, 0]
+    imageData->SetExtent(0, total_num_pixels - 1, // x goes from 0 to total_num_pixels - 1
+                         0, 0, // no variation in y
+                         0, 0); // no variation in z
     imageData->SetSpacing(1., 1., 1.);
     imageData->SetOrigin(0., 0., 0.);
     imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-    unsigned char *pixels = (unsigned char *)imageData->GetScalarPointer(0, 0, 0);
+    unsigned char *pixels = static_cast<unsigned char *>(imageData->GetScalarPointer(0, 0, 0));
     unsigned char *ipixel = pixels;
+
+    auto set_pixel = [&ipixel](unsigned char r, unsigned char g, unsigned char b)
+    {
+        ipixel[0] = r;
+        ipixel[1] = g;
+        ipixel[2] = b;
+        ipixel += 3;
+    };
 
     if (invertCT)
     {
         // the first extra pixel will get the same color as the first real pixel
-        int last_index = ncolors * 3 - 3;
-        *ipixel = rgb[last_index];
-        ipixel ++;
-        *ipixel = rgb[last_index + 1];
-        ipixel ++;
-        *ipixel = rgb[last_index + 2];
-        ipixel ++;
+        const int last_index = ncolors * 3 - 3;
+        set_pixel(rgb[last_index], rgb[last_index + 1], rgb[last_index + 2]);
 
         // iterate through the colors in reverse
         for (int i = ncolors * 3 - 3; i >= 0; i -= 3)
         {
-            *ipixel = rgb[i];
-            ipixel ++;
-            *ipixel = rgb[i + 1];
-            ipixel ++;
-            *ipixel = rgb[i + 2];
-            ipixel ++;
+            set_pixel(rgb[i], rgb[i + 1], rgb[i + 2]);
         }
 
         // the second (and last) extra pixel will get the same color as the last real pixel
-        *ipixel = rgb[0];
-        ipixel ++;
-        *ipixel = rgb[1];
-        ipixel ++;
-        *ipixel = rgb[2];
-        ipixel ++;
+        set_pixel(rgb[0], rgb[1], rgb[2]);
     }
     else
     {
         // the first extra pixel will get the same color as the first real pixel
-        *ipixel = rgb[0];
-        ipixel ++;
-        *ipixel = rgb[1];
-        ipixel ++;
-        *ipixel = rgb[2];
-        ipixel ++;
+        set_pixel(rgb[0], rgb[1], rgb[2]);
 
         // iterate through the colors
         for (int i = 0; i < ncolors * 3; i += 3)
         {
-            *ipixel = rgb[i];
-            ipixel ++;
-            *ipixel = rgb[i + 1];
-            ipixel ++;
-            *ipixel = rgb[i + 2];
-            ipixel ++;
+            set_pixel(rgb[i], rgb[i + 1], rgb[i + 2]);
         }
 
         // the second (and last) extra pixel will get the same color as the last real pixel
-        int last_index = ncolors * 3 - 3;
-        *ipixel = rgb[last_index];
-        ipixel ++;
-        *ipixel = rgb[last_index + 1];
-        ipixel ++;
-        *ipixel = rgb[last_index + 2];
-        ipixel ++;
+        const int last_index = ncolors * 3 - 3;
+        set_pixel(rgb[last_index], rgb[last_index + 1], rgb[last_index + 2]);
     }
+
+    unsigned char below_color[3];
+    below_color[0] = static_cast<unsigned char>(belowMinColor.Red());
+    below_color[1] = static_cast<unsigned char>(belowMinColor.Green());
+    below_color[2] = static_cast<unsigned char>(belowMinColor.Blue());
+
+    unsigned char above_color[3];
+    above_color[0] = static_cast<unsigned char>(aboveMaxColor.Red());
+    above_color[1] = static_cast<unsigned char>(aboveMaxColor.Green());
+    above_color[2] = static_cast<unsigned char>(aboveMaxColor.Blue());
+
+    // below min color
+    set_pixel(below_color[0], below_color[1], below_color[2]);
+    set_pixel(below_color[0], below_color[1], below_color[2]);
+
+    // above max color
+    set_pixel(above_color[0], above_color[1], above_color[2]);
+    set_pixel(above_color[0], above_color[1], above_color[2]);
 
     return imageData;
 }

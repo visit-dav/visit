@@ -71,6 +71,9 @@ typedef enum
 //    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
 //    Made WriteOBJFile static and public and added some new arguments with
 //    default parameters.
+// 
+//    Justin Privitera, Fri Aug 14 15:52:42 PDT 2026
+//    WriteOBJFile takes additional parameters to control coloring settings.
 //
 // ****************************************************************************
 
@@ -90,9 +93,16 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
     static void        WriteOBJFile(vtkDataSet *, 
                                     const char *, 
                                     const char *, 
-                                    bool writeMTL = false,
-                                    bool MTLHasTex = false,
-                                    std::string texFilename = "");
+                                    const bool writeMTL = false,
+                                    const bool MTLHasTex = false,
+                                    const std::string texFilename = "",
+                                    const int ncolors = 256,
+                                    const bool useMin = false,
+                                    const double minValue = 0.,
+                                    const bool useMax = false,
+                                    const double maxValue = 1.,
+                                    const bool useBelowMinColor = false,
+                                    const bool useAboveMaxColor = false);
 
   protected:
     static const char *extensions[];
@@ -130,5 +140,4 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
 
 
 #endif
-
 

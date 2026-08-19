@@ -11,6 +11,7 @@
 
 #include <avtDatabaseWriter.h>
 
+#include <ColorAttribute.h>
 #include <string>
 
 class DBOptionsAttributes;
@@ -35,6 +36,9 @@ class vtkImageData;
 // 
 //    Justin Privitera, Tue Nov 28 17:31:40 PST 2023
 //    Added invert color table option.
+// 
+//    Justin Privitera, Fri Aug 14 15:52:42 PDT 2026
+//    Added more color controls.
 //
 // ****************************************************************************
 
@@ -60,11 +64,20 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
     virtual CombineMode   GetCombineMode(const std::string &plotName) const;
 
   private:
-    vtkImageData   *GetColorTable();
+    vtkImageData   *GetColorTable(const int ncolors);
     
     bool                       doColor;
     std::string                colorTable;
     bool                       invertCT;
+    int                        ncolors;
+    bool                       useMin;
+    double                     minValue;
+    bool                       useMax;
+    double                     maxValue;
+    bool                       useBelowMinColor;
+    ColorAttribute             belowMinColor;
+    bool                       useAboveMaxColor;
+    ColorAttribute             aboveMaxColor;
 };
 
 

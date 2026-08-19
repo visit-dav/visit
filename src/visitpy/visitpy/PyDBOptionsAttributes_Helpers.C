@@ -24,6 +24,12 @@
 //    Kathleen Biagas, Tue Sep 13, 2022
 //    Support MultiLineString option type.
 //
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Now handles the new DBOptionsAttributes::Color option type. For color
+//    options, instead of ignoring them or failing, it reads the RGBA
+//    components from DBOptionsAttributes and inserts a Python 4-tuple 
+//    (r, g, b, a) into the returned dictionary.
+//
 // ****************************************************************************
 
 PyObject *
@@ -53,6 +59,16 @@ PyDBOptionsAttributes_CreateDictionaryFromDBOptions(const DBOptionsAttributes &o
             break;
           case DBOptionsAttributes::String:
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
+            break;
+          case DBOptionsAttributes::Color:
+            {
+                int red, green, blue, alpha;
+                opts.GetColor(name, red, green, blue, alpha);
+                PyObject *tuple = Py_BuildValue("(iiii)",
+                                                red, green, blue, alpha);
+                PyDict_SetItemString(dict, name, tuple);
+                Py_DECREF(tuple);
+            }
             break;
           case DBOptionsAttributes::MultiLineString:
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetMultiLineString(name).c_str()));
@@ -108,4 +124,3 @@ PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(const DBOptionsAttribu
     Py_DECREF(py_opts_repr);
     return res;
 }
-

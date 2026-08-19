@@ -12,20 +12,20 @@
 static const char *OptionType_strings[] = {
 "Bool", "Int", "Float",
 "Double", "String", "Enum",
-"MultiLineString"};
+"MultiLineString", "Color"};
 
 std::string
 DBOptionsAttributes::OptionType_ToString(DBOptionsAttributes::OptionType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 7) index = 0;
+    if(index < 0 || index >= 8) index = 0;
     return OptionType_strings[index];
 }
 
 std::string
 DBOptionsAttributes::OptionType_ToString(int t)
 {
-    int index = (t < 0 || t >= 7) ? 0 : t;
+    int index = (t < 0 || t >= 8) ? 0 : t;
     return OptionType_strings[index];
 }
 
@@ -33,7 +33,7 @@ bool
 DBOptionsAttributes::OptionType_FromString(const std::string &s, DBOptionsAttributes::OptionType &val)
 {
     val = DBOptionsAttributes::Bool;
-    for(int i = 0; i < 7; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         if(s == OptionType_strings[i])
         {
@@ -90,6 +90,7 @@ void DBOptionsAttributes::Copy(const DBOptionsAttributes &obj)
     optInts = obj.optInts;
     optStrings = obj.optStrings;
     optEnums = obj.optEnums;
+    optColors = obj.optColors;
     optMultiLineStrings = obj.optMultiLineStrings;
     enumStrings = obj.enumStrings;
     enumStringsSizes = obj.enumStringsSizes;
@@ -260,6 +261,7 @@ DBOptionsAttributes::operator == (const DBOptionsAttributes &obj) const
             (optInts == obj.optInts) &&
             (optStrings == obj.optStrings) &&
             (optEnums == obj.optEnums) &&
+            (optColors == obj.optColors) &&
             (optMultiLineStrings == obj.optMultiLineStrings) &&
             (enumStrings == obj.enumStrings) &&
             (enumStringsSizes == obj.enumStringsSizes) &&
@@ -416,6 +418,7 @@ DBOptionsAttributes::SelectAll()
     Select(ID_optInts,             (void *)&optInts);
     Select(ID_optStrings,          (void *)&optStrings);
     Select(ID_optEnums,            (void *)&optEnums);
+    Select(ID_optColors,           (void *)&optColors);
     Select(ID_optMultiLineStrings, (void *)&optMultiLineStrings);
     Select(ID_enumStrings,         (void *)&enumStrings);
     Select(ID_enumStringsSizes,    (void *)&enumStringsSizes);
@@ -501,6 +504,12 @@ DBOptionsAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("optEnums", optEnums));
     }
 
+    if(completeSave || !FieldsEqual(ID_optColors, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("optColors", optColors));
+    }
+
     if(completeSave || !FieldsEqual(ID_optMultiLineStrings, &defaultObject))
     {
         addToParent = true;
@@ -583,6 +592,8 @@ DBOptionsAttributes::SetFromNode(DataNode *parentNode)
         SetOptStrings(node->AsStringVector());
     if((node = searchNode->GetNode("optEnums")) != 0)
         SetOptEnums(node->AsIntVector());
+    if((node = searchNode->GetNode("optColors")) != 0)
+        SetOptColors(node->AsIntVector());
     if((node = searchNode->GetNode("optMultiLineStrings")) != 0)
         SetOptMultiLineStrings(node->AsStringVector());
     if((node = searchNode->GetNode("enumStrings")) != 0)
@@ -653,6 +664,13 @@ DBOptionsAttributes::SetOptEnums(const intVector &optEnums_)
 {
     optEnums = optEnums_;
     Select(ID_optEnums, (void *)&optEnums);
+}
+
+void
+DBOptionsAttributes::SetOptColors(const intVector &optColors_)
+{
+    optColors = optColors_;
+    Select(ID_optColors, (void *)&optColors);
 }
 
 void
@@ -790,6 +808,18 @@ DBOptionsAttributes::GetOptEnums()
     return optEnums;
 }
 
+const intVector &
+DBOptionsAttributes::GetOptColors() const
+{
+    return optColors;
+}
+
+intVector &
+DBOptionsAttributes::GetOptColors()
+{
+    return optColors;
+}
+
 const stringVector &
 DBOptionsAttributes::GetOptMultiLineStrings() const
 {
@@ -903,6 +933,12 @@ DBOptionsAttributes::SelectOptEnums()
 }
 
 void
+DBOptionsAttributes::SelectOptColors()
+{
+    Select(ID_optColors, (void *)&optColors);
+}
+
+void
 DBOptionsAttributes::SelectOptMultiLineStrings()
 {
     Select(ID_optMultiLineStrings, (void *)&optMultiLineStrings);
@@ -964,6 +1000,7 @@ DBOptionsAttributes::GetFieldName(int index) const
     case ID_optInts:             return "optInts";
     case ID_optStrings:          return "optStrings";
     case ID_optEnums:            return "optEnums";
+    case ID_optColors:           return "optColors";
     case ID_optMultiLineStrings: return "optMultiLineStrings";
     case ID_enumStrings:         return "enumStrings";
     case ID_enumStringsSizes:    return "enumStringsSizes";
@@ -1001,6 +1038,7 @@ DBOptionsAttributes::GetFieldType(int index) const
     case ID_optInts:             return FieldType_intVector;
     case ID_optStrings:          return FieldType_stringVector;
     case ID_optEnums:            return FieldType_intVector;
+    case ID_optColors:           return FieldType_intVector;
     case ID_optMultiLineStrings: return FieldType_stringVector;
     case ID_enumStrings:         return FieldType_stringVector;
     case ID_enumStringsSizes:    return FieldType_intVector;
@@ -1038,6 +1076,7 @@ DBOptionsAttributes::GetFieldTypeName(int index) const
     case ID_optInts:             return "intVector";
     case ID_optStrings:          return "stringVector";
     case ID_optEnums:            return "intVector";
+    case ID_optColors:           return "intVector";
     case ID_optMultiLineStrings: return "stringVector";
     case ID_enumStrings:         return "stringVector";
     case ID_enumStringsSizes:    return "intVector";
@@ -1107,6 +1146,11 @@ DBOptionsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_optEnums:
         {  // new scope
         retval = (optEnums == obj.optEnums);
+        }
+        break;
+    case ID_optColors:
+        {  // new scope
+        retval = (optColors == obj.optColors);
         }
         break;
     case ID_optMultiLineStrings:
@@ -1516,6 +1560,83 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
 }
 
 // ****************************************************************************
+//  Method: DBOptionsAttributes::SetColor
+//
+//  Purpose:
+//      Sets a color value.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Mon Jul 20 16:40:22 PDT 2026
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetColor(const std::string &name,
+                              int red,
+                              int green,
+                              int blue,
+                              int alpha)
+{
+    // optColors stores all colors flattened into one intVector, with 4 integers per option
+    // [r, g, b, a, r, g, b, a, ...]
+
+    const int bIndex = FindIndex(name);
+    int rgba[4] = {red, green, blue, alpha};
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(Color);
+        for (int i = 0; i < 4; i ++)
+        {
+            optColors.push_back(rgba[i]);
+        }
+    }
+    else
+    {
+        // bIndex is the index of the color option within the color-option storage, 
+        // not within all options. So to find where that option’s RGBA data begins,
+        // we multiply by 4.
+        const int start = bIndex * 4;
+        for (int i = 0; i < 4; i ++)
+        {
+            optColors[start + i] = rgba[i];
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetColor
+//
+//  Purpose:
+//      Gets a color value.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Mon Jul 20 16:40:22 PDT 2026
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::GetColor(const std::string &name,
+                              int &red,
+                              int &green,
+                              int &blue,
+                              int &alpha) const
+{
+    const int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+
+    // bIndex is the index of the color option within the color-option storage, 
+    // not within all options. So to find where that option’s RGBA data begins,
+    // we multiply by 4.
+    const int start = bIndex * 4;
+    red = optColors[start];
+    green = optColors[start + 1];
+    blue = optColors[start + 2];
+    alpha = optColors[start + 3];
+}
+
+// ****************************************************************************
 //  Method: DBOptionsAttributes::GetMultiLineString
 //
 //  Purpose: Gets a multi line string.
@@ -1658,6 +1779,10 @@ DBOptionsAttributes::IsObsolete(const std::string &name) const
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Aug 14 18:04:39 PDT 2015
+// 
+//  Modifications:
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Handle the "color" case.
 //
 // ****************************************************************************
 
@@ -1695,6 +1820,13 @@ DBOptionsAttributes::Merge(const DBOptionsAttributes &obj)
                 break;
             case MultiLineString:
                 SetMultiLineString(name, obj.GetMultiLineString(name));
+                break;
+            case Color:
+                {
+                    int red, green, blue, alpha;
+                    obj.GetColor(name, red, green, blue, alpha);
+                    SetColor(name, red, green, blue, alpha);
+                }
                 break;
             }
         }
