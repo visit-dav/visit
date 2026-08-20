@@ -8594,9 +8594,9 @@ return type : CLI_return_t
 
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/noise.silo")
-  AddPlot("Contour", "hgslice")
+  AddPlot("Pseudocolor", "hgslice")
   DrawPlots()
-  SetDefaultDiscreteColorTable("levels")
+  SetDefaultContinuousColorTable("Blues")
 
 
 SetDefaultDiscreteColorTable

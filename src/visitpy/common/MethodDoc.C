@@ -8283,9 +8283,9 @@ const char *visit_SetDefaultContinuousColorTable_doc =
 "\n"
 "#% visit -cli\n"
 "OpenDatabase(\"/usr/gapps/visit/data/noise.silo\")\n"
-"AddPlot(\"Contour\", \"hgslice\")\n"
+"AddPlot(\"Pseudocolor\", \"hgslice\")\n"
 "DrawPlots()\n"
-"SetDefaultDiscreteColorTable(\"levels\")\n"
+"SetDefaultContinuousColorTable(\"Blues\")\n"
 ;
 const char *visit_SetDefaultDiscreteColorTable_doc = 
 "SetDefaultDiscreteColorTable\n"
