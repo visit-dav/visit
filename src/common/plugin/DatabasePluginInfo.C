@@ -27,9 +27,7 @@ CommonDatabasePluginInfo::CommonDatabasePluginInfo()
 }
 
 // ****************************************************************************
-//  Method: GeneralDatabasePluginInfo::GetDefaultScalarComponentREs
-//
-//  Purpose: Return default REs for identifying scalar components of aggregates.
+//  Return default REs for identifying scalar components of aggregate types.
 //  Capture group 1 is the aggregate base name; group 2 is component id. Will
 //  recognize candidate scalar component name strings with 2 or more characters
 //  in the basename and of the forms...
@@ -63,7 +61,7 @@ CommonDatabasePluginInfo::CommonDatabasePluginInfo()
 //  of a database's preferences and user-settable in the GUI/CLI as opposed
 //  to set at compile time (or xml2info time).
 //  
-//  ChatGPT via Mark C. Miller, Fri Aug 14 17:50:57 PDT 2026
+//  ChatGPT+Mark C. Miller, Fri Aug 14 17:50:57 PDT 2026
 // ****************************************************************************
 
 std::vector<std::string>
@@ -75,9 +73,19 @@ GeneralDatabasePluginInfo::GetDefaultScalarComponentREs() const
     // With an explicit separator the component identifier may consist of
     // arbitrary characters. GroupAndOrderStringsByRE requires all identifiers
     // within a group to have the same length and orders them lexicographically.
+    //    ^ : means anchor at beginning of string
+    //    (.+) : means any sequence of 1 or more chars
+    //        . : means any char
+    //        + : means one or more of preceding
+    //        (...) : means capture whatever matches as subexpr (capture group)
+    //    [._] : means either . or _ (inside [] . means actual .)
+    //    ([^._]+) : means any sequence of one or more chars not . or _
+    //        [^._] : means any char not a . or _
+    //        + : means one or more of preceding
+    //        (...) : means capture whatever matches as subexpr (capture group)
+    //    $ : means anchor at end of string
     //
-    result.push_back("^(.+)_([^_]+)$");
-    result.push_back("^(.+)\\.([^.]+)$");
+    result.push_back("^(.+)[._]([^._]+)$");
 
     //
     // Without a separator, determining where the basename ends and the

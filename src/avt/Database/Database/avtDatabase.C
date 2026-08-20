@@ -70,13 +70,13 @@ ConvertSlashes(char *str)
 }
 
 // ****************************************************************************
-// Purpose: Helper function for adding expressions based on scalar components.
+// Helper function for adding expressions based on scalar components.
 // Defines vector expressions from candidate scalar component groupings.
 // The candidate groupings are constructed in the caller according to 
 // scalar component name RE matching and whether all candidates share the same
 // mesh, centering.
 //
-// ChatGPT via Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
+// ChatGPT+Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
 // ****************************************************************************
 
 static bool
@@ -130,13 +130,13 @@ AddScalarComponentVectorExpression(
 }
 
 // ****************************************************************************
-// Purpose: Helper function for adding expressions based on scalar components
+// Helper function for adding expressions based on scalar components.
 // Defines tensor expressions from candidate scalar component groupings.
 // The candidate groupings are constructed in the caller according to 
 // scalar component name RE matching and whether all candidates share the same
 // mesh, centering.
 //
-// ChatGPT via Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
+// ChatGPT+Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
 // ****************************************************************************
 
 static bool
@@ -2056,14 +2056,12 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
 }
 
 // ****************************************************************************
-//  Method: avtDatabase::AddScalarComponentExpressions
-//
-//  Purpose: Infer vector expressions from scalar components matching
+//  Infer vector/tensor expressions from scalar components matching
 //  plugin-provided regular expressions. Candidate scalars are bucketed by mesh
 //  and centering before grouping. In addition no new expression will be
 //  defined if it collides with any existing variable or expression.
 //
-//  ChatGTP via by Mark C. Miller, Fri Aug 14 17:49:13 PDT 2026
+//  ChatGPT+Mark C. Miller, Fri Aug 14 17:49:13 PDT 2026
 // ****************************************************************************
 void
 avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)

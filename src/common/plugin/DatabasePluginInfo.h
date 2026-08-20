@@ -87,7 +87,7 @@ class DatabasePluginManager;
 //    Add a method to return license.
 //    Work partially supported by DOE Grant SC0007548.
 //
-//    ChatGPT as prompted by Mark C. Miller, Fri Aug 14 17:51:42 PDT 2026
+//    ChatGPT+Mark C. Miller, Fri Aug 14 17:51:42 PDT 2026
 //    Add support for scalar component REs.
 // ****************************************************************************
 
