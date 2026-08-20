@@ -1906,8 +1906,7 @@ There other examples in `CGNS <https://raw.githubusercontent.com/visit-dav/visit
 `AVSucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/AVSucd/avtAVSucdFileFormat.C#:~:text=md-%3EAddExpression%28%26vecExpr%29%3B>`__, and `CEAucd <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/CEAucd/avtCEAucdFileFormat.C#:~:text=md-%3EAddExpression%28%26vec_expr%29%3B>`__.
 
 To avoid repeatedly duplicating such functionality in individual database plugins, a new feature was added similar to the ``<FilePatterns>`` feature.
-
-It is a new XML tag, ``<ScalarComponentREs>``, that allows developers to specify regular expressions used to automatically *detect* patterns of scalar variables representing the components of an aggregate vector or tensor variable.
+It is a new XML tag, ``<ScalarComponentREs>``, that allows developers to specify regular expressions used to automatically *detect* patterns of scalar variables representing the components of aggregate vector or tensor variables.
 
 VisIt_ defines *default* scalar component regular expressions in `GeneralDatabasePluginInfo::GetDefaultScalarComponentREs <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/common/plugin/DatabasePluginInfo.C#:~:text=GeneralDatabasePluginInfo::GetDefaultScalarComponentREs>`__ which can be overridden in any database plugin using the ``<ScalarComponentREs>`` tag in the ``.xml`` file for the plugin.
 There is an example override in the `Pixie plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Pixie/Pixie.xml#:~:text=ScalarComponentREs>`__.
@@ -1919,17 +1918,20 @@ The first capture group identifies the common base name of a candidate aggregate
 Scalar variables having the same base name, mesh and centering are grouped together, and an aggregate expression is created only when the resulting components form a complete vector, symmetric tensor, or tensor appropriate to the spatial dimension of the mesh.
 
 The default regular expressions distinguish between component naming conventions that use an explicit separator between the base name and component designation and those that do not.
-When an explicit separator such as ``_`` or ``.`` is present, the separator provides an unambiguous boundary between the base name and component designation, allowing the component designation itself to use arbitrary characters subject to the ordering and consistency requirements described above.
+When an explicit separator such as ``_`` or ``.`` is present, the separator provides an unambiguous boundary between the base name and component designation, allowing the component designation itself to use arbitrary strings subject to the ordering and consistency requirements described next.
 
 For example, a regular expression operating on ``velocity_comp1``, and ``velocity_comp2`` all with the same centering on a 2D mesh, VisIt_ will create the vector ``velocity`` with definition ``{velocity_comp1, velocity_comp2}``.
 Likewise, if the three scalar variables ``steel_red``, ``steel_grn`` and ``steel_blu`` are encountered all with the same centering on a 3D mesh, VisIt_ will create the vector named ``steel`` with definition ``{steel_blu, steel_grn, steel_red}``.
 Why?
-All have a common base name, ``steel``.
-All have a common-length (3 in this example) component designation.
-When the component designation is sorted lexicographically, the result is ``blu``, ``grn``, ``red``.
+All have a common base name, ``steel`` followed by a separator character, ``_``.
+All have a common-length (3 characters in this example) component designation string.
+When the component designation is sorted lexicographically, the result is ``blu``, ``grn``, ``red`` which the reader should note is the *oppposite* of the standard ``rgb`` ordering.
+This is because the ordering VisIt_ uses is lexicographical.
+So, as long as the scalar component naming convention is such that a lexicographical ordering of component strings results in the intended aggregate vector or tensor.
 
-When there is no separator, determining where the base name ends and the component designation begins is inherently ambiguous.
-VisIt_'s default regular expressions therefore restrict such component designations to commonly used numeric and Cartesian-style *single* characters such as ``0123``, ``ijk``, ``uvw``, and ``xyz``, including uppercase forms.
+When there is no separator character in the scalar component naming convention, determining where the base name ends and the component designation begins is inherently ambiguous.
+In this case, VisIt_'s default regular expressions restrict such component designations to commonly used numeric and Cartesian-style *single* characters such as ``0123``, ``ijk``, ``uvw``, and ``xyz``, including uppercase forms.
+In other words, names like ``Vx``, ``Vy``, ``Vz`` or ``Qii``, ``Qij``, ``Qik``
 
 A single-character component designation (e.g. ``i``) identifies a candidate vector component, while a two-character designation (e.g. ``ij``) identifies a candidate tensor component.
 All component designations in a candidate group must have the same length.
@@ -1938,8 +1940,8 @@ Component designations are ordered lexicographically when constructing an aggreg
 Consequently, the component designation convention used by a regular expression must be such that lexicographic ordering produces the intended component order.
 For example, ``0,1,2``, ``1,2,3``, ``i,j,k``, ``u,v,w``, and ``x,y,z`` all naturally satisfy this requirement.
 
-In addition, the characters identifying successive component directions must also be *consecutive* in lexicographic order.
-Thus, ``x,y`` is a valid pair of component directions for a two-dimensional vector while ``x,z`` is not.
+In addition, for *single* character component designations, the characters be *consecutive* in lexicographic order.
+Thus, ``Vx``, ``Vy`` is a valid pair of components for a vector on a 2D mesh while ``Vx``, ``Vz`` is not.
 The same rule applies to the individual characters of tensor component designations.
 For example, ``xx,xy,yx,yy`` describes a valid set of two-dimensional tensor component directions, whereas ``xx,xz,zx,zz`` does not.
 
