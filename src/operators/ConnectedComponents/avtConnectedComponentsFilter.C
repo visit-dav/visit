@@ -108,6 +108,10 @@ avtConnectedComponentsFilter::Equivalent(const AttributeGroup *a)
 //
 //  Programmer: Hank Childs
 //  Creation:   September 24, 2010
+// 
+//  Modifications:
+//    Justin Privitera, Wed Aug 19 17:34:41 PDT 2026
+//    Added a more descriptive error message.
 //
 // ****************************************************************************
 

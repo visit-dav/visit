@@ -115,6 +115,9 @@ avtConnComponentsExpression::~avtConnComponentsExpression()
 //
 //    Cyrus Harrison, Wed Mar 29 14:03:59 PDT 2017
 //    Fix typo and string parsing logic.
+// 
+//    Justin Privitera, Wed Aug 19 17:34:41 PDT 2026
+//    Fixed typo allowing "2" as an option for enable ghost neighbors.
 //
 // ****************************************************************************
 void
@@ -162,7 +165,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
             int enable =
                        dynamic_cast<IntegerConstExpr*>(second_tree)->GetValue();
 
-            if(enable < 0 || enable > 2)
+            if(enable < 0 || enable > 1)
             {
                 EXCEPTION2(ExpressionException, outputVariableName,
                 "avtConnComponents: Invalid optional second argument.\n"

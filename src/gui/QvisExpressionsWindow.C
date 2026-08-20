@@ -1973,6 +1973,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
         res += QString("(crack_number, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))");
         doParens = false;
     }
+    else if (func_name == "conn_components")
+    {
+        res += QString("(<mesh> [, \"true\", \"false\"])");
+        doParens = false;
+    }
 
     if (doParens)
     {
