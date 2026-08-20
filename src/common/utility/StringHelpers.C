@@ -416,40 +416,37 @@ StringHelpers::GroupStringsFixedAlpha(
 }
 
 // ****************************************************************************
-//  Function: GroupAndOrderStringsByRE
+// Groups strings according to a subexpression of a regular expression.
+// A second subexpression identifies each member within its group.
 //
-//  Purpose:
-//      Groups strings according to a subexpression of a regular expression.
-//      A second subexpression identifies each member within its group.
+// Strings which do not match the regular expression are ignored.
 //
-//      Strings which do not match the regular expression are ignored.
+// All member identifiers in a returned group must have the same length.
+// Members of each returned group are ordered lexicographically according
+// to their member identifiers. Groups containing duplicate member
+// identifiers or member identifiers of differing lengths are discarded.
 //
-//      All member identifiers in a returned group must have the same length.
-//      Members of each returned group are ordered lexicographically according
-//      to their member identifiers. Groups containing duplicate member
-//      identifiers or member identifiers of differing lengths are discarded.
+// For example, given
 //
-//      For example, given
+//     B^3 B^1 B^2 E^2 E^1 rho
 //
-//          B^3 B^1 B^2 E^2 E^1 rho
+// and the regular expression
 //
-//      and the regular expression
+//     ^(.+)\^([0-9]+)$
 //
-//          ^(.+)\^([0-9]+)$
+// with groupNameSubexp=1 and memberIdSubexp=2, this produces groups named
+// "B" and "E". The B group contains B^1, B^2, B^3 in that order.
 //
-//      with groupNameSubexp=1 and memberIdSubexp=2, this produces groups named
-//      "B" and "E". The B group contains B^1, B^2, B^3 in that order.
+// Group names themselves are returned in lexical order.
 //
-//      Group names themselves are returned in lexical order.
-//
-//      When member identifiers are a single character, we then also require
-//      them to to be successive numerial values (e.g. abc, xyz, QRS, etc.)
+// When member identifiers are a single character, we then also require
+// them to to be successive numerical values (e.g. abc, xyz, QRS, etc.)
 //
 //  Returns:
 //      true on success. false if the regular expression is invalid or either
 //      requested subexpression does not exist.
 //
-//  Programmer: ChatGPT via Mark C. Miller August 13, 2026
+//  Programmer: ChatGPT+Mark C. Miller August 13, 2026
 //
 // ****************************************************************************
 
