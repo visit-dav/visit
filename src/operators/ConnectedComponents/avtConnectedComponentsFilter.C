@@ -138,7 +138,11 @@ avtConnectedComponentsFilter::InferVariableNameFromContract(avtContract_p c)
 
     if (!foundIt)
     {
-        EXCEPTION1(VisItException, "Unable to determine variable name from contract");
+        EXCEPTION1(VisItException, "The ConnectedComponents operator cannot be applied "
+                                   "directly to a plot. Select or plot the operator-created "
+                                   "variable operators/ConnectedComponents/<mesh>, or use the "
+                                   "conn_components(<mesh>) expression with the DeferExpression "
+                                   "Operator when operating on pipeline results.");
     }
 }
 

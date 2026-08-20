@@ -31,17 +31,17 @@ interesting pattern to explore. In practice, volume fractions or density
 values are also useful fields to use.
 
 
-We compare using two operators, Threshold and Isovolume, to cut the mesh according to a scalar field. These methods produce different mesh topologies which influence the Connected Components Labeling result.
+We compare using two :ref:`operators <Operators>`, :ref:`Threshold <Threshold operator>` and :ref:`Isovolume <Threshold operator>`, to cut the mesh according to a scalar field. These methods produce different mesh topologies which influence the Connected Components Labeling result.
 
 
 Threshold
 ~~~~~~~~~~
 
-First, we create a new mesh using the Threshold operator.
+First, we create a new mesh using the :ref:`Threshold <Threshold operator> operator.
 
 #. In the plot list, click *Add->Pseudocolor->pressure*.
 
-#. In the plot list, click *Operators->Selection->Isovolume*
+#. In the plot list, click *Operators->Selection->Threshold*
 
 #. Click on the triangle to the left of your Pseudocolor plot and double click 
    Threshold to open up the Threshold attributes. 
@@ -51,7 +51,7 @@ First, we create a new mesh using the Threshold operator.
 
    .. figure:: images/ccl_thresh_atts.png
 
-      Setting the Isovolume attributes.
+      Setting the Threshold attributes.
 
 #. Click *Apply* and dismiss the Threshold attributes Window.
 
@@ -69,7 +69,7 @@ The Threshold operator simply excludes elements from the mesh based on if the th
 Isovolume
 ~~~~~~~~~~ 
 
-Next, we create a new mesh using the Isovolume operator.
+Next, we create a new mesh using the :ref:`Isovolume <Threshold operator>` operator.
 We created this in a new viewer window, so we can easily look at both results side-by-side.
 
 #. Create a new viewer window
@@ -92,7 +92,7 @@ We created this in a new viewer window, so we can easily look at both results si
 
       Setting the Isovolume attributes.
 
-#. Click *Apply* and dismiss the Threshold attributes Window.
+#. Click *Apply* and dismiss the Isovolume attributes Window.
 
 #. Optionally, open the Pseudocolor attributes Window and change the color table used. These plots use the ``Spectral`` color table.
 
