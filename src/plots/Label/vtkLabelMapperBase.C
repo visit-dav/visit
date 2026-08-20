@@ -61,7 +61,7 @@ LabelVerticalJustificationToVTK(LabelAttributes::LabelVerticalAlignment v)
 inline bool
 MatrixChanged(vtkMatrix4x4 *matrix, const double *lastMatrix)
 {
-    if(matrix == NULL)
+    if(matrix == NULL || lastMatrix == NULL)
         return true;
 
     for(int i = 0; i < 4; ++i)
@@ -80,7 +80,7 @@ MatrixChanged(vtkMatrix4x4 *matrix, const double *lastMatrix)
 inline void
 CopyMatrix(vtkMatrix4x4 *matrix, double *lastMatrix)
 {
-    if(matrix == NULL)
+    if(matrix == NULL || lastMatrix == NULL)
         return;
 
     for(int i = 0; i < 4; ++i)
