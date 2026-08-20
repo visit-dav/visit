@@ -37,7 +37,7 @@ We compare using two :ref:`operators <Operators>`, :ref:`Threshold <Threshold op
 Threshold
 ~~~~~~~~~~
 
-First, we create a new mesh using the :ref:`Threshold <Threshold operator> operator.
+First, we create a new mesh using the :ref:`Threshold <Threshold operator>` operator.
 
 #. In the plot list, click *Add->Pseudocolor->pressure*.
 
