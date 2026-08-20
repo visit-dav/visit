@@ -27,6 +27,9 @@
 #  Kathleen Biagas, Mon Oct 20, 2025 
 #  Change ospray check to 'ospray_FOUND' instead of 'OSPRAY_FOUND'.
 #
+#  Kathleen Biagas, Thur Aug 20, 2026
+#  Add call to generate_lib_setup_cmake.
+#
 #*****************************************************************************
 
 # Use the VTK_DIR hint from the config-site .cmake file
@@ -166,6 +169,7 @@ else(VISIT_VTK_SKIP_INSTALL)
                            INCBASE "vtk-${vtk_majmin}" 
                            ITEMS ${vtktargs}
                            SIMPLE_INCLUDE true)
+    generate_lib_setup_cmake(NAME "VTK")
     unset(vtktargs)
 endif()
 

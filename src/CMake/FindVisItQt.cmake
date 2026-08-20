@@ -57,6 +57,9 @@
 #   Use new visit_install_thirdparty_targets function to propery install
 #   qt targets without guessing configuration type.
 #
+#   Kathleen Biagas, Thur Aug 20, 2026
+#   Add call to generate_lib_setup_cmake.
+#
 #*****************************************************************************
 
 #[====[
@@ -136,12 +139,13 @@ if(NOT VISIT_QT_SKIP_INSTALL)
 
     # need a few extras in the Setup file.
 
-    set(fname ${VISIT_BINARY_DIR}/SetupQT.cmake)
+    get_lib_setup_cmake_input_file(fname "QT")
     file(APPEND ${fname} "\nadd_library(WrapAtomic::WrapAtomic INTERFACE IMPORTED)\n")
     file(APPEND ${fname} "\nadd_library(WrapOpenGL::WrapOpenGL INTERFACE IMPORTED)\n")
     file(APPEND ${fname} "\nfunction(qt6_disable_unicode_defines target)\n")
     file(APPEND ${fname} "    set_target_properties(\${target} PROPERTIES QT_NO_UNICODE_DEFINES TRUE)\n")
     file(APPEND ${fname} "endfunction()\n")
+    generate_lib_setup_cmake(NAME "QT")
 
     if(APPLE)
         # Add Qt archives (lib*.a)

@@ -49,9 +49,12 @@
 #    installation so that all the proper symlinks will be installed
 #    alongside VisIt.
 #
-#   Kathleen Biagas, Mon Aug 17, 2026
-#   Use new visit_install_thirdparty_targets function to propery install
-#   silo targets without guessing configuration type.
+#    Kathleen Biagas, Mon Aug 17, 2026
+#    Use new visit_install_thirdparty_targets function to propery install
+#    silo targets without guessing configuration type.
+#
+#    Kathleen Biagas, Thur Aug 20, 2026
+#    Add call to generate_lib_setup_cmake.
 #
 #****************************************************************************/
 
@@ -103,8 +106,9 @@ if(TARGET silo)
                            SIMPLE_INCLUDE true)
 
     # need a few extras in the Setup file.
-    set(fname ${VISIT_BINARY_DIR}/SetupSILO.cmake)
+    get_lib_setup_cmake_input_file(fname "SILO")
     file(APPEND ${fname} "\nset(SILO_LIB ${SILO_LIB})\n")
     file(APPEND ${fname} "\nset(PDB_LIB  ${SILO_LIB})\n")
+    generate_lib_setup_cmake(NAME "SILO")
 endif()
 

@@ -40,6 +40,9 @@
 #   Use new visit_install_thirdparty_targets function to propery install
 #   vtkm targets without guessing configuration type.
 #
+#   Kathleen Biagas, Thur Aug 20, 2026
+#   Add call to generate_lib_setup_cmake.
+#
 #****************************************************************************/
 
 if (VISIT_VTKM_DIR)
@@ -116,9 +119,11 @@ if (VISIT_VTKM_DIR)
                                NESTED_INCLUDES true)
         unset(target_list)
 
-        file(APPEND ${VISIT_BINARY_DIR}/SetupVTKM.cmake "\nadd_library(vtkm::loguru INTERFACE IMPORTED)\n")
-        file(APPEND ${VISIT_BINARY_DIR}/SetupVTKM.cmake "set_target_properties(vtkm::loguru PROPERTIES INTERFACE_LINK_LIBRARIES \"Threads::Threads\")\n")
-        file(APPEND ${VISIT_BINARY_DIR}/SetupVTKM.cmake "\nadd_library(vtkm::diy_developer_flags INTERFACE IMPORTED)\n")
+        get_lib_setup_cmake_input_file(fname "VTKM")
+        file(APPEND ${fname} "\nadd_library(vtkm::loguru INTERFACE IMPORTED)\n")
+        file(APPEND ${fname} "set_target_properties(vtkm::loguru PROPERTIES INTERFACE_LINK_LIBRARIES \"Threads::Threads\")\n")
+        file(APPEND ${fname} "\nadd_library(vtkm::diy_developer_flags INTERFACE IMPORTED)\n")
+        generate_lib_setup_cmake(NAME "VTKM")
     endif()
 endif()
 

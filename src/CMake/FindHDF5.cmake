@@ -25,6 +25,9 @@
 #   Use new visit_install_thirdparty_targets function to propery install
 #   hdf5 targets without guessing configuration type.
 #
+#   Kathleen Biagas, Thur Aug 20, 2026
+#   Add call to generate_lib_setup_cmake.
+#
 #****************************************************************************/
 
 # Uses the HDF5_DIR hint from the config-site .cmake file
@@ -63,8 +66,9 @@ if(TARGET hdf5-shared)
                            SIMPLE_INCLUDE true)
 
     # Add the needed CMake vars to the setup file.
-    set(fname ${VISIT_BINARY_DIR}/SetupHDF5.cmake)
+    get_lib_setup_cmake_input_file(fname "HDF5")
     file(APPEND ${fname} "\nset(HDF5_LIB ${HDF5_LIB})\n")
     file(APPEND ${fname} "\nset(HDF5_HL_LIB ${HDF5_HL_LIB})\n")
+    generate_lib_setup_cmake(NAME "HDF5")
 endif()
 
