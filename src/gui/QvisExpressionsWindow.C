@@ -1772,6 +1772,9 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //
 //    Kathleen Biagas, Wed Jun 15 2022
 //    Added crack_width.
+// 
+//    Justin Privitera, Wed Aug 19 18:04:31 PDT 2026
+//    Added quickfill for conn_components.
 //
 // ****************************************************************************
 
