@@ -1958,7 +1958,11 @@ rectilinear Laplacian Function: ``rectilinear_laplacian()`` : ``rectilinear_lapl
 .. _Conn_Components_Expression_Function:
 
 Connected Components Function: ``conn_components()`` : ``conn_components(<mesh> [, enable_ghost_neighbors])``
-    The ``conn_components`` expression computes connected component labels for a mesh. Cells that are connected through the mesh topology are assigned the same component id, and cells in separate disconnected regions receive different ids. The result is a scalar, zone-centered variable that can be plotted, queried, or used by later pipeline operations. The first argument is a mesh and the optional second argument enables/disables the ghost-neighbor optimization for parallel connected component labeling. Valid intended values are: ``1`` (Default), ``0``, ``"true"``, and ``"false"``, where where ``1`` and ``"true"`` both mean the optimization is enabled and ``0`` and ``"false"`` both mean the optimization is disabled.
+    The ``conn_components`` expression computes connected component labels for a mesh.
+    Cells that are connected through the mesh topology are assigned the same component id, and cells in separate disconnected regions receive different ids.
+    The result is a scalar, zone-centered variable that can be plotted, queried, or used by later pipeline operations.
+    The first argument is a mesh and the optional second argument enables/disables the ghost-neighbor optimization for parallel connected component labeling.
+    Valid intended values are: ``1`` (Default), ``0``, ``"true"``, and ``"false"``, where where ``1`` and ``"true"`` both mean the optimization is enabled and ``0`` and ``"false"`` both mean the optimization is disabled.
 
 .. _Resrad_Expression_Function:
 
