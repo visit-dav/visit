@@ -31,7 +31,7 @@ interesting pattern to explore. In practice, volume fractions or density
 values are also useful fields to use.
 
 
-We compare using two :ref:`operators <Operators>`, :ref:`Threshold <Threshold operator>` and :ref:`Isovolume <Threshold operator>`, to cut the mesh according to a scalar field.
+We compare using two :ref:`operators <Operators>`, :ref:`Threshold <Threshold operator>` and :ref:`Isovolume <Isovolume operator>`, to cut the mesh according to a scalar field.
 These methods produce different mesh topologies which influence the Connected Components Labeling result.
 
 
