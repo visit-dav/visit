@@ -297,7 +297,7 @@ avtWavefrontOBJWriter::GetColorTable(const int ncolors)
         }
     }
 
-    unsigned char rgb[ncolors * 3];
+    unsigned char *rgb = new unsigned char[ncolors * 3];
     
     table->GetColors(rgb, ncolors);
 
@@ -388,6 +388,8 @@ avtWavefrontOBJWriter::GetColorTable(const int ncolors)
     // above max color
     set_pixel(above_color[0], above_color[1], above_color[2]);
     set_pixel(above_color[0], above_color[1], above_color[2]);
+
+    delete [] rgb;
 
     return imageData;
 }
