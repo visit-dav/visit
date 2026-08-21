@@ -1772,6 +1772,9 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //
 //    Kathleen Biagas, Wed Jun 15 2022
 //    Added crack_width.
+// 
+//    Justin Privitera, Wed Aug 19 18:04:31 PDT 2026
+//    Added quickfill for conn_components.
 //
 // ****************************************************************************
 
@@ -1971,6 +1974,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "crack_width")
     {
         res += QString("(crack_number, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))");
+        doParens = false;
+    }
+    else if (func_name == "conn_components")
+    {
+        res += QString("(<mesh> [, \"true\", \"false\"])");
         doParens = false;
     }
 
