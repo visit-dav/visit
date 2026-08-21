@@ -37,7 +37,7 @@
 #   Replace vtkm_filter with vtkm::filter.
 #
 #   Kathleen Biagas, Mon Aug 17, 2026
-#   Use new visit_install_thirdparty_targets function to propery install
+#   Use new visit_install_thirdparty_targets function to properly install
 #   vtkm targets without guessing configuration type.
 #
 #   Kathleen Biagas, Thur Aug 20, 2026
