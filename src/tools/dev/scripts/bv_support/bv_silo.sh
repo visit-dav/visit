@@ -380,6 +380,38 @@ EOF
     fi
 }
 
+function apply_silo_4120_python_moduledef_patch
+{
+    info "Patching Silo 4.12.0 for Python module definition issue"
+    patch -p0 << \EOF
+--- Silo-4.12.0/tools/python/pysilo.h
++++ Silo-4.12.0/tools/python/pysilo.h
+@@ -82,8 +82,15 @@ void SiloErrorFunc(const char *errString);
+     #define PY_SILO_MOD_DEF(ob, name, methods)  \
+         static struct PyModuleDef moduledef = { \
+             PyModuleDef_HEAD_INIT,              \
+-            .m_name = name,                     \
+-            .m_methods = methods };             \
++            name,                               \
++            NULL,                               \
++            0,                                  \
++            methods,                            \
++            NULL,                               \
++            NULL,                               \
++            NULL,                               \
++            NULL                                \
++        };                                      \
+         ob = PyModule_Create(&moduledef);
+ #else
+     #define PY_SILO_MOD_DEF(ob, name, methods) \
+-- 
+2.50.1
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
 function apply_silo_patch
 {
     info "Patching silo . . ."
@@ -412,6 +444,11 @@ function apply_silo_patch
             return 1
         fi
         apply_silo_4120_extents_calc
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
+        apply_silo_4120_python_moduledef_patch
         if [[ $? != 0 ]] ; then
             warn "Giving up on Silo build because the patch failed."
             return 1
