@@ -16,11 +16,10 @@
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
-#include <vtkTextMapper.h>
-#include <vtkTextProperty.h>
 #include <vtkTransform.h>
 #include <vtkUnsignedIntArray.h>
 
+#include <avtVector.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <vtkVisItUtility.h>
@@ -34,11 +33,6 @@
 // Include the vector quantization table
 //
 #include <quant_vector_lookup.C>
-
-#ifndef vtkLabelMapper
-#include <avtCallback.h>
-bool vtkLabelMapper::zBufferWarningIssued = false;
-#endif
 
 static bool createCellLabels = false;
 static bool createNodeLabels = false;
@@ -78,6 +72,149 @@ matrix_mul_point(double out[4], const double M[4][4], const double pt[4])
     out[3] = pt[0]*M[0][3] + pt[1]*M[1][3] + pt[2]*M[2][3] + pt[3]*M[3][3];
 }
 
+//--------------------------------------------------------------------------
+// Depth / ZBuffer helpers
+
+static bool
+LabelPointToZBufferPixel(vtkRenderer *ren, const double *normalizedPoint,
+    int zBufferWidth, int zBufferHeight, int &sx, int &sy)
+{
+    if(ren == NULL || normalizedPoint == NULL ||
+       zBufferWidth <= 0 || zBufferHeight <= 0 ||
+       !std::isfinite(normalizedPoint[0]) ||
+       !std::isfinite(normalizedPoint[1]) ||
+       !std::isfinite(normalizedPoint[2]))
+    {
+        return false;
+    }
+
+    double x = normalizedPoint[0];
+    double y = normalizedPoint[1];
+    ren->NormalizedDisplayToDisplay(x, y);
+
+    // Points exactly on the right/top render-window edge map to width/height.
+    // Clamp those to the last valid depth-buffer pixel instead of rejecting
+    // visible labels at data-set bounds.
+    const double eps = 1.e-6;
+    if(x < -eps || x > double(zBufferWidth) + eps ||
+       y < -eps || y > double(zBufferHeight) + eps)
+    {
+        return false;
+    }
+
+    if(x < 0.)
+        x = 0.;
+    else if(x >= double(zBufferWidth))
+        x = double(zBufferWidth - 1);
+
+    if(y < 0.)
+        y = 0.;
+    else if(y >= double(zBufferHeight))
+        y = double(zBufferHeight - 1);
+
+    sx = int(x);
+    sy = int(y);
+    return true;
+}
+
+static bool
+LabelDepthPassesZBufferValue(double labelDepth, float zValue,
+    float zTolerance)
+{
+    return std::isfinite(labelDepth) && std::isfinite(zValue) &&
+           labelDepth <= double(zValue) + double(zTolerance);
+}
+
+static bool
+LabelDepthPassesZBuffer(const float *zBuffer, int zBufferWidth,
+    int zBufferHeight, int sx, int sy, double labelDepth, float zTolerance)
+{
+    if(zBuffer == NULL || sx < 0 || sx >= zBufferWidth ||
+       sy < 0 || sy >= zBufferHeight)
+    {
+        return false;
+    }
+
+    if(LabelDepthPassesZBufferValue(labelDepth,
+        zBuffer[sy * zBufferWidth + sx], zTolerance))
+    {
+        return true;
+    }
+
+    // A thin decoration or outline can occupy the exact anchor pixel
+    // even when the label's data point is visible.  Use the farthest
+    // non-background neighboring depth as a fallback so such lines do not
+    // make labels at data bounds disappear.
+    const int neighborRadius = 4;
+    float farthestNeighbor = -1.f;
+    for(int yy = sy - neighborRadius; yy <= sy + neighborRadius; ++yy)
+    {
+        if(yy < 0 || yy >= zBufferHeight)
+            continue;
+
+        for(int xx = sx - neighborRadius; xx <= sx + neighborRadius; ++xx)
+        {
+            if(xx < 0 || xx >= zBufferWidth || (xx == sx && yy == sy))
+                continue;
+
+            float zValue = zBuffer[yy * zBufferWidth + xx];
+            if(std::isfinite(zValue) && zValue < 1.f &&
+               zValue > farthestNeighbor)
+            {
+                farthestNeighbor = zValue;
+            }
+        }
+    }
+
+    return farthestNeighbor >= 0.f &&
+           LabelDepthPassesZBufferValue(labelDepth, farthestNeighbor,
+               zTolerance);
+}
+
+static bool
+LabelDepthPassesZBuffer(vtkRenderer *ren, int zBufferWidth,
+    int zBufferHeight, int sx, int sy, double labelDepth, float zTolerance)
+{
+    if(ren == NULL || sx < 0 || sx >= zBufferWidth ||
+       sy < 0 || sy >= zBufferHeight)
+    {
+        return false;
+    }
+
+    if(LabelDepthPassesZBufferValue(labelDepth, ren->GetZ(sx, sy),
+        zTolerance))
+    {
+        return true;
+    }
+
+    const int neighborRadius = 4;
+    float farthestNeighbor = -1.f;
+    for(int yy = sy - neighborRadius; yy <= sy + neighborRadius; ++yy)
+    {
+        if(yy < 0 || yy >= zBufferHeight)
+            continue;
+
+        for(int xx = sx - neighborRadius; xx <= sx + neighborRadius; ++xx)
+        {
+            if(xx < 0 || xx >= zBufferWidth || (xx == sx && yy == sy))
+                continue;
+
+            float zValue = ren->GetZ(xx, yy);
+            if(std::isfinite(zValue) && zValue < 1.f &&
+               zValue > farthestNeighbor)
+            {
+                farthestNeighbor = zValue;
+            }
+        }
+    }
+
+    return farthestNeighbor >= 0.f &&
+           LabelDepthPassesZBufferValue(labelDepth, farthestNeighbor,
+               zTolerance);
+}
+
+//--------------------------------------------------------------------------
+
 vtkLabelMapper *
 vtkLabelMapper::New()
 {
@@ -89,7 +226,7 @@ vtkLabelMapper::New()
 // ****************************************************************************
 // Method: vtkLabelMapper::vtkLabelMapper
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the vtkLabelMapper class.
 //
 // Programmer: Brad Whitlock
@@ -113,7 +250,7 @@ vtkLabelMapper::vtkLabelMapper()  : vtkLabelMapperBase()
 // ****************************************************************************
 // Method: vtkLabelMapper::~vtkLabelMapper
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the vtkLabelMapper class.
 //
 // Programmer: Brad Whitlock
@@ -135,7 +272,7 @@ vtkLabelMapper::~vtkLabelMapper()
 // ****************************************************************************
 // Method: vtkLabelMapper::ReleaseGraphicsResources
 //
-// Purpose: 
+// Purpose:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 25 16:00:15 PST 2004
@@ -159,11 +296,6 @@ void
 vtkLabelMapper::BuildLabelsInternal(vtkDataSet *input, vtkRenderer *ren)
 {
     //
-    // Clear out old informaton
-    //
-    this->TextMappers.clear();
-    this->LabelPositions.clear();
-    // 
     // Create an appropriate this->MaxLabelSize for the data.
     //
     vtkDataArray *pointData = input->GetPointData()->GetArray(this->VarName.c_str());
@@ -203,7 +335,7 @@ vtkLabelMapper::BuildLabelsInternal(vtkDataSet *input, vtkRenderer *ren)
     }
     else
     {
-       bool notSubsetOrMaterial = 
+       bool notSubsetOrMaterial =
             atts.GetVarType() != LabelAttributes::LABEL_VT_SUBSET &&
             atts.GetVarType() != LabelAttributes::LABEL_VT_MATERIAL;
 
@@ -234,7 +366,7 @@ vtkLabelMapper::BuildLabelsInternal(vtkDataSet *input, vtkRenderer *ren)
 // ****************************************************************************
 // Method: vtkLabelMapper::DrawLabels2D
 //
-// Purpose: 
+// Purpose:
 //   Draws the labels in 2D according to the options specified in the label plot.
 //
 // Programmer: Brad Whitlock
@@ -273,7 +405,7 @@ vtkLabelMapper::DrawLabels2D(vtkDataSet *input, vtkRenderer *ren)
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Draws all of the 2D labels using the label cache.
 //
 // Arguments:
@@ -294,6 +426,9 @@ vtkLabelMapper::DrawLabels2D(vtkDataSet *input, vtkRenderer *ren)
 //    Alister Maguire, Mon May 24 10:06:23 PDT 2021
 //    If we're in full frame mode, we need to perform some scaling.
 //
+//    Kathleen Biagas, Tue Aug 4, 2026
+//    Modified to use AddRenderedLabel.
+//
 // ****************************************************************************
 
 void
@@ -305,21 +440,18 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
     //
     // Draw all the node labels.
     //
-    size_t index = this->TextMappers.size();
     if(createNodeLabels)
     {
         vtkPoints *p = vtkVisItUtility::GetPoints(input);
         const char *labelPtr = this->NodeLabelsCache;
-        for(int i = 0; i < this->NodeLabelsCacheSize; ++i, index++)
+        for(int i = 0; i < this->NodeLabelsCacheSize; ++i)
         {
-            this->TextMappers.push_back(vtkSmartPointer<vtkTextMapper>::New());
-            this->TextMappers[index]->SetTextProperty(this->NodeLabelProperty);
-            this->TextMappers[index]->SetInput(labelPtr);
-            labelPtr += this->MaxLabelSize;
             const double *vert = p->GetPoint(i);
-            this->LabelPositions.push_back(vert[0] * positionScale[0]);
-            this->LabelPositions.push_back(vert[1] * positionScale[1]);
-            this->LabelPositions.push_back(vert[2] * positionScale[2]);
+            double labelPoint[3] = {vert[0] * positionScale[0],
+                                    vert[1] * positionScale[1],
+                                    vert[2] * positionScale[2]};
+            this->AddRenderedLabel(labelPoint, labelPtr, 0);
+            labelPtr += this->MaxLabelSize;
         }
         p->Delete();
     }
@@ -331,16 +463,14 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
     if(createCellLabels && cellCenters != 0)
     {
         const char *labelPtr = this->CellLabelsCache;
-        for(int i = 0; i < this->CellLabelsCacheSize; ++i, index++)
+        for(int i = 0; i < this->CellLabelsCacheSize; ++i)
         {
-            this->TextMappers.push_back(vtkSmartPointer<vtkTextMapper>::New());
-            this->TextMappers[index]->SetTextProperty(this->CellLabelProperty);
-            this->TextMappers[index]->SetInput(labelPtr);
-            labelPtr += this->MaxLabelSize;
             const double *vert = cellCenters->GetTuple3(i);
-            this->LabelPositions.push_back(vert[0] * positionScale[0]);
-            this->LabelPositions.push_back(vert[1] * positionScale[1]);
-            this->LabelPositions.push_back(vert[2] * positionScale[2]);
+            double labelPoint[3] = {vert[0] * positionScale[0],
+                                    vert[1] * positionScale[1],
+                                    vert[2] * positionScale[2]};
+            this->AddRenderedLabel(labelPoint, labelPtr, 1);
+            labelPtr += this->MaxLabelSize;
         }
     }
 }
@@ -350,7 +480,7 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Bins up 2D world space to make sure that only a subset of the 2D labels
 //   are drawn.
 //
@@ -383,6 +513,9 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
 //
 //    Alister Maguire, Mon May 24 10:06:23 PDT 2021
 //    If we're in full frame mode, we need to perform some scaling.
+//
+//    Kathleen Biagas, Tue Aug 4, 2026
+//    Modified to use AddRenderedLabel.
 //
 // ****************************************************************************
 
@@ -498,7 +631,6 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
     {
         char *labelPtr = this->NodeLabelsCache;
         vtkPoints *p = vtkVisItUtility::GetPoints(input);
-        size_t index = this->TextMappers.size();
         for(int i = 0; i < this->NodeLabelsCacheSize; ++i, labelPtr += this->MaxLabelSize)
         {
             //
@@ -525,14 +657,10 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
             // Mark that the cell has a label
             bins[binIndex] = true;
 
-            // Add this label.
-            this->TextMappers.push_back(vtkSmartPointer<vtkTextMapper>::New());
-            this->TextMappers[index]->SetTextProperty(this->NodeLabelProperty);
-            this->TextMappers[index]->SetInput(labelPtr);
-            index++;
-            this->LabelPositions.push_back(labelVert[0] * positionScale[0]);
-            this->LabelPositions.push_back(labelVert[1] * positionScale[1]);
-            this->LabelPositions.push_back(labelVert[2] * positionScale[2]);
+            double labelPoint[3] = {labelVert[0] * positionScale[0],
+                                    labelVert[1] * positionScale[1],
+                                    labelVert[2] * positionScale[2]};
+            this->AddRenderedLabel(labelPoint, labelPtr, 0);
         }
         p->Delete();
     }
@@ -544,7 +672,6 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
     if(createCellLabels && cellCenters != 0)
     {
         const char *labelPtr = this->CellLabelsCache;
-        size_t index = this->TextMappers.size();
         for(int i = 0; i < this->CellLabelsCacheSize; ++i, labelPtr += this->MaxLabelSize)
         {
             //
@@ -571,14 +698,10 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
             // Mark that the cell has a label
             bins[binIndex] = true;
 
-            // Add this label.
-            this->TextMappers.push_back(vtkSmartPointer<vtkTextMapper>::New());
-            this->TextMappers[index]->SetTextProperty(this->CellLabelProperty);
-            this->TextMappers[index]->SetInput(labelPtr);
-            index++;
-            this->LabelPositions.push_back(labelVert[0] * positionScale[0]);
-            this->LabelPositions.push_back(labelVert[1] * positionScale[1]);
-            this->LabelPositions.push_back(labelVert[2] * positionScale[2]);
+            double labelPoint[3] = {labelVert[0] * positionScale[0],
+                                    labelVert[1] * positionScale[1],
+                                    labelVert[2] * positionScale[2]};
+            this->AddRenderedLabel(labelPoint, labelPtr, 1);
         }
     }
 
@@ -590,7 +713,7 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Transforms an array of points from world space to normalized display
 //   space and returns a pointer to the transformed points.
 //
@@ -697,7 +820,7 @@ vtkLabelMapper::TransformPoints(T inputPoints,
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Helps the PopulateBinsWithNodeLabels3D and PopulateBinsWithCellLabels3D
 //   functions.
 //
@@ -710,6 +833,9 @@ vtkLabelMapper::TransformPoints(T inputPoints,
 //
 //   Brad Whitlock, Sat Apr 21 21:32:21 PDT 2012
 //   Pass points as doubles.
+//
+//   Kathleen Biagas, Wed Aug 5, 2026
+//   Use new Depth/Zbuffer helpers.
 //
 // ****************************************************************************
 
@@ -730,12 +856,13 @@ vtkLabelMapper::PopulateBinsHelper(vtkRenderer *ren, const unsigned char *
             {
                 if(visiblePoint[quantizedNormalIndices[i]])
                 {
-                    int sx = int(double(zBufferWidth) * transformedPoint[0]);
-                    int sy = int(double(zBufferHeight) * transformedPoint[1]);
-
-                    if(sx >= 0 && sx < zBufferWidth &&
-                       sy >= 0 && sy < zBufferHeight &&
-                       transformedPoint[2] <= zBuffer[sy * zBufferWidth + sx]+zTolerance)
+                    int sx = 0;
+                    int sy = 0;
+                    if(LabelPointToZBufferPixel(ren, transformedPoint,
+                           zBufferWidth, zBufferHeight, sx, sy) &&
+                       LabelDepthPassesZBuffer(zBuffer, zBufferWidth,
+                           zBufferHeight, sx, sy, transformedPoint[2],
+                           zTolerance))
                     {
                         AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
                     }
@@ -752,11 +879,13 @@ vtkLabelMapper::PopulateBinsHelper(vtkRenderer *ren, const unsigned char *
             //
             for(vtkIdType i = 0; i < n; ++i)
             {
-                int sx = int(double(zBufferWidth) * transformedPoint[0]);
-                int sy = int(double(zBufferHeight) * transformedPoint[1]);
-                if(sx >= 0 && sx < zBufferWidth &&
-                   sy >= 0 && sy < zBufferHeight &&
-                  transformedPoint[2] <= zBuffer[sy * zBufferWidth + sx]+zTolerance)
+                int sx = 0;
+                int sy = 0;
+                if(LabelPointToZBufferPixel(ren, transformedPoint,
+                       zBufferWidth, zBufferHeight, sx, sy) &&
+                   LabelDepthPassesZBuffer(zBuffer, zBufferWidth,
+                       zBufferHeight, sx, sy, transformedPoint[2],
+                       zTolerance))
                 {
                     AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
                 }
@@ -777,14 +906,15 @@ vtkLabelMapper::PopulateBinsHelper(vtkRenderer *ren, const unsigned char *
             {
                 if(visiblePoint[quantizedNormalIndices[i]])
                 {
-                    int sx = int(double(zBufferWidth) * transformedPoint[0]);
-                    int sy = int(double(zBufferHeight) * transformedPoint[1]);
-                    if(sx >= 0 && sx < zBufferWidth &&
-                       sy >= 0 && sy < zBufferHeight)
+                    int sx = 0;
+                    int sy = 0;
+                    if(LabelPointToZBufferPixel(ren, transformedPoint,
+                           zBufferWidth, zBufferHeight, sx, sy) &&
+                       LabelDepthPassesZBuffer(ren, zBufferWidth,
+                           zBufferHeight, sx, sy, transformedPoint[2],
+                           zTolerance))
                     {
-                        float Z = ren->GetZ(sx, sy);
-                        if(transformedPoint[2] <= Z+zTolerance)
-                            AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
+                        AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
                     }
                 }
                 transformedPoint += 3;
@@ -799,14 +929,14 @@ vtkLabelMapper::PopulateBinsHelper(vtkRenderer *ren, const unsigned char *
             //
             for(vtkIdType i = 0; i < n; ++i)
             {
-                int sx = int(double(zBufferWidth) * transformedPoint[0]);
-                int sy = int(double(zBufferHeight) * transformedPoint[1]);
-                if(sx >= 0 && sx < zBufferWidth &&
-                   sy >= 0 && sy < zBufferHeight)
+                int sx = 0;
+                int sy = 0;
+                if(LabelPointToZBufferPixel(ren, transformedPoint,
+                       zBufferWidth, zBufferHeight, sx, sy) &&
+                   LabelDepthPassesZBuffer(ren, zBufferWidth, zBufferHeight,
+                       sx, sy, transformedPoint[2], zTolerance))
                 {
-                    float Z = ren->GetZ(sx,sy);
-                    if(transformedPoint[2] <= Z+zTolerance)
-                        AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
+                    AllowLabelInBin(transformedPoint, currentLabel, t, realPoint);
                 }
                 transformedPoint += 3;
                 realPoint += 3;
@@ -851,7 +981,7 @@ vtkLabelMapper::PopulateBinsHelper(vtkRenderer *ren, const unsigned char *
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Adds node labels to the 3D label bins.
 //
 // Note:       The transformed points are stored in the bins.
@@ -902,7 +1032,7 @@ vtkLabelMapper::PopulateBinsWithNodeLabels3D(vtkDataSet *input, vtkRenderer *ren
     // Transform the points that face the camera.
     //
     double *xformedPoints = NULL;
-    double *realPoints = new double[inputPoints->GetNumberOfPoints()*3]; 
+    double *realPoints = new double[inputPoints->GetNumberOfPoints()*3];
     if(inputPoints->GetDataType() == VTK_DOUBLE)
     {
         debug4 << mName << "TransformPoints with doubles" << endl;
@@ -940,7 +1070,7 @@ vtkLabelMapper::PopulateBinsWithNodeLabels3D(vtkDataSet *input, vtkRenderer *ren
     double *transformedPoint = xformedPoints;
     double *realP = realPoints;
     const char *currentLabel = this->NodeLabelsCache;
-    PopulateBinsHelper(ren, quantizedNormalIndices, currentLabel, 
+    PopulateBinsHelper(ren, quantizedNormalIndices, currentLabel,
                        transformedPoint, n, 0, realP);
     visitTimer->StopTimer(stageTimer, "Binning the 3D node labels");
 
@@ -956,7 +1086,7 @@ vtkLabelMapper::PopulateBinsWithNodeLabels3D(vtkDataSet *input, vtkRenderer *ren
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Adds cell labels to the 3D label bins.
 //
 // Note:       The transformed points are stored in the bins.
@@ -1030,7 +1160,7 @@ vtkLabelMapper::PopulateBinsWithCellLabels3D(vtkDataSet *input, vtkRenderer *ren
     PopulateBinsHelper(ren, quantizedNormalIndices, currentLabel,
                        transformedPoint, n, 1, realPoint);
     visitTimer->StopTimer(stageTimer, "Binning the 3D cell labels");
-  
+
     delete [] xformedPoints;
     delete [] realPoints;
 
@@ -1042,7 +1172,7 @@ vtkLabelMapper::PopulateBinsWithCellLabels3D(vtkDataSet *input, vtkRenderer *ren
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Draws the labels in 3D.
 //
 // Programmer: Brad Whitlock
@@ -1069,6 +1199,9 @@ vtkLabelMapper::PopulateBinsWithCellLabels3D(vtkDataSet *input, vtkRenderer *ren
 //   I added logic to do the binning across the entire image when doing
 //   tiled rendering.
 //
+//   Kathleen Biagas, Tue Aug 4, 2026
+//   Modified to use AddRenderedLabel.
+//
 // ****************************************************************************
 
 void
@@ -1083,7 +1216,7 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
     int total = visitTimer->StartTimer();
     int stageTimer = visitTimer->StartTimer();
 
-    bool notSubsetOrMaterial = 
+    bool notSubsetOrMaterial =
          atts.GetVarType() != LabelAttributes::LABEL_VT_SUBSET &&
          atts.GetVarType() != LabelAttributes::LABEL_VT_MATERIAL;
     visitTimer->StopTimer(stageTimer, "Creating label caches");
@@ -1218,7 +1351,7 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
     {
         debug4 << mName << "Restricting number of labels" << endl;
 
-        // 
+        //
         // Reset the label bins so we have to repopulate them with the labels,
         // taking into account the current view.
         //
@@ -1266,22 +1399,15 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
         int n = numXBins * numYBins;
         const LabelInfo *info = this->LabelBins;
         debug4 << mName << "Drawing labels" << endl;
-        size_t index = this->TextMappers.size();
         for(int i = 0; i < n; ++i, ++info)
         {
             if(info->label == 0)
                 continue;
 
-            this->TextMappers.push_back(vtkSmartPointer<vtkTextMapper>::New());
-            this->TextMappers[index]->SetInput(info->label);
-            if (info->type == 1)
-                this->TextMappers[index]->SetTextProperty(this->CellLabelProperty);
-            else
-                this->TextMappers[index]->SetTextProperty(this->NodeLabelProperty);
-            index++;
-            this->LabelPositions.push_back(info->realPoint[0] * positionScale[0]);
-            this->LabelPositions.push_back(info->realPoint[1] * positionScale[1]);
-            this->LabelPositions.push_back(info->realPoint[2] * positionScale[2]);
+            double labelPoint[3] = {info->realPoint[0] * positionScale[0],
+                                    info->realPoint[1] * positionScale[1],
+                                    info->realPoint[2] * positionScale[2]};
+            this->AddRenderedLabel(labelPoint, info->label, info->type);
         }
         visitTimer->StopTimer(stageTimer, "Drawing binned 3D labels");
     }
@@ -1339,14 +1465,14 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Deletes the allocated z-buffer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 9 09:52:35 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1365,7 +1491,7 @@ vtkLabelMapper::ClearZBuffer()
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Initializes the z-buffer array (if necessary).
 //
 // Arguments:
@@ -1380,12 +1506,17 @@ vtkLabelMapper::ClearZBuffer()
 //   Replaced Mesa compile-time check with a runtime check.
 //
 //   Brad Whitlock, Sat Apr 21 22:51:33 PDT 2012
-//   Change the zTolerance calculation to match the updated method in the 
+//   Change the zTolerance calculation to match the updated method in the
 //   mesh renderer.
 //
 //   Eric Brugger, Wed Apr 10 14:03:26 PDT 2013
 //   Changed the check against vtkMesaRenderWindow to vtkOSMesaGLRenderWindow
 //   because of the change to VTK-6.
+//
+//   Kathleen Biagas, Tue Aug 4, 2026
+//   With assistance from Codex, don't test for IsDirect, simply use the
+//   VTK ZBuffer if available. Fixes issue with labels internal to mesh
+//   being drawn.
 //
 // ****************************************************************************
 
@@ -1423,7 +1554,7 @@ vtkLabelMapper::InitializeZBuffer(vtkDataSet *input, vtkRenderer *ren,
             {
                 if(haveNodeData && haveCellData)
                 {
-                    if(input->GetNumberOfCells() + 
+                    if(input->GetNumberOfCells() +
                        input->GetNumberOfPoints() < ZBUFFER_QUERY_CUTOFF)
                     {
                         zBufferMode = ZBUFFER_QUERY;
@@ -1440,26 +1571,12 @@ vtkLabelMapper::InitializeZBuffer(vtkDataSet *input, vtkRenderer *ren,
                         zBufferMode = ZBUFFER_QUERY;
                 }
 
-                // If we're not going to try and query the zbuffer later then
-                // read the whole thing now if we're direct.
+                // If we're not going to query individual z values later then
+                // try to read the whole buffer through VTK. This works for
+                // both direct and offscreen/generic OpenGL render windows.
                 if(zBufferMode == ZBUFFER_DONT_USE)
                 {
-                    if(ren->GetVTKWindow()->IsA("vtkRenderWindow"))
-                    {
-                        vtkRenderWindow *renWin = (vtkRenderWindow*)ren->GetVTKWindow();
-                        if(renWin->IsDirect())
-                            readZBuffer = true;
-                        else if(!zBufferWarningIssued)
-                        {
-                            zBufferWarningIssued = true;
-                            avtCallback::IssueWarning("VisIt is not running on "
-                                "a direct display so the z-buffer will not be "
-                                "read back to aid in depth testing to "
-                                "determine which labels should not be drawn. "
-                                "If you want to enable depth testing, set the "
-                                "Label plot's depth test flag to Always.");
-                        }
-                    }
+                    readZBuffer = true;
                 }
             }
 
@@ -1467,17 +1584,24 @@ vtkLabelMapper::InitializeZBuffer(vtkDataSet *input, vtkRenderer *ren,
             if(readZBuffer)
             {
                 int getZ = visitTimer->StartTimer();
-                // vtk's GetZbufferData use width+1 so ensure buffer
-                // size is correct, may need to adjust something else as well?
-                int zBufferSize = (zBufferWidth+1) * (zBufferHeight+1);
+                int zBufferSize = zBufferWidth * zBufferHeight;
 
                 debug4 << mName << "Allocated z-buffer" << endl;
                 zBuffer = new float[zBufferSize];
                 if(zBuffer != 0)
                 {
-                    ren->GetRenderWindow()->GetZbufferData(
-                        0, 0, zBufferWidth, zBufferHeight, zBuffer);
-                    zBufferMode = ZBUFFER_USE_PROVIDED;
+                    int ok = ren->GetRenderWindow()->GetZbufferData(
+                        0, 0, zBufferWidth - 1, zBufferHeight - 1, zBuffer);
+                    if(ok == VTK_OK)
+                    {
+                        zBufferMode = ZBUFFER_USE_PROVIDED;
+                    }
+                    else
+                    {
+                        delete [] zBuffer;
+                        zBuffer = 0;
+                        zBufferMode = ZBUFFER_DONT_USE;
+                    }
                 }
                 visitTimer->StopTimer(getZ, "Reading back Z-buffer");
             }
@@ -1556,7 +1680,7 @@ vtkLabelMapper::GetPositionScale(double *scale)
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Draws transformed text in 3D.
 //
 // Programmer: Brad Whitlock
@@ -1576,12 +1700,17 @@ vtkLabelMapper::GetPositionScale(double *scale)
 //   Alister Maguire, Mon May 24 10:06:23 PDT 2021
 //   If we're in full frame mode, we need to perform some scaling.
 //
+//   Kathleen Biagas, Tue Aug 4, 2026
+//   Modified to use AddRenderedLabel.
+//
+//   Kathleen Biagas, Wed Aug 5, 2026
+//   Use new Depth/Zbuffer helpers.
+//
 // ****************************************************************************
 
 
 #define BEGIN_LABEL labelString = this->CellLabelsCache + this->MaxLabelSize*id; if(!cellLabelsCached) {
 #define GET_THE_POINT const double *vert = cellCenters->GetTuple3(id);
-#define TEXT_PROPERTY this->CellLabelProperty 
 
 #define END_LABEL   } VISIBLE_POINT_PREDICATE\
     { \
@@ -1598,13 +1727,10 @@ vtkLabelMapper::GetPositionScale(double *scale)
     double positionScale[3]; \
     GetPositionScale(positionScale); \
     ZBUFFER_PREDICATE_START \
-      this->TextMappers.push_back(vtkSmartPointer<vtkTextMapper>::New()); \
-      this->TextMappers[index]->SetInput(labelString); \
-      this->TextMappers[index]->SetTextProperty(TEXT_PROPERTY); \
-      index++; \
-      this->LabelPositions.push_back(vert[0] * positionScale[0]); \
-      this->LabelPositions.push_back(vert[1] * positionScale[1]); \
-      this->LabelPositions.push_back(vert[2] * positionScale[2]); \
+      double labelPoint[3] = {vert[0] * positionScale[0], \
+                              vert[1] * positionScale[1], \
+                              vert[2] * positionScale[2]}; \
+      this->AddRenderedLabel(labelPoint, labelString, LABEL_TYPE); \
     ZBUFFER_PREDICATE_END \
     }
 
@@ -1644,7 +1770,7 @@ vtkLabelMapper::DrawAllCellLabels3D(vtkDataSet *input, vtkRenderer *ren)
     // such that we immediately draw the labels without first transforming
     // them.
     //
-    size_t index = this->TextMappers.size();
+#define LABEL_TYPE 1
     if(zBufferMode == ZBUFFER_USE_PROVIDED)
     {
     //
@@ -1652,14 +1778,13 @@ vtkLabelMapper::DrawAllCellLabels3D(vtkDataSet *input, vtkRenderer *ren)
     // should be plotted.
     //
 #define ZBUFFER_PREDICATE_START \
-                          double sx = vprime[0];\
-                          double sy = vprime[1];\
-                          ren->NormalizedDisplayToDisplay(sx, sy);\
-                          int isx = int(sx);\
-                          int isy = int(sy);\
-                          if(isx >= 0 && isx < zBufferWidth &&\
-                             isy >= 0 && isy < zBufferHeight &&\
-                             vprime[2] <= zBuffer[isy*zBufferWidth+isx]+zTolerance)\
+                          int isx = 0;\
+                          int isy = 0;\
+                          if(LabelPointToZBufferPixel(ren, vprime,\
+                                 zBufferWidth, zBufferHeight, isx, isy) &&\
+                             LabelDepthPassesZBuffer(zBuffer, zBufferWidth,\
+                                 zBufferHeight, isx, isy, vprime[2],\
+                                 zTolerance))\
                           {
 #define ZBUFFER_PREDICATE_END }
         if(quantizedNormalIndices == 0)
@@ -1683,19 +1808,15 @@ vtkLabelMapper::DrawAllCellLabels3D(vtkDataSet *input, vtkRenderer *ren)
     // Query the zbuffer one pixel at a time to avoid having to read it
     // all at once.
     //
-#define ZBUFFER_PREDICATE_START float Z = 0.;\
-                          double sx = vprime[0];\
-                          double sy = vprime[1];\
-                          ren->NormalizedDisplayToDisplay(sx, sy);\
-                          int isx = int(sx);\
-                          int isy = int(sy);\
-                          if(isx >= 0 && isx < zBufferWidth &&\
-                             isy >= 0 && isy < zBufferHeight)\
-                          {\
-                              Z = ren->GetZ(isx, isy); \
-                              if(vprime[2] <= Z+zTolerance)\
+#define ZBUFFER_PREDICATE_START int isx = 0;\
+                          int isy = 0;\
+                          if(LabelPointToZBufferPixel(ren, vprime,\
+                                 zBufferWidth, zBufferHeight, isx, isy) &&\
+                             LabelDepthPassesZBuffer(ren, zBufferWidth,\
+                                 zBufferHeight, isx, isy, vprime[2],\
+                                 zTolerance))\
                               {
-#define ZBUFFER_PREDICATE_END }}
+#define ZBUFFER_PREDICATE_END }
         if(quantizedNormalIndices == 0)
         {
 #define VISIBLE_POINT_PREDICATE
@@ -1738,17 +1859,16 @@ vtkLabelMapper::DrawAllCellLabels3D(vtkDataSet *input, vtkRenderer *ren)
     cellLabelsCached = true;
 }
 #undef BEGIN_LABEL
-#undef GET_THE_POINT 
+#undef GET_THE_POINT
+#undef LABEL_TYPE
 #define GET_THE_POINT const double *vert = p->GetPoint(id);
-#undef TEXT_PROPERTY 
-#define TEXT_PROPERTY this->NodeLabelProperty
 
 // ****************************************************************************
 // Method: vtkLabelMapper::DrawAllNodeLabels3D
 //
 // Notes:  Taken from avtLabelRenderer
 //
-// Purpose: 
+// Purpose:
 //   Draws all node labels in 3D.
 //
 // Programmer: Brad Whitlock
@@ -1765,6 +1885,9 @@ vtkLabelMapper::DrawAllCellLabels3D(vtkDataSet *input, vtkRenderer *ren)
 //   Brad Whitlock, Tue Apr 25 10:26:22 PDT 2006
 //   I made it use our own transformation matrix to transform the points.
 //
+//   Kathleen Biagas, Wed Aug 5, 2026
+//   Use new Depth/Zbuffer helpers.
+//
 // ****************************************************************************
 
 #define BEGIN_LABEL labelString = this->NodeLabelsCache + this->MaxLabelSize*id; if(!nodeLabelsCached) {
@@ -1777,7 +1900,7 @@ vtkLabelMapper::DrawAllNodeLabels3D(vtkDataSet *input, vtkRenderer *ren)
     bool   nodeLabelsCached    = this->NodeLabelsCache != NULL;
 
     // Resize the node labels cache.
-    if(this->NodeLabelsCache == 0 || 
+    if(this->NodeLabelsCache == 0 ||
        input->GetNumberOfPoints() != this->NodeLabelsCacheSize)
     {
         delete [] this->NodeLabelsCache;
@@ -1801,7 +1924,7 @@ vtkLabelMapper::DrawAllNodeLabels3D(vtkDataSet *input, vtkRenderer *ren)
     // them.
     //
 
-    size_t index = this->TextMappers.size();
+#define LABEL_TYPE 0
     if(zBufferMode == ZBUFFER_USE_PROVIDED)
     {
         debug4 << mName << "zBufferMode=ZBUFFER_USE_PROVIDED" << endl;
@@ -1810,14 +1933,13 @@ vtkLabelMapper::DrawAllNodeLabels3D(vtkDataSet *input, vtkRenderer *ren)
         // should be plotted.
         //
 #define ZBUFFER_PREDICATE_START \
-                          double sx = vprime[0];\
-                          double sy = vprime[1];\
-                          ren->NormalizedDisplayToDisplay(sx, sy);\
-                          int isx = int(sx);\
-                          int isy = int(sy);\
-                          if(isx >= 0 && isx < zBufferWidth &&\
-                             isy >= 0 && isy < zBufferHeight &&\
-                             vprime[2] <= zBuffer[isy*zBufferWidth+isx]+zTolerance)\
+                          int isx = 0;\
+                          int isy = 0;\
+                          if(LabelPointToZBufferPixel(ren, vprime,\
+                                 zBufferWidth, zBufferHeight, isx, isy) &&\
+                             LabelDepthPassesZBuffer(zBuffer, zBufferWidth,\
+                                 zBufferHeight, isx, isy, vprime[2],\
+                                 zTolerance))\
                           {
 #define ZBUFFER_PREDICATE_END }
         if(quantizedNormalIndices == 0)
@@ -1843,19 +1965,15 @@ vtkLabelMapper::DrawAllNodeLabels3D(vtkDataSet *input, vtkRenderer *ren)
         // Query the zbuffer one pixel at a time to avoid having to read it
         // all at once.
         //
-#define ZBUFFER_PREDICATE_START float Z = 0.;\
-                          double sx = vprime[0];\
-                          double sy = vprime[1];\
-                          ren->NormalizedDisplayToDisplay(sx, sy);\
-                          int isx = int(sx);\
-                          int isy = int(sy);\
-                          if(isx >= 0 && isx < zBufferWidth &&\
-                             isy >= 0 && isy < zBufferHeight)\
-                          {\
-                              Z=ren->GetZ(isx, isy);\
-                              if(vprime[2] <= Z+zTolerance)\
+#define ZBUFFER_PREDICATE_START int isx = 0;\
+                          int isy = 0;\
+                          if(LabelPointToZBufferPixel(ren, vprime,\
+                                 zBufferWidth, zBufferHeight, isx, isy) &&\
+                             LabelDepthPassesZBuffer(ren, zBufferWidth,\
+                                 zBufferHeight, isx, isy, vprime[2],\
+                                 zTolerance))\
                               {
-#define ZBUFFER_PREDICATE_END }}
+#define ZBUFFER_PREDICATE_END }
         if(quantizedNormalIndices == 0)
         {
 #define VISIBLE_POINT_PREDICATE
@@ -1902,5 +2020,4 @@ vtkLabelMapper::DrawAllNodeLabels3D(vtkDataSet *input, vtkRenderer *ren)
 }
 #undef BEGIN_LABEL
 #undef END_LABEL
-
-
+#undef LABEL_TYPE
