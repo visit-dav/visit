@@ -1923,15 +1923,15 @@ When an explicit separator such as ``_`` or ``.`` is present, the separator prov
 For example, a regular expression operating on ``velocity_comp1``, and ``velocity_comp2`` all with the same centering on a 2D mesh, VisIt_ will create the vector ``velocity`` with definition ``{velocity_comp1, velocity_comp2}``.
 Likewise, if the three scalar variables ``steel_red``, ``steel_grn`` and ``steel_blu`` are encountered all with the same centering on a 3D mesh, VisIt_ will create the vector named ``steel`` with definition ``{steel_blu, steel_grn, steel_red}``.
 Why?
-All have a common base name, ``steel`` followed by a separator character, ``_``.
+All have a common base name, ``steel`` followed by a common separator character, ``_``.
 All have a common-length (3 characters in this example) component designation string.
 When the component designation is sorted lexicographically, the result is ``blu``, ``grn``, ``red`` which the reader should note is the *oppposite* of the standard ``rgb`` ordering.
 This is because the ordering VisIt_ uses is lexicographical.
-So, as long as the scalar component naming convention is such that a lexicographical ordering of component strings results in the intended aggregate vector or tensor.
+The data producer just has to ensure that scalar component names are such that a lexicographical ordering of component designation strings results in the intended ordering in the aggregate vector or tensor.
 
 When there is no separator character in the scalar component naming convention, determining where the base name ends and the component designation begins is inherently ambiguous.
-In this case, VisIt_'s default regular expressions restrict such component designations to commonly used numeric and Cartesian-style *single* characters such as ``0123``, ``ijk``, ``uvw``, and ``xyz``, including uppercase forms.
-In other words, names like ``Vx``, ``Vy``, ``Vz`` or ``Qii``, ``Qij``, ``Qik``
+In this case, VisIt_'s default regular expressions restrict the component designations to commonly used numeric and Cartesian-style *single* characters such as ``0123``, ``ijk``, ``uvw``, and ``xyz``, including uppercase forms.
+In other words, names like ``Velx``, ``Vely``, ``Velz`` or ``Qii``, ``Qij``, ``Qik``
 
 A single-character component designation (e.g. ``i``) identifies a candidate vector component, while a two-character designation (e.g. ``ij``) identifies a candidate tensor component.
 All component designations in a candidate group must have the same length.
@@ -1940,12 +1940,12 @@ Component designations are ordered lexicographically when constructing an aggreg
 Consequently, the component designation convention used by a regular expression must be such that lexicographic ordering produces the intended component order.
 For example, ``0,1,2``, ``1,2,3``, ``i,j,k``, ``u,v,w``, and ``x,y,z`` all naturally satisfy this requirement.
 
-In addition, for *single* character component designations, the characters be *consecutive* in lexicographic order.
-Thus, ``Vx``, ``Vy`` is a valid pair of components for a vector on a 2D mesh while ``Vx``, ``Vz`` is not.
+In addition, for *single* character component designations, the characters must be *consecutive* in lexicographic order.
+Thus, ``Vx``, ``Vy`` is a valid pair of components for a vector on a 2D mesh while ``Vx``, ``Vz`` is not because there is a gap of one in the component designator strings.
 The same rule applies to the individual characters of tensor component designations.
 For example, ``xx,xy,yx,yy`` describes a valid set of two-dimensional tensor component directions, whereas ``xx,xz,zx,zz`` does not.
 
-Database plugins with naming conventions not covered by the defaults can override ``<ScalarComponentREs>``.
+Database plugins with naming conventions not covered by the defaults can override default behavior using ``<ScalarComponentREs>`` tag in the plugin's ``.xml`` file..
 For example, a plugin using single-character component designations ``a``, ``b``, and ``c`` separated from the base name could use a regular expression such as ``^(.+)_(a|b|c)$``.
 Because ``a``, ``b``, and ``c`` have equal length, are consecutive, and sort into the intended component order, they can be used without VisIt_ having any built-in knowledge of that particular naming convention.
 

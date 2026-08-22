@@ -127,7 +127,10 @@ def test_2d_scalar_comp_exprs():
         "stress_",
 
         # e should be seen as e00 vector, not e0 tensor
-        "e0"
+        "e0",
+ 
+        # gorfo.compA , gorfo_compB should not be accepted due to differing sep char
+        "gorfo"
     )
 
     TestExpressionNamesAndTypes("2D automatic aggregate expressions",
@@ -201,7 +204,10 @@ def test_3d_scalar_comp_exprs():
         "qy",
 
         # e should be seen as e00 vector, not e0 tensor
-        "e0"
+        "e0",
+
+        # gorfo.dirI , gorfo_dirJ, gorfo.dirK should not be accepted due to differing sep char
+        "gorfo"
     )
 
     TestExpressionNamesAndTypes("3D automatic aggregate expressions",

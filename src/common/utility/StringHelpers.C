@@ -425,6 +425,9 @@ StringHelpers::GroupStringsFixedAlpha(
 // Members of each returned group are ordered lexicographically according
 // to their member identifiers. Groups containing duplicate member
 // identifiers or member identifiers of differing lengths are discarded.
+// Any text occurring between the group-name and member-id subexpressions is
+// treated as a separator, and all members of a group must use the same
+// separator (which may be empty). Groups using mixed separators are discarded.
 //
 // For example, given
 //
@@ -479,6 +482,8 @@ StringHelpers::GroupAndOrderStringsByRE(
     }
 
     map<string, REStringGroup> groupMap;
+    map<string, string> groupSeparators;
+    std::set<string> inconsistentSeparatorGroups;
 
     for (size_t i = 0; i < stringList.size(); ++i)
     {
@@ -494,10 +499,34 @@ StringHelpers::GroupAndOrderStringsByRE(
         string groupName = m[groupNameSubexp].str();
         string memberId  = m[memberIdSubexp].str();
 
+        //
+        // Treat whatever text occurs between the group-name and member-id
+        // subexpressions as a separator. All members of a group must use the
+        // same separator. The separator may be empty.
+        //
+        const std::smatch::difference_type groupEnd =
+            m.position(groupNameSubexp) + m.length(groupNameSubexp);
+        const std::smatch::difference_type memberBegin =
+            m.position(memberIdSubexp);
+
+        if (memberBegin < groupEnd)
+            continue;
+
+        string separator = stringList[i].substr(
+            static_cast<size_t>(groupEnd),
+            static_cast<size_t>(memberBegin - groupEnd));
+
         REStringGroup &group = groupMap[groupName];
 
         if (group.strings.empty())
+        {
             group.name = groupName;
+            groupSeparators[groupName] = separator;
+        }
+        else if (groupSeparators[groupName] != separator)
+        {
+            inconsistentSeparatorGroups.insert(groupName);
+        }
 
         group.strings.push_back(stringList[i]);
         group.ids.push_back(memberId);
@@ -507,6 +536,10 @@ StringHelpers::GroupAndOrderStringsByRE(
          it != groupMap.end(); ++it)
     {
         REStringGroup &group = it->second;
+
+        if (inconsistentSeparatorGroups.find(group.name) !=
+            inconsistentSeparatorGroups.end())
+            continue;
 
         if (group.ids.empty())
             continue;
