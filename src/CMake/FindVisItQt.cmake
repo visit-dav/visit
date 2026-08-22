@@ -53,6 +53,13 @@
 #   Now building/using a static version of openssl lib when build Qt on
 #   Windows, so no need to copy or install its libraries.
 #
+#   Kathleen Biagas, Mon Aug 17, 2026
+#   Use new visit_install_thirdparty_targets function to properly install
+#   qt targets without guessing configuration type.
+#
+#   Kathleen Biagas, Thur Aug 20, 2026
+#   Add call to generate_lib_setup_cmake.
+#
 #*****************************************************************************
 
 #[====[
@@ -100,70 +107,25 @@ if(NOT VISIT_QT_SKIP_INSTALL)
     install(DIRECTORY ${VISIT_QT_DIR}/mkspecs/
             DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt)
 
-
-    # moc
-    get_target_property(moc_location Qt${QT_MAJOR_VERSION}::moc LOCATION)
-    install(PROGRAMS ${moc_location}
-            DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-            PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                    WORLD_READ WORLD_EXECUTE)
-    unset(moc_location)
-
-    # automoc parser
-    get_target_property(automoc_location Qt${QT_MAJOR_VERSION}::cmake_automoc_parser LOCATION)
-    install(PROGRAMS ${automoc_location}
-            DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-            PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                    WORLD_READ WORLD_EXECUTE)
-    unset(automoc_location)
-
+    # moc and automoc parser
+    set(qt_targets Qt${QT_MAJOR_VERSION}::moc
+                   Qt${QT_MAJOR_VERSION}::cmake_automoc_parser)
 
     foreach(mod ${visit_qt_modules})
-        set(qt_lib Qt${QT_MAJOR_VERSION}::${mod})
-
-        if(APPLE)
-            if(EXISTS ${VISIT_QT_DIR}/lib/Qt${mod}.framework)
-                THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/Qt${mod}.framework)
-            else()
-                get_target_property(qtlib_location ${qt_lib} LOCATION)
-            endif()
-        else()
-            if(WIN32)
-                get_target_property(qtlib_location ${qt_lib} IMPORTED_IMPLIB)
-            else()
-                get_target_property(qtlib_location ${qt_lib} IMPORTED_LOCATION)
-                # On Linux, the library names are Qtxxx.so.${QT_VERSION}
-                # We need to remove the version part so that
-                # THIRD_PARTY_INSTALL_LIBRARY will work correctly.
-                string(REPLACE ".${Qt${QT_MAJOR_VERSION}Core_VERSION}" ""
-                       qtlib_location ${qtlib_location})
-            endif()
-        endif()
-        if(qtlib_location)
-            THIRD_PARTY_INSTALL_LIBRARY(${qtlib_location})
-        endif()
-
-        unset(libname)
-        unset(qtlib_location)
-        unset(qt_lib)
+        list(APPEND qt_targets Qt${QT_MAJOR_VERSION}::${mod})
     endforeach()
+    visit_install_thirdparty_targets(NAME qt TARGETS ${qt_targets})
+
 
 
     # create SetupQT.cmake
-    set(qttargs)
-    foreach(mod ${visit_qt_modules})
-        list(APPEND qttargs Qt${QT_MAJOR_VERSION}::${mod})
-    endforeach()
-    list(APPEND qttargs Qt${QT_MAJOR_VERSION}::moc)
-    list(APPEND qttargs Qt${QT_MAJOR_VERSION}::cmake_automoc_parser)
     include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
     create_lib_setup_cmake(NAME "QT"
                            NAMESPACE "Qt${QT_MAJOR_VERSION}::"
                            INCBASE "qt"
-                           ITEMS ${qttargs})
+                           ITEMS ${qt_targets})
 
+    unset(qt_targets)
     # QT also has a non-versioned namespace, so add these items, too.
     set(qttargs)
     foreach(mod ${visit_qt_modules})
@@ -177,12 +139,13 @@ if(NOT VISIT_QT_SKIP_INSTALL)
 
     # need a few extras in the Setup file.
 
-    set(fname ${VISIT_BINARY_DIR}/SetupQT.cmake)
+    get_lib_setup_cmake_input_file(fname "QT")
     file(APPEND ${fname} "\nadd_library(WrapAtomic::WrapAtomic INTERFACE IMPORTED)\n")
     file(APPEND ${fname} "\nadd_library(WrapOpenGL::WrapOpenGL INTERFACE IMPORTED)\n")
     file(APPEND ${fname} "\nfunction(qt6_disable_unicode_defines target)\n")
     file(APPEND ${fname} "    set_target_properties(\${target} PROPERTIES QT_NO_UNICODE_DEFINES TRUE)\n")
     file(APPEND ${fname} "endfunction()\n")
+    generate_lib_setup_cmake(NAME "QT")
 
     if(APPLE)
         # Add Qt archives (lib*.a)

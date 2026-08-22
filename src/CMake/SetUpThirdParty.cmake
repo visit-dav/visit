@@ -59,6 +59,11 @@
 #   Fetch the 'stem' of the library so that file globbing will pick up all
 #   extensions including symlinks.
 #
+#   Kathleen Biagas, Mon Aug 17, 2026
+#   Add 'visit_install_thirdparty_targets', for installing imported third
+#   party target (from their cmake export sets) in a configuration-agnostic
+#   manner.
+#
 #****************************************************************************/
 
 # ==============================================
@@ -211,6 +216,7 @@ function(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
                 PATTERN "*.inc"
                 PATTERN "*.inl"
                 PATTERN ".svn" EXCLUDE
+                PATTERN ".git" EXCLUDE
             )
         endif()
 endfunction()
@@ -513,6 +519,129 @@ function(visit_import_third_party pkg)
     endif()
 endfunction()
 
+
+#[=======================================================================[
+  Function for installing thirdparty targets.
+  Used with third-party packages that provide their own CMake export sets
+  as they cannot be 'installed' in the normal fashion.
+  Uses $TARGET_XXX generator expressions so that the correct config
+  version of a library is installed (for packages that may supply multiple
+  configurations or a configuration that doesn't exactly match Visit's
+  current build configuration.)
+#]=======================================================================]
+
+function(visit_install_thirdparty_targets)
+    cmake_parse_arguments(vitt "" "NAME" "TARGETS" ${ARGN})
+
+    if(NOT DEFINED vitt_NAME)
+        message(FATAL_ERROR "Incomplete arguments to visit_install_thirdparty_targets. Required: NAME, TARGETS")
+    endif()
+    if(NOT DEFINED vitt_TARGETS)
+        message(FATAL_ERROR "Incomplete arguments to visit_install_thirdparty_targets. Required: NAME, TARGETS")
+    endif()
+
+    foreach(targetName ${vitt_TARGETS})
+        if(NOT TARGET ${targetName})
+            message(FATAL_ERROR "visit_install_thirdparty_targets, target does not exist: ${targetName}")
+        endif()
+
+        get_target_property(_targetType ${targetName} TYPE)
+        if(NOT _targetType)
+            message(FATAL_ERROR "visit_install_thirdparty_targets could not determine target type for: ${targetName}")
+        endif()
+
+        if(WIN32)
+            if(_targetType STREQUAL "SHARED_LIBRARY" OR
+               _targetType STREQUAL "EXECUTABLE")
+
+                # keep track of shared-library targets that will need
+                # dlls copied to build directory
+                if(_targetType STREQUAL "SHARED_LIBRARY")
+                    list(APPEND tfnames "$<TARGET_FILE:${targetName}>")
+                endif()
+
+                # this yields the same as target property
+                # IMPORTED_LOCATION_<CONFIG>
+                install(FILES "$<TARGET_FILE:${targetName}>"
+                        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                        PERMISSIONS ${VISIT_TP_PERMS}
+                        OPTIONAL)
+            endif()
+
+            if(VISIT_INSTALL_THIRD_PARTY)
+                if(_targetType STREQUAL "SHARED_LIBRARY")
+                    # this yields the same as target property
+                    # IMPORTED_IMPLIB_<CONFIG>
+                    install(FILES "$<TARGET_LINKER_FILE:${targetName}>"
+                            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                            PERMISSIONS ${VISIT_TP_PERMS}
+                            OPTIONAL)
+                elseif(_targetType STREQUAL "STATIC_LIBRARY")
+                    # this yields the same as target property
+                    # IMPORTED_LOCATION_<CONFIG>
+                    install(FILES "$<TARGET_FILE:${targetName}>"
+                            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                            PERMISSIONS ${VISIT_TP_PERMS}
+                            OPTIONAL)
+                endif()
+            endif()
+        else()
+            if(APPLE)
+                get_target_property(_isFramework ${targetName} FRAMEWORK)
+                if(_isFramework)
+                    install(DIRECTORY "$<TARGET_BUNDLE_DIR:${targetName}>"
+                            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                            DIRECTORY_PERMISSIONS ${VISIT_TP_PERMS}
+                            FILE_PERMISSIONS ${VISIT_TP_PERMS}
+                            PATTERN "Qt*_debug" EXCLUDE)
+                    continue()
+                endif()
+            endif()
+
+            if(_targetType STREQUAL "SHARED_LIBRARY")
+                    # this yields the same as target property
+                    # IMPORTED_LOCATION_<CONFIG>
+                    install(FILES "$<TARGET_FILE:${targetName}>"
+                            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                            PERMISSIONS ${VISIT_TP_PERMS}
+                            OPTIONAL)
+                    # this yields the same as target property
+                    # IMPORTED_SONAME_<CONFIG>
+                    install(FILES "$<TARGET_SONAME_FILE:${targetName}>"
+                            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                            PERMISSIONS ${VISIT_TP_PERMS}
+                            OPTIONAL)
+            elseif(_targetType STREQUAL "STATIC_LIBRARY")
+                if(VISIT_INSTALL_THIRD_PARTY)
+                    # this yields the same as target property
+                    # IMPORTED_LOCATION_<CONFIG>
+                    install(FILES "$<TARGET_FILE:${targetName}>"
+                            DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
+                            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+                            OPTIONAL)
+                endif()
+            elseif(_targetType STREQUAL "EXECUTABLE")
+                install(PROGRAMS "$<TARGET_FILE:${targetName}>"
+                        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                        PERMISSIONS ${VISIT_TP_PERMS}
+                        OPTIONAL)
+            elseif(NOT _targetType STREQUAL "INTERFACE_LIBRARY")
+                message(FATAL_ERROR
+                    "visit_install_thirdparty_target does not support ${targetName} target type: ${_targetType}")
+            endif()
+        endif()
+    endforeach()
+
+
+    # copy available dlls to build directory
+    if(WIN32 AND tfnames)
+        add_custom_target(${vitt_NAME}_copy_dlls ALL
+                    COMMAND ${CMAKE_COMMAND} -E copy ${tfnames}
+                    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty")
+        visit_add_to_util_builds(${vitt_NAME}_copy_dlls)
+        unset(tfnames)
+    endif()
+endfunction()
 
 # ==============================================
 # Installs a library's executables.
