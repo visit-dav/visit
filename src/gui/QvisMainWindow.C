@@ -113,12 +113,17 @@ QvisMainWindowDrawSplitterGrip(QPainter *painter, const QStyleOption &option)
     const QPoint center = option.rect.center();
     if(option.state & QStyle::State_Horizontal)
     {
+        // A horizontal splitter orientation has a vertical handle, so the grip
+        // is a column of dots. The +1 keeps the 2-pixel-wide dots visually
+        // aligned in the narrow handle instead of biased to the left.
         for(int j = -6 ; j < 12 ; j += 3)
             painter->fillRect(center.x() + 1, center.y() + j, 2, 2,
                 gripColor);
     }
     else
     {
+        // The other orientation has a horizontal handle, so the same dots are
+        // drawn as a row centered on the handle.
         for(int i = -6; i < 12 ; i += 3)
             painter->fillRect(center.x() + i, center.y(), 2, 2,
                 gripColor);
