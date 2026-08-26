@@ -3032,6 +3032,10 @@ QvisColorTableWindow::resizeColorTable(int size)
 // 
 //    Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //    No more error when searching is on; searching is always on.
+// 
+//    Justin Privitera, Wed Aug 19 16:23:51 PDT 2026
+//    Error for built-in color table export is descriptive and explains how to
+//    get around it.
 //
 // ****************************************************************************
 
@@ -3044,7 +3048,10 @@ QvisColorTableWindow::exportColorTable()
         QString tmp;
         tmp = tr("The color table ") +
               QString("\"") + currentColorTable + QString("\"") +
-              tr(" is built-in. You cannot export a built-in color table.");
+              tr(" is built-in. You cannot export a built-in color table directly. "
+                 "To export it, enter a new name in the \"Name\" field and click "
+                 "the \"New\" button to create a copy of the current color table "
+                 "using the new name. Then go ahead and click \"Export\".");
         Error(tmp);
         return;
     }
