@@ -472,6 +472,9 @@ class VisitInteractor;
 //    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
 //    Added ResetAnariScene
 //
+//    Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//    Added TiledRendering to support tiled rendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -726,10 +729,12 @@ public:
     bool                 GetMultiresolutionMode() const;
     void                 SetMultiresolutionCellSize(double size);
     double               GetMultiresolutionCellSize() const;
-    int                  GetTiledRenderingWidth() const;
+    void                 SetTiledRendering(bool mode);
+    bool                 GetTiledRendering() const;
     void                 SetTiledRenderingWidth(int width);
-    int                  GetTiledRenderingHeight() const;
+    int                  GetTiledRenderingWidth() const;
     void                 SetTiledRenderingHeight(int height);
+    int                  GetTiledRenderingHeight() const;
     void                 GetRenderTimes(double times[6]) const;
     void                 SetStereoRendering(bool enabled, int type);
     bool                 GetStereo() const;
@@ -849,6 +854,7 @@ protected:
     bool                               multiresolutionMode;
     double                             multiresolutionCellSize;
 
+    bool                               tiledRendering;
     int                                tiledRenderingWidth;
     int                                tiledRenderingHeight;
 

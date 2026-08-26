@@ -3096,6 +3096,9 @@ NetworkManager::CopyTileToImage(int imageWidth, int imageHeight,
 //  Creation:    Mon Feb  2 14:37:47 PST 2026
 //
 //  Modifications:
+//    Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//    Added code to skip tiled rendering if TiledRendering is false in the
+//    vis window.
 //
 // ****************************************************************************
 
@@ -3139,7 +3142,8 @@ NetworkManager::RenderTiledInternal()
     // If there is only a single tile or we are in viewported mode then
     // bypass the tiling.
     //
-    if ((nxTiles == 1 && nyTiles == 1) || renderState.viewportedMode)
+    if (!viswin->GetTiledRendering() ||
+        (nxTiles == 1 && nyTiles == 1) || renderState.viewportedMode)
     {
         debug1 << "NetworkManager::RenderTiledInternal: Bypassing tiling." << endl;
         //
