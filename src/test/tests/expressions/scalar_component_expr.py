@@ -87,9 +87,12 @@ def test_2d_scalar_comp_exprs():
     #
     #   disp        disp1, disp2
     #   vel         vel_x, vel_y, vel_z
+    #   v           vx, vy (1-char, no sep, out of order)
+    #   e00         e000, e001 (handle leading zeros)
     #   stress      stress_xx, stress_xy, stress_yx, stress_yy
     #   strain      strain.11, strain.12, strain.22
     #   metric      metric_11, metric_21, metric_22
+    #   q           qxx, qxy, qyx, qyy (1-char, nosep, out of order)
     #
     # temp and zonev already exist as scalars and therefore must not be replaced
     # by inferred aggregate expressions.  badvec and partial are incomplete.
@@ -155,10 +158,12 @@ def test_3d_scalar_comp_exprs():
     #
     #   disp        disp1, disp2, disp3
     #   vel         vel_x, vel_y, vel_z
+    #   v           vx, vy, vz (1-char, no-sep, defined out of order)
+    #   e00         e000, e001, e002 (handles leading zeros)
     #   stress      complete 3x3 Cartesian tensor
     #   strain      6-component upper-triangular symmetric tensor
     #   metric      6-component lower-triangular u/v/w symmetric tensor
-    #
+    #   q           qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz (1-char, no sep, out of order)
     expected3d = {
         "disp"   : Expression().VectorMeshVar,
         "vel"    : Expression().VectorMeshVar,
