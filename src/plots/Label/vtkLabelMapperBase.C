@@ -15,6 +15,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
+#include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkRenderer.h>
@@ -24,6 +25,8 @@
 
 #include <DebugStream.h>
 #include <vtkVisItUtility.h>
+
+#include <cmath>
 
 
 //
@@ -54,12 +57,43 @@ LabelVerticalJustificationToVTK(LabelAttributes::LabelVerticalAlignment v)
     return vtk_v;
 }
 
+// For testing if View has changed
+inline bool
+MatrixChanged(vtkMatrix4x4 *matrix, const double *lastMatrix)
+{
+    if(matrix == NULL || lastMatrix == NULL)
+        return true;
+
+    for(int i = 0; i < 4; ++i)
+    {
+        for(int j = 0; j < 4; ++j)
+        {
+            if(matrix->GetElement(i, j) != lastMatrix[i * 4 + j])
+                return true;
+        }
+    }
+
+    return false;
+}
+
+// For keeping track of latest view
+inline void
+CopyMatrix(vtkMatrix4x4 *matrix, double *lastMatrix)
+{
+    if(matrix == NULL || lastMatrix == NULL)
+        return;
+
+    for(int i = 0; i < 4; ++i)
+        for(int j = 0; j < 4; ++j)
+            lastMatrix[i * 4 + j] = matrix->GetElement(i, j);
+}
+
 
 
 // ****************************************************************************
 // Method: vtkLabelMapperBase::vtkLabelMapperBase
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the vtkLabelMapperBase class.
 //
 // Programmer: Brad Whitlock
@@ -73,10 +107,14 @@ LabelVerticalJustificationToVTK(LabelAttributes::LabelVerticalAlignment v)
 //   Added SetTileZoom to pass the tile zoom to the mapper to support
 //   tiled rendering.
 //
+//   Kathleen Biagas, Tue Aug 4, 2026
+//   Remove TextMappers,LabelPositions. Add RenderedLabels.
+//   Initialize single LabelTextMapper.
+//   Initialize view tracking.
 // ****************************************************************************
 
-vtkLabelMapperBase::vtkLabelMapperBase() : 
-    VarName(), TextMappers(), LabelPositions(), GlobalLabel()
+vtkLabelMapperBase::vtkLabelMapperBase() :
+    VarName(), RenderedLabels(), GlobalLabel()
 {
     this->NodeLabelProperty = vtkSmartPointer<vtkTextProperty>::New();
     this->NodeLabelProperty->SetFontSize(12);
@@ -85,6 +123,8 @@ vtkLabelMapperBase::vtkLabelMapperBase() :
     this->CellLabelProperty = vtkSmartPointer<vtkTextProperty>::New();
     this->CellLabelProperty->SetFontSize(12);
     this->CellLabelProperty->SetFontFamilyToArial();
+
+    this->LabelTextMapper = vtkSmartPointer<vtkTextMapper>::New();
 
     this->MaxLabelSize = 36;
     this->TreatAsASCII = false;
@@ -120,12 +160,22 @@ vtkLabelMapperBase::vtkLabelMapperBase() :
     this->NodeLabelsCacheSize = 0;
     for (int i  = 0; i < 256; ++i)
         visiblePoint[i] = false;
+
+    // View change tracking
+    this->HaveLastViewState = false;
+    for(int i = 0; i < 16; ++i)
+    {
+        this->LastModelViewMatrix[i] = 0.;
+        this->LastProjectionMatrix[i] = 0.;
+    }
+    this->LastViewportSize[0] = 0;
+    this->LastViewportSize[1] = 0;
 }
 
 // ****************************************************************************
 // Method: vtkLabelMapperBase::~vtkLabelMapperBase
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the vtkLabelMapperBase class.
 //
 // Programmer: Brad Whitlock
@@ -174,7 +224,7 @@ vtkMTimeType vtkLabelMapperBase::GetMTime()
 // ****************************************************************************
 // Method: vtkLabelMapperBase::ReleaseGraphicsResources
 //
-// Purpose: 
+// Purpose:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 25 16:00:15 PST 2004
@@ -183,68 +233,42 @@ vtkMTimeType vtkLabelMapperBase::GetMTime()
 //   Brad Whitlock, Mon Oct 25 16:10:03 PST 2004
 //   I made it clear the label cache and release the graphical resources.
 //
+//   Kathleen Biagas, Tue Aug 4, 2026
+//   Release resources from LabelTxtMapper.
+//
 // ****************************************************************************
 
 void
 vtkLabelMapperBase::ReleaseGraphicsResources(vtkWindow *win)
 {
     ClearLabelCaches();
+    if (this->LabelTextMapper)
+        this->LabelTextMapper->ReleaseGraphicsResources(win);
 }
 
 
+//----------------------------------------------------------------------------
+//  Modifications:
+//   Kathleen Biagas, Tue Aug 4, 2026
+//   Removed LabelPositions.  Add SetTextAtts, RenderLabelsVTK.
 //----------------------------------------------------------------------------
 void vtkLabelMapperBase::RenderOverlay(vtkViewport *viewport,
                                    vtkActor2D *actor)
 {
-    for (size_t i=0; i<this->TextMappers.size(); i++)
-    {
-        double x[3];
-        x[0] = this->LabelPositions[3*i];
-        x[1] = this->LabelPositions[3*i + 1];
-        x[2] = this->LabelPositions[3*i + 2];
-
-        double* pos = x;
-
-        actor->GetPositionCoordinate()->SetValue(pos);
-        this->TextMappers[i]->RenderOverlay(viewport, actor);
-  }
-}
-
-bool CompareViews(avtViewInfo a, avtViewInfo b)
-{
-    bool mod = false;
-    if(a.camera[0] != b.camera[0])
-       mod = true;
-    else if(a.camera[1] != b.camera[1])
-       mod = true;
-    else if(a.camera[2] != b.camera[2])
-       mod = true;
-    else if(a.focus[0] != b.focus[0])
-       mod = true;
-    else if(a.focus[1] != b.focus[1])
-       mod = true;
-    else if(a.focus[2] != b.focus[2])
-       mod = true;
-    else if(a.viewUp[0] != b.viewUp[0])
-       mod = true;
-    else if(a.viewUp[1] != b.viewUp[1])
-       mod = true;
-    else if(a.viewUp[2] != b.viewUp[2])
-       mod = true;
-    else if(a.parallelScale != b.parallelScale)
-       mod = true;
-    else if(a.imagePan[0] != b.imagePan[0])
-       mod = true;
-    else if(a.imagePan[1] != b.imagePan[1])
-       mod = true;
-    else if(a.imageZoom != b.imageZoom)
-       mod = true;
-    return mod;
+    this->SetTextAtts(viewport);
+    this->RenderLabelsVTK(viewport, actor);
 }
 
 //----------------------------------------------------------------------------
+//  Modifications:
+//   Kathleen Biagas, Tue Aug 4, 2026
+//   With assistance from Codex, modify view-change check to include entire
+//   view (projection and model view matrices, and viewport size),
+//   not just camera pos and viewUp.
+//   Fixes issue with zoom/pan not updating labels.
+//----------------------------------------------------------------------------
 void vtkLabelMapperBase::RenderOpaqueGeometry(vtkViewport *viewport,
-                                          vtkActor2D *actor)
+                                          vtkActor2D *vtkNotUsed(actor))
 {
     // Updates the input pipeline if needed.
     this->Update();
@@ -252,8 +276,7 @@ void vtkLabelMapperBase::RenderOpaqueGeometry(vtkViewport *viewport,
     vtkDataObject *inputDO = this->GetInputDataObject(0, 0);
     if (!inputDO)
     {
-        this->TextMappers.clear();
-        this->LabelPositions.clear();
+        this->ClearRenderedLabels();
         vtkErrorMacro(<<"Need input data to render labels (2)");
         return;
     }
@@ -261,34 +284,50 @@ void vtkLabelMapperBase::RenderOpaqueGeometry(vtkViewport *viewport,
     vtkDataSet *input = vtkDataSet::SafeDownCast(inputDO);
     if (!input)
     {
-        this->TextMappers.clear();
-        this->LabelPositions.clear();
+        this->ClearRenderedLabels();
         vtkErrorMacro(<<"Input should be a vtkDataSet.");
         return;
     }
 
     vtkRenderer *ren = vtkRenderer::SafeDownCast(viewport);
+    if(ren == NULL || ren->GetActiveCamera() == NULL)
+    {
+        this->ClearRenderedLabels();
+        return;
+    }
+
+    vtkCamera *camera = ren->GetActiveCamera();
+    vtkMatrix4x4 *modelViewMatrix = camera->GetModelViewTransformMatrix();
+    vtkMatrix4x4 *projectionMatrix = camera->GetProjectionTransformMatrix(ren);
+    int *viewportSize = viewport->GetSize();
+
     avtViewInfo temp;
-    temp.SetViewFromCamera(ren->GetActiveCamera());
-    bool viewChanged = CompareViews(visit_view, temp);
+    temp.SetViewFromCamera(camera);
+    bool viewChanged = !this->HaveLastViewState ||
+                       !(temp == visit_view) ||
+                       MatrixChanged(modelViewMatrix,
+                                     this->LastModelViewMatrix) ||
+                       MatrixChanged(projectionMatrix,
+                                     this->LastProjectionMatrix) ||
+                       viewportSize[0] != this->LastViewportSize[0] ||
+                       viewportSize[1] != this->LastViewportSize[1];
     if (viewChanged)
+    {
         visit_view = temp;
+        CopyMatrix(modelViewMatrix, this->LastModelViewMatrix);
+        CopyMatrix(projectionMatrix, this->LastProjectionMatrix);
+        this->LastViewportSize[0] = viewportSize[0];
+        this->LastViewportSize[1] = viewportSize[1];
+        this->HaveLastViewState = true;
+    }
     if ( this->GetMTime() > this->BuildTime ||
          inputDO->GetMTime() > this->BuildTime ||
          viewChanged)
     {
-        this->BuildLabels(vtkRenderer::SafeDownCast(viewport));
+        this->BuildLabels(ren);
     }
 
     this->SetTextAtts(viewport);
-
-    for (size_t i=0; i<this->TextMappers.size(); i++)
-    {
-        double* pos = &this->LabelPositions[3*i];
-        actor->GetPositionCoordinate()->SetCoordinateSystemToWorld();
-        actor->GetPositionCoordinate()->SetValue(pos);
-        this->TextMappers[i]->RenderOpaqueGeometry(viewport, actor);
-    }
 }
 
 //----------------------------------------------------------------------------
@@ -330,7 +369,7 @@ void vtkLabelMapperBase::PrintSelf(ostream& os, vtkIndent indent)
 // ****************************************************************************
 // Method: vtkLabelMapperBase::SetTextAtts
 //
-// Purpose: 
+// Purpose:
 //   Sets the color based on the type of variable being plotted and the
 //   desired node or cell coloring.
 //
@@ -431,6 +470,8 @@ void
 vtkLabelMapperBase::BuildLabels(vtkRenderer *ren)
 {
   vtkDebugMacro(<<"Rebuilding labels");
+  this->ClearRenderedLabels();
+
   vtkDataObject* inputDO = this->GetInputDataObject(0, 0);
   vtkCompositeDataSet* cd = vtkCompositeDataSet::SafeDownCast(inputDO);
   vtkDataSet* ds = vtkDataSet::SafeDownCast(inputDO);
@@ -467,7 +508,7 @@ vtkLabelMapperBase::BuildLabels(vtkRenderer *ren)
 //
 // Notes:  Taken from avtLabelRenderer.
 //
-// Purpose: 
+// Purpose:
 //   Resets the label bins used by the 3D binning algorithm so all of the
 //   bins are empty.
 //
@@ -501,7 +542,7 @@ vtkLabelMapperBase::ResetLabelBins()
 //
 // Notes:  Taken from avtLabelRenderer.
 //
-// Purpose: 
+// Purpose:
 //   Sets the name of the variable that is being rendered.
 //
 // Arguments:
@@ -515,7 +556,7 @@ vtkLabelMapperBase::ResetLabelBins()
 //    The caching code changed a bit, so I decided to change the
 //    invalidation to actually deallocate the memory as well.  It was
 //    not a big price to pay, and the code winds up a bit simpler.
-//   
+//
 // ****************************************************************************
 
 void
@@ -539,17 +580,17 @@ vtkLabelMapperBase::SetVariable(const std::string &name)
 //
 //  Notes:  Taken from avtLabelRenderer.
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the cell center array.
 //
-// Returns:    A pointer to the cell center array that the label filter 
+// Returns:    A pointer to the cell center array that the label filter
 //             calculated.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 25 09:00:58 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkDoubleArray *
@@ -580,7 +621,7 @@ vtkLabelMapperBase::GetCellCenterArray(vtkDataSet *input)
 //
 //  Notes:  Taken from avtLabelRenderer.
 //
-// Purpose: 
+// Purpose:
 //   Creates a cache of cell labels
 //
 // Programmer: Brad Whitlock
@@ -591,7 +632,7 @@ vtkLabelMapperBase::GetCellCenterArray(vtkDataSet *input)
 //    Caching is now done on a per-vtk-dataset basis, and we no longer
 //    keep track of whether the cache is invalidated independent of whether
 //    it was deallocated.
-//   
+//
 //    Hank Childs, Thu Jul 21 09:33:42 PDT 2005
 //    Modify BEGIN/CREATE/END _LABEL macros to accomodate multi-step label
 //    creation (necessary for arrays).
@@ -633,7 +674,7 @@ vtkLabelMapperBase::CreateCachedCellLabels(vtkDataSet *input)
 //
 //  Notes:  Taken from avtLabelRenderer.
 //
-// Purpose: 
+// Purpose:
 //   Creates a cache of all node labels.
 //
 // Programmer: Brad Whitlock
@@ -684,7 +725,7 @@ vtkLabelMapperBase::CreateCachedNodeLabels(vtkDataSet *input)
 //
 //  Notes:  Taken from avtLabelRenderer.
 //
-// Purpose: 
+// Purpose:
 //   Clear out the label caches.
 //
 // Programmer: Brad Whitlock
@@ -695,7 +736,7 @@ vtkLabelMapperBase::CreateCachedNodeLabels(vtkDataSet *input)
 //    Caching is now done on a per-vtk-dataset basis, and we no longer
 //    keep track of whether the cache is invalidated independent of whether
 //    it was deallocated.
-//   
+//
 // ****************************************************************************
 
 void
@@ -721,9 +762,92 @@ vtkLabelMapperBase::ClearLabelCaches()
     this->CellLabelsCacheSize = 0;
     this->NodeLabelsCacheSize = 0;
 
-    this->TextMappers.clear();
-    this->LabelPositions.clear();
+    this->ClearRenderedLabels();
     this->Modified();
+}
+
+// ****************************************************************************
+// Method: vtkLabelMapperBase::AddRenderedLabel
+//
+// Purpose:
+//   Adds a selected label to the render list.
+//
+// ****************************************************************************
+
+void
+vtkLabelMapperBase::AddRenderedLabel(const double *point, const char *label,
+    int type)
+{
+    if(label == NULL || label[0] == '\0')
+        return;
+
+    this->RenderedLabels.push_back(RenderedLabelInfo(point, label, type));
+}
+
+// ****************************************************************************
+// Method: vtkLabelMapperBase::ClearRenderedLabels
+//
+// Purpose:
+//   Clears selected labels without invalidating the label string caches.
+//
+// ****************************************************************************
+
+void
+vtkLabelMapperBase::ClearRenderedLabels()
+{
+    this->RenderedLabels.clear();
+}
+
+// ****************************************************************************
+// Method: vtkLabelMapperBase::RenderLabelsVTK
+//
+// Purpose:
+//   Renders selected labels through VTK's antialiased text mapper.
+//
+// ****************************************************************************
+
+void
+vtkLabelMapperBase::RenderLabelsVTK(vtkViewport *viewport, vtkActor2D *actor)
+{
+    if(this->RenderedLabels.empty() || actor == NULL ||
+       this->LabelTextMapper == NULL)
+        return;
+
+    vtkRenderer *ren = vtkRenderer::SafeDownCast(viewport);
+    if(ren == NULL)
+        return;
+
+    int *size = viewport->GetSize();
+    if(size[0] <= 0 || size[1] <= 0)
+        return;
+
+    actor->GetPositionCoordinate()->SetCoordinateSystemToDisplay();
+
+    for(size_t i = 0; i < this->RenderedLabels.size(); ++i)
+    {
+        const RenderedLabelInfo &labelInfo = this->RenderedLabels[i];
+
+        ren->SetWorldPoint(labelInfo.point[0], labelInfo.point[1],
+                           labelInfo.point[2], 1.0);
+        ren->WorldToDisplay();
+        double *displayPoint = ren->GetDisplayPoint();
+
+        if(!std::isfinite(displayPoint[0]) ||
+           !std::isfinite(displayPoint[1]) ||
+           !std::isfinite(displayPoint[2]))
+        {
+            continue;
+        }
+
+        vtkTextProperty *prop =
+            (labelInfo.type == 1) ? this->CellLabelProperty
+                                  : this->NodeLabelProperty;
+
+        this->LabelTextMapper->SetInput(labelInfo.label.c_str());
+        this->LabelTextMapper->SetTextProperty(prop);
+        actor->GetPositionCoordinate()->SetValue(displayPoint);
+        this->LabelTextMapper->RenderOverlay(viewport, actor);
+    }
 }
 
 
@@ -732,7 +856,7 @@ vtkLabelMapperBase::ClearLabelCaches()
 //
 //  Notes:  Taken from avtLabelRenderer.
 //
-// Purpose: 
+// Purpose:
 //   This method is used in 3D label binning and it determines whether a given
 //   label should be allowed in a bin.
 //
@@ -743,7 +867,7 @@ vtkLabelMapperBase::ClearLabelCaches()
 //
 // Returns:    True if the label is allowed to be in the cell.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 25 09:03:34 PDT 2004
@@ -756,7 +880,7 @@ vtkLabelMapperBase::ClearLabelCaches()
 // ****************************************************************************
 
 bool
-vtkLabelMapperBase::AllowLabelInBin(const double *screenPoint, 
+vtkLabelMapperBase::AllowLabelInBin(const double *screenPoint,
     const char *labelString, int t, const double *realPoint)
 {
     bool retval = false;
@@ -832,12 +956,12 @@ vtkLabelMapperBase::SetAtts(LabelAttributes *newAtts)
     //
     // See if the label display format changed.
     //
-    bool labelDisplayFormatChanged = 
+    bool labelDisplayFormatChanged =
         (atts.GetLabelDisplayFormat() != newAtts->GetLabelDisplayFormat()) ||
         (atts.GetFormatTemplate()     != newAtts->GetFormatTemplate());
 
-    bool setModified = atts.GetRestrictNumberOfLabels() != 
-                           newAtts->GetRestrictNumberOfLabels(); 
+    bool setModified = atts.GetRestrictNumberOfLabels() !=
+                           newAtts->GetRestrictNumberOfLabels();
 
     setModified |= atts.GetNumberOfLabels() !=
                    newAtts->GetNumberOfLabels();
@@ -899,4 +1023,12 @@ vtkLabelMapperBase::LabelInfo::LabelInfo()
 
 vtkLabelMapperBase::LabelInfo::~LabelInfo()
 {
+}
+
+vtkLabelMapperBase::RenderedLabelInfo::RenderedLabelInfo(const double *p,
+    const char *l, int t) : label(l == NULL ? "" : l), type(t)
+{
+    point[0] = p[0];
+    point[1] = p[1];
+    point[2] = p[2];
 }

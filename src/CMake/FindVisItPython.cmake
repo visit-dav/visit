@@ -112,6 +112,9 @@
 #   what we don't want instead of PATTERN to include what we do want, since
 #   the latter always seems to include everything, not just the PATTERNs.
 #
+#   Kathleen Biagas, Thur Aug 20, 2026
+#   Add call to generate_lib_setup_cmake.
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -186,9 +189,10 @@ if(Python3_FOUND)
                            ITEMS Python3::Python Python3::Interpreter
                            SIMPLE_INCLUDE true)
 
-    set(fname ${VISIT_BINARY_DIR}/SetupPYTHON.cmake)
+    get_lib_setup_cmake_input_file(fname "PYTHON")
     file(APPEND ${fname} "\nset(PYTHON_LIBRARY Python3::Python)\n")
     file(APPEND ${fname} "set(PYTHON_EXECUTABE Python3::Interpreter)\n\n")
+    generate_lib_setup_cmake(NAME "PYTHON")
 else()
     message("Python3 not found")
 endif()

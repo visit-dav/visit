@@ -50,7 +50,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 3.6</font></b></p>
 <ul>
-  <li>GUI Change 1</li>
+  <li>The splitter handle between the main window's plot controls and notepad/posting area was made more visible, making it easier to know where to grab to resize.</li>
   <li>GUI Change 2</li>
 </ul>
 
@@ -71,21 +71,22 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 3.6</font></b></p>
 <ul>
+  <li>Issues with the Label plot when zooming/panning, and having labels drawn internal to a mesh were fixed.</li>
   <li>Spreadsheet plot data visibility and tracer plane functionality has been fixed.</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 3.6</font></b></p>
 <ul>
-  <li>Operator Change 1</li>
+  <li>The Connected Components Operator, when used improperly, provides more information to users about how to properly apply it.</li>
   <li>Operator Change 2</li>
 </ul>
 
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 3.6</font></b></p>
 <ul>
-  <li>Expression Change 1</li>
-  <li>Expression Change 2</li>
+  <li>The conn_components() expression now includes quickfill hints for its arguments.</li>
+  <li>The conn_components() expression now correctly takes 0 or 1 for the enable ghost-neighbor optimization argument instead of also mistakenly taking 2.</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -99,7 +100,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Other bugs fixed in version 3.6</font></b></p>
 <ul>
   <li>An issue partitioning nodal coordinates for parallel in Pixie files was fixed.</li>
-  <li>Bug Fix 2</li>
+  <li>Fixed bug with thirdparty Find mdoules when thirdparty library was not built in 'Release' mode.</li>
 </ul>
 
 <a name="Build_features"></a>
