@@ -1902,7 +1902,7 @@ Automated Expression Generation
 Although VisIt_ supports aggregate variable types such as vectors, tensors and arrays, it is often the case that only *scalar* variables are available when a new database is opened.
 This can happen either because the database file format doesn't support aggregate types or because the data producer didn't bother defining any.
 
-When this happen, what VisIt_ sees is often a set of related scalar variables employing a common naming convention such as ``vx``, ``vy``, ``vz`` for the scalar components of a velocity vector variable or ``sxx``, ``sxy``, ``sxz``, ``syx``, ... for the scalar components of a stress or strain tensor variable.
+When this happens, what VisIt_ sees is often a set of related scalar variables employing a common naming convention such as ``vx``, ``vy``, ``vz`` for the scalar components of a velocity vector variable or ``sxx``, ``sxy``, ``sxz``, ``syx``, ... for the scalar components of a stress or strain tensor variable.
 
 There is logic in VisIt_ to automatically recognize these scalar variable naming patterns and try to define VisIt_ *expressions* for the appropriate aggregate mesh variable types.
 In other words, when VisIt_ encounters a scalar variable naming pattern such as ``vel_comp1``, ``vel_comp2``, ``vel_comp3``, (and those variables are defined on the same mesh and with the same centering) it will define the vector expression named ``vel`` with definition ``{vel_comp1, vel_comp2, vel_comp3}``.
