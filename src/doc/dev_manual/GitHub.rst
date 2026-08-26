@@ -206,10 +206,19 @@ A normal ``git checkout`` command can be used within that worktree directory to 
 .. note::
    Two worktrees cannot be checked out to the same branch.
 
-To remove a worktree::
+To remove a worktree (assuming no changes to the ``blt`` submodule)::
 
     cd visit
-    git worktree remove ../visit2
+    git worktree remove --force ../visit2
+
+The ``--force`` is fine to use and **needed*, typically, due to VisIt_'s use of submodules **and** when no work has been done on the submodule.
+That said, a *cleaner* way to remove a worktree with unchanged submodules is::
+
+   cd ../visit2
+   git submodule foreach --recursive git status --short
+   git submodule deinit --all --force
+   cd ../visit
+   git worktree remove ../visit2
 
 When worktrees were first introduced to ``git``, they were considered experimental and did not work on repos with submodules. 
 In versions of ``git`` newer than 2.30, those limitations have been removed.
