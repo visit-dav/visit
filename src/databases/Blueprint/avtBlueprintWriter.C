@@ -20,10 +20,9 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkXMLPolyDataWriter.h>
-#include <vtkXMLRectilinearGridWriter.h>
-#include <vtkXMLStructuredGridWriter.h>
-#include <vtkXMLUnstructuredGridWriter.h>
+#include <vtkPolyDataRelevantPointsFilter.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridRelevantPointsFilter.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtParallelContext.h>
@@ -493,9 +492,16 @@ avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
     {
         mesh["state/time"] = m_time;
     }
-
+    
+    vtkDataSet *clean_ds = RemoveUnusedPoints(ds);
+ 
     avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKToBlueprintMesh(mesh, ds, ndims);
-
+    
+    if(clean_ds != ds)
+    {
+        clean_ds->Delete();
+    }
+    
     Node verify_info;
     if(!blueprint::mesh::verify(mesh,verify_info))
     {
@@ -651,4 +657,58 @@ void
 avtBlueprintWriter::WriteRootFile()
 {
     // root file has already been written
+}
+
+// ****************************************************************************
+// Method: avtBlueprintWriter::RemoveUnusedPoints
+//
+// Purpose:
+//   Cleans up unused points vtkDataset
+//
+// Arguments:
+//
+// Returns:
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Jul 16 09:15:44 PDT 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+vtkDataSet *
+avtBlueprintWriter::RemoveUnusedPoints(vtkDataSet *ds)
+{
+    vtkDataSet *res = nullptr;
+    switch(ds->GetDataObjectType())
+    {
+        case VTK_POLY_DATA:
+        {
+            vtkPolyDataRelevantPointsFilter *rpfPD = vtkPolyDataRelevantPointsFilter::New();
+            rpfPD->SetInputData((vtkPolyData*)ds);
+            vtkPolyData *out_pd = vtkPolyData::New();
+            rpfPD->SetOutput(out_pd);
+            rpfPD->Update();
+            rpfPD->Delete();
+            res = out_pd;
+            break;
+        }
+        case VTK_UNSTRUCTURED_GRID:
+        {
+            vtkUnstructuredGridRelevantPointsFilter *rpfUG = vtkUnstructuredGridRelevantPointsFilter::New();
+            rpfUG->SetInputData((vtkUnstructuredGrid*)ds);
+            vtkUnstructuredGrid *out_ug = vtkUnstructuredGrid::New();
+            rpfUG->SetOutput(out_ug);
+            rpfUG->Update();
+            rpfUG->Delete();
+            res = out_ug;
+            break;
+        }
+        default: // we do not need to filter points for other dataset types
+        {
+            res = ds;
+            break;
+        }
+    }
+
+    return res;
 }
