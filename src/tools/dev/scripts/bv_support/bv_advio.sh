@@ -237,11 +237,49 @@ EOF
     return 0 
 }
 
+function apply_advio_12_bool_patch
+{
+    patch -p0 << \EOF
+--- AdvIO-1.2/Base/AdvTypes.h	2006-02-14 04:09:33.000000000 -0800
++++ AdvIO-1.2/Base/AdvTypes.h.new	2026-07-29 09:58:52.000000000 -0700
+@@ -51,9 +51,13 @@
+ #else
+ /*---------- C ----------*/
+ 
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++#include <stdbool.h>
++#else
+ typedef int bool;
+ #define false 0
+ #define true 1
++#endif
+ 
+ #endif /* __cplusplus */
+ 
+EOF
+    if [[ $? != 0 ]] ; then
+        echo "Failed applying AdvIO bool patch"
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_advio_12_patch
 {
-    apply_advio_12_configure_patch
+    local patch_status=0
 
-    return $?
+    apply_advio_12_configure_patch
+    if [[ $? != 0 ]] ; then
+        patch_status=1
+    fi
+
+    apply_advio_12_bool_patch
+    if [[ $? != 0 ]] ; then
+        patch_status=1
+    fi
+
+    return $patch_status
 }
 
 function apply_advio_patch

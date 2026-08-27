@@ -213,7 +213,10 @@ function build_gdal
         fi
     fi
     
-    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
+    # GCC 16 defaults to C23 semantics, where empty parameter lists mean
+    # "(void)". GDAL 2.2.4's bundled qhull relies on the older no-prototype
+    # meaning for declarations in alg/internal_qhull_headers.h.
+    C_OPT_FLAGS="-std=gnu99 -Wno-error=implicit-function-declaration"
     set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" \
