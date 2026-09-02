@@ -1086,28 +1086,18 @@ QvisMainWindow::SetDefaultSplitterSizes(int h)
 //   Cyrus Harrison, Tue Aug 13 15:40:11 PDT 2019
 //   Remove update visit entry.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Make Help a direct menubar action. 'About' has been moved to Help window.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::AddHelpMenu(void)
 {
     menuBar()->addSeparator();
-    helpPopup = menuBar()->addMenu(tr("&Help"));
-
-    helpPopup->addAction(tr("About . . ."),
-                         this, SIGNAL(activateAboutWindow()));
-
-    helpPopup->addAction(tr("Copyright . . ."),
-                         this, SIGNAL(activateCopyrightWindow()));
-
-    helpPopup->addAction(tr("Help . . ."),
-                         this, SIGNAL(activateHelpWindow()),
-                         QKeySequence(Qt::Key_F1));
-
-    helpPopup->addAction(tr("Release notes . . ."),
-                         this, SIGNAL(activateReleaseNotesWindow()));
-
-    helpPopup->addSeparator();
+    helpAction = menuBar()->addAction(tr("&Help"),
+                                      this, SIGNAL(activateHelpWindow()));
+    helpAction->setShortcut(QKeySequence(Qt::Key_F1));
 }
 
 // ****************************************************************************
