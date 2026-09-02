@@ -119,7 +119,7 @@ static int vtkCellType210NodeListLength[20]={
 avtUNICFileFormat::avtUNICFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
-    H5Eset_auto(0, 0); // quiet HDF5 output on stderr
+    H5Eset_auto(NULL, NULL); // quiet HDF5 output on stderr
     file_handle = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
     if (file_handle < 0)
     {

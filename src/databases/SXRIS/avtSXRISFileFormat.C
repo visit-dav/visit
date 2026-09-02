@@ -221,7 +221,7 @@ avtSXRISFileFormat::LoadFile()
     // Initialize HDF5.
     H5open();
     H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-    fileId = H5Fopen(filename, H5F_ACC_RDONLY, 0);
+    fileId = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
 
     if (fileId < 0)
         EXCEPTION1(InvalidFilesException, filename);

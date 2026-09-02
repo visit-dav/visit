@@ -21,6 +21,8 @@
 #include <Expression.h>
 #include <Utility.h>
 #include <VisItStreamUtil.h>
+#include <ImproperUseException.h>
+#include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
 
 using namespace std;
@@ -137,33 +139,34 @@ avtGTCFileFormat::CreateInterfaceADIOS2(
 avtGTCFileFormat::avtGTCFileFormat(const char *filename)
     : adios(std::make_shared<adios2::ADIOS>()),
       io(adios->DeclareIO("ReadBP")),
-      numTimeSteps(1),
       avtMTSDFileFormat(&filename, 1),
       grid(NULL),
+      ptGrid(NULL),
       cylGrid(NULL),
-      ptGrid(NULL)
+      numTimeSteps(1)
 {
     reader = io.Open(filename, adios2::Mode::Read);
+
     if (!reader)
-        EXCEPTION1(ImproperUseException, "Invalid file");
+        EXCEPTION1(InvalidDBTypeException,
+                   "Could not open file with ADIOS2");
 
     variables = io.AvailableVariables();
     attributes = io.AvailableAttributes();
 
-    //Determine how many steps we have.
-    if (variables.find("potential") != variables.end())
-        numTimeSteps = std::stoi(variables["potential"]["AvailableStepsCount"]);
+    if (!IdentifyADIOS2(variables, attributes))
+    {
+        reader.Close();
+        EXCEPTION1(InvalidDBTypeException,
+                   "File is not a GTC database");
+    }
 
-    /*
-    debug5<<"Attrs: "<<endl;
-    for (auto ai = attributes.begin(); ai != attributes.end(); ai++)
-        debug5<<ai->first<<" "<<ai->second<<endl;
-    debug5<<"Vars:"<<endl;
-    for (auto vi = variables.begin(); vi != variables.end(); vi++)
-        debug5<<vi->first<<" "<<vi->second<<endl;
-    */
+    auto p = variables.find("potential");
+    auto nsteps = p->second.find("AvailableStepsCount");
+
+    if (nsteps != p->second.end() && !nsteps->second.empty())
+        numTimeSteps = std::stoi(nsteps->second);
 }
-
 
 avtGTCFileFormat::avtGTCFileFormat(std::shared_ptr<adios2::ADIOS> adios,
         adios2::Engine &reader,
@@ -260,7 +263,8 @@ avtGTCFileFormat::GetTimes(std::vector<double> &t)
 void
 avtGTCFileFormat::FreeUpResources()
 {
-    grid->Delete();
+    if (grid)
+        grid->Delete();
     grid = NULL;
 }
 

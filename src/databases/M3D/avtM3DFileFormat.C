@@ -853,7 +853,7 @@ avtM3DFileFormat::LoadFile()
     H5open();
     H5Eset_auto( NULL, NULL );
 
-    m_fileID = H5Fopen( m_filename.c_str(), 0, 0 );
+    m_fileID = H5Fopen( m_filename.c_str(), 0, H5P_DEFAULT );
     if ( m_fileID < 0 )
         EXCEPTION1( InvalidFilesException, m_filename.c_str() );
 

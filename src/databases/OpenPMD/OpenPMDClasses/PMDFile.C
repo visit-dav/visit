@@ -200,6 +200,8 @@ void PMDFile::ScanFileAttributes()
         }
     }
 
+    H5Gclose(groupId);
+
     // missing self-identification as openPMD file
     if (!isValid)
     {
