@@ -3415,32 +3415,55 @@ VisWinRendering::SetAnariAttributes(const AnariAttributes &atts)
 
     const AnariAttributes oldAtts = anariAttributes;
     anariAttributes = atts;
+
+    if(!anariDeviceCreationEnabled)
+    {
+        // This VisWindow never renders with ANARI (e.g. the viewer's own
+        // window in client-server mode, where the client may not have any
+        // ANARI backend libraries installed). Just keep the attributes
+        // around for round-tripping (session save/restore, etc.) without
+        // touching any ANARI/VTK objects. anariRendering must stay false
+        // here regardless of atts.GetAnariRendering() -- there is no
+        // engine-verified device behind it on this process, and leaving a
+        // stale "true" here would make RenderRenderWindow() hand the canvas
+        // an ANARI pass with an uninitialized device, which crashes.
+        anariRendering = false;
+        return;
+    }
+
     anariRendering = atts.GetAnariRendering();
-    
+
     // Anari library or library subtype changed
-    if(oldAtts.GetAnariLibrary() != anariAttributes.GetAnariLibrary() || 
+    if(oldAtts.GetAnariLibrary() != anariAttributes.GetAnariLibrary() ||
        oldAtts.GetAnariLibrarySubtype() != anariAttributes.GetAnariLibrarySubtype())
     {
         SetAnariLibrary();
-        SetAnariRendererSubtype();
 
-        if(!anariAttributes.GetUsingUsdDevice())
+        // SetAnariLibrary() sets anariRendering to false if the library/device
+        // failed to load. Don't touch the renderer/parameters in that case --
+        // there is no valid ANARI device to configure, and doing so crashes.
+        if(anariRendering)
         {
-            SetAnariRendererParameters();
-        }
-        else
-        {
-            SetAnariUSDParameters();
+            SetAnariRendererSubtype();
+
+            if(!anariAttributes.GetUsingUsdDevice())
+            {
+                SetAnariRendererParameters();
+            }
+            else
+            {
+                SetAnariUSDParameters();
+            }
         }
     }
-    else 
+    else if(anariRendering)
     {
         // Anari renderer subtype changed
         if(oldAtts.GetAnariRendererSubtype() != anariAttributes.GetAnariRendererSubtype())
         {
             SetAnariRendererSubtype();
         }
-        
+
         // Anari renderer parameters changed
         if(oldAtts.GetAnariRendererParameters() != anariAttributes.GetAnariRendererParameters())
         {
@@ -3469,6 +3492,11 @@ VisWinRendering::SetAnariAttributes(const AnariAttributes &atts)
 void
 VisWinRendering::SetAnariLibrary()
 {
+    // Only called from SetAnariAttributes() when anariDeviceCreationEnabled
+    // is true, so it's always safe here to actually load a backend library.
+    auto anariLibraryName = anariAttributes.GetAnariLibrary();
+    auto anariLibrarySubtype = anariAttributes.GetAnariLibrarySubtype();
+
     if(this->anariPass != nullptr)
     {
         this->anariPass->Delete();
@@ -3477,12 +3505,9 @@ VisWinRendering::SetAnariLibrary()
     }
 
     this->anariPass = this->CreateAnariPass();
-
-    auto anariLibraryName = anariAttributes.GetAnariLibrary();
-    auto anariLibrarySubtype = anariAttributes.GetAnariLibrarySubtype();
     auto* ad = this->anariPass->GetAnariDevice();
     const bool success = ad->SetupAnariDeviceFromLibrary(anariLibraryName.c_str(), anariLibrarySubtype.c_str());
-    
+
     if(!success)
     {
         debug5 << "[ANARI] Failed to set ANARI library to " << anariLibraryName.c_str() << " with subtype " << anariLibrarySubtype.c_str() << std::endl;
@@ -3490,8 +3515,29 @@ VisWinRendering::SetAnariLibrary()
         this->anariRendering = false;
         return;
     }
-    
+
     debug5 << "[ANARI] Back-end Name: " << anariLibraryName.c_str() << std::endl;
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetAnariDeviceCreationEnabled
+//
+// Purpose:
+//   Controls whether this VisWindow is allowed to load a real ANARI backend
+//   library/device. Only the engine's VisWindow(s) should enable this (see
+//   NetworkManager_CreateVisWindow in NetworkManager.C) -- the viewer's own
+//   VisWindow never actually renders with ANARI in client-server mode, and
+//   the client may not have any ANARI backend libraries installed.
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetAnariDeviceCreationEnabled(bool enabled)
+{
+    anariDeviceCreationEnabled = enabled;
 }
 
 // ****************************************************************************
@@ -3511,6 +3557,12 @@ VisWinRendering::SetAnariLibrary()
 void
 VisWinRendering::SetAnariRendererSubtype()
 {
+    if(anariPass->GetAnariDevice()->GetHandle() == nullptr)
+    {
+        debug5 << "[ANARI::SetAnariRendererSubtype] ANARI device handle is NULL" << std::endl;
+        return;
+    }
+
     auto subtype = anariAttributes.GetAnariRendererSubtype();
     auto* ar = anariPass->GetAnariRenderer();
     ar->SetSubtype(subtype.c_str());

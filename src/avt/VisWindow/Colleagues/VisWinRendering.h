@@ -449,8 +449,16 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 #endif
 #ifdef HAVE_ANARI
     void                    SetAnariAttributes(const AnariAttributes &);
-    const AnariAttributes   &GetAnariAttributes() const { return anariAttributes; } 
-    void                    ResetAnariScene();   
+    const AnariAttributes   &GetAnariAttributes() const { return anariAttributes; }
+    void                    ResetAnariScene();
+    // Only the engine (the process that actually renders with ANARI) should
+    // ever create a real ANARI device. The viewer's own VisWindow still needs
+    // to accept/store AnariAttributes for round-tripping (session save, etc.)
+    // but must not attempt to load ANARI backend libraries locally, since the
+    // client may not have any installed. Defaults to false.
+    void                    SetAnariDeviceCreationEnabled(bool);
+    bool                    GetAnariDeviceCreationEnabled() const
+                                 { return anariDeviceCreationEnabled; }
 #endif
 
     virtual void            *CreateToolbar(const char *) { return 0; };
@@ -504,8 +512,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 #endif
     bool                          anariRendering {false};
 #ifdef HAVE_ANARI
-    AnariAttributes               anariAttributes;    
+    AnariAttributes               anariAttributes;
     vtkAnariPass                  *anariPass {nullptr};
+    bool                           anariDeviceCreationEnabled {false};
 #endif
     void                          (*renderInfo)(void *);
     void                         *renderInfoData {nullptr};

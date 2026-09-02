@@ -25,6 +25,9 @@
 
 #ifdef HAVE_ANARI
     #include <AnariRenderingWidget.h>
+    #include <AnariDeviceInfoAttributes.h>
+    #include <MapNode.h>
+    #include <XMLNode.h>
 #endif
 
 #include <DebugStream.h>
@@ -77,6 +80,9 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
 {
     renderAtts = 0;
     windowInfo = 0;
+#ifdef HAVE_ANARI
+    anariDeviceInfo = 0;
+#endif
     lastAA = 0;
 
     stereoType = 0;
@@ -1023,6 +1029,10 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
         UpdateOptions(doAll);
     if(SelectedSubject() == windowInfo || doAll)
         UpdateInformation(doAll);
+#ifdef HAVE_ANARI
+    if(SelectedSubject() == (Subject*)anariDeviceInfo || doAll)
+        UpdateAnariDeviceInfo(doAll);
+#endif
 }
 
 // ****************************************************************************
@@ -1631,6 +1641,39 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
     }
 }
 
+#ifdef HAVE_ANARI
+// ****************************************************************************
+// Method: QvisRenderingWindow::UpdateAnariDeviceInfo
+//
+// Purpose:
+//   Forwards the engine's ANARI library/subtype/renderer/parameter info
+//   (delivered as a MapNode-in-XML by AnariDeviceInfoAttributes) to the
+//   ANARI rendering widget, so it can populate its UI without the client
+//   creating a local ANARI device.
+//
+// Arguments:
+//   doAll : Whether or not to ignore field selection.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::UpdateAnariDeviceInfo(bool doAll)
+{
+    if(anariDeviceInfo == 0 || anariRenderingWidget == 0)
+        return;
+
+    const std::string &xml = anariDeviceInfo->GetXmlResult();
+    if(xml.empty())
+        return;
+
+    MapNode info{XMLNode(xml)};
+    anariRenderingWidget->UpdateDeviceInfo(info);
+}
+#endif
+
 // ****************************************************************************
 // Method: QvisRenderingWindow::Apply
 //
@@ -1684,6 +1727,10 @@ QvisRenderingWindow::SubjectRemoved(Subject *TheRemovedSubject)
         renderAtts = 0;
     else if(TheRemovedSubject == windowInfo)
         windowInfo = 0;
+#ifdef HAVE_ANARI
+    else if(TheRemovedSubject == (Subject*)anariDeviceInfo)
+        anariDeviceInfo = 0;
+#endif
 }
 
 // ****************************************************************************
@@ -1731,6 +1778,53 @@ QvisRenderingWindow::ConnectWindowInformation(WindowInformation *w)
     windowInfo = w;
     windowInfo->Attach(this);
 }
+
+#ifdef HAVE_ANARI
+// ****************************************************************************
+// Method: QvisRenderingWindow::ConnectAnariDeviceInfoAttributes
+//
+// Purpose:
+//   Makes this window observe the ANARI device info the engine reports,
+//   so the ANARI rendering settings can be populated without the client
+//   creating a local ANARI device.
+//
+// Arguments:
+//   w : The ANARI device info attributes.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::ConnectAnariDeviceInfoAttributes(AnariDeviceInfoAttributes *w)
+{
+    anariDeviceInfo = w;
+    anariDeviceInfo->Attach(this);
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::RequestAnariDeviceInfo
+//
+// Purpose:
+//   Forwards an ANARI device info request (issued by AnariRenderingWidget)
+//   to the viewer/engine. GetViewerMethods() is protected on GUIBase, so
+//   AnariRenderingWidget (which is not a GUIBase subclass) goes through
+//   this method rather than calling it directly.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::RequestAnariDeviceInfo(const std::string &libraryName,
+                                            const std::string &librarySubtype,
+                                            const std::string &rendererSubtype)
+{
+    GetViewerMethods()->GetAnariDeviceInfo(libraryName, librarySubtype, rendererSubtype);
+}
+#endif
 
 //
 // Qt slot functions

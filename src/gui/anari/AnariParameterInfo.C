@@ -30,6 +30,9 @@ AnariParameterInfo::AnariParameterInfo(AnariParameterInfo &&other)
     m_maximum = other.m_maximum;
     m_defaultValue = other.m_defaultValue;
     m_acceptedValues = other.m_acceptedValues;
+    m_minimumText = other.m_minimumText;
+    m_maximumText = other.m_maximumText;
+    m_defaultValueText = other.m_defaultValueText;
 }
 
 // ****************************************************************************
@@ -61,6 +64,9 @@ AnariParameterInfo::operator=(AnariParameterInfo &&other)
         m_maximum = other.m_maximum;
         m_defaultValue = other.m_defaultValue;
         m_acceptedValues = other.m_acceptedValues;
+        m_minimumText = other.m_minimumText;
+        m_maximumText = other.m_maximumText;
+        m_defaultValueText = other.m_defaultValueText;
     }
 
     return *this;

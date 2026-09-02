@@ -7,6 +7,7 @@
 // ************************************************************************* //
 
 #include <AttributeSubject.h>
+#include <MapNode.h>
 #include <NetworkManager.h>
 #include <DataNetwork.h>
 #include <ClonedDataNetwork.h>
@@ -240,6 +241,13 @@ static void
 NetworkManager_CreateVisWindow(int winID, VisWindow *&viswindow, bool &owns, void *)
 {
     viswindow = new VisWindow;
+#ifdef HAVE_ANARI
+    // The engine is the only process that should ever load a real ANARI
+    // backend library/device -- it's the only one guaranteed to have ANARI
+    // backends installed, and (with client-server ANARI) the only one that
+    // actually renders with ANARI. See VisWinRendering::SetAnariDeviceCreationEnabled.
+    viswindow->SetAnariDeviceCreationEnabled(true);
+#endif
     owns = true;
 }
 
@@ -7180,7 +7188,17 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
         plotsCurrentlyInWindow = plotIds;
     }
 
-    if (checkSRThreshold)
+    // ANARI backend libraries are only guaranteed to be installed on the engine
+    // (e.g. a remote HPC compute node); the viewer may be running client-side
+    // with no ANARI backends available at all. So whenever ANARI rendering is
+    // enabled, always render on the engine and stream the image back, rather
+    // than letting the scalable-rendering threshold hand geometry to the viewer.
+    bool anariRenderingEnabled = false;
+#ifdef HAVE_ANARI
+    anariRenderingEnabled = renderAtts.GetAnariAttributes().GetAnariRendering();
+#endif
+
+    if (checkSRThreshold && !anariRenderingEnabled)
     {
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid
         // the misfortune of oscillating switching of modes around the threshold)
@@ -8303,6 +8321,321 @@ std::string
 NetworkManager::GetQueryParameters(const std::string &qName)
 {
     return avtQueryFactory::Instance()->GetDefaultInputParams(qName);
+}
+
+#ifdef HAVE_ANARI
+// ****************************************************************************
+//  Method: AnariEngineStatusCallback
+//
+//  Purpose:
+//    ANARI status callback used only for the library/device probing done by
+//    NetworkManager::GetAnariDeviceInfo(); routed to the debug log, never
+//    surfaced to the user, since failures here just mean a library/subtype
+//    isn't available on this engine.
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+void
+NetworkManager::AnariEngineStatusCallback(const void *, ANARIDevice, ANARIObject,
+                                          ANARIDataType sourceType, ANARIStatusSeverity severity,
+                                          ANARIStatusCode, const char *message)
+{
+    if (severity == ANARI_SEVERITY_FATAL_ERROR || severity == ANARI_SEVERITY_ERROR)
+        debug1 << "[ANARI] " << message << ", DataType: " << (int)sourceType << std::endl;
+    else
+        debug5 << "[ANARI] " << message << std::endl;
+}
+
+// ****************************************************************************
+//  Method: AnariValueToString
+//
+//  Purpose:
+//    Best-effort stringification of a raw ANARI parameter value (as returned
+//    by anariGetParameterInfo for "default"/"minimum"/"maximum") so it can be
+//    shipped to the client as text instead of a typed binary blob. Vector
+//    types are stringified as space-separated components. Unhandled types are
+//    left blank; the client falls back to a plain text entry for those.
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+std::string
+NetworkManager::AnariValueToString(ANARIDataType type, const void *value)
+{
+    if (!value)
+        return std::string();
+
+    std::ostringstream oss;
+    switch (type)
+    {
+        case ANARI_BOOL:
+            oss << (*static_cast<const int32_t*>(value) != 0 ? "true" : "false");
+            break;
+        case ANARI_INT32:
+            oss << *static_cast<const int32_t*>(value);
+            break;
+        case ANARI_UINT32:
+            oss << *static_cast<const uint32_t*>(value);
+            break;
+        case ANARI_FLOAT32:
+            oss << *static_cast<const float*>(value);
+            break;
+        case ANARI_FLOAT64:
+            oss << *static_cast<const double*>(value);
+            break;
+        case ANARI_STRING:
+            oss << static_cast<const char*>(value);
+            break;
+        case ANARI_INT32_VEC2: case ANARI_INT32_VEC3: case ANARI_INT32_VEC4:
+        {
+            int n = (type == ANARI_INT32_VEC2) ? 2 : (type == ANARI_INT32_VEC3) ? 3 : 4;
+            const int32_t *p = static_cast<const int32_t*>(value);
+            for (int i = 0; i < n; ++i)
+                oss << (i ? " " : "") << p[i];
+            break;
+        }
+        case ANARI_FLOAT32_VEC2: case ANARI_FLOAT32_VEC3: case ANARI_FLOAT32_VEC4:
+        {
+            int n = (type == ANARI_FLOAT32_VEC2) ? 2 : (type == ANARI_FLOAT32_VEC3) ? 3 : 4;
+            const float *p = static_cast<const float*>(value);
+            for (int i = 0; i < n; ++i)
+                oss << (i ? " " : "") << p[i];
+            break;
+        }
+        case ANARI_FLOAT64_VEC2: case ANARI_FLOAT64_VEC3: case ANARI_FLOAT64_VEC4:
+        {
+            int n = (type == ANARI_FLOAT64_VEC2) ? 2 : (type == ANARI_FLOAT64_VEC3) ? 3 : 4;
+            const double *p = static_cast<const double*>(value);
+            for (int i = 0; i < n; ++i)
+                oss << (i ? " " : "") << p[i];
+            break;
+        }
+        case ANARI_UFIXED8: case ANARI_UFIXED8_VEC2: case ANARI_UFIXED8_VEC3: case ANARI_UFIXED8_VEC4:
+        case ANARI_UFIXED8_R_SRGB: case ANARI_UFIXED8_RA_SRGB:
+        case ANARI_UFIXED8_RGB_SRGB: case ANARI_UFIXED8_RGBA_SRGB:
+        {
+            size_t n = anari::componentsOf(type);
+            const uint8_t *p = static_cast<const uint8_t*>(value);
+            for (size_t i = 0; i < n; ++i)
+                oss << (i ? " " : "") << (unsigned int)p[i];
+            break;
+        }
+        case ANARI_UFIXED16: case ANARI_UFIXED16_VEC2: case ANARI_UFIXED16_VEC3: case ANARI_UFIXED16_VEC4:
+        {
+            size_t n = anari::componentsOf(type);
+            const uint16_t *p = static_cast<const uint16_t*>(value);
+            for (size_t i = 0; i < n; ++i)
+                oss << (i ? " " : "") << p[i];
+            break;
+        }
+        case ANARI_UFIXED32: case ANARI_UFIXED32_VEC2: case ANARI_UFIXED32_VEC3: case ANARI_UFIXED32_VEC4:
+        {
+            size_t n = anari::componentsOf(type);
+            const uint32_t *p = static_cast<const uint32_t*>(value);
+            for (size_t i = 0; i < n; ++i)
+                oss << (i ? " " : "") << p[i];
+            break;
+        }
+        default:
+            break;
+    }
+    return oss.str();
+}
+#endif
+
+// ****************************************************************************
+//  Method: GetAnariDeviceInfo
+//
+//  Purpose:
+//    Enumerates the ANARI libraries, device subtypes, renderer subtypes, and
+//    renderer parameters that are actually available/loadable on this
+//    engine, so a client that has no ANARI backend libraries of its own
+//    (e.g. a laptop talking to a remote HPC engine) can populate its ANARI
+//    settings UI without creating a local ANARI device. Each of the three
+//    arguments may be passed empty to request only the information that can
+//    be determined without it; the caller is expected to make one RPC call
+//    per level of the library -> subtype -> renderer subtype cascade as the
+//    user's selection narrows, mirroring how the settings dialog used to do
+//    this locally via direct anari::newDevice() calls.
+//
+//  Arguments:
+//    libraryName     ANARI library name (e.g. "helide"), or empty to list
+//                    the libraries this engine can load.
+//    librarySubtype  ANARI device subtype for libraryName, or empty to list
+//                    the device subtypes libraryName supports.
+//    rendererSubtype ANARI renderer subtype for libraryName/librarySubtype,
+//                    or empty to list the renderer subtypes the device
+//                    supports.
+//
+//  Returns:    A MapNode, serialized to XML, containing whichever of
+//              "libraries" / "subtypes" / "renderers" / "parameters" could
+//              be determined from the given inputs.
+//
+//  Programmer: Kevin Griffin
+//  Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+std::string
+NetworkManager::GetAnariDeviceInfo(const std::string &libraryName,
+                                   const std::string &librarySubtype,
+                                   const std::string &rendererSubtype)
+{
+    MapNode info;
+
+#ifndef HAVE_ANARI
+    (void)libraryName;
+    (void)librarySubtype;
+    (void)rendererSubtype;
+    info["available"] = 0;
+    return info.ToXML();
+#else
+    info["available"] = 1;
+
+    if (libraryName.empty())
+    {
+        // Report which of the known ANARI backend libraries this engine can
+        // actually load. The client cannot determine this itself since it
+        // may not have any ANARI backends installed at all.
+        static const char *knownLibraries[] =
+            { "helide", "usd", "visrtx", "visgl", "ospray", "rpr", "phenocryst" };
+        stringVector loadable;
+
+        // Check ANARI_LIBRARY environment variable
+        const char* envLibrary = std::getenv("ANARI_LIBRARY");
+        if(envLibrary != nullptr)
+        {
+            anari::Library lib = anari::loadLibrary(envLibrary, NetworkManager::AnariEngineStatusCallback);
+            if (lib)
+            {
+                loadable.push_back(envLibrary);
+                anariUnloadLibrary(lib);
+            }
+            else
+            {
+                debug1 << "[ANARI] Engine could not load ANARI_LIBRARY='"
+                       << envLibrary << "'" << std::endl;
+            }
+        }
+
+        for (auto libname : knownLibraries)
+        {
+            anari::Library lib = anari::loadLibrary(libname, NetworkManager::AnariEngineStatusCallback);
+            if (lib)
+            {
+                loadable.push_back(libname);
+                anariUnloadLibrary(lib);
+            }
+        }
+
+        info["libraries"] = loadable;
+        return info.ToXML();
+    }
+
+    anari::Library lib = anari::loadLibrary(libraryName.c_str(), NetworkManager::AnariEngineStatusCallback);
+    if (!lib)
+    {
+        debug1 << "[ANARI] Engine could not load ANARI library '"
+               << libraryName << "'" << std::endl;
+        info["available"] = 0;
+        return info.ToXML();
+    }
+
+    if (librarySubtype.empty())
+    {
+        stringVector subtypes;
+        const char **devices = anariGetDeviceSubtypes(lib);
+
+        if (devices)
+            for (const char **d = devices; *d != nullptr; ++d)
+                subtypes.push_back(*d);
+        else
+            subtypes.push_back("default");
+
+        info["subtypes"] = subtypes;
+        anariUnloadLibrary(lib);
+        return info.ToXML();
+    }
+
+    anari::Device device = anari::newDevice(lib, librarySubtype.c_str());
+    if (!device)
+    {
+        debug1 << "[ANARI] Engine could not create ANARI device for library '"
+               << libraryName << "', subtype '" << librarySubtype << "'" << std::endl;
+        anariUnloadLibrary(lib);
+        return info.ToXML();
+    }
+
+    if (rendererSubtype.empty())
+    {
+        stringVector renderers;
+        const char **rendererSubtypes = anariGetObjectSubtypes(device, ANARI_RENDERER);
+
+        if (rendererSubtypes)
+            for (const char **r = rendererSubtypes; *r != nullptr; ++r)
+                renderers.push_back(*r);
+        else
+            renderers.push_back("default");
+            
+        info["renderers"] = renderers;
+        anari::release(device, device);
+        anariUnloadLibrary(lib);
+        return info.ToXML();
+    }
+
+    MapNode params;
+    const ANARIParameter *parameterList = static_cast<const ANARIParameter*>(
+        anariGetObjectInfo(device, ANARI_RENDERER, rendererSubtype.c_str(),
+                            "parameter", ANARI_PARAMETER_LIST));
+
+    for (const ANARIParameter *param = parameterList; param && param->name != nullptr; ++param)
+    {
+        MapNode paramInfo;
+        paramInfo["type"] = (int)param->type;
+
+        const void *desc = anariGetParameterInfo(device, ANARI_RENDERER,
+            rendererSubtype.c_str(), param->name, param->type,
+            "description", ANARI_STRING);
+        if (desc)
+            paramInfo["description"] = static_cast<const char*>(desc);
+
+        const void *defaultVal = anariGetParameterInfo(device, ANARI_RENDERER,
+            rendererSubtype.c_str(), param->name, param->type,
+            "default", param->type);
+        paramInfo["default"] = NetworkManager::AnariValueToString(param->type, defaultVal);
+
+        const void *minVal = anariGetParameterInfo(device, ANARI_RENDERER,
+            rendererSubtype.c_str(), param->name, param->type,
+            "minimum", param->type);
+        paramInfo["minimum"] = NetworkManager::AnariValueToString(param->type, minVal);
+
+        const void *maxVal = anariGetParameterInfo(device, ANARI_RENDERER,
+            rendererSubtype.c_str(), param->name, param->type,
+            "maximum", param->type);
+        paramInfo["maximum"] = NetworkManager::AnariValueToString(param->type, maxVal);
+
+        const char **acceptedValues = (const char **)anariGetParameterInfo(
+            device, ANARI_RENDERER, rendererSubtype.c_str(), param->name,
+            param->type, "value", ANARI_STRING_LIST);
+        stringVector accepted;
+        if (acceptedValues)
+            for (const char **v = acceptedValues; *v != nullptr; ++v)
+                accepted.push_back(*v);
+        paramInfo["acceptedValues"] = accepted;
+
+        params[param->name] = paramInfo;
+    }
+
+    info["parameters"] = params;
+    anari::release(device, device);
+    anariUnloadLibrary(lib);
+    return info.ToXML();
+#endif
 }
 
 void

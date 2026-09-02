@@ -242,6 +242,9 @@ class VIEWERCORE_API ViewerQueryManager : public ViewerBase
 
     void            Query(const MapNode &queryParams);
     void            GetQueryParameters(const std::string &queryName);
+    void            GetAnariDeviceInfo(const std::string &libraryName,
+                                       const std::string &librarySubtype,
+                                       const std::string &rendererSubtype);
 
     void            Pick(PICK_POINT_INFO *pd, const int dom = -1,
                          const int el = -1);
