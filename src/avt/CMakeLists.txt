@@ -13,6 +13,9 @@
 #   Ryan Krattiger, Fri Oct 31 13:37:05 CST 2025
 #   Blueprints with optional MFEM dependency
 #
+#   Kathleen Biagas, Wed Sep 2, 2026
+#   avtBlueprint is dependent on MFEM.
+#
 #****************************************************************************
 
 if(VISIT_DBIO_ONLY)
@@ -46,9 +49,8 @@ else()
 
     if(HAVE_MFEM)
         add_subdirectory(MFEM)
-    endif()
-
-    if(HAVE_CONDUIT)
-        add_subdirectory(Blueprint)
+        if(HAVE_CONDUIT)
+            add_subdirectory(Blueprint)
+        endif()
     endif()
 endif()
