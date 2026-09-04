@@ -9,12 +9,6 @@
 #ifndef AVT_M3D_FILE_FORMAT_H
 #define AVT_M3D_FILE_FORMAT_H
 
-// Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
-// in this file uses version 1.6 of the HDF5 API. This is harmless for
-// versions of HDF5 before 1.8 and ensures correct compilation with
-// version 1.8 and thereafter. When, and if, the HDF5 code in this file
-// is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
 #include <avtMTMDFileFormat.h>
 
@@ -36,13 +30,13 @@ class VarInfo
 {
  public:
         VarInfo()
-            { varName = ""; varDim = -1; dataID = -1; planeIdx = -1; }
-        VarInfo( std::string &nm, hid_t id, int dim, int idx=-1 )
-            { varName = nm; dataID = id; varDim = dim; planeIdx = idx; }
+            { varName = ""; varDim = -1; varIndex = -1; planeIdx = -1; }
+        VarInfo( std::string &nm, int idx, int dim, int planeIdx_=-1 )
+            { varName = nm; varIndex = idx; varDim = dim; planeIdx = planeIdx_; }
 
         std::string varName;
         int varDim, planeIdx;
-        hid_t dataID;
+        int varIndex;
 };
 
 // ****************************************************************************
@@ -58,10 +52,11 @@ class VarInfo
 class CellInfo
 {
  public:
-        CellInfo() { id = -1; numCells = -1; }
-        CellInfo( int i, int n ) { id = i; numCells = n; }
+        CellInfo() { cellSetIndex = -1; numCells = -1; }
+        CellInfo(int i, int n) { cellSetIndex = i; numCells = n; }
 
-        int id, numCells;
+        int cellSetIndex;
+        int numCells;
 };
 
 
@@ -126,7 +121,6 @@ class avtM3DFileFormat : public avtMTMDFileFormat
         bool m_vValidFile;
         std::string m_filename;
         std::string m_XPClassStr, m_Plane3DString, m_Plane2DString, m_FullString;
-        std::vector<hid_t> m_coordIDs;
         std::vector<double> m_timeSteps;
         std::vector<CellInfo*> m_cellInfo;
         std::vector<VarInfo*> m_scalarVarNames, m_vectorVarNames, m_tensorVarNames;

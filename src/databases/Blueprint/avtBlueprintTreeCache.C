@@ -810,7 +810,7 @@ avtBlueprintTreeCache::IO::ReadHDF5Slab(hid_t h5_file_id,
                                         void *data_ptr)
 {
     // open the dataset
-    hid_t h5_dset_id = H5Dopen( h5_file_id, fetch_path.c_str(),H5P_DEFAULT);
+    hid_t h5_dset_id = H5Dopen2(h5_file_id, fetch_path.c_str(), H5P_DEFAULT);
 
     CHECK_HDF5_ERROR(h5_dset_id,
                      "Error opening HDF5 dataset at: " << fetch_path);
@@ -1392,5 +1392,4 @@ avtBlueprintTreeCache::Read(const std::string &file_path,
 
     return res;
 }
-
 

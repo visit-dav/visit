@@ -65,7 +65,6 @@
 // versions of HDF5 before 1.8 and ensures correct compilation with
 // version 1.8 and thereafter. When, and if, the HDF5 code in this file
 // is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
 #include <visit-hdf5.h>
 
@@ -107,7 +106,7 @@ avtSAMRAIFileFormat::InitializeHDF5(void)
 {
     debug5 << "Initializing HDF5 Library" << endl;
     H5open();
-    H5Eset_auto(NULL, NULL);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 }
 
 // ****************************************************************************
@@ -1175,7 +1174,7 @@ avtSAMRAIFileFormat::ReadVar(int patch,
                         patch_map[patch].patch_number, 
                         var_name.c_str(), offset);
             }
-            hid_t h5d_variable = H5Dopen(h5f_file, variable);
+            hid_t h5d_variable = H5Dopen2(h5f_file, variable, H5P_DEFAULT);
             if (h5d_variable < 0)
             {
                 EXCEPTION1(InvalidFilesException, file);
@@ -1218,7 +1217,7 @@ avtSAMRAIFileFormat::ReadVar(int patch,
             //
             // Ok, now read any material-specific fractional values for this component
             //
-            hid_t h5d_mixvar = H5Dopen(h5f_file, mixvar);
+            hid_t h5d_mixvar = H5Dopen2(h5f_file, mixvar, H5P_DEFAULT);
             if (h5d_mixvar < 0)
               continue;
 
@@ -1349,7 +1348,7 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
         EXCEPTION1(InvalidFilesException, file);
     }
 
-    hid_t h5d_variable = H5Dopen(h5f_file, variable);
+    hid_t h5d_variable = H5Dopen2(h5f_file, variable, H5P_DEFAULT);
     if (h5d_variable < 0)
     {
         EXCEPTION1(InvalidFilesException, file);
@@ -3068,7 +3067,7 @@ avtSAMRAIFileFormat::ReadTime(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/VDR_version_number");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/VDR_version_number", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/VDR_version_number does not exist. Unable "
@@ -3251,7 +3250,7 @@ avtSAMRAIFileFormat::ReadDX(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadNumPatches(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_global_patches");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/number_global_patches", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/number_global_patches", file_name.c_str());
@@ -3280,7 +3279,7 @@ avtSAMRAIFileFormat::ReadNumPatches(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadNumPatchesLevel(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/number_patches_at_level");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/number_patches_at_level", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/number_patches_at_level", 
@@ -3312,8 +3311,8 @@ avtSAMRAIFileFormat::ReadNumPatchesLevel(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadRatiosCoarserLevels(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, 
-                               "/BASIC_INFO/ratios_to_coarser_levels");
+    hid_t h5_dataset = H5Dopen2(h5_file,
+                               "/BASIC_INFO/ratios_to_coarser_levels", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/ratios_to_coarser_levels", 
@@ -3345,7 +3344,7 @@ avtSAMRAIFileFormat::ReadRatiosCoarserLevels(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadNumClusters(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_file_clusters");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/number_file_clusters", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/number_file_clusters", 
@@ -3375,7 +3374,7 @@ avtSAMRAIFileFormat::ReadNumClusters(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadNumProcessors(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_processors");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/number_processors", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/number_processors", file_name.c_str());
@@ -3404,7 +3403,7 @@ avtSAMRAIFileFormat::ReadNumProcessors(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadNumVariables(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_visit_variables");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/number_visit_variables", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/number_visit_variables", 
@@ -3437,7 +3436,7 @@ avtSAMRAIFileFormat::ReadVarCellCentered(hid_t &h5_file)
     if (num_vars <= 0)
         return;
 
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/var_cell_centered");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/var_cell_centered", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/var_cell_centered", file_name.c_str());
@@ -3468,7 +3467,7 @@ avtSAMRAIFileFormat::ReadVarCellCentered(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadGridType(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/grid_type");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/grid_type", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/grid_type", file_name.c_str());
@@ -3680,7 +3679,7 @@ avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
             char ds_name[50];
             sprintf(ds_name, "/extents/%s-Extents", var_names[v].c_str());
       
-            hid_t h5_dataset = H5Dopen(h5_file, ds_name);
+            hid_t h5_dataset = H5Dopen2(h5_file, ds_name, H5P_DEFAULT);
             if (h5_dataset < 0) {
                 char str[1024];
                 sprintf(str, "%s::%s", file_name.c_str(), ds_name);
@@ -3699,7 +3698,7 @@ avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
                 sprintf(ds_name, "/extents/%s.%02d-Extents",
                         var_names[v].c_str(), c);
       
-                hid_t h5_dataset = H5Dopen(h5_file, ds_name);
+                hid_t h5_dataset = H5Dopen2(h5_file, ds_name, H5P_DEFAULT);
                 if (h5_dataset < 0) {
                     char str[1024];
                     sprintf(str, "%s::%s", file_name.c_str(), ds_name);
@@ -3739,7 +3738,7 @@ avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/extents/patch_extents");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/extents/patch_extents", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/extents/patch_extents", file_name.c_str());
@@ -3749,10 +3748,10 @@ avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
     patch_extents = new patch_extents_t[num_patches];
 
     hsize_t dim[] = {3};
-    hid_t h5_lower_datatype = H5Tarray_create(H5T_NATIVE_INT, 1, dim, NULL);
-    hid_t h5_upper_datatype = H5Tarray_create(H5T_NATIVE_INT, 1, dim, NULL);
-    hid_t h5_xlo_datatype = H5Tarray_create(H5T_NATIVE_DOUBLE, 1, dim, NULL);
-    hid_t h5_xup_datatype = H5Tarray_create(H5T_NATIVE_DOUBLE, 1, dim, NULL);
+    hid_t h5_lower_datatype = H5Tarray_create(H5T_NATIVE_INT, 1, dim);
+    hid_t h5_upper_datatype = H5Tarray_create(H5T_NATIVE_INT, 1, dim);
+    hid_t h5_xlo_datatype = H5Tarray_create(H5T_NATIVE_DOUBLE, 1, dim);
+    hid_t h5_xup_datatype = H5Tarray_create(H5T_NATIVE_DOUBLE, 1, dim);
 
     int size = H5Tget_size(h5_lower_datatype) + 
                H5Tget_size(h5_upper_datatype) + 
@@ -3828,7 +3827,7 @@ avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
 void
 avtSAMRAIFileFormat::ReadPatchBoundaryType(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/extents/bdry_type");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/extents/bdry_type", H5P_DEFAULT);
 
     if (h5_dataset < 0)
         return; // silently ignore if not available
@@ -3856,7 +3855,7 @@ avtSAMRAIFileFormat::ReadPatchBoundaryType(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadPatchMap(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/extents/patch_map");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/extents/patch_map", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/extents/patch_map", file_name.c_str());
@@ -3897,7 +3896,7 @@ avtSAMRAIFileFormat::ReadPatchMap(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadChildArrayLength(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/child_array_length");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/child_array_length", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/child_array_length", file_name.c_str());
@@ -3929,7 +3928,7 @@ avtSAMRAIFileFormat::ReadChildArray(hid_t &h5_file)
     if (child_array_length == 0)
         return;
 
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/child_array");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/child_array", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/child_array", file_name.c_str());
@@ -3963,7 +3962,7 @@ avtSAMRAIFileFormat::ReadChildPointerArray(hid_t &h5_file)
     if (child_array_length == 0)
         return;
 
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/child_pointer_array");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/child_pointer_array", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/child_pointer_array", file_name.c_str());
@@ -4001,7 +4000,7 @@ avtSAMRAIFileFormat::ReadChildPointerArray(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadParentArrayLength(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/parent_array_length");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/parent_array_length", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/parent_array_length", file_name.c_str());
@@ -4033,7 +4032,7 @@ avtSAMRAIFileFormat::ReadParentArray(hid_t &h5_file)
     if (parent_array_length == 0)
         return;
 
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/parent_array");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/parent_array", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/parent_array", file_name.c_str());
@@ -4067,7 +4066,7 @@ avtSAMRAIFileFormat::ReadParentPointerArray(hid_t &h5_file)
     if (parent_array_length == 0)
         return;
 
-    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/parent_pointer_array");
+    hid_t h5_dataset = H5Dopen2(h5_file, "/BASIC_INFO/parent_pointer_array", H5P_DEFAULT);
     if (h5_dataset < 0) {
         char str[1024];
         sprintf(str, "%s::/BASIC_INFO/parent_pointer_array", file_name.c_str());
@@ -4603,7 +4602,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
             return false;
     }
 
-    hid_t h5_dataset = H5Dopen(hdfFile, dsPath);
+    hid_t h5_dataset = H5Dopen2(hdfFile, dsPath, H5P_DEFAULT);
     if (h5_dataset < 0)
     {
         if (isOptional)

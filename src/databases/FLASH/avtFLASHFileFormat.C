@@ -46,7 +46,6 @@
 // versions of HDF5 before 1.8 and ensures correct compilation with
 // version 1.8 and thereafter. When, and if, the HDF5 code in this file
 // is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
 #include <visit-hdf5.h>
 
@@ -156,7 +155,7 @@ avtFLASHFileFormat::InitializeHDF5(void)
 {
     debug5 << "Initializing HDF5 Library" << endl;
     H5open();
-    H5Eset_auto(NULL, NULL);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 }
 
 // ****************************************************************************
@@ -838,7 +837,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
     }
     else if (string(meshname) == "particles")
     {
-        hid_t pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+        hid_t pointId = H5Dopen2(fileId, particleHDFVarName.c_str(), H5P_DEFAULT);
 
         vtkPoints *points  = vtkPoints::New();
         points->SetNumberOfPoints(numParticles);
@@ -947,7 +946,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
         float *vals = new float[nvals];
 
         string varname = string(meshname).substr(7); 
-        hid_t varId = H5Dopen(fileId, varname.c_str());
+        hid_t varId = H5Dopen2(fileId, varname.c_str(), H5P_DEFAULT);
 
         H5Dread(varId, H5T_NATIVE_FLOAT, H5S_ALL,H5S_ALL,H5P_DEFAULT, vals);
         H5Dclose(varId);
@@ -1408,7 +1407,7 @@ avtFLASHFileFormat::GetVar(int visitDomain, const char *vname)
         string varname = particleVarNames[index];
         hid_t  vartype = particleVarTypes[index];
 
-        hid_t pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+        hid_t pointId = H5Dopen2(fileId, particleHDFVarName.c_str(), H5P_DEFAULT);
 
         vtkFloatArray * fa = vtkFloatArray::New();
         fa->SetNumberOfTuples(numParticles);
@@ -1463,7 +1462,7 @@ avtFLASHFileFormat::GetVar(int visitDomain, const char *vname)
         // It's a grid variable
         //
 
-        hid_t varId = H5Dopen(fileId, vn_substr.c_str());
+        hid_t varId = H5Dopen2(fileId, vn_substr.c_str(), H5P_DEFAULT);
         if (varId < 0)
         {
             EXCEPTION1(InvalidVariableException, vn_substr.c_str());
@@ -1755,7 +1754,7 @@ avtFLASHFileFormat::ReadAllMetaData()
 // Support for files w/o "processor number"
 void avtFLASHFileFormat::ReadProcessorNumbers()
 {
-    hid_t rootId = H5Gopen(fileId, "/");
+    hid_t rootId = H5Gopen2(fileId, "/", H5P_DEFAULT);
     if (rootId < 0)
     {
         debug5 << "[avtFLASHFileFormat::ReadProcessorNumbers] - Didn't open root group" << endl;
@@ -1794,7 +1793,7 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
         //
         // Read the processor number description for the blocks
         //
-        hid_t procnumId = H5Dopen(fileId, "processor number");
+        hid_t procnumId = H5Dopen2(fileId, "processor number", H5P_DEFAULT);
         if (procnumId < 0)
         {
             H5Fclose(fileId);
@@ -1879,7 +1878,7 @@ void avtFLASHFileFormat::ReadCoordinates()
     //
     // Read the coordinates description for the blocks
     //
-    hid_t coordinatesId = H5Dopen(fileId, "coordinates");
+    hid_t coordinatesId = H5Dopen2(fileId, "coordinates", H5P_DEFAULT);
     if (coordinatesId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -1978,7 +1977,7 @@ void avtFLASHFileFormat::ReadNodeTypes()
     //
     // Read the node type description for the blocks
     //
-    hid_t nodetypeId = H5Dopen(fileId, "node type");
+    hid_t nodetypeId = H5Dopen2(fileId, "node type", H5P_DEFAULT);
     if (nodetypeId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2052,18 +2051,18 @@ void avtFLASHFileFormat::ReadNodeTypes()
 void avtFLASHFileFormat::ReadBlockStructure()
 {
     // temporarily disable error reporting
-    H5E_auto_t  old_errorfunc;
+    H5E_auto2_t  old_errorfunc;
     void       *old_clientdata;
-    H5Eget_auto(&old_errorfunc, &old_clientdata);
-    H5Eset_auto(NULL, NULL);
+    H5Eget_auto2(H5E_DEFAULT, &old_errorfunc, &old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     //
     // Read the "gid" block connectivity description
     //
-    hid_t gidId = H5Dopen(fileId, "gid");
+    hid_t gidId = H5Dopen2(fileId, "gid", H5P_DEFAULT);
 
     // turn back on error reporting
-    H5Eset_auto(old_errorfunc, old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, old_errorfunc, old_clientdata);
 
     if (gidId < 0)
     {
@@ -2167,7 +2166,7 @@ void avtFLASHFileFormat::ReadBlockExtents()
     //
     // Read the bounding box description for the blocks
     //
-    hid_t bboxId = H5Dopen(fileId, "bounding box");
+    hid_t bboxId = H5Dopen2(fileId, "bounding box", H5P_DEFAULT);
     if (bboxId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2291,7 +2290,7 @@ void avtFLASHFileFormat::ReadRefinementLevels()
     //
     // Read the bounding box description for the blocks
     //
-    hid_t refinementId = H5Dopen(fileId, "refine level");
+    hid_t refinementId = H5Dopen2(fileId, "refine level", H5P_DEFAULT);
     if (refinementId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2374,7 +2373,7 @@ void avtFLASHFileFormat::ReadSimulationParameters(hid_t file_id,
         //
         // Read the simulation parameters
         //
-        hid_t simparamsId = H5Dopen(file_id, "simulation parameters");
+        hid_t simparamsId = H5Dopen2(file_id, "simulation parameters", H5P_DEFAULT);
         if (simparamsId < 0)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2474,7 +2473,7 @@ avtFLASHFileFormat::ReadUnknownNames()
     //
     // Read the variable ("unknown") names
     //
-    hid_t unknownsId = H5Dopen(fileId, "unknown names");
+    hid_t unknownsId = H5Dopen2(fileId, "unknown names", H5P_DEFAULT);
     if (unknownsId < 0)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2552,23 +2551,23 @@ void
 avtFLASHFileFormat::ReadParticleAttributes()
 {
     // temporarily disable error reporting
-    H5E_auto_t  old_errorfunc;
+    H5E_auto2_t  old_errorfunc;
     void       *old_clientdata;
-    H5Eget_auto(&old_errorfunc, &old_clientdata);
-    H5Eset_auto(NULL, NULL);
+    H5Eget_auto2(H5E_DEFAULT, &old_errorfunc, &old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     // find the particle variable (if it exists)
     hid_t pointId;
     particleHDFVarName = "particle tracers";
-    pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+    pointId = H5Dopen2(fileId, particleHDFVarName.c_str(), H5P_DEFAULT);
     if (pointId < 0)
     {
         particleHDFVarName = "tracer particles";
-        pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+        pointId = H5Dopen2(fileId, particleHDFVarName.c_str(), H5P_DEFAULT);
     }
 
     // turn back on error reporting
-    H5Eset_auto(old_errorfunc, old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, old_errorfunc, old_clientdata);
 
     // Doesn't exist?  No problem -- we just don't have any particles
     if (pointId < 0)
@@ -3062,10 +3061,10 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
 {
     debug5 << "Determining FLASH file format version." << endl;
     // temporarily disable error reporting
-    H5E_auto_t  old_errorfunc;
+    H5E_auto2_t  old_errorfunc;
     void       *old_clientdata;
-    H5Eget_auto(&old_errorfunc, &old_clientdata);
-    H5Eset_auto(NULL, NULL);
+    H5Eget_auto2(H5E_DEFAULT, &old_errorfunc, &old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     // If this is a FLASH3 Particles file, or a FLASH3 file with particles, 
     // then it will have the "particle names" field.  If, in addition, it's a
@@ -3074,7 +3073,7 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
     // needed for non-particle files.  So...further checking all around.
 
     int flash3_particles = 0;   //  Init to false
-    hid_t h5_PN = H5Dopen(file_id, "particle names");
+    hid_t h5_PN = H5Dopen2(file_id, "particle names", H5P_DEFAULT);
     if (h5_PN >= 0)
     {
         flash3_particles = 1;
@@ -3085,13 +3084,13 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
     //
     // Read the file format version  (<= 7 means FLASH2)
     //
-    hid_t h5_FFV = H5Dopen(file_id, "file format version");
+    hid_t h5_FFV = H5Dopen2(file_id, "file format version", H5P_DEFAULT);
 
     if (h5_FFV < 0)
     {
         debug5 << "File format version not found in global attributes.  " 
                << "Looking for sim info." << endl;
-        hid_t h5_SI = H5Dopen(file_id, "sim info");
+        hid_t h5_SI = H5Dopen2(file_id, "sim info", H5P_DEFAULT);
         if (h5_SI < 0)
         {
             debug5 << "sim info not found, assuming FLASH2...unless FLASH3 particles" << endl;
@@ -3135,7 +3134,7 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
             fileFormatVersion = simInfo.file_format_version;
         }
         // turn back on error reporting
-        H5Eset_auto(old_errorfunc, old_clientdata);
+        H5Eset_auto2(H5E_DEFAULT, old_errorfunc, old_clientdata);
         return;
     }
 
@@ -3152,7 +3151,7 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
 
     H5Dclose(h5_FFV);
     // turn back on error reporting
-    H5Eset_auto(old_errorfunc, old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, old_errorfunc, old_clientdata);
 }
 
 // ****************************************************************************
@@ -3182,7 +3181,7 @@ avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
     if (fileFormatVersion < FLASH3_FFV8)
         return;
 
-    hid_t intScalarsId = H5Dopen(file_id, "integer scalars");
+    hid_t intScalarsId = H5Dopen2(file_id, "integer scalars", H5P_DEFAULT);
     //
     //
     // Read the integer scalars
@@ -3264,7 +3263,7 @@ avtFLASHFileFormat::ReadRealScalars(hid_t file_id)
     if (fileFormatVersion < FLASH3_FFV8)
         return;
 
-    hid_t realScalarsId = H5Dopen(file_id, "real scalars");
+    hid_t realScalarsId = H5Dopen2(file_id, "real scalars", H5P_DEFAULT);
     //
     // Read the real scalars
     //
@@ -3340,15 +3339,15 @@ avtFLASHFileFormat::ReadParticleAttributes_FLASH3()
         return;
 
     // temporarily disable error reporting
-    H5E_auto_t  old_errorfunc;
+    H5E_auto2_t  old_errorfunc;
     void       *old_clientdata;
-    H5Eget_auto(&old_errorfunc, &old_clientdata);
-    H5Eset_auto(NULL, NULL);
+    H5Eget_auto2(H5E_DEFAULT, &old_errorfunc, &old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
-    hid_t pnameId = H5Dopen(fileId, "particle names");
+    hid_t pnameId = H5Dopen2(fileId, "particle names", H5P_DEFAULT);
 
     // turn back on error reporting
-    H5Eset_auto(old_errorfunc, old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, old_errorfunc, old_clientdata);
 
     // do we have particle names?
     if (pnameId < 0)
@@ -3422,21 +3421,21 @@ avtFLASHFileFormat::ReadParticleAttributes_FLASH3()
     // 
 
     // temporarily disable error reporting
-    H5Eget_auto(&old_errorfunc, &old_clientdata);
-    H5Eset_auto(NULL, NULL);
+    H5Eget_auto2(H5E_DEFAULT, &old_errorfunc, &old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     // find the particle variable (if it exists)
     hid_t pointId;
     particleHDFVarName = "particle tracers";
-    pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+    pointId = H5Dopen2(fileId, particleHDFVarName.c_str(), H5P_DEFAULT);
     if (pointId < 0)
     {
         particleHDFVarName = "tracer particles";
-        pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+        pointId = H5Dopen2(fileId, particleHDFVarName.c_str(), H5P_DEFAULT);
     }
 
     // turn back on error reporting
-    H5Eset_auto(old_errorfunc, old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, old_errorfunc, old_clientdata);
 
     // Doesn't exist?  No problem -- we just don't have any particles
     if (pointId < 0)
