@@ -2264,8 +2264,9 @@ void avtXdmfFileFormat::SetCurrentGrid(int timestate, const char * meshname)
         if (currentGrid != NULL) {
             delete currentGrid;
         }
-        currentGrid = new XdmfGrid();
+
         if (timestate == 0) {
+            currentGrid = new XdmfGrid();
             int id = 1;
             while (true) {
                 std::stringstream gridLocation;
