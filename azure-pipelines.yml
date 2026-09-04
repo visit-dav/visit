@@ -14,7 +14,8 @@
 # consistent with those same files listed in the paths trigger
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2026-03-04-sha1bd594
+  GIT_LFS_SKIP_SMUDGE: 1
+  container_tag: visitdav/visit-ci-develop:2026-05-21-sha848d41
   python_test_files: >
     ../../src/test/tests/databases/silo.py
     ../../src/test/tests/databases/blueprint.py
@@ -38,8 +39,7 @@ pr:
   branches:
     include:
     - develop
-    - '[0-9].[0-9]RC'
-    - '[0-9].[0-9][0-9]RC'
+    - '*.*RC'
   paths:
     include:
     - 'azure-pipelines.yml'
@@ -77,8 +77,11 @@ stages:
       vmImage: 'ubuntu-latest'
     steps:
       - checkout: self
-        clean: boolean
-        submodules: recursive
+        clean: true
+        submodules: true
+        fetchDepth: 1
+        fetchTags: false
+        lfs: false
 
       - script: |
           #######################################
@@ -103,8 +106,33 @@ stages:
       TPLS_PATH: /masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
     steps:
       - checkout: self
-        clean: boolean
-        submodules: recursive
+        clean: true
+        submodules: true
+        fetchDepth: 1
+        fetchTags: false
+        lfs: false
+
+      - script: |
+           #################################
+           # Fetch subset of test data (silo + blueprint).
+           # Do as early as possible to fail fast if no LFS budget 
+           #################################
+           set -e
+
+           echo "Fetching data-repository LFS objects..."
+           cd data
+           git lfs pull --include "**/silo*.tar.xz"
+           git lfs pull --include "**/blueprint*.tar.xz"
+
+           echo "Fetching VisIt baseline LFS objects..."
+           cd ..
+           git lfs pull --include="test/baseline/databases/silo/**"
+           git lfs pull --include="test/baseline/databases/blueprint/**"
+           git lfs pull --include="test/baseline/databases/blueprint_export/**"
+           git lfs pull --include="test/baseline/hybrid/ddf/**"
+
+           echo "LFS test-data fetch completed successfully."
+        displayName: 'Fetch LFS Test Data'
 
       - script: |
            #################################
@@ -131,21 +159,13 @@ stages:
 
       - script: |
            #################################
-           # fetch subset of test data (silo + blueprint)
+           # unpack test data
            #################################
-           cd data
-           git lfs pull --include "**/silo*.tar.xz"
-           git lfs pull --include "**/blueprint*.tar.xz"
-           cd ../
-           git lfs pull  --include test/baseline/databases/silo
-           git lfs pull  --include test/baseline/databases/blueprint
-           git lfs pull  --include test/baseline/databases/blueprint_export
-           git lfs pull  --include test/baseline/hybrid/ddf
            cd build/testdata/
            for f in ../../data/silo*.tar.xz ../../data/blueprint*.tar.xz; do
              tar xvf "$f"
            done
-        displayName: 'Prep Test Data'
+        displayName: 'Unpack Test Data'
 
       - script: |
            #################################
@@ -170,10 +190,11 @@ stages:
            fi
         displayName: 'Run Tests'
 
-      - task: CopyFiles@2
+      - task: PublishPipelineArtifact@1
         inputs:
-          contents: 'build/test/output/html/**'
-          targetFolder: $(Build.ArtifactStagingDirectory)
+          targetPath: 'build/test/output/html'
+          artifact: 'VisIt_Test_Outputs'
+          publishLocation: 'pipeline'
         condition: succeededOrFailed()
 
       - script: |
@@ -185,16 +206,11 @@ stages:
            make docs
         displayName: 'Docs'
 
-      - task: CopyFiles@2
+      - task: PublishPipelineArtifact@1
         inputs:
-          contents: 'build/resources/help/en_US/manual/**'
-          targetFolder: $(Build.ArtifactStagingDirectory)
-        condition: succeededOrFailed()
-
-      - task: PublishBuildArtifacts@1
-        inputs:
-          pathToPublish: $(Build.ArtifactStagingDirectory)
-          artifactName: VisIt_Test_Outputs
+          targetPath: 'build/resources/help/en_US/manual'
+          artifact: 'VisIt_Manual'
+          publishLocation: 'pipeline'
         condition: succeededOrFailed()
 
       # - script: |

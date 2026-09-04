@@ -143,7 +143,7 @@ function build_vtkm
     #
     # Prepare build dir
     #
-    prepare_build_dir $VTKM_BUILD_DIR $VTKM_FILE
+    prepare_build_dir $VTKM_BUILD_DIR $VTKM_FILE SHA256 $VTKM_SHA256_CHECKSUM
     untarred_vtkm=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -233,10 +233,10 @@ function build_vtkm
     info "Installing VTKm . . . (~2 minutes)"
     ${CMAKE_COMMAND} --install . || error "VTKm did not install correctly."
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/vtkm"
-        chgrp -R ${GROUP} "$VISITDIR/vtkm"
-    fi
+    cleanup_build_dirs $VTKM_BUILD_DIR $VTKM_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/vtkm"
+
     cd "$START_DIR"
     info "Done with vtkm"
     return 0

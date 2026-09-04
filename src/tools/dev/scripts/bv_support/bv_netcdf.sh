@@ -174,7 +174,7 @@ function build_netcdf
 {
     # Prepare build dir
     #
-    prepare_build_dir $NETCDF_BUILD_DIR $NETCDF_FILE
+    prepare_build_dir $NETCDF_BUILD_DIR $NETCDF_FILE SHA256 $NETCDF_SHA256_CHECKSUM
     untarred_netcdf=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -299,10 +299,10 @@ function build_netcdf
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/netcdf"
-        chgrp -R ${GROUP} "$VISITDIR/netcdf"
-    fi
+    cleanup_build_dirs $NETCDF_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/netcdf"
+
     cd "$START_DIR"
     info "Done with NetCDF"
     return 0

@@ -10,6 +10,7 @@
 
 #include <avtCGNSFileReader.h>
 #include <avtDatabaseMetaData.h>
+#include <avtVariableCache.h>
 
 #include <InvalidFilesException.h>
 
@@ -226,6 +227,21 @@ avtCGNS_MTMDFileFormat::GetVectorVar(int timestate, int domain, const char *varn
 }
 
 // ****************************************************************************
+//  Method: avtCGNS_MTMDFileReader::GetAuxiliaryData
+//
+// ****************************************************************************
+
+void *
+avtCGNS_MTMDFileFormat::GetAuxiliaryData(const char *var, int timestate,
+    int domain, const char *type, void *args, DestructorFunction &df)
+{
+    (void) domain;
+    if (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0)
+        return 0;
+    return reader->GetAuxiliaryData(var, timestate, type, args, df);
+}
+
+// ****************************************************************************
 //  Method: avtCGNS_MTMDFileReader::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -237,6 +253,8 @@ avtCGNS_MTMDFileFormat::GetVectorVar(int timestate, int domain, const char *varn
 //  Creation:   Fri Feb 28 13:48:04 PST 2020
 //
 //  Modifications:
+//    Kathleen Biagas, Mon Apr 27 10:37:08 PDT 2026
+//    Add logic for populating domain boundary info.
 //
 // ****************************************************************************
 
@@ -245,6 +263,32 @@ avtCGNS_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timestate)
 {
     reader->PopulateDatabaseMetaData(md, timestate);
+
+#ifdef ENGINE
+
+    if (cache != NULL)
+    {
+        stringVector names = md->GetAllMeshNames();
+        if (names.size() == 1)
+        {
+            void_ref_ptr vr = cache->GetVoidRef("any_mesh",
+                AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, timestate, -1);
+            if (*vr == NULL)
+            {
+                DestructorFunction df;
+                void *dbi = reader->GetAuxiliaryData(names[0].c_str(), timestate,
+                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, NULL, df);
+                if (dbi != NULL)
+                {
+                    vr = void_ref_ptr(dbi, df);
+                    cache->CacheVoidRef("any_mesh",
+                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                        timestate, -1, vr);
+                }
+            }
+        }
+    }
+#endif
 }
 
 // ****************************************************************************
@@ -454,6 +498,20 @@ avtCGNS_MTSDFileFormat::GetVectorVar(int timestate, const char *varname)
 }
 
 // ****************************************************************************
+//  Method: avtCGNS_MTSDFileReader::GetAuxiliaryData
+//
+// ****************************************************************************
+
+void *
+avtCGNS_MTSDFileFormat::GetAuxiliaryData(const char *var, int timestate,
+    const char *type, void *args, DestructorFunction &df)
+{
+    if (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0)
+        return 0;
+    return reader->GetAuxiliaryData(var, timestate, type, args, df);
+}
+
+// ****************************************************************************
 //  Method: avtCGNS_MTSDFileReader::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -473,6 +531,29 @@ avtCGNS_MTSDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timestate)
 {
     reader->PopulateDatabaseMetaData(md, timestate);
+
+    if (cache != NULL)
+    {
+        stringVector names = md->GetAllMeshNames();
+        if (names.size() == 1)
+        {
+            void_ref_ptr vr = cache->GetVoidRef("any_mesh",
+                AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, timestate, -1);
+            if (*vr == NULL)
+            {
+                DestructorFunction df;
+                void *dbi = reader->GetAuxiliaryData(names[0].c_str(), timestate,
+                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, NULL, df);
+                if (dbi != NULL)
+                {
+                    vr = void_ref_ptr(dbi, df);
+                    cache->CacheVoidRef("any_mesh",
+                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                        timestate, -1, vr);
+                }
+            }
+        }
+    }
 
     //
     // Check that there is a single mesh.

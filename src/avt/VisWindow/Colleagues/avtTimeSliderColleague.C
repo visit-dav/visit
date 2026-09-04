@@ -9,6 +9,7 @@
 #include <StringHelpers.h>
 #include <VisWindowColleagueProxy.h>
 
+#include <vtkCamera.h>
 #include <vtkRenderer.h>
 #include <vtkTextProperty.h>
 #include <vtkTimeSliderActor.h>
@@ -57,10 +58,17 @@
 //    Brad Whitlock, Mon Dec 10 10:26:44 PST 2012
 //    Initialize values from static members.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
-    avtAnnotationWithTextColleague(m)
+    avtAnnotationWithTextColleague(m),
+    sliderPosition{DEFAULT_X, DEFAULT_Y, 0.},
+    sliderWidth(DEFAULT_WIDTH),
+    sliderHeight(DEFAULT_HEIGHT)
 {
     useForegroundForTextColor = true;
     addedToRenderer = false;
@@ -68,27 +76,18 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     timeDisplayMode = 0;
 
     //
-    // Create and position the time slider actor
+    // Create the time slider actor.
     //
-    double rect[4];
-    GetSliderRect(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT, rect);
     timeSlider = vtkTimeSliderActor::New();
-    timeSlider->GetPositionCoordinate()->SetValue(rect[0], rect[1]);
-    timeSlider->GetPosition2Coordinate()->SetValue(rect[2], rect[3]);
     timeSlider->SetStartColor(0.,1.,1.,1.);
     timeSlider->SetEndColor(1.,1.,1.,0.6);
 
     //
-    // Create and position the start text actor.
+    // Create the text actor.
     //
     textActor = vtkVisItTextActor::New();
     textActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_VIEWPORT);
     SetText(DEFAULT_STRING, "%g");
-    vtkCoordinate *pos = textActor->GetPositionCoordinate();
-    pos->SetCoordinateSystemToNormalizedViewport();
-    GetTextRect(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT, rect);
-    pos->SetValue(rect[0], rect[1], 0.);
-    textActor->SetTextHeight(rect[3] * TEXT_SCALING_CORRECTION);
 
     // Make sure that the text actors initially has the right fg color.
     double fgColor[3];
@@ -151,6 +150,8 @@ avtTimeSliderColleague::~avtTimeSliderColleague()
 // Creation:   Thu Nov 6 14:26:55 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
 //   
 // ****************************************************************************
 
@@ -159,8 +160,8 @@ avtTimeSliderColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
     {
-        mediator.GetForeground()->AddActor2D(timeSlider);
-        mediator.GetForeground()->AddActor2D(textActor);
+        mediator.GetForeground()->AddViewProp(timeSlider);
+        mediator.GetForeground()->AddViewProp(textActor);
         addedToRenderer = true;
     }
 }
@@ -175,6 +176,8 @@ avtTimeSliderColleague::AddToRenderer()
 // Creation:   Thu Nov 6 14:27:22 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
 //   
 // ****************************************************************************
 
@@ -183,8 +186,8 @@ avtTimeSliderColleague::RemoveFromRenderer()
 {
     if(addedToRenderer)
     {
-        mediator.GetForeground()->RemoveActor2D(timeSlider);
-        mediator.GetForeground()->RemoveActor2D(textActor);
+        mediator.GetForeground()->RemoveViewProp(timeSlider);
+        mediator.GetForeground()->RemoveViewProp(textActor);
         addedToRenderer = false;
     }
 }
@@ -269,6 +272,10 @@ avtTimeSliderColleague::ShouldBeAddedToRenderer() const
 //    Brad Whitlock, Wed Sep 28 15:24:47 PDT 2011
 //    Change how the text size gets set.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -350,21 +357,10 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
     if(!currentOptions.FieldsEqual(4, &annot) ||
        !currentOptions.FieldsEqual(5, &annot))
     {
-        const double *p1 = annot.GetPosition();
-        const double *p2 = annot.GetPosition2();
-
-        // Set the time slider's coordinates.
-        double rect[4];
-        GetSliderRect(p1[0], p1[1], p2[0], p2[1], rect);
-        timeSlider->GetPositionCoordinate()->SetValue(rect[0], rect[1]);
-        timeSlider->GetPosition2Coordinate()->SetValue(rect[2], rect[3]);
-
-        // Set the text actor's coordinates.
-        vtkCoordinate *pos = textActor->GetPositionCoordinate();
-        pos->SetCoordinateSystemToNormalizedViewport();
-        GetTextRect(p1[0], p1[1], p2[0], p2[1], rect);
-        pos->SetValue(rect[0], rect[1], 0.);
-        textActor->SetTextHeight(rect[3] * TEXT_SCALING_CORRECTION);
+        sliderPosition[0] = annot.GetPosition()[0];
+        sliderPosition[1] = annot.GetPosition()[1];
+        sliderWidth = annot.GetPosition2()[0];
+        sliderHeight = annot.GetPosition2()[1];
     }
 
     //
@@ -450,6 +446,10 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
 //    Brad Whitlock, Wed Sep 28 14:57:23 PDT 2011
 //    Fix return of size since I changed the text actor.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    I changed the routine to plot the data in world coordinates instead of
+//    normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -459,15 +459,10 @@ avtTimeSliderColleague::GetOptions(AnnotationObject &annot)
     annot.SetVisible(GetVisible());
     annot.SetActive(GetActive());
 
-    const double *p1 = textActor->GetPosition();
-    const double *p3 = timeSlider->GetPosition2();
+    const double p1[3] = {sliderPosition[0], sliderPosition[1], 0.};
+    const double p2[3] = {sliderWidth, sliderHeight, 0.};
     annot.SetPosition(p1);
-    // Store the width and height in position2.
-    double p2wh[3];
-    p2wh[0] = p3[0];
-    p2wh[1] = p3[1] + textActor->GetTextHeight() * (1. / TEXT_SCALING_CORRECTION);
-    p2wh[2] = p3[2];
-    annot.SetPosition2(p2wh);
+    annot.SetPosition2(p2);
 
     double fColor[4]; int iColor[4];
 #define DoublesToColorAttribute(Source, Dest) \
@@ -640,6 +635,10 @@ avtTimeSliderColleague::SetFrameAndState(int nFrames,
 //   Brad Whitlock, Mon Dec 10 10:27:40 PST 2012
 //   Save the current time to the "intial" static members.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -647,6 +646,38 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
     if(lst.size() > 0 && textFormatString != 0)
     {
+        // The zoomTile calculation assumes that the parallel scale for the
+        // foreground renderer is 0.5.
+        double zoomTile =
+            0.5 / mediator.GetForeground()->GetActiveCamera()->GetParallelScale();
+        // Get the width and height of the tile to determine the amount
+        // to scale the width by.
+        int w, h;
+        mediator.GetSize(w, h);
+        double windowScale = double(w) / double(h);
+
+        double rect[4];
+        GetSliderRect(sliderPosition[0], sliderPosition[1], sliderWidth, sliderHeight, rect);
+
+        double p0[2], p1[2];
+        p0[0] = 0.5 - windowScale / 2. + rect[0] * windowScale;
+        p0[1] = rect[1];
+        p1[0] = rect[2] * windowScale;
+        p1[1] = rect[3];
+
+        timeSlider->GetPositionCoordinate()->SetValue(p0[0], p0[1]);
+        timeSlider->GetPosition2Coordinate()->SetValue(p1[0], p1[1]);
+
+        GetTextRect(sliderPosition[0], sliderPosition[1], sliderWidth, sliderHeight, rect);
+
+        p0[0] = 0.5 - windowScale / 2. + rect[0] * windowScale;
+        p0[1] = rect[1];
+
+        vtkCoordinate *pos = textActor->GetPositionCoordinate();
+        pos->SetCoordinateSystemToWorld();
+        pos->SetValue(p0[0], p0[1], 0.);
+        textActor->SetTextHeight(rect[3] * zoomTile * TEXT_SCALING_CORRECTION);
+
         // Look for the first plot that uses a database with multiple time
         // states. If one is not found then we will use the first plot.
         int plotIndex = 0;

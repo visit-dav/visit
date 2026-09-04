@@ -122,7 +122,7 @@ function build_damaris
     #
     # Prepare build dir for Damaris
     #
-    prepare_build_dir $DAMARIS_BUILD_DIR $DAMARIS_FILE
+    prepare_build_dir $DAMARIS_BUILD_DIR $DAMARIS_FILE SHA256 $DAMARIS_SHA256_CHECKSUM
     untarred_damaris=$?
     if [[ $untarred_damaris == -1 ]] ; then
         warn "Unable to prepare Damaris build directory. Giving Up!"
@@ -179,6 +179,12 @@ function build_damaris
         warn "Failed to install Damaris.  Giving up."
         return 1
     fi
+
+    cleanup_build_dirs $DAMARIS_BUILD_DIR
+
+    change_install_dir_perms $VISITDIR/damaris
+
+    cd $START_DIR
 
     return 0
 }

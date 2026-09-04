@@ -347,7 +347,56 @@ diff -c src/gallium/drivers/llvmpipe/lp_screen.c.orig src/gallium/drivers/llvmpi
      case PIPE_CAP_PREFER_BLIT_BASED_TEXTURE_TRANSFER:
 EOF
     if [[ $? != 0 ]] ; then
-        warn "OSMesa patch 6 failed."
+        warn "OSMesa patch 8 failed."
+        return 1
+    fi
+
+    #
+    # Patch so that building with newer glibc/gcc-16 will work. Newer
+    # glibc exposes once_flag, ONCE_FLAG_INIT, and call_once from stdlib.h.
+    #
+    patch -p0 << \EOF
+diff -u include/c11/threads_posix.h.orig include/c11/threads_posix.h
+--- include/c11/threads_posix.h.orig	2018-04-18 01:44:00.000000000 -0700
++++ include/c11/threads_posix.h	2026-07-28 12:00:00.000000000 -0700
+@@ -51,7 +51,10 @@
+ #include <pthread.h>
+ 
+ /*---------------------------- macros ----------------------------*/
++#ifndef ONCE_FLAG_INIT
+ #define ONCE_FLAG_INIT PTHREAD_ONCE_INIT
++#define EMULATED_THREADS_USE_PTHREAD_ONCE
++#endif
+ #ifdef INIT_ONCE_STATIC_INIT
+ #define TSS_DTOR_ITERATIONS PTHREAD_DESTRUCTOR_ITERATIONS
+ #else
+@@ -66,7 +69,9 @@
+ typedef pthread_t       thrd_t;
+ typedef pthread_key_t   tss_t;
+ typedef pthread_mutex_t mtx_t;
++#ifdef EMULATED_THREADS_USE_PTHREAD_ONCE
+ typedef pthread_once_t  once_flag;
++#endif
+ 
+ 
+ /*
+@@ -91,11 +96,13 @@
+ 
+ /*--------------- 7.25.2 Initialization functions ---------------*/
+ // 7.25.2.1
++#ifdef EMULATED_THREADS_USE_PTHREAD_ONCE
+ static inline void
+ call_once(once_flag *flag, void (*func)(void))
+ {
+     pthread_once(flag, func);
+ }
++#endif
+ 
+ 
+ /*------------- 7.25.3 Condition variable functions -------------*/
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "OSMesa patch 9 failed."
         return 1
     fi
 
@@ -359,7 +408,7 @@ function build_osmesa
     #
     # prepare build dir
     #
-    prepare_build_dir $OSMESA_BUILD_DIR $OSMESA_FILE
+    prepare_build_dir $OSMESA_BUILD_DIR $OSMESA_FILE SHA256 $OSMESA_SHA256_CHECKSUM
     untarred_osmesa=$?
     if [[ $untarred_osmesa == -1 ]] ; then
         warn "Unable to prepare Mesa build directory. Giving Up!"
@@ -467,10 +516,10 @@ function build_osmesa
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/osmesa"
-        chgrp -R ${GROUP} "$VISITDIR/osmesa"
-    fi
+    cleanup_build_dirs $OSMESA_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/osmesa"
+
     cd "$START_DIR"
     info "Done with OSMesa"
     return 0

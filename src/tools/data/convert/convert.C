@@ -37,6 +37,7 @@
 
 #include <VisItException.h>
 #include <visitstream.h>
+#include <sstream>
 
 #include <string>
 #include <vector>
@@ -69,6 +70,9 @@ static void UsageAndExit(DatabasePluginManager *, const char *);
 //
 //    Kathleen Biagas, Tue Sep 13, 2022
 //    Support MultiLineString option type.
+// 
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Support Color option type.
 //
 // ****************************************************************************
 void
@@ -103,6 +107,16 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
           case DBOptionsAttributes::String:
             if (PAR_Rank() == 0)
                 cerr << " (string, default='"<<opts->GetString(name)<<"'):\n";
+            break;
+          case DBOptionsAttributes::Color:
+            if (PAR_Rank() == 0)
+            {
+                int red, green, blue, alpha;
+                opts->GetColor(name, red, green, blue, alpha);
+                cerr << " (color as 'r g b [a]', default="
+                     << red << " " << green << " "
+                     << blue << " " << alpha << "):\n";
+            }
             break;
           case DBOptionsAttributes::MultiLineString:
             if (PAR_Rank() == 0)
@@ -164,6 +178,26 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
             opts->SetString(name, buff);
             if (PAR_Rank() == 0)
                 cerr << "Set to new value "<<opts->GetString(name) << endl;
+            break;
+          case DBOptionsAttributes::Color:
+            {
+                std::istringstream iss(str);
+                int rgba[4] = {0, 0, 0, 255};
+                if (!(iss >> rgba[0] >> rgba[1] >> rgba[2]))
+                {
+                    if (PAR_Rank() == 0)
+                        cerr << "Invalid color input for '" << name
+                             << "'. Expected 'r g b [a]'" << endl;
+                    break;
+                }
+                if (!(iss >> rgba[3]))
+                    rgba[3] = 255;
+                opts->SetColor(name, rgba[0], rgba[1], rgba[2], rgba[3]);
+                if (PAR_Rank() == 0)
+                    cerr << "Set to new value " << rgba[0] << " "
+                         << rgba[1] << " " << rgba[2] << " "
+                         << rgba[3] << endl;
+            }
             break;
           case DBOptionsAttributes::MultiLineString:
             opts->SetMultiLineString(name, buff);
@@ -788,5 +822,3 @@ UsageAndExit(DatabasePluginManager *dbmgr, const char *argv0)
     PAR_Exit();
     exit(EXIT_FAILURE);
 }
-
-

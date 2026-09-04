@@ -130,7 +130,7 @@ function build_conduit
     #
     # Prepare build dir
     #
-    prepare_build_dir $CONDUIT_BUILD_DIR $CONDUIT_FILE
+    prepare_build_dir $CONDUIT_BUILD_DIR $CONDUIT_FILE SHA256 $CONDUIT_SHA256_CHECKSUM
     untarred_conduit=$?
     if [[ $untarred_conduit == -1 ]] ; then
         warn "Unable to prepare Conduit build directory. Giving Up!"
@@ -309,10 +309,10 @@ function build_conduit
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/conduit"
-        chgrp -R ${GROUP} "$VISITDIR/conduit"
-    fi
+    cleanup_build_dirs $CONDUIT_BUILD_DIR $CONDUIT_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/conduit"
+
     cd "$START_DIR"
     info "Done with Conduit"
     return 0

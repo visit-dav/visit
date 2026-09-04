@@ -1,0 +1,29 @@
+--- CMakeLists.txt	2025-11-20 21:30:59.000000000 -0800
++++ CMakeLists.txt	2026-03-02 12:38:07.000000000 -0800
+@@ -223,21 +223,25 @@
+ 
+ 
+ ##
+ # HDF5
+ ##
+ if(SILO_ENABLE_HDF5)
++    if(SILO_ZLIB_DIR)
++        # ensure hdf5 finds correct zlib
++        set(ZLIB_ROOT ${SILO_ZLIB_DIR})
++    endif()
+     include(SiloFindHDF5)
+ endif()
+ 
+ ##
+ # Zlib  needed for hzip (non-BSD)
+ #     On Windows, if HDF5 was built with zlib support, need to find the zlib package
+ #     so that the correct path to the dll can be found and copied to the necessary places
+ ##
+-if(SILO_ENABLE_HZIP OR (WIN32 AND HDF5_ENABLE_Z_LIB_SUPPORT))
++if(SILO_ENABLE_HZIP OR (WIN32 AND HDF5_PROVIDES_ZLIB_SUPPORT))
+     include(SiloFindZlib)
+ endif()
+ 
+ ##
+ # szip  if HDF5 was built with szip support on Windows (needed to find dll's)
+ ##

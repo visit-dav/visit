@@ -80,10 +80,8 @@ function bv_nektarpp_host_profile
                 "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR \${VISITHOME}/nektar++/\${NEKTAR++_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF
 
-            ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
-
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+                "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP zlib TYPE STRING)" \
                 >> $HOSTCONF
         fi
     fi
@@ -214,7 +212,7 @@ function build_nektarpp
     #
     # Prepare build dir
     #
-    prepare_build_dir $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE
+    prepare_build_dir $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE SHA256 $NEKTAR_PLUS_PLUS_SHA256_CHECKSUM
     untarred_nektar_plus_plus=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -370,10 +368,10 @@ function build_nektarpp
 
     #    mv ${nektar_plus_plus_inst_path}/lib64/* ${nektar_plus_plus_inst_path}/lib
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/nektar++"
-        chgrp -R ${GROUP} "$VISITDIR/nektar++"
-    fi
+    cleanup_build_dirs $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_SRC_DIR
+
+    change_install_dir_perms  "$VISITDIR/nektar++"
+
     cd "$START_DIR"
     info "Done with Nektar++"
     return 0

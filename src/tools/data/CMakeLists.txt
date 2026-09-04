@@ -32,7 +32,7 @@ if(VISIT_ENABLE_DATAGEN)
     add_subdirectory(datagen)
 endif()
 
-if(SILO_FOUND AND VISIT_ENABLE_SILO_TOOLS)
+if(HAVE_SILO AND VISIT_ENABLE_SILO_TOOLS)
     add_subdirectory(mrgtree2dot)
     if(NOT WIN32)
         add_subdirectory(add_visit_searchpath)
@@ -43,7 +43,7 @@ if(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
     add_subdirectory(writer)
 endif()
 
-if(HDF5_FOUND AND NOT WIN32)
+if(HAVE_HDF5 AND NOT WIN32)
     add_subdirectory(xdmf_writer)
 endif()
 

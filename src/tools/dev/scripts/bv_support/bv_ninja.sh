@@ -87,7 +87,7 @@ function build_ninja
     #
     # Prepare build dir
     #
-    prepare_build_dir $NINJA_BUILD_DIR $NINJA_FILE
+    prepare_build_dir $NINJA_BUILD_DIR $NINJA_FILE SHA256 $NINJA_SHA256_CHECKSUM
     untarred_ninja=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -126,10 +126,10 @@ function build_ninja
     info "Installing Ninja . . . (~2 minutes)"
     ${CMAKE_COMMAND} --install . || error "Ninja did not install correctly."
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/ninja"
-        chgrp -R ${GROUP} "$VISITDIR/ninja"
-    fi
+    cleanup_build_dirs $NINJA_BUILD_DIR
+
+    change_install_dir_perms  "$VISITDIR/ninja"
+
     cd "$START_DIR"
     info "Done with ninja"
     return 0

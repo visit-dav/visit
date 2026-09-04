@@ -82,7 +82,7 @@ class avtXdmfFileFormat: public avtMTMDFileFormat
         XdmfGrid * currentGrid;
         XdmfDOM *dom;
         int Stride[3];
-        int numGrids;
+        int numTopLevelGrids;
         std::vector<double> timesteps;
         std::map<std::string, std::string> curveToGridMap;
 

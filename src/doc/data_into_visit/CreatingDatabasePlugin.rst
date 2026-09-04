@@ -1895,3 +1895,49 @@ If your plugin depends on an I/O library not already supported by VisIt_, and if
 Please see :ref:`dev_create_bv_module` for how to add a new module to build_visit.
 A CMake `Find` module will also need to be added to ``src/CMake`` and ``src/CMake/SetupThirdParty.cmake`` will need to be modified to include that module.
 See :ref:`dev_adding_find_module` for more information.
+
+Automated Expression Generation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Although VisIt_ supports aggregate variable types such as vectors, tensors and arrays, it is often the case that only *scalar* variables are available when a new database is opened.
+This can happen either because the database file format doesn't support aggregate types or because the data producer didn't bother defining any.
+
+When this happens, what VisIt_ sees is often a set of related scalar variables employing a common naming convention such as ``vx``, ``vy``, ``vz`` for the scalar components of a velocity vector variable or ``sxx``, ``sxy``, ``sxz``, ``syx``, ... for the scalar components of a stress or strain tensor variable.
+
+There is logic in VisIt_ to automatically recognize these scalar variable naming patterns and define VisIt_ *expressions* for the appropriate aggregate mesh variable types.
+In other words, when VisIt_ encounters a scalar variable naming pattern such as ``vel_comp1``, ``vel_comp2``, ``vel_comp3``, (and those variables are defined on the same mesh and with the same centering) it will define the vector expression named ``vel`` with definition ``{vel_comp1, vel_comp2, vel_comp3}``.
+
+To do this, VisIt_ uses a string processing technique based on `regular expressions (REs) <https://en.cppreference.com/w/cpp/regex>`__ which are just compact ways of specifying patterns in strings.
+VisIt_ defines *default* scalar component REs in `GeneralDatabasePluginInfo::GetDefaultScalarComponentREs <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/common/plugin/DatabasePluginInfo.C#:~:text=GeneralDatabasePluginInfo::GetDefaultScalarComponentREs>`__ which can be overridden in any database plugin using the ``<ScalarComponentREs>`` tag in the ``.xml`` file for the plugin.
+There is an example override in the `Pixie plugin <https://raw.githubusercontent.com/visit-dav/visit/refs/heads/develop/src/databases/Pixie/Pixie.xml#:~:text=ScalarComponentREs>`__.
+
+To define *custom* scalar component REs for a database, each RE must contain two sub-expressions (e.g. capture groups).
+The first capture group identifies the common base name of a candidate aggregate variable, and the second capture group identifies the component designation.
+
+Default REs distinguish between component naming conventions that use an explicit separator character between the base name and component designation and those that do not.
+When an explicit separator such as ``_`` or ``.`` is present, the separator provides an unambiguous boundary between the base name and component designation.
+In this case, component designation strings themselves can be somewhat arbitrary subject to the ordering and consistency requirements described below.
+
+When there is no separator character in the scalar component naming convention, determining where the base name ends and the component designation begins is inherently ambiguous.
+In this case, component designation are *restricted* to commonly used numeric and Cartesian-style *single* characters such as ``0123``, ``ijk``, ``uvw``, and ``xyz``, including uppercase forms.
+In other words, names like ``Velx``, ``Vely``, ``Velz`` or ``Qii``, ``Qij``, ``Qik``.
+A single-character component designation (e.g. ``i``) identifies a candidate vector component, while a two-character designation (e.g. ``ij``) identifies a candidate tensor component.
+All component designations in a candidate group must have the same length.
+
+Component designations strings must all be the same length (e.g. ``steel_red``, ``steel_grn``, ``steel_blu`` succeeds, but ``steel_red``, ``steel_green``, ``steel_blue`` will not).
+In addition, a lexicographical sort of the component designation strings determines the order of the scalar component variables in the aggregate type.
+So, ``steel_red``, ``steel_grn``, ``steel_blu`` will, after sorting, define the vector ``steel``, ``{steel_blu, steel_grn, steel_red}``.
+In addition, for *single* character component designations, the characters must be *consecutive* in lexicographic order.
+Thus, ``Vx``, ``Vy`` is a valid pair of components for a vector on a 2D mesh while ``Vx``, ``Vz`` is not because there is a gap of one in the component designator strings.
+The same rule applies to the individual characters of tensor component designations.
+For example, ``xx,xy,yx,yy`` describes a valid set of two-dimensional tensor component directions, whereas ``xx,xz,zx,zz`` does not.
+
+Database plugins with naming conventions not covered by the defaults can override default behavior using ``<ScalarComponentREs>`` tag in the plugin's ``.xml`` file..
+For example, a plugin using single-character component designations ``a``, ``b``, and ``c`` separated from the base name could use a regular expression such as ``^(.+)_(a|b|c)$``.
+Because ``a``, ``b``, and ``c`` have equal length, are consecutive, and sort into the intended component order, they can be used without VisIt_ having any built-in knowledge of that particular naming convention.
+
+.. warning::
+
+    Although the ``<ScalarComponentREs>`` tag in a database plugin's ``.xml`` file accepts a *list* of regular expression strings, care should be taken in making the list too long.
+    Each regular expression is scanned over each database's list of scalar variables.
+    If the list of scalar variables is large, the string matching work is multiplied by the number of regular expression strings in ``<ScalarComponentREs>``.

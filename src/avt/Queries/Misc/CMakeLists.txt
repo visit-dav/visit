@@ -7,19 +7,22 @@
 #
 #****************************************************************************
 
-set(MISC_SOURCES
-    avtDirectDatabaseQOTFilter.C
-    avtQueryFactory.C
-    avtQueryOverTimeFilter.C
-    avtTimeLoopQOTFilter.C)
+visit_append_list(
+    NAME  avtquery_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtDirectDatabaseQOTFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtQueryFactory.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtQueryOverTimeFilter.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTimeLoopQOTFilter.C)
 
-target_sources(avtquery_ser PRIVATE ${MISC_SOURCES})
-target_include_directories(avtquery_ser PUBLIC .)
+visit_append_list(
+    NAME  avtquery_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtDirectDatabaseQOTFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtQueryFactory.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtQueryOverTimeFilter.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTimeLoopQOTFilter.h)
 
-if(VISIT_PARALLEL)
-    target_sources(avtquery_par PRIVATE ${MISC_SOURCES})
-    target_include_directories(avtquery_par PUBLIC .)
-endif()
-
-unset(MISC_SOURCES)
+visit_append_list(
+    NAME  avtquery_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Queries/Misc>)
 

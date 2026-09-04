@@ -55,8 +55,7 @@ function bv_mpich_host_profile
             >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON TYPE BOOL)" >> $HOSTCONF
         echo "" >> $HOSTCONF
-        echo "# Tell VisIt the parallel compiler so it can deduce parallel flags" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER \${VISIT_MPICH_DIR}/bin/mpicc TYPE FILEPATH)"  >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_MPI_HOME \${VISIT_MPICH_DIR} TYPE PATH)"  >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)" >> $HOSTCONF
     fi
 }
@@ -152,7 +151,7 @@ function build_mpich
     #
     # Prepare build dir
     #
-    prepare_build_dir $MPICH_BUILD_DIR $MPICH_FILE
+    prepare_build_dir $MPICH_BUILD_DIR $MPICH_FILE SHA256 $MPICH_SHA256_CHECKSUM
     untarred_mpich=$?
     if [[ $untarred_mpich == -1 ]] ; then
         warn "Unable to prepare MPICH build directory. Giving Up!"
@@ -256,10 +255,10 @@ function build_mpich
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/mpich"
-        chgrp -R ${GROUP} "$VISITDIR/mpich"
-    fi
+    cleanup_build_dirs $MPICH_BUILD_DIR
+
+    change_install_dir_perms  "$VISITDIR/mpich"
+
     cd "$START_DIR"
     info "Done with MPICH"
     return 0

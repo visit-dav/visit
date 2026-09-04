@@ -27,6 +27,9 @@
 #  Kathleen Biagas, Mon Oct 20, 2025 
 #  Change ospray check to 'ospray_FOUND' instead of 'OSPRAY_FOUND'.
 #
+#  Kathleen Biagas, Thur Aug 20, 2026
+#  Add call to generate_lib_setup_cmake.
+#
 #*****************************************************************************
 
 # Use the VTK_DIR hint from the config-site .cmake file
@@ -119,16 +122,18 @@ else(VISIT_VTK_SKIP_INSTALL)
         set(pathnameandprefix "${VTK_PREFIX_PATH}/lib/")
     endif()
 
+    set(vtk_majmin ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
     macro(SETUP_INSTALL vtk_component)
         set(sepchar "-")
         if(${vtk_component} MATCHES "vtksys")
-            set(LIBNAME   ${pathnameandprefix}${vtk_component}${sepchar}${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
+          set(LIBNAME   ${pathnameandprefix}${vtk_component}${sepchar}${vtk_majmin}.${SO_EXT})
         elseif(${vtk_component} MATCHES "WrappingPythonCore")
-            # also needs PYTHON_VERSION
-            set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${PYTHON_VERSION}${sepchar}${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
+          # also needs PYTHON_VERSION
+          set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${PYTHON_COMPAT_VERSION}${sepchar}${vtk_majmin}.${SO_EXT})
         else()
-            set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${sepchar}${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
+            set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${sepchar}${vtk_majmin}.${SO_EXT})
         endif()
+
         if(EXISTS ${LIBNAME})
             THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
         endif()
@@ -139,11 +144,12 @@ else(VISIT_VTK_SKIP_INSTALL)
         SETUP_INSTALL("${VTKLIB}")
     endforeach()
 
+
     if(VISIT_HEADERS_SKIP_INSTALL)
         message(STATUS "Skipping vtk headers installation")
     else()
-        install(DIRECTORY ${VTK_PREFIX_PATH}/include/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}
-            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk
+        install(DIRECTORY ${VTK_PREFIX_PATH}/include/vtk-${vtk_majmin}
+            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
             FILE_PERMISSIONS OWNER_WRITE OWNER_READ
                              GROUP_WRITE GROUP_READ
                              WORLD_READ
@@ -151,6 +157,20 @@ else(VISIT_VTK_SKIP_INSTALL)
                                   GROUP_WRITE GROUP_READ GROUP_EXECUTE
                                   WORLD_READ WORLD_EXECUTE)
     endif()
+
+    set(vtktargs) 
+    foreach(VTKLIB ${VTK_AVAILABLE_COMPONENTS})
+        list(APPEND vtktargs VTK::${VTKLIB})
+    endforeach()
+    # write SetupVTK.cmake for our export sets.
+    include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
+    create_lib_setup_cmake(NAME "VTK"
+                           NAMESPACE "VTK::" 
+                           INCBASE "vtk-${vtk_majmin}" 
+                           ITEMS ${vtktargs}
+                           SIMPLE_INCLUDE true)
+    generate_lib_setup_cmake(NAME "VTK")
+    unset(vtktargs)
 endif()
 
 # check for python wrappers

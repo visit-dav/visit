@@ -5,22 +5,16 @@
 #ifndef QVIS_HELP_WINDOW_H
 #define QVIS_HELP_WINDOW_H
 #include <gui_exports.h>
-#include <QMap>
-#include <QIcon>
 #include <QvisDelayedWindow.h>
 
 class QAction;
-class QDomElement;
-class QLineEdit;
+class QLabel;
 class QListWidget;
-class QPushButton;
+class QListWidgetItem;
 class QSplitter;
-class QTabWidget;
+class QStackedWidget;
 class QTextBrowser;
-class QTreeWidget;
-class QTreeWidgetItem;
 class QUrl;
-class QWidget;
 
 // ****************************************************************************
 // Class: QvisHelpWindow
@@ -58,6 +52,21 @@ class QWidget;
 //   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
 //   Added manualPath.
 //
+//   Kathleen Biagas, Wed June 24, 2026
+//   Replaced 'reload' with 'externalBrowser' argument to displayPage as the
+//   reload arg not being used. Added a second displayTitle method and new
+//   startOptsPath ivar.
+//
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Restructure window to simplify. Since most content is displayed in
+//   external browser, remove Index, Bookmarks, Search, tabs.
+//   Topics now stored in QListWidget.
+//   Remove Contributors.
+//   Add 'About'. (link used to be in Main window's menu bar 'Help').
+//   Home page now loads external Home page.
+//   Add 'Getting Help' which opens to correct page in local docs in an
+//   external broswer.
+//
 // ****************************************************************************
 
 class GUI_API QvisHelpWindow : public QvisDelayedWindow
@@ -70,79 +79,49 @@ public:
     void SetLocale(const QString &);
 
     virtual void CreateWindowContents();
-    virtual void CreateNode(DataNode *);
-    virtual void SetFromNode(DataNode *, const int *borders);
 public slots:
     void displayCopyright();
     void displayReleaseNotes();
     void displayReleaseNotesIfAvailable();
-    void displayContributors();
-    void openHelp(const QString& entry);
+    void openHelp(const QString &entry);
     virtual void show();
+signals:
+    void showAbout();
 private slots:
-    void activeTabChanged(int);
-    void activateContentsTab();
-    void activateIndexTab();
-    void activateBookmarkTab();
-    void openHelp(QTreeWidgetItem *);
-    void topicExpanded(QTreeWidgetItem *);
-    void topicCollapsed(QTreeWidgetItem *);
-    void displayNoHelp();
-    void displayTitle(const QString &title);
-    void displayHome();
-    bool displayPage(const QString &page, bool reload = false);
+    void displaySelectedTopic(QListWidgetItem *);
     void increaseFontSize();
     void decreaseFontSize();
-    void displayIndexTopic();
-    void lookForIndexTopic(const QString &topic);
-    void displayBookmarkTopic();
-    void addBookmark();
-    void removeBookmark();
     void anchorClicked(const QUrl &);
 private:
-    typedef QMap<QString, QString> IndexMap;
-
     QString ReleaseNotesFile() const;
-    void LoadHelp(const QString &helpFile);
-    void BuildIndex();
-    void AddToIndex(const QString &topic, const QString &doc);
-    void BuildContents(QTreeWidgetItem *parentItem,
-                       const QDomElement &parentElement);
-    void BuildBookmarks();
-    QString TopicFromDoc(const QString &doc);
-    bool TopicFromDocHelper(QString &str, const QString &doc,
-                            QTreeWidgetItem *item);
     QString CompleteFileName(const QString &page) const;
-    void synchronizeContents(const QString &page);
+    void AddTopic(const QString &title, const QString &page);
+    bool displayPage(const QString &page);
+    bool displayExternalLink(const QString &title, const QString &page);
+    bool displayExternalLink(const QString &title, const QUrl &url,
+                             const QString &statusText,
+                             const QString &page);
+    void displayAbout();
+    void displayTitle(const QString &title);
+    void displayNoHelp();
     void displayReleaseNotesHelper(bool);
+    void selectPage(const QString &page);
+    void updateFontSizeActions(const QString &page);
 
     QString       locale;
-    QTabWidget   *helpTabs;
-    QTreeWidget  *helpContents;
-    QTextBrowser *helpBrowser;
+    QString       helpPath;
+    QString       aboutPath;
+    QString       manualPath;
+    QString       gettingHelpPath;
+    QString       currentPage;
+    QListWidget  *topics;
+    QStackedWidget *pageStack;
+    QTextBrowser *browser;
+    QLabel       *externalLinkLabel;
     QSplitter    *splitter;
-    QAction      *backAction;
-    QAction      *forwardAction;
-
-    QWidget      *helpIndexTab;
-    QListWidget  *helpIndex;
-    QLineEdit    *helpIndexText;
-
-    QWidget      *helpBookmarksTab;
-    QPushButton  *addBookmarkButton;
-    QPushButton  *removeBookmarkButton;
-    QListWidget  *helpBookMarks;
-
-    QIcon        closedBookIcon;
-    QIcon        openBookIcon;
-    QIcon        helpIcon;
-    QString      helpFile;
-    QString      helpPath;
-    QString      manualPath;
+    QAction      *fontUpAction;
+    QAction      *fontDownAction;
     bool         firstShow;
-    int          activeTab;
-    IndexMap     index;
-    IndexMap     bookmarks;
 };
 
 #endif

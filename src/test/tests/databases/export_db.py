@@ -59,6 +59,12 @@
 #
 #    Eric Brugger, Mon May 1 15:28:30 PST 2023
 #    Added HTG export test.
+# 
+#    Justin Privitera, Wed Aug 19 09:07:01 PDT 2026
+#    Now that color export was made default for the OBJ writer, I turned it
+#    off here to restore the previous behavior of this test. There is a bug
+#    currently with reading the exported colors from OBJ files written with
+#    our writer.
 #
 # ----------------------------------------------------------------------------
 import time
@@ -170,7 +176,15 @@ def export_and_plot(e, v, a, count, usingWriteGroups):
         e.db_type = f
         e.db_type_fullname = f + "_1.0"
         e.filename = export_name
-        ExportDatabase(e)
+        if f is "WavefrontOBJ":
+            # this conditional can be removed when
+            # https://github.com/visit-dav/visit/issues/21108
+            # is addressed
+            opts = GetExportOptions("WavefrontOBJ")
+            opts["Output colors"] = 0 # turn colors off
+            ExportDatabase(e, opts)
+        else:
+            ExportDatabase(e)
         time.sleep(1)
 
     # now attempt to read the exported files

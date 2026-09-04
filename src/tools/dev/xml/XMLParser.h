@@ -227,6 +227,8 @@ ParseCharacters(const QString &buff_input)
 //    Removed logic surrounding Conditions, now only store in code file and
 //    no need to copy to Attribute.
 //
+//    ChatGPT via Mark C. Miller, Fri Aug 14 17:54:03 PDT 2026
+//    Add support for scalar component REs.
 // ****************************************************************************
 
 class XMLParser
@@ -353,6 +355,10 @@ class XMLParser
             else if (currentTag == "FilePatterns")
             {
                 currentPlugin->filePatterns.push_back(strings[i]);
+            }
+            else if (currentTag == "ScalarComponentREs")
+            {
+                currentPlugin->scalarComponentREs.push_back(strings[i]);
             }
         }
         return true;
@@ -692,6 +698,9 @@ class XMLParser
         else if (tag == "FilePatterns")
         {
         }
+        else if (tag == "ScalarComponentREs")
+        {
+        }
         else if (tag == "Files")
         {
             QString comps1 = getAttribute(domEl, "components");
@@ -800,6 +809,14 @@ class XMLParser
                         currentPlugin->mlibs.clear();
                         comps_current |= COMP_MDSERVER;
                         currentPlugin->custommlibs = true;
+                    }
+                    else if (comps_split[i] == "E")
+                    {
+                        comps_current |= COMP_ENGINE;
+                        currentPlugin->elibsSer.clear();
+                        currentPlugin->customelibsSer = true;
+                        currentPlugin->elibsPar.clear();
+                        currentPlugin->customelibsPar = true;
                     }
                     else if (comps_split[i] == "ESer")
                     {
@@ -993,6 +1010,9 @@ class XMLParser
             currentLibComponents = COMP_NONE;
         }
         else if (tag == "FilePatterns")
+        {
+        }
+        else if (tag == "ScalarComponentREs")
         {
         }
         else if (tag == "Files")

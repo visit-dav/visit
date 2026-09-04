@@ -87,13 +87,25 @@ function bv_qt_initialize_vars
 function bv_qt_ensure
 {
     if [[ "$DO_QT" == "yes" ]]; then
-        if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
-            download_file ${QT_TOOLS_FILE} ${QT_URL}
-            download_file ${QT_SVG_FILE} ${QT_URL}
-        fi
         ensure_built_or_ready "qt"     $QT_VERSION    $QT_BASE_SOURCE_DIR    $QT_BASE_FILE    $QT_URL
+
+        # check if tools and svn have been installed/downloaded
+        INSTALL_DIR=$VISITDIR/qt/$QT_VERSION/$VISITARCH
+
+        PATTERN=(${INSTALL_DIR}/lib/*Tools*.*)
+        ensure_built_or_ready_component "qt" $QT_VERSION $QT_TOOLS_FILE $PATTERN
         if [[ $? != 0 ]] ; then
-            return 1
+            ANY_ERRORS="yes"
+            DO_QT="no"
+            error "Unable to build Qt Tools . ${QT_TOOLS_FILE} not found."
+        fi
+
+        PATTERN=(${INSTALL_DIR}/lib/*Svg*.*)
+        ensure_built_or_ready_component "qt" $QT_VERSION $QT_SVG_FILE $PATTERN
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_QT="no"
+            error "Unable to build Qt Svg. ${QT_SVG_FILE} not found."
         fi
     fi
     return 0
@@ -417,7 +429,7 @@ EOF
 function build_qt_base
 {
     echo "Build Qt 6 base module"
-    prepare_build_dir $QT_BASE_SOURCE_DIR $QT_BASE_FILE
+    prepare_build_dir $QT_BASE_SOURCE_DIR $QT_BASE_FILE SHA256 $QT_BASE_SHA256_CHECKSUM
 
     untarred_qt=$?
     # 0, already exists, 1 untarred src, 2 error
@@ -562,7 +574,7 @@ function build_qt_base
     # Build Qt. Config options above make sure we only build the libs & tools.
     #
     info "Building Qt6 base . . . "
-    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "QtBase did not build correctly."
 
     if [[ $? != 0 ]] ; then
         warn "Qt base build failed.  Giving up"
@@ -570,14 +582,14 @@ function build_qt_base
     fi
 
     info "Installing Qt  base . . . "
-    ${CMAKE_COMMAND} --install .
+    ${CMAKE_COMMAND} --install . || error "QtBase did not install correctly."
+
+    cleanup_build_dirs $QT_BASE_BUILD_DIR $QT_BASE_SOURCE_DIR
 
     # Qt screws up permissions in some cases.  Try to fix that.
     chmod -R a+rX ${VISITDIR}/qt/${QT_VERSION}
-   if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/qt"
-        chgrp -R ${GROUP} "$VISITDIR/qt"
-    fi
+
+    change_install_dir_perms "$VISITDIR/qt"
 
     cd "$START_DIR"
     info "Done with Qt base "
@@ -603,22 +615,14 @@ function build_qt_tools
 {
     cd "$START_DIR"
     echo "Build Qt 6 tools module"
+    prepare_build_dir $QT_TOOLS_SOURCE_DIR $QT_TOOLS_FILE SHA256 $QT_TOOLS_SHA256_CHECKSUM
 
-    if ! test -f ${QT_TOOLS_FILE} ; then
-        download_file ${QT_TOOLS_FILE} ${QT_URL}
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${QT_TOOLS_FILE}"
-            return 1
-        fi
-    fi
+    untarred_qt=$?
+    # 0, already exists, 1 untarred src, 2 error
 
-    if ! test -d ${QT_TOOLS_SOURCE_DIR} ; then
-        info "Extracting qt tools ..."
-        uncompress_untar ${QT_TOOLS_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${QT_TOOLS_FILE}"
-            return 1
-        fi
+    if [[ $untarred_qt == -1 ]] ; then
+        warn "Unable to prepare Qt 6 tools directory. Giving Up!"
+        return 1
     fi
 
     # Make a build directory for an out-of-source build.
@@ -638,10 +642,14 @@ function build_qt_tools
         ${qt_module_cmake_flags}
 
     info "Building Qt6 tools . . . "
-    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "QtTools did not build correctly."
 
     info "Installing Qt tools . . . "
-    ${CMAKE_COMMAND} --install .
+    ${CMAKE_COMMAND} --install . || error "QtTools did not install correctly."
+
+    cleanup_build_dirs $QT_TOOLS_BUILD_DIR $QT_TOOLS_SOURCE_DIR
+
+    change_install_dir_perms "$VISITDIR/qt"
 
     return 0;
 }
@@ -650,22 +658,14 @@ function build_qt_svg
 {
     cd "$START_DIR"
     echo "Build Qt 6 svg module"
+    prepare_build_dir $QT_SVG_SOURCE_DIR $QT_SVG_FILE SHA256 $QT_SVG_SHA256_CHECKSUM
 
-    if ! test -f ${QT_SVG_FILE} ; then
-        download_file ${QT_SVG_FILE} ${QT_URL}
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${QT_SVG_FILE}"
-            return 1
-        fi
-    fi
+    untarred_qt=$?
+    # 0, already exists, 1 untarred src, 2 error
 
-    if ! test -d ${QT_SVG_SOURCE_DIR} ; then
-        info "Extracting qt svg ..."
-        uncompress_untar ${QT_SVG_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${QT_SVG_FILE}"
-            return 1
-        fi
+    if [[ $untarred_qt == -1 ]] ; then
+        warn "Unable to prepare Qt 6 svg directory. Giving Up!"
+        return 1
     fi
 
     # Make a build directory for an out-of-source build.
@@ -685,10 +685,14 @@ function build_qt_svg
         ${qt_module_cmake_flags}
 
     info "Building Qt6 svg . . . "
-    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "QtSVG did not build correctly."
 
     info "Installing Qt svg . . . "
-    ${CMAKE_COMMAND} --install .
+    ${CMAKE_COMMAND} --install .  || error "QtSVG did not install correctly."
+
+    cleanup_build_dirs $QT_SVG_BUILD_DIR $QT_SVG_SOURCE_DIR
+
+    change_install_dir_perms "$VISITDIR/qt"
 
     return 0;
 }

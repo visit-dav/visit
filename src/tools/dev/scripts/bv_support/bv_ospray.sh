@@ -162,70 +162,12 @@ function bv_ospray_is_installed
     return 0
 }
 
-function build_ospray_in_source
-{
-    # set compiler if the user hasn't explicitly set CC and CXX
-    if [ -z $CC ]; then
-        echo "***NOTE: using compiler $C_COMPILER/$CXX_COMPILER!"
-        export CC=$C_COMPILER
-        export CXX=$CXX_COMPILER
-    fi
-
-    #### Build OSPRay ####
-    mkdir -p build
-    cd build
-
-    # Clean out build directory to be sure we are doing a fresh build
-    rm -rf *
-
-    # set release and RPM settings
-    info "Configure OSPRay . . . "
-    CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
-
-    CMAKE_VARS=""
-    CMAKE_VARS=${CMAKE_VARS}" -D CMAKE_INSTALL_PREFIX=${OSPRAY_INSTALL_DIR} "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_BUILD_ISA=ALL "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_MODULE_VISIT=ON "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_MODULE_MPI=OFF "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_MODULE_MPI_APPS=OFF "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_APPS_EXAMPLEVIEWER=OFF "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_APPS_BENCHMARK=OFF "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_SG_CHOMBO=OFF "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_SG_OPENIMAGEIO=OFF "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_SG_VTK=OFF "
-    CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_ZIP_MODE=OFF "
-    CMAKE_VARS=${CMAKE_VARS}" -D embree_DIR=${EMBREE_INSTALL_DIR} "
-    CMAKE_VARS=${CMAKE_VARS}" -D ISPC_EXECUTABLE=${ISPC_INSTALL_DIR}/ispc "
-    if [[ "${TBB_INSTALL_DIR}" == "" ]]; then
-        bv_ospray_check_openmp
-        if [[ $? == 0 ]]; then
-            CMAKE_VARS=${CMAKE_VARS}" -D OSPRAY_TASKING_SYSTEM=OpenMP "
-        else
-            error "OSPRay cannot find neither TBB nor OpenMP."
-        fi
-    else
-        CMAKE_VARS=${CMAKE_VARS}" -D TBB_ROOT=${TBB_INSTALL_DIR} "
-    fi
-    ${CMAKE_INSTALL}/cmake ${CMAKE_VARS} \
-        .. || error "OSPRay did not configure correctly.  Giving up."
-
-    #
-    # Now build OSPRay
-    #
-    info "Building OSPRay (~10 minute)"
-    env DYLD_LIBRARY_PATH=`pwd`/bin ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || \
-        error "OSPRay did not build correctly.  Giving up."
-
-    info "Installing OSPRay . . . "
-    ${CMAKE_COMMAND} --install . || error "OSPRay did not install correctly."
-}
-
 function build_ospray
 {
     #
     # Uncompress the source file
     #
-    prepare_build_dir $OSPRAY_SRC_DIR $OSPRAY_FILE
+    prepare_build_dir $OSPRAY_SRC_DIR $OSPRAY_FILE SHA256 $OSPRAY_SHA256_CHECKSUM
     untarred_ospray=$?
     if [[ $untarred_ospray == -1 ]] ; then
         warn "Unable to uncompress OSPRay source file. Giving Up!"
@@ -352,10 +294,10 @@ function build_ospray
 
     # No need to install as the cmake build does that.
 
-    if [[ "$DO_GROUP" == "yes" ]]; then
-        chmod -R ug+w,a+rX "$VISITDIR/ospray"
-        chgrp -R ${GROUP} "$VISITDIR/ospray"
-    fi
+    cleanup_build_dirs $OSPRAY_BUILD_DIR $OSPRAY_SRC_DIR
+    cleanup_build_dirs $OSPRAY_LIBS_DIR
+
+    change_install_dir_perms "$VISITDIR/ospray"
 
     cd "$START_DIR"
     info "Done with OSPRay"

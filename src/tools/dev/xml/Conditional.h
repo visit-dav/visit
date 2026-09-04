@@ -7,6 +7,7 @@
 
 #include <QTextStream>
 #include <map>
+#include <vector>
 
 
 // ****************************************************************************
@@ -59,20 +60,24 @@ class Conditional
     }
 
 
-    inline static const char *keys[] =
-        {"Definitions:", \
-         "CXXFlags:", \
-         "VLinkLibraries:", \
-         "MLinkLibraries:", \
-         "ELinkLibraries:"};
+    inline static const std::vector<QString> keys
+    {
+        "Definitions:",
+        "CXXFlags:",
+        "VLinkLibraries:",
+        "MLinkLibraries:",
+        "ELinkLibraries:"
+    };
 
     bool ParseCondition(QString &buff)
     {
         bool success = false;
-        for (size_t i = 0; i < 5 && !success; ++i)
+        for (const auto &key : keys)
         {
-            QString key(keys[i]);
-            if (buff.left(key.size()) == key)
+            if (success)
+                break;
+
+            if (buff.startsWith(key))
             {
                 QString value(buff.mid(key.size()).trimmed());
                 while (value.right(1) == "\n")

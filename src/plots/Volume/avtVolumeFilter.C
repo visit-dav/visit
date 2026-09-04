@@ -635,13 +635,18 @@ avtVolumeFilter::GetRenderVariables( int &primIndex,
 //    Alister Maguire, Wed Oct  7 16:30:23 PDT 2020
 //    Removed the calls to SetDistance as they are no longer needed.
 //
+//    Kevin Griffin, Tue Jul 28 05:29:03 PM CDT 2026
+//    Route ANARI to RenderImageVTK() to execute the ANARI volume rendering 
+//    without any conflicting global render pass.
+//
 // ****************************************************************************
 
 avtImage_p
 avtVolumeFilter::RenderImage(avtImage_p opaque_image,
                              const WindowAttributes &window)
 {
-    if (atts.GetRendererType() == VolumeAttributes::Parallel)
+    if (atts.GetRendererType() == VolumeAttributes::Parallel ||
+        atts.GetRendererType() == VolumeAttributes::ANARI)
     {
         return RenderImageVTK(opaque_image, window);
     }
@@ -1209,6 +1214,9 @@ avtVolumeFilter::GetNumberOfStages(const WindowAttributes &a)
 //    Brad Whitlock, Wed Sep 28 13:54:02 PDT 2011
 //    Negate the image pan to account for changes in avtView3D.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Add code to copy the tile pan and zoom.
+//
 // ****************************************************************************
 
 void
@@ -1232,9 +1240,25 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &viewAt
     view3d.nearPlane = viewAtts.GetNearPlane();
     view3d.farPlane = viewAtts.GetFarPlane();
     view3d.perspective = viewAtts.GetPerspective();
+    //
+    // The method avtView3D::SetViewInfoFromView stores the negative of
+    // the imagePan into avtViewInfo.
+    // The function CreateViewInfoFromViewAttributes in avtVolumeFilter.C
+    // also stores the negative of imagePan from View3DAttributes into
+    // avtView3D.
+    // The method avtVisItVTKRendererFilter::CreateCamera temporarily
+    // negates imagePan before calling avtViewInfo::SetCameraFromView.
+    //
+    // All this negation should probably be removed. All 3 locations need
+    // to be changed and the call to vtkCamera->SetWindowCenter in
+    // avtViewInfo::SetCameraFromView.
+    //
     view3d.imagePan[0] = -viewAtts.GetImagePan()[0];
     view3d.imagePan[1] = -viewAtts.GetImagePan()[1];
     view3d.imageZoom = viewAtts.GetImageZoom();
+    view3d.tilePan[0] = viewAtts.GetTilePan()[0];
+    view3d.tilePan[1] = viewAtts.GetTilePan()[1];
+    view3d.tileZoom = viewAtts.GetTileZoom();
 
     //
     // Now View3D can be converted directly into avtViewInfo.

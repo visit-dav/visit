@@ -7,11 +7,16 @@
 #
 #****************************************************************************
 
-target_sources(avtmir_ser PRIVATE DiscreteMIR.C)
-target_include_directories(avtmir_ser PUBLIC .)
+visit_append_list(
+    NAME  avtmir_ser_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/DiscreteMIR.C)
 
-if(VISIT_PARALLEL)
-    target_sources(avtmir_par PRIVATE DiscreteMIR.C)
-    target_include_directories(avtmir_par PUBLIC .)
-endif()
+visit_append_list(
+    NAME  avtmir_ser_HEADERS
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/DiscreteMIR.h)
+
+visit_append_list(
+    NAME  avtmir_ser_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/MIR/Discrete>)
 

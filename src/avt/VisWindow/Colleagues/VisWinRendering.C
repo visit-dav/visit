@@ -9,6 +9,7 @@
 #include <VisWinRendering.h>
 
 #include <vtkCallbackCommand.h>
+#include <vtkCamera.h>
 #include <vtkCullerCollection.h>
 #include <vtkDataSetMapper.h>
 #include <vtkFloatArray.h>
@@ -292,6 +293,10 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   that it could be explicitly deleted since it wasn't getting deleted
 //   using a vtkSmartPointer.
 //
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to set the background and foreground cameras to
+//   support tiled rendering.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -321,6 +326,13 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     background->SetInteractive(0);
     background->SetPass(nullptr);
     background->SetLayer(0);
+    vtkCamera *cam = background->GetActiveCamera();
+    cam->SetFocalPoint(0.5, 0.5, 0.);
+    cam->SetPosition(0.5, 0.5, 1.);
+    cam->SetViewUp(0., 1., 0.);
+    cam->SetParallelProjection(1);
+    cam->SetParallelScale(0.5);
+    background->SetActiveCamera(cam);
 
     canvas = vtkRenderer::New();
     canvas->SetInteractive(1);
@@ -331,6 +343,13 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     foreground->SetInteractive(0);
     foreground->SetPass(nullptr);
     foreground->SetLayer(2);
+    cam = foreground->GetActiveCamera();
+    cam->SetFocalPoint(0.5, 0.5, 0.);
+    cam->SetPosition(0.5, 0.5, 1.);
+    cam->SetViewUp(0., 1., 0.);
+    cam->SetParallelProjection(1);
+    cam->SetParallelScale(0.5);
+    foreground->SetActiveCamera(cam);
 
     RemoveCullers(background);
     RemoveCullers(canvas);
@@ -1361,7 +1380,6 @@ VisWinRendering::RenderRenderWindow(void)
     GetRenderWindow()->Render();
 
     debug1 << "VisWinRendering, vtkRenderWindow classname: " << GetRenderWindow()->GetClassName() << endl;
-
 }
 
 // ****************************************************************************
@@ -2725,17 +2743,17 @@ VisWinRendering::SetMSAASamples(int numSamples)
 //   Kathleen Biagas, Thu Oct 16, 2025.
 //   Check of olgWin is valid, prevent possible crash.
 //
-//   OpenAI, Apr 17 2026
-//   Avoid querying GL_MAX_SAMPLES until VTK has a current OpenGL context.
-//   If the render window is not ready yet during startup, return false
-//   instead of crashing.  Once the context is current, keep using the real
-//   GL_MAX_SAMPLES query so MSAA remains available on supported systems.
+//   Kathleen Biagas, Fri Apr 17, 2026
+//   Due to a crash when this is called at startup and before the full
+//   gl context is created, disable MSAA completely until the crash can
+//   be fixed in an appropriate manner.
 //
 // ****************************************************************************
 
 bool
 VisWinRendering::MSAAAvailable()
 {
+#if 0
 #ifdef GL_MAX_SAMPLES
     vtkOpenGLRenderWindow* oglWin = vtkOpenGLRenderWindow::SafeDownCast(GetRenderWindow());
     if (oglWin == NULL)
@@ -2759,6 +2777,7 @@ VisWinRendering::MSAAAvailable()
     int msamples = 0;
     oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
     return (msamples > 1);
+#endif
 #endif
     return false;
 }
@@ -3773,5 +3792,30 @@ VisWinRendering::CreateAnariPass()
         vtkAnariVisItViewNodeFactory::axis_act_maker);
 
     return anariPass;
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::ResetAnariScene
+//
+// Purpose:
+//   Force a full ANARI scene graph rebuild
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Jul 24 11:46:21 AM CDT 2026
+//
+// ****************************************************************************
+
+void
+VisWinRendering::ResetAnariScene()
+{
+    if (anariPass != nullptr)
+    {
+        auto* sceneGraph = vtkAnariSceneGraph::SafeDownCast(anariPass->GetSceneGraph());
+
+        if (sceneGraph)
+        {
+            sceneGraph->InvalidateSceneStructure();
+        }
+    }
 }
 #endif

@@ -56,7 +56,7 @@ function bv_fms_host_profile
             >> $HOSTCONF
         if [[ "$DO_CONDUIT" == "yes" ]] ; then
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_FMS_LIBDEP CONDUIT_LIBRARY_DIR conduit CONDUIT_LIBRARY_DIR conduit_blueprint CONDUIT_LIBRARY_DIR conduit_relay \${VISIT_CONDUIT_LIBDEP} TYPE STRING)" \
+                "VISIT_OPTION_DEFAULT(VISIT_FMS_LIBDEP conduit TYPE STRING)" \
                 >> $HOSTCONF
         fi
     fi
@@ -82,7 +82,7 @@ function build_fms
     #
     # Prepare build dir
     #
-    prepare_build_dir $FMS_BUILD_DIR $FMS_FILE
+    prepare_build_dir $FMS_BUILD_DIR $FMS_FILE SHA256 $FMS_SHA256_CHECKSUM
     untarred_fms=$?
     if [[ $untarred_fms == -1 ]] ; then
         warn "Unable to prepare FMS build directory. Giving Up!"
@@ -152,11 +152,15 @@ function build_fms
     #
     info "Installing FMS"
     ${CMAKE_COMMAND} --install .
-
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/fms"
-        chgrp -R ${GROUP} "$VISITDIR/fms"
+    if [[ $? != 0 ]] ; then
+        warn "FMS install failed.  Giving up"
+        return 1
     fi
+
+    cleanup_build_dirs $FMS_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/fms"
+
     cd "$START_DIR"    
     info "Done with FMS"
     return 0

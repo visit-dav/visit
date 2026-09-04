@@ -293,6 +293,9 @@ VisWinFrame::NoPlots(void)
 //    Hank Childs, Tue Jul 25 13:37:22 PDT 2000
 //    Put frame on foreground, rather than canvas.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
@@ -304,10 +307,10 @@ VisWinFrame::AddFrameToWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->AddActor2D(bottomBorder);
-    foreground->AddActor2D(topBorder);
-    foreground->AddActor2D(leftBorder);
-    foreground->AddActor2D(rightBorder);
+    foreground->AddViewProp(bottomBorder);
+    foreground->AddViewProp(topBorder);
+    foreground->AddViewProp(leftBorder);
+    foreground->AddViewProp(rightBorder);
 
     addedFrame = true;
 }
@@ -328,6 +331,9 @@ VisWinFrame::AddFrameToWindow(void)
 //    Hank Childs, Tue Jul 25 13:37:22 PDT 2000
 //    Put frame on foreground, rather than canvas.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
+//
 // ****************************************************************************
 
 void
@@ -339,10 +345,10 @@ VisWinFrame::RemoveFrameFromWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->RemoveActor2D(leftBorder);
-    foreground->RemoveActor2D(rightBorder);
-    foreground->RemoveActor2D(bottomBorder);
-    foreground->RemoveActor2D(topBorder);
+    foreground->RemoveViewProp(leftBorder);
+    foreground->RemoveViewProp(rightBorder);
+    foreground->RemoveViewProp(bottomBorder);
+    foreground->RemoveViewProp(topBorder);
    
     addedFrame = false;
 }

@@ -42,6 +42,7 @@ function bv_silo_info
     export SILO_VERSION=${SILO_VERSION:-"4.12.0"}
     export SILO_FILE=${SILO_FILE:-"Silo-${SILO_VERSION}.tar.xz"}
     export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.12.0"}
+    export SILO_SRC_DIR=${SILO_SRC_DIR:-"Silo-${SILO_VERSION}"}
     export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"Silo-${SILO_VERSION}-build"}
     export SILO_SHA256_CHECKSUM="bde1685e4547d5dd7416bd6215b41f837efef0e4934d938ba776957afbebdff0"
 }
@@ -51,6 +52,7 @@ function bv_silo_print
     printf "%s%s\n" "SILO_FILE=" "${SILO_FILE}"
     printf "%s%s\n" "SILO_VERSION=" "${SILO_VERSION}"
     printf "%s%s\n" "SILO_COMPATIBILITY_VERSION=" "${SILO_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "SILO_SRC_DIR=" "${SILO_SRC_DIR}"
     printf "%s%s\n" "SILO_BUILD_DIR=" "${SILO_BUILD_DIR}"
 }
 
@@ -71,23 +73,13 @@ function bv_silo_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_SILO_DIR \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
 
-        libdep=""
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            libdep="HDF5_LIB"
-        fi
-        libdep="$libdep ZLIB_LIB"
-        if [[ -n "$libdep" ]]; then
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP $libdep TYPE STRING)" \
-                >> $HOSTCONF
-        fi
     fi
 }
 
 function bv_silo_ensure
 {
     if [[ "$DO_SILO" == "yes" ]] ; then
-        ensure_built_or_ready "silo" $SILO_VERSION $SILO_BUILD_DIR $SILO_FILE $SILO_URL
+        ensure_built_or_ready "silo" $SILO_VERSION $SILO_SRC_DIR $SILO_FILE $SILO_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_SILO="no"
@@ -388,6 +380,38 @@ EOF
     fi
 }
 
+function apply_silo_4120_python_moduledef_patch
+{
+    info "Patching Silo 4.12.0 for Python module definition issue"
+    patch -p0 << \EOF
+--- Silo-4.12.0/tools/python/pysilo.h
++++ Silo-4.12.0/tools/python/pysilo.h
+@@ -82,8 +82,15 @@ void SiloErrorFunc(const char *errString);
+     #define PY_SILO_MOD_DEF(ob, name, methods)  \
+         static struct PyModuleDef moduledef = { \
+             PyModuleDef_HEAD_INIT,              \
+-            .m_name = name,                     \
+-            .m_methods = methods };             \
++            name,                               \
++            NULL,                               \
++            0,                                  \
++            methods,                            \
++            NULL,                               \
++            NULL,                               \
++            NULL,                               \
++            NULL                                \
++        };                                      \
+         ob = PyModule_Create(&moduledef);
+ #else
+     #define PY_SILO_MOD_DEF(ob, name, methods) \
+-- 
+2.50.1
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
 function apply_silo_patch
 {
     info "Patching silo . . ."
@@ -424,6 +448,11 @@ function apply_silo_patch
             warn "Giving up on Silo build because the patch failed."
             return 1
         fi
+        apply_silo_4120_python_moduledef_patch
+        if [[ $? != 0 ]] ; then
+            warn "Giving up on Silo build because the patch failed."
+            return 1
+        fi
     fi
 
     return 0
@@ -454,7 +483,7 @@ function build_silo
     #
     # Prepare build dir
     #
-    prepare_build_dir $SILO_BUILD_DIR $SILO_FILE
+    prepare_build_dir $SILO_SRC_DIR $SILO_FILE SHA256 $SILO_SHA256_CHECKSUM
     untarred_silo=$?
     if [[ $untarred_silo == -1 ]] ; then
         warn "Unable to prepare Silo build directory. Giving Up!"
@@ -529,10 +558,10 @@ function build_silo
     fi
 
     if [[ "$PAR_LIBS" != "" ]] ; then
-        cmake_opts="${cmake_opts} -DMPI_C_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
-        cmake_opts="${cmake_opts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
-        cmake_opts="${cmake_opts} -DMPI_CXX_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
-        cmake_opts="${cmake_optss} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+        cmake_opts="${cmake_opts} -DMPI_C_LINK_FLAGS:STRING=\"${PAR_LINKER_FLAGS}\""
+        cmake_opts="${cmake_opts} -DMPI_C_LIBRARIES:STRING=\"${PAR_LIBRARY_LINKER_FLAGS}\""
+        cmake_opts="${cmake_opts} -DMPI_CXX_LINK_FLAGS:STRING=\"${PAR_LINKER_FLAGS}\""
+        cmake_opts="${cmake_opts} -DMPI_CXX_LIBRARIES:STRING=\"${PAR_LIBRARY_LINKER_FLAGS}\""
     fi
 
     info "CMake'ing Silo"
@@ -550,7 +579,7 @@ function build_silo
     #
 
     rm -f bv_run_cmake.sh
-    echo "\"${CMAKE_BIN}\"" ${cmake_opts} ../Silo-${SILO_VERSION} > bv_run_cmake.sh
+    echo "\"${CMAKE_BIN}\"" ${cmake_opts} ../${SILO_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh
 
@@ -579,10 +608,10 @@ function build_silo
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/silo"
-        chgrp -R ${GROUP} "$VISITDIR/silo"
-    fi
+    cleanup_build_dirs $SILO_BUILD_DIR $SILO_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/silo"
+
     cd "$START_DIR"
     info "Done with Silo"
     return 0

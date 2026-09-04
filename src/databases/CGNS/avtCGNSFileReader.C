@@ -9,7 +9,14 @@
 #include <avtCGNSFileReader.h>
 #include <cgnslib.h>
 
+#include <array>
 #include <algorithm>
+#include <cctype>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <set>
+#include <sstream>
 #include <string>
 
 #include <vtkCellData.h>
@@ -28,6 +35,7 @@
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
+#include <avtStructuredDomainBoundaries.h>
 
 #include <Expression.h>
 #include <DebugStream.h>
@@ -41,6 +49,159 @@
 // Include more source code.
 #include <CGNSHelpers.C>
 #include <CGNSUnitsStack.C>
+
+namespace
+{
+const char *cgnsVersionWarningMsg1 =
+    "The file being read is more recent that the CGNS library used";
+const char *cgnsVersionWarningMsg2 =
+    "The file being read is more recent than the CGNS library used";
+
+void
+CGNSWarningHandler(int is_error, char *errmsg)
+{
+    if(is_error != 0 || errmsg == NULL)
+        return;
+
+    if(strcmp(errmsg, cgnsVersionWarningMsg1) == 0 ||
+       strcmp(errmsg, cgnsVersionWarningMsg2) == 0)
+        return;
+
+    fprintf(stdout, "*** Warning:%s ***\n", errmsg);
+    fflush(stdout);
+}
+
+std::string
+TrimCgnsFixedString(const char *s, size_t len)
+{
+    if(s == nullptr || len == 0)
+        return std::string();
+
+    size_t end = 0;
+    for(end = 0; end < len; ++end)
+    {
+        if(s[end] == '\0')
+            break;
+    }
+    while(end > 0 && std::isspace(static_cast<unsigned char>(s[end-1])))
+        --end;
+
+    return std::string(s, s + end);
+}
+
+bool
+ReadSidsCharPointerArrayAtCurrentNode(const char *arrayName,
+    std::vector<std::string> &out)
+{
+    out.clear();
+
+    int narrays = 0;
+    if(cg_narrays(&narrays) != CG_OK)
+        return false;
+
+    for(int i = 0; i < narrays; ++i)
+    {
+        char name[33];
+        int ndims = 0;
+        cgsize_t dims[10];
+        DataType_t dt = DataTypeNull;
+        memset(name, 0, sizeof(name));
+        memset(dims, 0, sizeof(dims));
+
+        if(cg_array_info(i+1, name, &dt, &ndims, dims) != CG_OK)
+            continue;
+
+        if(strcmp(name, arrayName) != 0)
+            continue;
+
+        if(dt != Character || ndims < 2 || dims[0] <= 0)
+            return false;
+
+        const size_t strLen = static_cast<size_t>(dims[0]);
+        size_t nStrings = 1;
+        for(int d = 1; d < ndims; ++d)
+            nStrings *= static_cast<size_t>(dims[d]);
+
+        if(nStrings == 0)
+            return false;
+
+        std::vector<char> raw(strLen * nStrings, '\0');
+        if(cg_array_read(i+1, raw.data()) != CG_OK)
+            return false;
+
+        out.reserve(nStrings);
+        for(size_t si = 0; si < nStrings; ++si)
+        {
+            const char *p = raw.data() + si * strLen;
+            out.push_back(TrimCgnsFixedString(p, strLen));
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool
+ZoneListContains(const intVector &zones, int zone)
+{
+    return std::find(zones.begin(), zones.end(), zone) != zones.end();
+}
+
+intVector
+GetBaseZonePointersForTime(
+    const std::map<int, std::vector<std::vector<std::string> > > &baseZonePointers,
+    int base, int timeState, const stringVector &zoneNames)
+{
+    intVector zonesForTime;
+
+    std::map<int, std::vector<std::vector<std::string> > >::const_iterator it =
+        baseZonePointers.find(base);
+    if(it == baseZonePointers.end() || it->second.empty())
+        return zonesForTime;
+
+    int stateIndex = timeState;
+    if(stateIndex < 0)
+        stateIndex = 0;
+    if(stateIndex >= static_cast<int>(it->second.size()))
+        stateIndex = static_cast<int>(it->second.size()) - 1;
+
+    const std::vector<std::string> &zonePointers = it->second[stateIndex];
+    for(size_t pi = 0; pi < zonePointers.size(); ++pi)
+    {
+        if(zonePointers[pi].empty())
+            continue;
+
+        for(size_t zi = 0; zi < zoneNames.size(); ++zi)
+        {
+            if(zonePointers[pi] == zoneNames[zi] &&
+               !ZoneListContains(zonesForTime, static_cast<int>(zi) + 1))
+            {
+                zonesForTime.push_back(static_cast<int>(zi) + 1);
+                break;
+            }
+        }
+    }
+
+    return zonesForTime;
+}
+
+intVector
+FilterZonesForTime(const intVector &zones, const intVector &zonesForTime)
+{
+    if(zonesForTime.empty())
+        return zones;
+
+    intVector filteredZones;
+    for(size_t zi = 0; zi < zonesForTime.size(); ++zi)
+    {
+        if(ZoneListContains(zones, zonesForTime[zi]))
+            filteredZones.push_back(zonesForTime[zi]);
+    }
+
+    return filteredZones.empty() ? zones : filteredZones;
+}
+}
 
 // ****************************************************************************
 // Method: MakeSafeVariableName
@@ -127,6 +288,10 @@ MakeSafeVariableName(const std::string &var)
 //    Corrected a bug that caused a crash when doing a Subset plot of "zones"
 //    when reading data decomposed across multiple CGNS files.
 //
+//    Kathleen Biagas, Wed Apr 15 13:14:23 PDT 2026
+//    Add support for SIDS-style time-varying data:
+//    Added initializedMapsTimeState and mapsDependOnTimeState.
+//
 // ****************************************************************************
 
 avtCGNSFileReader::avtCGNSFileReader(const char *filename, bool isMTMD)
@@ -141,6 +306,8 @@ avtCGNSFileReader::avtCGNSFileReader(const char *filename, bool isMTMD)
     cgnsCyclesAccurate = false;
     cgnsTimesAccurate = false;
     initializedMaps = false;
+    initializedMapsTimeState = -1;
+    mapsDependOnTimeState = false;
 }
 
 // ****************************************************************************
@@ -220,6 +387,9 @@ avtCGNSFileReader::FreeUpResources(void)
 //   Brad Whitlock, Wed Apr 16 10:15:07 PDT 2008
 //   Made it use cgnsFileName.
 //
+//   Kathleen Biagas, Mon Apr 26, 2026
+//   Added call to cg_error_handler.
+//
 // ****************************************************************************
 
 int
@@ -227,6 +397,7 @@ avtCGNSFileReader::GetFileHandle()
 {
     if(fn == INVALID_FILE_HANDLE)
     {
+        cg_error_handler(CGNSWarningHandler);
 #ifdef CG_MODE_READ
         if(cg_open(cgnsFileName, CG_MODE_READ, &fn) != CG_OK)
 #else
@@ -263,6 +434,10 @@ avtCGNSFileReader::GetFileHandle()
 //   Added call to FreeUpResources to prevent crash when opening many files
 //   in a virtual database.
 //
+//   Kathleen Biagas, Wed Apr 15 13:17:09 PDT 2026
+//   Add support for SIDS-style time-varying data:
+//   Attempt to read ZonePointers from each base.
+//
 // ****************************************************************************
 
 void
@@ -285,7 +460,8 @@ avtCGNSFileReader::ReadTimes()
         bool createTimeStates = true;
         bool createCycleStates = true;
 
-        // TODO only one (first) base is considered currently
+        // Times/cycles are still taken from the first base, but SIDS iterative
+        // pointer arrays such as ZonePointers may be needed for every base.
         int base = 1;
         int nstates = 1;
         char namenode[33];
@@ -389,6 +565,11 @@ avtCGNSFileReader::ReadTimes()
                    << endl;
         }
 
+        // Attempt to read SIDS-style ZonePointers (and variants) from every
+        // base so per-timestep mesh/domain filtering works across all meshes.
+        for(int b = 1; b <= nbases; ++b)
+            ReadZonePointersFromBaseIterativeData(b);
+
         if(createTimeStates)
         {
             debug4 << mName << "Creating fake times." << endl;
@@ -414,6 +595,202 @@ avtCGNSFileReader::ReadTimes()
     }
     // make sure file handles are closed
     FreeUpResources();
+}
+
+// ****************************************************************************
+// Method: avtCGNSFileReader::ReadZonePointersFromBaseIterativeData
+//
+// Purpose:
+//   Read CGNS SIDS BaseIterativeData_t ZonePointers (character pointer array)
+//   and cache it for later use (e.g. mapping domains, selecting per-timestep
+//   zones in unsteady datasets).
+//
+// ****************************************************************************
+
+void
+avtCGNSFileReader::ReadZonePointersFromBaseIterativeData(int base)
+{
+    // Only try once per base.
+    if(baseZonePointers.find(base) != baseZonePointers.end())
+        return;
+
+    std::vector<std::vector<std::string> > empty;
+    baseZonePointers[base] = empty;
+
+    char biterName[33];
+    int nstates = 0;
+    if(cg_biter_read(GetFileHandle(), base, biterName, &nstates) != CG_OK)
+        return;
+
+    if(nstates <= 0)
+        return;
+
+    int nZones = 0;
+    if(cg_nzones(GetFileHandle(), base, &nZones) != CG_OK || nZones <= 0)
+        return;
+
+    if(cg_goto(GetFileHandle(), base, "BaseIterativeData_t", 1, "end") != CG_OK)
+        return;
+
+    std::vector<std::string> flat;
+    if(!ReadSidsCharPointerArrayAtCurrentNode("ZonePointers", flat) &&
+       !ReadSidsCharPointerArrayAtCurrentNode("ZonePointer", flat))
+    {
+        return;
+    }
+
+    // Expected SIDS dims are typically [32][nZones][nStates] (Fortran ordering),
+    // but tolerate flattened shapes as well.
+    if(flat.empty())
+        return;
+
+    if(static_cast<int>(flat.size()) == nstates)
+    {
+        // One zone pointer per time state.
+        baseZonePointers[base].resize(nstates);
+        for(int ts = 0; ts < nstates; ++ts)
+            baseZonePointers[base][ts].push_back(flat[ts]);
+    }
+    else if(static_cast<int>(flat.size()) == nstates * nZones)
+    {
+        baseZonePointers[base].resize(nstates);
+        for(int ts = 0; ts < nstates; ++ts)
+        {
+            baseZonePointers[base][ts].reserve(nZones);
+            for(int zi = 0; zi < nZones; ++zi)
+                baseZonePointers[base][ts].push_back(flat[ts * nZones + zi]);
+        }
+    }
+    else
+    {
+        // Unknown shape; keep as a single flat list (ts=0) so the data isn't lost.
+        baseZonePointers[base].resize(1);
+        baseZonePointers[base][0] = flat;
+    }
+
+    if(baseZonePointers[base].size() > 1)
+        mapsDependOnTimeState = true;
+}
+
+// ****************************************************************************
+// Method: avtCGNSFileReader::ReadZoneIterativePointers
+//
+// Purpose:
+//   Read CGNS SIDS ZoneIterativeData_t pointer arrays for selecting the
+//   correct GridCoordinates_t and FlowSolution_t nodes for a given timestep.
+//
+// ****************************************************************************
+
+void
+avtCGNSFileReader::ReadZoneIterativePointers(int base, int zone)
+{
+    BaseZoneKey key(base, zone);
+    if(zoneGridCoordinatesPointers.find(key) != zoneGridCoordinatesPointers.end() &&
+       zoneFlowSolutionPointers.find(key) != zoneFlowSolutionPointers.end())
+    {
+        return;
+    }
+
+    // Mark as attempted even on failure to avoid repeated cg_goto scans.
+    zoneGridCoordinatesPointers[key] = std::vector<std::string>();
+    zoneFlowSolutionPointers[key] = std::vector<std::string>();
+
+    if(cg_goto(GetFileHandle(), base, "Zone_t", zone, "ZoneIterativeData_t", 1, "end") != CG_OK)
+        return;
+
+    std::vector<std::string> gridPtrs;
+    if(ReadSidsCharPointerArrayAtCurrentNode("GridCoordinatesPointers", gridPtrs))
+        zoneGridCoordinatesPointers[key] = gridPtrs;
+
+    std::vector<std::string> solPtrs;
+    if(ReadSidsCharPointerArrayAtCurrentNode("FlowSolutionPointers", solPtrs))
+        zoneFlowSolutionPointers[key] = solPtrs;
+}
+
+// ****************************************************************************
+// Method: avtCGNSFileReader::ResolveGridIndexForTime
+//
+// Purpose:
+//    Get the correct grid index for timestate.
+//    If GridCoordinatesPointers exists (SIDS-style), prefer it over the
+//    timestate+1 heuristic.
+//
+// ****************************************************************************
+
+int
+avtCGNSFileReader::ResolveGridIndexForTime(int timestate, int base, int zone,
+    int ngrids)
+{
+    if(ngrids <= 0)
+        return 1;
+
+    BaseZoneKey key(base, zone);
+    std::map<BaseZoneKey, std::vector<std::string> >::const_iterator it =
+        zoneGridCoordinatesPointers.find(key);
+
+    if(it == zoneGridCoordinatesPointers.end() ||
+       timestate < 0 || timestate >= static_cast<int>(it->second.size()) ||
+       it->second[timestate].empty())
+    {
+        return (timestate < ngrids) ? (timestate + 1) : ngrids;
+    }
+
+    const std::string &desiredName = it->second[timestate];
+    for(int g = 1; g <= ngrids; ++g)
+    {
+        char gridName[33];
+        memset(gridName, 0, sizeof(gridName));
+        if(cg_grid_read(GetFileHandle(), base, zone, g, gridName) != CG_OK)
+            continue;
+        if(desiredName == gridName)
+            return g;
+    }
+
+    return (timestate < ngrids) ? (timestate + 1) : ngrids;
+}
+
+
+// ****************************************************************************
+// Method: avtCGNSFileReader::ResolveSolutionIndexForTime
+//
+// Purpose:
+//    Get the correct solution index for timestate.
+//    If FlowSolutionsPointers exists (SIDS-style), prefer it over the
+//    timestate+1 heuristic.
+//
+// ****************************************************************************
+
+int
+avtCGNSFileReader::ResolveSolutionIndexForTime(int timestate, int base, int zone,
+    int nsols)
+{
+    if(nsols <= 0)
+        return 1;
+
+    BaseZoneKey key(base, zone);
+    std::map<BaseZoneKey, std::vector<std::string> >::const_iterator it =
+        zoneFlowSolutionPointers.find(key);
+
+    if(it == zoneFlowSolutionPointers.end() ||
+       timestate < 0 || timestate >= static_cast<int>(it->second.size()) ||
+       it->second[timestate].empty())
+    {
+        return (timestate < nsols) ? (timestate + 1) : nsols;
+    }
+
+    const std::string &desiredName = it->second[timestate];
+    for(int sol = 1; sol <= nsols; ++sol)
+    {
+        char solname[33];
+        GridLocation_t varcentering;
+        memset(solname, 0, sizeof(solname));
+        if(cg_sol_info(GetFileHandle(), base, zone, sol, solname, &varcentering) != CG_OK)
+            continue;
+        if(desiredName == solname)
+            return sol;
+    }
+
+    return (timestate < nsols) ? (timestate + 1) : nsols;
 }
 
 // ****************************************************************************
@@ -553,6 +930,8 @@ avtCGNSFileReader::BaseContainsUnits(int base)
 // Creation:   Thu Apr 17 10:19:18 PDT 2008
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr 15 13:42:40 PDT 2026
+//    Add support for SIDS-style time-varying data.
 //
 // ****************************************************************************
 
@@ -677,6 +1056,11 @@ avtCGNSFileReader::GetVariablesForBase(int base, avtCGNSFileReader::BaseInformat
 
                 debug4 << "\t\t\t" << "solution[" << sol << "]" << solname;
 
+                // Per CGNS SIDS, FlowSolution_t defaults to Vertex when
+                // GridLocation is omitted.
+                if(varcentering == GridLocationNull)
+                    varcentering = Vertex;
+
                 int nfields = 0;
                 if(cg_nfields(GetFileHandle(), base, zone, sol, &nfields) != CG_OK)
                 {
@@ -699,6 +1083,8 @@ avtCGNSFileReader::GetVariablesForBase(int base, avtCGNSFileReader::BaseInformat
                 {
                 case GridLocationNull:
                      debug4 << "GridLocationNull";
+                     nodeCentering = 1;
+                     badCentering = 0;
                      break;
                 case GridLocationUserDefined:
                      debug4 << "GridLocationUserDefined";
@@ -1034,6 +1420,9 @@ avtCGNSFileReader::AddReferenceStateExpressions(avtDatabaseMetaData *md,
 //    Corrected a bug that caused a crash when doing a Subset plot of "zones"
 //    when reading data decomposed across multiple CGNS files.
 //
+//    Kathleen Biagas, Wed Apr 15 13:42:40 PDT 2026
+//    Add support for SIDS-style time-varying data.
+//
 // ****************************************************************************
 
 void
@@ -1041,6 +1430,11 @@ avtCGNSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timeState)
 {
     const char *mName = "avtCGNSFileReader::PopulateDatabaseMetaData: ";
+
+    MeshDomainMapping.clear();
+    BaseNameToIndices.clear();
+    VisItNameToCGNSName.clear();
+    VarNameToMeshName.clear();
 
     // Read the times if we have not read them yet.
     ReadTimes();
@@ -1132,21 +1526,28 @@ avtCGNSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         intVector allDomains;
         for(int i = 0; i < (int)baseInfo[bi].zoneNames.size(); ++i)
             allDomains.push_back(i+1);
+        int baseId = BaseNameToIndices[baseInfo[bi].name];
+        intVector zonesForTime =
+            GetBaseZonePointersForTime(baseZonePointers, baseId, timeState,
+                                       baseInfo[bi].zoneNames);
+        if(!zonesForTime.empty())
+            allDomains = zonesForTime;
         meshDef[allDomains] = meshName;
         debug4 << mName << "Step 2: Need mesh " << meshName.c_str() << endl;
         int meshCount = 0;
         for(StringVarInfoMap::const_iterator it = baseInfo[bi].vars.begin();
             it !=  baseInfo[bi].vars.end(); ++it)
         {
+            intVector varZones = FilterZonesForTime(it->second.zoneList, zonesForTime);
             std::map<intVector, std::string>::iterator meshIt =
-                meshDef.find(it->second.zoneList);
+                meshDef.find(varZones);
             if(meshIt == meshDef.end())
             {
                 ++meshCount;
                 char tmp[100];
                 snprintf(tmp, 100, "subgrid/%s%03d",
                          baseName.c_str(), meshCount);
-                meshDef[it->second.zoneList] = std::string(tmp);
+                meshDef[varZones] = std::string(tmp);
                 debug4 << mName << "Step 2: Need mesh " << tmp << endl;
             }
         }
@@ -1205,7 +1606,7 @@ avtCGNSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             // Remember the list of zones that make up the mesh so we can use it
             // later in GetMesh.
             BaseAndZoneList bzl;
-            bzl.base = (int)bi+1;
+            bzl.base = BaseNameToIndices[baseInfo[bi].name];
             bzl.zones = it->first;
             MeshDomainMapping[it->second] = bzl;
 
@@ -1262,7 +1663,9 @@ avtCGNSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 centering = AVT_NODECENT;
 
             // Get the name of the mesh to use for this variable.
-            std::string varMesh(meshDef[it->second.zoneList]);
+            intVector varZones = FilterZonesForTime(it->second.zoneList, zonesForTime);
+            std::string varMesh(meshDef[varZones]);
+            VarNameToMeshName[fieldName] = varMesh;
 
             // Create the scalar metadata.
             avtScalarMetaData *smd = new avtScalarMetaData(fieldName,
@@ -1299,6 +1702,7 @@ avtCGNSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     // Indicate that we've initialized maps.
     initializedMaps = true;
+    initializedMapsTimeState = timeState;
 }
 
 // ****************************************************************************
@@ -1326,11 +1730,263 @@ avtCGNSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 void
 avtCGNSFileReader::InitializeMaps(int timeState)
 {
-    if(!initializedMaps)
+    if(!initializedMaps ||
+       (mapsDependOnTimeState && initializedMapsTimeState != timeState))
     {
         avtDatabaseMetaData md;
         PopulateDatabaseMetaData(&md, timeState);
     }
+}
+
+// ****************************************************************************
+//  Method: avtCGNSFileReader::GetAuxiliaryData
+//
+// ****************************************************************************
+
+void *
+avtCGNSFileReader::GetAuxiliaryData(const char *var, int timestate,
+    const char *type, void *args, DestructorFunction &df)
+{
+    (void) args;
+
+    if (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0)
+       return GetStructuredDomainBoundaries(var, timestate, df);
+    return 0;
+}
+
+// ****************************************************************************
+//  Method: avtCGNSFileReader::GetStructuredDomainBoundaries
+//
+//  Purpose:
+//      Build structured domain-boundary information from CGNS 1-to-1 zone
+//      connectivity when the requested mesh is composed entirely of structured
+//      zones that participate in the same base.
+//
+// ****************************************************************************
+
+void *
+avtCGNSFileReader::GetStructuredDomainBoundaries(const char *meshname,
+    int timestate, DestructorFunction &df)
+{
+    const char *mName = "avtCGNSFileReader::GetStructuredDomainBoundaries: ";
+    InitializeMaps(timestate);
+
+    std::map<std::string, BaseAndZoneList>::const_iterator pos =
+        MeshDomainMapping.find(meshname);
+    if (pos == MeshDomainMapping.end())
+    {
+        if (MeshDomainMapping.size() == 1)
+        {
+            debug4 << mName << "mesh not found in MeshDomainMapping; "
+                   << "using the only available mesh entry." << endl;
+            pos = MeshDomainMapping.begin();
+        }
+        else
+        {
+            debug4 << mName << "mesh not found in MeshDomainMapping and "
+                   << "there is no unique fallback mesh." << endl;
+            return 0;
+        }
+    }
+
+    const BaseAndZoneList &bzl = pos->second;
+    const intVector &zones = bzl.zones;
+    if (zones.size() < 2)
+    {
+        debug4 << mName << "mesh has fewer than two zones; skipping "
+               << "domain-boundary creation." << endl;
+        return 0;
+    }
+
+    std::map<int, int> zoneToDomain;
+    for (size_t i = 0; i < zones.size(); ++i)
+    {
+        zoneToDomain[zones[i]] = (int)i;
+    }
+
+    int nZones = 0;
+    if (cg_nzones(GetFileHandle(), bzl.base, &nZones) != CG_OK)
+    {
+        debug4 << mName << "Could not get zone count for base " << bzl.base
+               << ": " << cg_get_error() << endl;
+        return 0;
+    }
+
+    std::vector<std::string> zoneNames(nZones + 1);
+    std::vector<std::array<int, 6> > domainExtents(zones.size());
+    for (size_t i = 0; i < zones.size(); ++i)
+    {
+        char zonename[33];
+        cgsize_t zsize[9];
+        memset(zonename, 0, 33);
+        memset(zsize, 0, 9 * sizeof(cgsize_t));
+        if (cg_zone_read(GetFileHandle(), bzl.base, zones[i], zonename, zsize) != CG_OK)
+        {
+            debug4 << mName << "Could not read zone " << zones[i] << ": "
+                   << cg_get_error() << endl;
+            return 0;
+        }
+
+        zoneNames[zones[i]] = zonename;
+
+        ZoneType_t zt = ZoneTypeNull;
+        if (cg_zone_type(GetFileHandle(), bzl.base, zones[i], &zt) != CG_OK ||
+            zt != Structured)
+        {
+            debug4 << mName << "zone " << zones[i]
+                   << " is not structured; cannot build boundaries." << endl;
+            return 0;
+        }
+
+        domainExtents[i][0] = 1;
+        domainExtents[i][1] = (int)zsize[0];
+        domainExtents[i][2] = 1;
+        domainExtents[i][3] = (int)std::max<cgsize_t>(zsize[1], 1);
+        domainExtents[i][4] = 1;
+        domainExtents[i][5] = (int)std::max<cgsize_t>(zsize[2], 1);
+    }
+
+    avtStructuredDomainBoundaries *dbi = new avtCurvilinearDomainBoundaries;
+    dbi->SetNumDomains((int)zones.size());
+    for (size_t i = 0; i < zones.size(); ++i)
+        dbi->SetExtents((int)i, domainExtents[i].data());
+    std::vector<int> neighborCounts(zones.size(), 0);
+    std::set<std::string> seenInterfaces;
+    int neighborPairs = 0;
+
+    for (size_t i = 0; i < zones.size(); ++i)
+    {
+        int zone = zones[i];
+        int nconn = 0;
+        if (cg_n1to1(GetFileHandle(), bzl.base, zone, &nconn) != CG_OK)
+        {
+            debug4 << mName << "Could not get 1-to-1 connectivity for zone "
+                   << zone << ": " << cg_get_error() << endl;
+            delete dbi;
+            return 0;
+        }
+        for (int conn = 1; conn <= nconn; ++conn)
+        {
+            char connectname[33];
+            char donorname[33];
+            cgsize_t range[6];
+            cgsize_t donorRange[6];
+            int transform[3];
+
+            memset(connectname, 0, sizeof(connectname));
+            memset(donorname, 0, sizeof(donorname));
+            if (cg_1to1_read(GetFileHandle(), bzl.base, zone, conn, connectname,
+                             donorname, range, donorRange, transform) != CG_OK)
+            {
+                debug4 << mName << "Could not read 1-to-1 connectivity for zone "
+                       << zone << ": " << cg_get_error() << endl;
+                delete dbi;
+                return 0;
+            }
+            int donorZone = -1;
+            for (int z = 1; z <= nZones; ++z)
+            {
+                if (zoneNames[z].empty())
+                {
+                    char zonename[33];
+                    cgsize_t zsize[9];
+                    memset(zonename, 0, 33);
+                    memset(zsize, 0, 9 * sizeof(cgsize_t));
+                    if (cg_zone_read(GetFileHandle(), bzl.base, z, zonename, zsize) == CG_OK)
+                        zoneNames[z] = zonename;
+                }
+                if (zoneNames[z] == donorname)
+                {
+                    donorZone = z;
+                    break;
+                }
+            }
+
+            std::map<int, int>::const_iterator donorIt = zoneToDomain.find(donorZone);
+            if (donorIt == zoneToDomain.end())
+            {
+                debug4 << mName << "donor zone " << donorZone << " (" << donorname
+                       << ") is not part of the requested mesh; skipping." << endl;
+                continue;
+            }
+
+            std::array<int, 6> extA = {{
+                (int)std::min(range[0], range[3]),
+                (int)std::max(range[0], range[3]),
+                (int)std::min(range[1], range[4]),
+                (int)std::max(range[1], range[4]),
+                (int)std::min(range[2], range[5]),
+                (int)std::max(range[2], range[5])
+            }};
+            std::array<int, 6> extB = {{
+                (int)std::min(donorRange[0], donorRange[3]),
+                (int)std::max(donorRange[0], donorRange[3]),
+                (int)std::min(donorRange[1], donorRange[4]),
+                (int)std::max(donorRange[1], donorRange[4]),
+                (int)std::min(donorRange[2], donorRange[5]),
+                (int)std::max(donorRange[2], donorRange[5])
+            }};
+
+            std::ostringstream key;
+            if (zone < donorZone)
+            {
+                key << zone << ":" << donorZone;
+                for (int j = 0; j < 6; ++j)
+                    key << ":" << extA[j];
+                for (int j = 0; j < 6; ++j)
+                    key << ":" << extB[j];
+            }
+            else
+            {
+                key << donorZone << ":" << zone;
+                for (int j = 0; j < 6; ++j)
+                    key << ":" << extB[j];
+                for (int j = 0; j < 6; ++j)
+                    key << ":" << extA[j];
+            }
+
+            if (!seenInterfaces.insert(key.str()).second)
+            {
+                continue;
+            }
+
+            int orient[3] = { transform[0], transform[1], transform[2] };
+            int invOrient[3] = { 0, 0, 0 };
+            for (int axis = 0; axis < 3; ++axis)
+            {
+                int donorAxis = std::abs(orient[axis]) - 1;
+                if (donorAxis >= 0 && donorAxis < 3)
+                    invOrient[donorAxis] = (orient[axis] < 0 ? -1 : 1) * (axis + 1);
+            }
+
+            int domA = (int)i;
+            int domB = donorIt->second;
+            int matchA = neighborCounts[domB];
+            int matchB = neighborCounts[domA];
+            dbi->AddNeighbor(domA, domB, matchA, orient, extA.data());
+            neighborCounts[domA]++;
+            dbi->AddNeighbor(domB, domA, matchB, invOrient, extB.data());
+            neighborCounts[domB]++;
+            neighborPairs++;
+        }
+    }
+
+    if (neighborPairs == 0)
+    {
+        debug4 << mName << "no qualifying 1-to-1 interfaces found." << endl;
+        delete dbi;
+        return 0;
+    }
+
+    for (size_t i = 0; i < zones.size(); ++i)
+    {
+        dbi->Finish((int)i);
+    }
+
+    df = avtStructuredDomainBoundaries::Destruct;
+    debug4 << mName << "successfully built structured domain boundaries with "
+           << neighborPairs << " neighbor pairs." << endl;
+    return dbi;
 }
 
 // ****************************************************************************
@@ -1387,21 +2043,12 @@ avtCGNSFileReader::GetMesh(int timestate, int domain, const char *meshname)
             return 0;
         }
     }
-    int base = pos->second.base;
-    int zone = domain + 1;
     const intVector &zones = pos->second.zones;
-    debug4 << mName << "Checking if zone " << zone << " is part of "
-           << meshname << endl;
-    debug4 << "zones = {";
-    for(size_t i = 0; i < zones.size(); ++i)
-        debug4 << zones[i] << ", ";
-    debug4 << "}" << endl;
-    if(std::find(zones.begin(), zones.end(), zone) == zones.end())
-    {
-        debug4 << mName << "No, the mesh does not contain zone " << zone << endl;
+    if(domain < 0 || domain >= static_cast<int>(zones.size()))
         return 0;
-    }
-    debug4 << mName << "Yes, the mesh contains zone " << zone << endl;
+
+    int base = pos->second.base;
+    int zone = zones[domain];
     debug4 << mName << "Mesh " << meshname << " exists in base " << base << endl;
 
     vtkDataSet *retval = 0;
@@ -1504,6 +2151,10 @@ avtCGNSFileReader::GetMesh(int timestate, int domain, const char *meshname)
 //   Brad Whitlock, Mon Jun 18 15:21:02 PDT 2012
 //   Don't pass out ncoords.
 //
+//   Kathleen Biagas, Wed Apr 15 13:42:40 PDT 2026
+//   Add support for SIDS-style time-varying data:
+//   call ReadZoneIterativePointers, ResolveGridIndexForTime.
+//
 // ****************************************************************************
 
 bool
@@ -1512,6 +2163,8 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
 {
     const char *mName = "avtCGNSFileReader::GetCoords: ";
     bool err = false;
+
+    ReadZoneIterativePointers(base, zone);
 
     // Init the coord array
     coords[0] = 0;
@@ -1567,9 +2220,10 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
                  << zone << endl;
           debug4 << cg_get_error() << endl;
         }
-        // If the solution is unsteady but not the mesh, timestate will change but requiredgrid
-        // should remain bounded.
-        int requiredgrid = (timestate < ngrids) ? (timestate + 1) : ngrids;
+        // If the solution is unsteady but not the mesh, timestate will change but
+        // requiredgrid should remain bounded. If GridCoordinatesPointers exists
+        // (SIDS-style), prefer it over the timestate+1 heuristic.
+        int requiredgrid = ResolveGridIndexForTime(timestate, base, zone, ngrids);
 
         char GridCoordName[33];
         cg_grid_read(GetFileHandle(), base, zone, requiredgrid, GridCoordName);
@@ -3003,6 +3657,9 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
 //    Brad Whitlock, Thu Oct 13 11:13:30 PDT 2011
 //    Call InitializeMaps so we can group files.
 //
+//    Kathleen Biagas, Wed Apr 15 13:42:40 PDT 2026
+//    Add support for SIDS style time-varying data.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -3013,6 +3670,8 @@ avtCGNSFileReader::GetVar(int timestate, int domain, const char *varname)
            << ", var=" << varname << endl;
 
     InitializeMaps(timestate);
+
+    std::string visitVarName(varname);
 
     // Look up the base that contains the variable.
     int base = 1;
@@ -3039,6 +3698,32 @@ avtCGNSFileReader::GetVar(int timestate, int domain, const char *varname)
 
     vtkDataArray *retval = 0;
     int zone = domain + 1;
+    std::map<std::string, std::string>::const_iterator meshIt =
+        VarNameToMeshName.find(visitVarName);
+    if(meshIt != VarNameToMeshName.end())
+    {
+        std::map<std::string, BaseAndZoneList>::const_iterator pos =
+            MeshDomainMapping.find(meshIt->second);
+        if(pos != MeshDomainMapping.end())
+        {
+            const intVector &zones = pos->second.zones;
+            if(domain >= 0 && domain < static_cast<int>(zones.size()))
+            {
+                base = pos->second.base;
+                zone = zones[domain];
+            }
+            else
+            {
+                debug4 << mName << "Domain " << domain
+                       << " is out of range for mapped mesh "
+                       << meshIt->second.c_str() << " which has "
+                       << zones.size() << " zones." << endl;
+                EXCEPTION1(InvalidVariableException, varname);
+            }
+        }
+    }
+
+    ReadZoneIterativePointers(base, zone);
     char zonename[33];
     cgsize_t zsize[9];
 
@@ -3125,7 +3810,7 @@ avtCGNSFileReader::GetVar(int timestate, int domain, const char *varname)
         // e.g. the number of the required solution in the
         // FlowSolutionPointers array is the same as node number of
         // the solution, which is not necessarily true
-        int requiredsol = (timestate < nsols) ? timestate + 1: nsols;
+        int requiredsol = ResolveSolutionIndexForTime(timestate, base, zone, nsols);
 
         // Iterate through the solutions until we find the variable that we're
         // looking for or required solution by number.
@@ -3148,6 +3833,11 @@ avtCGNSFileReader::GetVar(int timestate, int domain, const char *varname)
 
             debug5 << mName << "solution " << sol << " in zone "
                    << zone << " taken." << endl;
+
+            // Per CGNS SIDS, FlowSolution_t defaults to Vertex when
+            // GridLocation is omitted.
+            if(varcentering == GridLocationNull)
+                varcentering = Vertex;
 
             if(varcentering == Vertex || varcentering == CellCenter)
             {

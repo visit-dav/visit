@@ -1,0 +1,135 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>VisIt 3.6 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 3.6 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#General_features">Features for all users</a></li>
+  <li><a href="#Advanced_features">Features for advanced users</a></li>
+  <li><a href="#GUI_changes">Changes in GUI behavior</a></li>
+  <li><a href="#CLI_changes">Changes in CLI</a></li>
+  <li><a href="#File_format">Changes to file format readers</a></li>
+  <li><a href="#Plot_changes">Changes to plots</a></li>
+  <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
+  <li><a href="#Query_changes">Changes to picks and queries</a></li>
+  <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Build_features">Changes to build_visit</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+  <li><a href="#TPL">Third-party library versions</a></li>
+</ul>
+
+<a name="General_features"></a>
+<p><b><font size="4">General features added in version 3.6</font></b></p>
+<ul>
+  <li>OBJ export turns colors on by default.</li>
+  <li>OBJ export has additional choices for setting color attributes.</li>
+  <li>Support for tiled rendering has been added to VisIt, which allows for rendering images of an arbitrarily large size. Tiled rendering is always enabled with a default tile width and height of 2048. The image tile size can be set to a maximum image tile width and height of 8192.</li>
+  <li>When trying to export a built-in color table, a more helpful error message is displayed explaining how to properly export.</li>
+</ul>
+
+<a name="Advanced_features"></a>
+<p><b><font size="4">Advanced features added in version 3.6</font></b></p>
+<ul>
+  <li>Advanced Feature 1</li>
+  <li>Advanced Feature 2</li>
+</ul>
+
+<a name="GUI_changes"></a>
+<p><b><font size="4">Changes in GUI behavior for version 3.6</font></b></p>
+<ul>
+  <li>The splitter handle between the main window's plot controls and notepad/posting area was made more visible, making it easier to know where to grab to resize.</li>
+ <li>The 'Help' window controls and content have been simplified. For easier reading of content, 'Manual', 'Getting Help' and 'VisIt home page' topics will now open in an external browser. Bookmarks, index, tabs and back/forward navigation have been removed due to this simplification.  The 'About' option from the Main Gui Menu 'Help' control was moved to the Help window. The main Gui window 'Help' control now directly opens the Help window. 'Contributors' topic was moved to the 'Acknowledgements' section of the online Manual. Command-line arguments are already a part of the online manual, so they were also removed from the Help window.</li>
+
+  <li>GUI Change 2</li>
+</ul>
+
+<a name="CLI_changes"></a>
+<p><b><font size="4">Changes in CLI for version 3.6</font></b></p>
+<ul>
+  <li>CLI Change 1</li>
+  <li>CLI Change 2</li>
+</ul>
+
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 3.6</font></b></p>
+<ul>
+  <li>Database plugins now recognize and automatically define aggregate expressions (e.g. vector, tensor) for a group of similarly named scalar components (e.g. velX, velY, velZ ==> vector(vel)).</li>
+  <li>File Format 2</li>
+</ul>
+
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 3.6</font></b></p>
+<ul>
+  <li>Issues with the Label plot when zooming/panning, and having labels drawn internal to a mesh were fixed.</li>
+  <li>Spreadsheet plot data visibility and tracer plane functionality has been fixed.</li>
+</ul>
+
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators in version 3.6</font></b></p>
+<ul>
+  <li>The Connected Components Operator, when used improperly, provides more information to users about how to properly apply it.</li>
+  <li>Operator Change 2</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 3.6</font></b></p>
+<ul>
+  <li>The conn_components() expression now includes quickfill hints for its arguments.</li>
+  <li>The conn_components() expression now correctly takes 0 or 1 for the enable ghost-neighbor optimization argument instead of also mistakenly taking 2.</li>
+</ul>
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 3.6</font></b></p>
+<ul>
+  <li>Query Change 1</li>
+  <li>Query Change 2</li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 3.6</font></b></p>
+<ul>
+  <li>An issue partitioning nodal coordinates for parallel in Pixie files was fixed.</li>
+  <li>Fixed bug with thirdparty Find mdoules when thirdparty library was not built in 'Release' mode.</li>
+</ul>
+
+<a name="Build_features"></a>
+<p><b><font size="4">Changes to build_visit in version 3.6</font></b></p>
+<ul>
+  <li>build_visit now has a `--cleanup` option. When turned on it triggers deletion of src and build dirs for each library if build and install are successful.</li>
+  <li>MOAB was updated to version 5.6.0.</li>
+  <li>The `--print-files` and `--print-files-html` options were fixed so that no libraries are missing from the printed lists.</li>
+  <li>Issues with running build_visit on Fedora44 with gcc16 were resolved with patches to some modules.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 3.6</font></b></p>
+<ul>
+  <li>Enhanced <code>multi_test.C</code> data generator to handle both single and double precision.</li>
+</ul>
+
+<a name="TPL"></a>
+<p><b><font size="4">Third-party libraries used for version 3.6</font></b></p>
+<table>
+<tr><td><b>Required</b></td></tr>
+<tr><td>Required Third-party Library 1</td></tr>
+<tr><td><b>Explicit</b></td></tr>
+<tr><td>Explicit Third-party Library 1</td></tr>
+</table>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href=relnotes3.5.0.html>3.5.0</a>.</p>
+</body>
+</html>

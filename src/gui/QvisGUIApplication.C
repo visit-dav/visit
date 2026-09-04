@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <map>
+#include <filesystem> // for determining full-path location of sessionfile
 
 #include <visit-config.h> // To get the version number
 #include <QColor>
@@ -3105,6 +3106,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Cyrus Harrison, Tue Aug 13 15:46:52 PDT 2019
 //   Removed updateVisIt related logic.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Remove activateAboutWindow, it is now part of the Help window.
+//
 // ****************************************************************************
 
 void
@@ -3133,7 +3137,6 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(saveSettings()), this, SLOT(SaveSettings()));
     connect(mainWin, SIGNAL(iconifyWindows(bool)), this, SLOT(IconifyWindows(bool)));
     connect(mainWin, SIGNAL(deIconifyWindows()), this, SLOT(DeIconifyWindows()));
-    connect(mainWin, SIGNAL(activateAboutWindow()), this, SLOT(AboutVisIt()));
     connect(mainWin, SIGNAL(saveWindow()), this, SLOT(SaveWindow()));
     connect(mainWin, SIGNAL(saveCinema()), this, SLOT(SaveCinema()));
     connect(mainWin, SIGNAL(saveMovie()), this, SLOT(SaveMovie()));
@@ -3241,6 +3244,10 @@ QvisGUIApplication::CreateMainWindow()
 //   Added code to connect QvisColorTableButton with a method to open the
 //   ColorTable window.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Remove activateCopyright and activateReleaseNotes. They are part of Help
+//   window, which now has single-click activation.
+//
 // ****************************************************************************
 
 void
@@ -3346,12 +3353,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showGlobalLineoutWindow()));
      connect(mainWin, SIGNAL(activateMaterialWindow()),
              this, SLOT(showMaterialWindow()));
-     connect(mainWin, SIGNAL(activateCopyrightWindow()),
-             this, SLOT(displayCopyright()));
      connect(mainWin, SIGNAL(activateHelpWindow()),
              this, SLOT(showHelpWindow()));
-     connect(mainWin, SIGNAL(activateReleaseNotesWindow()),
-             this, SLOT(displayReleaseNotes()));
      connect(mainWin, SIGNAL(activateQueryWindow()),
              this, SLOT(showQueryWindow()));
      connect(mainWin, SIGNAL(activateRenderingWindow()),
@@ -3461,6 +3464,9 @@ QvisGUIApplication::SetupWindows()
 //
 //   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 //   Removed support for SeedMe.
+//
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Connect 'showAbout' to Help window.
 //
 // ****************************************************************************
 
@@ -3616,6 +3622,7 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the help window
         { QvisHelpWindow *helpwin = new QvisHelpWindow(tr("Help"));
           helpwin->SetLocale(applicationLocale);
+          connect(helpwin, SIGNAL(showAbout()), this, SLOT(AboutVisIt()));
           win = helpwin;
         }
         break;
@@ -5115,6 +5122,12 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 //   David Camp, Tue Aug  4 11:04:14 PDT 2015
 //   Added new ablitiy to load session files from a remote host.
 //
+//   Kathleen Biagas, Mon Jun 29 17:11:10 PDT 2026
+//   Use std::filesystem to determine full path location of session file.
+//   If it doesn't already contain full path, test cwd, then VisIt user dir
+//   and stop processing if it cannot be found.
+//   Only attempt to process .gui file if it exists.
+//
 // ****************************************************************************
 
 void
@@ -5130,40 +5143,65 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
         restoringSession = true;
         std::string filename(s.toStdString());
 
-        // Make the gui read in its part of the config.
-        std::string guifilename(filename);
-        guifilename += ".gui";
-        DataNode *node;
-        if(host.empty() || host == "localhost")
+        // get full-path to session file, if it doesn't already contain
+        // will first check cwd, then VisIt user dir.
+
+        std::filesystem::path fsp(s.toStdString());
+        if(fsp.has_parent_path())
         {
-            node = ReadConfigFile(guifilename.c_str());
+            // make sure it is absolute before passing it along
+            filename = std::filesystem::absolute(fsp).lexically_normal().string();
         }
         else
         {
-            std::istringstream sessionGUI;
-            std::string sessionGUIStr;
-
-            fileServer->RestoreSessionFile(host, guifilename, sessionGUIStr);
-            sessionGUI.str( sessionGUIStr );
-            node = ReadConfigFile(sessionGUI);
-        }
-
-        // If the file could not be opened then try and prepend the
-        // VisIt directory to it.
-#ifndef _WIN32
-        if(node == 0)
-        {
-            if(guifilename[0] != VISIT_SLASH_CHAR)
+            // no parent path, check cwd
+            if(std::filesystem::exists(fsp))
             {
-                filename = GetUserVisItDirectory() + filename;
-                guifilename = GetUserVisItDirectory() + guifilename;
-                debug1 << "The desired session file " << s.toStdString()
-                       << ".gui could not be opened. VisIt will try and open "
-                       << guifilename.c_str() << endl;
-                node = ReadConfigFile(guifilename.c_str());
+                std::filesystem::path tmp(std::filesystem::current_path());
+                tmp /= fsp;
+                filename = tmp.string();
+            }
+            else
+            {
+                // not in cwd, check VisIt user directory.
+                std::filesystem::path vud(GetUserVisItDirectory());
+                vud /= fsp;
+                if(std::filesystem::exists(vud))
+                {
+                    filename = vud.string();
+                }
+                else
+                {
+                    QString msg = tr("Could not find session file (%1). Please provide full path if it is not in current working directory or your VisIt user directory.").arg(s.toStdString().c_str());
+                    Error(msg);
+                    restoringSession = false;
+                    return;
+                }
             }
         }
-#endif
+
+        // Make the gui read in its part of the config.
+        std::string guifilename(filename);
+        guifilename += ".gui";
+
+
+        DataNode *node = nullptr;
+        if(std::filesystem::exists(guifilename))
+        {
+            if(host.empty() || host == "localhost")
+            {
+                node = ReadConfigFile(guifilename.c_str());
+            }
+            else
+            {
+                std::istringstream sessionGUI;
+                std::string sessionGUIStr;
+
+                fileServer->RestoreSessionFile(host, guifilename, sessionGUIStr);
+                sessionGUI.str( sessionGUIStr );
+                node = ReadConfigFile(sessionGUI);
+            }
+        }
 
         ProcessSessionNode(node, filename, sources, host);
 
@@ -6833,6 +6871,9 @@ QvisGUIApplication::DeIconifyWindows()
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Removed showContributors.
+//
 // ****************************************************************************
 
 void
@@ -6847,9 +6888,6 @@ QvisGUIApplication::AboutVisIt()
     {
         disconnect(splash, SIGNAL(showCopyright()), hw, SLOT(displayCopyright()));
         connect(splash, SIGNAL(showCopyright()), hw, SLOT(displayCopyright()));
-
-        disconnect(splash, SIGNAL(showContributors()), hw, SLOT(displayContributors()));
-        connect(splash, SIGNAL(showContributors()), hw, SLOT(displayContributors()));
     }
 
     splash->About();

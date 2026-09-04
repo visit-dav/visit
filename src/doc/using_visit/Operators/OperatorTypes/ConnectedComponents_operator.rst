@@ -3,9 +3,11 @@
 Connected Components operator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Connected Components operator is in a special class of operators, one that 
-creates a new variable.  In this case, the operator accepts as an input 
-variable the name of a mesh, and constructs a scalar variable as output.
+The Connected Components operator is in a special class of operators, one that creates a new variable.
+In this case, the operator accepts as an input variable the name of a mesh, and constructs a scalar variable as output.
+
+It is not possible to apply the Connected Components Operator directly.
+Please see the :ref:`Operators that Generate New Variables` section to understand how to apply this operator.
 
 The operator creates unique labels for each connected mesh sub-component and
 tags each zone in the mesh with the label of the connected component it 

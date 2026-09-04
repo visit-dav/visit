@@ -108,7 +108,7 @@ function build_hdf5
     #
     # Prepare build dir
     #
-    prepare_build_dir $HDF5_BUILD_DIR $HDF5_FILE
+    prepare_build_dir $HDF5_BUILD_DIR $HDF5_FILE SHA256 $HDF5_SHA256_CHECKSUM
     untarred_hdf5=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -121,6 +121,8 @@ function build_hdf5
     #-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON
     cmk_opts=" \
         -DBUILD_TESTING:BOOL=OFF \
+        -DHDF5_USE_FILE_LOCKING:BOOL=OFF \
+        -DHDF5_IGNORE_DISABLED_FILE_LOCKS:BOOL=ON \
         -DHDF5_BUILD_CPP_LIB:BOOL=OFF \
         -DHDF5_BUILD_JAVA:BOOL=OFF \
         -DHDF5_BUILD_EXAMPLES:BOOL=OFF \
@@ -231,10 +233,10 @@ function build_hdf5
     #    echo "endif()" >> $targetsfile
     #fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/hdf5"
-        chgrp -R ${GROUP} "$VISITDIR/hdf5"
-    fi
+    cleanup_build_dirs $HDF5_BUILD_DIR $HDF5_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/hdf5"
+
     popd > /dev/null
     info "Done with HDF5"
     return 0

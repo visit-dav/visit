@@ -18,6 +18,7 @@
 #include <cassert>
 #include <stdio.h>
 
+#include <visit-hdf5.h>
 #include <DebugStream.h>
 #include <InstallationFunctions.h>
 

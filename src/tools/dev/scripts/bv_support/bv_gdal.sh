@@ -167,7 +167,7 @@ function build_gdal
     #
     # Prepare build dir
     #
-    prepare_build_dir $GDAL_BUILD_DIR $GDAL_FILE
+    prepare_build_dir $GDAL_BUILD_DIR $GDAL_FILE SHA256 $GDAL_SHA256_CHECKSUM
     untarred_gdal=$?
     if [[ $untarred_gdal == -1 ]] ; then
         warn "Unable to prepare GDAL Build Directory. Giving Up"
@@ -213,11 +213,14 @@ function build_gdal
         fi
     fi
     
-    C_OPT_FLAGS="-Wno-error=implicit-function-declaration"
+    # GCC 16 defaults to C23 semantics, where empty parameter lists mean
+    # "(void)". GDAL 2.2.4's bundled qhull relies on the older no-prototype
+    # meaning for declarations in alg/internal_qhull_headers.h.
+    C_OPT_FLAGS="-std=gnu99 -Wno-error=implicit-function-declaration"
     set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
-                CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API" \
-                CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS -DH5_USE_16_API" \
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" \
+                CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 --prefix="$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH" \
                 --with-libtiff=internal --with-gif=internal \
                 --with-png=internal --with-jpeg=internal \
@@ -258,21 +261,17 @@ function build_gdal
         #
         info "Fixing install_name of dynamic libraries for GDAL . . ."
 
-        cp .libs/libgdal.2.2.4.${SO_EXT} libgdal.${SO_EXT}
         INSTALLNAMEPATH="$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH/lib"
 
         install_name_tool -id \
                           $INSTALLNAMEPATH/libgdal.${SO_EXT} \
-                          libgdal.${SO_EXT}
-        rm "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.${SO_EXT}"
-        cp libgdal.${SO_EXT} \
-           "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.${SO_EXT}"
+                          $INSTALLNAMEPATH/libgdal.${SO_EXT}
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/gdal"
-        chgrp -R ${GROUP} "$VISITDIR/gdal"
-    fi
+    cleanup_build_dirs $GDAL_BUILD_DIR
+
+    change_install_dir_perms "$VISITDIR/gdal"
+
     cd "$START_DIR"
     info "Done with GDAL"
     return 0

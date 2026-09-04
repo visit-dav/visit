@@ -5,10 +5,12 @@
 #include <SpreadsheetTable.h>
 
 #include <QAbstractItemModel>
+#include <QHeaderView>
 #include <QItemDelegate>
 #include <QMap>
 #include <QPainter>
 #include <QPalette>
+#include <QResizeEvent>
 #include <QStyle>
 #include <QFontMetrics>
 
@@ -859,9 +861,13 @@ DataArrayDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 //   Brad Whitlock, Wed Aug 27 14:06:08 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Thu Aug 6, 2026
+//   Add columnMinimumWidths, minimumRowHeight.
+//
 // ****************************************************************************
 
-SpreadsheetTable::SpreadsheetTable(QWidget *parent) : QTableView(parent)
+SpreadsheetTable::SpreadsheetTable(QWidget *parent) : QTableView(parent),
+    columnMinimumWidths(), minimumRowHeight(0)
 {
     // Create a data array model that we'll use to access the VTK data.
     DataArrayModel *m = new DataArrayModel(this);
@@ -1052,12 +1058,17 @@ SpreadsheetTable::setDataArray(vtkDataArray *arr,
 //   Brad Whitlock, Wed Aug 27 09:36:36 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Thu Aug 6, 2026
+//   Clear columnMinimumWidths, minimumRowHeight.
+//
 // ****************************************************************************
 
 void
 SpreadsheetTable::clearDataArray()
 {
     MODEL->clearDataArray();
+    columnMinimumWidths.clear();
+    minimumRowHeight = 0;
     selectNone();
 }
 
@@ -1275,12 +1286,16 @@ SpreadsheetTable::selectedRowIndices(int &nvals) const
 //   Brad Whitlock, Thu Aug 28 09:40:22 PDT 2008
 //   Rewrote.
 //
+//   Kathleen Biagas, Thu Aug 6, 2026
+//   Add updateColumnWidths.
+//
 // ****************************************************************************
 
 void
 SpreadsheetTable::addSelectedCellLabel(int row, int col, const QString &label)
 {
     MODEL->addSelectedCellLabel(row, col, label);
+    updateColumnWidths();
 }
 
 // ****************************************************************************
@@ -1296,12 +1311,16 @@ SpreadsheetTable::addSelectedCellLabel(int row, int col, const QString &label)
 //   Brad Whitlock, Thu Aug 28 09:40:46 PDT 2008
 //   Rewrote.
 //
+//   Kathleen Biagas, Thu Aug 6, 2026
+//   Add updateColumnWidths.
+//
 // ****************************************************************************
 
 void
 SpreadsheetTable::clearSelectedCellLabels()
 {
     MODEL->clearSelectedCellLabels();
+    updateColumnWidths();
 }
 
 // ****************************************************************************
@@ -1373,11 +1392,33 @@ SpreadsheetTable::selectNone()
 }
 
 // ****************************************************************************
+// Method: SpreadsheetTable::resizeEvent
+//
+// Purpose:
+//   Updates cell sizes when the table viewport changes.
+//
+// Programmer: Kathleen Biagas
+// Creation:   Thu Aug  6 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+SpreadsheetTable::resizeEvent(QResizeEvent *e)
+{
+    QTableView::resizeEvent(e);
+    updateColumnWidths(false);
+}
+
+// ****************************************************************************
 // Method: SpreadsheetTable::updateColumnWidths
 //
 // Purpose:
-//   Change table column width so that numeric values (and labels) displayed
-//   in cells are not truncated
+//   Change table cell sizes so current numeric values and labels are not
+//   truncated.
+//   If the viewport is larger than the minimum needed size, spread the extra
+//   space across the columns instead of leaving unused blank space.
 //
 // Programmer: Gunther H. Weber
 // Creation:   Thu Sep 27 13:43:05 PDT 2007
@@ -1386,23 +1427,82 @@ SpreadsheetTable::selectNone()
 //   Brad Whitlock, Wed Aug 27 10:59:56 PDT 2008
 //   Qt 4.
 //
-//    Kathleen Biagas, Wed Apr 6, 2022
-//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
+//   Kathleen Biagas, Thu Aug 6, 2026
+//   Reworked (with CODEX assistance) calculations so that cell contents and
+//   column headers are visible, and resizing window updates accordingly.
 //
 // ****************************************************************************
 
 void
-SpreadsheetTable::updateColumnWidths()
+SpreadsheetTable::updateColumnWidths(bool recalculate)
 {
-    QFontMetrics fm(font());
-    QString lengthProbeString;
-    lengthProbeString.asprintf(MODEL->getFormatString().toStdString().c_str(),
-        -3.33333333333333333333);
-    int columnWidth = fm.horizontalAdvance(lengthProbeString);
-    if(MODEL->numSelectedCellLabels() > 0)
-        columnWidth += fm.horizontalAdvance(" AA=");
-    else
-        columnWidth += fm.horizontalAdvance(" ");
-    for (int i=0; i < model()->columnCount(); ++i)
+    const int nColumns = model()->columnCount();
+    const int nRows = model()->rowCount();
+    if(nColumns < 1)
+    {
+        columnMinimumWidths.clear();
+        minimumRowHeight = 0;
+        return;
+    }
+
+    QFontMetrics cellMetrics(font());
+    QFontMetrics headerMetrics(horizontalHeader()->font());
+    const int padding = 2 * style()->pixelMetric(QStyle::PM_FocusFrameHMargin,
+                                                 0, this) + 12;
+
+    if(recalculate ||
+       columnMinimumWidths.size() != static_cast<size_t>(nColumns))
+    {
+        columnMinimumWidths.assign(nColumns, 0);
+        for(int col = 0; col < nColumns; ++col)
+        {
+            int width = headerMetrics.horizontalAdvance(
+                model()->headerData(col, Qt::Horizontal, Qt::DisplayRole).
+                    toString()) + padding;
+
+            for(int row = 0; row < nRows; ++row)
+            {
+                const int cellWidth = cellMetrics.horizontalAdvance(
+                    model()->data(model()->index(row, col), Qt::DisplayRole).
+                        toString()) + padding;
+                if(cellWidth > width)
+                    width = cellWidth;
+            }
+
+            columnMinimumWidths[col] = width;
+        }
+
+        minimumRowHeight = cellMetrics.height() + 8;
+    }
+
+    long long totalMinimumWidth = 0;
+    for(size_t i = 0; i < columnMinimumWidths.size(); ++i)
+        totalMinimumWidth += columnMinimumWidths[i];
+
+    const int availableWidth = viewport() != 0 ? viewport()->width() : 0;
+    const int extraWidth =
+        (availableWidth > totalMinimumWidth) ?
+        static_cast<int>(availableWidth - totalMinimumWidth) : 0;
+    const int extraPerColumn = (nColumns > 0) ? extraWidth / nColumns : 0;
+    const int extraRemainder = (nColumns > 0) ? extraWidth % nColumns : 0;
+
+    for (int i=0; i < nColumns; ++i)
+    {
+        int columnWidth = columnMinimumWidths[i] + extraPerColumn;
+        if(i < extraRemainder)
+            ++columnWidth;
         setColumnWidth(i, columnWidth);
+    }
+
+    if(nRows > 0)
+    {
+        int rowHeight = minimumRowHeight;
+        const int availableHeight = viewport() != 0 ? viewport()->height() : 0;
+        if(availableHeight > minimumRowHeight * nRows)
+            rowHeight = availableHeight / nRows;
+        verticalHeader()->setDefaultSectionSize(rowHeight);
+    }
 }

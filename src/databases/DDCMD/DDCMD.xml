@@ -3,13 +3,7 @@
     <FilePatterns>
       *.ddcmd
     </FilePatterns>
-    <Files components="M">
-      avtDDCMDFileFormat.C
-      object.C
-      error.C
-    </Files>
-    <Files components="E">
-      avtDDCMDFileFormat.C
+    <Files components="M,E">
       object.C
       error.C
     </Files>

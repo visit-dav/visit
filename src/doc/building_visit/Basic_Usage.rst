@@ -13,7 +13,7 @@ Building VisIt_ in this fashion will give you the highest probability of success
 
 .. code:: bash
 
-  ./build_visit3_0_1
+  ./build_visit3_5_0
 
 Building with multiple cores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,7 +27,7 @@ The following example specifies using 4 cores.
 
 .. code:: bash
 
-  ./build_visit3_0_1 --makeflags -j4
+  ./build_visit3_5_0 --makeflags -j4
 
 Specifying the third party library install location
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,7 +38,7 @@ The following example specifies installing the third party libraries in a anothe
 
 .. code:: bash
 
-  ./build_visit3_0_1 --thirdparty-path /usr/gapps/visit/third_party
+  ./build_visit3_5_0 --thirdparty-path /usr/gapps/visit/third_party
 
 Building with the HDF5 and Silo_ libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,7 +48,7 @@ The following example specifies building HDF5 and Silo_.
 
 .. code:: bash
 
-  ./build_visit3_0_1 --hdf5 --silo
+  ./build_visit3_5_0 --hdf5 --silo
 
 Building the stable optional libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,7 +59,7 @@ The following example specifies building the more reliable of the optional I/O l
 
 .. code:: bash
 
-  ./build_visit3_0_1 --optional
+  ./build_visit3_5_0 --optional
 
 Using a VisIt_ source code tar file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,13 +69,24 @@ The tar file should be considerably smaller than a git clone.
 The following example uses the VisIt_ source code corresponding to the official 3.0.1 release of VisIt_.
 .. code:: bash
 
-  ./build_visit3_0_1 --optional --tarball visit3.0.1.tar.gz
+  ./build_visit3_5_0 --optional --tarball visit3.5.0.tar.gz
+
+Having ``build_visit`` cleanup after itself
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, ``build_visit`` does not remove untarred source or build directories.
+You can change that behavior with the ``--cleanup`` option.
+When turned on, ``build_visit`` will remove untarred source and build directories for every library that successfully completes the build and install stages.
+Unsuccessful build or install of a library will prevent that library's cleanup so that debugging the failure is easier.
+.. code:: bash
+
+  ./build_visit3_5_0 --cleanup
 
 If ``build_visit`` is interrupted
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If ``build_visit`` is interrupted while it is executing, it is suggested that you remove the directories associated with the last package it was in the process of building.
-``build_visit`` always leaves directories intact when it runs to aid with troubleshooting failures.
+``build_visit`` always leaves directories intact when it runs to aid with troubleshooting failures, unless the ``--cleanup`` option is used.
 Likewise, ``build_visit`` doesn't remove existing directories before starting to build a package.
 This can sometimes problems when ``build_visit`` is interrupted and you restart the build again.
 
@@ -94,7 +105,7 @@ if you built using a git clone.
 
 .. code:: bash
 
-  visit3.0.1/build/bin/visit
+  visit3.5.0/build/bin/visit
 
 if you built using a tar file.
 

@@ -26,11 +26,11 @@ function bv_openexr_info
     export OPENEXR_BUILD_DIR=${OPENEXR_BUILD_DIR:-"openexr-${OPENEXR_VERSION}"}
     export OPENEXR_SHA256_CHECKSUM="73a6d83edcc68333afb95e133f6e12012073815a854bc41abc1a01c1db5f124c"
 
-    export IMATH_VERSION=${IMATH_VERSION:-"3.1.12"}
-    export IMATH_FILE=${IMATH_FILE:-"Imath-${IMATH_VERSION}.tar.gz"}
-    export IMATH_COMPATIBILITY_VERSION=${IMATH_COMPATIBILITY_VERSION:-"3.1"}
-    export IMATH_BUILD_DIR=${IMATH_BUILD_DIR:-"Imath-${IMATH_VERSION}"}
-    export IMATH_SHA256_CHECKSUM="cb8ca9ca77ac4338ebbee911fc90c886011ac5b00088630bacf8ef6c6e522f0a"
+    export OPENEXR_IMATH_VERSION=${OPENEXR_IMATH_VERSION:-"3.1.12"}
+    export OPENEXR_IMATH_FILE=${OPENEXR_IMATH_FILE:-"Imath-${OPENEXR_IMATH_VERSION}.tar.gz"}
+    export OPENEXR_IMATH_COMPATIBILITY_VERSION=${OPENEXR_IMATH_COMPATIBILITY_VERSION:-"3.1"}
+    export OPENEXR_IMATH_BUILD_DIR=${OPENEXR_IMATH_BUILD_DIR:-"Imath-${OPENEXR_IMATH_VERSION}"}
+    export OPENEXR_IMATH_SHA256_CHECKSUM="cb8ca9ca77ac4338ebbee911fc90c886011ac5b00088630bacf8ef6c6e522f0a"
 }
 
 function bv_openexr_print
@@ -40,10 +40,10 @@ function bv_openexr_print
     printf "%s%s\n" "OPENEXR_COMPATIBILITY_VERSION=" "${OPENEXR_COMPATIBILITY_VERSION}"
     printf "%s%s\n" "OPENEXR_BUILD_DIR=" "${OPENEXR_BUILD_DIR}"
 
-    printf "%s%s\n" "IMATH_FILE=" "${IMATH_FILE}"
-    printf "%s%s\n" "IMATH_VERSION=" "${IMATH_VERSION}"
-    printf "%s%s\n" "IMATH_COMPATIBILITY_VERSION=" "${IMATH_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "IMATH_BUILD_DIR=" "${IMATH_BUILD_DIR}"
+    printf "%s%s\n" "OPENEXR_IMATH_FILE=" "${OPENEXR_IMATH_FILE}"
+    printf "%s%s\n" "OPENEXR_IMATH_VERSION=" "${OPENEXR_IMATH_VERSION}"
+    printf "%s%s\n" "OPENEXR_IMATH_COMPATIBILITY_VERSION=" "${OPENEXR_IMATH_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "OPENEXR_IMATH_BUILD_DIR=" "${OPENEXR_IMATH_BUILD_DIR}"
 }
 
 function bv_openexr_host_profile
@@ -75,11 +75,11 @@ function bv_openexr_ensure
             DO_OPENEXR="no"
             error "Unable to build OpenEXR.  ${OPENEXR_FILE} not found."
         fi
-        ensure_built_or_ready "openexr" $IMATH_VERSION $IMATH_BUILD_DIR $IMATH_FILE
+        ensure_built_or_ready "openexr" $OPENEXR_IMATH_VERSION $OPENEXR_IMATH_BUILD_DIR $OPENEXR_IMATH_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_OPENEXR="no"
-            error "Unable to build OpenEXR.  ${IMATH_FILE} not found."
+            error "Unable to build OpenEXR.  ${OPENEXR_IMATH_FILE} not found."
         fi
     fi
 }
@@ -96,7 +96,7 @@ function build_imath
     #
     # Prepare build dir
     #
-    prepare_build_dir $IMATH_BUILD_DIR $IMATH_FILE
+    prepare_build_dir $OPENEXR_IMATH_BUILD_DIR $OPENEXR_IMATH_FILE SHA256 $OPENEXR_IMATH_SHA256_CHECKSUM
     untarred_imath=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -106,25 +106,25 @@ function build_imath
     fi
 
     # Make a build directory for an out-of-source build. Change the
-    # IMATH_BUILD_DIR variable to represent the out-of-source build directory.
-    IMATH_SRC_DIR=$IMATH_BUILD_DIR
-    IMATH_BUILD_DIR="${IMATH_SRC_DIR}-build"
-    if [[ ! -d $IMATH_BUILD_DIR ]] ; then
-        echo "Making build directory $IMATH_BUILD_DIR"
-        mkdir $IMATH_BUILD_DIR
+    # OPENEXR_IMATH_BUILD_DIR variable to represent the out-of-source build directory.
+    OPENEXR_IMATH_SRC_DIR=$OPENEXR_IMATH_BUILD_DIR
+    OPENEXR_IMATH_BUILD_DIR="${OPENEXR_IMATH_SRC_DIR}-build"
+    if [[ ! -d $OPENEXR_IMATH_BUILD_DIR ]] ; then
+        echo "Making build directory $OPENEXR_IMATH_BUILD_DIR"
+        mkdir $OPENEXR_IMATH_BUILD_DIR
     fi
 
    
     #
     # Configure Imath
     #
-    cd $IMATH_BUILD_DIR || error "Can't cd to Imath build dir."
+    cd $OPENEXR_IMATH_BUILD_DIR || error "Can't cd to Imath build dir."
 
     #
     # Remove the CMakeCache.txt files ... existing files sometimes prevent
     # fields from getting overwritten properly.
     #
-    rm -Rf ${IMATH_BUILD_DIR}/CMakeCache.txt 
+    rm -Rf ${OPENEXR_IMATH_BUILD_DIR}/CMakeCache.txt
 
     imathopts=""
     imathopts="${imathopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
@@ -145,7 +145,7 @@ function build_imath
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
-    echo "\"${CMAKE_INSTALL}/cmake\"" ${imathopts} ../${IMATH_SRC_DIR} > bv_run_cmake.sh
+    echo "\"${CMAKE_INSTALL}/cmake\"" ${imathopts} ../${OPENEXR_IMATH_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh || error "Imath configuration failed."
 
@@ -167,10 +167,11 @@ function build_imath
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/openexr"
-        chgrp -R ${GROUP} "$VISITDIR/openexr"
-    fi
+
+    cleanup_build_dirs $OPENEXR_IMATH_BUILD_DIR $OPENEXR_IMATH_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/openexr"
+
     cd "$START_DIR"
     info "Done with Imath"
     return 0
@@ -231,7 +232,7 @@ function build_openexr
     #
     # Prepare build dir
     #
-    prepare_build_dir $OPENEXR_BUILD_DIR $OPENEXR_FILE
+    prepare_build_dir $OPENEXR_BUILD_DIR $OPENEXR_FILE SHA256 $OPENEXR_SHA256_CHECKSUM
     untarred_openexr=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -273,7 +274,7 @@ function build_openexr
     #
     # Configure OpenEXR
     #
-    cd $OPENEXR_BUILD_DIR || error "Can't cd to Imath build dir."
+    cd $OPENEXR_BUILD_DIR || error "Can't cd to OpenEXR build dir."
 
     #
     # Remove the CMakeCache.txt files ... existing files sometimes prevent
@@ -334,10 +335,10 @@ function build_openexr
         return 1
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/openexr"
-        chgrp -R ${GROUP} "$VISITDIR/openexr"
-    fi
+    cleanup_build_dirs $OPENEXR_BUILD_DIR $OPENEXR_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/openexr"
+
     cd "$START_DIR"
     info "Done with OpenEXR"
     return 0

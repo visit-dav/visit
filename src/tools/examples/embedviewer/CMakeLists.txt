@@ -21,162 +21,125 @@
 #
 #****************************************************************************
 
-SET(SOURCES1
-CommandParser.C
-SimpleVisApp.C
-Synchronizer.C
-main.C
-)
+set(embedded_SOURCES
+    CommandParser.C
+    SimpleVisApp.C
+    Synchronizer.C
+    main.C)
 
-SET(SOURCES2
-MultiWindowVisApp.C
-main.C
-)
+set(embedded_HEADERS
+    CommandParser.h
+    SimpleVisApp.h
+    Synchronizer.h
+    main.C)
+
+set(multiwindow_SOURCES
+    MultiWindowVisApp.C
+    main.C)
+
+set(multiwindow_HEADERS
+    MultiWindowVisApp.h
+    main.C)
 
 # If the viewer is static then we need some static symbol lookup functions
-IF(VISIT_STATIC)
-    SET(STATIC_SOURCES1 ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
-    SET(STATIC_SOURCES2 ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
-ENDIF(VISIT_STATIC)
+if(VISIT_STATIC)
+    list(APPEND embedded_SOURCES ${VISIT_SOURCE_DIR}/viewer/main/ViewerStaticSymbolLocator.C)
+    list(APPEND multiwindow_SOURCES ${VISIT_SOURCE_DIR}/viewer/main/ViewerStaticSymbolLocator.C)
+endif()
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/engine/proxy
-${VISIT_SOURCE_DIR}/engine/rpc
-${VISIT_SOURCE_DIR}/mdserver/proxy
-${VISIT_SOURCE_DIR}/mdserver/rpc
-${VISIT_SOURCE_DIR}/viewer/core
-${VISIT_SOURCE_DIR}/viewer/main
-${VISIT_SOURCE_DIR}/viewer/main/ui
-${VISIT_SOURCE_DIR}/viewer/proxy
-${VISIT_SOURCE_DIR}/viewer/rpc
-${VISIT_SOURCE_DIR}/vtkqt
-${VTK_INCLUDE_DIRS}
-)
+set(embedded_DEPENDS 
+    ${viewer_exe_IOperator}
+    ${viewer_exe_VOperator}
+    ${viewer_exe_IPlot}
+    ${viewer_exe_VPlot}
+    avtdatabase_ser 
+    avtdbatts
+    avtfilters_ser 
+    avtmath
+    avtmir_ser 
+    avtpipeline_ser
+    avtplotter_ser 
+    avtqtviswindow
+    avtview 
+    avtviswindow_ser
+    avtwriter_ser 
+    engineproxy
+    enginerpc
+    lightweight_visit_vtk
+    mdserverproxy
+    mdserverrpc
+    vclproxy
+    vclrpc
+    viewer
+    viewerrpc 
+    visit_verdict 
+    visit_vtk
+    vtkqt
+    ${QT_QTGUI_LIBRARY}
+    ${QT_QTOPENGL_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTCORE_LIBRARY})
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-IF(NOT APPLE)
-    ADD_EXECUTABLE(embedded ${VISIT_APPLICATION_STYLE} ${SOURCES1} ${STATIC_SOURCES1})
-    ADD_EXECUTABLE(multiwindow ${VISIT_APPLICATION_STYLE} ${SOURCES2} ${STATIC_SOURCES2})
-ELSE(NOT APPLE)
-    SET(GUI_ICON_FILE VisItIcon.icns)
-    SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE} PROPERTIES
-        MACOSX_PACKAGE_LOCATION Resources
-    )
-
-    ADD_EXECUTABLE(embedded MACOSX_BUNDLE ${SOURCES1}  ${STATIC_SOURCES1} ${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE})
-    SET(MACOSX_BUNDLE_BUNDLE_NAME          "Embedded viewer example ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_INFO_STRING          "Embedded viewer example")
-    SET(MACOSX_BUNDLE_ICON_FILE            ${GUI_ICON_FILE})
-    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
-    SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "Embedded viewer example version ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "Embedded viewer example ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2026, Lawrence Livermore National Security, LLC")
-
-    ADD_EXECUTABLE(multiwindow MACOSX_BUNDLE ${SOURCES2}  ${STATIC_SOURCES2} ${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE})
-#    SET(MACOSX_BUNDLE_BUNDLE_NAME          "Multiwindow embedded viewer example ${VISIT_VERSION}")
-#    SET(MACOSX_BUNDLE_INFO_STRING          "Multiwindow embedded viewer example")
-#    SET(MACOSX_BUNDLE_ICON_FILE            ${GUI_ICON_FILE})
-#    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
-#    SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "Multiwindow embedded viewer example version ${VISIT_VERSION}")
-#    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "Multiwindow embedded viewer example ${VISIT_VERSION}")
-#    SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-#    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2026, Lawrence Livermore National Security, LLC")
-ENDIF(NOT APPLE)
-
-
-set_target_properties(embedded PROPERTIES AUTOMOC ON)
-set_target_properties(multiwindow PROPERTIES AUTOMOC ON)
-
-
-SET(VIEWER_QT_LIBS 
-${QT_QTGUI_LIBRARY}
-${QT_QTOPENGL_LIBRARY}
-${QT_QTNETWORK_LIBRARY}
-${QT_QTCORE_LIBRARY}
-)
-IF(VISIT_STATIC)
-    MAC_NIB_INSTALL(embedded)
-    MAC_NIB_INSTALL(multiwindow)
-    SET(VIEWER_QT_LIBS 
+if(VISIT_STATIC)
+    list(APPEND embedded_DEPENDS
         ${VIEWER_QT_LIBS}
         ${QT_QTGUI_LIB_DEPENDENCIES}
         ${QT_QTOPENGL_LIB_DEPENDENCIES}
         ${QT_QTNETWORK_LIB_DEPENDENCIES}
-        ${QT_QTCORE_LIB_DEPENDENCIES}
-    )
-ENDIF(VISIT_STATIC)
+        ${QT_QTCORE_LIB_DEPENDENCIES})
+endif()
 
-SET(EMBEDDED_VIEWER_LIBS
-${viewer_exe_IOperator}
-${viewer_exe_VOperator}
-${viewer_exe_IPlot}
-${viewer_exe_VPlot}
-avtdatabase_ser 
-avtdbatts
-avtfilters_ser 
-avtmath
-avtmir_ser 
-avtpipeline_ser
-avtplotter_ser 
-avtqtviswindow
-avtview 
-avtviswindow_ser
-avtwriter_ser 
-engineproxy
-enginerpc
-lightweight_visit_vtk
-mdserverproxy
-mdserverrpc
-vclproxy
-vclrpc
-viewer
-viewerrpc 
-visit_verdict 
-visit_vtk
-vtkqt
-${VIEWER_QT_LIBS}
-)
 
-TARGET_LINK_LIBRARIES(embedded ${EMBEDDED_VIEWER_LIBS})
-TARGET_LINK_LIBRARIES(multiwindow ${EMBEDDED_VIEWER_LIBS})
+if(APPLE)
+    set(GUI_ICON_FILE VisItIcon.icns)
+    set(RESOURCE_FILE ${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE})
+    set_source_files_properties(${RESOURCE_FILE}
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+    set(MACOSX_BUNDLE_BUNDLE_NAME          "Embedded viewer example ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_INFO_STRING          "Embedded viewer example")
+    set(MACOSX_BUNDLE_ICON_FILE            ${GUI_ICON_FILE})
+    set(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
+    set(MACOSX_BUNDLE_LONG_VERSION_STRING  "Embedded viewer example version ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_SHORT_VERSION_STRING "Embedded viewer example ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
+    set(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2025, Lawrence Livermore National Security, LLC")
+
+    set(CMAKE_MACOSX_BUNDLE ON)
+endif()
+
+visit_add_executable(
+    NAME        embedded 
+    SOURCES     ${embedded_SOURCES} ${RESOURCE_FILE}
+    HEADERS     ${embedded_HEADERS}
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS_ON  ${embedded_DEPENDS}
+    FOLDER      tools/examples/embedded
+    SKIP_INSTALL)
+
+visit_add_executable(
+    NAME        multiwindow 
+    SOURCES     ${multiwindow_SOURCES} ${RESOURCE_FILE}
+    HEADERS     ${multiwindow_HEADERS}
+    INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS_ON  ${embedded_DEPENDS}
+    FOLDER      tools/examples/embedded
+    SKIP_INSTALL)
+
+set_target_properties(embedded multiwindow PROPERTIES AUTOMOC ON)
 
 qt6_disable_unicode_defines(embedded)
 qt6_disable_unicode_defines(multiwindow)
 
-IF(APPLE)
-    # Hey, do we need this on 10.6?
-    SET_TARGET_PROPERTIES(embedded 
-        PROPERTIES
-        LINK_FLAGS "-framework Carbon"
-    )
-    SET_TARGET_PROPERTIES(multiwindow 
-        PROPERTIES
-        LINK_FLAGS "-framework Carbon"
-    )
-ENDIF(APPLE)
+if(APPLE)
+    if(VISIT_STATIC)
+        MAC_NIB_INSTALL(embedded)
+        MAC_NIB_INSTALL(multiwindow)
+    endif()
 
-# If we're building statically then the viewer can't be linked until the plugin
-# sources are built
-IF(VISIT_STATIC)
-    ADD_DEPENDENCIES(embedded
-        ${viewer_exe_IOperator}
-        ${viewer_exe_VOperator}
-        ${viewer_exe_IPlot}
-        ${viewer_exe_VPlot}
-    )
+    # Hey, do we need "-framework Carbon" on 10.6?
+    set_target_properties(embedded multiwindow PROPERTIES
+        MACOSX_BUNDLE TRUE
+        LINK_FLAGS "-framework Carbon")
+endif()
 
-    ADD_DEPENDENCIES(multiwindow
-        ${viewer_exe_IOperator}
-        ${viewer_exe_VOperator}
-        ${viewer_exe_IPlot}
-        ${viewer_exe_VPlot}
-    )
-ENDIF(VISIT_STATIC)
-
-VISIT_EXAMPLES_ADD_FOLDER(embedded embedded multiwindow)

@@ -156,13 +156,80 @@ Once you have finished all your changes you can push the change to GitHub. To pu
 
 Once you have pushed your changes to GitHub, you can submit a :ref:`pull request <Creating a Pull Request>`.
 
+Simultaneous Development on Multiple Branches
+---------------------------------------------
+
+Doing VisIt_ development on multiple branches *simultaneously* can be challenging.
+Frequently switching between branches in a single clone can involve significant productivity hits especially if the branches diverge substantially from one another.
+Maintaining multiple clones is possible but requires a lot of disk space, especially given all of the LFS content in VisIt_.
+
+Another approach is to use git `worktrees <https://git-scm.com/docs/git-worktree>`__.
+Worktrees are like multiple clones except they all share a common, single ``.git`` repository database.
+
+To maintain worktrees for two *existing* branches of development, ``develop`` and ``3.5RC``, in two directory peers named ``visit`` and ``3.5RC``, do the following::
+
+    git clone --recursive https://github.com/visit-dav/visit.git
+    cd visit
+    git worktree add ../3.5RC 3.5RC
+    cd ../3.5RC
+    git submodule update --init --recursive
+
+The clone is checked out to the *default* branch, ``develop``.
+The worktree command will create a worktree directory that is peer to ``visit`` and will check out that worktree to the *existing* ``3.5RC`` branch.
+Work can proceed in either ``visit``  or ``3.5RC`` directories totally independently.
+Also, be aware that when a worktree is *added*, any submodules need to be initialized.
+
+If instead, the goal is to create a worktree for a new feature, then while in the ``visit`` directory::
+
+    git worktree add ../feature-xyz -b feature-xyz origin/feature-xyz
+    cd ../feature-xyz
+    git submodule update --init --recursive
+
+This will create a worktree directory, ``feature-xyz``, which is peer to ``visit`` and check it out to the *new* branch, ``feature-xyz``.
+Because a new worktree is being *added* here, any of its submodules must also be initialized.
+
+Alternatively, one can just maintain worktrees representing a *second* and a *third* copy of VisIt_ and do whatever development is desired in either copy::
+
+    cd visit
+    git worktree add --detach ../visit2
+    cd ../visit2
+    git checkout exisiting-branch
+    cd ../visit
+    git worktree add --detach ../visit3
+    cd ../visit3
+    git checkout -b new-branch
+    git submodule update --init --recursive
+
+The ``--detach`` argument will create a worktree directory in a detached head state.
+A normal ``git checkout`` command can be used within that worktree directory to set it to whatever branch is needed.
+
+.. note::
+   Two worktrees cannot be checked out to the same branch.
+
+To remove a worktree (assuming no changes to the ``blt`` submodule)::
+
+    cd visit
+    git worktree remove --force ../visit2
+
+The ``--force`` is fine to use and **needed*, typically, due to VisIt_'s use of submodules **and** when no work has been done on the submodule.
+That said, a *cleaner* way to remove a worktree with unchanged submodules is::
+
+   cd ../visit2
+   git submodule foreach --recursive git status --short
+   git submodule deinit --all --force
+   cd ../visit
+   git worktree remove ../visit2
+
+When worktrees were first introduced to ``git``, they were considered experimental and did not work on repos with submodules. 
+In versions of ``git`` newer than 2.30, those limitations have been removed.
+Read more about the advantages of worktrees on `bssw.io <https://bssw.io/items/working-within-multiple-git-branches-simultaneously>`__.
 
 CMake Build System 
 -------------------
 
 VisIt's build system uses `BLT <https://github.com/llnl/blt/>`_ CMake helpers.
 BLT is included in VisIt's git repo as a git submodule.
-To obtain the submodule, use `git clone --recursive` when cloning, or manually setup the submodule after cloning using::
+To obtain the submodule, use ``git clone --recursive`` when cloning, or manually setup the submodule after cloning using::
 
     git submodule init
     git submodule update
@@ -173,7 +240,7 @@ When you switch branches, you may also need to update submodules so they match y
 
 Branch development with git submodules can lead to unintended submodule commits.
 To avoid this, we have an CI check that ensures the active submodule commits match
-a version explicitly listed in a `hashes.txt` file at the root of the git repo.
+a version explicitly listed in a ``hashes.txt`` file at the root of the git repo.
 
 GitHub Administration
 ---------------------

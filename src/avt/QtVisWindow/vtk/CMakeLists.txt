@@ -4,14 +4,19 @@
 
 #****************************************************************************
 # Modifications:
-#   Kathleen Biagas, Tue April 15, 2025
-#   Removed setting of HAVE_XLIB definition. No longer needed.
+#  Kathleen Biagas, Thu Oct 24, 2024
+#  Utilize visit_patch_target.
+#
+#  Kathleen Biagas, Tue April 15, 2025
+#  Removed setting of HAVE_XLIB definition. No longer needed.
 #
 #****************************************************************************
 
-target_sources(avtqtviswindow PRIVATE
-    vtkDashedXorGridMapper2D.C
-    vtkRubberBandMapper2D.C)
-
-target_include_directories(avtqtviswindow PUBLIC .)
+visit_patch_target(
+    NAME      avtqtviswindow
+    SOURCES   vtkDashedXorGridMapper2D.C
+              vtkRubberBandMapper2D.C
+    HEADERS   vtkDashedXorGridMapper2D.h
+              vtkRubberBandMapper2D.h
+    INCLUDES  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 

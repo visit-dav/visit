@@ -54,16 +54,8 @@ function bv_xdmf_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR \${VISITHOME}/Xdmf/$XDMF_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
 
-        xml64=""
-        xmlsep="-"
-        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
-            xml64="64"
-        fi
-        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
-            xmlsep="."
-        fi
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP \${VISIT_VTK_DIR}/lib${xml64} vtklibxml2${xmlsep}\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} HDF5_LIB TYPE STRING)"\
+            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP VTK::libxml2 HDF5_LIB TYPE STRING)"\
                 >> $HOSTCONF
     fi
 }
@@ -358,7 +350,7 @@ function build_xdmf
     #
     # Prepare build dir
     #
-    prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE
+    prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE SHA256 $XDMF_SHA256_CHECKSUM
     untarred_xdmf=$?
     if [[ $untarred_xdmf == -1 ]] ; then
         warn "Unable to prepare Xdmf Build Directory. Giving up"
@@ -496,11 +488,9 @@ function build_xdmf
         install_name_tool -id $LIBDIR/libXdmf.dylib $LIBDIR/libXdmf.dylib
     fi
 
+    cleanup_build_dirs $XDMF_BUILD_DIR Xdmf
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/Xdmf"
-        chgrp -R ${GROUP} "$VISITDIR/Xdmf"
-    fi
+    change_install_dir_perms "$VISITDIR/Xdmf"
 
     cd "$START_DIR"
     info "Done with Xdmf"

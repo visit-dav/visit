@@ -557,6 +557,7 @@ function initialize_build_visit()
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
     DOWNLOAD_ONLY="no"
+    CLEANUP="no"
     LIST_TPS="no"
 
 
@@ -1148,6 +1149,7 @@ function run_build_visit()
             --java) DO_JAVA="yes";;
             --list-tpls) LIST_TPLS="yes";;
             --makeflags) next_arg="makeflags";;
+            --cleanup) CLEANUP="yes";;
             --no-hostconf) DO_HOSTCONF="no";;
             --no-boost) DO_BOOST="no";;
             --no-qt-silent) DO_QT_SILENT="no";;

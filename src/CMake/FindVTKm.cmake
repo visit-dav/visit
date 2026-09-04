@@ -32,13 +32,20 @@
 #   Eric Brugger, Wed Sep  4 10:31:31 PT 2024
 #   Modified the logic to also install static libraries. I also fixed a
 #   bug that prevented installing dependent libraries.
-# 
+#
 #   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
 #   Replace vtkm_filter with vtkm::filter.
 #
+#   Kathleen Biagas, Mon Aug 17, 2026
+#   Use new visit_install_thirdparty_targets function to properly install
+#   vtkm targets without guessing configuration type.
+#
+#   Kathleen Biagas, Thur Aug 20, 2026
+#   Add call to generate_lib_setup_cmake.
+#
 #****************************************************************************/
 
-IF (VISIT_VTKM_DIR)
+if (VISIT_VTKM_DIR)
    file(GLOB VTKm_DIR "${VISIT_VTKM_DIR}/lib/cmake/vtkm-*")
    if(NOT VTKm_DIR)
       message(FATAL_ERROR "Failed to find VTKm at VTKM_DIR=${VTKM_DIR}/lib/cmake/vtk-*")
@@ -46,69 +53,77 @@ IF (VISIT_VTKM_DIR)
    include(${VTKm_DIR}/VTKmConfig.cmake)
    find_package(VTKm REQUIRED QUIET)
    set(VTKM_FOUND true CACHE BOOL "VTKM library found" FORCE)
-   set("HAVE_LIBVTKM" true CACHE BOOL "Have VTKM library" FORCE)
+   set("HAVE_VTKM" true CACHE BOOL "Have VTKM library" FORCE)
 
-   MESSAGE(STATUS "  VTKM_DIR = ${VTKM_DIR}")
-   MESSAGE(STATUS "  VTKM_FOUND = ${VTKM_FOUND}")
-   MESSAGE(STATUS "  VTKm_VERSION_MAJOR = ${VTKm_VERSION_MAJOR}")
-   MESSAGE(STATUS "  VTKm_VERSION_MINOR = ${VTKm_VERSION_MINOR}")
-   MESSAGE(STATUS "  VTKm_VERSION_PATCH = ${VTKm_VERSION_PATCH}")
-   MESSAGE(STATUS "  VTKm_VERSION_FULL = ${VTKm_VERSION_FULL}")
-   MESSAGE(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
+   message(STATUS "  VTKM_DIR = ${VTKM_DIR}")
+   message(STATUS "  VTKM_FOUND = ${VTKM_FOUND}")
+   message(STATUS "  VTKm_VERSION_MAJOR = ${VTKm_VERSION_MAJOR}")
+   message(STATUS "  VTKm_VERSION_MINOR = ${VTKm_VERSION_MINOR}")
+   message(STATUS "  VTKm_VERSION_PATCH = ${VTKm_VERSION_PATCH}")
+   message(STATUS "  VTKm_VERSION_FULL = ${VTKm_VERSION_FULL}")
+   message(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
 
-   set(VTKm_INCLUDE_DIRS "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}"
-                         "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/diy/vtkmdiy/include"
-                         "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/lcl/vtkmlcl"
-       CACHE STRING "VTKm include directories")
+   if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_VTKM_SKIP_INSTALL)
+       set(vtkm_majmin ${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
 
-   # use the vtkm CMake properties to find locations and all interface
-   # link dependencies. This looks for shared libraries. We are currently
-   # building static libraries, so this is basically a noop, but if we
-   # ever change to shared libraries, this may be needed.
-   function(get_lib_loc_and_install _lib)
-       get_target_property(ttype ${_lib} TYPE)
-       if (ttype STREQUAL "INTERFACE_LIBRARY")
-           return()
-       endif()
-       get_target_property(i_loc ${_lib} IMPORTED_LOCATION)
-       if (NOT i_loc)
-         get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELEASE)
-       endif()
-       if (NOT i_loc)
-         get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELWITHDEBINFO)
-       endif()
-       if(i_loc)
-           THIRD_PARTY_INSTALL_LIBRARY(${i_loc})
-       endif()
-   endfunction()
+       # using a couple of main vtkm targets, find all of the link library
+       # targets for installation
+       list(APPEND vtkm_targets vtkm::filter vtkm::diy)
+       get_target_property(VTKM_INT_LL vtkm::filter INTERFACE_LINK_LIBRARIES)
+       # pluginVsInstall test for Slice on Windows revealed need for this module
+       # and its link dependencies to be installed, too.
+       get_target_property(VTKM_DIY_LL vtkm::diy INTERFACE_LINK_LIBRARIES)
+       set(addl_ll)
+       foreach(vtkmll ${VTKM_INT_LL} ${VTKM_DIY_LL})
+           # only process libraries that start with vtkm
+	   string(SUBSTRING ${vtkmll} 0 4 ll_dep_prefix)
+           if (TARGET ${vtkmll} AND "${ll_dep_prefix}" STREQUAL "vtkm")
+               list(APPEND vtkm_targets ${vtkmll})
+           endif()
 
-   get_target_property(VTKM_INT_LL vtkm::filter INTERFACE_LINK_LIBRARIES)
-   # pluginVsInstall test for Slice on Windows revealed need for this module
-   # and its link dependencies to be installed, too.
-   get_target_property(VTKM_DIY_LL vtkm::diy INTERFACE_LINK_LIBRARIES)
-   set(addl_ll)
-   foreach(vtkmll ${VTKM_INT_LL} ${VTKM_DIY_LL})
-       get_lib_loc_and_install(${vtkmll})
-       get_target_property(VTKM_LL_DEP ${vtkmll} INTERFACE_LINK_LIBRARIES)
-       if(VTKM_LL_DEP)
-           foreach(ll_dep ${VTKM_LL_DEP})
-               # only process libraries that start with vtkm
-	       string(SUBSTRING ${ll_dep} 0 4 ll_dep_prefix)
-               if ("${ll_dep_prefix}" STREQUAL "vtkm")
-                   # don't process duplicates
-                   if (NOT ${ll_dep} IN_LIST VTKM_INT_LL AND
-                       NOT ${ll_dep} IN_LIST addl_ll)
-                       get_lib_loc_and_install(${ll_dep})
-                       list(APPEND addl_ll ${ll_dep})
+           get_target_property(VTKM_LL_DEP ${vtkmll} INTERFACE_LINK_LIBRARIES)
+           if(VTKM_LL_DEP)
+               foreach(ll_dep ${VTKM_LL_DEP})
+                   # only process libraries that start with vtkm
+	           string(SUBSTRING ${ll_dep} 0 4 ll_dep_prefix)
+                   if (TARGET ${ll_dep} AND "${ll_dep_prefix}" STREQUAL "vtkm")
+                       list(APPEND vtkm_targets ${ll_dep})
                    endif()
-               endif()
-           endforeach()
-       endif()
-   endforeach()
-   unset(addl_ll)
+               endforeach()
+           endif()
+       endforeach()
+       list(REMOVE_DUPLICATES vtkm_targets)
+       unset(addl_ll)
 
-   if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
-       THIRD_PARTY_INSTALL_INCLUDE(vtkm ${VTKM_DIR}/include)
-   endif()
-ENDIF()
+       # install all library targets
+       visit_install_thirdparty_targets(NAME vtkm TARGETS ${vtkm_targets})
+
+       if(NOT VISIT_HEADERS_SKIP_INSTALL)
+           install(DIRECTORY ${VTKM_DIR}/include/vtkm-${vtkm_majmin}
+                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
+                FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                                 GROUP_WRITE GROUP_READ
+                                 WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                      GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                      WORLD_READ WORLD_EXECUTE)
+       endif()
+
+        # write SetupVTKM.cmake
+        include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
+        set(target_list vtkm::filter)
+        create_lib_setup_cmake(NAME "VTKM"
+                               NAMESPACE "vtkm::"
+                               INCBASE "vtkm-${vtkm_majmin}"
+                               ITEMS ${target_list}
+                               NESTED_INCLUDES true)
+        unset(target_list)
+
+        get_lib_setup_cmake_input_file(fname "VTKM")
+        file(APPEND ${fname} "\nadd_library(vtkm::loguru INTERFACE IMPORTED)\n")
+        file(APPEND ${fname} "set_target_properties(vtkm::loguru PROPERTIES INTERFACE_LINK_LIBRARIES \"Threads::Threads\")\n")
+        file(APPEND ${fname} "\nadd_library(vtkm::diy_developer_flags INTERFACE IMPORTED)\n")
+        generate_lib_setup_cmake(NAME "VTKM")
+    endif()
+endif()
 

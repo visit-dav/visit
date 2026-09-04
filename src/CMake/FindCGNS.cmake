@@ -13,14 +13,15 @@
 #   Kathleen Biagas, Thu July 15, 2021
 #   Add CGNS_WIN32_DEFINES (used by xml2cmake to add preprocessor defines).
 #
+#   Kathleen Biagas, Mon Mar 31, 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the CGNS_DIR hint from the config-site .cmake file
+# Uses the CGNS_DIR hint from the config-site .cmake file
 
-if(WIN32)
-  SET_UP_THIRD_PARTY(CGNS LIBS cgnsdll)
-  set(CGNS_WIN32_DEFINES "USE_DLL")
-else()
-  SET_UP_THIRD_PARTY(CGNS LIBS cgns)
-endif()
+visit_import_third_party(CGNS
+     LIBNAMES     cgns
+                  cgnsdll
+     WIN32DEFINES USE_DLL)
 

@@ -1,3 +1,4 @@
+#include <visit-hdf5.h>
 #include <AMRreader.h>
 
 #include <DebugStream.h>

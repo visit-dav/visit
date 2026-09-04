@@ -115,6 +115,43 @@ function bv_adios2_ensure
     fi
 }
 
+function apply_adios2_2100rc1_yamlcpp_cstdint_patch
+{
+    patch -p0 << \EOF
+diff -u thirdparty/yaml-cpp/yaml-cpp/src/emitterutils.cpp.orig thirdparty/yaml-cpp/yaml-cpp/src/emitterutils.cpp
+--- thirdparty/yaml-cpp/yaml-cpp/src/emitterutils.cpp.orig
++++ thirdparty/yaml-cpp/yaml-cpp/src/emitterutils.cpp
+@@ -1,5 +1,6 @@
+ #include <algorithm>
++#include <cstdint>
+ #include <iomanip>
+ #include <sstream>
+ 
+ #include "emitterutils.h"
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS2 yaml-cpp cstdint patch failed."
+        return 1
+    fi
+
+    return 0
+}
+
+function apply_adios2_patch
+{
+    info "Patching ADIOS2 . . ."
+
+    if [[ "$ADIOS2_VERSION" == "2.10.0-rc1" ]] ; then
+        apply_adios2_2100rc1_yamlcpp_cstdint_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
 function build_adios2
 {
     #
@@ -131,12 +168,30 @@ function build_adios2
     #
     # Prepare build dir
     #
-    prepare_build_dir $ADIOS2_BUILD_DIR $ADIOS2_FILE
+    prepare_build_dir $ADIOS2_BUILD_DIR $ADIOS2_FILE SHA256 $ADIOS2_SHA256_CHECKSUM
     untarred_ADIOS2=$?
     if [[ $untarred_ADIOS2 == -1 ]] ; then
         warn "Unable to prepare ADIOS2 Build Directory. Giving Up"
         return 1
     fi
+
+    #
+    # Apply patches
+    #
+    cd $ADIOS2_BUILD_DIR || error "Can't cd to ADIOS2 build dir."
+    apply_adios2_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_ADIOS2 == 1 ]] ; then
+            warn "Giving up on ADIOS2 build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+    cd "$START_DIR"
 
     #### begin parallel
 
@@ -275,14 +330,13 @@ function build_adios2
             return 1
         fi
 
-        if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/adios2"
-            chgrp -R ${GROUP} "$VISITDIR/adios2"
-        fi
-
         cd "$START_DIR"
     done
 
+    # the build dirs are located inside the src, so only need to delete src
+    cleanup_build_dirs $ADIOS2_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/adios2"
     cd "$START_DIR"
     info "Done with ADIOS2"
     return 0

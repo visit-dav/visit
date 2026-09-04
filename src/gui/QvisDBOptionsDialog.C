@@ -4,6 +4,7 @@
 
 #include <QvisDBOptionsDialog.h>
 #include <QvisDBOptionsHelpWindow.h>
+#include <QvisColorButton.h>
 #include <QLayout>
 #include <QPushButton>
 #include <QComboBox>
@@ -58,6 +59,9 @@
 //    multiple lines are properly displayed. Also use a fixed-width font
 //    (Courier) and prevent tabs from being entered by setting
 //    tabChangesFocus to true.
+// 
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Handle color.
 //
 // ****************************************************************************
 
@@ -132,6 +136,18 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
             grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
             grid->addWidget(cbo_box, i, 1);
             comboboxes.append(cbo_box);
+            }
+            break;
+          case DBOptionsAttributes::Color:
+            { // new scope
+            int red, green, blue, alpha;
+            atts->GetColor(name, red, green, blue, alpha);
+            QColor qcolor(red, green, blue, alpha);
+            QvisColorButton *colorButton = new QvisColorButton(this);
+            colorButton->setButtonColor(qcolor);
+            grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
+            grid->addWidget(colorButton, i, 1, Qt::AlignLeft);
+            colorbuttons.append(colorButton);
             }
             break;
           case DBOptionsAttributes::MultiLineString:
@@ -209,6 +225,9 @@ QvisDBOptionsDialog::~QvisDBOptionsDialog()
 //
 //    Chris Laganella, Tue Feb  8 18:24:35 EST 2022
 //    Add support for multi line string
+// 
+//    Justin Privitera, Mon Jul 20 16:40:22 PDT 2026
+//    Handle color.
 // ****************************************************************************
 
 void
@@ -219,6 +238,7 @@ QvisDBOptionsDialog::okayClicked()
     int lineedit_index = 0;
     int checkbox_index = 0;
     int combobox_index = 0;
+    int colorbutton_index = 0;
     int multiLineEditIdx = 0;
     for (int i=0; i<size; i++)
     {
@@ -270,6 +290,16 @@ QvisDBOptionsDialog::okayClicked()
             int val = comboboxes[combobox_index++]->currentIndex();
             debug5 << mName << "Setting \"" << name.c_str() << "\" to " << val << endl;
             atts->SetEnum(name, val);
+          }
+            break;
+          case DBOptionsAttributes::Color:
+          {
+            QColor val = colorbuttons[colorbutton_index++]->buttonColor();
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to "
+                   << val.red() << "," << val.green() << ","
+                   << val.blue() << "," << val.alpha() << endl;
+            atts->SetColor(name, val.red(), val.green(),
+                           val.blue(), val.alpha());
           }
             break;
           case DBOptionsAttributes::MultiLineString:

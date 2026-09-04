@@ -1,0 +1,54 @@
+--- IO\Legacy\vtkRectilinearGridReader.cxx	2025-06-23 11:12:36.000000000 -0800
++++ IO\Legacy\vtkRectilinearGridReader.cxx	2026-01-26 11:23:58.000000000 -0800
+@@ -80,14 +80,21 @@
+     while (true)
+     {
+       if (!this->ReadString(line))
+       {
+         break;
+       }
++      // Have to read field data because it may be binary.
++      // VTK bug ticket #18447
++      if (!strncmp(this->LowerCase(line), "field", 5))
++      {
++        vtkFieldData* fd = this->ReadFieldData();
++        fd->Delete();
++      }
+ 
+-      if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
++      else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+       {
+         int dim[3];
+         if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+         {
+           vtkErrorMacro(<< "Error reading dimensions!");
+           this->CloseVTKFile();
+@@ -113,12 +120,28 @@
+ 
+         outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), extent[0], extent[1],
+           extent[2], extent[3], extent[4], extent[5]);
+ 
+         dimsRead = true;
+       }
++
++      // if the coordinates have been reached, should be no reason
++      // to keep reading
++      else if (strncmp(this->LowerCase(line), "x_coordinate", 12) == 0)
++      {
++        break;
++      }
++      else if (strncmp(this->LowerCase(line), "y_coordinate", 12) == 0)
++      {
++        break;
++      }
++      else if (strncmp(this->LowerCase(line), "z_coordinate", 12) == 0)
++      {
++        break;
++      }
++
+     }
+   }
+ 
+   if (!dimsRead)
+   {
+     vtkWarningMacro(<< "Could not read dimensions or extents from the file.");

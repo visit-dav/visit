@@ -30,6 +30,9 @@ class avtCGNSFileReader;
 //    Modified the class to support both MTSD and MTMD variants and moved
 //    all the CGNS reading code to avtCGNSFileReader.
 //
+//    Kathleen Biagas, Mon Apr 27 09:57:31 PDT 2026
+//    Add GetAuxiliaryData.
+//
 // ****************************************************************************
 
 class avtCGNS_MTMDFileFormat : public avtMTMDFileFormat
@@ -49,6 +52,9 @@ public:
     virtual vtkDataSet    *GetMesh(int, int, const char *);
     virtual vtkDataArray  *GetVar(int, int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+    virtual void          *GetAuxiliaryData(const char *, int, int,
+                                            const char *, void *,
+                                            DestructorFunction &);
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
@@ -73,6 +79,9 @@ public:
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+    virtual void          *GetAuxiliaryData(const char *, int,
+                                            const char *, void *,
+                                            DestructorFunction &);
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
@@ -83,4 +92,3 @@ protected:
 };
 
 #endif
-

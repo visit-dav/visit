@@ -2155,6 +2155,36 @@ EOF
     fi
 }
 
+function apply_vtk95_vtk_convex_point_set_patch
+{
+    # patch vtkConvexPointSet to fix a contouring bug.
+    patch -p0 << \EOF
+--- Common/DataModel/vtkConvexPointSet.cxx.orig	2026-05-19 14:58:47.244708000 -0700
++++ Common/DataModel/vtkConvexPointSet.cxx	2026-05-19 15:01:39.993741000 -0700
+@@ -59,7 +59,13 @@
+   if (numPts < 1)
+     return;
+
+-  this->Triangulate(0, this->TetraIds, this->TetraPoints);
++  this->TriangulateLocalIds(0, this->TetraIds);
++
++  this->TetraPoints->SetNumberOfPoints(this->TetraIds->GetNumberOfIds());
++  for (int i = 0; i < this->TetraIds->GetNumberOfIds(); i++)
++  {
++    this->TetraPoints->SetPoint(i, this->Points->GetPoint(this->TetraIds->GetId(i)));
++  }
+ }
+
+ //------------------------------------------------------------------------------
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkConvexPointSet.cxx failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_vtk_patch
 {
     if [[ ${VTK_VERSION} == 9.5.0 ]] ; then
@@ -2194,6 +2224,12 @@ function apply_vtk_patch
         if [[ $? != 0 ]] ; then
             return 1    
         fi
+
+        # should submit a MR to kitware
+        apply_vtk95_vtk_convex_point_set_patch
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
     fi
 
     return 0
@@ -2213,7 +2249,7 @@ function build_vtk
     #
     # Prepare the build dir using src file.
     #
-    prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
+    prepare_build_dir $VTK_BUILD_DIR $VTK_FILE SHA256 $VTK_SHA256_CHECKSUM
     untarred_vtk=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -2524,15 +2560,15 @@ function build_vtk
     info "Installing VTK . . . "
     ${CMAKE_COMMAND} --install . || error "VTK did not install correctly."
 
+    cleanup_build_dirs $VTK_BUILD_DIR $VTK_SRC_DIR
+
     # Filter out an include that references the user's VTK build directory
     configdir="${vtk_inst_path}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
     cat ${configdir}/VTKConfig.cmake | grep -v "vtkTestingMacros" > ${configdir}/VTKConfig.cmake.new
     mv ${configdir}/VTKConfig.cmake.new ${configdir}/VTKConfig.cmake
 
-    chmod -R ug+w,a+rX ${VISITDIR}/${VTK_INSTALL_DIR}
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chgrp -R ${GROUP} "$VISITDIR/${VTK_INSTALL_DIR}"
-    fi
+    change_install_dir_perms ${VISITDIR}/${VTK_INSTALL_DIR}
+
     cd "$START_DIR"
     info "Done with VTK"
     return 0

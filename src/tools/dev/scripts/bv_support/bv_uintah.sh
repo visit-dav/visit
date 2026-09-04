@@ -138,6 +138,50 @@ index 9166e87..d80ae1d 100644
 EOF
 }
 
+function apply_uintah_cxx20_requires_patch
+{
+    info "Patching uintah C++ standard detection for C++20 requires keyword"
+    patch -p0 << \EOF
+--- Uintah-2.6.3/src/aclocal.m4	2018-06-20 14:50:32.000000000 -0700
++++ Uintah-2.6.3/src/aclocal.m4	2026-07-29 10:55:12.000000000 -0700
+@@ -1338,6 +1338,10 @@
+ 
+     auto d = a;
+     auto l = [](){};
++
++    struct cxx20_requires_check {
++      void requires();
++    };
+ ]])
+ 
+ AC_DEFUN([AX_CXX_COMPILE_STDCXX_11], [dnl
+--- Uintah-2.6.3/src/configure	2018-06-20 14:50:35.000000000 -0700
++++ Uintah-2.6.3/src/configure	2026-07-29 10:55:12.000000000 -0700
+@@ -10398,6 +10398,10 @@
+ 
+     auto d = a;
+     auto l = [](){};
++
++    struct cxx20_requires_check {
++      void requires();
++    };
+ 
+ _ACEOF
+ if ac_fn_cxx_try_compile "$LINENO"; then :
+@@ -10445,6 +10449,10 @@
+ 
+     auto d = a;
+     auto l = [](){};
++
++    struct cxx20_requires_check {
++      void requires();
++    };
+ 
+ _ACEOF
+ if ac_fn_cxx_try_compile "$LINENO"; then :
+EOF
+}
+
 
 # **************************************************************************** #
 #                          Function 8.1, build_uintah                          #
@@ -252,7 +296,7 @@ function build_uintah
     #
     # Prepare build dir
     #
-    prepare_build_dir $UINTAH_BUILD_DIR $UINTAH_FILE
+    prepare_build_dir $UINTAH_BUILD_DIR $UINTAH_FILE SHA256 $UINTAH_SHA256_CHECKSUM
     untarred_uintah=$?
     if [[ $untarred_uintah == -1 ]] ; then
         warn "Unable to prepare UINTAH Build Directory. Giving Up"
@@ -265,6 +309,11 @@ function build_uintah
         warn "Failed to patch UINTAH"
         return 1
     fi
+    apply_uintah_cxx20_requires_patch
+    if [[ $? != 0 ]] ; then
+        warn "Failed to patch UINTAH"
+        return 1
+    fi
     # move back up to the start dir
     cd "$START_DIR"
 
@@ -273,6 +322,7 @@ function build_uintah
     #
     info "Configuring UINTAH . . ."
 
+    UINTAH_SRC_DIR="${UINTAH_BUILD_DIR}"
     UINTAH_BUILD_DIR="${UINTAH_BUILD_DIR}/optimized"
     if [[ ! -d $UINTAH_BUILD_DIR ]] ; then
         echo "Making build directory $UINTAH_BUILD_DIR"
@@ -395,10 +445,11 @@ function build_uintah
         done
     fi
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/uintah"
-        chgrp -R ${GROUP} "$VISITDIR/uintah"
-    fi
+    # build dir is a subdir for SRC, so only need to delete SRC
+    cleanup_build_dirs $UINTAH_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/uintah"
+
     cd "$START_DIR"
     info "Done with UINTAH"
     return 0

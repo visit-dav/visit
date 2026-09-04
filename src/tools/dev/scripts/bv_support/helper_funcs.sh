@@ -370,6 +370,11 @@ function uncompress_untar
 #                                                                             #
 #   Cyrus Harrison, Thu, Jan 25, 2024  9:35:18 PM                             #
 #   Removed md5 logic, standrize on sha256                                    #
+#                                                                             #
+#   Kathleen Biagas, Tue Apr 7, 2026                                          #
+#   Use sha512sum or sha256sum based on checksum_algo. Simplified logic to    #
+#   use parameter extraction.                                                 #
+#                                                                             #
 # *************************************************************************** #
 
 function verify_sha_checksum
@@ -378,26 +383,31 @@ function verify_sha_checksum
     checksum=$2
     dfile=$3
 
-    tmp=`which shasum`
-    if [[ $? != 0 ]]; then
-        info "could not find shasum, disabling check"
-        return 0
-    fi
 
     if [[ $checksum_algo == 512 ]]; then
-        tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{128\}'`
+        checksum_algo_command="sha512sum"
+        digits=128
     else
-        tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{64\}'`
+        checksum_algo_command="sha256sum"
+        digits=64
     fi
-    if [[ "$tmp" == "$checksum" ]]; then
+
+    tmp=`which $checksum_algo_command`
+    if [[ $? != 0 ]]; then
+        info "could not find $checksum_algo_command, disabling check"
+        return 0
+    fi
+    tmp=`$checksum_algo_command $dfile`
+    tmp2=${tmp:0:$digits}
+
+    if [[ "$tmp2" == "$checksum" ]]; then
         info "verified"
         return 0
     else
-        info "shasum -a $checksum_algo failed: looking for $checksum got $tmp"
+        info "$checksum_algo_command failed: looking for $checksum got $tmp2"
         return 1
     fi
 
-    info "shasum does not support $checksum_algo, check disabled"
     return 0
 }
 
@@ -907,6 +917,61 @@ function prepare_build_dir
 
     return $untarred_src
 }
+
+# *************************************************************************** #
+# Function: cleanup_build_dirs                                                #
+#                                                                             #
+# Purpose: Helper that deletes a build directory                              #
+#                                                                             #
+# Returns:                                                                    #
+#           0 for success with deletion                                       #
+#           1 for failure with deletion                                       #
+#                                                                             #
+# Programmer: Kathleen Biagas                                                 #
+# Date: Wed Jul 15, 2026                                                      #
+#                                                                             #
+# Modifications:                                                              #
+#   Kathleen Biagas, Tue Aug 3, 2026                                          #
+#   Removed 'Not performing cleanup of build dirs' info message. Seemed a bit #
+#   excessive to be printed for every library.                                #
+# *************************************************************************** #
+function cleanup_build_dirs
+{
+    if [[ "$CLEANUP" == "no" ]] ; then
+        return 0
+    fi
+
+    cd "$START_DIR"
+
+    info "deleting $1"
+    rm -rf $1
+
+    if [[ $? != 0 ]] ; then
+        warn "Unable to delete $1."
+        return 1
+    fi
+
+    if [[ $# == 2 ]]; then
+        info "deleting $2"
+        rm -rf $2
+
+        if [[ $? != 0 ]] ; then
+            warn "Unable to delete $2."
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+function change_install_dir_perms
+{
+    chmod -R ug+w,a+rX "$1"
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chgrp -R ${GROUP} "$1"
+    fi
+}
+
 
 # *************************************************************************** 
 # check_3rdparty
@@ -1753,6 +1818,7 @@ function usage
     printf "\n"
 
     printf "%-20s %s [%s]\n" "--bv-debug"   "Enable debugging for this script" "no"
+    printf "%-20s %s [%s]\n" "--cleanup" "Cleanup (delete) src and build dirs upon successful compile and install." "no"
     printf "%-20s %s [%s]\n" "--download-only" "Only download the specified packages" "no"
     printf "%-20s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
     printf "%-20s %s [%s]\n" "-h, --help" "Display this help message." "no"

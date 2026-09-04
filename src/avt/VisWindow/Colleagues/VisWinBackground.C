@@ -8,6 +8,7 @@
 
 #include <vtkRenderer.h>
 #include <vtkBackgroundActor.h>
+#include <vtkCamera.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Factory.h>
 #include <vtkTexture.h>
@@ -155,16 +156,49 @@ VisWinBackground::SetGradientBackgroundColors(int gradStyle,
 // Creation:   Mon Nov 19 17:56:25 PST 2007
 //
 // Modifications:
+//   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//   I changed the routine to plot the data in world coordinates instead of
+//   normalized viewport coordinates to support tiled rendering.
 //   
 // ****************************************************************************
 
 void
-VisWinBackground::UpdatePlotList(std::vector<avtActor_p> &)
+VisWinBackground::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
     // Update the background in image sphere mode in case we were unable to
     // originally draw the image sphere due to having no plots.
     if(mediator.GetBackgroundMode() == 3)
         SetBackgroundMode(mediator.GetBackgroundMode());
+
+    if (lst.size() > 0)
+    {
+        // The zoomTile calculation assumes that the parallel scale for the
+        // background renderer is 0.5.
+        double zoomTile =
+            0.5 / mediator.GetBackground()->GetActiveCamera()->GetParallelScale();
+        // Get the width and height of the tile to determine the amount
+        // to scale the width by.
+        int w, h;
+        mediator.GetSize(w, h);
+        double windowScale = double(w) / double(h);
+
+        // Calculate PositionCoordinate and Position2Coordinate, where
+        // PositionCoordinate is the bottom left and Position2Coordinate is
+        // the width and height.
+        double rect[4];
+        rect[0] = 0.;
+        rect[1] = 0.;
+        rect[2] = 1.;
+        rect[3] = 1.;
+        double p0[2], p1[2];
+        p0[0] = 0.5 - windowScale / 2. + rect[0] * windowScale;
+        p0[1] = rect[1];
+        p1[0] = rect[2] * windowScale;
+        p1[1] = rect[3];
+
+        bgActor->GetPositionCoordinate()->SetValue(p0[0], p0[1]);
+        bgActor->GetPosition2Coordinate()->SetValue(p1[0], p1[1]);
+    }
 }
 
 // ****************************************************************************
@@ -246,6 +280,9 @@ VisWinBackground::SetBackgroundImage(const std::string &imgFile, int nx, int ny)
 //    Brad Whitlock, Fri Nov 16 11:01:18 PST 2007
 //    Added background image support.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using AddViewProp.
+//
 // ****************************************************************************
 
 void
@@ -263,18 +300,18 @@ VisWinBackground::AddBackgroundToWindow(int mode)
     vtkRenderer *background = mediator.GetBackground();
     if(mode == 1)
     {
-        background->AddActor2D(bgActor);
+        background->AddViewProp(bgActor);
         bgActor->SetVisibility(true);
     }
     else if(mode == 2)
     {
-        background->AddActor2D(textureActor);
+        background->AddViewProp(textureActor);
         textureActor->SetVisibility(true);
         textureActor->SetSphereMode(false);
     }
     else if(mode == 3)
     {
-        background->AddActor2D(textureActor);
+        background->AddViewProp(textureActor);
         textureActor->SetVisibility(true);
         bool doSphereMode = true;
 
@@ -321,8 +358,11 @@ VisWinBackground::AddBackgroundToWindow(int mode)
 //  Creation:   Wed Aug 29 15:39:59 PST 2001
 //
 //  Modifications:
-//   Brad Whitlock, Fri Nov 16 11:01:00 PST 2007
-//   Added background image support.
+//    Brad Whitlock, Fri Nov 16 11:01:00 PST 2007
+//    Added background image support.
+//
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Switched to using RemoveViewProp.
 //
 // ****************************************************************************
 
@@ -335,8 +375,8 @@ VisWinBackground::RemoveBackgroundFromWindow()
     }
 
     vtkRenderer *background = mediator.GetBackground();
-    background->RemoveActor2D(bgActor);
-    background->RemoveActor2D(textureActor);
+    background->RemoveViewProp(bgActor);
+    background->RemoveViewProp(textureActor);
 
     addedBackground = false;
 }

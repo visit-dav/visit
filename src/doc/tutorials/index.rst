@@ -10,6 +10,9 @@ The datasets for various tutorials can be found in VisIt_'s `large data <https:/
  * `Potential Flow tutorial data <https://visit-dav.github.io/largedata/datarchives/potential_flow>`_
  * `VisIt Basics tutorial data <https://visit-dav.github.io/largedata/datarchives/visit_tutorial>`_
 
+
+Tutorial Overview Slides: `Visualization and Analysis of HPC Simulation Data with VisIt and Ascent <https://github.com/visit-dav/largedata/blob/master/bindocs/2026_07_29_ATPESC26_VisIt_and_Ascent_Tutorial_Intro.pdf?raw=true>`_
+
 Contents:
 
 .. toctree::
@@ -29,7 +32,7 @@ Contents:
     PythonExpressions
     Partitioning
     KeyframeAnimation
-    
+    History
 
 .. Indices and tables
 .. ==================

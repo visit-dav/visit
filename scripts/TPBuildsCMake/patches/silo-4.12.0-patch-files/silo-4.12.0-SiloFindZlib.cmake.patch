@@ -1,0 +1,37 @@
+--- CMake\SiloFindZlib.cmake	2025-11-20 21:30:59.000000000 -0800
++++ CMake\SiloFindZlib.cmake	2026-03-02 13:14:56.000000000 -0800
+@@ -71,22 +71,31 @@
+ 
+ if(ZLIB_FOUND)
+     # needed for config.h
+     set(HAVE_LIBZ 1)
+     set(HAVE_ZLIB_H 1)
+     if(WIN32)
+-        get_target_property(ZLIB_DLL zlib IMPORTED_LOCATION_RELEASE)
++        # CMake's find_package sets IMPORTED_LOCATION_RELEASE for ZLIB::ZLIB
++        # to the import library instead of the .dll, which is needed for 
++        # installation alongside silex. 
++        # Get the dll location the hard way instead.
++        #
++        cmake_path(REPLACE_EXTENSION ZLIB_LIBRARY "dll" OUTPUT_VARIABLE zlib_dll)
++        cmake_path(GET zlib_dll PARENT_PATH zlib_lib_dir)
++        cmake_path(GET zlib_dll FILENAME zlib_dll_name)
++        cmake_path(SET zlib_dll NORMALIZE ${zlib_lib_dir}/../bin/${zlib_dll_name})
++
+         if(SILO_ENABLE_SILEX OR SILO_ENABLE_BROWSER)
+-            install(FILES ${ZLIB_DLL} DESTINATION ${CMAKE_INSTALL_BINDIR}
++            install(FILES ${zlib_dll} DESTINATION ${CMAKE_INSTALL_BINDIR}
+                     PERMISSIONS OWNER_READ OWNER_WRITE
+                                 GROUP_READ GROUP_WRITE
+                                 WORLD_READ)
+ 
+             add_custom_command(TARGET copy_deps POST_BUILD
+                  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+-                 ${ZLIB_DLL} ${Silo_BINARY_DIR}/bin/$<$<BOOL:${is_multi_config}>:$<CONFIG>>/)
++                 ${zlib_dll} ${Silo_BINARY_DIR}/bin/$<$<BOOL:${is_multi_config}>:$<CONFIG>>/)
+         endif()
+     endif()
+ else()
+     message(FATAL_ERROR "Could not find zlib, you may want to try setting SILO_ZLIB_DIR")
+ endif()
+ 

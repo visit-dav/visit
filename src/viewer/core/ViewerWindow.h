@@ -9,6 +9,7 @@
 #ifndef VIEWER_WINDOW_H
 #define VIEWER_WINDOW_H
 #include <viewercore_exports.h>
+#include <visit-config.h> // for HAVE_OSPRAY
 #include <ViewerBase.h>
 #include <avtActor.h>
 #include <avtDataset.h>
@@ -484,6 +485,13 @@ class ViewerPlotList;
 //    Kevin Griffin, Tue Sep 9, 2025
 //    Added Set/Get AnariAttributes when built with ANARI support.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added Set/Get TiledRenderingWidth and TiledRenderingHeight 
+//    to support tiled rendering.
+//
+//    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
+//    Added ResetAnariScene
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -712,6 +720,10 @@ public:
     bool GetMultiresolutionMode() const;
     void SetMultiresolutionCellSize(double size);
     double GetMultiresolutionCellSize() const;
+    void SetTiledRenderingWidth(int width);
+    int GetTiledRenderingWidth() const;
+    void SetTiledRenderingHeight(int height);
+    int GetTiledRenderingHeight() const;
     void GetRenderTimes(double times[6]) const;
     void SetStereoRendering(bool enabled, int type);
     bool GetStereo() const;
@@ -763,6 +775,7 @@ public:
 #ifdef HAVE_ANARI
     void                  SetAnariAttributes(const AnariAttributes &);
     const AnariAttributes &GetAnariAttributes() const;
+    void  ResetAnariScene();
 #endif
 
     void Lineout(const bool);

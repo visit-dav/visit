@@ -197,7 +197,7 @@ function build_cgns
     #
     # Prepare build dir
     #
-    prepare_build_dir $CGNS_BUILD_DIR $CGNS_FILE sha256 $CGNS_SHA256_CHECKSUM
+    prepare_build_dir $CGNS_BUILD_DIR $CGNS_FILE SHA256 $CGNS_SHA256_CHECKSUM
     untarred_cgns=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -307,10 +307,10 @@ function build_cgns
 
     ${CMAKE_COMMAND} --install . || error "CGNS did not install correctly. Giving up."
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/cgns"
-        chgrp -R ${GROUP} "$VISITDIR/cgns"
-    fi
+    cleanup_build_dirs $CGNS_BUILD_SUBDIR $CGNS_SRC_DIR
+
+    change_install_dir_perms "$VISITDIR/cgns"
+
     cd "$START_DIR"
     info "Done with CGNS"
     return 0

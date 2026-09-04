@@ -1,0 +1,56 @@
+--- CMakeLists.txt	2026-02-11 14:51:42.000000000 -0800
++++ CMakeLists.txt	2026-02-24 06:26:56.000000000 -0800
+@@ -0,0 +1,53 @@
++cmake_minimum_required(VERSION 3.24)
++
++project(PYTHON)
++
++execute_process(COMMAND ${PYTHON_SOURCE_DIR}/PCbuild/get_externals.bat)
++execute_process(COMMAND ${PYTHON_SOURCE_DIR}/PCbuild/build.bat --no-tkinter -c Release -p x64 -t Build)
++
++set(PY_BUILD_DIR ${PYTHON_SOURCE_DIR}/PCbuild/amd64)
++
++
++install(FILES ${PY_BUILD_DIR}/python.exe
++              ${PY_BUILD_DIR}/pythonw.exe
++              ${PY_BUILD_DIR}/python3.dll
++              ${PY_BUILD_DIR}/python313.dll
++        DESTINATION .)
++
++install(DIRECTORY ${PY_BUILD_DIR}/
++        DESTINATION DLLs
++        FILES_MATCHING PATTERN "*.dll")
++
++install(DIRECTORY ${PY_BUILD_DIR}/
++        DESTINATION DLLs
++        FILES_MATCHING PATTERN "*.pyd")
++
++
++install(DIRECTORY ${PY_BUILD_DIR}/
++        DESTINATION libs
++        FILES_MATCHING PATTERN "*.lib")
++
++install(DIRECTORY ${PY_BUILD_DIR}/
++        DESTINATION libs
++        FILES_MATCHING PATTERN "python3*.dll")
++
++install(DIRECTORY ${PYTHON_SOURCE_DIR}/Include/
++        DESTINATION include)
++
++install(FILES ${PY_BUILD_DIR}/pyconfig.h
++        DESTINATION include)
++
++install(DIRECTORY ${PYTHON_SOURCE_DIR}/Lib/
++        DESTINATION Lib)
++
++install(DIRECTORY ${PY_BUILD_DIR}/
++        DESTINATION Lib
++        FILES_MATCHING PATTERN "*.pyd")
++
++# sphinx-build.exe (installed when sphinx is built) doesn't work,
++# so install a python script that can be used instead
++# It is a file created by a 'patch'
++
++install(FILES ${PYTHON_SOURCE_DIR}/sphinx-build-script.py
++        DESTINATION Scripts)
++

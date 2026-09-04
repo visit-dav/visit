@@ -112,6 +112,9 @@
 #   what we don't want instead of PATTERN to include what we do want, since
 #   the latter always seems to include everything, not just the PATTERNs.
 #
+#   Kathleen Biagas, Thur Aug 20, 2026
+#   Add call to generate_lib_setup_cmake.
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -179,6 +182,17 @@ if(Python3_FOUND)
                     COMMAND_ERROR_IS_FATAL ANY)
     message(STATUS "PYTHON_PIP_VERSION:       ${PYTHON_PIP_VERSION}")
 
+    include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
+    create_lib_setup_cmake(NAME "PYTHON"
+                           NAMESPACE "Python3::"
+                           INCBASE "python"
+                           ITEMS Python3::Python Python3::Interpreter
+                           SIMPLE_INCLUDE true)
+
+    get_lib_setup_cmake_input_file(fname "PYTHON")
+    file(APPEND ${fname} "\nset(PYTHON_LIBRARY Python3::Python)\n")
+    file(APPEND ${fname} "set(PYTHON_EXECUTABE Python3::Interpreter)\n\n")
+    generate_lib_setup_cmake(NAME "PYTHON")
 else()
     message("Python3 not found")
 endif()
@@ -420,8 +434,8 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
                     FILE_PERMISSIONS ${filePerms}
                     DIRECTORY_PERMISSIONS ${dirPerms}
-                    PATTERN "site-packages" EXCLUDE
-            )
+                    PATTERN "site-packages" EXCLUDE)
+
             # Use a separate install for general site packages, with an
             # include list for modules thats users of visit will want.
             # This filters out several packages related to building and
@@ -488,19 +502,8 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
         if(VISIT_HEADERS_SKIP_INSTALL)
             message(STATUS "Skipping python headers installation")
         else()
-            # KSB
-            #  WIN32  PYTHON_INCLUDE_PATH is
-            #    'path-to-python/include'
-            #  Non-WIN32 PYTHON_INCLUDE_PATH is:
-            #    'path-to-python/include/python<vermaj>.<vermin>m'
-            #  So Non-WIN32 needs extra 'include' appended to DESTINATION
-
-            set(pyIncDest ${VISIT_INSTALLED_VERSION_INCLUDE}/python)
-            if(NOT WIN32)
-                string(APPEND pyIncDest "/include")
-            endif()
-            install(DIRECTORY ${PYTHON_INCLUDE_PATH}
-                DESTINATION ${pyIncDest}
+            install(DIRECTORY ${PYTHON_INCLUDE_PATH}/
+                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python
                 FILE_PERMISSIONS ${filePerms}
                 DIRECTORY_PERMISSIONS ${dirPerms})
         endif()

@@ -9,6 +9,7 @@
 #ifndef VIS_WINDOW_H
 #define VIS_WINDOW_H
 #include <viswindow_exports.h>
+#include <visit-config.h> // for HAVE_OSPRAY
 
 
 #include <vector>
@@ -461,6 +462,16 @@ class VisitInteractor;
 //    Kevin Griffin, Tue Sep 9, 2025
 //    Added Set/Get AnariAttributes when built with ANARI support.
 //
+//    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
+//    Added Set/Get TiledRenderingWidth and TiledRenderingHeight to
+//    support tiled rendering. Added TriggerPlotListUpdate. Made
+//    GetBackground and GetForeground public to allow setting their
+//    cameras to support tiled rendering of background and foreground
+//    annotations.
+//
+//    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
+//    Added ResetAnariScene
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -715,6 +726,10 @@ public:
     bool                 GetMultiresolutionMode() const;
     void                 SetMultiresolutionCellSize(double size);
     double               GetMultiresolutionCellSize() const;
+    int                  GetTiledRenderingWidth() const;
+    void                 SetTiledRenderingWidth(int width);
+    int                  GetTiledRenderingHeight() const;
+    void                 SetTiledRenderingHeight(int height);
     void                 GetRenderTimes(double times[6]) const;
     void                 SetStereoRendering(bool enabled, int type);
     bool                 GetStereo() const;
@@ -747,6 +762,7 @@ public:
 #ifdef HAVE_ANARI
     void                 SetAnariAttributes(const AnariAttributes &);
     const AnariAttributes &GetAnariAttributes() const;
+    void                 ResetAnariScene();
 #endif
     void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);
@@ -767,7 +783,7 @@ public:
     void                 ResumeTranslucentGeometry();
 
     bool                 TransparenciesExist(void);
-    avtTransparencyActor* GetTransparencyActor();
+    avtTransparencyActor *GetTransparencyActor();
     vtkCamera*           GetCamera();
 
     void                 GlyphPick(const double*, const double*, int&, int&,
@@ -775,15 +791,19 @@ public:
     void                 GlyphPick(const double*, const double*, int&, int&,
                                    bool&, double &, const bool = false);
 
-    virtual void UpdateMouseActions(std::string action,
+    virtual void         UpdateMouseActions(std::string action,
                             double start_dx, double start_dy,
                             double end_dx, double end_dy,
                             bool ctrl, bool shift);
 
-    VisWinAxes3D *GetAxes3D() const { return axes3D; }
+    VisWinAxes3D        *GetAxes3D() const { return axes3D; }
 
-    void GetExtents(double ext[2]); // TODO: Remove with VTK8
+    void                 GetExtents(double ext[2]); // TODO: Remove with VTK8
 
+    vtkRenderer         *GetBackground(void);
+    vtkRenderer         *GetForeground(void);
+
+    void                 TriggerPlotListUpdate();
 protected:
     VisWindowColleagueProxy            colleagueProxy;
     VisWindowInteractorProxy           interactorProxy;
@@ -828,6 +848,9 @@ protected:
 
     bool                               multiresolutionMode;
     double                             multiresolutionCellSize;
+
+    int                                tiledRenderingWidth;
+    int                                tiledRenderingHeight;
 
     WINDOW_MODE                        mode;
     bool                               updatesEnabled;
@@ -887,8 +910,6 @@ protected:
     void                 RecalculateRenderOrder(void);
 
     vtkRenderer         *GetCanvas(void);
-    vtkRenderer         *GetBackground(void);
-    vtkRenderer         *GetForeground(void);
 
     vtkPolyDataMapper2D *CreateRubberbandMapper();
     vtkPolyDataMapper2D *CreateXorGridMapper();

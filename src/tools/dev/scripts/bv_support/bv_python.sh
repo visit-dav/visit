@@ -75,15 +75,14 @@ function install_py_module
     fi
     popd > /dev/null
 
+    cleanup_build_dirs $MOD_DIR
+
     return 0
 }
 
 function fix_py_permissions
 {
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/python"
-        chgrp -R ${GROUP} "$VISITDIR/python"
-    fi
+    change_install_dir_perms "$VISITDIR/python"
     return 0
 }
 
@@ -667,7 +666,7 @@ function apply_python_patch
 
 function build_python
 {
-    prepare_build_dir $PYTHON_BUILD_DIR $PYTHON_FILE
+    prepare_build_dir $PYTHON_BUILD_DIR $PYTHON_FILE SHA256 $PYTHON_SHA256_CHECKSUM
     untarred_python=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -762,6 +761,8 @@ function build_python
         warn "Python build (make install) failed.  Giving up"
         return 1
     fi
+
+    cleanup_build_dirs $PYTHON_BUILD_DIR
 
     cd "$START_DIR"
     info "Done with Python"
@@ -1000,6 +1001,7 @@ function build_pillow
     # Simply re-execute the python perms command.
     fix_py_permissions
 
+    cleanup_build_dirs $PY_PILLOW_BUILD_DIR
     info "Done with Pillow."
     return 0
 }

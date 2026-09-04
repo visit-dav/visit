@@ -101,6 +101,8 @@
 //    Kathleen Biagas, Tue Sep 30 14:54:06 PDT 2025
 //    Remove duplication of various LIBS entries when writing out .xml file.
 //
+//    ChatGPT as prompted by Mark C. Miller, Fri Aug 14 17:52:34 PDT 2026
+//    Add support for scalar component REs
 // ****************************************************************************
 
 class Plugin : public PluginBase
@@ -304,6 +306,12 @@ class Plugin : public PluginBase
             WriteOpenTag(out, "FilePatterns", indent);
             WriteValues(out, filePatterns, indent);
             WriteCloseTag(out, "FilePatterns", indent);
+        }
+        if (type == "database" && scalarComponentREs.size() > 0)
+        {
+            WriteOpenTag(out, "ScalarComponentREs", indent);
+            WriteValues(out, scalarComponentREs, indent);
+            WriteCloseTag(out, "ScalarComponentREs", indent);
         }
 
         if (customgfiles)

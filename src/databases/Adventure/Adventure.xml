@@ -1,13 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="Adventure" type="database" label="Adventure" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <CXXFLAGS>
-      ${ADVIO_INCLUDE_DIR}
-    </CXXFLAGS>
-    <LDFLAGS>
-      ${ADVIO_LIBRARY_DIR}
-    </LDFLAGS>
     <LIBS>
-      ${ADVIO_LIB}
+      advio
       visit_verdict
     </LIBS>
     <FilePatterns>
@@ -15,14 +9,7 @@
       *.inp
       *.msh
     </FilePatterns>
-    <Files components="M">
-      avtAdventureFileFormat.C
-      AdvData.C
-      AdvDataSet.C
-      MshData.C
-    </Files>
-    <Files components="E">
-      avtAdventureFileFormat.C
+    <Files components="M,E">
       AdvData.C
       AdvDataSet.C
       MshData.C
