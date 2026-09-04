@@ -16,3 +16,9 @@ build-mb-*
 _logs
 *.vscode
 *.DS_Store
+
+.gitignore_backup
+build/
+dconf/
+src/GIT_VERSION
+src/config-site/rzwhippet7.cmake

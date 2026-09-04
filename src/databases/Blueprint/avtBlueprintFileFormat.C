@@ -3504,8 +3504,6 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                              spec_name,
                              n_specset);
 
-        n_specset.print();
-
         if (!n_specset.has_child("matset"))
         {
             BP_PLUGIN_EXCEPTION1(InvalidVariableException,
@@ -3519,14 +3517,10 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                             matset_name,
                             n_matset);
 
-        n_matset.print();
-
         Node n_silo_specset;
         conduit::blueprint::mesh::specset::to_silo(n_specset,
                                                    n_matset,
                                                    n_silo_specset);
-
-        // std::cout << n_silo_specset.to_yaml() << std::endl;
 
         if (!n_silo_specset.has_child("speclist"))
         {
