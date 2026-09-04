@@ -79,7 +79,7 @@ class SubsetViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, 
     static SubsetAttributes *clientAtts;
     // User-defined functions
   private:
-    void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &, const bool setDefault=true);
 };
 
 class SubsetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual SubsetViewerEnginePluginInfo

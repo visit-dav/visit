@@ -79,7 +79,7 @@ class FilledBoundaryViewerEnginePluginInfo : public virtual ViewerEnginePlotPlug
     static FilledBoundaryAttributes *clientAtts;
     // User-defined functions
   private:
-    void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &, const bool setDefault=true);
 };
 
 class FilledBoundaryViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual FilledBoundaryViewerEnginePluginInfo
