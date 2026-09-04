@@ -195,7 +195,7 @@ SubsetViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //    Changed API.
 //
 //    Kathleen Biagas, Thu Sep 3, 2026
-//    Send 'false' for 'setDefault' argument of PrivateSetPlotAtts so that
+//    Send 'false' for 'setDefaultAtts' argument of PrivateSetPlotAtts so that
 //    defaultAtts won't be changed.
 //
 // ****************************************************************************
@@ -325,7 +325,7 @@ SubsetViewerEnginePluginInfo::GetMenuName() const
 //    Removed Material as a subset option.
 //
 //    Kathleen Biagas, Thu Sep 3, 2026
-//    Add 'setDefault' argument, default to true. When false, no changes
+//    Add 'setDefaultAtts' argument, default to true. When false, no changes
 //    are made to defaultAtts. ReInitializePlotAtts sets to 'false'.
 //
 // ****************************************************************************
@@ -343,7 +343,7 @@ SubsetViewerEnginePluginInfo::GetMenuName() const
 
 void
 SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
-    const avtPlotMetaData &plot, const bool setDefault)
+    const avtPlotMetaData &plot, const bool setDefaultAtts)
 {
     SubsetAttributes *subsetAtts = (SubsetAttributes *)atts;
 
@@ -530,7 +530,7 @@ SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Set the subset names and colors in the subsetAtts.
     subsetAtts->SetSubsetNames(sv);
     subsetAtts->SetMultiColor(cal);
-    if(setDefault)
+    if(setDefaultAtts)
     {
         defaultAtts->SetSubsetType(subsetAtts->GetSubsetType());
         defaultAtts->SetSubsetNames(sv);

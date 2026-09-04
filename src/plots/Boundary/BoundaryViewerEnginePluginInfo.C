@@ -195,7 +195,7 @@ BoundaryViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //    Changed API.
 //
 //    Kathleen Biagas, Thu Sep 3, 2026
-//    Send 'false' for 'setDefault' argument of PrivateSetPlotAtts so that
+//    Send 'false' for 'setDefaultAtts' argument of PrivateSetPlotAtts so that
 //    defaultAtts won't be changed.
 //
 // ****************************************************************************
@@ -306,7 +306,7 @@ BoundaryViewerEnginePluginInfo::GetMenuName() const
 //    Remove Subset logic as this plot only supports Materials.
 //
 //    Kathleen Biagas, Thu Sep 3, 2026
-//    Add 'setDefault' argument, default to true. When false, no changes
+//    Add 'setDefaultAtts' argument, default to true. When false, no changes
 //    are made to defaultAtts. ReInitializePlotAtts sets to 'false'.
 //
 // ****************************************************************************
@@ -326,7 +326,7 @@ BoundaryViewerEnginePluginInfo::GetMenuName() const
 
 void
 BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
-    const avtPlotMetaData &plot, const bool setDefault)
+    const avtPlotMetaData &plot, const bool setDefaultAtts)
 {
     BoundaryAttributes *boundaryAtts = (BoundaryAttributes *)atts;
 
@@ -434,7 +434,7 @@ BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Set the boundary names and colors in the boundaryAtts.
     boundaryAtts->SetBoundaryNames(sv);
     boundaryAtts->SetMultiColor(cal);
-    if(setDefault)
+    if(setDefaultAtts)
     {
         defaultAtts->SetBoundaryNames(sv);
         defaultAtts->SetMultiColor(cal);
