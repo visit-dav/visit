@@ -267,6 +267,9 @@ MIR::SpeciesSelect(const vector<bool> &selection,
 {
     if (mat->GetNMaterials() != spec->GetNMat())
     {
+        std::cout << "mat->GetNMaterials() " << mat->GetNMaterials() << std::endl;
+        std::cout << "spec->GetNMat() " << spec->GetNMat() << std::endl;
+
         string str = "The species and the material do not match up.  This may"
                 " be a problem with the data file or it may be an internal "
                 "error.";

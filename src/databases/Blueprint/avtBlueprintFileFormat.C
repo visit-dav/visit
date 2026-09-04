@@ -3504,6 +3504,8 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                              spec_name,
                              n_specset);
 
+        n_specset.print();
+
         if (!n_specset.has_child("matset"))
         {
             BP_PLUGIN_EXCEPTION1(InvalidVariableException,
@@ -3517,10 +3519,14 @@ avtBlueprintFileFormat::GetSpecies(int domain,
                             matset_name,
                             n_matset);
 
+        n_matset.print();
+
         Node n_silo_specset;
         conduit::blueprint::mesh::specset::to_silo(n_specset,
                                                    n_matset,
                                                    n_silo_specset);
+
+        // std::cout << n_silo_specset.to_yaml() << std::endl;
 
         if (!n_silo_specset.has_child("speclist"))
         {
@@ -3545,12 +3551,12 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         n_silo_specset["mix_spec"].to_int_array(n_tmp["mix_spec"]);
         n_silo_specset["species_mf"].to_float_array(n_tmp["species_mf"]);
 
-        const int    nmat        = n_silo_specset["nmat"].as_int();
+        const int    nmat        = n_silo_specset["nmat"].to_int();
         const int*   nmatspec    = n_tmp["nmatspec"].as_int_ptr();
         const int*   speclist    = n_tmp["speclist"].as_int_ptr();
-        const int    mixlen      = n_silo_specset["mixlen"].as_int();
+        const int    mixlen      = n_silo_specset["mixlen"].to_int();
         const int*   mix_spec    = n_tmp["mix_spec"].as_int_ptr();
-        const int    nspecies_mf = n_silo_specset["nspecies_mf"].value();
+        const int    nspecies_mf = n_silo_specset["nspecies_mf"].to_int();
         const float* species_mf  = n_tmp["species_mf"].as_float_ptr();
 
         avtSpecies *spec = new avtSpecies(nmat,        // number of materials
