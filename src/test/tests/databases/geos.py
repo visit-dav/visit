@@ -7,6 +7,10 @@
 #  Date:       January 7, 2025
 #
 #  Modifications:
+#    Kathleen Biagas, Thu Sep 3, 2026
+#    #20180 has been fixed, so remove workaround.
+#    Fix a test that is supposed to open the grouped .vtm files to actually
+#    do that.
 #
 # ----------------------------------------------------------------------------
 
@@ -42,10 +46,6 @@ def TestMPMdata():
 
     ChangeActivePlotsVar("blocks")
 
-    # needed due to bug #20180
-    defaultSubsetAtts = SubsetAttributes()
-    #
-
     s = SubsetAttributes()
     s.SetMultiColor(0,(255,0,0,68))
     s.SetMultiColor(1,(0,255,0,68))
@@ -67,22 +67,15 @@ def TestMPMdata():
 
     Test("geos_mpm_subset_blocks_02")
 
-    # reset Subset attributes to default so the next test isn't affected
-    #  by atts set here
-    # (needed until bug #20180 is fixed)
-    SetDefaultPlotOptions(defaultSubsetAtts)
-    #
-
     DeleteAllPlots()
     CloseDatabase(data_path("geos_test_data/mpm_moving_through_partition/vtkOutput.pvd"))
 
     # test opening the grouped *.vtm files
     # If it doesn't get opened as 'geos' flavor,
     # the number of scalars will be wrong
-    md = GetMetaData(data_path("geos_test_data/mpm_moving_through_partition/vtkOutput.pvd"))
+    md = GetMetaData(data_path("geos_test_data/mpm_moving_through_partition/vtkOutput/*.vtm database"))
     TestValueEQ("geos_mpm_grouped_vtm_num_scalars", md.GetNumScalars(), 18)
-    CloseDatabase(data_path("geos_test_data/mpm_moving_through_partition/vtkOutput.pvd"))
-
+    CloseDatabase(data_path("geos_test_data/mpm_moving_through_partition/vtkOutput/*.vtm database"))
 
 
 def TestTHMdata():
