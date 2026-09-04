@@ -1543,12 +1543,20 @@ bool avtXdmfFileFormat::GetWholeExtent(XdmfGrid* grid, int extents[6])
     XdmfInt64 dimensions[XDMF_MAX_DIMENSION];
     XdmfDataDesc* xmfDataDesc = grid->GetTopology()->GetShapeDesc();
     XdmfInt32 num_of_dims = xmfDataDesc->GetShape(dimensions);
-    // clear out un-filled dimensions.
-    for (int cc = num_of_dims; cc < 3; cc++) // only need to until the 3rd dimension
-    // since we don't care about any higher
-    // dimensions yet.
+
+    // Pad dimensions array on the left with ones, so that after the k,j,i ->
+    // i,j,k reversal below the padding ends up in the high dimensions
+    if (num_of_dims < 3)
     {
-        dimensions[cc] = 1;
+        int shift = 3 - num_of_dims;
+        for (int cc = 2; cc >= shift; cc--)
+        {
+            dimensions[cc] = dimensions[cc - shift];
+        }
+        for (int cc = 0; cc < shift; cc++)
+        {
+            dimensions[cc] = 1;
+        }
     }
 
     // vtk Dims are i,j,k XDMF are k,j,i
@@ -1811,36 +1819,10 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
     vtkDoubleArray * yarray = vtkDoubleArray::New();
     vtkDoubleArray * zarray = vtkDoubleArray::New();
 
-    int rgdims[3]={0,0,0};
-    if(xmfGeometry->GetGeometryType() ==  XDMF_GEOMETRY_VXVY)
-    {
-        rgdims[0] = scaled_dims[1];
-        rgdims[1] = scaled_dims[2];
-        rgdims[2] = 1;
-        rg->SetDimensions(rgdims);
-
-        xarray->SetNumberOfTuples(scaled_dims[1]);
-        yarray->SetNumberOfTuples(scaled_dims[2]);
-        zarray->SetNumberOfTuples(1);
-    }
-    else if(xmfGeometry->GetGeometryType() ==  XDMF_GEOMETRY_ORIGIN_DXDY)
-    {   // scaled_dims seems to contain {1, NX, NY}
-        rgdims[0] = scaled_dims[1];
-        rgdims[1] = scaled_dims[2];
-        rgdims[2] = 1;
-        rg->SetDimensions(rgdims);
-
-        xarray->SetNumberOfTuples(scaled_dims[1]);
-        yarray->SetNumberOfTuples(scaled_dims[2]);
-        zarray->SetNumberOfTuples(1);
-    }
-    else
-    {
-        rg->SetDimensions(scaled_dims);
-        xarray->SetNumberOfTuples(scaled_dims[0]);
-        yarray->SetNumberOfTuples(scaled_dims[1]);
-        zarray->SetNumberOfTuples(scaled_dims[2]);
-    }
+    rg->SetDimensions(scaled_dims);
+    xarray->SetNumberOfTuples(scaled_dims[0]);
+    yarray->SetNumberOfTuples(scaled_dims[1]);
+    zarray->SetNumberOfTuples(scaled_dims[2]);
 
     rg->SetXCoordinates(xarray);
     rg->SetYCoordinates(yarray);
@@ -1849,20 +1831,6 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
     switch (xmfGeometry->GetGeometryType())
     {
         case XDMF_GEOMETRY_ORIGIN_DXDY:
-        {   // scaled_extents seems to contain zmin,zmax,xmin,xmax,ymin,ymax
-            XdmfFloat64* origin = xmfGeometry->GetOrigin();
-            XdmfFloat64* dxdydz = xmfGeometry->GetDxDyDz();
-            for (int cc = scaled_extents[2]; cc <= scaled_extents[3]; cc++) {
-                xarray->GetPointer(0)[cc - scaled_extents[2]] = origin[0] + (dxdydz[0] * cc * this->Stride[0]);
-            }
-            for (int cc = scaled_extents[4]; cc <= scaled_extents[5]; cc++) {
-                yarray->GetPointer(0)[cc - scaled_extents[4]] = origin[1] + (dxdydz[1] * cc * this->Stride[1]);
-            }
-            for (int cc = scaled_extents[0]; cc <= scaled_extents[1]; cc++) {
-                zarray->GetPointer(0)[cc - scaled_extents[0]] = origin[2] + (dxdydz[2] * cc * this->Stride[2]);
-            }
-            break;
-        }
         case XDMF_GEOMETRY_ORIGIN_DXDYDZ:
         {
             XdmfFloat64* origin = xmfGeometry->GetOrigin();
@@ -1881,17 +1849,17 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
         case XDMF_GEOMETRY_XY:
         {
             zarray->FillComponent(0, 0);
-            xmfGeometry->GetVectorX()->GetValues(update_extents[2], xarray->GetPointer(0), scaled_dims[1],
-                    this->Stride[1]);
+            xmfGeometry->GetVectorX()->GetValues(update_extents[0], xarray->GetPointer(0), scaled_dims[0],
+                    this->Stride[0]);
             break;
         }
         case XDMF_GEOMETRY_VXVY:
         {
             zarray->FillComponent(0, 0);
-            xmfGeometry->GetVectorX()->GetValues(update_extents[2], xarray->GetPointer(0), scaled_dims[1],
+            xmfGeometry->GetVectorX()->GetValues(update_extents[0], xarray->GetPointer(0), scaled_dims[0],
+                    this->Stride[0]);
+            xmfGeometry->GetVectorY()->GetValues(update_extents[2], yarray->GetPointer(0), scaled_dims[1],
                     this->Stride[1]);
-            xmfGeometry->GetVectorY()->GetValues(update_extents[4], yarray->GetPointer(0), scaled_dims[2],
-                    this->Stride[2]);
             break;
         }
         case XDMF_GEOMETRY_VXVYVZ:
@@ -2206,17 +2174,20 @@ avtXdmfFileFormat::GetStructuredGhostZones(int dims[3], int ghostOffsets[6],
     for (int i = 0; i < ncells; i++)
         buf[i] = ghostVal;
 
-    int iMin[3], iMax[3];
+    int iMin[3], iMax[3], iMaxLoop[3];
     for (int i = 0; i < 3; i++)
     {
         iMin[i] = ghostOffsets[i*2];
         iMax[i] = dims[i] - 1 - ghostOffsets[i*2+1];
+
+        // To handle a dummy dimension (dims[i] == 1) in the loop below
+        iMaxLoop[i] = (dims[i] == 1) ? iMin[i] + 1 : iMax[i];
     }
-    for (int k = iMin[2]; k < iMax[2]; k++)
+    for (int k = iMin[2]; k < iMaxLoop[2]; k++)
     {
-        for (int j = iMin[1]; j < iMax[1]; j++)
+        for (int j = iMin[1]; j < iMaxLoop[1]; j++)
         {
-            for (int i = iMin[0]; i < iMax[0]; i++)
+            for (int i = iMin[0]; i < iMaxLoop[0]; i++)
             {
                 int ndx = k * (dims[1]-1) *
                               (dims[0]-1) +
@@ -2293,8 +2264,9 @@ void avtXdmfFileFormat::SetCurrentGrid(int timestate, const char * meshname)
         if (currentGrid != NULL) {
             delete currentGrid;
         }
-        currentGrid = new XdmfGrid();
+
         if (timestate == 0) {
+            currentGrid = new XdmfGrid();
             int id = 1;
             while (true) {
                 std::stringstream gridLocation;
