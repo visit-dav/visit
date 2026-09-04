@@ -5,51 +5,55 @@
 #-----------------------------------------------------------------------------
 # Checks for minimum compiler version that is supported by VisIt
 # Borrowed from VTK.
+#
+# Modifications;
+#   Kathleen Biagas, Fri Sep 4, 2206
+#   Update gcc to 10.3, MSVC to 2022, llvm clang to 14, apple clang to 11,
+#   icc to 2021.6.0
+#
 #-----------------------------------------------------------------------------
 
 
 
 #-----------------------------------------------------------------------------
-# Minimum compiler version check: GCC >= 7.3
+# Minimum compiler version check: GCC >= 10.3
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    if(USE_QT6 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.1)
-      message(FATAL_ERROR "GCC 8.1 or later is required.")
-    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3)
-      message(FATAL_ERROR "GCC 7.3 or later is required.")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.3)
+      message(FATAL_ERROR "GCC 10.3 or later is required.")
     endif()
 endif()
 
 #-----------------------------------------------------------------------------
-# Minimum compiler version check: LLVM Clang >= 3.3
+# Minimum compiler version check: LLVM Clang >= 14.0
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
-    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.3)
-  message(FATAL_ERROR "LLVM Clang 3.3 or later is required.")
-endif ()
-
-#-----------------------------------------------------------------------------
-# Minimum compiler version check: Apple Clang >= 5.0 (Xcode 5.0)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND
-    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
-  message(FATAL_ERROR "Apple Clang 5.0 or later is required.")
-endif ()
-
-#-----------------------------------------------------------------------------
-
-# Minimum compiler version check: Microsoft C/C++ >= 19.1 (aka VS 2017)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND
-    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.1)
-  message(FATAL_ERROR "Microsoft Visual Studio 2017 or later is required.")
-endif ()
-
-#-----------------------------------------------------------------------------
-# Minimum compiler version check: Intel C++ (ICC) >= 14
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND
     CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14.0)
-  message(FATAL_ERROR "Intel C++ (ICC) 14.0 or later is required.")
+  message(FATAL_ERROR "LLVM Clang 14.0 or later is required.")
 endif ()
 
 #-----------------------------------------------------------------------------
-# VTKm requires C++14. Turning off extensions for maximum compatability.
+# Minimum compiler version check: Apple Clang >= 11.0 (Xcode 11.3.1)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND
+    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0)
+  message(FATAL_ERROR "Apple Clang 11.0 or later is required.")
+endif ()
+
+#-----------------------------------------------------------------------------
+
+# Minimum compiler version check: Microsoft C/C++ >= 19.44 (aka VS 2022)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND
+    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.44)
+  message(FATAL_ERROR "Microsoft Visual Studio 2022 or later is required.")
+endif ()
+
+#-----------------------------------------------------------------------------
+# Minimum compiler version check: Intel C++ (ICC) >= 2021.6.0
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND
+    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 2021.6.0)
+  message(FATAL_ERROR "Intel C++ (ICC) 2021.6.0 or later is required.")
+endif ()
+
+#---------------------------------------------------------------------------
+# Require C++17. Turning off extensions for maximum compatability.
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
