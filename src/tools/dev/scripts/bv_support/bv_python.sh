@@ -1904,4 +1904,11 @@ function bv_python_build
             fi
         fi
     fi
+
+    # now ensure everything was installed correctly
+    info "Checking if all py modules were installed correctly"
+    bv_python_is_installed
+    if [[ $? != 1 ]] ; then
+        error "Python did not install fully."
+    fi
 }
