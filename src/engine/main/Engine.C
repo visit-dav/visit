@@ -82,7 +82,7 @@
 #include <avtStructuredDomainBoundaries.h>
 #include <avtExecutionManager.h>
 
-#ifdef HAVE_CONDUIT
+#if defined(HAVE_CONDUIT) && defined(HAVE_MFEM)
 #include <avtConduitBlueprintDataAdaptor.h>
 #endif
 
@@ -818,7 +818,7 @@ Engine::InitializeCompute()
 #ifdef HAVE_VTKM
     vtkm::cont::Initialize();
 #endif
-#ifdef HAVE_CONDUIT
+#if defined(HAVE_CONDUIT) && defined(HAVE_MFEM)
     avtConduitBlueprintDataAdaptor::Initialize();
 #endif
     if (avtCallback::GetSoftwareRendering())

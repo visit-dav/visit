@@ -2779,8 +2779,6 @@ ConduitElementShapeSize(const std::string &shape_name)
     return res;
 }
 
-#ifdef HAVE_MFEM
-
 using namespace mfem;
 
 #include <avtMFEMDataAdaptor.h>
@@ -3467,4 +3465,3 @@ avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(
    return res;
 }
 
-#endif // HAVE_MFEM
