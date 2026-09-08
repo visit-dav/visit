@@ -131,9 +131,331 @@ function bv_adios_ensure
 # ***************************************************************************
 
 
+function apply_adios_1131_bool_patch
+{
+    if [[ "$ADIOS_1131_BOOL_PATCH_APPLIED" == "yes" ]] ; then
+        return 0
+    fi
+
+    if [[ -f utils/bpls/bpls.h ]] && grep -q "#  include <stdbool.h>" utils/bpls/bpls.h ; then
+        ADIOS_1131_BOOL_PATCH_APPLIED="yes"
+        return 0
+    fi
+
+    info "Patching ADIOS 1.13.1 bool definitions"
+    patch -p0 << \EOF
+--- examples/staging/stage_write/utils.h	2018-01-22 14:57:53.000000000 -0800
++++ examples/staging/stage_write/utils.h	2026-07-28 13:53:11.985004000 -0700
+@@ -15,9 +15,15 @@
+ #define print(...) fprintf (stderr, __VA_ARGS__); 
+ #define print0(...) if (!rank) fprintf (stderr, __VA_ARGS__); 
+ 
+-#define bool int
+-#define false 0
+-#define true 1
++#if defined(__cplusplus)
++/* bool, true, and false are built in. */
++#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++#  include <stdbool.h>
++#else
++#  define bool int
++#  define false 0
++#  define true 1
++#endif
+ 
+ void ints_to_str (int n, int *values, char *s);
+ void int64s_to_str (int n, uint64_t *values, char *s);
+@@ -47,4 +53,3 @@
+ int createdir_recursive( char* path);
+ 
+ #endif
+-
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS 1.13.1 bool patch1 failed."
+        return 1
+    fi
+
+    patch -p0 << \EOF
+--- examples/staging/stage_write_varyingsize/utils.h	2018-01-22 14:57:53.000000000 -0800
++++ examples/staging/stage_write_varyingsize/utils.h	2026-07-28 13:53:12.570246000 -0700
+@@ -15,9 +15,15 @@
+ #define print(...) fprintf (stderr, __VA_ARGS__); 
+ #define print0(...) if (!rank) fprintf (stderr, __VA_ARGS__); 
+ 
+-#define bool int
+-#define false 0
+-#define true 1
++#if defined(__cplusplus)
++/* bool, true, and false are built in. */
++#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++#  include <stdbool.h>
++#else
++#  define bool int
++#  define false 0
++#  define true 1
++#endif
+ 
+ void ints_to_str (int n, int *values, char *s);
+ void int64s_to_str (int n, uint64_t *values, char *s);
+@@ -47,4 +53,3 @@
+ int createdir_recursive( char* path);
+ 
+ #endif
+-
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS 1.13.1 bool patch2 failed."
+        return 1
+    fi
+
+    patch -p0 << \EOF
+--- utils/bp2h5/bp2h5.c	2018-01-22 14:57:57.000000000 -0800
++++ utils/bp2h5/bp2h5.c	2026-07-28 13:53:10.417327000 -0700
+@@ -43,10 +43,18 @@
+ #include "dmalloc.h"
+ #endif
+ 
+-#ifndef bool
+-    typedef int bool;
+-#   define false 0
+-#   define true  1
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++#   include <stdbool.h>
++#else
++#   ifndef bool
++typedef int bool;
++#   endif
++#   ifndef false
++#      define false 0
++#   endif
++#   ifndef true
++#      define true  1
++#   endif
+ #endif
+ 
+ bool noindex = false;              // do no print array indices with data
+@@ -641,4 +649,3 @@
+     }
+     return status;
+ }
+-
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS 1.13.1 bool patch3 failed."
+        return 1
+    fi
+
+
+    patch -p0 << \EOF
+--- utils/bpdiff/utils.h	2018-01-22 14:57:57.000000000 -0800
++++ utils/bpdiff/utils.h	2026-07-28 13:53:11.482481000 -0700
+@@ -16,9 +16,15 @@
+ #define print(...) fprintf (stderr, __VA_ARGS__); 
+ #define print0(...) if (!rank) fprintf (stderr, __VA_ARGS__); 
+ 
+-#define bool int
+-#define false 0
+-#define true 1
++#if defined(__cplusplus)
++/* bool, true, and false are built in. */
++#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++#  include <stdbool.h>
++#else
++#  define bool int
++#  define false 0
++#  define true 1
++#endif
+ 
+ void ints_to_str (int n, int *values, char *s);
+ void int64s_to_str (int n, uint64_t *values, char *s);
+@@ -48,4 +54,3 @@
+ int createdir_recursive( char* path);
+ 
+ #endif
+-
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS 1.13.1 bool patch4 failed."
+        return 1
+    fi
+
+
+    patch -p0 << \EOF
+--- utils/bpls/bpls.h	2018-01-22 14:57:57.000000000 -0800
++++ utils/bpls/bpls.h	2026-07-28 13:53:10.953449000 -0700
+@@ -17,9 +17,15 @@
+ #  define strndup(str,len) strdup(str)
+ #endif
+ 
++#if defined(__cplusplus)
++/* bool, true, and false are built in. */
++#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++#  include <stdbool.h>
++#else
+ typedef int bool;
+-#define false 0
+-#define true  1
++#  define false 0
++#  define true  1
++#endif
+ 
+ #define CUT_TO_BYTE(x) (x < 0 ? 0 : (x > 255 ? 255 : x))
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS 1.13.1 bool patch5 failed."
+        return 1
+    fi
+
+ 
+    patch -p0 << \EOF
+--- utils/bpsplit/bpappend.c	2018-01-22 14:57:57.000000000 -0800
++++ utils/bpsplit/bpappend.c	2026-07-28 13:53:09.321559000 -0700
+@@ -50,11 +50,19 @@
+ 
+ #define DIVIDER "========================================================\n"
+ 
+-#ifndef bool
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++#  include <stdbool.h>
++#else
++#  ifndef bool
+ typedef int bool;
++#  endif
++#  ifndef true
++#    define true 1
++#  endif
++#  ifndef false
++#    define false 0
++#  endif
+ #endif
+-#define true 1
+-#define false 0
+ 
+ /** Prototypes */
+ int bpappend(char *filein, char *fileout);
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS 1.13.1 bool patch6 failed."
+        return 1
+    fi
+
+
+    patch -p0 << \EOF
+--- utils/bpsplit/bpgettime.c	2018-01-22 14:57:57.000000000 -0800
++++ utils/bpsplit/bpgettime.c	2026-07-28 13:53:09.883540000 -0700
+@@ -44,11 +44,19 @@
+ 
+ #define DIVIDER "========================================================\n"
+ 
+-#ifndef bool
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++#  include <stdbool.h>
++#else
++#  ifndef bool
+ typedef int bool;
++#  endif
++#  ifndef true
++#    define true 1
++#  endif
++#  ifndef false
++#    define false 0
++#  endif
+ #endif
+-#define true 1
+-#define false 0
+ 
+ /** Prototypes */
+ int bpgettime(char *filein);
+@@ -203,4 +211,3 @@
+ 
+     return excode;
+ }
+-
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS 1.13.1 bool patch7 failed."
+        return 1
+    fi
+
+
+    patch -p0 << \EOF
+--- utils/bpsplit/bpsplit.c	2018-01-22 14:57:57.000000000 -0800
++++ utils/bpsplit/bpsplit.c	2026-07-28 13:53:08.768578000 -0700
+@@ -50,11 +50,19 @@
+ 
+ #define DIVIDER "========================================================\n"
+ 
+-#ifndef bool
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++#  include <stdbool.h>
++#else
++#  ifndef bool
+ typedef int bool;
++#  endif
++#  ifndef true
++#    define true 1
++#  endif
++#  ifndef false
++#    define false 0
++#  endif
+ #endif
+-#define true 1
+-#define false 0
+ 
+ /** Prototypes */
+ int bpsplit(char *filein, char *fileout, char *recordfile, int from_in, int to_in, bool skiplast);
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS 1.13.1 bool patch8 failed."
+        return 1
+    fi
+
+    ADIOS_1131_BOOL_PATCH_APPLIED="yes"
+    return 0
+}
+
+function apply_adios_1131_bpls_hidden_attrs_patch
+{
+    if [[ -f utils/bpls/bpls.c ]] && ! grep -q "bool hidden_attrs" utils/bpls/bpls.c ; then
+        return 0
+    fi
+
+    info "Patching ADIOS 1.13.1 bpls hidden_attrs option flag"
+    patch -p0 << \EOF
+--- utils/bpls/bpls.c	2018-01-22 14:57:57.000000000 -0800
++++ utils/bpls/bpls.c	2026-07-28 16:48:00.000000000 -0700
+@@ -67,7 +67,7 @@
+ bool noindex;              // do no print array indices with data
+ bool printByteAsChar;      // print 8 bit integer arrays as string
+ bool plot;                 // dump histogram related information
+-bool hidden_attrs;         // show hidden attrs in BP file
++int  hidden_attrs;         // show hidden attrs in BP file; getopt_long requires int flags
+ bool show_decomp;          // show decomposition of arrays
+ 
+ // other global variables
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "ADIOS 1.13.1 bpls hidden_attrs patch failed."
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_adios_patch
 {
-    info "No patches for adios"
+    if [[ "$ADIOS_VERSION" == "1.13.1" ]] ; then
+        apply_adios_1131_bool_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_adios_1131_bpls_hidden_attrs_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
     return 0
 }
 
@@ -150,6 +472,8 @@ function build_adios
         warn "Unable to prepare ADIOS Build Directory. Giving Up"
         return 1
     fi
+
+    cd $ADIOS_BUILD_DIR || error "Can't cd to ADIOS build dir."
 
     #
     # Apply patches
@@ -171,7 +495,6 @@ function build_adios
     # Apply configure
     #
     info "Configuring ADIOS . . ."
-    cd $ADIOS_BUILD_DIR || error "Can't cd to ADIOS build dir."
 
     info "Invoking command to configure ADIOS"
 
@@ -232,22 +555,6 @@ function build_adios
     if [[ $? != 0 ]] ; then
         warn "ADIOS configure failed.  Giving up"
         return 1
-    fi
-
-    #
-    # Apply patches
-    #
-    apply_adios_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_adios == 1 ]] ; then
-            warn "Giving up on Adios build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
     fi
 
     #

@@ -3487,6 +3487,9 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 //  Modifications:
 //     Justin Privitera, Tue Jan 27 15:51:14 PST 2026
 //     Removed unnecessary material set conversion.
+// 
+//     Justin Privitera, Thu Sep  3 20:57:04 PDT 2026
+//     Fixed type conversion issue.
 //
 // ****************************************************************************
 avtSpecies *
@@ -3545,12 +3548,12 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         n_silo_specset["mix_spec"].to_int_array(n_tmp["mix_spec"]);
         n_silo_specset["species_mf"].to_float_array(n_tmp["species_mf"]);
 
-        const int    nmat        = n_silo_specset["nmat"].as_int();
+        const int    nmat        = n_silo_specset["nmat"].to_int();
         const int*   nmatspec    = n_tmp["nmatspec"].as_int_ptr();
         const int*   speclist    = n_tmp["speclist"].as_int_ptr();
-        const int    mixlen      = n_silo_specset["mixlen"].as_int();
+        const int    mixlen      = n_silo_specset["mixlen"].to_int();
         const int*   mix_spec    = n_tmp["mix_spec"].as_int_ptr();
-        const int    nspecies_mf = n_silo_specset["nspecies_mf"].value();
+        const int    nspecies_mf = n_silo_specset["nspecies_mf"].to_int();
         const float* species_mf  = n_tmp["species_mf"].as_float_ptr();
 
         avtSpecies *spec = new avtSpecies(nmat,        // number of materials

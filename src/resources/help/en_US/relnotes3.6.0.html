@@ -50,7 +50,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes in GUI behavior for version 3.6</font></b></p>
 <ul>
   <li>The splitter handle between the main window's plot controls and notepad/posting area was made more visible, making it easier to know where to grab to resize.</li>
+  <li>The 'Help' window controls and content have been simplified. For easier reading of content, 'Manual', 'Getting Help' and 'VisIt home page' topics will now open in an external browser. Bookmarks, index, tabs and back/forward navigation have been removed due to this simplification.  The 'About' option from the Main Gui Menu 'Help' control was moved to the Help window. The main Gui window 'Help' control now directly opens the Help window. 'Contributors' topic was moved to the 'Acknowledgements' section of the online Manual. Command-line arguments are already a part of the online manual, so they were also removed from the Help window.</li>
   <li>The ANARI rendering options in the Rendering options window (Back-end, Back-end Subtype, Renderer, and their options) are now populated by querying the connected compute engine instead of the local machine, since ANARI rendering is now performed by the engine.</li>
+  <li>GUI Change 2</li>
 </ul>
 
 <a name="CLI_changes"></a>
@@ -63,8 +65,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 3.6</font></b></p>
 <ul>
-  <li>File Format 1</li>
-  <li>File Format 2</li>
+  <li>Database plugins now recognize and automatically define aggregate expressions (e.g. vector, tensor) for a group of similarly named scalar components (e.g. velX, velY, velZ ==> vector(vel)).</li>
+  <li>Updated Conduit to 0.9.8.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -108,6 +110,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>build_visit now has a `--cleanup` option. When turned on it triggers deletion of src and build dirs for each library if build and install are successful.</li>
   <li>MOAB was updated to version 5.6.0.</li>
   <li>The `--print-files` and `--print-files-html` options were fixed so that no libraries are missing from the printed lists.</li>
+  <li>Issues with running build_visit on Fedora44 with gcc16 were resolved with patches to some modules.</li>
 </ul>
 
 <a name="Dev_changes"></a>
