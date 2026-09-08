@@ -454,7 +454,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     // Only the engine (the process that actually renders with ANARI) should
     // ever create a real ANARI device. The viewer's own VisWindow still needs
     // to accept/store AnariAttributes for round-tripping (session save, etc.)
-    // but must not attempt to load ANARI backend libraries locally, since the
+    // but must not attempt to load ANARI backend libraries locally since the
     // client may not have any installed. Defaults to false.
     void                    SetAnariDeviceCreationEnabled(bool);
     bool                    GetAnariDeviceCreationEnabled() const

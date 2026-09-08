@@ -40,6 +40,13 @@ processing stage. The window also provides buttons for interrupting and closing
 compute engines, as well as an **Engine Information Area** that indicates how
 many processors the engine uses and its style of load balancing.
 
+When a compute engine renders using ANARI, each of its processors renders its
+own portion of the data and those pieces are combined into the final image using 
+the same parallel compositing VisIt_ uses for standard rendering; 
+see :ref:`ANARI Rendering with Parallel Engines<Preferences-AnariRenderingParallel>` 
+in the :ref:`Rendering Options Window<Rendering Options Window>` chapter for 
+details and some cluster-configuration nuances to be aware of.
+
 
 Picking a compute engine
 ~~~~~~~~~~~~~~~~~~~~~~~~

@@ -3423,7 +3423,7 @@ VisWinRendering::SetAnariAttributes(const AnariAttributes &atts)
         // ANARI backend libraries installed). Just keep the attributes
         // around for round-tripping (session save/restore, etc.) without
         // touching any ANARI/VTK objects. anariRendering must stay false
-        // here regardless of atts.GetAnariRendering() -- there is no
+        // here regardless of atts.GetAnariRendering() since there is no
         // engine-verified device behind it on this process, and leaving a
         // stale "true" here would make RenderRenderWindow() hand the canvas
         // an ANARI pass with an uninitialized device, which crashes.
@@ -3440,7 +3440,7 @@ VisWinRendering::SetAnariAttributes(const AnariAttributes &atts)
         SetAnariLibrary();
 
         // SetAnariLibrary() sets anariRendering to false if the library/device
-        // failed to load. Don't touch the renderer/parameters in that case --
+        // failed to load. Don't touch the renderer/parameters in that case
         // there is no valid ANARI device to configure, and doing so crashes.
         if(anariRendering)
         {
@@ -3525,7 +3525,7 @@ VisWinRendering::SetAnariLibrary()
 // Purpose:
 //   Controls whether this VisWindow is allowed to load a real ANARI backend
 //   library/device. Only the engine's VisWindow(s) should enable this (see
-//   NetworkManager_CreateVisWindow in NetworkManager.C) -- the viewer's own
+//   NetworkManager_CreateVisWindow in NetworkManager.C). The viewer's own
 //   VisWindow never actually renders with ANARI in client-server mode, and
 //   the client may not have any ANARI backend libraries installed.
 //

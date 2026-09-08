@@ -149,9 +149,17 @@ ANARI Rendering
 
     ANARI rendering options
 
-If VisIt_ is built with `ANARI <https://www.khronos.org/api/index_2017/anari/>`_ support by using the ``--anari`` option when building from source, the **ANARI rendering** section will appear in the **Rendering options** window under the **Advanced** tab.
-Once **Anari Rendering** is enabled, all surface rendering will be done using ANARI.
-This section contains options for controlling the ANARI rendering system.
+If VisIt_ is built with `ANARI <https://www.khronos.org/api/index_2017/anari/>`_ support by 
+using the ``--anari`` option when building from source, the **ANARI rendering** section will 
+appear in the **Rendering options** window under the **Advanced** tab. Once **Anari Rendering** 
+is enabled, all surface rendering will be done using ANARI. This section contains options for 
+controlling the ANARI rendering system.
+
+ANARI rendering follows a client-server model: the settings in this window are configured in the GUI, 
+but it is the connected :ref:`compute engine<ComputeEngines>` that actually creates the ANARI device 
+and performs the rendering. The GUI and viewer never load an ANARI back-end themselves, so this 
+feature works even when the machine running the GUI has no ANARI back-ends installed, as is often the 
+case when using a remote engine on an HPC cluster. See `ANARI Rendering and the Compute Engine`_ below for details.
 
 Back-end
 """"""""
@@ -165,6 +173,39 @@ A list of supported back-ends and publicly available applications using ANARI ca
     ANARI back-ends are a software construct.
     Because ANARI abstracts away the details of an entire rendering system, the underlying hardware which a back-end may use is entirely up to the implementation.
     Please read your vendor's back-end documentation to see what parameters are available to configure and what underlying hardware is both available and used to render frames.
+
+Default back-ends searched
+'''''''''''''''''''''''''''
+
+The **Back-end** list is built by having the compute engine try to load a known set of ANARI back-end libraries 
+and reporting back only the ones that loaded successfully. The compute engine currently checks for the following 
+back-ends by their ANARI library name:
+
+* ``helide`` -- the CPU reference back-end included with the ANARI SDK
+* ``visrtx`` -- `NVIDIA VisRTX <https://github.com/NVIDIA/VisRTX/>`_, a GPU ray tracing back-end
+* ``ospray`` -- `Intel OSPRay <https://github.com/ospray/anari-ospray/>`_
+
+A back-end only appears in the **Back-end** list if its library can actually be found and loaded on the machine 
+running the compute engine. Back-ends that are not installed, or whose dependent hardware/driver/SDK is unavailable, 
+are silently omitted rather than shown as an error. Each of these names corresponds to a shared library named 
+``libanari_library_<name>.so`` on Linux (``.dylib`` on macOS, ``anari_library_<name>.dll`` on Windows).
+This lookup depends on the back-ends being found through the system library search paths (or referenced through **ANARI_LIBRARY**, described next).
+
+ANARI_LIBRARY
+'''''''''''''
+
+In addition to the back-ends listed above, the compute engine also checks the **ANARI_LIBRARY** environment variable.
+If it is set, its value is treated as the name of an additional ANARI library to try loading (for example, ``export ANARI_LIBRARY=barney``), 
+using the same library naming convention and search path described above. If that library loads successfully, it 
+is added to the **Back-end** list alongside whichever of the built-in known back-ends were also found. It does not 
+replace or hide the others. This makes it possible to make a back-end available that is not one of the built-in known 
+names, without having to modify or rebuild VisIt_.
+
+.. important::
+    **ANARI_LIBRARY** is read by the **compute engine** process, not the GUI or viewer, since the engine is the process 
+    that actually loads ANARI back-ends and renders. Setting **ANARI_LIBRARY** in your desktop/GUI environment has no 
+    effect. **ANARI_LIBRARY** must be set in the environment the compute engine itself is launched in (for example, in 
+    a host profile's launch environment, a job script, or the shell that starts the engine).
 
 Back-end Subtype
 """"""""""""""""
@@ -186,6 +227,49 @@ Other Options
 These options are specific to the **Back-end** and **Renderer** you are using and are generated at runtime.
 Hovering the mouse over the option label will show you a tooltip with more information.
 For more detailed information on the options, please refer to the vendor's documentation.
+
+ANARI Rendering and the Compute Engine
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _Preferences-AnariRenderingEngine:
+
+Because ANARI abstracts an entire rendering system, its back-end libraries can depend on specific hardware, 
+drivers, or SDKs (for example, an NVIDIA GPU and OptiX for the VisRTX back-end).
+The GUI and viewer are not guaranteed to have any of this available, particularly when connecting to a remote 
+or HPC compute engine from a laptop or workstation, so only the **compute engine** ever creates a real ANARI device.
+The GUI and viewer only store and forward your ANARI settings since they do not render with ANARI and do not need 
+any ANARI back-ends installed to do so.
+
+This also means that the **Back-end**, **Back-end Subtype**, **Renderer**, and **Other Options** choices offered 
+in this window are populated by asking the currently connected compute engine which libraries, subtypes, renderers, 
+and parameters it has available, rather than by inspecting the local machine. If you change which compute engine 
+you are connected to, these lists reflect the newly connected engine, and may differ from what was available on a 
+previously connected engine.
+
+ANARI Rendering with Parallel Engines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _Preferences-AnariRenderingParallel:
+
+When a :ref:`compute engine<ComputeEngines>` is running in parallel across multiple processors, ANARI rendering follows 
+VisIt_'s normal parallel rendering model: each processor renders only the portion of the data it owns, and the resulting 
+images are combined into the single image shown in the viewer. Enabling **Anari Rendering** changes how each processor 
+draws its local portion of the data, but it does not change how those pieces are combined, so no additional configuration 
+is needed to use ANARI rendering in parallel.
+
+A few nuances of this are worth knowing about, especially on clusters where nodes may not be identically configured:
+
+* Each processor independently loads its own ANARI back-end and creates its own ANARI device.
+  On GPU-based back-ends (such as VisRTX), this means each processor sharing a GPU also shares that GPU's memory and 
+  compute resources. Running many processors per GPU-equipped node can increase memory pressure and reduce performance 
+  compared to fewer processors per GPU.
+* The **Back-end**, **Back-end Subtype**, **Renderer**, and **Other Options** lists described in `ANARI Rendering and the Compute Engine`_ 
+  are populated using information from only the first processor (processor 0) of the parallel engine, even though every 
+  processor is capable of reporting this information independently. On a cluster where all nodes are configured identically 
+  this makes no difference, but if the engine is running across heterogeneous nodes (for example, only some nodes have the GPU or driver a back-end requires), 
+  the options shown in the GUI reflect only processor 0's capabilities and may not be available on every processor.
+  If ANARI rendering fails unexpectedly in this situation, verify that the selected back-end is actually available on all 
+  nodes the engine is running on, not just the node running processor 0.
 
 Rendering Information
 ~~~~~~~~~~~~~~~~~~~~~

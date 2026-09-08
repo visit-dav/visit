@@ -8329,7 +8329,7 @@ NetworkManager::GetQueryParameters(const std::string &qName)
 //
 //  Purpose:
 //    ANARI status callback used only for the library/device probing done by
-//    NetworkManager::GetAnariDeviceInfo(); routed to the debug log, never
+//    NetworkManager::GetAnariDeviceInfo(). Routed to the debug log, never
 //    surfaced to the user, since failures here just mean a library/subtype
 //    isn't available on this engine.
 //
@@ -8502,8 +8502,7 @@ NetworkManager::GetAnariDeviceInfo(const std::string &libraryName,
         // Report which of the known ANARI backend libraries this engine can
         // actually load. The client cannot determine this itself since it
         // may not have any ANARI backends installed at all.
-        static const char *knownLibraries[] =
-            { "helide", "usd", "visrtx", "visgl", "ospray", "rpr", "phenocryst" };
+        static const char *knownLibraries[] = { "helide", "visrtx", "ospray" };
         stringVector loadable;
 
         // Check ANARI_LIBRARY environment variable

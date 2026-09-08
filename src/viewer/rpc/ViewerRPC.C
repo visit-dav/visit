@@ -81,8 +81,7 @@ static const char *ViewerRPCType_strings[] = {
 "PlotDDTVispointVariablesRPC", "ExportRPC", "ExportHostProfileRPC",
 "StartPlotAnimationRPC", "StopPlotAnimationRPC", "ReadHostProfilesFromDirectoryRPC",
 "SetRemoveDuplicateNodesRPC", "QueryMSAAAvailabilityRPC", "GetAnariDeviceInfoRPC",
-"MaxRPC"
-};
+"MaxRPC"};
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(ViewerRPC::ViewerRPCType t)
