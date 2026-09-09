@@ -3106,6 +3106,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Cyrus Harrison, Tue Aug 13 15:46:52 PDT 2019
 //   Removed updateVisIt related logic.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Remove activateAboutWindow, it is now part of the Help window.
+//
 // ****************************************************************************
 
 void
@@ -3134,7 +3137,6 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(saveSettings()), this, SLOT(SaveSettings()));
     connect(mainWin, SIGNAL(iconifyWindows(bool)), this, SLOT(IconifyWindows(bool)));
     connect(mainWin, SIGNAL(deIconifyWindows()), this, SLOT(DeIconifyWindows()));
-    connect(mainWin, SIGNAL(activateAboutWindow()), this, SLOT(AboutVisIt()));
     connect(mainWin, SIGNAL(saveWindow()), this, SLOT(SaveWindow()));
     connect(mainWin, SIGNAL(saveCinema()), this, SLOT(SaveCinema()));
     connect(mainWin, SIGNAL(saveMovie()), this, SLOT(SaveMovie()));
@@ -3242,6 +3244,10 @@ QvisGUIApplication::CreateMainWindow()
 //   Added code to connect QvisColorTableButton with a method to open the
 //   ColorTable window.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Remove activateCopyright and activateReleaseNotes. They are part of Help
+//   window, which now has single-click activation.
+//
 // ****************************************************************************
 
 void
@@ -3347,12 +3353,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showGlobalLineoutWindow()));
      connect(mainWin, SIGNAL(activateMaterialWindow()),
              this, SLOT(showMaterialWindow()));
-     connect(mainWin, SIGNAL(activateCopyrightWindow()),
-             this, SLOT(displayCopyright()));
      connect(mainWin, SIGNAL(activateHelpWindow()),
              this, SLOT(showHelpWindow()));
-     connect(mainWin, SIGNAL(activateReleaseNotesWindow()),
-             this, SLOT(displayReleaseNotes()));
      connect(mainWin, SIGNAL(activateQueryWindow()),
              this, SLOT(showQueryWindow()));
      connect(mainWin, SIGNAL(activateRenderingWindow()),
@@ -3462,6 +3464,9 @@ QvisGUIApplication::SetupWindows()
 //
 //   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 //   Removed support for SeedMe.
+//
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Connect 'showAbout' to Help window.
 //
 // ****************************************************************************
 
@@ -3617,6 +3622,7 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the help window
         { QvisHelpWindow *helpwin = new QvisHelpWindow(tr("Help"));
           helpwin->SetLocale(applicationLocale);
+          connect(helpwin, SIGNAL(showAbout()), this, SLOT(AboutVisIt()));
           win = helpwin;
         }
         break;
@@ -6865,6 +6871,9 @@ QvisGUIApplication::DeIconifyWindows()
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Removed showContributors.
+//
 // ****************************************************************************
 
 void
@@ -6879,9 +6888,6 @@ QvisGUIApplication::AboutVisIt()
     {
         disconnect(splash, SIGNAL(showCopyright()), hw, SLOT(displayCopyright()));
         connect(splash, SIGNAL(showCopyright()), hw, SLOT(displayCopyright()));
-
-        disconnect(splash, SIGNAL(showContributors()), hw, SLOT(displayContributors()));
-        connect(splash, SIGNAL(showContributors()), hw, SLOT(displayContributors()));
     }
 
     splash->About();

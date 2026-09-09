@@ -37,7 +37,7 @@ class WindowInformation;
 // Purpose:
 //   This is class that describes the VisIt main window.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 26 09:40:53 PDT 2000
@@ -61,7 +61,7 @@ class WindowInformation;
 //   Brad Whitlock, Thu Sep 6 11:54:18 PDT 2001
 //   Added signals for the appearance window and the about box.
 //
-//   Kathleen Bonnell, Wed Dec 12 12:06:20 PST 2001 
+//   Kathleen Bonnell, Wed Dec 12 12:06:20 PST 2001
 //   Added pick window.
 //
 //   Brad Whitlock, Thu May 9 16:50:27 PST 2002
@@ -90,8 +90,8 @@ class WindowInformation;
 //   Brad Whitlock, Mon Nov 11 12:18:08 PDT 2002
 //   I added window time and tool locking.
 //
-//   Kathleen Bonnell, Wed Feb 19 13:13:24 PST 2003  
-//   I added activateGlobalLineoutWindow. 
+//   Kathleen Bonnell, Wed Feb 19 13:13:24 PST 2003
+//   I added activateGlobalLineoutWindow.
 //
 //   Eric Brugger, Thu Mar 13 11:58:50 PST 2003
 //   I added the preferences window.
@@ -122,7 +122,7 @@ class WindowInformation;
 //   I added maintain data limits.
 //
 //   Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004
-//   Added method to activate queryOverTime window. 
+//   Added method to activate queryOverTime window.
 //
 //   Brad Whitlock, Mon Apr 5 15:20:29 PST 2004
 //   Added support for reopen and close coming up under an advanced menu.
@@ -131,11 +131,11 @@ class WindowInformation;
 //   Added a method to set whether the file panel is allowed to update the
 //   file selection.
 //
-//   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
-//   Added method to activate interactors window. 
+//   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004
+//   Added method to activate interactors window.
 //
 //   Hank Childs, Thu Jan 13 13:18:27 PST 2005
-//   Added a boolean to iconifyWindows to indicate if the request was 
+//   Added a boolean to iconifyWindows to indicate if the request was
 //   spontaneous.
 //
 //   Brad Whitlock, Wed Feb 9 17:48:30 PST 2005
@@ -189,7 +189,7 @@ class WindowInformation;
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //
 //   Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
-//   More shuffling to provide better layouts. 
+//   More shuffling to provide better layouts.
 //
 //   Hank Childs, Sun Aug  1 12:02:45 PDT 2010
 //   Add signal for setting up CMFEs.
@@ -211,6 +211,12 @@ class WindowInformation;
 //
 //   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 //   Removed support for SeedMe.
+//
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Change 'QMenu helpPopup' to 'QAction helpAction' to reduce clicks
+//   required to access Help window.  Remove activateReleaseNotesWindow,
+//   activateAboutWindow, activateCopyrightWindow. All are accessible from
+//   Help window.
 //
 // ****************************************************************************
 
@@ -277,9 +283,6 @@ signals:
     void activatePluginWindow();
     void activatePreferencesWindow();
     void activateRenderingWindow();
-    void activateReleaseNotesWindow();
-    void activateAboutWindow();
-    void activateCopyrightWindow();
     void activateHelpWindow();
     void activateOutputWindow();
     void activateGlobalLineoutWindow();
@@ -418,7 +421,7 @@ private:
     QAction                  *lockViewAct;
     QAction                  *spinModeAct;
     QAction                  *fullFrameModeAct;
-    QMenu                    *helpPopup;
+    QAction                  *helpAction;
 
     QTimer                    *recoveryFileTimer;
     bool                       okayToSaveRecoveryFile;

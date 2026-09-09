@@ -921,6 +921,8 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
 //    Kathleen Biagas, Thu Feb 14 10:36:09 PST 2013
 //    Only set isEnsemble if rv not null.
 //
+//    ChatGPT as prompted by Mark C. Miller, Fri Aug 14 17:50:02 PDT 2026
+//    Add support for scalar component expressions.
 // ****************************************************************************
 
 avtDatabase *
@@ -966,6 +968,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
         if (timestep != -2)
             rv->ActivateTimestep(timestep);
         rv->SetFileFormat(info->GetID());
+        rv->SetScalarComponentREs(info->GetDefaultScalarComponentREs());
         bool forceReadThisStateCycleTime = false;
         if (timestep != -2)
         {
