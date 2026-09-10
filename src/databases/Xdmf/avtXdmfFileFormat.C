@@ -2263,6 +2263,7 @@ void avtXdmfFileFormat::SetCurrentGrid(int timestate, const char * meshname)
     if (!currentGrid || strcmp(currentGrid->GetName(), meshname) != 0) {
         if (currentGrid != NULL) {
             delete currentGrid;
+            currentGrid = NULL;
         }
 
         if (timestate == 0) {
