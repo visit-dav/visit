@@ -1483,11 +1483,18 @@ class LLDBDebugger(Debugger):
         super(LLDBDebugger, self).__init__(launcher)
 
     def Executable(self):
-        native_arm64 = subprocess.check_output(["sysctl", "-n", "hw.optional.arm64"]).decode().strip()
-        if native_arm64 == "1":
-            return ["arch", "-arm64", "lldb"]
-        else:
-            return ["lldb"]
+        # "arch -arm64" is a macOS-only mechanism for selecting the native
+        # architecture out of a universal binary; it doesn't apply (and
+        # "sysctl -n hw.optional.arm64" doesn't exist) on other platforms.
+        if self.launcher.os == "darwin":
+            try:
+                native_arm64 = subprocess.check_output(
+                    ["sysctl", "-n", "hw.optional.arm64"]).decode().strip()
+                if native_arm64 == "1":
+                    return ["arch", "-arm64", "lldb"]
+            except (subprocess.CalledProcessError, OSError):
+                pass
+        return ["lldb"]
 
     def CreateCommand(self, args):
         #lldb_args = ["process","launch","--tty","--"]
