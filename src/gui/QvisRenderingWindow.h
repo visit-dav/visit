@@ -125,6 +125,9 @@ class AnariRenderingWidget;
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //   Added controls for setting the tiled rendering width and height.
 //
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added ability to toggle tiled rendering on and off.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -190,6 +193,7 @@ private slots:
     void depthCueingStartChanged();
     void depthCueingEndChanged();
     void colorTexturingToggled(bool);
+    void tiledRenderingToggled(bool);
     void tiledRenderingWidthChanged();
     void tiledRenderingHeightChanged();
     void osprayRenderingToggled(bool);
@@ -279,7 +283,7 @@ private:
     QLabel            *depthCueingEndLabel;
     QLineEdit         *depthCueingEndEdit;
     QCheckBox         *colorTexturingToggle;
-    QGroupBox         *tiledRenderingGroup;
+    QCheckBox         *tiledRenderingToggle;
     QLabel            *tiledRenderingWidthLabel;
     QLineEdit         *tiledRenderingWidth;
     QLabel            *tiledRenderingHeightLabel;

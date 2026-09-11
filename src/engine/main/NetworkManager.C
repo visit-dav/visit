@@ -3096,6 +3096,11 @@ NetworkManager::CopyTileToImage(int imageWidth, int imageHeight,
 //  Creation:    Mon Feb  2 14:37:47 PST 2026
 //
 //  Modifications:
+//    Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//    Added code to skip tiled rendering if TiledRendering is false in the
+//    vis window. I modified the logic to skip tiled rendering based on the
+//    viewportedMode to instead base it on the capture region, which is
+//    really what the intent was all along.
 //
 // ****************************************************************************
 
@@ -3111,7 +3116,7 @@ NetworkManager::RenderTiledInternal()
     int captureR0, captureC0, captureWidth, captureHeight;
     viswin->GetCaptureRegion(captureR0, captureC0, captureWidth, captureHeight,
         renderState.viewportedMode);
-    debug1 << "NetworkManager::RenderTiledInternal captureR0=" << captureR0 << ",captureC0=" << captureC0 << ",captureWidth=" << captureWidth << ",captureHeight=" << captureHeight << endl;
+    debug1 << "NetworkManager::RenderTiledInternal: captureR0=" << captureR0 << ",captureC0=" << captureC0 << ",captureWidth=" << captureWidth << ",captureHeight=" << captureHeight << endl;
 
     //
     // Determine the tile size and number of tiles.
@@ -3130,16 +3135,20 @@ NetworkManager::RenderTiledInternal()
     const int nxTiles = int(double(imageWidth - 1) / double(tileWidth)) + 1;
     const int nyTiles = int(double(imageHeight - 1) / double(tileHeight)) + 1;
 
+    debug1 << "NetworkManager::RenderTiledInternal: tiledRendering=" << viswin->GetTiledRendering() << endl;
     debug1 << "NetworkManager::RenderTiledInternal: imageWidth=" << imageWidth << ",imageHeight=" << imageHeight << endl;
     debug1 << "NetworkManager::RenderTiledInternal: tileWidth=" << tileWidth << ",tileHheight=" << tileHeight << endl;
     debug1 << "NetworkManager::RenderTiledInternal: nxTiles=" << nxTiles << ",nyTiles=" << nyTiles << endl;
-    debug1 << "NetworkManager::RenderTiledInternal: renderState.viewportedMode=" << renderState.viewportedMode << endl;
 
     //
-    // If there is only a single tile or we are in viewported mode then
-    // bypass the tiling.
+    // If there is only a single tile or we are only rendering a partial
+    // image bypass the tiling.
     //
-    if ((nxTiles == 1 && nyTiles == 1) || renderState.viewportedMode)
+    bool renderingPartialImage = (captureR0 != 0) || (captureC0 != 0) ||
+        (captureWidth != imageWidth) || (captureHeight != imageHeight);
+    debug1 << "NetworkManager::RenderTiledInternal: renderingPartialImage=" << renderingPartialImage << endl;
+    if (!viswin->GetTiledRendering() ||
+        (nxTiles == 1 && nyTiles == 1) || renderingPartialImage)
     {
         debug1 << "NetworkManager::RenderTiledInternal: Bypassing tiling." << endl;
         //
@@ -3476,6 +3485,9 @@ NetworkManager::RenderInternal()
 //    Added TiledRenderingWidth and TiledRenderingHeight from
 //    RenderingAttributes to support tiled rendering.
 //
+//    Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//    Added TiledRendering to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -3688,6 +3700,9 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
 
         if (viswin->GetMultiresolutionCellSize() != renderAtts.GetMultiresolutionCellSize())
             viswin->SetMultiresolutionCellSize(renderAtts.GetMultiresolutionCellSize());
+
+        if (viswin->GetTiledRendering() != renderAtts.GetTiledRendering())
+            viswin->SetTiledRendering(renderAtts.GetTiledRendering());
 
         if (viswin->GetTiledRenderingWidth() != renderAtts.GetTiledRenderingWidth())
             viswin->SetTiledRenderingWidth(renderAtts.GetTiledRenderingWidth());
