@@ -69,7 +69,7 @@ class avtDenovoFileFormat : public avtSTMDFileFormat
         varInfo() {}
         varInfo(hid_t fileId, const std::string &nm, const std::string &fileName) : name(nm)
         {
-            if ((varId = H5Dopen(fileId, name.c_str(), H5P_DEFAULT)) < 0)
+            if ((varId = H5Dopen2(fileId, name.c_str(), H5P_DEFAULT)) < 0)
                 EXCEPTION1(InvalidFilesException, fileName);
             if ((spaceId = H5Dget_space(varId)) < 0)
                 EXCEPTION1(InvalidFilesException, fileName);

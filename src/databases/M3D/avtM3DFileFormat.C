@@ -65,6 +65,8 @@ avtM3DFileFormat::avtM3DFileFormat(const char *filename)
 
 avtM3DFileFormat::~avtM3DFileFormat()
 {
+    FreeUpResources();
+
     for ( size_t i = 0; i < m_cellInfo.size(); i++ )
         delete m_cellInfo[i];
     for ( size_t i = 0; i < m_scalarVarNames.size(); i++ )
@@ -117,10 +119,18 @@ avtM3DFileFormat::GetNTimesteps(void)
 void
 avtM3DFileFormat::FreeUpResources(void)
 {
-    H5Fclose( m_fileID );
+    if (m_fileID >= 0)
+    {
+        H5Fclose(m_fileID);
+        m_fileID = -1;
+    }
     for ( size_t i = 0; i < m_planeXforms.size(); i++ )
         if ( m_planeXforms[i] )
+        {
             m_planeXforms[i]->Delete();
+            m_planeXforms[i] = NULL;
+        }
+    m_planeXforms.clear();
 }
 
 
@@ -209,7 +219,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
             
             avtCentering cent = AVT_NODECENT;
             AddScalarVarToMetaData( md, meshvarname, m_meshes[m], cent );
-            m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->dataID,
+            m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->varIndex,
                                                  m_scalarVarNames[i]->varDim ) );
         }
 
@@ -223,7 +233,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
                 
                 avtCentering cent = AVT_NODECENT;
                 AddScalarVarToMetaData( md, meshvarname, m_meshesPlane3D[m], cent );
-                m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->dataID,
+                m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->varIndex,
                                                      m_scalarVarNames[i]->varDim, m ) );
             }
             
@@ -235,7 +245,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
                 
                 avtCentering cent = AVT_NODECENT;
                 AddScalarVarToMetaData( md, meshvarname, m_meshesPlane2D[m], cent );
-                m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->dataID,
+                m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->varIndex,
                                                      m_scalarVarNames[i]->varDim, m ) );
             }
         }
@@ -258,7 +268,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
             avtCentering cent = AVT_NODECENT;
             int vector_dim = m_vectorVarNames[i]->varDim;
             AddVectorVarToMetaData( md, meshvarname, m_meshes[m], cent, vector_dim );
-            m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->dataID,
+            m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->varIndex,
                                                  m_vectorVarNames[i]->varDim ) );
         }
 
@@ -273,7 +283,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
                 avtCentering cent = AVT_NODECENT;
                 int vector_dim = m_vectorVarNames[i]->varDim;
                 AddVectorVarToMetaData( md, meshvarname, m_meshesPlane3D[m], cent, vector_dim );
-                m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->dataID,
+                m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->varIndex,
                                                      m_vectorVarNames[i]->varDim, m ) );
             }
             
@@ -286,7 +296,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
                 avtCentering cent = AVT_NODECENT;
                 int vector_dim = m_vectorVarNames[i]->varDim;
                 AddVectorVarToMetaData( md, meshvarname, m_meshesPlane2D[m], cent, vector_dim );
-                m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->dataID,
+                m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->varIndex,
                                                      m_vectorVarNames[i]->varDim, m ) );
             }
         }
@@ -310,7 +320,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
             int tensor_dim = m_tensorVarNames[i]->varDim;
             avtCentering cent = AVT_NODECENT;
             AddTensorVarToMetaData( md, varname, m_meshes[m], cent, tensor_dim );
-            m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->dataID,
+            m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->varIndex,
                                                  m_tensorVarNames[i]->varDim ) );
         }
 
@@ -325,7 +335,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
                 int tensor_dim = m_tensorVarNames[i]->varDim;
                 avtCentering cent = AVT_NODECENT;
                 AddTensorVarToMetaData( md, varname, m_meshesPlane3D[m], cent, tensor_dim );
-                m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->dataID,
+                m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->varIndex,
                                                      m_tensorVarNames[i]->varDim, m ) );
             }
             
@@ -338,7 +348,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
                 int tensor_dim = m_tensorVarNames[i]->varDim;
                 avtCentering cent = AVT_NODECENT;
                 AddTensorVarToMetaData( md, varname, m_meshesPlane2D[m], cent, tensor_dim );
-                m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->dataID,
+                m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->varIndex,
                                                      m_tensorVarNames[i]->varDim, m ) );
             }
         }
@@ -374,6 +384,10 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
     string meshname = nm;
 
     debug5 << "Reading in mesh " << meshname << " [domain, timestate] = " << domain << " " << timestate << endl;
+    if (m_fileID < 0)
+        m_fileID = H5Fopen(m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (m_fileID < 0)
+        EXCEPTION1(InvalidFilesException, m_filename.c_str());
 
     // Look for a full mesh first.
     for ( size_t m = 0; m < m_meshes.size(); m++ )
@@ -384,7 +398,11 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
         vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
         
         // Read in points.
-        hid_t dataID = m_coordIDs[ timestate ];
+        char coordPath[512];
+        sprintf(coordPath, "/time_coordinates[%d]/coordinates/values", timestate);
+        hid_t dataID = H5Dopen2(m_fileID, coordPath, H5P_DEFAULT);
+        if (dataID < 0)
+            EXCEPTION1(InvalidFilesException, m_filename.c_str());
         hid_t spaceID = H5Dget_space( dataID );
         hsize_t dims[10];
         H5Sget_simple_extent_dims( spaceID, dims, NULL );
@@ -392,10 +410,16 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints( dims[0] );
         H5Dread( dataID, H5T_NATIVE_FLOAT, H5S_ALL, spaceID, H5P_DEFAULT, pts->GetVoidPointer(0) );
+        H5Sclose(spaceID);
+        H5Dclose(dataID);
 
         //Read in connectivity.
-        dataID = m_cellInfo[domain]->id;
-        spaceID = H5Dget_space( dataID );
+        char connPath[512];
+        sprintf(connPath, "/cell_set[%d]/node_connect_list", m_cellInfo[domain]->cellSetIndex);
+        dataID = H5Dopen2(m_fileID, connPath, H5P_DEFAULT);
+        if (dataID < 0)
+            EXCEPTION1(InvalidFilesException, m_filename.c_str());
+        spaceID = H5Dget_space(dataID);
         H5Sget_simple_extent_dims( spaceID, dims, NULL );
         if ( dims[1] != 6 )
             EXCEPTION2( UnexpectedValueException, "Expecting a wedge!", "Connectivity" );
@@ -404,6 +428,8 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
         
         int *conn = new int[dims[0]*dims[1]];
         H5Dread( dataID, H5T_NATIVE_INT, H5S_ALL, spaceID, H5P_DEFAULT, conn );
+        H5Sclose(spaceID);
+        H5Dclose(dataID);
         int *ptr = conn;
         for ( size_t i = 0; i < dims[0]; i++ )
         {
@@ -433,23 +459,35 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
         vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
         
         // Read in points.
-        hid_t dataID = m_coordIDs[ timestate ];
+        char coordPath[512];
+        sprintf(coordPath, "/time_coordinates[%d]/coordinates/values", timestate);
+        hid_t dataID = H5Dopen2(m_fileID, coordPath, H5P_DEFAULT);
+        if (dataID < 0)
+            EXCEPTION1(InvalidFilesException, m_filename.c_str());
         hid_t spaceID = H5Dget_space( dataID );
         hsize_t dims[10];
         H5Sget_simple_extent_dims( spaceID, dims, NULL );
         
         float *vals = new float[dims[0]*dims[1]];
         H5Dread( dataID, H5T_NATIVE_FLOAT, H5S_ALL, spaceID, H5P_DEFAULT, vals );
+        H5Sclose(spaceID);
+        H5Dclose(dataID);
 
 
         //Read in connectivity.
-        dataID = m_cellInfo[domain]->id;
-        spaceID = H5Dget_space( dataID );
+        char connPath[512];
+        sprintf(connPath, "/cell_set[%d]/node_connect_list", m_cellInfo[domain]->cellSetIndex);
+        dataID = H5Dopen2(m_fileID, connPath, H5P_DEFAULT);
+        if (dataID < 0)
+            EXCEPTION1(InvalidFilesException, m_filename.c_str());
+        spaceID = H5Dget_space(dataID);
         H5Sget_simple_extent_dims( spaceID, dims, NULL );
         if ( dims[1] != 6 )
             EXCEPTION2( UnexpectedValueException, "Expecting a wedge!", "Connectivity" );
         int *conn = new int[dims[0]*dims[1]];
         H5Dread( dataID, H5T_NATIVE_INT, H5S_ALL, spaceID, H5P_DEFAULT, conn );
+        H5Sclose(spaceID);
+        H5Dclose(dataID);
         
         int nPts = m_nNodes / m_nPlanes;
         vtkPoints *pts = vtkPoints::New();
@@ -489,22 +527,34 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
         vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
         
         // Read in points.
-        hid_t dataID = m_coordIDs[ timestate ];
+        char coordPath[512];
+        sprintf(coordPath, "/time_coordinates[%d]/coordinates/values", timestate);
+        hid_t dataID = H5Dopen2(m_fileID, coordPath, H5P_DEFAULT);
+        if (dataID < 0)
+            EXCEPTION1(InvalidFilesException, m_filename.c_str());
         hid_t spaceID = H5Dget_space( dataID );
         hsize_t dims[10];
         H5Sget_simple_extent_dims( spaceID, dims, NULL );
         
         float *vals = new float[dims[0]*dims[1]];
         H5Dread( dataID, H5T_NATIVE_FLOAT, H5S_ALL, spaceID, H5P_DEFAULT, vals );
+        H5Sclose(spaceID);
+        H5Dclose(dataID);
 
         //Read in connectivity.
-        dataID = m_cellInfo[domain]->id;
-        spaceID = H5Dget_space( dataID );
+        char connPath[512];
+        sprintf(connPath, "/cell_set[%d]/node_connect_list", m_cellInfo[domain]->cellSetIndex);
+        dataID = H5Dopen2(m_fileID, connPath, H5P_DEFAULT);
+        if (dataID < 0)
+            EXCEPTION1(InvalidFilesException, m_filename.c_str());
+        spaceID = H5Dget_space(dataID);
         H5Sget_simple_extent_dims( spaceID, dims, NULL );
         if ( dims[1] != 6 )
             EXCEPTION2( UnexpectedValueException, "Expecting a wedge!", "Connectivity" );
         int *conn = new int[dims[0]*dims[1]];
         H5Dread( dataID, H5T_NATIVE_INT, H5S_ALL, spaceID, H5P_DEFAULT, conn );
+        H5Sclose(spaceID);
+        H5Dclose(dataID);
         
         int nPts = m_nNodes / m_nPlanes;
         vtkPoints *pts = vtkPoints::New();
@@ -576,24 +626,34 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
 vtkDataArray *
 avtM3DFileFormat::GetVar( int timestate, int domain, const char *nm )
 {
-    char values[512];
-    sprintf( values, "/time_node_data[%d]/node_data[%d]/values", timestate, domain );
+    (void) domain;
+    if (m_fileID < 0)
+        m_fileID = H5Fopen(m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (m_fileID < 0)
+        EXCEPTION1(InvalidFilesException, m_filename.c_str());
 
     string varname = nm;
     for ( size_t i = 0; i < m_scalarVars.size(); i++ )
     {
         if ( varname != m_scalarVars[i]->varName )
             continue;
-        
-        hid_t dataID = m_scalarVars[i]->dataID;
-        H5Dopen( dataID, values );
 
-        hid_t spaceID = H5Dget_space( dataID );
+        char values[512];
+        sprintf(values, "/time_node_data[%d]/node_data[%d]/values",
+                timestate, m_scalarVars[i]->varIndex);
+
+        hid_t dataID = H5Dopen2(m_fileID, values, H5P_DEFAULT);
+        if (dataID < 0)
+            EXCEPTION1(InvalidVariableException, varname);
+
+        hid_t spaceID = H5Dget_space(dataID);
         hsize_t dims[10];
         H5Sget_simple_extent_dims( spaceID, dims, NULL );
                         
         float *vals = new float[dims[0]*dims[1]];
         H5Dread( dataID, H5T_NATIVE_FLOAT, H5S_ALL, spaceID, H5P_DEFAULT, vals );
+        H5Sclose(spaceID);
+        H5Dclose(dataID);
         
         vtkFloatArray *var = vtkFloatArray::New();
         int nScalars = dims[0], offset = 0;
@@ -607,9 +667,9 @@ avtM3DFileFormat::GetVar( int timestate, int domain, const char *nm )
         var->SetNumberOfTuples( nScalars );
         float *entry = &vals[offset];
 
-        for ( int j = 0; j < nScalars; j++ )
+        for (int j = 0; j < nScalars; j++)
         {
-            var->SetTuple1( j, vals[j] );
+            var->SetTuple1(j, *entry);
             ++entry;
         }
                         
@@ -650,8 +710,11 @@ avtM3DFileFormat::GetVar( int timestate, int domain, const char *nm )
 vtkDataArray *
 avtM3DFileFormat::GetVectorVar( int timestate, int domain, const char *nm )
 {
-    char values[512];
-    sprintf( values, "/time_node_data[%d]/node_data[%d]/values", timestate, domain );
+    (void) domain;
+    if (m_fileID < 0)
+        m_fileID = H5Fopen(m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (m_fileID < 0)
+        EXCEPTION1(InvalidFilesException, m_filename.c_str());
 
     string varname = nm;
     for ( size_t i = 0; i < m_vectorVars.size(); i++ )
@@ -659,15 +722,22 @@ avtM3DFileFormat::GetVectorVar( int timestate, int domain, const char *nm )
         if ( varname != m_vectorVars[i]->varName )
             continue;
 
-        hid_t dataID = m_vectorVars[i]->dataID;
-        H5Dopen( dataID, values );
+        char values[512];
+        sprintf(values, "/time_node_data[%d]/node_data[%d]/values",
+                timestate, m_vectorVars[i]->varIndex);
 
-        hid_t spaceID = H5Dget_space( dataID );
+        hid_t dataID = H5Dopen2(m_fileID, values, H5P_DEFAULT);
+        if (dataID < 0)
+            EXCEPTION1(InvalidVariableException, varname);
+
+        hid_t spaceID = H5Dget_space(dataID);
         hsize_t dims[10];
         H5Sget_simple_extent_dims( spaceID, dims, NULL );
                         
         float *vals = new float[dims[0]*dims[1]];
         H5Dread( dataID, H5T_NATIVE_FLOAT, H5S_ALL, spaceID, H5P_DEFAULT, vals );
+        H5Sclose(spaceID);
+        H5Dclose(dataID);
         
         vtkFloatArray *var = vtkFloatArray::New();
         int nVecs = dims[0], offset = 0;
@@ -851,13 +921,13 @@ avtM3DFileFormat::LoadFile()
     debug1 << "Attempting to open M3D file " << m_filename << endl;
     // Init HDF5.
     H5open();
-    H5Eset_auto( NULL, NULL );
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
-    m_fileID = H5Fopen( m_filename.c_str(), 0, 0 );
+    m_fileID = H5Fopen(m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
     if ( m_fileID < 0 )
         EXCEPTION1( InvalidFilesException, m_filename.c_str() );
 
-    hid_t rootID = H5Gopen( m_fileID, "/" );
+    hid_t rootID = H5Gopen2(m_fileID, "/", H5P_DEFAULT);
     if ( rootID < 0 )
     {
         H5Fclose(m_fileID);
@@ -894,8 +964,8 @@ avtM3DFileFormat::LoadFile()
     delete [] times;
 
     //Read in planes information.
-    hid_t groupid = H5Gopen( m_fileID, "/planes" );
-    hid_t dataid = H5Dopen( groupid, "values" );
+    hid_t groupid = H5Gopen2(m_fileID, "/planes", H5P_DEFAULT);
+    hid_t dataid = H5Dopen2(groupid, "values", H5P_DEFAULT);
     hid_t dataspace = H5Dget_space( dataid );
     H5Sselect_all( dataspace );
     int planes[2];
@@ -927,62 +997,64 @@ avtM3DFileFormat::LoadFile()
         EXCEPTION2( UnexpectedValueException, "nnode_data", "Not found or wrong type" );                
     }
     
-    //Load basic info on variables.
-    for ( size_t t = 0; t < m_timeSteps.size(); t++ )
+    // Load basic info on variables (from timestep 0).
+    for (int n = 0; n < m_nVars; n++)
     {
-        for ( int n = 0; n < m_nVars; n++ )
+        char field[512], values[512];
+        sprintf(field, "/time_node_data[0]/node_data[%d]", n);
+        sprintf(values, "%s/values", field);
+
+        string labelStr;
+        hid_t labelID = H5Gopen2(m_fileID, field, H5P_DEFAULT);
+        if (labelID < 0 || !ReadStringAttribute(labelID, "labels", &labelStr))
         {
-            char field[512], values[512];
-            sprintf( field, "/time_node_data[%ld]/node_data[%d]", t, n );
-            sprintf( values, "%s/values", field );
-            
-            string labelStr;
-            hid_t labelID = H5Gopen( m_fileID, field );
-            if ( ! ReadStringAttribute( labelID, "labels", &labelStr ) )
-                EXCEPTION2( UnexpectedValueException, "Variable Label", "Not found or wrong type" );
-            
-            string varName;
-            varName.assign( labelStr.c_str(), labelStr.find("," ) );
-            hid_t dataID = H5Dopen( m_fileID, values );
-            //hid_t clss = H5Tget_class( H5Dget_type( dataID ) );
-            hid_t spaceID = H5Dget_space( dataID );
-            int numDims = H5Sget_simple_extent_ndims( spaceID );
-            hsize_t dimSize[10];
-            H5Sget_simple_extent_dims( spaceID, dimSize, NULL );
-            
-            int varDim = dimSize[numDims-1];
-            debug1 << "Variable: " << varName << " of dimension " << varDim << endl;
-            
-            if ( varDim == 1 )
-                m_scalarVarNames.push_back( new VarInfo( varName, dataID, varDim ) );
-            else if ( varDim == 2 || varDim == 3 )
-                m_vectorVarNames.push_back( new VarInfo( varName, dataID, varDim ) );
-            else 
-                m_tensorVarNames.push_back( new VarInfo( varName, dataID, varDim ) );
+            if (labelID >= 0)
+                H5Gclose(labelID);
+            EXCEPTION2(UnexpectedValueException, "Variable Label", "Not found or wrong type");
         }
+        H5Gclose(labelID);
+
+        string varName;
+        varName.assign(labelStr.c_str(), labelStr.find(","));
+
+        hid_t dataID = H5Dopen2(m_fileID, values, H5P_DEFAULT);
+        if (dataID < 0)
+            EXCEPTION2(UnexpectedValueException, "Variable Dataset", "Not found");
+
+        hid_t spaceID = H5Dget_space(dataID);
+        int numDims = H5Sget_simple_extent_ndims(spaceID);
+        hsize_t dimSize[10];
+        H5Sget_simple_extent_dims(spaceID, dimSize, NULL);
+
+        int varDim = dimSize[numDims-1];
+        debug1 << "Variable: " << varName << " of dimension " << varDim << endl;
+
+        H5Sclose(spaceID);
+        H5Dclose(dataID);
+
+        if (varDim == 1)
+            m_scalarVarNames.push_back(new VarInfo(varName, n, varDim));
+        else if (varDim == 2 || varDim == 3)
+            m_vectorVarNames.push_back(new VarInfo(varName, n, varDim));
+        else
+            m_tensorVarNames.push_back(new VarInfo(varName, n, varDim));
     }
-    
+
+    H5Gclose(rootID);
+
     //Load mesh info.
     for ( int n = 0; n < m_nCellSets; n++ )
     {
         char field[512];
         sprintf( field, "/cell_set[%d]/node_connect_list", n );
-        hid_t connectID = H5Dopen( m_fileID, field );
         
         sprintf( field ,"/cell_set[%d]", n );
-        hid_t groupid = H5Gopen( m_fileID, field );
+        hid_t groupid = H5Gopen2(m_fileID, field, H5P_DEFAULT);
         int nCells;
         ReadAttribute( groupid, "ncells", &nCells );
+        H5Gclose(groupid);
         
-        m_cellInfo.push_back( new CellInfo( connectID, nCells ) );
-    }
-    
-    for ( size_t t = 0; t < m_timeSteps.size(); t++ )
-    {
-        char values[512];
-        sprintf( values, "/time_coordinates[%ld]/coordinates/values", t );
-        hid_t coordID = H5Dopen( m_fileID, values );
-        m_coordIDs.push_back( coordID );
+        m_cellInfo.push_back(new CellInfo(n, nCells));
     }
 
     // Finally, calculate the angular spacing of each plane.
@@ -1076,14 +1148,25 @@ void
 avtM3DFileFormat::CalcPlaneAngularSpacing()
 {
     // Find the normal of the first plane.
-    hid_t dataID = m_coordIDs[0];
-    hid_t spaceID = H5Dget_space( dataID );
+    if (m_fileID < 0)
+        m_fileID = H5Fopen(m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (m_fileID < 0)
+        EXCEPTION1(InvalidFilesException, m_filename.c_str());
+
+    char coordPath[512];
+    sprintf(coordPath, "/time_coordinates[0]/coordinates/values");
+    hid_t dataID = H5Dopen2(m_fileID, coordPath, H5P_DEFAULT);
+    if (dataID < 0)
+        EXCEPTION1(InvalidFilesException, m_filename.c_str());
+    hid_t spaceID = H5Dget_space(dataID);
 
     hsize_t dims[10];
     H5Sget_simple_extent_dims( spaceID, dims, NULL );
 
     float *vals = new float[dims[0]*dims[1]];
     H5Dread( dataID, H5T_NATIVE_FLOAT, H5S_ALL, spaceID, H5P_DEFAULT, vals );
+    H5Sclose(spaceID);
+    H5Dclose(dataID);
 
     vector<float *> planes;
     int nPts = m_nNodes / m_nPlanes;
@@ -1174,4 +1257,3 @@ avtM3DFileFormat::GetTimes(vector<double> &outTimes)
 {
     outTimes = m_timeSteps;
 }
-

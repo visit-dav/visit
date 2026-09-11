@@ -10,13 +10,17 @@
 using std::cerr;
 using std::endl;
 
-// Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
-// in this file uses version 1.6 of the HDF5 API. This is harmless for
-// versions of HDF5 before 1.8 and ensures correct compilation with
-// version 1.8 and thereafter. When, and if, the HDF5 code in this file
-// is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
+
+static inline hid_t UnicH5Gcreate(hid_t loc_id, const char *name, size_t)
+{
+    return H5Gcreate2(loc_id, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+}
+
+static inline hid_t UnicH5Dcreate(hid_t loc_id, const char *name, hid_t type_id, hid_t space_id, hid_t dcpl_id)
+{
+    return H5Dcreate2(loc_id, name, type_id, space_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT);
+}
 
 // disable set but unused warning as much of the code
 // in this file captures, but ignores, the return form hdf5
@@ -44,7 +48,7 @@ write_header(const hid_t file_id, const int ndims, const int nblocks)
     dims[0] = 5;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "CONTROL", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(file_id, "CONTROL", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[5];
@@ -67,7 +71,7 @@ write_header(const hid_t file_id, const int ndims, const int nblocks)
     dims[0] = 20;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "VERTEX_VECTOR_NAMES", H5T_NATIVE_CHAR,
+    dataset_id = UnicH5Dcreate(file_id, "VERTEX_VECTOR_NAMES", H5T_NATIVE_CHAR,
                            dataspace_id, H5P_DEFAULT);
 
     char point_names[21] = "xcoord              ";
@@ -84,7 +88,7 @@ write_header(const hid_t file_id, const int ndims, const int nblocks)
     dims[0] = 20;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "ELEMENT_VECTOR_NAMES", H5T_NATIVE_CHAR,
+    dataset_id = UnicH5Dcreate(file_id, "ELEMENT_VECTOR_NAMES", H5T_NATIVE_CHAR,
                            dataspace_id, H5P_DEFAULT);
 
     char cell_names[21] = "density             ";
@@ -107,13 +111,13 @@ write_quads(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -133,7 +137,7 @@ write_quads(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 4 * 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *xyz = new float[nx*ny*4*2];
@@ -166,7 +170,7 @@ write_quads(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*2];
@@ -195,7 +199,7 @@ write_quads(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -231,13 +235,13 @@ write_vtk100(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -257,7 +261,7 @@ write_vtk100(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 3 * 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 1;
@@ -289,7 +293,7 @@ write_vtk100(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*3];
@@ -317,7 +321,7 @@ write_vtk100(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -353,13 +357,13 @@ write_vtk101(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -379,7 +383,7 @@ write_vtk101(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 6 * 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 1;
@@ -417,7 +421,7 @@ write_vtk101(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*6];
@@ -448,7 +452,7 @@ write_vtk101(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -484,13 +488,13 @@ write_vtk111(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -510,7 +514,7 @@ write_vtk111(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 6 * 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 3;
@@ -548,7 +552,7 @@ write_vtk111(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*6];
@@ -579,7 +583,7 @@ write_vtk111(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -615,13 +619,13 @@ write_vtk112(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -641,7 +645,7 @@ write_vtk112(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 10 * 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 4, yoffset = 3;
@@ -688,7 +692,7 @@ write_vtk112(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*10];
@@ -723,7 +727,7 @@ write_vtk112(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -759,13 +763,13 @@ write_vtk150(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -785,7 +789,7 @@ write_vtk150(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 4 * 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 6;
@@ -819,7 +823,7 @@ write_vtk150(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*4];
@@ -848,7 +852,7 @@ write_vtk150(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -884,13 +888,13 @@ write_vtk151(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -910,7 +914,7 @@ write_vtk151(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 8 * 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 6;
@@ -952,7 +956,7 @@ write_vtk151(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*8];
@@ -985,7 +989,7 @@ write_vtk151(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -1021,13 +1025,13 @@ write_vtk161(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -1047,7 +1051,7 @@ write_vtk161(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 9 * 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 8;
@@ -1091,7 +1095,7 @@ write_vtk161(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*9];
@@ -1125,7 +1129,7 @@ write_vtk161(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -1161,13 +1165,13 @@ write_vtk162(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -1187,7 +1191,7 @@ write_vtk162(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 16 * 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 4, yoffset = 8;
@@ -1245,7 +1249,7 @@ write_vtk162(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*16];
@@ -1286,7 +1290,7 @@ write_vtk162(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -1322,13 +1326,13 @@ write_hexes(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -1348,7 +1352,7 @@ write_hexes(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 8 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *xyz = new float[nx*ny*8*3];
@@ -1397,7 +1401,7 @@ write_hexes(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*8];
@@ -1430,7 +1434,7 @@ write_hexes(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -1466,13 +1470,13 @@ write_vtk200(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -1492,7 +1496,7 @@ write_vtk200(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 4 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 1;
@@ -1529,7 +1533,7 @@ write_vtk200(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*4];
@@ -1558,7 +1562,7 @@ write_vtk200(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -1594,13 +1598,13 @@ write_vtk201(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -1620,7 +1624,7 @@ write_vtk201(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 10 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 1;
@@ -1676,7 +1680,7 @@ write_vtk201(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*10];
@@ -1711,7 +1715,7 @@ write_vtk201(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -1747,13 +1751,13 @@ write_vtk211(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -1773,7 +1777,7 @@ write_vtk211(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 10 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 3;
@@ -1828,7 +1832,7 @@ write_vtk211(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*10];
@@ -1863,7 +1867,7 @@ write_vtk211(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -1899,13 +1903,13 @@ write_vtk212(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -1925,7 +1929,7 @@ write_vtk212(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 20 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 4, yoffset = 3;
@@ -1964,7 +1968,7 @@ write_vtk212(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata= new float[nx*ny*20];
@@ -2001,7 +2005,7 @@ write_vtk212(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -2037,13 +2041,13 @@ write_vtk250(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -2063,7 +2067,7 @@ write_vtk250(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 6 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 6;
@@ -2106,7 +2110,7 @@ write_vtk250(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*6];
@@ -2137,7 +2141,7 @@ write_vtk250(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -2173,13 +2177,13 @@ write_vtk251(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -2199,7 +2203,7 @@ write_vtk251(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 15 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 6;
@@ -2270,7 +2274,7 @@ write_vtk251(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*15];
@@ -2310,7 +2314,7 @@ write_vtk251(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -2346,13 +2350,13 @@ write_vtk261(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -2372,7 +2376,7 @@ write_vtk261(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 18 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 8;
@@ -2452,7 +2456,7 @@ write_vtk261(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*18];
@@ -2495,7 +2499,7 @@ write_vtk261(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -2531,13 +2535,13 @@ write_vtk262(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -2557,7 +2561,7 @@ write_vtk262(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 40 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 4, yoffset = 8;
@@ -2597,7 +2601,7 @@ write_vtk262(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*40];
@@ -2634,7 +2638,7 @@ write_vtk262(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -2670,13 +2674,13 @@ write_vtk300(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -2696,7 +2700,7 @@ write_vtk300(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 8 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 11;
@@ -2746,7 +2750,7 @@ write_vtk300(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*8];
@@ -2779,7 +2783,7 @@ write_vtk300(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -2815,13 +2819,13 @@ write_vtk301(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -2841,7 +2845,7 @@ write_vtk301(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 20 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 11;
@@ -2927,7 +2931,7 @@ write_vtk301(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*20];
@@ -2972,7 +2976,7 @@ write_vtk301(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -3008,13 +3012,13 @@ write_vtk311(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -3034,7 +3038,7 @@ write_vtk311(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 27 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 6, yoffset = 11;
@@ -3141,7 +3145,7 @@ write_vtk311(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*27];
@@ -3193,7 +3197,7 @@ write_vtk311(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];
@@ -3229,13 +3233,13 @@ write_vtk312(const hid_t file_id, const int iblock)
     sprintf(block_name, "BLOCK%012d", iblock);
 
     hid_t block_id;
-    block_id = H5Gcreate(file_id, block_name, 100);
+    block_id = UnicH5Gcreate(file_id, block_name, 100);
 
     // Write the block information.
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
+    dataset_id = UnicH5Dcreate(block_id, "INFO", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
     int info[3];
@@ -3255,7 +3259,7 @@ write_vtk312(const hid_t file_id, const int iblock)
     dims[0] = nx * ny * 64 * 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 10, yoffset = 11;
@@ -3296,7 +3300,7 @@ write_vtk312(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *vdata = new float[nx*ny*64];
@@ -3332,7 +3336,7 @@ write_vtk312(const hid_t file_id, const int iblock)
     dims[0] = 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
+    dataset_id = UnicH5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
     float *cdata = new float[nx*ny];

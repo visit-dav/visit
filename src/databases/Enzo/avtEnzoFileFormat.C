@@ -32,17 +32,48 @@
 #include <DebugStream.h>
 #include <FileFunctions.h>
 
-// Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
-// in this file uses version 1.6 of the HDF5 API. This is harmless for
-// versions of HDF5 before 1.8 and ensures correct compilation with
-// version 1.8 and thereafter. When, and if, the HDF5 code in this file
-// is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
 #include <visit-hdf5.h>
 
 using std::string;
 using std::vector;
+
+struct EnzoVarNameCollector
+{
+    std::vector<std::string> *varNames;
+    std::vector<std::string> *particleVarNames;
+    std::vector<std::string> *tracerparticleVarNames;
+};
+
+static herr_t
+EnzoCollectDatasetNames(hid_t loc_id, const char *name, const H5L_info_t *, void *opData)
+{
+    EnzoVarNameCollector *collector = static_cast<EnzoVarNameCollector*>(opData);
+
+    H5O_info_t objInfo;
+    if (H5Oget_info_by_name(loc_id, name, &objInfo, H5P_DEFAULT) < 0)
+        return 0;
+
+    if (objInfo.type != H5O_TYPE_DATASET)
+        return 0;
+
+    if (strlen(name) > 8 && strncmp(name,"particle",8)==0)
+    {
+        if (strncmp(name,"particle_position_",18) != 0)
+            collector->particleVarNames->push_back(name);
+    }
+    else if (strlen(name) > 16 && strncmp(name,"tracer_particles",16)==0)
+    {
+        if (strncmp(name,"tracer_particle_position_",25) != 0)
+            collector->tracerparticleVarNames->push_back(name);
+    }
+    else
+    {
+        collector->varNames->push_back(name);
+    }
+
+    return 0;
+}
 
 void avtEnzoFileFormat::Grid::PrintRecursive(vector<Grid> &grids, int level)
 {
@@ -554,74 +585,23 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
 
     fileType = ENZO_FT_HDF5;
 
-    // NOTE: H5Gget_num_objs fails using a file id in HDF51.6.0, but
-    //       works correctly (as the documentation says it should) in
-    //       1.6.3.  Since we're going for portability, just open the
-    //       darn root group and use that instead.
-    hid_t rootId = H5Gopen(fileId, "/");
-    hid_t rootId_tmp;
+    hid_t rootId = H5Gopen2(fileId, "/", H5P_DEFAULT);
 
-    // Make a pass over the contents of the root directory
-    // looking for a group corresponding to our grid name, and
-    // open it if necessary.
-    hsize_t n_objs;
-    H5Gget_num_objs(rootId, &n_objs);
-    for (hsize_t var = 0 ; var < n_objs ; var++)
+    // If there is a group corresponding to our grid name, open it.
     {
-        if (H5Gget_objtype_by_idx(rootId, var) == H5G_GROUP)
+        char gridGroupName[65];
+        snprintf(gridGroupName, sizeof(gridGroupName), "Grid%d", smallest_grid);
+        hid_t gridGroup = H5Gopen2(rootId, gridGroupName, H5P_DEFAULT);
+        if (gridGroup >= 0)
         {
-            int gridindex;
-            char  name[65];
-            H5Gget_objname_by_idx(rootId, var, name, 64);
-            if (sscanf(name, "Grid%d", &gridindex) == 1 &&
-                gridindex == smallest_grid)
-            {
-                rootId_tmp = rootId;
-                rootId = H5Gopen(rootId, name);
-                H5Gclose(rootId_tmp);
-                break;
-            }
+            H5Gclose(rootId);
+            rootId = gridGroup;
         }
     }
 
-    // In case we opened a subdirectory, get the num items again.
-    H5Gget_num_objs(rootId, &n_objs);
-
-    // Okay, actually do the parsing work.
-    for (size_t var = 0 ; var < n_objs ; var++)
-    {
-        if (H5Gget_objtype_by_idx(rootId, var) == H5G_DATASET)
-        {
-            char  name[65];
-            H5Gget_objname_by_idx(rootId, var, name, 64);
-
-            // NOTE: to do the same diligence as HDF4 here, we should
-            // really H5Dopen, H5Dget_space, H5Sget_simple_extent_ndims
-            // and make sure it is a 3D (or 2D?) object before assuming
-            // it is a mesh variable.  For now, assume away!
-            if (strlen(name) > 8 && strncmp(name,"particle",8)==0)
-            {
-                // it's a particle variable; skip over coordinate arrays
-                if (strncmp(name,"particle_position_",18) != 0)
-                {
-                    particleVarNames.push_back(name);
-                }
-            }
-            else if (strlen(name) > 16 &&
-                     strncmp(name,"tracer_particles",16)==0)
-            {
-                // it's a particle variable; skip over coordinate arrays
-                if (strncmp(name,"tracer_particle_position_",25) != 0)
-                {
-                    tracerparticleVarNames.push_back(name);
-                }
-            }
-            else
-            {
-                varNames.push_back(name);
-            }
-        }
-    }
+    EnzoVarNameCollector collector{&varNames, &particleVarNames, &tracerparticleVarNames};
+    hsize_t idx = 0;
+    H5Literate(rootId, H5_INDEX_NAME, H5_ITER_INC, &idx, EnzoCollectDatasetNames, &collector);
 
     H5Gclose(rootId);
     H5Fclose(fileId);
@@ -1194,34 +1174,23 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         // Make a pass over the contents of the root directory
         // looking for a group corresponding to our grid name, and
         // open it if necessary.
-        hid_t rootId = H5Gopen(fileId, "/");
-        hid_t rootId_tmp;
-
-        hsize_t n_objs;
-        H5Gget_num_objs(rootId, &n_objs);
-        for (hsize_t var = 0 ; var < n_objs ; var++)
+        hid_t rootId = H5Gopen2(fileId, "/", H5P_DEFAULT);
         {
-            if (H5Gget_objtype_by_idx(rootId, var) == H5G_GROUP)
+            char gridGroupName[65];
+            snprintf(gridGroupName, sizeof(gridGroupName), "Grid%d", domain+1);
+            hid_t gridGroup = H5Gopen2(rootId, gridGroupName, H5P_DEFAULT);
+            if (gridGroup >= 0)
             {
-                int gridindex;
-                char  name[65];
-                H5Gget_objname_by_idx(rootId, var, name, 64);
-                if (sscanf(name, "Grid%d", &gridindex) == 1 &&
-                    gridindex == domain+1)
-                {
-                    rootId_tmp = rootId;
-                    rootId = H5Gopen(rootId, name);
-                    H5Gclose(rootId_tmp);
-                    break;
-                }
+                H5Gclose(rootId);
+                rootId = gridGroup;
             }
         }
 
         // temporarily disable error reporting
-        H5E_auto_t old_errorfunc;
+        H5E_auto2_t old_errorfunc;
         void *old_clientdata;
-        H5Eget_auto(&old_errorfunc, &old_clientdata);
-        H5Eset_auto(NULL, NULL);
+        H5Eget_auto2(H5E_DEFAULT, &old_errorfunc, &old_clientdata);
+        H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
         bool is_particle = (strcmp(meshname, "particles") == 0);
         const char *xn = is_particle ? "particle_position_x" : "tracer_particle_position_x";
@@ -1229,12 +1198,12 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         const char *zn = is_particle ? "particle_position_z" : "tracer_particle_position_z";
 
         // find the coordinate variables (if they exist)
-        hid_t var_id_x = H5Dopen(rootId, xn);
-        hid_t var_id_y = H5Dopen(rootId, yn);
-        hid_t var_id_z = dimension==3 ? H5Dopen(rootId, zn) : -1;
+        hid_t var_id_x = H5Dopen2(rootId, xn, H5P_DEFAULT);
+        hid_t var_id_y = H5Dopen2(rootId, yn, H5P_DEFAULT);
+        hid_t var_id_z = dimension==3 ? H5Dopen2(rootId, zn, H5P_DEFAULT) : -1;
 
         // turn back on error reporting
-        H5Eset_auto(old_errorfunc, old_clientdata);
+        H5Eset_auto2(H5E_DEFAULT, old_errorfunc, old_clientdata);
 
         // check if the variables exist
         if (var_id_x < 0 || var_id_y < 0 ||
@@ -1536,40 +1505,29 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
     // Make a pass over the contents of the root directory
     // looking for a group corresponding to our grid name, and
     // open it if necessary.
-    hid_t rootId = H5Gopen(fileId, "/");
-    hid_t rootId_tmp;
-
-    hsize_t n_objs;
-    H5Gget_num_objs(rootId, &n_objs);
-    for (hsize_t var = 0 ; var < n_objs ; var++)
+    hid_t rootId = H5Gopen2(fileId, "/", H5P_DEFAULT);
     {
-        if (H5Gget_objtype_by_idx(rootId, var) == H5G_GROUP)
+        char gridGroupName[65];
+        snprintf(gridGroupName, sizeof(gridGroupName), "Grid%d", domain+1);
+        hid_t gridGroup = H5Gopen2(rootId, gridGroupName, H5P_DEFAULT);
+        if (gridGroup >= 0)
         {
-            int gridindex;
-            char  name[65];
-            H5Gget_objname_by_idx(rootId, var, name, 64);
-            if (sscanf(name, "Grid%d", &gridindex) == 1 &&
-                gridindex == domain+1)
-            {
-                rootId_tmp = rootId;
-                rootId = H5Gopen(rootId, name);
-                H5Gclose(rootId_tmp);
-                break;
-            }
+            H5Gclose(rootId);
+            rootId = gridGroup;
         }
     }
 
     // temporarily disable error reporting
-    H5E_auto_t old_errorfunc;
+    H5E_auto2_t old_errorfunc;
     void *old_clientdata;
-    H5Eget_auto(&old_errorfunc, &old_clientdata);
-    H5Eset_auto(NULL, NULL);
+    H5Eget_auto2(H5E_DEFAULT, &old_errorfunc, &old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     // find the variable (if it exists)
-    hid_t varId = H5Dopen(rootId, varname);
+    hid_t varId = H5Dopen2(rootId, varname, H5P_DEFAULT);
 
     // turn back on error reporting
-    H5Eset_auto(old_errorfunc, old_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, old_errorfunc, old_clientdata);
 
     // check if the variable exists
     if (varId < 0)

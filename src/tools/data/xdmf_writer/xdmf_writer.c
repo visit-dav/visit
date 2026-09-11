@@ -1367,7 +1367,7 @@ HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
     dataspace_id = H5Screate_simple(2, vdims, NULL);
 
     sprintf(str, "/XYZ%d", hdfFile->iProc);
-    dataset_id = H5Dcreate(file_id, str, dataTypeToHDFType[coordDataType],
+    dataset_id = H5Dcreate2(file_id, str, dataTypeToHDFType[coordDataType],
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
                            H5P_DEFAULT);
 
@@ -1433,7 +1433,7 @@ HdfWriteCurvVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
         dataspace_id = H5Screate_simple(nvdims, vdims, NULL);
 
         sprintf(str, "/%s%d", varNames[iVar], hdfFile->iProc);
-        dataset_id = H5Dcreate(file_id, str,
+        dataset_id = H5Dcreate2(file_id, str,
             dataTypeToHDFType[varDataTypes[iVar]], dataspace_id,
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
@@ -1480,7 +1480,7 @@ HdfWriteCurvBlock(HDFFileParallel *hdfFile, const char *gridName,
     dataspace_id = H5Screate_simple(2, vdims, NULL);
 
     sprintf(str, "/XYZ%d", hdfFile->iProc);
-    dataset_id = H5Dcreate(file_id, str, dataTypeToHDFType[gridDataType],
+    dataset_id = H5Dcreate2(file_id, str, dataTypeToHDFType[gridDataType],
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
                            H5P_DEFAULT);
 
@@ -1518,7 +1518,7 @@ HdfWriteCurvBlock(HDFFileParallel *hdfFile, const char *gridName,
         dataspace_id = H5Screate_simple(nvdims, vdims, NULL);
 
         sprintf(str, "/%s%d", varNames[iVar], hdfFile->iProc);
-        dataset_id = H5Dcreate(file_id, str,
+        dataset_id = H5Dcreate2(file_id, str,
             dataTypeToHDFType[varDataTypes[iVar]], dataspace_id,
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
@@ -1563,7 +1563,7 @@ HdfWriteUcdMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
     dataspace_id = H5Screate_simple(2, vdims, NULL);
 
     sprintf(str, "/XYZ%d", hdfFile->iProc);
-    dataset_id = H5Dcreate(file_id, str, dataTypeToHDFType[coordDataType],
+    dataset_id = H5Dcreate2(file_id, str, dataTypeToHDFType[coordDataType],
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
                            H5P_DEFAULT);
 
@@ -1581,7 +1581,7 @@ HdfWriteUcdMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
     dataspace_id = H5Screate_simple(1, vdims, NULL);
 
     sprintf(str, "/connectivity%d", hdfFile->iProc);
-    dataset_id = H5Dcreate(file_id, str, dataTypeToHDFType[XDMF_INT],
+    dataset_id = H5Dcreate2(file_id, str, dataTypeToHDFType[XDMF_INT],
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
                            H5P_DEFAULT);
 
@@ -1643,7 +1643,7 @@ HdfWriteUcdVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
         dataspace_id = H5Screate_simple(nvdims, vdims, NULL);
 
         sprintf(str, "/%s%d", varNames[iVar], hdfFile->iProc);
-        dataset_id = H5Dcreate(file_id, str,
+        dataset_id = H5Dcreate2(file_id, str,
             dataTypeToHDFType[varDataTypes[iVar]], dataspace_id,
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
@@ -3883,7 +3883,7 @@ HdfPutCoords(HDFFile *hdfFileIn, const char *coordName,
     vdims[1] = 3;
     dataspace_id = H5Screate_simple(2, vdims, NULL);
 
-    dataset_id = H5Dcreate(hdfFile->fileId, coordName,
+    dataset_id = H5Dcreate2(hdfFile->fileId, coordName,
                            dataTypeToHDFType[coordDataType],
                            dataspace_id, H5P_DEFAULT,
                            H5P_DEFAULT, H5P_DEFAULT);
@@ -3924,7 +3924,7 @@ HdfPutConnectivity(HDFFile *hdfFileIn, const char *connectivityName,
     vdims[0] = connectivityLength;
     dataspace_id = H5Screate_simple(1, vdims, NULL);
 
-    dataset_id = H5Dcreate(hdfFile->fileId, connectivityName,
+    dataset_id = H5Dcreate2(hdfFile->fileId, connectivityName,
                            dataTypeToHDFType[connectivityDataType],
                            dataspace_id, H5P_DEFAULT,
                            H5P_DEFAULT, H5P_DEFAULT);
@@ -3989,7 +3989,7 @@ HdfPutCurvVar(HDFFile *hdfFileIn, const char *varName, int varType,
 
     dataspace_id = H5Screate_simple(nvdims, vdims, NULL);
 
-    dataset_id = H5Dcreate(hdfFile->fileId, varName,
+    dataset_id = H5Dcreate2(hdfFile->fileId, varName,
                            dataTypeToHDFType[varDataType],
                            dataspace_id, H5P_DEFAULT,
                            H5P_DEFAULT, H5P_DEFAULT);
@@ -4049,7 +4049,7 @@ HdfPutUcdVar(HDFFile *hdfFileIn, const char *varName, int varType,
 
     dataspace_id = H5Screate_simple(nvdims, vdims, NULL);
 
-    dataset_id = H5Dcreate(hdfFile->fileId, varName,
+    dataset_id = H5Dcreate2(hdfFile->fileId, varName,
                            dataTypeToHDFType[varDataType],
                            dataspace_id, H5P_DEFAULT,
                            H5P_DEFAULT, H5P_DEFAULT);
