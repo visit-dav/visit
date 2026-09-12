@@ -1064,6 +1064,26 @@ EngineMethods::GetQueryParameters(const std::string &qName)
 
 
 // ****************************************************************************
+//  Method:  EngineMethods::GetAnariDeviceInfo
+//
+//  Purpose: Gets ANARI library/subtype/renderer/parameter info that is
+//           actually available on the engine.
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+std::string
+EngineMethods::GetAnariDeviceInfo(const std::string &libraryName,
+                                   const std::string &librarySubtype,
+                                   const std::string &rendererSubtype)
+{
+    return state->anariDeviceInfoRPC(libraryName, librarySubtype, rendererSubtype);
+}
+
+
+// ****************************************************************************
 //  Method:  EngineMethods::GetProcInfo
 //
 //  Purpose: Gets unix process information from the engine

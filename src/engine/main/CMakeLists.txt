@@ -108,7 +108,8 @@ set(LIBENGINE_INCLUDES
 set(LIBENGINE_DEPENDS
     visitcommon
     enginerpc
-    avtview)
+    avtview
+    $<$<BOOL:${HAVE_ANARI}>:anari::anari>)
 
 if(HAVE_CONDUIT AND HAVE_MFEM)
     list(APPEND LIBENGINE_DEPENDS mfem avtblueprint)

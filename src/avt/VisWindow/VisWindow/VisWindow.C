@@ -7179,6 +7179,24 @@ VisWindow::ResetAnariScene()
 {
     return rendering->ResetAnariScene();
 }
+
+// ****************************************************************************
+// Method: VisWindow::SetAnariDeviceCreationEnabled
+//
+// Purpose:
+//   Controls whether this VisWindow is allowed to load a real ANARI backend
+//   library/device (see VisWinRendering::SetAnariDeviceCreationEnabled).
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+void
+VisWindow::SetAnariDeviceCreationEnabled(bool enabled)
+{
+    rendering->SetAnariDeviceCreationEnabled(enabled);
+}
 #endif
 
 // ****************************************************************************

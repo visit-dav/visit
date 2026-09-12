@@ -241,6 +241,7 @@ public:
         ReadHostProfilesFromDirectoryRPC,
         SetRemoveDuplicateNodesRPC,
         QueryMSAAAvailabilityRPC,
+        GetAnariDeviceInfoRPC,
         MaxRPC
     };
 

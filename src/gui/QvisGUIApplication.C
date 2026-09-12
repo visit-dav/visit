@@ -3648,6 +3648,10 @@ QvisGUIApplication::WindowFactory(int i)
             windowNames[i], tr("Rendering"), mainWin->GetNotepad());
           renderingWin->ConnectRenderingAttributes(GetViewerState()->GetRenderingAttributes());
           renderingWin->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+#ifdef HAVE_ANARI
+          renderingWin->ConnectAnariDeviceInfoAttributes(GetViewerState()->GetAnariDeviceInfoAttributes());
+          renderingWin->ConnectEngineList(GetViewerState()->GetEngineList());
+#endif
           win = renderingWin;
         }
         break;

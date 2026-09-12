@@ -60,6 +60,7 @@ class PlotInfoAttributes;
     VIEWER_REGISTER_OBJECT(KeyframeAttributes,       KeyframeAttributes, true)\
     VIEWER_REGISTER_OBJECT(QueryList,                QueryList, true)\
     VIEWER_REGISTER_OBJECT(QueryAttributes,          QueryAttributes, true)\
+    VIEWER_REGISTER_OBJECT(AnariDeviceInfoAttributes, AnariDeviceInfoAttributes, true)\
     VIEWER_REGISTER_OBJECT(MaterialAttributes,       MaterialAttributes, true)\
     VIEWER_REGISTER_OBJECT(GlobalLineoutAttributes,  GlobalLineoutAttributes, true)\
     VIEWER_REGISTER_OBJECT(AnnotationObjectList,     AnnotationObjectList, true)\

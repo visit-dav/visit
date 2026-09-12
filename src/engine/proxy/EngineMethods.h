@@ -155,6 +155,9 @@ public:
     void                     UpdateExpressions(const ExpressionList &);
 
     std::string              GetQueryParameters(const std::string &qName);
+    std::string              GetAnariDeviceInfo(const std::string &libraryName,
+                                                 const std::string &librarySubtype,
+                                                 const std::string &rendererSubtype);
 
     void                     GetProcInfo(ProcessAttributes &);
 

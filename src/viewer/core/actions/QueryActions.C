@@ -111,6 +111,35 @@ GetQueryParametersAction::Execute()
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: GetAnariDeviceInfoAction::Execute
+//
+// Purpose:
+//   Execute ViewerRPC::GetAnariDeviceInfoRPC
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+void
+GetAnariDeviceInfoAction::Execute()
+{
+    const MapNode &params = args.GetQueryParams();
+    std::string libraryName, librarySubtype, rendererSubtype;
+
+    if (params.HasEntry("libraryName"))
+        libraryName = params.GetEntry("libraryName")->AsString();
+    if (params.HasEntry("librarySubtype"))
+        librarySubtype = params.GetEntry("librarySubtype")->AsString();
+    if (params.HasEntry("rendererSubtype"))
+        rendererSubtype = params.GetEntry("rendererSubtype")->AsString();
+
+    GetQueryManager()->GetAnariDeviceInfo(libraryName, librarySubtype, rendererSubtype);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
 // Method: ProcessExpressionsAction::Execute
 //
 // Purpose: 

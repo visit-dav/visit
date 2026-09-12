@@ -416,6 +416,10 @@ public:
                const QueryAttributes *atts, QueryAttributes &retAtts);
     bool GetQueryParameters(const EngineKey &ek, const std::string &qname,
                             std::string *params);
+    bool GetAnariDeviceInfo(const EngineKey &ek, const std::string &libraryName,
+                            const std::string &librarySubtype,
+                            const std::string &rendererSubtype,
+                            std::string *result);
     bool GetProcInfo(const EngineKey &ek, ProcessAttributes &retAtts);
     bool ReleaseData(const EngineKey &ek, int id);
     bool CloneNetwork(const EngineKey &ek, int id, 
