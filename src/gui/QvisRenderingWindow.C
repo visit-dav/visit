@@ -1195,9 +1195,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             fxaaSCT->blockSignals(true);
             fxaaSCTCustomLabel->blockSignals(true);
             fxaaSCTCustom->blockSignals(true);
-            fxaaHQE->blockSignals(true);  
+            fxaaHQE->blockSignals(true);
             fxaaESILabel->blockSignals(true);
-            fxaaESI->blockSignals(true);  
+            fxaaESI->blockSignals(true);
 
             FXAAOptions &fxaaOpt = renderAtts->GetFXAAOpt();
 
@@ -1238,9 +1238,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             fxaaSCT->blockSignals(false);
             fxaaSCTCustomLabel->blockSignals(false);
             fxaaSCTCustom->blockSignals(false);
-            fxaaHQE->blockSignals(false);  
+            fxaaHQE->blockSignals(false);
             fxaaESILabel->blockSignals(false);
-            fxaaESI->blockSignals(false);  
+            fxaaESI->blockSignals(false);
         }
             break;
         case RenderingAttributes::ID_multiresolutionMode:
@@ -1966,19 +1966,21 @@ QvisRenderingWindow::apply()
 //
 // Purpose:
 //   Updates enabled state of MSAA button, based on MSAA availability.
-//   Changes Label text to indicate if it is not available.
+//   Changes label text only when MSAA is definitely not available.
 //
 // Programmer: Kathleen Biagas
 // Creation:   August 26, 2025
 //
 // Modifications:
+//   Kathleen Biagas, Mon Sep 14, 2026
+//   MSAAAvailable is now tri-state, available, not available, and unknown.
 //
 // ****************************************************************************
 
 void
 QvisRenderingWindow::UpdateMSAAButton()
 {
-    if(renderAtts->GetMSAAAvailable())
+    if(renderAtts->GetMSAAAvailable() != RenderingAttributes::MSAA_NOT_AVAILABLE)
     {
         antialiasingMode->button(1)->setEnabled(!depthPeeling->isChecked());
         antialiasingMode->button(1)->setText("MSAA");
@@ -2006,6 +2008,8 @@ QvisRenderingWindow::UpdateMSAAButton()
 // Creation:   August 14, 2025
 //
 // Modifications:
+//   Kathleen Biagas, Mon Sep 14, 2026
+//   Fix typo so that fxaaSCTCustom can be enabled when appropriate.
 //
 // ****************************************************************************
 
@@ -2059,8 +2063,8 @@ QvisRenderingWindow::UpdateAAControls(int mode)
 
     fxaaSCTLabel->setEnabled(mode == 2);
     fxaaSCT->setEnabled(mode == 2);
-    fxaaSCTCustomLabel->setEnabled(mode == 2 && fxaaSCT->currentIndex() == 5);
-    fxaaSCTCustom->setEnabled(mode == 2 && fxaaSCT->currentIndex() == 5);
+    fxaaSCTCustomLabel->setEnabled(mode == 2 && fxaaSCT->currentIndex() == 4);
+    fxaaSCTCustom->setEnabled(mode == 2 && fxaaSCT->currentIndex() == 4);
 
     fxaaHQE->setEnabled(mode == 2);
     fxaaESILabel->setEnabled(mode == 2);
@@ -2423,7 +2427,7 @@ QvisRenderingWindow::fxaaESIChanged()
 // Modifications:
 //   Kathleen Biagas, Tue Aug 26, 2025
 //   Issue warning if MSAA is enabled and set depthPeeling to unchecked.
-// 
+//
 // ****************************************************************************
 
 void

@@ -16,11 +16,16 @@
       MSAA
       FXAA
     </Enum>
+    <Enum name="MSAAAvailability">
+      MSAA_NOT_AVAILABLE
+      MSAA_AVAILABLE
+      MSAA_UNKNOWN
+    </Enum>
     <Field name="antialiasing" label="antialiasing" type="enum" subtype="AAMode">
       None
     </Field>
-    <Field name="MSAAAvailable" label="MSAA Available" type="bool" internal="true">
-      false
+    <Field name="MSAAAvailable" label="MSAA Available" type="enum" subtype="MSAAAvailability" internal="true" persistent="false">
+      MSAA_UNKNOWN
     </Field>
     <Field name="MSAASamples" label="MSAA Samples" type="int">
       4
