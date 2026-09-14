@@ -6508,6 +6508,9 @@ RotateAroundY(const avtView3D &curView, double angle,
 //   Added TiledRenderingWidth and TiledRenderingHeight to support
 //   tiled rendering.
 //
+//   Kathleen Biagas, Mon Sep 14, 2026
+//   Convert int from MSAAAvailable to the appropriate enum.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -6591,7 +6594,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 
     renderAtts.SetAntialiasing((RenderingAttributes::AAMode) GetAntialiasing());
     renderAtts.SetMSAASamples(GetMSAASamples());
-    renderAtts.SetMSAAAvailable(MSAAAvailable());
+    renderAtts.SetMSAAAvailable(RenderingAttributes::MSAAAvailability(MSAAAvailable()));
     renderAtts.SetFXAAOpt(*(GetFXAAOptions()));
 
     renderAtts.SetOrderComposite(GetOrderComposite());
@@ -7481,16 +7484,18 @@ ViewerWindow::GetMSAASamples() const
 // Method: ViewerWindow::MSAAAvailable
 //
 // Purpose:
-//   Returns the availablility of MSAA.
+//   Returns tri-state MSAA availability.
 //
 // Programmer: Kathleen Biagas
 // Creation:   August 26, 2025
 //
 // Modifications:
+//   Kathleen Biagas, Mon Sep 14, 2026
+//   Return type is now an int.
 //
 // ****************************************************************************
 
-bool
+int
 ViewerWindow::MSAAAvailable() const
 {
     return visWindow->MSAAAvailable();

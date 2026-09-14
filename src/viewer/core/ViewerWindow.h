@@ -486,11 +486,14 @@ class ViewerPlotList;
 //    Added Set/Get AnariAttributes when built with ANARI support.
 //
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
-//    Added Set/Get TiledRenderingWidth and TiledRenderingHeight 
+//    Added Set/Get TiledRenderingWidth and TiledRenderingHeight
 //    to support tiled rendering.
 //
 //    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
 //    Added ResetAnariScene
+//
+//    Kathleen Biagas, Mon Sep 14, 2026
+//    MSAAAvailable now returns an int.
 //
 // ****************************************************************************
 
@@ -697,7 +700,7 @@ public:
     int  GetAntialiasing() const;
     void SetMSAASamples(int);
     int  GetMSAASamples() const;
-    bool MSAAAvailable() const;
+    int  MSAAAvailable() const;
     void SetFXAAOptions(const FXAAOptions *);
     const FXAAOptions *GetFXAAOptions() const;
     void SetOrderComposite(bool enabled);

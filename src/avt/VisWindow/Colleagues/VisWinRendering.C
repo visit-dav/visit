@@ -2680,6 +2680,9 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   Kathleen Biagas, Wed Aug 27, 2025
 //   Issue warning if MSAA chosen when it isn't available.
 //
+//   Kathleen Biagas, Mon Sep 14, 2026
+//   MSAAAvailable now returns an int (tri-state enum).
+//
 // ****************************************************************************
 
 void
@@ -2687,7 +2690,8 @@ VisWinRendering::SetAntialiasing(int aaMode)
 {
     if(aaMode != antialiasing )
     {
-        if(aaMode == 1 && !MSAAAvailable())
+        if(aaMode == RenderingAttributes::MSAA &&
+           MSAAAvailable() == RenderingAttributes::MSAA_NOT_AVAILABLE)
         {
             avtCallback::IssueWarning(
                 "MSAA is not available with the current configuration of"
@@ -2731,10 +2735,12 @@ VisWinRendering::SetMSAASamples(int numSamples)
 // Method: VisWinRendering::MSAAAvailable
 //
 // Purpose:
-//   Determines is MSAA is available for the current Render Window.
+//   Determines if MSAA is available for the current Render Window.
 //
 // Returns:
-//   true if MSAA is available (GL_MAX_SAMPLES > 1).
+//   RenderingAttributes::MSAA_NOT_AVAILABLE if MSAA is definitely not available,
+//   RenderingAttributes::MSAA_AVAILABLE if it is definitely available, or
+//   RenderingAttributes::MSAA_UNKNOWN if availability cannot be determined.
 //
 // Programmer: Kathleen Biagas
 // Creation:   August 26, 2025
@@ -2748,21 +2754,33 @@ VisWinRendering::SetMSAASamples(int numSamples)
 //   gl context is created, disable MSAA completely until the crash can
 //   be fixed in an appropriate manner.
 //
+//   Kathleen Biagas, Mon Sep 14, 2026
+//   If oglWIn is not available, initialized and current, return MSAA_UNKNOWN.
+//   Otherwise get GL_MAX_SAMPLES to determine if available or not.
+//
 // ****************************************************************************
 
-bool
+int
 VisWinRendering::MSAAAvailable()
 {
-#if 0
 #ifdef GL_MAX_SAMPLES
     vtkOpenGLRenderWindow* oglWin = vtkOpenGLRenderWindow::SafeDownCast(GetRenderWindow());
+    if (oglWin == NULL)
+        return RenderingAttributes::MSAA_UNKNOWN;
+
+    if (!oglWin->GetInitialized())
+        return RenderingAttributes::MSAA_UNKNOWN;
+
+    if (!oglWin->IsCurrent())
+        return RenderingAttributes::MSAA_UNKNOWN;
+
     int msamples = 0;
-    if(oglWin)
-        oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
-    return (msamples > 1);
+    oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
+    return (msamples > 1) ? RenderingAttributes::MSAA_AVAILABLE :
+                            RenderingAttributes::MSAA_NOT_AVAILABLE;
+#else
+    return RenderingAttributes::MSAA_NOT_AVAILABLE;
 #endif
-#endif
-    return false;
 }
 
 
@@ -3727,7 +3745,7 @@ VisWinRendering::SetAnariUSDParameters()
                                                                   anariLibrarySubtype.c_str(),
                                                                   "parameter",
                                                                   ANARI_PARAMETER_LIST));
-    
+
     const stringVector &usdParams = anariAttributes.GetAnariUSDParameters();
 
     for (const auto& usdParam : usdParams)

@@ -50,6 +50,12 @@ public:
         MSAA,
         FXAA
     };
+    enum MSAAAvailability
+    {
+        MSAA_NOT_AVAILABLE,
+        MSAA_AVAILABLE,
+        MSAA_UNKNOWN
+    };
     static const int DEFAULT_SCALABLE_AUTO_THRESHOLD;
     static const int DEFAULT_SCALABLE_ACTIVATION_MODE;
     static const int DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE;
@@ -88,7 +94,7 @@ public:
 
     // Property setting methods
     void SetAntialiasing(AAMode antialiasing_);
-    void SetMSAAAvailable(bool MSAAAvailable_);
+    void SetMSAAAvailable(MSAAAvailability MSAAAvailable_);
     void SetMSAASamples(int MSAASamples_);
     void SetFXAAOpt(const FXAAOptions &FXAAOpt_);
     void SetOrderComposite(bool orderComposite_);
@@ -130,7 +136,7 @@ public:
 
     // Property getting methods
     AAMode                GetAntialiasing() const;
-    bool                  GetMSAAAvailable() const;
+    MSAAAvailability      GetMSAAAvailable() const;
     int                   GetMSAASamples() const;
     const FXAAOptions     &GetFXAAOpt() const;
           FXAAOptions     &GetFXAAOpt();
@@ -195,6 +201,11 @@ public:
 protected:
     static std::string AAMode_ToString(int);
 public:
+    static std::string MSAAAvailability_ToString(MSAAAvailability);
+    static bool MSAAAvailability_FromString(const std::string &, MSAAAvailability &);
+protected:
+    static std::string MSAAAvailability_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -254,7 +265,7 @@ public:
 
 private:
     int             antialiasing;
-    bool            MSAAAvailable;
+    int             MSAAAvailable;
     int             MSAASamples;
     FXAAOptions     FXAAOpt;
     bool            orderComposite;
@@ -298,6 +309,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfbibiiiibffabdbbDDibiibiiba"
+#define RENDERINGATTRIBUTES_TMFS "iiiabiiiibdibfbibiiiibffabdbbDDibiibiiba"
 
 #endif
