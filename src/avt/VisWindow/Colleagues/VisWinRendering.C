@@ -2756,9 +2756,26 @@ VisWinRendering::MSAAAvailable()
 #if 0
 #ifdef GL_MAX_SAMPLES
     vtkOpenGLRenderWindow* oglWin = vtkOpenGLRenderWindow::SafeDownCast(GetRenderWindow());
+    if (oglWin == NULL)
+        return false;
+
+    // Startup can query MSAA availability before Qt/VTK has finished creating
+    // and binding the widget's OpenGL context.  Do not issue GL calls until
+    // the context is current.
+    if (!oglWin->IsCurrent())
+        oglWin->MakeCurrent();
+
+    if (!oglWin->IsCurrent())
+        return false;
+
+    if (!oglWin->GetInitialized())
+        oglWin->OpenGLInit();
+
+    if (!oglWin->GetInitialized() || oglWin->GetState() == NULL)
+        return false;
+
     int msamples = 0;
-    if(oglWin)
-        oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
+    oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
     return (msamples > 1);
 #endif
 #endif
