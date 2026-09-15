@@ -90,7 +90,7 @@ function check_minimum_compiler_version()
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
         VERSION=$(get_version_digits g++)
         echo "g++ version $VERSION"
-        gccv=8.1
+        gccv=10.3
         testvercomp $VERSION $gccv '<'
         if [[ $? == 0 ]] ; then
             echo "Need g++ version >= $gccv"
@@ -99,17 +99,17 @@ function check_minimum_compiler_version()
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
         VERSION=$(get_version_digits clang++)
         echo "apple clang version $VERSION"
-        testvercomp $VERSION 5.0 '<'
+        testvercomp $VERSION 11.0 '<'
         if [[ $? == 0 ]] ; then
-            echo "Need clang++ version >= 5.0"
+            echo "Need clang++ version >= 11.0"
             exit 1
         fi
     elif [[ "$CXX_COMPILER" == "clang++" ]] ; then 
         VERSION=$(get_version_digits clang++)
         echo "clang version $VERSION"
-        testvercomp $VERSION 3.3 '<'
+        testvercomp $VERSION 14.0 '<'
         if [[ $? == 0 ]] ; then
-            echo "Need clang++ version >= 3.3"
+            echo "Need clang++ version >= 14.0"
             exit 1
         fi
     elif [[ "$CXX_COMPILER" == "icpc" ]] ; then 
@@ -118,9 +118,9 @@ function check_minimum_compiler_version()
             VERSION=$(icpc -v 2>&1 | grep "icpc.orig version" | cut -d' ' -f3 )
         fi
         echo "icpc version $VERSION"
-        testvercomp $VERSION 14.0 '<'
+        testvercomp $VERSION 2021.6.0 '<'
         if [[ $? == 0 ]] ; then
-            echo "Need icpc version >= 14.0"
+            echo "Need icpc version >= 2021.6.0"
             exit 1
         fi
     fi
