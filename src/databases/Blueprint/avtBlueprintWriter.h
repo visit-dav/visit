@@ -90,6 +90,9 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
     virtual void   WriteRootFile();
+
+
+    vtkDataSet    *RemoveUnusedPoints(vtkDataSet *ds);
 };
 
 
