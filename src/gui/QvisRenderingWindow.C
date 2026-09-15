@@ -14,6 +14,7 @@
 #include <QLayout>
 #include <QFormLayout>
 #include <QRadioButton>
+#include <QScrollArea>
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QTabWidget>
@@ -180,12 +181,22 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Biagas, Thu Oct 15, 2025
 //   Removed remnant of widgets associated with objectRepresentation.
 //
+//   Kathleen Biagas, Mon Sep 14, 2026
+//   Add QScrollArea for easier use on smaller laptop displays.
+//
 // ****************************************************************************
 
 QWidget *
 QvisRenderingWindow::CreateBasicPage()
 {
-    QWidget *basicOptions = new QWidget(central);
+    QScrollArea *scroll = new QScrollArea(central);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setWidgetResizable(true);
+
+    QWidget *basicOptions = new QWidget();
+    scroll->setWidget(basicOptions);
+
     QVBoxLayout *basicLayout = new QVBoxLayout(basicOptions);
     basicLayout->setContentsMargins(10,10,10,10);
 
@@ -580,7 +591,7 @@ QvisRenderingWindow::CreateBasicPage()
     specLayout->addRow(specularPowerLabel, specularPowerSlider);
 
     basicLayout->setSpacing(0);
-    return basicOptions;
+    return scroll;
 }
 
 // ****************************************************************************
@@ -619,6 +630,9 @@ QvisRenderingWindow::CreateBasicPage()
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //   Added controls for setting the tiled rendering width and height.
 //
+//   Kathleen Biagas, Mon Sep 14, 2026
+//   Add QScrollArea for easier use on smaller laptop displays.
+//
 // ****************************************************************************
 
 QWidget *
@@ -626,7 +640,14 @@ QvisRenderingWindow::CreateAdvancedPage()
 {
     int row = 0;
 
-    QWidget *advancedOptions = new QWidget(central);
+    QScrollArea *scroll = new QScrollArea(central);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setWidgetResizable(true);
+
+    QWidget *advancedOptions = new QWidget();
+    scroll->setWidget(advancedOptions);
+
     QGridLayout *advLayout = new QGridLayout(advancedOptions);
     advLayout->setSpacing(5);
     advLayout->setContentsMargins(10,10,10,10);
@@ -881,7 +902,7 @@ QvisRenderingWindow::CreateAdvancedPage()
             osprayShadowsToggle, SLOT(setEnabled(bool)));
 #endif
 
-    return advancedOptions;
+    return scroll;
 }
 
 
