@@ -354,6 +354,11 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 //    lie on the face that was intersected, but user will be expecting a
 //    result on the intersected face.
 //
+//    Kathleen Biagas, Wed Sep 2, 2026
+//    Replace 'cell->GetFace->EvaluatePosition' with
+//    vtkVisItUtility::EvaluatePosition.  The new function has a fallback to
+//    handle degenerate cells.
+//
 // ****************************************************************************
 
 int
@@ -423,28 +428,30 @@ avtNodePickQuery::DeterminePickedNode(vtkDataSet *ds)
 
         for (int i = 0; i < cell->GetNumberOfFaces(); ++i)
         {
-            int vp = cell->GetFace(i)->EvaluatePosition(pp, cp, subId, pc, dist2, wts);
+            vtkCell *face = cell->GetFace(i);
+            int vp = vtkVisItUtility::EvaluatePosition(face, pp, cp, subId,
+                                                       pc, dist2, wts);
             if (vp == 1 && dist2 < dist)
             {
                 minFace = i;
                 dist = dist2;
             }
         }
-       if (minFace != -1)
-       {
-           dist = DBL_MAX;
-           vtkCell *f = cell->GetFace(minFace);
-           vtkPoints *cpts = f->GetPoints();
-           for (vtkIdType i = 0; i < cpts->GetNumberOfPoints(); ++i)
-           {
-               double dist2 = vtkMath::Distance2BetweenPoints(pp, cpts->GetPoint(i));
-               if (dist2 < dist)
-               {
-                   dist = dist2;
-                   node = f->GetPointId(i);
-               }
-           }
-       }
+        if (minFace != -1)
+        {
+            dist = DBL_MAX;
+            vtkCell *f = cell->GetFace(minFace);
+            vtkPoints *cpts = f->GetPoints();
+            for (vtkIdType i = 0; i < cpts->GetNumberOfPoints(); ++i)
+            {
+                double dist2 = vtkMath::Distance2BetweenPoints(pp, cpts->GetPoint(i));
+                if (dist2 < dist)
+                {
+                    dist = dist2;
+                    node = f->GetPointId(i);
+                }
+            }
+        }
     }
     else
     {
