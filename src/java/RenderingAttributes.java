@@ -38,6 +38,10 @@ public class RenderingAttributes extends AttributeSubject
     public final static int AAMODE_MSAA = 1;
     public final static int AAMODE_FXAA = 2;
 
+    public final static int MSAAAVAILABILITY_MSAA_NOT_AVAILABLE = 0;
+    public final static int MSAAAVAILABILITY_MSAA_AVAILABLE = 1;
+    public final static int MSAAAVAILABILITY_MSAA_UNKNOWN = 2;
+
     // Constants
 public final static int DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;
 
@@ -53,7 +57,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         super(RenderingAttributes_numAdditionalAtts);
 
         antialiasing = AAMODE_NONE;
-        MSAAAvailable = false;
+        MSAAAvailable = MSAAAVAILABILITY_MSAA_UNKNOWN;
         MSAASamples = 4;
         FXAAOpt = new FXAAOptions();
         orderComposite = true;
@@ -105,7 +109,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         super(RenderingAttributes_numAdditionalAtts + nMoreFields);
 
         antialiasing = AAMODE_NONE;
-        MSAAAvailable = false;
+        MSAAAvailable = MSAAAVAILABILITY_MSAA_UNKNOWN;
         MSAASamples = 4;
         FXAAOpt = new FXAAOptions();
         orderComposite = true;
@@ -284,7 +288,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         Select(0);
     }
 
-    public void SetMSAAAvailable(boolean MSAAAvailable_)
+    public void SetMSAAAvailable(int MSAAAvailable_)
     {
         MSAAAvailable = MSAAAvailable_;
         Select(1);
@@ -540,7 +544,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
 
     // Property getting methods
     public int             GetAntialiasing() { return antialiasing; }
-    public boolean         GetMSAAAvailable() { return MSAAAvailable; }
+    public int             GetMSAAAvailable() { return MSAAAvailable; }
     public int             GetMSAASamples() { return MSAASamples; }
     public FXAAOptions     GetFXAAOpt() { return FXAAOpt; }
     public boolean         GetOrderComposite() { return orderComposite; }
@@ -586,7 +590,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         if(WriteSelect(0, buf))
             buf.WriteInt(antialiasing);
         if(WriteSelect(1, buf))
-            buf.WriteBool(MSAAAvailable);
+            buf.WriteInt(MSAAAvailable);
         if(WriteSelect(2, buf))
             buf.WriteInt(MSAASamples);
         if(WriteSelect(3, buf))
@@ -673,7 +677,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
             SetAntialiasing(buf.ReadInt());
             break;
         case 1:
-            SetMSAAAvailable(buf.ReadBool());
+            SetMSAAAvailable(buf.ReadInt());
             break;
         case 2:
             SetMSAASamples(buf.ReadInt());
@@ -806,7 +810,14 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         if(antialiasing == AAMODE_FXAA)
             str = str + "AAMODE_FXAA";
         str = str + "\n";
-        str = str + boolToString("MSAAAvailable", MSAAAvailable, indent) + "\n";
+        str = str + indent + "MSAAAvailable = ";
+        if(MSAAAvailable == MSAAAVAILABILITY_MSAA_NOT_AVAILABLE)
+            str = str + "MSAAAVAILABILITY_MSAA_NOT_AVAILABLE";
+        if(MSAAAvailable == MSAAAVAILABILITY_MSAA_AVAILABLE)
+            str = str + "MSAAAVAILABILITY_MSAA_AVAILABLE";
+        if(MSAAAvailable == MSAAAVAILABILITY_MSAA_UNKNOWN)
+            str = str + "MSAAAVAILABILITY_MSAA_UNKNOWN";
+        str = str + "\n";
         str = str + intToString("MSAASamples", MSAASamples, indent) + "\n";
         str = str + indent + "FXAAOpt = {\n" + FXAAOpt.toString(indent + "    ") + indent + "}\n";
         str = str + boolToString("orderComposite", orderComposite, indent) + "\n";
@@ -881,7 +892,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
 
     // Attributes
     private int             antialiasing;
-    private boolean         MSAAAvailable;
+    private int             MSAAAvailable;
     private int             MSAASamples;
     private FXAAOptions     FXAAOpt;
     private boolean         orderComposite;

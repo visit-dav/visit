@@ -472,6 +472,9 @@ class VisitInteractor;
 //    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
 //    Added ResetAnariScene
 //
+//    Kathleen Biagas, Mon Sep 14, 2026
+//    Change MSAAAvailable return type from bool to int.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -699,7 +702,7 @@ public:
     int                  GetAntialiasing() const;
     void                 SetMSAASamples(int);
     int                  GetMSAASamples() const;
-    bool                 MSAAAvailable() const;
+    int                  MSAAAvailable() const;
     void                 SetFXAAOptions(const FXAAOptions *);
     const FXAAOptions   *GetFXAAOptions() const;
     void                 SetOrderComposite(bool enabled);

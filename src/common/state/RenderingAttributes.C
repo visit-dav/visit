@@ -128,6 +128,44 @@ RenderingAttributes::AAMode_FromString(const std::string &s, RenderingAttributes
     return false;
 }
 
+//
+// Enum conversion methods for RenderingAttributes::MSAAAvailability
+//
+
+static const char *MSAAAvailability_strings[] = {
+"MSAA_NOT_AVAILABLE", "MSAA_AVAILABLE", "MSAA_UNKNOWN"
+};
+
+std::string
+RenderingAttributes::MSAAAvailability_ToString(RenderingAttributes::MSAAAvailability t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return MSAAAvailability_strings[index];
+}
+
+std::string
+RenderingAttributes::MSAAAvailability_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return MSAAAvailability_strings[index];
+}
+
+bool
+RenderingAttributes::MSAAAvailability_FromString(const std::string &s, RenderingAttributes::MSAAAvailability &val)
+{
+    val = RenderingAttributes::MSAA_NOT_AVAILABLE;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == MSAAAvailability_strings[i])
+        {
+            val = (MSAAAvailability)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: RenderingAttributes::RenderingAttributes
 //
@@ -146,7 +184,7 @@ RenderingAttributes::AAMode_FromString(const std::string &s, RenderingAttributes
 void RenderingAttributes::Init()
 {
     antialiasing = None;
-    MSAAAvailable = false;
+    MSAAAvailable = MSAA_UNKNOWN;
     MSAASamples = 4;
     orderComposite = true;
     depthCompositeThreads = 2;
@@ -683,12 +721,7 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("antialiasing", AAMode_ToString(antialiasing)));
     }
 
-    if(completeSave || !FieldsEqual(ID_MSAAAvailable, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("MSAAAvailable", MSAAAvailable));
-    }
-
+    // MSAAAvailable is not persistent and should not be saved.
     if(completeSave || !FieldsEqual(ID_MSAASamples, &defaultObject))
     {
         addToParent = true;
@@ -983,8 +1016,7 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
                 SetAntialiasing(value);
         }
     }
-    if((node = searchNode->GetNode("MSAAAvailable")) != 0)
-        SetMSAAAvailable(node->AsBool());
+    // MSAAAvailable is not persistent and was not saved.
     if((node = searchNode->GetNode("MSAASamples")) != 0)
         SetMSAASamples(node->AsInt());
     if((node = searchNode->GetNode("FXAAOpt")) != 0)
@@ -1131,7 +1163,7 @@ RenderingAttributes::SetAntialiasing(RenderingAttributes::AAMode antialiasing_)
 }
 
 void
-RenderingAttributes::SetMSAAAvailable(bool MSAAAvailable_)
+RenderingAttributes::SetMSAAAvailable(RenderingAttributes::MSAAAvailability MSAAAvailable_)
 {
     MSAAAvailable = MSAAAvailable_;
     Select(ID_MSAAAvailable, (void *)&MSAAAvailable);
@@ -1417,10 +1449,10 @@ RenderingAttributes::GetAntialiasing() const
     return AAMode(antialiasing);
 }
 
-bool
+RenderingAttributes::MSAAAvailability
 RenderingAttributes::GetMSAAAvailable() const
 {
-    return MSAAAvailable;
+    return MSAAAvailability(MSAAAvailable);
 }
 
 int
@@ -1804,7 +1836,7 @@ RenderingAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return FieldType_enum;
-    case ID_MSAAAvailable:                return FieldType_bool;
+    case ID_MSAAAvailable:                return FieldType_enum;
     case ID_MSAASamples:                  return FieldType_int;
     case ID_FXAAOpt:                      return FieldType_att;
     case ID_orderComposite:               return FieldType_bool;
@@ -1868,7 +1900,7 @@ RenderingAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "enum";
-    case ID_MSAAAvailable:                return "bool";
+    case ID_MSAAAvailable:                return "enum";
     case ID_MSAASamples:                  return "int";
     case ID_FXAAOpt:                      return "att";
     case ID_orderComposite:               return "bool";
