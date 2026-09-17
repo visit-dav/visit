@@ -2429,6 +2429,30 @@ ViewerEngineManagerImplementation::GetQueryParameters(const EngineKey &ek,
 }
 
 // ****************************************************************************
+// Method: ViewerEngineManagerImplementation::GetAnariDeviceInfo
+//
+// Purpose:
+//   Engine AnariDeviceInfoRPC wrapped for safety. Lets the client learn
+//   which ANARI libraries/subtypes/renderers/parameters the engine has
+//   available, without the client needing to load ANARI backends itself.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManagerImplementation::GetAnariDeviceInfo(const EngineKey &ek,
+    const std::string &libraryName, const std::string &librarySubtype,
+    const std::string &rendererSubtype, string *result)
+{
+    ENGINE_PROXY_RPC_BEGIN("GetAnariDeviceInfo");
+    *result = engine->GetEngineMethods()->GetAnariDeviceInfo(
+        libraryName, librarySubtype, rendererSubtype);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+// ****************************************************************************
 // Method: ViewerEngineManagerImplementation::GetProcInfo
 //
 // Purpose:

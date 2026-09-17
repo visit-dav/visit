@@ -20,6 +20,8 @@ class QSlider;
 class QSpinBox;
 class RenderingAttributes;
 class WindowInformation;
+class AnariDeviceInfoAttributes;
+class EngineList;
 class QvisOpacitySlider;
 class QLineEdit;
 class AnariRenderingWidget;
@@ -143,6 +145,13 @@ public:
 
     void ConnectRenderingAttributes(RenderingAttributes *);
     void ConnectWindowInformation(WindowInformation *);
+#ifdef HAVE_ANARI
+    void ConnectAnariDeviceInfoAttributes(AnariDeviceInfoAttributes *);
+    void ConnectEngineList(EngineList *);
+    void RequestAnariDeviceInfo(const std::string &libraryName,
+                                const std::string &librarySubtype,
+                                const std::string &rendererSubtype);
+#endif
     void SetUpdateApply(bool val) { SetUpdate(val); Apply(); }
 protected slots:
     virtual void apply();
@@ -150,6 +159,10 @@ protected:
     virtual void UpdateWindow(bool doAll);
     void UpdateOptions(bool doAll);
     void UpdateInformation(bool doAll);
+#ifdef HAVE_ANARI
+    void UpdateAnariDeviceInfo(bool doAll);
+    void UpdateAnariEngineAvailability();
+#endif
     void Apply(bool ignore = false);
     void InterpretScalableAutoThreshold(int,int*,QString*,int*) const;
     void GetCurrentValues();
@@ -211,6 +224,10 @@ private:
 
     RenderingAttributes *renderAtts;
     WindowInformation   *windowInfo;
+#ifdef HAVE_ANARI
+    AnariDeviceInfoAttributes *anariDeviceInfo;
+    EngineList                *engineList;
+#endif
     int                 lastAA;
 
     // Basic controls

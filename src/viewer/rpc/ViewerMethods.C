@@ -5078,6 +5078,49 @@ ViewerMethods::GetQueryParameters(const std::string &queryName)
 }
 
 
+// ****************************************************************************
+// Method: ViewerMethods::GetAnariDeviceInfo
+//
+// Purpose:
+//   Tells the viewer to ask the engine which ANARI libraries/subtypes/
+//   renderers/parameters are actually available, so the client's ANARI
+//   settings dialog can be populated without creating a local ANARI device.
+//   Any of the three arguments may be passed empty; see
+//   NetworkManager::GetAnariDeviceInfo() for what each combination returns.
+//
+// Arguments:
+//   libraryName     : ANARI library name, or empty.
+//   librarySubtype  : ANARI device subtype, or empty.
+//   rendererSubtype : ANARI renderer subtype, or empty.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+void
+ViewerMethods::GetAnariDeviceInfo(const std::string &libraryName,
+                                  const std::string &librarySubtype,
+                                  const std::string &rendererSubtype)
+{
+    MapNode params;
+    params["libraryName"] = libraryName;
+    params["librarySubtype"] = librarySubtype;
+    params["rendererSubtype"] = rendererSubtype;
+
+    //
+    // Set the rpc type.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::GetAnariDeviceInfoRPC);
+    state->GetViewerRPC()->SetQueryParams(params);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+
 
 // ****************************************************************************
 //  Method: ViewerMethods::SetGlobalLineotuAttributes

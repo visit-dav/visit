@@ -37,14 +37,152 @@ vtkStandardNewMacro(vtkCellIntersections)
 
 
 int
-LineLineIsect(const double *, const double *, const double *, const double *, double *);
-
-int
 EdgeLineIsect(vtkCell *cell, const double *, const double *, double *);
 
-bool 
-SlabTest(const double d, const double o, const double lo, 
+static bool
+PointOnLineSegment(const double *, const double *, const double *, double *);
+
+static void
+CheckClosestIntersection(const double *, const double *, double &, double *, bool &);
+
+bool
+SlabTest(const double d, const double o, const double lo,
          const double hi, double &tnear, double &tfar);
+
+static bool
+SamePoint(const double *p0, const double *p1)
+{
+  return p0[0] == p1[0] && p0[1] == p1[1] && p0[2] == p1[2];
+}
+
+static void
+CopyPoint(double *dest, const double *src)
+{
+  dest[0] = src[0];
+  dest[1] = src[1];
+  dest[2] = src[2];
+}
+
+static int
+GetUniqueQuadPoints(const double *pt0, const double *pt1,
+    const double *pt2, const double *pt3, double uniquePts[4][3])
+{
+  const double *pts[4] = {pt0, pt1, pt2, pt3};
+  int numUnique = 0;
+
+  for (int i = 0; i < 4; i++)
+    {
+    bool found = false;
+    for (int j = 0; j < numUnique && !found; j++)
+      {
+      found = SamePoint(pts[i], uniquePts[j]);
+      }
+    if (!found)
+      {
+      CopyPoint(uniquePts[numUnique], pts[i]);
+      numUnique++;
+      }
+    }
+
+  return numUnique;
+}
+
+static bool
+PointsAreCollinear(double pts[4][3], int numPts)
+{
+  if (numPts < 3)
+    {
+    return true;
+    }
+
+  double v0[3];
+  for (int i = 0; i < 3; i++)
+    {
+    v0[i] = pts[1][i] - pts[0][i];
+    }
+  double len0 = vtkMath::Dot(v0, v0);
+
+  for (int pt = 2; pt < numPts; pt++)
+    {
+    double v1[3], cross[3];
+    for (int i = 0; i < 3; i++)
+      {
+      v1[i] = pts[pt][i] - pts[0][i];
+      }
+
+    vtkMath::Cross(v0, v1, cross);
+
+    double cross2 = vtkMath::Dot(cross, cross);
+    double len1 = vtkMath::Dot(v1, v1);
+
+    if (cross2 > DBL_EPSILON * DBL_EPSILON * len0 * len1)
+      {
+      return false;
+      }
+    }
+
+  return true;
+}
+
+static void
+GetLongestSegment(double pts[4][3], int numPts, double p0[3], double p1[3])
+{
+  double maxDist = -1.;
+
+  for (int i = 0; i < numPts; i++)
+    {
+    for (int j = i + 1; j < numPts; j++)
+      {
+      double dist = vtkMath::Distance2BetweenPoints(pts[i], pts[j]);
+      if (dist > maxDist)
+        {
+        maxDist = dist;
+        CopyPoint(p0, pts[i]);
+        CopyPoint(p1, pts[j]);
+        }
+      }
+    }
+}
+
+static int
+PointIntersectWithLine(const double *pt, const double *p1, const double *p2,
+    double &t, double *x)
+{
+  double lineT = 0.;
+  double cp[3];
+  double dist = vtkLine::DistanceToLine(pt, p1, p2, lineT, cp);
+  t = VTK_DOUBLE_MAX;
+
+  if (dist == 0.)
+    {
+    CopyPoint(x, pt);
+    t = vtkMath::Distance2BetweenPoints(p1, x);
+    return 1;
+    }
+
+  return 0;
+}
+
+static int
+SegmentIntersectWithLine(const double *pt0, const double *pt1,
+    const double *p1, const double *p2, double &t, double *x)
+{
+  double u = VTK_DOUBLE_MAX;
+  double v = VTK_DOUBLE_MAX;
+  t = VTK_DOUBLE_MAX;
+
+  if (vtkLine::Intersection(p1, p2, pt0, pt1, u, v) == vtkLine::Intersect)
+    {
+    for (int i = 0; i < 3; i++)
+      {
+      x[i] = pt0[i] + v*(pt1[i]-pt0[i]);
+      }
+    t = vtkMath::Distance2BetweenPoints(p1, x);
+    return 1;
+    }
+
+  return 0;
+}
 
 // Construct with automatic computation of divisions, averaging
 // 25 cells per bucket.
@@ -53,11 +191,11 @@ SlabTest(const double d, const double o, const double lo,
 //   Kathleen Bonnell, Tue Jun  3 15:26:52 PDT 2003
 //   Initialize MinCellLength.
 //
-//   Kathleen Bonnell, Wed Jun 18 18:27:18 PDT 2003 
-//   Initialize triangle and quad. 
+//   Kathleen Bonnell, Wed Jun 18 18:27:18 PDT 2003
+//   Initialize triangle and quad.
 //
-//   Kathleen Bonnell, Thu Nov  6 08:18:54 PST 2003 
-//   Initialize UserBounds. 
+//   Kathleen Bonnell, Thu Nov  6 08:18:54 PST 2003
+//   Initialize UserBounds.
 //
 vtkCellIntersections::vtkCellIntersections()
 {
@@ -69,8 +207,8 @@ vtkCellIntersections::vtkCellIntersections()
 
 //
 // Modificatons:
-//   Kathleen Bonnell, Wed Jun 18 18:27:18 PDT 2003 
-//   Delete triangle and quad. 
+//   Kathleen Bonnell, Wed Jun 18 18:27:18 PDT 2003
+//   Delete triangle and quad.
 //
 
 vtkCellIntersections::~vtkCellIntersections()
@@ -91,7 +229,7 @@ void vtkCellIntersections::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
-  os << indent << "TestCoPlanar: " 
+  os << indent << "TestCoPlanar: "
      << this->TestCoPlanar << "\n";
 }
 
@@ -101,72 +239,72 @@ void vtkCellIntersections::PrintSelf(ostream& os, vtkIndent indent)
 //
 //    Hank Childs, Sat Oct  6 09:45:02 PDT 2007
 //    Add case for hex20.  Also change debug macro to error macro, since debug
-//    macros don't get put into the VisIt debug logs and error macros do ...and 
+//    macros don't get put into the VisIt debug logs and error macros do ...and
 //    I believe the debug statement *should* be in the VisIt debug logs.
 //
 // ****************************************************************************
 
 int
-vtkCellIntersections::CellIntersectWithLine(vtkCell *cell, 
+vtkCellIntersections::CellIntersectWithLine(vtkCell *cell,
     double p1[3], double p2[3], double& t, double x[3])
 {
   switch(cell->GetCellType())
     {
     case VTK_EMPTY_CELL : return 0;
-    case VTK_VERTEX : 
+    case VTK_VERTEX :
       return VertexIntersectWithLine(
              static_cast<vtkVertex*>(cell), p1, p2, t, x);
-    case VTK_POLY_VERTEX : 
+    case VTK_POLY_VERTEX :
       return PolyVertexIntersectWithLine(
              static_cast<vtkPolyVertex*>(cell), p1, p2, t, x);
-    case VTK_LINE : 
+    case VTK_LINE :
       return LineIntersectWithLine(
              static_cast<vtkLine*>(cell), p1, p2, t, x);
-    case VTK_POLY_LINE : 
+    case VTK_POLY_LINE :
       return PolyLineIntersectWithLine(
              static_cast<vtkPolyLine*>(cell), p1, p2, t, x);
-    case VTK_TRIANGLE : 
+    case VTK_TRIANGLE :
       return TriangleIntersectWithLine(
              static_cast<vtkTriangle*>(cell), p1, p2, t, x);
-    case VTK_TRIANGLE_STRIP : 
+    case VTK_TRIANGLE_STRIP :
       return TriStripIntersectWithLine(
              static_cast<vtkTriangleStrip*>(cell), p1, p2, t, x);
-    case VTK_POLYGON : 
+    case VTK_POLYGON :
       return PolygonIntersectWithLine(
              static_cast<vtkPolygon*>(cell), p1, p2, t, x);
-    case VTK_PIXEL : 
+    case VTK_PIXEL :
       return PixelIntersectWithLine(
              static_cast<vtkPixel*>(cell), p1, p2, t, x);
-    case VTK_QUAD : 
+    case VTK_QUAD :
       return QuadIntersectWithLine(
              static_cast<vtkQuad*>(cell), p1, p2, t, x);
-    case VTK_TETRA : 
+    case VTK_TETRA :
       return TetraIntersectWithLine(
              static_cast<vtkTetra*>(cell), p1, p2, t, x);
-    case VTK_VOXEL : 
+    case VTK_VOXEL :
       return VoxelIntersectWithLine(
              static_cast<vtkVoxel*>(cell), p1, p2, t, x);
-    case VTK_HEXAHEDRON : 
+    case VTK_HEXAHEDRON :
       return HexIntersectWithLine(
              static_cast<vtkHexahedron*>(cell), p1, p2, t, x);
-    case VTK_WEDGE : 
+    case VTK_WEDGE :
       return WedgeIntersectWithLine(
              static_cast<vtkWedge*>(cell), p1, p2, t, x);
-    case VTK_PYRAMID : 
+    case VTK_PYRAMID :
       return PyramidIntersectWithLine(
              static_cast<vtkPyramid*>(cell), p1, p2, t, x);
-    case VTK_QUADRATIC_HEXAHEDRON : 
+    case VTK_QUADRATIC_HEXAHEDRON :
       return QuadraticHexahedronIntersectWithLine(
              static_cast<vtkQuadraticHexahedron*>(cell), p1, p2, t, x);
     default:
-      vtkErrorMacro( << "CellType  " << cell->GetCellType() 
+      vtkErrorMacro( << "CellType  " << cell->GetCellType()
                      << "not yet supported for CellIntersectWithLine ..." );
       return 0;
     }
 }
 
 int
-vtkCellIntersections::VertexIntersectWithLine(vtkVertex *cell, double p1[3], 
+vtkCellIntersections::VertexIntersectWithLine(vtkVertex *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   double cp[3], X[3];
@@ -188,11 +326,11 @@ vtkCellIntersections::VertexIntersectWithLine(vtkVertex *cell, double p1[3],
 }
 
 int
-vtkCellIntersections::PolyVertexIntersectWithLine(vtkPolyVertex *cell, 
+vtkCellIntersections::PolyVertexIntersectWithLine(vtkPolyVertex *cell,
     double p1[3], double p2[3], double& t, double x[3])
 {
   vtkIdType numPts=cell->Points->GetNumberOfPoints();
-  
+
   vtkVertex *vertex = vtkVertex::New();
   double pt[3], tTemp, xTemp[3];
   t = VTK_DOUBLE_MAX;
@@ -219,7 +357,7 @@ vtkCellIntersections::PolyVertexIntersectWithLine(vtkPolyVertex *cell,
 }
 
 int
-vtkCellIntersections::LineIntersectWithLine(vtkLine *cell, double p1[3], 
+vtkCellIntersections::LineIntersectWithLine(vtkLine *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   double a1[3], a2[3], u, v;
@@ -282,25 +420,25 @@ vtkCellIntersections::PolyLineIntersectWithLine(vtkPolyLine *cell, double p1[3],
 // ****************************************************************************
 //
 // Modifications:
-//   Kathleen Bonnell, Mon Jul  7 15:57:37 PDT 2003 
+//   Kathleen Bonnell, Mon Jul  7 15:57:37 PDT 2003
 //   Use smaller eps for testing when DotProduct close to zero.
 //
 //   Kathleen Bonnell, Thu Sep 18 15:48:54 PDT 2003
-//   Cast multiplication to double before setting intersection point. 
+//   Cast multiplication to double before setting intersection point.
 //
-//   Kathleen Bonnell, Fri Oct 10 10:46:48 PDT 2003 
+//   Kathleen Bonnell, Fri Oct 10 10:46:48 PDT 2003
 //   Remove eps for testing DotProduct.
 //
-//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004 
+//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004
 //   If the line is coplanar with the triangle, and we should test for
-//   intersection in this case, call EdgeLineIsect. 
+//   intersection in this case, call EdgeLineIsect.
 //
 //   Hank Childs, Fri Mar  2 15:18:17 PST 2012
 //   Add special handling for cases close to 0.  (Needed for 2D.)
 //
 // ****************************************************************************
 int
-vtkCellIntersections::TriangleIntersectWithLine(vtkTriangle *cell, 
+vtkCellIntersections::TriangleIntersectWithLine(vtkTriangle *cell,
     double p1[3], double p2[3], double& t, double x[3])
 {
   double pt1[3], pt2[3], pt3[3], xTemp[3];
@@ -348,11 +486,11 @@ vtkCellIntersections::TriangleIntersectWithLine(vtkTriangle *cell,
     {
     return 0;
     }
- 
+
   vtkMath::Cross(s, e1, q);
   v = tmp * vtkMath::Dot(rayDir, q);
 
-  if (v < 0. || v > 1.) 
+  if (v < 0. || v > 1.)
     {
     return 0;
     }
@@ -382,7 +520,7 @@ vtkCellIntersections::TriangleIntersectWithLine(vtkTriangle *cell,
 }
 
 int
-vtkCellIntersections::TriStripIntersectWithLine(vtkTriangleStrip *cell, 
+vtkCellIntersections::TriStripIntersectWithLine(vtkTriangleStrip *cell,
     double p1[3], double p2[3], double& t, double x[3])
 {
   vtkIdType numTris = cell->Points->GetNumberOfPoints()-2;
@@ -399,35 +537,35 @@ vtkCellIntersections::TriStripIntersectWithLine(vtkTriangleStrip *cell,
     this->triangle->Points->SetPoint(0, pt1);
     this->triangle->Points->SetPoint(1, pt2);
     this->triangle->Points->SetPoint(2, pt3);
- 
+
     if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp))
       {
       if (tTemp < t)
         {
         for (i = 0; i < 3 ; i++)
           {
-          x[i] = xTemp[i]; 
+          x[i] = xTemp[i];
           }
         t = tTemp;
         intersection = 1;
         }
       }
     }
- 
+
   return intersection;
 }
 
 // ****************************************************************************
 //
 // Modifications:
-//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004 
+//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004
 //   If the line is coplanar with the polygon, and we should test for
-//   intersection in this case, call EdgeLineIsect. 
+//   intersection in this case, call EdgeLineIsect.
 //
 // ****************************************************************************
 
 int
-vtkCellIntersections::PolygonIntersectWithLine(vtkPolygon *cell, double p1[3], 
+vtkCellIntersections::PolygonIntersectWithLine(vtkPolygon *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   //
@@ -439,12 +577,12 @@ vtkCellIntersections::PolygonIntersectWithLine(vtkPolygon *cell, double p1[3],
   vtkIdType npts = cell->GetNumberOfPoints();
   int i, success;
   double *weights = NULL;;
- 
+
   // Define a plane to intersect with
   //
   cell->Points->GetPoint(1, pt1);
   cell->ComputeNormal(cell->Points,n);
-  double tTemp = -1; 
+  double tTemp = -1;
   // Intersect plane of the polygon with line
   //
   if (!vtkPlane::IntersectWithLine(p1,p2,n,pt1,tTemp,xTemp))
@@ -459,7 +597,7 @@ vtkCellIntersections::PolygonIntersectWithLine(vtkPolygon *cell, double p1[3],
         {
         x[i] = xTemp[i];
         }
-      t = vtkMath::Distance2BetweenPoints(p1, x); 
+      t = vtkMath::Distance2BetweenPoints(p1, x);
       }
     return success;
     }
@@ -486,13 +624,13 @@ vtkCellIntersections::PolygonIntersectWithLine(vtkPolygon *cell, double p1[3],
 // ****************************************************************************
 //
 // Modifications:
-//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004 
+//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004
 //   If the line is coplanar with the pixel, and we should test for
-//   intersection in this case, call EdgeLineIsect. 
+//   intersection in this case, call EdgeLineIsect.
 //
 // ****************************************************************************
 int
-vtkCellIntersections::PixelIntersectWithLine(vtkPixel *cell, double p1[3], 
+vtkCellIntersections::PixelIntersectWithLine(vtkPixel *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
 
@@ -501,13 +639,13 @@ vtkCellIntersections::PixelIntersectWithLine(vtkPixel *cell, double p1[3],
   double closestPoint[3];
   double dist2, weights[4];
   int i;
- 
-  // 
+
+  //
   // Get normal for triangle
-  // 
+  //
   cell->Points->GetPoint(0, pt1);
   cell->Points->GetPoint(3, pt4);
- 
+
   n[0] = n[1] = n[2] = 0.0;
   for (i=0; i<3; i++)
     {
@@ -542,7 +680,7 @@ vtkCellIntersections::PixelIntersectWithLine(vtkPixel *cell, double p1[3],
     }
 
   //
-  // Does intersection point lie within pixel? 
+  // Does intersection point lie within pixel?
   //
   double pc[3] = {0., 0., 0.};
   int subId;
@@ -565,9 +703,14 @@ vtkCellIntersections::PixelIntersectWithLine(vtkPixel *cell, double p1[3],
 //   Kathleen Bonnell, Tue Aug  8 13:48:48 PDT 2006
 //   Test both triangles for both diagonal cases, and return the closest
 //   intersection point.
+//
+//   Kathleen Biagas, Wed Sep 2, 2026
+//   Using uniquepoints, determine if  Quad is degenerate, and call new
+//   Intersect method specifically for such quads.
+//
 // ****************************************************************************
 int
-vtkCellIntersections::QuadIntersectWithLine(vtkQuad *cell, double p1[3], 
+vtkCellIntersections::QuadIntersectWithLine(vtkQuad *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   double pt0[3], pt1[3], pt2[3], pt3[3];
@@ -575,12 +718,20 @@ vtkCellIntersections::QuadIntersectWithLine(vtkQuad *cell, double p1[3],
   cell->Points->GetPoint(1, pt1);
   cell->Points->GetPoint(2, pt2);
   cell->Points->GetPoint(3, pt3);
+  double uniquePts[4][3];
+  int numUnique = GetUniqueQuadPoints(pt0, pt1, pt2, pt3, uniquePts);
+  if (numUnique < 4 || PointsAreCollinear(uniquePts, numUnique))
+    {
+    return this->DegenerateQuadIntersectWithLine(uniquePts, numUnique,
+                                                 p1, p2, t, x);
+    }
+
   double tTemp = VTK_DOUBLE_MAX;
   double xTemp[3];
   t = VTK_DOUBLE_MAX;
-  // Figure out how to uniquely tessellate the quad. Watch out for 
+  // Figure out how to uniquely tessellate the quad. Watch out for
   // equivalent triangulations (i.e., the triangulation is equivalent
-  // no matter where the diagonal). In this case use the point ids as 
+  // no matter where the diagonal). In this case use the point ids as
   // a tie breaker to insure unique triangulation across the quad.
   //
   int i, intersection = 0;
@@ -594,25 +745,25 @@ vtkCellIntersections::QuadIntersectWithLine(vtkQuad *cell, double p1[3],
         this->triangle->Points->SetPoint(0, pt0);
         this->triangle->Points->SetPoint(1, pt1);
         this->triangle->Points->SetPoint(2, pt2);
-        break; 
+        break;
       case 1 :
         // Second Triangle, diagonal case 0
         this->triangle->Points->SetPoint(0, pt2);
         this->triangle->Points->SetPoint(1, pt3);
         this->triangle->Points->SetPoint(2, pt0);
-        break; 
+        break;
       case 2 :
         // First Triangle, diagonal case 1
         this->triangle->Points->SetPoint(0, pt0);
         this->triangle->Points->SetPoint(1, pt1);
         this->triangle->Points->SetPoint(2, pt3);
-        break; 
+        break;
       case 3 :
         // Second Triangle, diagonal case 1
         this->triangle->Points->SetPoint(0, pt2);
         this->triangle->Points->SetPoint(1, pt3);
         this->triangle->Points->SetPoint(2, pt1);
-        break; 
+        break;
       }
     tTemp = VTK_DOUBLE_MAX;
 
@@ -633,7 +784,36 @@ vtkCellIntersections::QuadIntersectWithLine(vtkQuad *cell, double p1[3],
 }
 
 int
-vtkCellIntersections::TetraIntersectWithLine(vtkTetra *cell, double p1[3], 
+vtkCellIntersections::DegenerateQuadIntersectWithLine(double pts[4][3],
+    int numPts, double p1[3], double p2[3], double& t, double x[3])
+{
+  t = VTK_DOUBLE_MAX;
+
+  if (numPts == 1)
+    {
+    return PointIntersectWithLine(pts[0], p1, p2, t, x);
+    }
+
+  if (numPts == 2 || PointsAreCollinear(pts, numPts))
+    {
+    double pt0[3], pt1[3];
+    GetLongestSegment(pts, numPts, pt0, pt1);
+    return SegmentIntersectWithLine(pt0, pt1, p1, p2, t, x);
+    }
+
+  if (numPts == 3)
+    {
+    this->triangle->Points->SetPoint(0, pts[0]);
+    this->triangle->Points->SetPoint(1, pts[1]);
+    this->triangle->Points->SetPoint(2, pts[2]);
+    return this->TriangleIntersectWithLine(this->triangle, p1, p2, t, x);
+    }
+
+  return 0;
+}
+
+int
+vtkCellIntersections::TetraIntersectWithLine(vtkTetra *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   int i, intersection = 0;
@@ -669,25 +849,25 @@ vtkCellIntersections::TetraIntersectWithLine(vtkTetra *cell, double p1[3],
 }
 
 int
-vtkCellIntersections::VoxelIntersectWithLine(vtkVoxel *cell, double p1[3], 
+vtkCellIntersections::VoxelIntersectWithLine(vtkVoxel *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   double minPt[3], maxPt[3], xTemp[3];;
   double bounds[6], p21[3];
   int i;
- 
+
   t = VTK_DOUBLE_MAX;
- 
+
   cell->Points->GetPoint(0, minPt);
   cell->Points->GetPoint(7, maxPt);
- 
+
   for (i=0; i<3; i++)
     {
     p21[i] = p2[i] - p1[i];
     bounds[2*i] = minPt[i];
     bounds[2*i+1] = maxPt[i];
     }
- 
+
   if (!IntersectBox(bounds, p1, p21, xTemp))
     {
     return 0;
@@ -697,12 +877,12 @@ vtkCellIntersections::VoxelIntersectWithLine(vtkVoxel *cell, double p1[3],
     {
     x[i] = xTemp[i];
     }
-  t = vtkMath::Distance2BetweenPoints(p1, x); 
+  t = vtkMath::Distance2BetweenPoints(p1, x);
   return 1;
 }
 
 int
-vtkCellIntersections::HexIntersectWithLine(vtkHexahedron *cell, double p1[3], 
+vtkCellIntersections::HexIntersectWithLine(vtkHexahedron *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   int  i, intersection = 0;
@@ -735,12 +915,12 @@ vtkCellIntersections::HexIntersectWithLine(vtkHexahedron *cell, double p1[3],
         }
       }
     }
-  return intersection;  
+  return intersection;
 }
 
 int
 vtkCellIntersections::QuadraticHexahedronIntersectWithLine(
-                             vtkQuadraticHexahedron *cell, double p1[3], 
+                             vtkQuadraticHexahedron *cell, double p1[3],
                              double p2[3], double& t, double x[3])
 {
   int  i, intersection = 0, faceNum;
@@ -776,11 +956,11 @@ vtkCellIntersections::QuadraticHexahedronIntersectWithLine(
         }
       }
     }
-  return intersection;  
+  return intersection;
 }
 
 int
-vtkCellIntersections::WedgeIntersectWithLine(vtkWedge *cell, double p1[3], 
+vtkCellIntersections::WedgeIntersectWithLine(vtkWedge *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   int i, intersection = 0;
@@ -806,7 +986,7 @@ vtkCellIntersections::WedgeIntersectWithLine(vtkWedge *cell, double p1[3],
         {
         intersection = 1;
         t = tTemp;
-        for (i = 0; i < 3; i ++) 
+        for (i = 0; i < 3; i ++)
           {
           x[i] = xTemp[i];
           }
@@ -833,7 +1013,7 @@ vtkCellIntersections::WedgeIntersectWithLine(vtkWedge *cell, double p1[3],
         {
         intersection = 1;
         t = tTemp;
-        for (i = 0; i < 3; i ++) 
+        for (i = 0; i < 3; i ++)
           {
           x[i] = xTemp[i];
           }
@@ -844,7 +1024,7 @@ vtkCellIntersections::WedgeIntersectWithLine(vtkWedge *cell, double p1[3],
 }
 
 int
-vtkCellIntersections::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3], 
+vtkCellIntersections::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   int i, intersection = 0;
@@ -902,86 +1082,73 @@ vtkCellIntersections::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3],
       }
     }
 
-  return intersection; 
+  return intersection;
 }
 
 
 // ****************************************************************************
-// Method:    LineLineIsect
+// Method:    PointOnLineSegment
 //
 // Description:
-//   Determines if two line segments intersect.
+//   Determines if the given point lies on the finite line segment.
 //
-//   From Graphics Gems II, "Intersection of Line Segments" by Mukesh Prasad, 
-//   p. 7-9, code: p. 473-476, xlines.c.
+// Returns:     true if the point lies on the segment, false otherwise.
 //
-// Returns:     1 if an intersection is found, 0 otherwise.
+// Programmer:  Kathleen Biagas
+// Creation:    August 27, 2026
 //
-// Arguments:
-//   p1         The first endpoint of the first line segment. 
-//   p2         The second endpoint of the first line segment.
-//   p3         The first endpoint of the second line segment. 
-//   p4         The second endpoint of the second line segment.
-//   isect      A place to store the intersection point, if any. 
+// ****************************************************************************
+static bool
+PointOnLineSegment(const double *pt, const double *p1, const double *p2,
+                   double *closestPoint)
+{
+    double t;
+    double dist2 = vtkLine::DistanceToLine(pt, p1, p2, t, closestPoint);
+    if (dist2 != 0.0)
+    {
+        return false;
+    }
+
+    return (t >= 0.0 && t <= 1.0);
+}
+
+// ****************************************************************************
+// Method:    CheckClosestIntersection
 //
-// Programmer:  Kathleen Bonnell
-// Creation:    July 27, 2004 
+// Description:
+//   Updates the intersection point if the candidate is closer to p1.
+//
+// Programmer:  Kathleen Biagas
+// Creation:    August 27, 2026
 //
 // ****************************************************************************
 
-int
-LineLineIsect(const double *p1, const double *p2, const double *p3, 
-              const double *p4, double *isect)
+static void
+CheckClosestIntersection(const double *candidate, const double *p1,
+                         double &dist, double *x, bool &isectedEdge)
 {
-    double a1, a2, b1, b2, c1, c2, r1, r2, r3, r4;
-    double x1 = p1[0], x2 = p2[0], x3 = p3[0], x4 = p4[0]; 
-    double y1 = p1[1], y2 = p2[1], y3 = p3[1], y4 = p4[1]; 
-
-    a1 = y2 - y1; 
-    b1 = x1 - x2;
-    c1 = x2 * y1 - x1 * y2;
-
-    r3 = a1 * x3 + b1 *y3 + c1;
-    r4 = a1 * x4 + b1 *y4 + c1;
-           
-    if ((r3 < 0 && r4 < 0) || (r3 > 0 && r4 > 0))
+    double d2 = vtkMath::Distance2BetweenPoints(p1, candidate);
+    if (d2 < dist)
     {
-        return 0;
+        dist = d2;
+        x[0] = candidate[0];
+        x[1] = candidate[1];
+        x[2] = candidate[2];
+        isectedEdge = true;
     }
-
-    a2 = y4 - y3;
-    b2 = x3 - x4;
-    c2 = x4 * y3 - x3 * y4;
-
-    r1 = a2 * x1 + b2 * y1 + c2;
-    r2 = a2 * x2 + b2 * y2 + c2;
-            
-    if ((r1 < 0 && r2 < 0) || (r1 > 0 && r2 > 0))
-    {
-        return 0;
-    }
-
-    double denom = a1 * b2 - a2 * b1;
-    if (denom == 0)
-    { // COLLINEAR
-        return 0;
-    }
-
-    isect[0] = (b1 * c2 - b2 * c1) / denom;
-    isect[1] = (a2 * c1 - a1 * c2) / denom;
-    isect[2] = 0;
-
-    return 1;    
 }
+
 
 // ****************************************************************************
 // Method:    EdgeLineIsect
 //
 // Description:
-//   Determines if the finit line specified by endpoints p1 and p2 intersects
+//   Determines if the finite line specified by endpoints p1 and p2 intersects
 //   any of the edges of the given cell.
+//   Tests in 3D so degenerate quad faces on hexes are pickable regardless of
+//   view orientation.
 //
-// Returns:     1 if an intersection is found, 0 otherwise.A
+// Returns:     1 if an intersection is found, 0 otherwise.
 //
 // Arguments:
 //   cell       The cell to test for intersection.
@@ -989,7 +1156,12 @@ LineLineIsect(const double *p1, const double *p2, const double *p3,
 //   p2         The second endpoint of the finite line.
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    July 27, 2004 
+// Creation:    July 27, 2004
+//
+// Modifications:
+//   Kathleen Biagas, Wed Sep 2, 2026
+//   Replace 2D XY line intersection with 3D finite segment tests and handle
+//   collapsed edges.
 //
 // ****************************************************************************
 int
@@ -1005,62 +1177,90 @@ EdgeLineIsect(vtkCell *cell, const double *p1, const double *p2, double *x)
     {
         cell->GetEdge(i)->Points->GetPoint(0, p3);
         cell->GetEdge(i)->Points->GetPoint(1, p4);
-        if (LineLineIsect(p1, p2, p3, p4, xTemp))
+
+        if (vtkMath::Distance2BetweenPoints(p3, p4) == 0.0)
         {
-            double d2 = vtkMath::Distance2BetweenPoints(p1, xTemp);
-            if (d2 < dist)
+            if (PointOnLineSegment(p3, p1, p2, xTemp))
             {
-                dist = d2;
-                x[0] = xTemp[0];
-                x[1] = xTemp[1];
-                x[2] = xTemp[2];
-                isectedEdge = true;
+                CheckClosestIntersection(xTemp, p1, dist, x, isectedEdge);
+            }
+            continue;
+        }
+
+        double u, v;
+        int lineIntersection = vtkLine::Intersection(p1, p2, p3, p4, u, v);
+        if (lineIntersection == vtkLine::Intersect)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                xTemp[j] = p3[j] + v*(p4[j]-p3[j]);
+            }
+            CheckClosestIntersection(xTemp, p1, dist, x, isectedEdge);
+        }
+        else if (lineIntersection == vtkLine::OnLine)
+        {
+            double candidate[3];
+            if (PointOnLineSegment(p1, p3, p4, candidate))
+            {
+                CheckClosestIntersection(candidate, p1, dist, x, isectedEdge);
+            }
+            if (PointOnLineSegment(p2, p3, p4, candidate))
+            {
+                CheckClosestIntersection(candidate, p1, dist, x, isectedEdge);
+            }
+            if (PointOnLineSegment(p3, p1, p2, candidate))
+            {
+                CheckClosestIntersection(candidate, p1, dist, x, isectedEdge);
+            }
+            if (PointOnLineSegment(p4, p1, p2, candidate))
+            {
+                CheckClosestIntersection(candidate, p1, dist, x, isectedEdge);
             }
         }
     }
-    return (isectedEdge ? 1 : 0); 
+    return (isectedEdge ? 1 : 0);
 }
 
 
-bool 
-SlabTest(const double d, const double o, const double lo, 
+bool
+SlabTest(const double d, const double o, const double lo,
          const double hi, double &tnear, double &tfar)
 {
-  if (d == 0) 
-    { 
-    if (o < lo || o > hi) 
-      return false; 
-    } 
-  else 
-    { 
-    double T1 = (lo - o) / d; 
-    double T2 = (hi - o) / d; 
-    if (T1 > T2) 
-      { 
-      double temp = T1; 
-      T1 = T2; 
-      T2 = temp; 
-      } 
-    if (T1 > tnear)  
-      { 
-      tnear = T1; 
-      } 
-    if (T2 < tfar)  
-      { 
-      tfar = T2; 
-      } 
-    if (tnear > tfar) 
-      return false; 
-    if (tfar < 0) 
-      return false; 
-    if (tnear == tfar) 
-      return false; 
-    } 
-  return true; 
-} 
+  if (d == 0)
+    {
+    if (o < lo || o > hi)
+      return false;
+    }
+  else
+    {
+    double T1 = (lo - o) / d;
+    double T2 = (hi - o) / d;
+    if (T1 > T2)
+      {
+      double temp = T1;
+      T1 = T2;
+      T2 = temp;
+      }
+    if (T1 > tnear)
+      {
+      tnear = T1;
+      }
+    if (T2 < tfar)
+      {
+      tfar = T2;
+      }
+    if (tnear > tfar)
+      return false;
+    if (tfar < 0)
+      return false;
+    if (tnear == tfar)
+      return false;
+    }
+  return true;
+}
 
 int
-vtkCellIntersections::LineIntersectBox(const double bounds[6], 
+vtkCellIntersections::LineIntersectBox(const double bounds[6],
     const double pt1[3], const double pt2[3], double coord[3])
 {
     double si, ei, bmin, bmax, t;
@@ -1089,7 +1289,7 @@ vtkCellIntersections::LineIntersectBox(const double bounds[6],
                 return false;
             }
             double di = ei - si;
-            
+
             st = (si > bmax) ? (bmax -si) / di : 0;
             et = (ei < bmin) ? (bmin -si) / di : 1;
         }
@@ -1108,8 +1308,8 @@ vtkCellIntersections::LineIntersectBox(const double bounds[6],
 }
 
 int
-vtkCellIntersections::IntersectBox(const double bounds[6], 
-    const double origin[3], const double dir[3], double coord[3]) 
+vtkCellIntersections::IntersectBox(const double bounds[6],
+    const double origin[3], const double dir[3], double coord[3])
 {
   double Tnear = -DBL_MAX;
   double Tfar = DBL_MAX;
@@ -1132,4 +1332,3 @@ vtkCellIntersections::IntersectBox(const double bounds[6],
 
   return true;
 }
-
