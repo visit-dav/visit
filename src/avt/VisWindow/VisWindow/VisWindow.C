@@ -226,6 +226,9 @@ VisWindow::VisWindow(bool callInit)
 //    Added TiledRenderingWidth and TiledRenderingHeight to support
 //    tiled rendering.
 //
+//    Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//    Added TiledRendering to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -261,6 +264,7 @@ VisWindow::Initialize(VisWinRendering *ren)
     SetViewport(0., 0., 1., 1.);
     multiresolutionMode = false;
     multiresolutionCellSize = 0.002;
+    tiledRendering = true;
     tiledRenderingWidth = 2048;
     tiledRenderingHeight = 2048;
     EnableUpdates();
@@ -6361,6 +6365,44 @@ double
 VisWindow::GetMultiresolutionCellSize() const
 {
     return multiresolutionCellSize;
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetTiledRendering
+//
+// Purpose:
+//   Enables (true) or disables (false) tiled rendering
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Aug 26 14:29:54 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetTiledRendering(bool mode)
+{
+    tiledRendering = mode;
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetTiledRendering
+//
+// Purpose:
+//   returns true if tiled rendering is enabled, false if not
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Aug 26 14:29:54 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+VisWindow::GetTiledRendering() const
+{
+    return tiledRendering;
 }
 
 // ****************************************************************************

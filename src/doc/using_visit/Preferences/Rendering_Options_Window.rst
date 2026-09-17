@@ -122,10 +122,10 @@ Tiled rendering
 .. _Preferences-TiledRendering:
 
 VisIt_ will render images in a tiled manner when the image size exceeds the tiled image size.
-Tiled rendering is always enabled with a default tile width and height of 2048.
-Tiled rendering is always enabled because the underlying rendering library used by VisIt_ stops working properly somewhere between an image width and height of 8192 and 16384.
-This avoids that issue.
+Tiled rendering is enabled with the **Tiled rendering** radio box.
+The default tile width and height are 2048 with a minimum of 100 and a maximum of 8192.
 
+Tiled rendering only works when scalable rendering is also enabled.
 Tiled rendering is only used when saving images.
 It is not used when displaying images on the screen.
 
@@ -134,7 +134,7 @@ There are a few limitations of tiled rendering.
 * Anti-aliasing doesn't work properly with tiling.
   When using FXAA (Fast Approximate Anti-Aliasing), each tile will be independently anti-aliased resulting in artifacts along tile boundaries.
   Typically, those artifacts are not visible.
-* Points may not extend across tile boundaries when using the "Point" point type.
+* Points may not extend across tile boundaries when using the **Point** point type.
   All other point types work fine.
 * Horizontal or vertical lines that align exactly with tile boundaries may not be visible.
 * Points that are exactly on tile boundaries may not be visible.

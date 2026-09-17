@@ -3490,6 +3490,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Added TiledRenderingWidth and TiledRenderingHeight from
 //    RenderingAttributes to support tiled rendering.
 //
+//    Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//    Added TiledRendering to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -3552,6 +3555,11 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             ratts->GetMultiresolutionCellSize())
             windows[index]->SetMultiresolutionCellSize(
             ratts->GetMultiresolutionCellSize());
+
+        if (windows[index]->GetTiledRendering() !=
+            ratts->GetTiledRendering())
+            windows[index]->SetTiledRendering(
+            ratts->GetTiledRendering());
 
         if (windows[index]->GetTiledRenderingWidth() !=
             ratts->GetTiledRenderingWidth())

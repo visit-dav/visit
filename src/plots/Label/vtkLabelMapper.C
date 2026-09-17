@@ -1293,8 +1293,8 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
 
     // Set the pan and zoom to the untiled image.
     double origPan[2];
-    origPan[0] = imagePan[0] + tilePan[0] * tileZoom;
-    origPan[1] = imagePan[1] + tilePan[1] * tileZoom;
+    origPan[0] = imagePan[0] + tilePan[0] * 2.0;
+    origPan[1] = imagePan[1] + tilePan[1] * 2.0;
     ren->GetActiveCamera()->SetWindowCenter(origPan[0], origPan[1]);
     if (imageZoom != tileZoom)
     {
@@ -1316,13 +1316,20 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
     // Get the model view and projection matrices for the untiled image.
     double modelview[4][4], projection[4][4], mtmp[4][4];
     vtkMatrix4x4 *mvtm = ren->GetActiveCamera()->GetModelViewTransformMatrix();
-    vtkMatrix4x4 *ptm = ren->GetActiveCamera()->GetProjectionTransformMatrix(ren);
+    vtkMatrix4x4 *ptm = vtkMatrix4x4::New();
+    // Args to GetProjectionTransformMatrix are aspect, nearz, farz
+    ptm->DeepCopy(ren->GetActiveCamera()->GetProjectionTransformMatrix(1, -1, 1));
+    ptm->Transpose();
 
     // Restore the pan and zoom to the current tile.
     if (izt)
     {
         ren->GetActiveCamera()->SetUserTransform(izt);
         izt->Delete();
+    }
+    else
+    {
+        ren->GetActiveCamera()->SetUserTransform(NULL);
     }
     ren->GetActiveCamera()->SetWindowCenter(windowCenter[0], windowCenter[1]);
 

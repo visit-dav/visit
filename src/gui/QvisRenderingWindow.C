@@ -619,6 +619,9 @@ QvisRenderingWindow::CreateBasicPage()
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //   Added controls for setting the tiled rendering width and height.
 //
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added ability to toggle tiled rendering on and off.
+//
 // ****************************************************************************
 
 QWidget *
@@ -772,35 +775,32 @@ QvisRenderingWindow::CreateAdvancedPage()
     row++;
 
     // Create the tiled rendering widgets.
-    tiledRenderingGroup = new QGroupBox(tr("Tiled rendering"), advancedOptions);
-    tiledRenderingGroup->setCheckable(false);
-    tiledRenderingGroup->setChecked(false);
-    advLayout->addWidget(tiledRenderingGroup, row, 0, 2, 4);
-    row += 2;
-
-    QGridLayout *tiledRenderingLayout = new QGridLayout(tiledRenderingGroup);
-    tiledRenderingLayout->setContentsMargins(5,5,5,5);
-    tiledRenderingLayout->setSpacing(10);
+    tiledRenderingToggle = new QCheckBox(tr("Tiled rendering"), advancedOptions);
+    connect(tiledRenderingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(tiledRenderingToggled(bool)));
+    advLayout->addWidget(tiledRenderingToggle, row, 0, 1, 4);
+    row++;
 
     tiledRenderingWidthLabel = new QLabel(tr("Tile width"), advancedOptions);
-    tiledRenderingLayout->addWidget(tiledRenderingWidthLabel, 0, 0);
+    advLayout->addWidget(tiledRenderingWidthLabel, row, 0);
 
     tiledRenderingWidth = new QLineEdit("2048");
     QIntValidator *widthValidator = new QIntValidator(100,8192);
     tiledRenderingWidth->setValidator(widthValidator);
     connect(tiledRenderingWidth, SIGNAL(textChanged(const QString &)),
             this, SLOT(tiledRenderingWidthChanged(void)));
-    tiledRenderingLayout->addWidget(tiledRenderingWidth, 0, 1);
+    advLayout->addWidget(tiledRenderingWidth, row, 1);
 
     tiledRenderingHeightLabel = new QLabel(tr("Tile height"), advancedOptions);
-    tiledRenderingLayout->addWidget(tiledRenderingHeightLabel, 0, 2);
+    advLayout->addWidget(tiledRenderingHeightLabel, row, 2);
 
     tiledRenderingHeight = new QLineEdit("2048");
     QIntValidator *heightValidator = new QIntValidator(100,8192);
     tiledRenderingHeight->setValidator(heightValidator);
     connect(tiledRenderingHeight, SIGNAL(textChanged(const QString &)),
             this, SLOT(tiledRenderingHeightChanged(void)));
-    tiledRenderingLayout->addWidget(tiledRenderingHeight, 0, 3);
+    advLayout->addWidget(tiledRenderingHeight, row, 3);
+    row++;
 
 #ifdef HAVE_ANARI
     // Divider
@@ -1130,6 +1130,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //   Added controls for setting the tiled rendering width and height.
 //
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added ability to toggle tiled rendering on and off.
+//
 // ****************************************************************************
 
 void
@@ -1260,6 +1263,11 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->blockSignals(true);
             renderNotifyToggle->setChecked(renderAtts->GetNotifyForEachRender());
             renderNotifyToggle->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_tiledRendering:
+            tiledRenderingToggle->blockSignals(true);
+            tiledRenderingToggle->setChecked(renderAtts->GetTiledRendering());
+            tiledRenderingToggle->blockSignals(false);
             break;
         case RenderingAttributes::ID_tiledRenderingWidth:
             tmp = IntToQString(renderAtts->GetTiledRenderingWidth());
@@ -1483,6 +1491,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //    Removed setting of widgets whose enablement is controlled by their
 //    containing QGroupBox.
 //
+//    Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//    Added ability to toggle tiled rendering on and off.
+//
 // ****************************************************************************
 
 void
@@ -1495,6 +1506,7 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     bool shadowOn = renderAtts->GetDoShadowing();
     bool depthCueingOn = renderAtts->GetDoDepthCueing();
     bool depthCueingAuto = renderAtts->GetDepthCueingAutomatic();
+    bool tiledRendering = renderAtts->GetTiledRendering();
 
     scalrenAutoThreshold->setEnabled(scalableAuto);
     compactDomainsAutoThreshold->setEnabled(compactAuto);
@@ -1506,6 +1518,11 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     depthCueingStartLabel->setEnabled(depthCueingOn && !depthCueingAuto);
     depthCueingEndEdit->setEnabled(depthCueingOn && !depthCueingAuto);
     depthCueingEndLabel->setEnabled(depthCueingOn && !depthCueingAuto);
+
+    tiledRenderingWidthLabel->setEnabled(tiledRendering);
+    tiledRenderingWidth->setEnabled(tiledRendering);
+    tiledRenderingHeightLabel->setEnabled(tiledRendering);
+    tiledRenderingHeight->setEnabled(tiledRendering);
 }
 
 // ****************************************************************************
@@ -3037,6 +3054,32 @@ void
 QvisRenderingWindow::colorTexturingToggled(bool val)
 {
     renderAtts->SetColorTexturingFlag(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::tiledRenderingToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when the tiledRendering check
+//   box is toggled.
+//
+// Arguments:
+//   val : The new on/off value for the widget.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Aug 26 14:29:54 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::tiledRenderingToggled(bool val)
+{
+    renderAtts->SetTiledRendering(val);
+    UpdateWindowSensitivity();
     SetUpdate(false);
     Apply();
 }
