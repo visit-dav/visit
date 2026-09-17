@@ -9,6 +9,7 @@
 #include <QWidget>
 
 #include <anari/anari_cpp.hpp>
+#include <MapNode.h>
 #include <vectortypes.h>
 
 #include <memory>
@@ -35,7 +36,8 @@ namespace anari_visit
         VISRTX,
         VISGL,
         OSPRAY,
-        RADEONPRORENDER
+        RADEONPRORENDER,
+        PHENOCRYST
     };
 }
 
@@ -63,6 +65,14 @@ public:
     void UpdateRendererParameters(const stringVector &);
     void UpdateUSDParameters(const stringVector &);
 
+    // Called by QvisRenderingWindow when the engine reports ANARI device
+    // info (library subtypes / renderer subtypes / renderer parameters)
+    // in response to a request issued by this widget.
+    void UpdateDeviceInfo(const MapNode &info);
+
+    static QColor TextToColor(ANARIDataType, const std::string &);
+    static std::string ColorToText(ANARIDataType, const QColor &);
+
 signals:
     void currentBackendChanged(int);
 
@@ -79,18 +89,22 @@ private slots:
     void lineEditingFinished();
     void comboBoxTextChanged(const QString &);
     void checkBoxToggled(bool);
-
+    
 private:
     QWidget *CreateGeneralWidget(int &);
     QWidget *CreateUSDWidget(int &);
-    void CreateDynamicWidget(anari::Device, const char *, const std::string &, bool isUSD = false);
+    void CreateDynamicWidget(const MapNode &parameters, const std::string &, bool isUSD = false);
+    QPushButton *CreateColorButton(QWidget *, ANARIDataType, const std::string &);
+    void SetColorButtonSwatch(QPushButton *, const QColor &);
 
     BackendType GetBackendType(const std::string &) const;
-    AnariParameterInfo GetParameterInfo(anari::Device, ANARIDataType, const char *, const ANARIParameter *);
+    AnariParameterInfo BuildParameterInfoFromMapNode(const std::string &name, const MapNode &paramNode);
     QWidget *MakeWidgetFromParameterInfo(const AnariParameterInfo &);
     void UpdateRenderingAttributes(const bool);
     void ClearAnariParameterAttributes();
-    void UpdateLibraryUI(anari::Library, const std::string &);
+    void RequestDeviceInfo(const std::string &libraryName,
+                           const std::string &librarySubtype,
+                           const std::string &rendererSubtype);
 
     QvisRenderingWindow *renderingWindow;
     AnariAttributes *anariAttributes;
@@ -104,7 +118,7 @@ private:
 
     // General Widget Components
     QGroupBox   *renderingGroup;
-    QLineEdit   *libraryName;
+    QComboBox   *libraryName;
     QComboBox   *librarySubtypes;
     QComboBox   *rendererSubtypes;
 

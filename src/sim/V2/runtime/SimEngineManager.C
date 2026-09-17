@@ -1107,6 +1107,31 @@ SimEngineManager::GetQueryParameters(const EngineKey &/*ek*/,
 }
 
 // ****************************************************************************
+// Method: SimEngineManager::GetAnariDeviceInfo
+//
+// Purpose:
+//   Get ANARI library/subtype/renderer/parameter info that is actually
+//   available on this (in-situ) engine.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+bool
+SimEngineManager::GetAnariDeviceInfo(const EngineKey &/*ek*/,
+                                     const std::string &libraryName,
+                                     const std::string &librarySubtype,
+                                     const std::string &rendererSubtype,
+                                     std::string *result)
+{
+    StackTimer t0("SimEngineManager::GetAnariDeviceInfo");
+    *result = engine->GetNetMgr()->GetAnariDeviceInfo(libraryName, librarySubtype,
+                                                       rendererSubtype);
+    return true;
+}
+
+// ****************************************************************************
 // Method: SimEngineManager::ClearCache
 //
 // Purpose:

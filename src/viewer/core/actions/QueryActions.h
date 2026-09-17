@@ -82,6 +82,28 @@ public:
 };
 
 // ****************************************************************************
+// Class: GetAnariDeviceInfoAction
+//
+// Purpose:
+//   Handles ViewerRPC::GetAnariDeviceInfoRPC
+//
+// Notes:
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+class VIEWERCORE_API GetAnariDeviceInfoAction : public QueryActionBase
+{
+public:
+    GetAnariDeviceInfoAction(ViewerWindow *win) : QueryActionBase(win) {}
+    virtual ~GetAnariDeviceInfoAction() {}
+
+    virtual void Execute();
+};
+
+// ****************************************************************************
 // Class: ProcessExpressionsAction
 //
 // Purpose:

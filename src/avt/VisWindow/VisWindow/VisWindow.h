@@ -763,6 +763,7 @@ public:
     void                 SetAnariAttributes(const AnariAttributes &);
     const AnariAttributes &GetAnariAttributes() const;
     void                 ResetAnariScene();
+    void                 SetAnariDeviceCreationEnabled(bool);
 #endif
     void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);

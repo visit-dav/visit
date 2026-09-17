@@ -8934,6 +8934,29 @@ void
 ViewerWindow::SetAnariAttributes(const AnariAttributes &atts)
 {
     visWindow->SetAnariAttributes(atts);
+
+    // ANARI only ever renders on the engine (the client may not have any
+    // ANARI backend libraries installed -- see
+    // VisWinRendering::SetAnariDeviceCreationEnabled), so an ANARI-enabled
+    // window must always be in scalable/engine rendering mode. Without this,
+    // ExternalRenderAuto() (ViewerWindow.C) bails out immediately for a
+    // window that was never in SR mode, no RenderRPC is ever sent to the
+    // engine, and NetworkManager::RenderSetup()'s ANARI-forcing logic never
+    // runs -- the plot just keeps showing its old client-side VTK render.
+    if(atts.GetAnariRendering())
+    {
+        SendScalableRenderingModeChangeMessage(true);
+    }
+    else
+    {
+        // ANARI no longer needs SR mode forced on; re-evaluate whether this
+        // window should still be in scalable rendering mode based on the
+        // user's actual scalable-rendering preference, rather than
+        // unconditionally forcing it off.
+        bool newMode;
+        if(ShouldSendScalableRenderingModeChangeMessage(&newMode))
+            SendScalableRenderingModeChangeMessage(newMode);
+    }
 }
 
 // ****************************************************************************

@@ -239,7 +239,8 @@ public class ViewerRPC extends AttributeSubject
     public final static int VIEWERRPCTYPE_READHOSTPROFILESFROMDIRECTORYRPC = 209;
     public final static int VIEWERRPCTYPE_SETREMOVEDUPLICATENODESRPC = 210;
     public final static int VIEWERRPCTYPE_QUERYMSAAAVAILABILITYRPC = 211;
-    public final static int VIEWERRPCTYPE_MAXRPC = 212;
+    public final static int VIEWERRPCTYPE_GETANARIDEVICEINFORPC = 212;
+    public final static int VIEWERRPCTYPE_MAXRPC = 213;
 
 
     public ViewerRPC()
@@ -1351,6 +1352,8 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_SETREMOVEDUPLICATENODESRPC";
         if(RPCType == VIEWERRPCTYPE_QUERYMSAAAVAILABILITYRPC)
             str = str + "VIEWERRPCTYPE_QUERYMSAAAVAILABILITYRPC";
+        if(RPCType == VIEWERRPCTYPE_GETANARIDEVICEINFORPC)
+            str = str + "VIEWERRPCTYPE_GETANARIDEVICEINFORPC";
         if(RPCType == VIEWERRPCTYPE_MAXRPC)
             str = str + "VIEWERRPCTYPE_MAXRPC";
         str = str + "\n";
