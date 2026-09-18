@@ -84,6 +84,7 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
 #ifdef HAVE_ANARI
     anariDeviceInfo = 0;
     engineList = 0;
+    anariRenderingWidget = 0;
 #endif
     lastAA = 0;
 
