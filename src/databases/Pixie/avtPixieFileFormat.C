@@ -36,12 +36,6 @@
 #include <InvalidFilesException.h>
 #include <InvalidTimeStepException.h>
 
-// Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
-// in this file uses version 1.6 of the HDF5 API. This is harmless for
-// versions of HDF5 before 1.8 and ensures correct compilation with
-// version 1.8 and thereafter. When, and if, the HDF5 code in this file
-// is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
 #include <visit-hdf5.h>
 #include <avtGhostData.h>
@@ -56,7 +50,7 @@
 //
 static void DetectSilo(int fileId)
 {
-    hid_t siloDir = H5Gopen(fileId, ".silo");
+    hid_t siloDir = H5Gopen2(fileId, ".silo", H5P_DEFAULT);
     if (siloDir >= 0)
     {
         H5Gclose(siloDir);
@@ -68,7 +62,7 @@ static void DetectSilo(int fileId)
 
 static void DetectTetrad(int fileId)
 {
-    hid_t cell_array = H5Dopen(fileId, "CellArray");
+    hid_t cell_array = H5Dopen2(fileId, "CellArray", H5P_DEFAULT);
     if (cell_array >= 0)
     {
         H5Dclose(cell_array);
@@ -80,7 +74,7 @@ static void DetectTetrad(int fileId)
 
 static void DetectPFLOTRAN(int fileId)
 {
-    hid_t coordsGID = H5Gopen(fileId, "Coordinates");
+    hid_t coordsGID = H5Gopen2(fileId, "Coordinates", H5P_DEFAULT);
     if (coordsGID >= 0)
     {
         H5Gclose(coordsGID);
@@ -92,7 +86,7 @@ static void DetectPFLOTRAN(int fileId)
 
 static void DetectUNIC(int fileId)
 {
-    hid_t control = H5Dopen(fileId, "CONTROL");
+    hid_t control = H5Dopen2(fileId, "CONTROL", H5P_DEFAULT);
     if (control >= 0)
     {
         H5Dclose(control);
@@ -104,7 +98,7 @@ static void DetectUNIC(int fileId)
 
 static void DetectVisSchema(int fileId)
 {
-    hid_t runInfo = H5Gopen(fileId, "runInfo");
+    hid_t runInfo = H5Gopen2(fileId, "runInfo", H5P_DEFAULT);
     if (runInfo >= 0)
     {
         hid_t vsVersion = H5Aopen_name(runInfo, "vsVersion");
@@ -147,7 +141,7 @@ static void DetectTyphonIO(int fileId)
     //
     //See if file is TyphonIO[v0] format
     //
-    hid_t tio_root = H5Gopen(fileId, "/");
+    hid_t tio_root = H5Gopen2(fileId, "/", H5P_DEFAULT);
     hid_t tio_version = H5Aopen_name(tio_root, "TIO_version_major");
     if (tio_version >= 0)
     {
@@ -158,7 +152,7 @@ static void DetectTyphonIO(int fileId)
                    "Cannot be a Pixie file because it looks like a TyphonIO file.");
     }
     if (tio_root >= 0) H5Gclose(tio_root);
-    hid_t tio_info = H5Gopen(fileId, "/TyphonIO_FileInfo");
+    hid_t tio_info = H5Gopen2(fileId, "/TyphonIO_FileInfo", H5P_DEFAULT);
     if (tio_info >= 0)
     {
         H5Gclose(tio_info);
@@ -211,7 +205,7 @@ avtPixieFileFormat::avtPixieFileFormat(const char *filename, const DBOptionsAttr
     }
 
     // Turn off error message printing.
-    H5Eset_auto(0,0);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 }
 
 // ****************************************************************************
@@ -476,8 +470,8 @@ avtPixieFileFormat::Initialize()
         }
 
         // Populate the scalar variable list
-        hid_t gid;
-        if ((gid = H5Gopen(fileId, "/")) < 0)
+        hid_t gid = H5Gopen2(fileId, "/", H5P_DEFAULT);
+        if (gid < 0)
         {
             H5Fclose(fileId);
             EXCEPTION1(InvalidFilesException, (const char *)filenames[0]);
@@ -498,8 +492,8 @@ avtPixieFileFormat::Initialize()
         // links. As such, code is in place to do this.
 
         // Iterate over the items in this group.
-        H5Giterate(fileId, "/", NULL, GetVariableList, (void*)&info);
-//      H5Literate(fileId, H5_INDEX_NAME, H5_ITER_INC, 0, VisitLinks, (void*)&info);
+        hsize_t idx = 0;
+        H5Literate(gid, H5_INDEX_NAME, H5_ITER_INC, &idx, VisitLinks, (void*)&info);
         H5Gclose(gid);
 
         // Tag any coordinates as isCoord.
@@ -534,7 +528,7 @@ avtPixieFileFormat::Initialize()
         // Look for expressions dataset
         //
         hid_t expid;
-        if ((expid = H5Dopen(fileId,"/visit_expressions")) >= 0)
+        if ((expid = H5Dopen2(fileId, "/visit_expressions", H5P_DEFAULT)) >= 0)
         {
             // examine size, dimensionality and type of the dataspace
             hid_t spid    = H5Dget_space(expid);
@@ -1711,9 +1705,9 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
     //
     debug4 << "avtPixieFileFormat::ReadVariableFromFile: Trying to open data: "
            << fileVar.c_str() << endl;
-    hid_t dataId = H5Dopen(fileId, fileVar.c_str());
+    hid_t dataId = H5Dopen2(fileId, fileVar.c_str(), H5P_DEFAULT);
     if(dataId < 0) // try stripping leading slash
-        dataId = H5Dopen(fileId, std::string(fileVar,1).c_str());
+        dataId = H5Dopen2(fileId, std::string(fileVar,1).c_str(), H5P_DEFAULT);
     if(dataId < 0)
     {
         EXCEPTION1(InvalidVariableException, varname);
@@ -1985,10 +1979,10 @@ avtPixieFileFormat::VisitLinks(hid_t locId, const char* name,
       switch(objinfo.type)
       {
         case H5O_TYPE_GROUP:
-        return GetVariableList( locId, name, opdata );
+        return GetVariableList(locId, name, linfo, opdata);
         break;
         case H5O_TYPE_DATASET:
-        return GetVariableList( locId, name, opdata );
+        return GetVariableList(locId, name, linfo, opdata);
         break;
 
         default:
@@ -2048,10 +2042,10 @@ avtPixieFileFormat::VisitLinks(hid_t locId, const char* name,
       switch(objinfo.type)
       {
         case H5O_TYPE_GROUP:
-        return GetVariableList( locId, name, opdata );
+        return GetVariableList(locId, name, linfo, opdata);
         break;
         case H5O_TYPE_DATASET:
-        return GetVariableList( locId, name, opdata );
+        return GetVariableList(locId, name, linfo, opdata);
         break;
 
         default:
@@ -2124,7 +2118,7 @@ avtPixieFileFormat::VisitLinks(hid_t locId, const char* name,
 
 herr_t
 avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
-    void *op_data)
+    const H5L_info_t *, void *op_data)
 {
     // Silo files have a ".." group.  Don't process that....  Ideally we
     // might detect and skip hard links, but this doesn't come up often.
@@ -2132,7 +2126,6 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
         return 0;
 
     hid_t      obj;
-    H5G_stat_t statbuf;
 
     //
     // Create a variable name that includes the path and the current
@@ -2147,16 +2140,17 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
     //
     // Get information about the object so we know if it is a dataset,
     // group, type, etc.
-    // changed 3rd argument to 1 to allow external links. Jean@cscs
-    H5Gget_objinfo(group, name, 1, &statbuf);
+    H5O_info_t objInfo;
+    if (H5Oget_info_by_name(group, name, &objInfo, H5P_DEFAULT) < 0)
+        return 0;
 
     //
     // Do something with the object based on its type.
     //
-    switch (statbuf.type)
+    switch (objInfo.type)
     {
-    case H5G_DATASET:
-        if ((obj = H5Dopen(group, name)) >= 0)
+    case H5O_TYPE_DATASET:
+        if ((obj = H5Dopen2(group, name, H5P_DEFAULT)) >= 0)
         {
             VarInfo varInfo;
             varInfo.fileVarName = varName;
@@ -2302,7 +2296,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             debug4 << "unable to get dataset " << name << endl;
         }
         break;
-    case H5G_GROUP:
+    case H5O_TYPE_GROUP:
         // We found a time state, increment the number of time states.
         if(info->level == 0 && varName.find("Timestep") != std::string::npos)
         {
@@ -2324,7 +2318,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             info->This->haveMeshCoords = true;
         }
 
-        if ((obj = H5Gopen(group, name)) >= 0)
+        if ((obj = H5Gopen2(group, name, H5P_DEFAULT)) >= 0)
         {
             TraversalInfo info2;
             info2.This = info->This;
@@ -2425,8 +2419,8 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             // do this.
 
             // Iterate over the items in this group.
-            H5Giterate(obj, ".", NULL, GetVariableList, (void*)&info2);
-//          H5Literate(obj, H5_INDEX_NAME, H5_ITER_INC, 0, VisitLinks, (void*)&info);
+            hsize_t idx = 0;
+            H5Literate(obj, H5_INDEX_NAME, H5_ITER_INC, &idx, VisitLinks, (void*)&info2);
             H5Gclose(obj);
         }
         else
