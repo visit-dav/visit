@@ -18,6 +18,7 @@ class QGroupBox;
 class QRadioButton;
 class QSlider;
 class QSpinBox;
+class QTabWidget;
 class RenderingAttributes;
 class WindowInformation;
 class AnariDeviceInfoAttributes;
@@ -137,6 +138,7 @@ public:
                         const QString &shortName = QString(),
                         QvisNotepadArea *n = 0);
     virtual ~QvisRenderingWindow();
+    virtual void CreateEntireWindow();
     virtual void CreateWindowContents();
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
 
@@ -213,6 +215,7 @@ private slots:
 private:
     void UpdateAAControls(int);
     void UpdateMSAAButton();
+    void SetInitialWindowSize();
 
     QWidget *CreateBasicPage();
     QWidget *CreateAdvancedPage();
@@ -225,6 +228,8 @@ private:
     EngineList                *engineList;
 #endif
     int                 lastAA;
+    QTabWidget          *renderingTabs;
+    int                 preferredPageHeight;
 
     // Basic controls
     QButtonGroup      *antialiasingMode;

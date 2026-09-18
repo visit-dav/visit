@@ -6,6 +6,7 @@
 #include <float.h>
 #include <limits.h>
 
+#include <QApplication>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
@@ -14,8 +15,13 @@
 #include <QLayout>
 #include <QFormLayout>
 #include <QRadioButton>
+#include <QRect>
 #include <QScrollArea>
+#include <QScreen>
+#include <QSize>
+#include <QSizePolicy>
 #include <QSpinBox>
+#include <QStyle>
 #include <QLineEdit>
 #include <QTabWidget>
 
@@ -85,8 +91,11 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
 #ifdef HAVE_ANARI
     anariDeviceInfo = 0;
     engineList = 0;
+    anariRenderingWidget = 0;
 #endif
     lastAA = 0;
+    renderingTabs = 0;
+    preferredPageHeight = 0;
 
     stereoType = 0;
     scalrenActivationMode = 0;
@@ -127,6 +136,88 @@ QvisRenderingWindow::~QvisRenderingWindow()
     if(engineList)
         engineList->Detach(this);
 #endif
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::CreateEntireWindow
+//
+// Purpose:
+//   Create the window and set a better initial height for the tabbed pages.
+//
+// Programmer: Kathleen Biagas
+// Creation:   Fri Sep 18, 2026
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::CreateEntireWindow()
+{
+    bool useDefaultSize = !saveWindowDefaults && !isCreated;
+
+    QvisPostableWindowSimpleObserver::CreateEntireWindow();
+
+    if(useDefaultSize)
+        SetInitialWindowSize();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::SetInitialWindowSize
+//
+// Purpose:
+//   Size the window to fit the scroll-area contents, clamped to the screen.
+//
+// Programmer: Kathleen Biagas
+// Creation:   Fri Sep 18, 2026
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::SetInitialWindowSize()
+{
+    if(renderingTabs == 0 || preferredPageHeight <= 0)
+        return;
+
+    int desiredHeight = sizeHint().height();
+    QWidget *currentPage = renderingTabs->currentWidget();
+    if(currentPage != 0)
+    {
+        int shortPageHeight = currentPage->sizeHint().height();
+        if(preferredPageHeight > shortPageHeight)
+            desiredHeight += preferredPageHeight - shortPageHeight;
+    }
+
+    int frameWidth = frameGeometry().width() - geometry().width();
+    int frameHeight = frameGeometry().height() - geometry().height();
+    if(frameWidth <= 0 || frameHeight <= 0)
+    {
+        int border = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+        int title = style()->pixelMetric(QStyle::PM_TitleBarHeight);
+        frameWidth = 2 * border;
+        frameHeight = title + (2 * border);
+    }
+
+    QRect availableGeometry = qApp->primaryScreen()->availableGeometry();
+    int maxW = availableGeometry.width() - frameWidth;
+    int maxH = availableGeometry.height() - frameHeight;
+
+#if defined(Q_OS_WIN)
+    maxH -= style()->pixelMetric(QStyle::PM_TitleBarHeight);
+#endif
+
+    QSize minSize = minimumSizeHint();
+    if(maxW < minSize.width())
+        maxW = minSize.width();
+    if(maxH < minSize.height())
+        maxH = minSize.height();
+
+    int w = sizeHint().width();
+    int h = desiredHeight;
+    if(w > maxW)
+        w = maxW;
+    if(h > maxH)
+        h = maxH;
+    resize(w, h);
 }
 
 
@@ -184,6 +275,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Biagas, Mon Sep 14, 2026
 //   Add QScrollArea for easier use on smaller laptop displays.
 //
+//   Kathleen Biagas, Fri Sep 18, 2026
+//   Allow scroll area to expand when the window is enlarged.
+//
 // ****************************************************************************
 
 QWidget *
@@ -193,8 +287,10 @@ QvisRenderingWindow::CreateBasicPage()
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scroll->setWidgetResizable(true);
+    scroll->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QWidget *basicOptions = new QWidget();
+    basicOptions->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     scroll->setWidget(basicOptions);
 
     QVBoxLayout *basicLayout = new QVBoxLayout(basicOptions);
@@ -591,6 +687,8 @@ QvisRenderingWindow::CreateBasicPage()
     specLayout->addRow(specularPowerLabel, specularPowerSlider);
 
     basicLayout->setSpacing(0);
+    if(basicOptions->sizeHint().height() > preferredPageHeight)
+        preferredPageHeight = basicOptions->sizeHint().height();
     return scroll;
 }
 
@@ -633,6 +731,9 @@ QvisRenderingWindow::CreateBasicPage()
 //   Kathleen Biagas, Mon Sep 14, 2026
 //   Add QScrollArea for easier use on smaller laptop displays.
 //
+//   Kathleen Biagas, Fri Sep 18, 2026
+//   Allow scroll area to expand when the window is enlarged.
+//
 // ****************************************************************************
 
 QWidget *
@@ -644,8 +745,10 @@ QvisRenderingWindow::CreateAdvancedPage()
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scroll->setWidgetResizable(true);
+    scroll->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QWidget *advancedOptions = new QWidget();
+    advancedOptions->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     scroll->setWidget(advancedOptions);
 
     QGridLayout *advLayout = new QGridLayout(advancedOptions);
@@ -902,6 +1005,8 @@ QvisRenderingWindow::CreateAdvancedPage()
             osprayShadowsToggle, SLOT(setEnabled(bool)));
 #endif
 
+    if(advancedOptions->sizeHint().height() > preferredPageHeight)
+        preferredPageHeight = advancedOptions->sizeHint().height();
     return scroll;
 }
 
@@ -1007,28 +1112,32 @@ QvisRenderingWindow::CreateInformationPage()
 //   Kathleen Biagas, Tue Aug 26, 2025
 //   Added call to QueryMSAAAvailability.
 //
+//   Kathleen Biagas, Fri Sep 18, 2026
+//   Add a stretch factor so the tab widget grows with the window.
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::CreateWindowContents()
 {
-    QTabWidget *topTab = new QTabWidget(central);
-    topLayout->addWidget(topTab);
+    preferredPageHeight = 0;
+    renderingTabs = new QTabWidget(central);
+    topLayout->addWidget(renderingTabs, 1);
 
     //
     // Create the basic renderer options page.
     //
-    topTab->addTab(CreateBasicPage(), tr("Basic"));
+    renderingTabs->addTab(CreateBasicPage(), tr("Basic"));
 
     //
     // Create the advanced renderer options group.
     //
-    topTab->addTab(CreateAdvancedPage(), tr("Advanced"));
+    renderingTabs->addTab(CreateAdvancedPage(), tr("Advanced"));
 
     //
     // Create the renderer information group.
     //
-    topTab->addTab(CreateInformationPage(), tr("Information"));
+    renderingTabs->addTab(CreateInformationPage(), tr("Information"));
 
     GetViewerMethods()->QueryMSAAAvailability();
 }
