@@ -24,6 +24,7 @@
 vtkStandardNewMacro(visit_vtkOpenFOAMReader)
 
 //-----------------------------------------------------------------------------
+// Initializes VisIt's OpenFOAM reader wrapper state.
 visit_vtkOpenFOAMReader::visit_vtkOpenFOAMReader()
 {
     this->CaseType = RECONSTRUCTED_CASE;
@@ -31,11 +32,13 @@ visit_vtkOpenFOAMReader::visit_vtkOpenFOAMReader()
 }
 
 //-----------------------------------------------------------------------------
+// Releases wrapper-owned resources.
 visit_vtkOpenFOAMReader::~visit_vtkOpenFOAMReader()
 {
 }
 
 //-----------------------------------------------------------------------------
+// Prints wrapper-specific state in addition to vtkOpenFOAMReader state.
 void visit_vtkOpenFOAMReader::PrintSelf(ostream &os, vtkIndent indent)
 {
     this->Superclass::PrintSelf(os, indent);
@@ -44,6 +47,7 @@ void visit_vtkOpenFOAMReader::PrintSelf(ostream &os, vtkIndent indent)
 }
 
 //-----------------------------------------------------------------------------
+// Sets the OpenFOAM case type and forces the wrapped reader to refresh.
 void visit_vtkOpenFOAMReader::SetCaseType(const int t)
 {
     if (this->CaseType != t)
@@ -55,6 +59,7 @@ void visit_vtkOpenFOAMReader::SetCaseType(const int t)
 }
 
 //-----------------------------------------------------------------------------
+// Builds timestep and processor-reader metadata for OpenFOAM cases.
 int visit_vtkOpenFOAMReader::RequestInformation(vtkInformation *request,
     vtkInformationVector **inputVector, vtkInformationVector *outputVector)
 {
@@ -175,6 +180,7 @@ int visit_vtkOpenFOAMReader::RequestInformation(vtkInformation *request,
 }
 
 //-----------------------------------------------------------------------------
+// Reads reconstructed data directly or combines decomposed processor outputs.
 int visit_vtkOpenFOAMReader::RequestData(vtkInformation *request,
     vtkInformationVector **inputVector, vtkInformationVector *outputVector)
 {
@@ -254,18 +260,21 @@ int visit_vtkOpenFOAMReader::RequestData(vtkInformation *request,
     return ret;
 }
 
+// Returns whether the wrapped reader knows a cell-data array by this name.
 int
 visit_vtkOpenFOAMReader::GetCellArrayExists(const char *name)
 {
     return this->CellDataArraySelection->ArrayExists(name);
 }
 
+// Returns whether the wrapped reader knows a point-data array by this name.
 int
 visit_vtkOpenFOAMReader::GetPointArrayExists(const char *name)
 {
     return this->PointDataArraySelection->ArrayExists(name);
 }
 
+// Returns whether the wrapped reader knows a lagrangian array by this name.
 int
 visit_vtkOpenFOAMReader::GetLagrangianArrayExists(const char *name)
 {
