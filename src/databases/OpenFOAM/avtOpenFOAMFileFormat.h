@@ -35,8 +35,8 @@ class vtkMultiBlockDataSet;
 //    Kathleen Biagas, Wed Aug 5, 2026
 //    Use visit_vtkOpenFOAMReader instead of visit_vtkPOpenFOAMReader, it is
 //    now a subclass of the VTK version.
-//    Add PatchArrayExists, SelectPatchArrayByName, GetBlock, GetZoneBLock,
-//    currentRegion.
+//    Add SyncReaderTime, PatchArrayExists, SelectPatchArrayByName,
+//    region-aware GetBlock, GetZoneBlock, and currentRegion.
 //
 // ****************************************************************************
 
@@ -64,6 +64,7 @@ class avtOpenFOAMFileFormat : public avtMTMDFileFormat
   protected:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     void                   SelectPatchArray(int, const std::string &);
+    bool                   SyncReaderTime(int, const char *);
     bool                   PatchArrayExists(const std::string &) const;
     void                   SelectPatchArrayByName(const std::vector<std::string> &);
     avtVarType             OpenFOAMClassNameToVarType(const vtkStdString &cn);

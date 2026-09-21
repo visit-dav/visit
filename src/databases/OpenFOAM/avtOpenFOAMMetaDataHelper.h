@@ -79,6 +79,8 @@ class avtOpenFOAMMetaDataHelper
                                             const std::string &regionName) const;
     bool                ReadEntryNames(const std::string &path,
                                        std::vector<std::string> &names) const;
+    bool                ReadBoundaryEntryNames(const std::string &path,
+                                               std::vector<std::string> &names) const;
     bool                ReadHeader(const std::string &path,
                                    HeaderInfo &header,
                                    bool tryGzipSuffix) const;
