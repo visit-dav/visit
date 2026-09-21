@@ -31,6 +31,7 @@ namespace
 static const size_t HEADER_READ_LIMIT = 64 * 1024;
 static const size_t BUFFER_SIZE = 8192;
 
+// Returns true when value ends with the requested suffix.
 bool
 EndsWith(const string &value, const string &suffix)
 {
@@ -38,6 +39,7 @@ EndsWith(const string &value, const string &suffix)
            value.compare(value.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
+// Strips line and block comments while preserving string literals.
 string
 StripComments(const string &text)
 {
@@ -113,8 +115,10 @@ StripComments(const string &text)
 class TokenStream
 {
   public:
+    // Creates a tokenizer over comment-free OpenFOAM dictionary text.
     TokenStream(const string &text_) : text(text_), pos(0), havePeek(false) { }
 
+    // Returns the next token, including any token previously saved by Peek.
     bool Next(string &token)
     {
         if (havePeek)
@@ -126,6 +130,7 @@ class TokenStream
         return ReadToken(token);
     }
 
+    // Returns the next token without consuming it from the stream.
     bool Peek(string &token)
     {
         if (!havePeek)
@@ -142,6 +147,7 @@ class TokenStream
     }
 
   private:
+    // Reads a single OpenFOAM token, treating delimiters as standalone tokens.
     bool ReadToken(string &token)
     {
         SkipWhitespace();
@@ -192,6 +198,7 @@ class TokenStream
         return !token.empty();
     }
 
+    // Advances the stream position past whitespace between tokens.
     void SkipWhitespace()
     {
         while (pos < text.size() &&
@@ -207,6 +214,7 @@ class TokenStream
     string        peekToken;
 };
 
+// Consumes tokens until the matching close delimiter for an already-read open.
 void
 SkipBalanced(TokenStream &tokens, const char openChar, const char closeChar)
 {
@@ -225,6 +233,7 @@ SkipBalanced(TokenStream &tokens, const char openChar, const char closeChar)
     }
 }
 
+// Removes one layer of single or double quotes from an OpenFOAM token.
 string
 Unquote(const string &value)
 {
@@ -238,6 +247,43 @@ Unquote(const string &value)
     return value;
 }
 
+// Skips a dictionary and reports whether its top-level type entry is ignored.
+bool
+SkipDictionaryAndCheckType(TokenStream &tokens, const std::set<string> &types)
+{
+    int depth = 1;
+    bool matchesType = false;
+    string token;
+    while (depth > 0 && tokens.Next(token))
+    {
+        if (token == "{")
+        {
+            ++depth;
+            continue;
+        }
+
+        if (token == "}")
+        {
+            --depth;
+            continue;
+        }
+
+        if (depth != 1 || token != "type")
+        {
+            continue;
+        }
+
+        string value;
+        if (tokens.Next(value) && types.find(Unquote(value)) != types.end())
+        {
+            matchesType = true;
+        }
+    }
+
+    return matchesType;
+}
+
+// Locates a readable file, optionally falling back to the path with .gz.
 bool
 ResolveReadablePath(const string &path,
                     bool tryGzipSuffix,
@@ -265,6 +311,7 @@ ResolveReadablePath(const string &path,
     return false;
 }
 
+// Reads up to limit bytes from a plain or gzip-compressed file.
 bool
 ReadFilePrefix(const string &path, bool isGzip, size_t limit, string &contents)
 {
@@ -308,6 +355,7 @@ ReadFilePrefix(const string &path, bool isGzip, size_t limit, string &contents)
     return !contents.empty();
 }
 
+// Reads the entire contents of a plain or gzip-compressed file.
 bool
 ReadWholeFile(const string &path, bool isGzip, string &contents)
 {
@@ -348,6 +396,7 @@ ReadWholeFile(const string &path, bool isGzip, string &contents)
     return true;
 }
 
+// Extracts the contents of the FoamFile dictionary from an OpenFOAM file.
 bool
 ExtractFoamFileBlock(const string &text, string &foamFileBlock)
 {
@@ -385,6 +434,7 @@ ExtractFoamFileBlock(const string &text, string &foamFileBlock)
     return false;
 }
 
+// Reads a named value from the FoamFile header block.
 bool
 ExtractHeaderValue(const string &foamFileBlock,
                    const string &key,
@@ -411,6 +461,7 @@ ExtractHeaderValue(const string &foamFileBlock,
     return false;
 }
 
+// Parses the OpenFOAM header and captures the class and object entries.
 bool
 ParseHeader(const string &text,
             avtOpenFOAMMetaDataHelper::HeaderInfo &header)
@@ -426,8 +477,10 @@ ParseHeader(const string &text,
     return !header.className.empty() || !header.objectName.empty();
 }
 
+// Extracts top-level entry names from an OpenFOAM list or dictionary.
 bool
-ExtractTopLevelEntryNames(const string &text, std::vector<string> &names)
+ExtractTopLevelEntryNames(const string &text, std::vector<string> &names,
+                          const std::set<string> &ignoredEntryTypes)
 {
     const string cleaned(StripComments(text));
     TokenStream tokens(cleaned);
@@ -478,17 +531,28 @@ ExtractTopLevelEntryNames(const string &text, std::vector<string> &names)
                 continue;
             }
 
-            names.push_back(Unquote(token));
             tokens.Next(nextToken);
-            SkipBalanced(tokens, '{', '}');
+            if (!SkipDictionaryAndCheckType(tokens, ignoredEntryTypes))
+            {
+                names.push_back(Unquote(token));
+            }
         }
 
-        return !names.empty();
+        return true;
     }
 
     return false;
 }
 
+// Extracts all top-level entry names without filtering by entry type.
+bool
+ExtractTopLevelEntryNames(const string &text, std::vector<string> &names)
+{
+    const std::set<string> ignoredEntryTypes;
+    return ExtractTopLevelEntryNames(text, names, ignoredEntryTypes);
+}
+
+// Returns true when a directory name is a valid numeric OpenFOAM time value.
 bool
 IsTimeDirectoryName(const string &name, double &value)
 {
@@ -508,6 +572,7 @@ IsTimeDirectoryName(const string &name, double &value)
     return true;
 }
 
+// Identifies backup files that should not be treated as Eulerian fields.
 bool
 IsEulerianBackupFile(const string &name)
 {
@@ -519,6 +584,7 @@ IsEulerianBackupFile(const string &name)
             EndsWith(name, ".save"));
 }
 
+// Uses a file name as an object name, removing a gzip suffix when present.
 string
 FallbackObjectName(const string &name)
 {
@@ -529,6 +595,7 @@ FallbackObjectName(const string &name)
     return name;
 }
 
+// Classifies supported vol* and point* OpenFOAM field classes.
 bool
 IsSupportedEulerianClass(const string &className,
                          bool &isCellField,
@@ -560,6 +627,7 @@ IsSupportedEulerianClass(const string &className,
     return false;
 }
 
+// Returns true for supported lagrangian field value classes.
 bool
 IsSupportedLagrangianClass(const string &className)
 {
@@ -571,6 +639,7 @@ IsSupportedLagrangianClass(const string &className)
            className == "tensorField";
 }
 
+// Adds a field only if a field with the same object name is not present.
 void
 InsertField(std::vector<avtOpenFOAMMetaDataHelper::FieldInfo> &fields,
             const string &name,
@@ -590,6 +659,7 @@ InsertField(std::vector<avtOpenFOAMMetaDataHelper::FieldInfo> &fields,
     fields.push_back(field);
 }
 
+// Adds a name only if the vector does not already contain it.
 void
 InsertName(std::vector<string> &names, const string &name)
 {
@@ -599,6 +669,7 @@ InsertName(std::vector<string> &names, const string &name)
     }
 }
 
+// Orders time entries by numeric time value, then by directory name.
 bool
 CompareTimeInfo(const avtOpenFOAMMetaDataHelper::TimeInfo &lhs,
                 const avtOpenFOAMMetaDataHelper::TimeInfo &rhs)
@@ -615,6 +686,7 @@ CompareTimeInfo(const avtOpenFOAMMetaDataHelper::TimeInfo &lhs,
 }
 }
 
+// Initializes the helper for an OpenFOAM case and records any setup error.
 avtOpenFOAMMetaDataHelper::avtOpenFOAMMetaDataHelper(const string &fileName,
                                                      int caseType_)
     : inputFileName(fileName),
@@ -629,24 +701,28 @@ avtOpenFOAMMetaDataHelper::avtOpenFOAMMetaDataHelper(const string &fileName,
     Initialize();
 }
 
+// Reports whether initialization completed without an error.
 bool
 avtOpenFOAMMetaDataHelper::IsValid() const
 {
     return error.empty();
 }
 
+// Returns the initialization or metadata discovery error message.
 const string &
 avtOpenFOAMMetaDataHelper::GetError() const
 {
     return error;
 }
 
+// Returns the discovered OpenFOAM time directories in timestep order.
 const std::vector<avtOpenFOAMMetaDataHelper::TimeInfo> &
 avtOpenFOAMMetaDataHelper::GetTimes() const
 {
     return times;
 }
 
+// Resolves paths and discovers the case times and regions.
 bool
 avtOpenFOAMMetaDataHelper::Initialize()
 {
@@ -673,6 +749,7 @@ avtOpenFOAMMetaDataHelper::Initialize()
     return true;
 }
 
+// Determines the controlDict path and the root OpenFOAM case directory.
 bool
 avtOpenFOAMMetaDataHelper::ResolveControlDictAndCasePath()
 {
@@ -720,6 +797,7 @@ avtOpenFOAMMetaDataHelper::ResolveControlDictAndCasePath()
     return true;
 }
 
+// Selects the metadata root, using processor0 for decomposed cases.
 bool
 avtOpenFOAMMetaDataHelper::SelectMetadataRootPath()
 {
@@ -770,6 +848,7 @@ avtOpenFOAMMetaDataHelper::SelectMetadataRootPath()
     return true;
 }
 
+// Discovers, sorts, and de-duplicates numeric timestep directories.
 bool
 avtOpenFOAMMetaDataHelper::DiscoverTimes()
 {
@@ -833,6 +912,7 @@ avtOpenFOAMMetaDataHelper::DiscoverTimes()
     return true;
 }
 
+// Finds single-region and multi-region meshes under the constant directory.
 bool
 avtOpenFOAMMetaDataHelper::DiscoverRegions()
 {
@@ -878,18 +958,21 @@ avtOpenFOAMMetaDataHelper::DiscoverRegions()
     return true;
 }
 
+// Builds the path component for a region below a time or constant directory.
 string
 avtOpenFOAMMetaDataHelper::RegionPath(const string &regionName) const
 {
     return (regionName.empty() ? string() : VISIT_SLASH_STRING + regionName);
 }
 
+// Builds the metadata name prefix used for multi-region objects.
 string
 avtOpenFOAMMetaDataHelper::RegionPrefix(const string &regionName) const
 {
-    return (regionName.empty() ? string() : regionName + VISIT_SLASH_STRING);
+    return (regionName.empty() ? string() : regionName + "/");
 }
 
+// Builds the path for a specific timestep and region.
 string
 avtOpenFOAMMetaDataHelper::TimeRegionPath(const string &timeName,
                                           const string &regionName) const
@@ -897,12 +980,14 @@ avtOpenFOAMMetaDataHelper::TimeRegionPath(const string &timeName,
     return metadataRootPath + timeName + RegionPath(regionName);
 }
 
+// Builds the path for a region under the constant directory.
 string
 avtOpenFOAMMetaDataHelper::ConstantRegionPath(const string &regionName) const
 {
     return metadataRootPath + "constant" + RegionPath(regionName);
 }
 
+// Checks whether a directory contains enough polyMesh files to identify a mesh.
 bool
 avtOpenFOAMMetaDataHelper::HasMeshFiles(const string &path) const
 {
@@ -920,6 +1005,7 @@ avtOpenFOAMMetaDataHelper::HasMeshFiles(const string &path) const
                                             "boundary.gz").c_str(), true);
 }
 
+// Finds the most recent mesh instance for a timestep and region.
 string
 avtOpenFOAMMetaDataHelper::ResolveMeshInstance(int timeState,
                                                const string &regionName) const
@@ -940,6 +1026,7 @@ avtOpenFOAMMetaDataHelper::ResolveMeshInstance(int timeState,
     return string();
 }
 
+// Reads and parses the header from a plain or optionally gzip-compressed file.
 bool
 avtOpenFOAMMetaDataHelper::ReadHeader(const string &path,
                                       HeaderInfo &header,
@@ -963,6 +1050,7 @@ avtOpenFOAMMetaDataHelper::ReadHeader(const string &path,
     return ParseHeader(prefix, header);
 }
 
+// Reads an OpenFOAM list/dictionary file and returns its top-level entry names.
 bool
 avtOpenFOAMMetaDataHelper::ReadEntryNames(const string &path,
                                           std::vector<string> &names) const
@@ -983,6 +1071,35 @@ avtOpenFOAMMetaDataHelper::ReadEntryNames(const string &path,
     return ExtractTopLevelEntryNames(contents, names);
 }
 
+// Reads boundary patch names, ignoring processor patches for decomposed cases.
+bool
+avtOpenFOAMMetaDataHelper::ReadBoundaryEntryNames(
+    const string &path, std::vector<string> &names) const
+{
+    string resolvedPath;
+    bool isGzip = false;
+    if (!ResolveReadablePath(path, true, resolvedPath, isGzip))
+    {
+        return false;
+    }
+
+    string contents;
+    if (!ReadWholeFile(resolvedPath, isGzip, contents))
+    {
+        return false;
+    }
+
+    std::set<string> ignoredPatchTypes;
+    if (caseType == 0)
+    {
+        ignoredPatchTypes.insert("processor");
+        ignoredPatchTypes.insert("processorCyclic");
+    }
+
+    return ExtractTopLevelEntryNames(contents, names, ignoredPatchTypes);
+}
+
+// Populates mesh patch metadata for all regions at the requested timestep.
 void
 avtOpenFOAMMetaDataHelper::GatherBoundaryMetaData(int timeState,
                                                   MetaData &metaData) const
@@ -1002,7 +1119,7 @@ avtOpenFOAMMetaDataHelper::GatherBoundaryMetaData(int timeState,
                                   VISIT_SLASH_STRING + "polyMesh" +
                                   VISIT_SLASH_STRING + "boundary");
         std::vector<string> boundaryNames;
-        if (!ReadEntryNames(boundaryPath, boundaryNames))
+        if (!ReadBoundaryEntryNames(boundaryPath, boundaryNames))
         {
             continue;
         }
@@ -1016,6 +1133,7 @@ avtOpenFOAMMetaDataHelper::GatherBoundaryMetaData(int timeState,
     }
 }
 
+// Populates zone metadata from each region's mesh instance.
 void
 avtOpenFOAMMetaDataHelper::GatherZoneMetaData(int timeState,
                                               MetaData &metaData) const
@@ -1064,6 +1182,7 @@ avtOpenFOAMMetaDataHelper::GatherZoneMetaData(int timeState,
     }
 }
 
+// Scans a timestep directory for supported cell-centered and point fields.
 void
 avtOpenFOAMMetaDataHelper::ReadEulerianFieldDirectory(
     const string &path,
@@ -1115,6 +1234,7 @@ avtOpenFOAMMetaDataHelper::ReadEulerianFieldDirectory(
     dir->Delete();
 }
 
+// Scans a lagrangian cloud directory for supported field files.
 void
 avtOpenFOAMMetaDataHelper::ReadLagrangianFieldDirectory(
     const string &path,
@@ -1156,6 +1276,7 @@ avtOpenFOAMMetaDataHelper::ReadLagrangianFieldDirectory(
     dir->Delete();
 }
 
+// Gathers Eulerian field metadata for every region at a named timestep.
 void
 avtOpenFOAMMetaDataHelper::GatherFieldMetaDataForTime(const string &timeName,
                                                       MetaData &metaData) const
@@ -1168,6 +1289,7 @@ avtOpenFOAMMetaDataHelper::GatherFieldMetaDataForTime(const string &timeName,
     }
 }
 
+// Gathers lagrangian cloud and field metadata for one region and timestep.
 bool
 avtOpenFOAMMetaDataHelper::GatherLagrangianMetaDataForRegion(
     const string &timeName,
@@ -1215,8 +1337,7 @@ avtOpenFOAMMetaDataHelper::GatherLagrangianMetaDataForRegion(
 
         found = true;
         InsertName(metaData.lagrangianPatches,
-                   RegionPrefix(regionName) + "lagrangian" +
-                   VISIT_SLASH_STRING + cloudNames[i]);
+                   RegionPrefix(regionName) + "lagrangian/" + cloudNames[i]);
         ReadLagrangianFieldDirectory(cloudPath, metaData.lagrangianFields);
     }
 
@@ -1239,6 +1360,7 @@ avtOpenFOAMMetaDataHelper::GatherLagrangianMetaDataForRegion(
     return false;
 }
 
+// Gathers lagrangian cloud metadata for every region at a timestep.
 void
 avtOpenFOAMMetaDataHelper::GatherLagrangianMetaDataForTime(const string &timeName,
                                                            MetaData &metaData) const
@@ -1249,6 +1371,7 @@ avtOpenFOAMMetaDataHelper::GatherLagrangianMetaDataForTime(const string &timeNam
     }
 }
 
+// Gathers and sorts field metadata for the requested timestep.
 void
 avtOpenFOAMMetaDataHelper::GatherFieldMetaData(int timeState,
                                                MetaData &metaData) const
@@ -1286,6 +1409,7 @@ avtOpenFOAMMetaDataHelper::GatherFieldMetaData(int timeState,
               { return lhs.name < rhs.name; });
 }
 
+// Reads all requested metadata for a timestep into a fresh MetaData object.
 bool
 avtOpenFOAMMetaDataHelper::ReadMetaData(int timeState,
                                         bool readZones,
