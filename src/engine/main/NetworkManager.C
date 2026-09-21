@@ -3170,18 +3170,29 @@ NetworkManager::RenderTiledInternal()
         return output;
     }
 
+    // Calculate the tile zoom factor.
+    const double zoomTile = double(imageHeight) / double(tileHeight);
+
     //
-    // Determine the tile zoom and the initial tile pan values and the
-    // X and Y tile pan deltas.
+    // Determine the tile parameters for the 2D view.
+    //
+    const avtView2D view2D = viswin->GetView2D();
+
+    const double xWindowInit = view2D.window[0];
+    const double yWindowInit = view2D.window[2];
+    const double xWindowDelta = (view2D.window[1] - view2D.window[0]) / zoomTile;
+    const double yWindowDelta = (view2D.window[3] - view2D.window[2]) / zoomTile;
+
+    debug5 << "NetworkManager::RenderTiledInternal: xWindowInit=" << xWindowInit << ",yWindowInit=" << yWindowInit << ",xWindowDelta=" << xWindowDelta << ",yWindowDelta=" << yWindowDelta << endl;
+
+    //
+    // Determine the tile parameters for the 3D view.
     //
     const avtView3D view3D = viswin->GetView3D();
 
     const double zoomUser = view3D.imageZoom;
     const double xPanUser = view3D.imagePan[0];
     const double yPanUser = view3D.imagePan[1];
-
-    // Calculate the tile zoom factor.
-    const double zoomTile = double(imageHeight) / double(tileHeight);
 
     debug5 << "NetworkManager::RenderTiledInternal: zoomUser=" << zoomUser << ",xPanUser=" << xPanUser << ",yPanUser=" << yPanUser << endl;
     debug5 << "NetworkManager::RenderTiledInternal: zoomTile=" << zoomTile << endl;
@@ -3190,7 +3201,9 @@ NetworkManager::RenderTiledInternal()
     const double nxExtra = double((nxTiles * tileWidth) - imageWidth) / double(tileWidth);
     const double nyExtra= double((nyTiles * tileHeight) - imageHeight) / double(tileHeight);
 
-    // Determine the pan factors for the canvas and foreground renderers.
+    //
+    // Determine the tile parameters for the canvas and foreground renderers.
+    //
     const double xPanInit  = xPanUser * (double(imageWidth) / double(imageHeight)) * (double(tileHeight) / double(tileWidth)) + double(nxTiles - 1 - nxExtra) / (double(zoomTile) * zoomUser * 2.);
     const double yPanInit  = yPanUser + double(nyTiles - 1 - nyExtra) / (double(zoomTile) * zoomUser * 2.);
     const double xPanDelta = 1. / (zoomUser * double(zoomTile));
@@ -3207,6 +3220,25 @@ NetworkManager::RenderTiledInternal()
     // Loop over tiles adjusting the X and Y pan factors for each tile.
     //
     viswin->SetSize(tileWidth, tileHeight);
+
+    // Set the initial 2D view.
+    avtView2D view2DTile = view2D;
+    view2DTile.window[0] = xWindowInit;
+    view2DTile.window[1] = xWindowInit + xWindowDelta;
+    view2DTile.window[2] = yWindowInit;
+    view2DTile.window[3] = yWindowInit + yWindowDelta;
+    viswin->SetView2D(view2DTile);
+
+    View2DAttributes view2DAtts = renderState.windowInfo->windowAttributes.GetView2D();
+    double windowCoords[4];
+    windowCoords[0] = xWindowInit;
+    windowCoords[1] = xWindowInit + xWindowDelta;
+    windowCoords[2] = yWindowInit;
+    windowCoords[3] = yWindowInit + yWindowDelta;
+    view2DAtts.SetWindowCoords(windowCoords);
+    renderState.windowInfo->windowAttributes.SetView2D(view2DAtts);
+
+    // Set the initial 3D view.
     avtView3D view3DTile = view3D;
     view3DTile.imageZoom = zoomUser * zoomTile;
     view3DTile.imagePan[0] = xPanInit;
@@ -3236,6 +3268,8 @@ NetworkManager::RenderTiledInternal()
     int rank = PAR_Rank();
     for (int iyTile = 0; iyTile < nyTiles; iyTile++)
     {
+	view2DTile.window[0] = xWindowInit;
+	view2DTile.window[1] = xWindowInit + xWindowDelta;
         view3DTile.imagePan[0] = xPanInit;
         view3DTile.tilePan[0] = xPanInit - xPanUser;
         foregroundPan[0] = xPanInit2;
@@ -3243,9 +3277,10 @@ NetworkManager::RenderTiledInternal()
         for (int ixTile = 0; ixTile < nxTiles; ixTile++)
         {
             //
-            // Set the viswin view3D, background and foreground cameras
-            // for the tile.
+            // Set the viswin view2D, view3D, background and foreground
+	    // cameras for the tile.
             //
+            viswin->SetView2D(view2DTile);
             viswin->SetView3D(view3DTile);
 
             vtkCamera *cam = viswin->GetBackground()->GetActiveCamera();
@@ -3265,8 +3300,11 @@ NetworkManager::RenderTiledInternal()
             viswin->GetForeground()->SetActiveCamera(cam);
 
             //
-            // Set the windowAttributes view3D for the tile.
+            // Set the windowAttributes view2D and view3D for the tile.
             //
+	    view2DAtts.SetWindowCoords(view2DTile.window);
+            renderState.windowInfo->windowAttributes.SetView2D(view2DAtts);
+
             view3DAtts.SetImagePan(view3DTile.imagePan);
             view3DAtts.SetTilePan(view3DTile.tilePan);
             renderState.windowInfo->windowAttributes.SetView3D(view3DAtts);
@@ -3287,11 +3325,15 @@ NetworkManager::RenderTiledInternal()
             }
 
             remainingNxCanvas -= tileWidth;
+	    view2DTile.window[0] += xWindowDelta;
+	    view2DTile.window[1] += xWindowDelta;
             view3DTile.imagePan[0] -= xPanDelta;
             view3DTile.tilePan[0] -= xPanDelta;
             foregroundPan[0] -= xPanDelta2;
         }
         remainingNyCanvas -= tileHeight;
+        view2DTile.window[2] += yWindowDelta;
+        view2DTile.window[3] += yWindowDelta;
         view3DTile.imagePan[1] -= yPanDelta;
         view3DTile.tilePan[1] -= yPanDelta;
         foregroundPan[1] -= yPanDelta2;
@@ -3301,9 +3343,11 @@ NetworkManager::RenderTiledInternal()
         writeVTK("pass_6_tiled_image.vtk", pass2->GetImage());
 
     //
-    // Restore the viswin size, view3D, background and foreground cameras.
+    // Restore the viswin size, view2D, view3D, background and foreground
+    // cameras.
     //
     viswin->SetSize(imageWidth, imageHeight);
+    viswin->SetView2D(view2D);
     viswin->SetView3D(view3D);
 
     vtkCamera *cam = viswin->GetBackground()->GetActiveCamera();
