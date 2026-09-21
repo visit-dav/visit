@@ -10,6 +10,18 @@
 
 class vtkDataArraySelection;
 
+// ****************************************************************************
+//  Class: visit_vtkOpenFOAMReader
+//
+//  Purpose:
+//      Wraps VTK's vtkOpenFOAMReader for VisIt and provides decomposed-case
+//      handling previously supplied by visit_vtkPOpenFOAMReader.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Wed Aug 5, 2026
+//
+// ****************************************************************************
+
 class visit_vtkOpenFOAMReader : public vtkOpenFOAMReader
 {
 public:
