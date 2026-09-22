@@ -2772,7 +2772,14 @@ VisWinRendering::MSAAAvailable()
         return RenderingAttributes::MSAA_UNKNOWN;
 
     if (!oglWin->IsCurrent())
-        return RenderingAttributes::MSAA_UNKNOWN;
+    {
+        oglWin->MakeCurrent();
+
+        // If we don't have a current window at this point, something
+        // may be wrong, set MSAA as unavailable.
+        if (!oglWin->IsCurrent())
+            return RenderingAttributes::MSAA_NOT_AVAILABLE;
+    }
 
     int msamples = 0;
     oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
