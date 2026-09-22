@@ -33,6 +33,9 @@ bool                          avtCallback::safeMode = false;
 #if defined(HAVE_OSPRAY)
 bool                          avtCallback::useOSPRay = false;
 #endif
+#if defined(HAVE_ANARI)
+bool                          avtCallback::anariDeviceCreationEnabled = false;
+#endif
 
 GlobalAttributes::BackendType avtCallback::backendType = GlobalAttributes::VTK;
 

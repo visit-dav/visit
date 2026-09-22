@@ -248,6 +248,16 @@ A few nuances of this are worth knowing about, especially on clusters where node
   On a cluster where all nodes are configured identically this makes no difference, but if the engine is running across heterogeneous nodes (for example, only some nodes have the GPU or driver a back-end requires), the options shown in the GUI reflect only processor 0's capabilities and may not be available on every processor.
   If ANARI rendering fails unexpectedly in this situation, verify that the selected back-end is actually available on all nodes the engine is running on, not just the node running processor 0.
 
+ANARI Rendering and Volume Plots
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _Preferences-AnariRenderingVolumeConflict:
+
+.. warning::
+    Enabling **Anari Rendering** here replaces VisIt_'s entire rendering pipeline for the visualization window and not just the surface plots in it.
+    If the window also contains a Volume plot that is **not** set to use ANARI rendering (its default, OSPRay, or other rendering method instead), that Volume plot will not be volume rendered while **Anari Rendering** is enabled here, since those rendering methods have no representation in the ANARI-rendered image.
+    To see both at once, set the Volume plot's rendering method to **ANARI Rendering** as well (see :ref:`ANARI rendering method<VolumePlot-AnariSurfaceConflict>` in the Volume plot chapter) otherwise, disable **Anari Rendering** here to use the Volume plot's other rendering methods.
+
 Rendering Information
 ~~~~~~~~~~~~~~~~~~~~~
 

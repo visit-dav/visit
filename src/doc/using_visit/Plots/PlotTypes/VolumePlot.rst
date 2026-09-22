@@ -158,12 +158,16 @@ For data not defined on a rectilinear grid, the data will need to be resampled o
 The user can control the resampling of the data through the resampling options. 
 See the **Serial and Parallel Rendering Options** section above for details.
 
+Like ANARI surface rendering (see :ref:`ANARI Rendering and the Compute Engine<Preferences-AnariRenderingEngine>` in the **Rendering options** chapter), ANARI volume rendering follows a client-server model: it is the connected :ref:`compute engine<ComputeEngines>` that creates the ANARI device and renders, not the GUI or viewer.
+This means ANARI volume rendering works even when the machine running the GUI has no ANARI back-ends installed.
+
 ANARI Rendering Options:
 
 ``Back-end``: This option allows you to specify any ANARI supported back-end like `NVIDIA VisRTX <https://github.com/NVIDIA/VisRTX/>`_.
 
-The back-end is a library that implements the ANARI API and must be on your library path.
-You can specify **environment** if you've exported the **ANARI_LIBRARY** environment variable with the name of theback-end (e.g., ``export ANARI_LIBRARY=visrtx``).
+The back-end is a library that implements the ANARI API and must be on the compute engine's library path.
+This list is populated by asking the connected compute engine which ANARI libraries it has available, rather than by inspecting the local machine.
+If **ANARI_LIBRARY** is set in the environment the compute engine is launched in, it is included in this list automatically (e.g., ``export ANARI_LIBRARY=visrtx`` before launching the engine).
 A list of supported back-ends and publicly available applications using ANARI can be found `here <https://github.com/KhronosGroup/ANARI-SDK/>`_.
 
 .. note::
@@ -191,6 +195,13 @@ For more detailed information on the options, please refer to the vendor's docum
 .. figure:: ../images/anari_rendering2.png
 
    ANARI rendering options generated at runtime
+
+.. _VolumePlot-AnariSurfaceConflict:
+
+.. warning::
+    ANARI surface rendering (enabled in the **Rendering options** window; see :ref:`ANARI Rendering<Preferences-AnariRenderingOptions>`) replaces VisIt_'s entire rendering pipeline for the visualization window, not just the surface plots in it.
+    If a Volume plot in that same window is **not** using the **ANARI Rendering** method described here, it will not be volume rendered while ANARI surface rendering is enabled, since ANARI has no way to represent the default (or OSPRay) volume renderer's output.
+    To switch between the various volume rendering methods, disable (if enabled) **ANARI Rendering** in the **Rendering options** window.
 
 Transfer Function
 """""""""""""""""

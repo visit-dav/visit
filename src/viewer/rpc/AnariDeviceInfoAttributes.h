@@ -22,6 +22,14 @@
 //  Programmer:  Kevin Griffin
 //  Creation:    Thu 27 Aug 2026
 //
+//  Modifications:
+//    Kevin Griffin, Tue 22 Sep 2026
+//    Added requestor. More than one ANARI settings panel (surface rendering,
+//    volume plots) can now be attached to this single shared result object,
+//    so the reply is stamped with a "<rendertype>" requestor (e.g.
+//    "surface", "volume") identifying which panel's request it answers,
+//    letting each panel ignore replies that aren't addressed to it.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API AnariDeviceInfoAttributes : public AttributeSubject
@@ -45,8 +53,13 @@ public:
     const std::string &GetXmlResult() const { return xmlResult; }
           std::string &GetXmlResult() { return xmlResult; }
 
+    void SetRequestor(const std::string &requestor_);
+    const std::string &GetRequestor() const { return requestor; }
+          std::string &GetRequestor() { return requestor; }
+
 private:
     std::string xmlResult;
+    std::string requestor;
 };
 
 #endif
