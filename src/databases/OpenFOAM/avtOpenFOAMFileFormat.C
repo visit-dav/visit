@@ -9,6 +9,7 @@
 #include <avtOpenFOAMFileFormat.h>
 
 #include <string>
+#include <vector>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -27,12 +28,24 @@
 #include <maptypes.h>
 #include <StringHelpers.h>
 #include <FileFunctions.h>
+#include <avtOpenFOAMMetaDataHelper.h>
 
 using     std::string;
 using     std::pair;
 using     std::map;
 
-#include <visit_vtkPOpenFOAMReader.h>
+#include <visit_vtkOpenFOAMReader.h>
+
+// Returns true when VisIt's metadata already contains the requested variable.
+static bool
+OpenFOAMVariableInMetaData(const avtDatabaseMetaData *md, const std::string &name)
+{
+    return md == NULL ||
+           md->GetScalar(name) != NULL ||
+           md->GetVector(name) != NULL ||
+           md->GetTensor(name) != NULL ||
+           md->GetSymmTensor(name) != NULL;
+}
 
 
 // ****************************************************************************
@@ -50,6 +63,9 @@ using     std::map;
 //    Ensure we pass the 'controlDict' file to the vtk reader. Assumes it is
 //    in the same location as the .foam file.
 //
+//    Kathleen Biagas, Wed Aug 5, 2026
+//    Use visit_vtkOpenFOAMReader and initialize currentTimeStep.
+//
 // ****************************************************************************
 
 avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename, 
@@ -57,6 +73,7 @@ avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename,
 {
     convertCellToPoint = false;
     readZones = false;
+    currentTimeStep = -1;
 
     std::string controlDict(filename);
     std::string base = FileFunctions::Basename(filename);
@@ -65,7 +82,7 @@ avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename,
         std::string dir = FileFunctions::Dirname(filename);
         controlDict = dir + VISIT_SLASH_STRING + "controlDict";
     }
-    reader = visit_vtkPOpenFOAMReader::New();
+    reader = visit_vtkOpenFOAMReader::New();
     reader->SetFileName(controlDict.c_str());
     reader->SetCreateCellToPoint(convertCellToPoint ? 1 : 0);
     reader->DecomposePolyhedraOn();
@@ -164,7 +181,9 @@ void
 avtOpenFOAMFileFormat::FreeUpResources(void)
 {
 }
-// **************************************************************************** //  Method: avtOpenFOAMFileFormat::PopulateDatabaseMetaData
+
+// ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
 //      This database meta-data object is like a table of contents for the
@@ -182,31 +201,39 @@ avtOpenFOAMFileFormat::FreeUpResources(void)
 //    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
 //    VTK-8, API for updating TimeStep changed.
 // 
+//    Kathleen Biagas, Wed Aug 5, 2026
+//    Utilize avtOpenFOAMMetaDataHelper for patches, zones and fields.
+// 
 // ****************************************************************************
 
 void
 avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, 
     int timeState)
 {
-    reader->GetOutputInformation(0)->Set(
-        vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(),
-        timeSteps[timeState]);
-    if (readZones)
+    avtOpenFOAMMetaDataHelper metaDataHelper(reader->GetFileName(),
+                                            static_cast<int>(reader->GetCaseType()));
+    if (!metaDataHelper.IsValid())
     {
-        // turn on ReadZones so we can get the names of the pointZones,
-        // faceZones and cellZones if present.
-        reader->SetReadZones(1);
+        debug1 << "avtOpenFOAMFileFormat::PopulateDatabaseMetaData: "
+               << metaDataHelper.GetError() << endl;
+        return;
     }
-    reader->UpdateTimeStep(timeSteps[timeState]);
 
-    stringVector lagrangianPatches;
+    avtOpenFOAMMetaDataHelper::MetaData metaData;
+    if (!metaDataHelper.ReadMetaData(timeState, readZones, metaData))
+    {
+        debug1 << "avtOpenFOAMFileFormat::PopulateDatabaseMetaData: "
+               << "failed to read metadata for timestep " << timeState << endl;
+        return;
+    }
+
     stringVector meshNames; // for non-lagrangian meshes
     StringStringVectorMap meshPatchMap;
     StringStringVectorMap regionPatchMap;
 
-    for(int i = 0; i < reader->GetNumberOfPatchArrays(); ++i)
+    for (size_t i = 0; i < metaData.patchNames.size(); ++i)
     {
-        string fullPatchName(reader->GetPatchArrayName(i));
+        const string &fullPatchName(metaData.patchNames[i]);
         size_t pos = fullPatchName.find("/");
         if (pos == string::npos)
         {
@@ -227,10 +254,6 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             {
                 meshPatchMap["Patches"].push_back(fullPatchName);
             }
-        }
-        else if (fullPatchName.find("lagrangian") != string::npos)
-        {
-            lagrangianPatches.push_back(fullPatchName);
         }
         else 
         {
@@ -310,20 +333,20 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
 
     // point meshes, 'Clouds'.
-    for (size_t i = 0;i < lagrangianPatches.size(); ++i)
+    for (size_t i = 0; i < metaData.lagrangianPatches.size(); ++i)
     {
         avtMeshMetaData *pmesh = new avtMeshMetaData;
         pmesh->meshType = AVT_POINT_MESH;
         pmesh->hasSpatialExtents = false;
         pmesh->topologicalDimension = 1;
         pmesh->spatialDimension = 3;
-        pmesh->name = lagrangianPatches[i];
+        pmesh->name = metaData.lagrangianPatches[i];
         md->Add(pmesh);
     }
 
     if (readZones)
     {
-        if (reader->GetNumberOfCellZones() > 0)
+        if (!metaData.cellZoneNames.empty())
         {
             avtMeshMetaData *mmd = new avtMeshMetaData;
             mmd->meshType = AVT_UNSTRUCTURED_MESH;
@@ -332,16 +355,15 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             mmd->spatialDimension = 3;
             mmd->name = "cellZones";
             mmd->blockTitle = "boundary";
-            mmd->numBlocks = 0;
-            for (int i = 0; i < reader->GetNumberOfCellZones();  ++i)
+            mmd->numBlocks = static_cast<int>(metaData.cellZoneNames.size());
+            for (size_t i = 0; i < metaData.cellZoneNames.size(); ++i)
             {
-              mmd->numBlocks++;
-              mmd->blockNames.push_back(reader->GetCellZoneName(i));
+              mmd->blockNames.push_back(metaData.cellZoneNames[i]);
             }
             md->Add(mmd);
             // don't add it to meshnames, because it has no vars
         }
-        if (reader->GetNumberOfFaceZones() > 0)
+        if (!metaData.faceZoneNames.empty())
         {
             avtMeshMetaData *mmd = new avtMeshMetaData;
             mmd->meshType = AVT_UNSTRUCTURED_MESH;
@@ -350,16 +372,15 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             mmd->spatialDimension = 3;
             mmd->name = "faceZones";
             mmd->blockTitle = "boundary";
-            mmd->numBlocks = 0;
-            for (int i = 0; i < reader->GetNumberOfFaceZones();  ++i)
+            mmd->numBlocks = static_cast<int>(metaData.faceZoneNames.size());
+            for (size_t i = 0; i < metaData.faceZoneNames.size(); ++i)
             {
-              mmd->numBlocks++;
-              mmd->blockNames.push_back(reader->GetFaceZoneName(i));
+              mmd->blockNames.push_back(metaData.faceZoneNames[i]);
             }
             md->Add(mmd);
             // don't add it to meshnames, because it has no vars
         }
-        if (reader->GetNumberOfPointZones() > 0)
+        if (!metaData.pointZoneNames.empty())
         {
             avtMeshMetaData *mmd = new avtMeshMetaData;
             mmd->meshType = AVT_UNSTRUCTURED_MESH;
@@ -368,11 +389,10 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             mmd->spatialDimension = 3;
             mmd->name = "pointZones";
             mmd->blockTitle = "boundary";
-            mmd->numBlocks = 0;
-            for (int i = 0; i < reader->GetNumberOfPointZones();  ++i)
+            mmd->numBlocks = static_cast<int>(metaData.pointZoneNames.size());
+            for (size_t i = 0; i < metaData.pointZoneNames.size(); ++i)
             {
-              mmd->numBlocks++;
-              mmd->blockNames.push_back(reader->GetPointZoneName(i));
+              mmd->blockNames.push_back(metaData.pointZoneNames[i]);
             }
             md->Add(mmd);
             // don't add it to meshnames, because it has no vars
@@ -386,38 +406,30 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // the vtk reader could sort that out so we only present variables for
     // patches that truly have them.
   
-    for (int i = 0; i < reader->GetNumberOfCellArrays(); ++i)
+    for (size_t i = 0; i < metaData.cellFields.size(); ++i)
     {
-         const char *name(reader->GetCellArrayName(i));
-         vtkStdString cn = reader->GetCellArrayClassName(name);
-         avtVarType varType = OpenFOAMClassNameToVarType(cn);
+         const string &name(metaData.cellFields[i].name);
+         avtVarType varType = OpenFOAMClassNameToVarType(metaData.cellFields[i].className);
          avtCentering centering = convertCellToPoint?AVT_NODECENT:AVT_ZONECENT;
          for (size_t j = 0; j < meshNames.size(); ++j)
              AddVarToMetaData(varType, md, name, meshNames[j], centering);
     }
 
-    for (int i = 0; i < reader->GetNumberOfPointArrays(); ++i)
+    for (size_t i = 0; i < metaData.pointFields.size(); ++i)
     {
-         const char *name = reader->GetPointArrayName(i);
-         vtkStdString cn = reader->GetPointArrayClassName(name);
-         avtVarType varType = OpenFOAMClassNameToVarType(cn);
+         const string &name(metaData.pointFields[i].name);
+         avtVarType varType = OpenFOAMClassNameToVarType(metaData.pointFields[i].className);
          for (size_t j = 0; j < meshNames.size(); ++j)
              AddVarToMetaData(varType, md, name, meshNames[j], AVT_NODECENT);
     }
 
-    for (int i = 0; i < reader->GetNumberOfLagrangianArrays(); ++i)
+    for (size_t i = 0; i < metaData.lagrangianFields.size(); ++i)
     {
-         const char *name = reader->GetLagrangianArrayName(i);
-         vtkStdString cn = reader->GetLagrangianArrayClassName(name);
-         avtVarType varType = OpenFOAMClassNameToVarType(cn);
-         for (size_t z = 0; z < lagrangianPatches.size(); ++z)
-             AddVarToMetaData(varType, md, name, lagrangianPatches[z], 
+         const string &name(metaData.lagrangianFields[i].name);
+         avtVarType varType = OpenFOAMClassNameToVarType(metaData.lagrangianFields[i].className);
+         for (size_t z = 0; z < metaData.lagrangianPatches.size(); ++z)
+             AddVarToMetaData(varType, md, name, metaData.lagrangianPatches[z],
                               AVT_NODECENT);
-    }
-    if (readZones)
-    {
-        // turn off ReadZones until we actually want to see them.
-        reader->SetReadZones(0);
     }
 }
 
@@ -442,11 +454,20 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Creation:   Thu May 30 15:18:41 MST 2013
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Aug 5, 2026
+//    Add region-aware traversal for nested VTK OpenFOAM multiblock output.
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtOpenFOAMFileFormat::GetBlock(vtkMultiBlockDataSet *mbds, bool matchMesh)
+{
+    return GetBlock(mbds, matchMesh, currentRegion.empty());
+}
+
+vtkDataSet *
+avtOpenFOAMFileFormat::GetBlock(vtkMultiBlockDataSet *mbds, bool matchMesh,
+    bool inCurrentRegion)
 {
     if (mbds == NULL)
     {
@@ -459,32 +480,153 @@ avtOpenFOAMFileFormat::GetBlock(vtkMultiBlockDataSet *mbds, bool matchMesh)
         vtkDataObject *block = mbds->GetBlock(i);
         if (block != NULL)
         {
-            string blockName(mbds->GetMetaData(i)->Get(
-                            vtkCompositeDataSet::NAME())); 
+            const char *blockNamePtr = NULL;
+            if (mbds->GetMetaData(i) != NULL &&
+                mbds->GetMetaData(i)->Has(vtkCompositeDataSet::NAME()))
+            {
+                blockNamePtr = mbds->GetMetaData(i)->Get(
+                               vtkCompositeDataSet::NAME());
+            }
+            string blockName(blockNamePtr == NULL ? "" : blockNamePtr);
+            const bool childInCurrentRegion =
+                inCurrentRegion || blockName == currentRegion;
+
             if (block->GetDataObjectType() == VTK_MULTIBLOCK_DATA_SET)
             {
+                if (!currentRegion.empty() && !childInCurrentRegion)
+                    continue;
+
                 if (matchMesh)
                 {
                     // We don't want to recurse on 'faceZones' when we
                     // are trying to plot 'cellZones', and vice-versa.
                     if (blockName == currentMesh || 
                         blockName == currentPatch || 
-                       (readZones && blockName == "Zones"))
+                       (readZones && blockName == "Zones") ||
+                        blockName == currentRegion ||
+                       (currentRegion.empty() && blockName == "defaultRegion"))
                         rv = GetBlock(vtkMultiBlockDataSet::SafeDownCast(block),
-                                      matchMesh);
+                                      matchMesh, childInCurrentRegion);
                 }
                 else
                     rv = GetBlock(vtkMultiBlockDataSet::SafeDownCast(block),
-                                  matchMesh);
+                                  matchMesh, childInCurrentRegion);
             }
             else
             {
-                if (blockName == currentPatch)
+                if (inCurrentRegion && blockName == currentPatch)
                     rv = vtkDataSet::SafeDownCast(block);
             }
         }
     } 
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::GetZoneBlock
+//
+//  Purpose:
+//      Traverses a vtkMultiBlockDataSet to find the selected point/face/cell
+//      zone. Unlike GetBlock, this only accepts leaf names after entering the
+//      requested zone-family block, so repeated names in regions, patches and
+//      zones do not alias each other.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Wed Aug 5, 2026
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtOpenFOAMFileFormat::GetZoneBlock(vtkMultiBlockDataSet *mbds,
+    bool inCurrentRegion, bool inZoneFamily)
+{
+    if (mbds == NULL)
+    {
+        return NULL;
+    }
+
+    vtkDataSet *rv = NULL;
+    int nBlocks = mbds->GetNumberOfBlocks();
+    for (int i = 0; i < nBlocks && rv == NULL; ++i)
+    {
+        vtkDataObject *block = mbds->GetBlock(i);
+        if (block == NULL)
+        {
+            continue;
+        }
+
+        const char *blockNamePtr = NULL;
+        if (mbds->GetMetaData(i) != NULL &&
+            mbds->GetMetaData(i)->Has(vtkCompositeDataSet::NAME()))
+        {
+            blockNamePtr = mbds->GetMetaData(i)->Get(
+                           vtkCompositeDataSet::NAME());
+        }
+        string blockName(blockNamePtr == NULL ? "" : blockNamePtr);
+
+        const bool childInCurrentRegion =
+            inCurrentRegion || blockName == currentRegion ||
+            (currentRegion.empty() && blockName == "defaultRegion");
+        const bool childInZoneFamily =
+            inZoneFamily || blockName == currentMesh;
+
+        if (block->GetDataObjectType() == VTK_MULTIBLOCK_DATA_SET)
+        {
+            if (!currentRegion.empty() && !childInCurrentRegion)
+            {
+                continue;
+            }
+
+            rv = GetZoneBlock(vtkMultiBlockDataSet::SafeDownCast(block),
+                              childInCurrentRegion, childInZoneFamily);
+        }
+        else if (childInZoneFamily && blockName == currentPatch)
+        {
+            rv = vtkDataSet::SafeDownCast(block);
+        }
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::SyncReaderTime
+//
+//  Purpose:
+//      Sets both the VTK pipeline requested time and the wrapped reader's
+//      internal OpenFOAM time index for the VisIt timestate.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Wed Aug 5, 2026
+//
+// ****************************************************************************
+
+bool
+avtOpenFOAMFileFormat::SyncReaderTime(int timestate, const char *caller)
+{
+    if (timestate < 0 || static_cast<size_t>(timestate) >= timeSteps.size())
+    {
+        return false;
+    }
+
+    const double timeValue = timeSteps[timestate];
+    reader->GetOutputInformation(0)->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(), timeValue);
+
+    const bool vtkTimeChanged = reader->SetTimeValue(timeValue);
+    debug1 << "avtOpenFOAMFileFormat::" << caller
+           << ": requested VTK time=" << timeValue
+           << ", reader time=" << reader->GetTimeValue()
+           << ", changed=" << (vtkTimeChanged ? "true" : "false")
+           << endl;
+
+    if (vtkTimeChanged)
+    {
+        reader->Modified();
+    }
+    return true;
 }
 
 
@@ -508,11 +650,21 @@ avtOpenFOAMFileFormat::GetBlock(vtkMultiBlockDataSet *mbds, bool matchMesh)
 //  Programmer: biagas2 -- generated by xml2avt
 //  Creation:   Tue May 21 11:07:32 PDT 2013
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Aug 5, 2026
+//    Synchronize the reader time explicitly and use zone-aware block lookup.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtOpenFOAMFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
+    debug1 << "avtOpenFOAMFileFormat::GetMesh: timestate=" << timestate
+           << ", domain=" << domain << ", mesh=\"" << meshname << "\""
+           << endl;
+
+    const bool haveRequestedTime = SyncReaderTime(timestate, "GetMesh");
+
     string mname(meshname);
     SelectPatchArray(domain, mname);
 
@@ -523,13 +675,18 @@ avtOpenFOAMFileFormat::GetMesh(int timestate, int domain, const char *meshname)
         reader->SetReadZones(1);
     }
 
-    reader->Update();
+    if (haveRequestedTime)
+        reader->UpdateTimeStep(timeSteps[timestate]);
+    else
+        reader->Update();
 
     if (reader->GetOutput() == NULL)
     {
-        debug1 << "avtOpenFOAMFileFormat::GetMesh, Error reading Patch "
-               << reader->GetPatchArrayName(domain) << "." 
-               << "  Reader's Output is NULL." << endl;
+        debug1 << "avtOpenFOAMFileFormat::GetMesh, Error reading Mesh "
+               << mname << ", domain " << domain << ", selected region \""
+               << currentRegion << "\", selected block \"" << currentPatch
+               << "\".  Reader's Output is NULL." << endl;
+        reader->SetReadZones(0);
         return NULL;
     }
 
@@ -537,15 +694,22 @@ avtOpenFOAMFileFormat::GetMesh(int timestate, int domain, const char *meshname)
                       mname == "faceZones" || 
                       mname == "pointZones");
 
-    vtkDataSet *block = GetBlock(reader->GetOutput(), matchMesh);
+    vtkDataSet *block = matchMesh
+        ? GetZoneBlock(reader->GetOutput(), currentRegion.empty(), false)
+        : GetBlock(reader->GetOutput(), matchMesh);
 
     if (block == NULL)
     {
-        debug1 << "avtOpenFOAMFileFormat::GetMesh, Error reading Patch "
-               << reader->GetPatchArrayName(domain) << "." 
-               << "  GetBlock returned NULL." << endl;
+        debug1 << "avtOpenFOAMFileFormat::GetMesh, Error reading Mesh "
+               << mname << ", domain " << domain << ", selected region \""
+               << currentRegion << "\", selected block \"" << currentPatch
+               << "\".  GetBlock returned NULL." << endl;
+        reader->SetReadZones(0);
         return NULL;
     }
+    debug1 << "avtOpenFOAMFileFormat::GetMesh: selected VTK block="
+           << block << ", cells=" << block->GetNumberOfCells()
+           << ", points=" << block->GetNumberOfPoints() << endl;
 
     vtkDataSet *rv = block->NewInstance();
     if(rv != NULL)
@@ -573,6 +737,10 @@ avtOpenFOAMFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 //  Creation:   May 22, 2013
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Aug 5, 2026
+//    Synchronize reader time, refresh field selections at the requested
+//    timestep, validate mesh-qualified variables against VisIt metadata, and
+//    add debug diagnostics.
 //
 // ****************************************************************************
 
@@ -581,7 +749,12 @@ avtOpenFOAMFileFormat::ReadVar(int timestate, int domain, const char *var)
 {
     // Var may have been constructed as 'meshname/varname', so deconstruct
     // to get at the var name the reader is expecting.
+    string metadataVarName(var);
     string varname(var);
+    debug1 << "avtOpenFOAMFileFormat::ReadVar: timestate=" << timestate
+           << ", domain=" << domain << ", requested var=\"" << var << "\""
+           << endl;
+
     size_t pos = varname.rfind('/');
     if (pos != string::npos)
     {
@@ -591,6 +764,31 @@ avtOpenFOAMFileFormat::ReadVar(int timestate, int domain, const char *var)
         // now we need to make sure this mesh is the currently selected Patch
         SelectPatchArray(domain, mesh);
     }
+
+    debug1 << "avtOpenFOAMFileFormat::ReadVar: selected mesh=\""
+           << currentMesh << "\", region=\"" << currentRegion
+           << "\", patch=\"" << currentPatch << "\", field=\""
+           << varname << "\"" << endl;
+
+    if (pos != string::npos && !OpenFOAMVariableInMetaData(metadata, metadataVarName))
+    {
+        debug1 << "avtOpenFOAMFileFormat::ReadVar: \"" << metadataVarName
+               << "\" is not present in VisIt metadata." << endl;
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    const bool haveRequestedTime = SyncReaderTime(timestate, "ReadVar");
+    if (haveRequestedTime)
+    {
+        reader->MakeMetaDataAtTimeStep(false);
+    }
+
+    debug1 << "avtOpenFOAMFileFormat::ReadVar: selection existence for \""
+           << varname << "\" after metadata refresh: cell="
+           << reader->GetCellArrayExists(varname.c_str()) << ", point="
+           << reader->GetPointArrayExists(varname.c_str())
+           << ", lagrangian="
+           << reader->GetLagrangianArrayExists(varname.c_str()) << endl;
 
     bool cellData = true;
 
@@ -616,10 +814,17 @@ avtOpenFOAMFileFormat::ReadVar(int timestate, int domain, const char *var)
     }
     else
     {
+        debug1 << "avtOpenFOAMFileFormat::ReadVar: \"" << varname
+               << "\" is not present in any VTK selection." << endl;
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    reader->Update();
+    if (haveRequestedTime)
+        reader->UpdateTimeStep(timeSteps[timestate]);
+    else
+        reader->Update();
+    debug1 << "avtOpenFOAMFileFormat::ReadVar: reader update complete, output="
+           << reader->GetOutput() << endl;
 
     bool matchMesh = (currentMesh == "cellZones" || 
                       currentMesh == "faceZones" ||
@@ -632,22 +837,54 @@ avtOpenFOAMFileFormat::ReadVar(int timestate, int domain, const char *var)
                <<  "vtkDataSet from reader's output" << endl;
         return NULL;
     }
+    debug1 << "avtOpenFOAMFileFormat::ReadVar: selected VTK block="
+           << block << ", cells=" << block->GetNumberOfCells()
+           << ", points=" << block->GetNumberOfPoints() << endl;
 
     vtkDataArray *rv = NULL;
     if (cellData)
     {
+        debug1 << "avtOpenFOAMFileFormat::ReadVar: output cell arrays="
+               << block->GetCellData()->GetNumberOfArrays()
+               << ", has \"" << varname << "\"="
+               << (block->GetCellData()->GetArray(varname.c_str()) != NULL)
+               << endl;
         rv = block->GetCellData()->GetArray(varname.c_str());
     }
     else 
     {
+        debug1 << "avtOpenFOAMFileFormat::ReadVar: output point arrays="
+               << block->GetPointData()->GetNumberOfArrays()
+               << ", has \"" << varname << "\"="
+               << (block->GetPointData()->GetArray(varname.c_str()) != NULL)
+               << endl;
         rv = block->GetPointData()->GetArray(varname.c_str());
     }
     if (rv == NULL)
     {
         debug1 << "avtOpenFOAMFileFormat::ReadVar: " << var
                << " should exist but reader could not retrieve it." << endl;
+        for (int i = 0; i < block->GetCellData()->GetNumberOfArrays(); ++i)
+        {
+            debug1 << "avtOpenFOAMFileFormat::ReadVar: cell array[" << i
+                   << "]=\"" << block->GetCellData()->GetArrayName(i)
+                   << "\"" << endl;
+        }
+        for (int i = 0; i < block->GetPointData()->GetNumberOfArrays(); ++i)
+        {
+            debug1 << "avtOpenFOAMFileFormat::ReadVar: point array[" << i
+                   << "]=\"" << block->GetPointData()->GetArrayName(i)
+                   << "\"" << endl;
+        }
         EXCEPTION1(InvalidVariableException, varname);
     }
+    double range[2] = {0., 0.};
+    rv->GetRange(range, -1);
+    debug1 << "avtOpenFOAMFileFormat::ReadVar: returning \"" << varname
+           << "\" tuples=" << rv->GetNumberOfTuples()
+           << ", components=" << rv->GetNumberOfComponents()
+           << ", magnitude range=(" << range[0] << ", " << range[1]
+           << ")" << endl;
     rv->Register(NULL);
     return rv;
 }
@@ -729,20 +966,24 @@ avtOpenFOAMFileFormat::GetVectorVar(int timestate, int domain,
 //    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
 //    VTK-8, API for updating TimeStep changed.
 //
+//    Kathleen Biagas, Wed Aug 5, 2026
+//    Use SyncReaderTime and fix the upper-bound timestep check.
+//
 // ****************************************************************************
 
 void
 avtOpenFOAMFileFormat::ActivateTimestep(int timestate)
 {
-    if (timestate < 0 || timestate > (int)timeSteps.size())
+    debug1 << "avtOpenFOAMFileFormat::ActivateTimestep: timestate="
+           << timestate << ", currentTimeStep=" << currentTimeStep << endl;
+
+    if (timestate < 0 || timestate >= (int)timeSteps.size())
     {
         EXCEPTION2(BadIndexException, timestate, (int) timeSteps.size());
     }
     if (timestate != currentTimeStep)
     {
-        reader->GetOutputInformation(0)->Set(
-            vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(),
-            timeSteps[timestate]);
+        SyncReaderTime(timestate, "ActivateTimestep");
         currentTimeStep = timestate;
     }
 }
@@ -834,6 +1075,72 @@ avtOpenFOAMFileFormat::AddVarToMetaData(avtVarType varType,
 
 
 // ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::SelectPatchArrayByName
+//
+//  Purpose:
+//      Chooses the first OpenFOAM patch-array spelling available from the
+//      wrapped reader.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Wed Aug 5, 2026
+//
+// ****************************************************************************
+
+void
+avtOpenFOAMFileFormat::SelectPatchArrayByName(
+    const std::vector<std::string> &names)
+{
+    if (names.empty())
+    {
+        return;
+    }
+
+    for (size_t i = 0; i < names.size(); ++i)
+    {
+        if (PatchArrayExists(names[i]))
+        {
+            reader->SetPatchArrayStatus(names[i].c_str(), 1);
+            return;
+        }
+    }
+
+    // Fall back to the legacy spelling. vtkDataArraySelection ignores names
+    // it does not know, so this preserves the old behavior without fabricating
+    // a new selection entry.
+    reader->SetPatchArrayStatus(names[0].c_str(), 1);
+}
+
+
+// ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::PatchArrayExists
+//
+//  Purpose:
+//      Tests whether the wrapped VTK OpenFOAM reader exposes a patch-array
+//      selection name. VTK 9.5 changed display names from region/patch to
+//      /region/patch/patch, so callers generally provide both spellings.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Wed Aug 5, 2026
+//
+// ****************************************************************************
+
+bool
+avtOpenFOAMFileFormat::PatchArrayExists(const std::string &name) const
+{
+    const int nPatchArrays = reader->GetNumberOfPatchArrays();
+    for (int i = 0; i < nPatchArrays; ++i)
+    {
+        const char *patchName = reader->GetPatchArrayName(i);
+        if (patchName != NULL && name == patchName)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+// ****************************************************************************
 //  Method: avtOpenFOAMFileFormat::SelectPatchArray
 //
 //  Purpose: Chooses the OpenFOAM patch array that should be enabled.
@@ -851,6 +1158,11 @@ avtOpenFOAMFileFormat::AddVarToMetaData(avtVarType varType,
 //  Programmer: Kathleen Biagas
 //  Creation:   May 21, 2013
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Aug 5, 2026
+//    Track the selected region and support both legacy and VTK 9.5 patch-array
+//    selection names.
+//
 // ****************************************************************************
 
 void
@@ -861,10 +1173,11 @@ avtOpenFOAMFileFormat::SelectPatchArray(int domain, const string &meshName)
     reader->DisableAllPatchArrays();
     reader->DisableAllLagrangianArrays();
     currentMesh = meshName;
+    currentRegion.clear();
     if ((meshName == "internalMesh")) //|| (meshName.find("lagrangian") != string::npos))
     {
-        reader->SetPatchArrayStatus(meshName.c_str(), 1);
         currentPatch = meshName;
+        SelectPatchArrayByName(std::vector<std::string>(1, meshName));
     }
     else 
     {
@@ -872,6 +1185,7 @@ avtOpenFOAMFileFormat::SelectPatchArray(int domain, const string &meshName)
         {
             const avtMeshMetaData *mmd = metadata->GetMesh(meshName.c_str());
             string mname(meshName);
+            std::vector<std::string> selectionNames;
             size_t pos = mname.find("/");
             if (pos != string::npos)
             {
@@ -881,32 +1195,78 @@ avtOpenFOAMFileFormat::SelectPatchArray(int domain, const string &meshName)
                 {
                     mname = mmd->blockNames[domain];
                     currentPatch =  mname;
+                    selectionNames.push_back(mname);
+                    selectionNames.push_back(string("patch/") + mname);
                 }
                 else if (patch == "Patches")
                 {
                     mname = region + string("/") + mmd->blockNames[domain];
-                    currentPatch =  mname;
+                    currentRegion = region;
+                    currentPatch =  mmd->blockNames[domain];
+                    selectionNames.push_back(mname);
+                    selectionNames.push_back(string("/") + region +
+                                             string("/patch/") + currentPatch);
                 }
                 else
                 {
+                    currentRegion = region;
                     currentPatch =  patch;
+                    selectionNames.push_back(mname);
+                    if (patch == "internalMesh")
+                    {
+                        selectionNames.push_back(string("/") + region +
+                                                 string("/internalMesh"));
+                    }
+                    else
+                    {
+                        selectionNames.push_back(string("/") + region +
+                                                 string("/patch/") + patch);
+                    }
                 }
             }
-            else  if (mname == "Patches" || mname == "cellZones" ||
-                      mname == "faceZones" || mname == "pointZones" )
+            else  if (mname == "Patches")
             {
                 mname = mmd->blockNames[domain];
                 currentPatch =  mname;
+                selectionNames.push_back(mname);
+                selectionNames.push_back(string("patch/") + mname);
+            }
+            else  if (mname == "cellZones" || mname == "faceZones" ||
+                      mname == "pointZones")
+            {
+                mname = mmd->blockNames[domain];
+                size_t zpos = mname.find("/");
+                if (zpos != string::npos)
+                {
+                    currentRegion = mname.substr(0, zpos);
+                    currentPatch = mname.substr(zpos+1);
+                }
+                else
+                {
+                    currentPatch =  mname;
+                }
             }
             else  if (mname == "Regions")
             {
                 string region(mmd->groupNames[mmd->groupIds[domain]]);
                 // now parse out the groupName from the blockName:
                 string patch = mmd->blockNames[domain].substr(region.size()+1);
+                currentRegion = region;
                 currentPatch =  patch;
                 mname = region + string("/") + patch;
+                selectionNames.push_back(mname);
+                if (patch == "internalMesh")
+                {
+                    selectionNames.push_back(string("/") + region +
+                                             string("/internalMesh"));
+                }
+                else
+                {
+                    selectionNames.push_back(string("/") + region +
+                                             string("/patch/") + patch);
+                }
             }
-            reader->SetPatchArrayStatus(mname.c_str(), 1);
+            SelectPatchArrayByName(selectionNames);
         }
         else
             EXCEPTION1(InvalidVariableException, meshName.c_str());
