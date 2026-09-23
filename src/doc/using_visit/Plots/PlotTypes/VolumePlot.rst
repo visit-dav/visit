@@ -200,8 +200,9 @@ For more detailed information on the options, please refer to the vendor's docum
 
 .. warning::
     ANARI surface rendering (enabled in the **Rendering options** window; see :ref:`ANARI Rendering<Preferences-AnariRenderingOptions>`) replaces VisIt_'s entire rendering pipeline for the visualization window, not just the surface plots in it.
-    If a Volume plot in that same window is **not** using the **ANARI Rendering** method described here, it will not be volume rendered while ANARI surface rendering is enabled, since ANARI has no way to represent the default (or OSPRay) volume renderer's output.
-    To switch between the various volume rendering methods, disable (if enabled) **ANARI Rendering** in the **Rendering options** window.
+    **Serial** and **OSPRay** volume rendering draw the volume as ordinary 3D geometry in that same pipeline, so a Volume plot using either of those methods will not be volume rendered while ANARI surface rendering is enabled, since ANARI has no way to represent their output.
+    **Parallel**, **Compositing**, **Integration**, **SLIVR**, and **ANARI Rendering** are all image-based: they render the volume to an off-screen image on the compute engine and composite that image into the final picture rather than drawing 3D geometry, so they are unaffected by ANARI surface rendering and can be freely combined with it.
+    To use **Serial** or **OSPRay** volume rendering, disable **ANARI Rendering** in the **Rendering options** window, or switch the Volume plot to one of the image-based rendering methods.
 
 Transfer Function
 """""""""""""""""
