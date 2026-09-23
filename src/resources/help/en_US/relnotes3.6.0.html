@@ -45,6 +45,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Advanced features added in version 3.6</font></b></p>
 <ul>
   <li>ANARI rendering now uses a client-server model: the compute engine is responsible for creating the ANARI device and rendering, while the GUI and viewer only need to send and receive ANARI settings. This allows ANARI rendering to be used from a client machine that has no ANARI back-ends installed, such as a laptop or workstation connecting to a remote engine.</li>
+  <li>ANARI volume rendering now uses the same client-server model as ANARI surface rendering: the Volume plot's ANARI settings are populated by querying the connected compute engine instead of creating a local ANARI device.</li>
 </ul>
 
 <a name="GUI_changes"></a>
@@ -53,6 +54,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The splitter handle between the main window's plot controls and notepad/posting area was made more visible, making it easier to know where to grab to resize.</li>
   <li>The 'Help' window controls and content have been simplified. For easier reading of content, 'Manual', 'Getting Help' and 'VisIt home page' topics will now open in an external browser. Bookmarks, index, tabs and back/forward navigation have been removed due to this simplification.  The 'About' option from the Main Gui Menu 'Help' control was moved to the Help window. The main Gui window 'Help' control now directly opens the Help window. 'Contributors' topic was moved to the 'Acknowledgements' section of the online Manual. Command-line arguments are already a part of the online manual, so they were also removed from the Help window.</li>
   <li>The ANARI rendering options in the Rendering options window (Back-end, Back-end Subtype, Renderer, and their options) are now populated by querying the connected compute engine instead of the local machine, since ANARI rendering is now performed by the engine.</li>
+  <li>The Volume plot's ANARI rendering options are now populated the same way, and its Back-end selector was changed from a free-text field to a drop-down list matching the Rendering options window's ANARI panel.</li>
   <li>GUI Change 2</li>
 </ul>
 
@@ -78,6 +80,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Issues with the Label plot when zooming/panning, and having labels drawn internal to a mesh were fixed.</li>
   <li>Spreadsheet plot data visibility and tracer plane functionality has been fixed.</li>
+  <li>Documented that ANARI surface rendering is incompatible with the Volume plot's Serial and OSPRay rendering methods, since ANARI surface rendering replaces VisIt's entire rendering pipeline for the window and those two methods draw the volume as ordinary 3D geometry in that pipeline. The Volume plot's other, image-based rendering methods (Parallel, Compositing, Integration, SLIVR, and ANARI) are unaffected and can be freely combined with ANARI surface rendering.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -112,7 +115,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug preventing VisIt from being built with CMake 4.0.</li>
   <li>VisIt will now open a session file passed on the command line with '-sessionfile' even if the corresponding .gui component file does not exist.</li>
   <li>Fixed a bug with the Viewer window not clearing deleted plots when ANARI rendering is enabled. </li>
-  <li>Fixed ANARI volume rendering broken by global ANARI surface pass.</li>
 </ul>
 
 <a name="Build_features"></a>

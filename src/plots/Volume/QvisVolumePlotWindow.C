@@ -30,6 +30,10 @@
 
 #ifdef HAVE_ANARI
 #include <AnariVolumeWidget.h>
+#include <AnariDeviceInfoAttributes.h>
+#include <EngineList.h>
+#include <MapNode.h>
+#include <XMLNode.h>
 #endif
 
 #include <QvisOpacitySlider.h>
@@ -54,6 +58,10 @@
 #include <PlotInfoAttributes.h>
 
 #define MAX_RENDERER_SAMPLE_VALUE 20.f
+
+#ifdef HAVE_ANARI
+const std::string QvisVolumePlotWindow::ANARI_REQUESTOR = "volume";
+#endif
 
 // XPM data for pixmaps.
 static const char * black_xpm[] = {
@@ -220,8 +228,27 @@ QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
     modeButtonGroup = 0;
     colorSelect = 0;
 
+#ifdef HAVE_ANARI
+    anariVolumeWidget = 0;
+    anariDeviceInfo = 0;
+    engineList = 0;
+#endif
+
     // Watch the plot info atts too.
     GetViewerState()->GetPlotInformation(plotType)->Attach(this);
+
+#ifdef HAVE_ANARI
+    // Watch the ANARI device info result and engine list too, so the ANARI
+    // settings panel can be populated from the engine and grayed out when
+    // no engine is running, without the client creating a local ANARI
+    // device. See QvisRenderingWindow, which does the same for surface
+    // rendering.
+    anariDeviceInfo = GetViewerState()->GetAnariDeviceInfoAttributes();
+    anariDeviceInfo->Attach(this);
+
+    engineList = GetViewerState()->GetEngineList();
+    engineList->Attach(this);
+#endif
 }
 
 // ****************************************************************************
@@ -251,6 +278,42 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
     volumeAtts = 0;
 
     GetViewerState()->GetPlotInformation(plotType)->Detach(this);
+
+#ifdef HAVE_ANARI
+    if(anariDeviceInfo != 0)
+        anariDeviceInfo->Detach(this);
+    if(engineList != 0)
+        engineList->Detach(this);
+#endif
+}
+
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::SubjectRemoved
+//
+// Purpose:
+//   Makes sure we don't try to Detach from a subject that has already been
+//   destroyed. QvisPostableWindowObserver::SubjectRemoved only handles the
+//   plot's own attribute subject; the ANARI device info result and engine
+//   list are additional subjects this window watches on its own.
+//
+// Arguments:
+//   TheRemovedSubject : The subject being deleted.
+//
+// Programmer: Kevin Griffin
+// Creation:   Tue 22 Sep 2026
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::SubjectRemoved(Subject *TheRemovedSubject)
+{
+    QvisPostableWindowObserver::SubjectRemoved(TheRemovedSubject);
+#ifdef HAVE_ANARI
+    if(TheRemovedSubject == (Subject*)anariDeviceInfo)
+        anariDeviceInfo = 0;
+    else if(TheRemovedSubject == (Subject*)engineList)
+        engineList = 0;
+#endif
 }
 
 // ****************************************************************************
@@ -1189,7 +1252,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         smoothDataToggle->setEnabled(false);
     
         anariVolumeWidget->setVisible(true);
-        anariVolumeWidget->setEnabled(true);
+        UpdateAnariEngineAvailability();
         break;
 #endif 
 
@@ -1810,6 +1873,13 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             return;
     }
 
+#ifdef HAVE_ANARI
+    if(doAll || SelectedSubject() == (Subject*)anariDeviceInfo)
+        UpdateAnariDeviceInfo(doAll);
+    if(doAll || SelectedSubject() == (Subject*)engineList)
+        UpdateAnariEngineAvailability();
+#endif
+
     bool updateSamplingGroup = false;
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
@@ -2259,6 +2329,101 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
     if (updateSamplingGroup)
         UpdateSamplingGroup();
 }
+
+#ifdef HAVE_ANARI
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::UpdateAnariDeviceInfo
+//
+// Purpose:
+//   Forwards the engine's ANARI library/subtype/renderer/parameter info
+//   (delivered as a MapNode-in-XML by AnariDeviceInfoAttributes) to the
+//   ANARI volume widget, so it can populate its UI without the client
+//   creating a local ANARI device. See QvisRenderingWindow, which does the
+//   same for surface rendering.
+//
+// Arguments:
+//   doAll : Whether or not to ignore field selection.
+//
+// Programmer: Kevin Griffin
+// Creation:   Tue 22 Sep 2026
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::UpdateAnariDeviceInfo(bool doAll)
+{
+    if(anariDeviceInfo == 0 || anariVolumeWidget == 0)
+        return;
+
+    // AnariDeviceInfoAttributes is shared by more than one ANARI settings
+    // panel (surface rendering, volume plots). Ignore replies not addressed
+    // to this window's panel -- checked before the empty-xml check, since
+    // an empty result from another panel's failed request must not revert
+    // this window's checkbox.
+    if(anariDeviceInfo->GetRequestor() != ANARI_REQUESTOR)
+        return;
+
+    const std::string &xml = anariDeviceInfo->GetXmlResult();
+    if(xml.empty())
+    {
+        // The request failed (e.g. no engine is running to service it).
+        // Revert the checkbox so AnariAttributes.anariRendering doesn't
+        // stay true for a feature that isn't actually working.
+        anariVolumeWidget->SetChecked(false);
+        return;
+    }
+
+    MapNode info{XMLNode(xml)};
+    anariVolumeWidget->UpdateDeviceInfo(info);
+}
+
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::UpdateAnariEngineAvailability
+//
+// Purpose:
+//   Enables/disables the ANARI volume widget based on whether an engine is
+//   currently running, since ANARI device info can only be retrieved from a
+//   running engine.
+//
+// Programmer: Kevin Griffin
+// Creation:   Tue 22 Sep 2026
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::UpdateAnariEngineAvailability()
+{
+    if(engineList == 0 || anariVolumeWidget == 0)
+        return;
+
+    anariVolumeWidget->setEnabled(!engineList->GetEngineName().empty());
+}
+
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::RequestAnariDeviceInfo
+//
+// Purpose:
+//   Forwards an ANARI device info request (issued by AnariVolumeWidget) to
+//   the viewer/engine, tagged with this window's requestor id so the reply
+//   is routed back here and not to another ANARI settings panel (e.g. the
+//   surface Rendering window). GetViewerMethods() is protected on GUIBase,
+//   so AnariVolumeWidget (which is not a GUIBase subclass) goes through
+//   this method rather than calling it directly.
+//
+// Programmer: Kevin Griffin
+// Creation:   Tue 22 Sep 2026
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::RequestAnariDeviceInfo(const std::string &libraryName,
+                                             const std::string &librarySubtype,
+                                             const std::string &rendererSubtype)
+{
+    GetViewerMethods()->GetAnariDeviceInfo(libraryName, librarySubtype, rendererSubtype,
+                                           ANARI_REQUESTOR);
+}
+#endif
 
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::UpdateColorControlPoints

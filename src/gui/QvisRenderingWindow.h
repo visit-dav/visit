@@ -218,6 +218,14 @@ private:
     void UpdateAAControls(int);
     void UpdateMSAAButton();
 
+#ifdef HAVE_ANARI
+    // Identifies this window's ANARI settings panel ("<rendertype>") when
+    // requesting device info, so replies meant for other panels (e.g. a
+    // Volume plot window) sharing the same AnariDeviceInfoAttributes result
+    // can be ignored.
+    static const std::string ANARI_REQUESTOR;
+#endif
+
     QWidget *CreateBasicPage();
     QWidget *CreateAdvancedPage();
     QWidget *CreateInformationPage();

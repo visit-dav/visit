@@ -5092,21 +5092,33 @@ ViewerMethods::GetQueryParameters(const std::string &queryName)
 //   libraryName     : ANARI library name, or empty.
 //   librarySubtype  : ANARI device subtype, or empty.
 //   rendererSubtype : ANARI renderer subtype, or empty.
+//   requestor       : Identifies which ANARI settings panel is asking
+//                      (e.g. "surface", "volume"), so the reply can be
+//                      routed back to only that panel. See
+//                      AnariDeviceInfoAttributes.
 //
 // Programmer: Kevin Griffin
 // Creation:   Thu 27 Aug 2026
+//
+// Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Added requestor so multiple ANARI settings panels (surface rendering,
+//   volume plots) sharing the single AnariDeviceInfoAttributes result can
+//   tell their own replies apart.
 //
 // ****************************************************************************
 
 void
 ViewerMethods::GetAnariDeviceInfo(const std::string &libraryName,
                                   const std::string &librarySubtype,
-                                  const std::string &rendererSubtype)
+                                  const std::string &rendererSubtype,
+                                  const std::string &requestor)
 {
     MapNode params;
     params["libraryName"] = libraryName;
     params["librarySubtype"] = librarySubtype;
     params["rendererSubtype"] = rendererSubtype;
+    params["requestor"] = requestor;
 
     //
     // Set the rpc type.

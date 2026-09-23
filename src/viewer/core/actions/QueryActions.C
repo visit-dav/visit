@@ -125,7 +125,7 @@ void
 GetAnariDeviceInfoAction::Execute()
 {
     const MapNode &params = args.GetQueryParams();
-    std::string libraryName, librarySubtype, rendererSubtype;
+    std::string libraryName, librarySubtype, rendererSubtype, requestor;
 
     if (params.HasEntry("libraryName"))
         libraryName = params.GetEntry("libraryName")->AsString();
@@ -133,8 +133,10 @@ GetAnariDeviceInfoAction::Execute()
         librarySubtype = params.GetEntry("librarySubtype")->AsString();
     if (params.HasEntry("rendererSubtype"))
         rendererSubtype = params.GetEntry("rendererSubtype")->AsString();
+    if (params.HasEntry("requestor"))
+        requestor = params.GetEntry("requestor")->AsString();
 
-    GetQueryManager()->GetAnariDeviceInfo(libraryName, librarySubtype, rendererSubtype);
+    GetQueryManager()->GetAnariDeviceInfo(libraryName, librarySubtype, rendererSubtype, requestor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
