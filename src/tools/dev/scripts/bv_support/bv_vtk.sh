@@ -240,7 +240,7 @@ function apply_vtk95_vtkopenfoamreader_patch
 +    }
 +    if (nActiveFaces < nFaces)
 +    {
-+      this->FaceOwner->Resize(nActiveFaces);
++      this->FaceOwner->SetNumberOfTuples(nActiveFaces);
 +      nFaces = nActiveFaces;
 +    }
  
@@ -275,10 +275,11 @@ function apply_vtk95_vtkopenfoamreader_patch
 +        nInternalFaces = facei;
 +        break;
        }
+-      this->FaceNeigh->Resize(nInternalFaces);
 +    }
 +    if (nInternalFaces < nNeighbourFaces)
 +    {
-       this->FaceNeigh->Resize(nInternalFaces);
++      this->FaceNeigh->SetNumberOfTuples(nInternalFaces);
 +      nNeighbourFaces = nInternalFaces;
      }
  
