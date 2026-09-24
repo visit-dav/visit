@@ -96,13 +96,13 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
     snprintf(tmpStr, 1000, "%sgroupSize = %d\n", prefix, atts->GetGroupSize());
     str += tmpStr;
 
-    std::string db_opts_dict_str = PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(atts->GetOpts(), false);
-    if((!db_opts_dict_str.empty()) && // make sure its not an empty string
-       (db_opts_dict_str.find("{}") != 0) ) // and not an empty dict
+    if(atts->GetOpts().GetNumberOfOptions() > 0)
     {
-        str += "DBExportOpts = ";
-        str += db_opts_dict_str;
-        str += "\n";
+        snprintf(tmpStr, 1000, "DBExportOpts = GetExportOptions(\"%s\")\n",
+                 atts->GetDb_type().c_str());
+        str += tmpStr;
+        str += PyDBOptionsAttributes_CreateDictionaryAssignmentsFromDBOptions(
+            atts->GetOpts(), "DBExportOpts", false);
     }
 
     return str;
@@ -1023,4 +1023,3 @@ PyExportDBAttributes_SetDefaults(const ExportDBAttributes *atts)
 
     defaultAtts = new ExportDBAttributes(*atts);
 }
-

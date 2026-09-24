@@ -13,6 +13,6 @@
 //
 VISITPY_API PyObject *  PyDBOptionsAttributes_CreateDictionaryFromDBOptions(const DBOptionsAttributes &opts, bool show_enum_opts);
 VISITPY_API std::string PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(const DBOptionsAttributes &opts, bool show_enum_opts);
+VISITPY_API std::string PyDBOptionsAttributes_CreateDictionaryAssignmentsFromDBOptions(const DBOptionsAttributes &opts, const std::string &dict_name, bool show_enum_opts);
 
 #endif
-
