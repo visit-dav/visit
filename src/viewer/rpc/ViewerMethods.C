@@ -3683,6 +3683,10 @@ ViewerMethods::ResetPickAttributes()
 //   Changed *active* to *default* for everything related to color tables.
 //   In this case I changed the function name.
 //
+//   Kathleen Biagas, Thu Sep 24, 2026
+//   Add int arg of '1' to UpdateColorTable so that logging will know
+//   the default continuous colortable changed.
+//
 // ****************************************************************************
 
 void
@@ -3695,9 +3699,9 @@ ViewerMethods::SetDefaultContinuousColorTable(const std::string &colorTableName)
         state->GetColorTableAttributes()->Notify();
 
         // Update the color table. This has the effect of making all plots
-        // use the default color table update to use the new active color
-        // table.
-        UpdateColorTable(colorTableName);
+        // using the default continuous color table update to use the
+        // new default.
+        UpdateColorTable(colorTableName, 1);
     }
 }
 
@@ -3719,6 +3723,10 @@ ViewerMethods::SetDefaultContinuousColorTable(const std::string &colorTableName)
 //   Changed *active* to *default* for everything related to color tables.
 //   In this case I changed the function name.
 //
+//   Kathleen Biagas, Thu Sep 24, 2026
+//   Add int arg of '2' to UpdateColorTable so that logging will know
+//   the default discrete colortable changed.
+//
 // ****************************************************************************
 
 void
@@ -3729,6 +3737,11 @@ ViewerMethods::SetDefaultDiscreteColorTable(const std::string &colorTableName)
     {
         state->GetColorTableAttributes()->SetDefaultDiscrete(colorTableName);
         state->GetColorTableAttributes()->Notify();
+
+        // Update the color table. This has the effect of making all plots
+        // using the default discete color table update to use the
+        // new default.
+        UpdateColorTable(colorTableName, 2);
     }
 }
 
@@ -3784,17 +3797,34 @@ ViewerMethods::DeleteColorTable(const std::string &colorTableName)
 // Creation:   Wed Jun 13 17:20:23 PST 2001
 //
 // Modifications:
+//   Kathleen Biagas, Thu Sep 24, 2025
+//   For logging, pass '0' to he new override method to indicate that neither
+//   SetDefaultContinuousColorTable nor SetDefaultDiscreteColorTable were the
+//   originators.
 //
 // ****************************************************************************
 
 void
 ViewerMethods::UpdateColorTable(const std::string &colorTableName)
 {
+    UpdateColorTable(colorTableName, 0);
+}
+
+// This overload identifies default-color-table changes for command recording
+// while using the existing color table RPC.
+// defaultChanged == 0: not changing a default colortable
+// defaultChanged == 1: changing the default continuous colortable
+// defaultChanged == 2: changing the default discrete colortable
+void
+ViewerMethods::UpdateColorTable(const std::string &colorTableName,
+                                int defaultChanged)
+{
     //
     // Set the RPC type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::UpdateColorTableRPC);
     state->GetViewerRPC()->SetColorTableName(colorTableName);
+    state->GetViewerRPC()->SetIntArg1(defaultChanged);
 
     //
     // Issue the RPC.
@@ -5930,4 +5960,3 @@ ViewerMethods::QueryMSAAAvailability()
     //
     state->GetViewerRPC()->Notify();
 }
-

@@ -815,6 +815,20 @@ static std::string log_HideAllWindowsRPC(ViewerRPC *rpc)
     return visitmodule() + std::string("HideAllWindows()\n");
 }
 
+static std::string log_SetDefaultContinuousColorTableRPC(ViewerRPC *rpc)
+{
+    return visitmodule() + std::string("SetDefaultContinuousColorTable(\"") +
+           StringHelpers::EscapeSpecialChars(rpc->GetColorTableName()) +
+           "\")\n";
+}
+
+static std::string log_SetDefaultDiscreteColorTableRPC(ViewerRPC *rpc)
+{
+    return visitmodule() + std::string("SetDefaultDiscreteColorTable(\"") +
+           StringHelpers::EscapeSpecialChars(rpc->GetColorTableName()) +
+           "\")\n";
+}
+
 static std::string log_SetAnnotationAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(constructor(PyAnnotationAttributes_GetLogString()));
@@ -2235,6 +2249,10 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 //   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
 //   Added operator keyframing.
 //
+//   Kathleen Biagas, Thu Sept 24, 2026
+//   Added UpdateColorTable logging specificaly for the
+//   SetDefaultContinuousColorTable and SetDefaultDiscreteColorTable methods.
+//
 // ****************************************************************************
 
 void
@@ -2797,13 +2815,23 @@ LogRPCs(Subject *subj, void *)
         str = log_GetQueryParametersRPC(rpc);
         break;
 
+    case ViewerRPC::UpdateColorTableRPC:
+        // UpdateColorTable RPCs normally represent implementation details
+        // that should not be recorded. IntArg1 != 0 marks RPCs emitted when
+        // the GUI changes a default color table.
+        if(rpc->GetIntArg1() == 1)
+            str = log_SetDefaultContinuousColorTableRPC(rpc);
+        else if(rpc->GetIntArg1() == 2)
+            str = log_SetDefaultDiscreteColorTableRPC(rpc);
+        else
+            record = false;
+        break;
+
     // RPCs that we don't want to log:
     case ViewerRPC::CloseRPC:
     case ViewerRPC::DetachRPC:
     case ViewerRPC::OpenClientRPC:
     case ViewerRPC::ConnectToMetaDataServerRPC:
-    case ViewerRPC::UpdateColorTableRPC:
-
         // ... more ...
         record = false;
         break;
