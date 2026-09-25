@@ -740,6 +740,10 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
 //   Brad Whitlock, Fri Apr 20 15:27:39 PDT 2012
 //   Make arg1 template.
 //
+//   Eric Brugger, Mon Sep 21 08:41:16 PDT 2026
+//   Replaced pointXForm with pointXFormImage and pointXFormTile to properly
+//   access the z-buffer with tiled rendering.
+//
 // ****************************************************************************
 
 template <typename T>
@@ -767,7 +771,7 @@ vtkLabelMapper::TransformPoints(T inputPoints,
              rp[1] = p1[1] = *pts++;
              rp[2] = p1[2] = *pts++;
 
-             matrix_mul_point(p2, pointXForm, p1);
+             matrix_mul_point(p2, pointXFormImage, p1);
              if (p2[3] != 0)
              {
                  *destPoints++ = (p2[0]/p2[3]);
@@ -792,7 +796,7 @@ vtkLabelMapper::TransformPoints(T inputPoints,
                  rp[1] = p1[1] = *pts++;
                  rp[2] = p1[2] = *pts++;
 
-                 matrix_mul_point(p2, pointXForm, p1);
+                 matrix_mul_point(p2, pointXFormImage, p1);
                  if (p2[3] != 0)
                  {
                      *destPoints++ = (p2[0]/p2[3]);
@@ -1202,6 +1206,10 @@ vtkLabelMapper::PopulateBinsWithCellLabels3D(vtkDataSet *input, vtkRenderer *ren
 //   Kathleen Biagas, Tue Aug 4, 2026
 //   Modified to use AddRenderedLabel.
 //
+//   Eric Brugger, Mon Sep 21 08:41:16 PDT 2026
+//   Replaced pointXForm with pointXFormImage and pointXFormTile to properly
+//   access the z-buffer with tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -1254,6 +1262,31 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
     //
     if((this->RendererAction & RENDERER_ACTION_INIT_ZBUFFER) != 0)
         InitializeZBuffer(input, ren, haveNodeData, haveCellData);
+
+    // Get the model view and projection matrices for the tile.
+    double modelview[4][4], projection[4][4], mtmp[4][4];
+    vtkMatrix4x4 *mvtm = ren->GetActiveCamera()->GetModelViewTransformMatrix();
+    vtkMatrix4x4 *ptm = ren->GetActiveCamera()->GetProjectionTransformMatrix(ren);
+
+    if (mvtm)
+    {
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j)
+                modelview[i][j] = mvtm->GetElement(j, i);
+                // VTK's modelview matrix seems inverted from what we used
+                // to get from GL, that's why we reverse i and j here.
+    }
+
+    if (ptm)
+    {
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j)
+                projection[i][j] = ptm->GetElement(i, j);
+    }
+
+    const double tonormdev[4][4] = {{0.5,0,0,0},{0,0.5,0,0},{0,0,0.5,0},{0.5,0.5,0.5,1}};
+    matrix_mul(mtmp, modelview, projection);
+    matrix_mul(pointXFormTile, mtmp, tonormdev);
 
     //
     // Initialize the transformation matrix that we'll use to transform points
@@ -1314,9 +1347,8 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
     }
 
     // Get the model view and projection matrices for the untiled image.
-    double modelview[4][4], projection[4][4], mtmp[4][4];
-    vtkMatrix4x4 *mvtm = ren->GetActiveCamera()->GetModelViewTransformMatrix();
-    vtkMatrix4x4 *ptm = vtkMatrix4x4::New();
+    mvtm = ren->GetActiveCamera()->GetModelViewTransformMatrix();
+    ptm = vtkMatrix4x4::New();
     // Args to GetProjectionTransformMatrix are aspect, nearz, farz
     ptm->DeepCopy(ren->GetActiveCamera()->GetProjectionTransformMatrix(1, -1, 1));
     ptm->Transpose();
@@ -1349,10 +1381,8 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
                 projection[i][j] = ptm->GetElement(i, j);
     }
 
-    const double tonormdev[4][4] = {{0.5,0,0,0},{0,0.5,0,0},{0,0,0.5,0},{0.5,0.5,0.5,1}};
     matrix_mul(mtmp, modelview, projection);
-    matrix_mul(pointXForm, mtmp, tonormdev);
-
+    matrix_mul(pointXFormImage, mtmp, tonormdev);
 
     if(atts.GetRestrictNumberOfLabels())
     {
@@ -1713,6 +1743,10 @@ vtkLabelMapper::GetPositionScale(double *scale)
 //   Kathleen Biagas, Wed Aug 5, 2026
 //   Use new Depth/Zbuffer helpers.
 //
+//   Eric Brugger, Mon Sep 21 08:41:16 PDT 2026
+//   Replaced pointXForm with pointXFormImage and pointXFormTile to properly
+//   access the z-buffer with tiled rendering.
+//
 // ****************************************************************************
 
 
@@ -1724,7 +1758,7 @@ vtkLabelMapper::GetPositionScale(double *scale)
     GET_THE_POINT \
     double v[4] = {vert[0], vert[1], vert[2], 1.f}; \
     double vprime[4]; \
-    matrix_mul_point(vprime, pointXForm, v);\
+    matrix_mul_point(vprime, pointXFormTile, v);\
     if (vprime[3] != 0.) \
     { \
     vprime[0] /= vprime[3]; \
