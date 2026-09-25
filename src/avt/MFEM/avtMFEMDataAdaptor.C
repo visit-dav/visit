@@ -966,6 +966,188 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 }
 
 // ****************************************************************************
+static int
+DecodeMFEMDof(int dof)
+{
+    return dof >= 0 ? dof : -1 - dof;
+}
+
+// ****************************************************************************
+static double
+LowOrderGridFunctionComponent(const double *values,
+                              const int ndofs,
+                              const int ncomps,
+                              const bool bynodes,
+                              const int dof,
+                              const int comp)
+{
+    const int decoded_dof = DecodeMFEMDof(dof);
+
+    if (decoded_dof < 0 || decoded_dof >= ndofs)
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+            "LowOrderGridFunctionToVTK2: finite element space dof "
+            << decoded_dof << " is outside of the grid function range [0, "
+            << ndofs << ").");
+    }
+
+    return bynodes ? values[comp * ndofs + decoded_dof]
+                   : values[decoded_dof * ncomps + comp];
+}
+
+// ****************************************************************************
+static void
+SetLowOrderGridFunctionTuple(vtkDataArray *retval,
+                             const vtkIdType tuple,
+                             const double *values,
+                             const int ndofs,
+                             const int ncomps,
+                             const bool bynodes,
+                             const int dof)
+{
+    for (int comp = 0; comp < ncomps; comp++)
+    {
+        retval->SetComponent(tuple, comp,
+            LowOrderGridFunctionComponent(values, ndofs, ncomps,
+                                          bynodes, dof, comp));
+    }
+
+    if (ncomps == 2)
+    {
+        retval->SetComponent(tuple, 2, 0.0);
+    }
+}
+
+// ****************************************************************************
+//  Method: LowOrderGridFunctionToVTK2
+//
+//  Purpose:
+//   Converts a low order MFEM grid function to a vtkDataArray using the
+//   finite element space to map MFEM dofs to VTK point/cell tuple ids.
+//
+//  Arguments:
+//   gf:           MFEM Grid Function for the field
+//
+//  Programmer: Justin Privitera
+//  Creation:   Fri Aug 21 2026
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtMFEMDataAdaptor::LowOrderGridFunctionToVTK2(mfem::GridFunction *gf)
+{
+    AVT_MFEM_INFO("Converting Low Order Grid Function To VTK with dof mapping");
+
+    if (!gf || !gf->FESpace())
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+            "LowOrderGridFunctionToVTK2: grid function finite element space is null.");
+    }
+
+    mfem::FiniteElementSpace *fespace = gf->FESpace();
+    mfem::Mesh *mesh = fespace->GetMesh();
+    if (!mesh)
+    {
+        AVT_MFEM_INFO("LowOrderGridFunctionToVTK2: finite element space mesh is null; "
+                      "falling back to direct dof copy.");
+        return LowOrderGridFunctionToVTK(gf);
+    }
+
+    const int ncomps = fespace->GetVectorDim();
+    const int ndofs = fespace->GetNDofs();
+    const int nverts = mesh->GetNV();
+    const int nelems = mesh->GetNE();
+    const std::string basis(fespace->FEColl()->Name());
+    const bool h1_like = basis.find("H1_") != std::string::npos ||
+                         basis.find("Linear") != std::string::npos;
+    const bool l2_like = basis.find("L2_") != std::string::npos;
+
+    bool use_vertex_mapping = h1_like && ndofs == nverts;
+    bool use_element_mapping = l2_like && ndofs == nelems;
+
+    if (!use_vertex_mapping && !use_element_mapping)
+    {
+        if (!l2_like && ndofs == nverts && ndofs != nelems)
+        {
+            use_vertex_mapping = true;
+        }
+        else if (!h1_like && ndofs == nelems && ndofs != nverts)
+        {
+            use_element_mapping = true;
+        }
+    }
+
+    if (!use_vertex_mapping && !use_element_mapping)
+    {
+        AVT_MFEM_INFO("LowOrderGridFunctionToVTK2: could not infer a low-order "
+                      "vertex or element dof map from basis " << basis
+                      << "; falling back to direct dof copy.");
+        return LowOrderGridFunctionToVTK(gf);
+    }
+
+    const double *values = gf->HostRead();
+
+    vtkDataArray *retval = vtkDoubleArray::New();
+    retval->SetNumberOfComponents(ncomps == 2 ? 3 : ncomps);
+
+    mfem::Array<int> dofs;
+
+    if (use_element_mapping)
+    {
+        AVT_MFEM_INFO("LowOrderGridFunctionToVTK2: using element dof mapping.");
+        retval->SetNumberOfTuples(nelems);
+        const bool bynodes = fespace->GetOrdering() == mfem::Ordering::byNODES;
+
+        for (vtkIdType el = 0; el < nelems; el++)
+        {
+            fespace->GetElementDofs(static_cast<int>(el), dofs);
+            if (dofs.Size() < 1)
+            {
+                AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                    "LowOrderGridFunctionToVTK2: element " << el
+                    << " has no finite element space dofs.");
+            }
+
+            SetLowOrderGridFunctionTuple(retval, el, values, ndofs, ncomps,
+                                         bynodes, dofs[0]);
+        }
+
+        return retval;
+    }
+
+    AVT_MFEM_INFO("LowOrderGridFunctionToVTK2: using vertex dof mapping.");
+    retval->SetNumberOfTuples(nverts);
+
+    for (int comp = 0; comp < ncomps; comp++)
+    {
+        mfem::Vector nodal_values;
+        gf->GetNodalValues(nodal_values, comp + 1);
+
+        if (nodal_values.Size() != nverts)
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                "LowOrderGridFunctionToVTK2: expected " << nverts
+                << " nodal values, got " << nodal_values.Size() << ".");
+        }
+
+        for (vtkIdType vertex = 0; vertex < nverts; vertex++)
+        {
+            retval->SetComponent(vertex, comp, nodal_values(vertex));
+        }
+    }
+
+    if (ncomps == 2)
+    {
+        for (vtkIdType vertex = 0; vertex < nverts; vertex++)
+        {
+            retval->SetComponent(vertex, 2, 0.0);
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 mfem::GridFunction *
 ConvertGridFunctionToScalar(mfem::GridFunction *org_gf,
                             const avtMFEMDataAdaptor::fieldProjectionMethod field_proj_method,
@@ -1279,7 +1461,10 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
     }
-    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf_to_use->FESpace()->GetVectorDim());
+    mfem::FiniteElementSpace lo_fes(&lo_mesh,
+                                    lo_col,
+                                    gf_to_use->FESpace()->GetVectorDim(),
+                                    gf_to_use->FESpace()->GetOrdering());
     mfem::GridFunction lo_gf(&lo_fes);
     // transform the higher order function to a low order function
     // using a matrix free transfer operator
@@ -1287,7 +1472,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     lo_fes.GetTransferOperator(*gf_to_use->FESpace(), hi_to_lo);
     hi_to_lo.Ptr()->Mult(*gf_to_use, lo_gf);
 
-    vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
+    vtkDataArray *retval = LowOrderGridFunctionToVTK2(&lo_gf);
 
     if (delete_gf_to_use)
     {

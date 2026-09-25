@@ -105,6 +105,7 @@ public:
                                                                 const bool var_is_nodal);
 
       static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
+      static vtkDataArray *LowOrderGridFunctionToVTK2(mfem::GridFunction *gf);
 
       static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                    mfem::GridFunction *gf,
