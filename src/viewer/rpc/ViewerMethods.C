@@ -3798,7 +3798,7 @@ ViewerMethods::DeleteColorTable(const std::string &colorTableName)
 //
 // Modifications:
 //   Kathleen Biagas, Thu Sep 24, 2025
-//   For logging, pass '0' to he new override method to indicate that neither
+//   For logging, pass '0' to the new override method to indicate that neither
 //   SetDefaultContinuousColorTable nor SetDefaultDiscreteColorTable were the
 //   originators.
 //
