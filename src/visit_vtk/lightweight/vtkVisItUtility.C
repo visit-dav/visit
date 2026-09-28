@@ -23,12 +23,14 @@
 #include <vtkGenericCell.h>
 #include <vtkHexahedron.h>
 #include <vtkIntArray.h>
+#include <vtkLine.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkPyramid.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkShortArray.h>
 #include <vtkStructuredGrid.h>
+#include <vtkTriangle.h>
 #include <vtkVisItCellLocator.h>
 #include <vtkVisItPointLocator.h>
 #include <vtkWedge.h>
@@ -36,6 +38,141 @@
 #include <DebugStream.h>
 
 static std::list<vtkObject*> vtkobjects;
+
+namespace {
+
+static bool
+SamePoint(const double *p0, const double *p1)
+{
+    return p0[0] == p1[0] && p0[1] == p1[1] && p0[2] == p1[2];
+}
+
+static void
+CopyPoint(double *dest, const double *src)
+{
+    dest[0] = src[0];
+    dest[1] = src[1];
+    dest[2] = src[2];
+}
+
+static int
+GetUniqueCellPoints(vtkCell *cell, double uniquePts[4][3])
+{
+    int numUnique = 0;
+    double pt[3];
+
+    for (int i = 0; i < cell->GetNumberOfPoints(); i++)
+    {
+        if (numUnique == 4)
+            break;
+
+        cell->GetPoints()->GetPoint(i, pt);
+        bool found = false;
+        for (int j = 0; j < numUnique && !found; j++)
+        {
+            found = SamePoint(pt, uniquePts[j]);
+        }
+        if (!found)
+        {
+            CopyPoint(uniquePts[numUnique], pt);
+            numUnique++;
+        }
+    }
+
+    return numUnique;
+}
+
+static bool
+PointsAreCollinear(double pts[4][3], int numPts)
+{
+    if (numPts < 3)
+        return true;
+
+    double v0[3];
+    for (int i = 0; i < 3; i++)
+        v0[i] = pts[1][i] - pts[0][i];
+    double len0 = vtkMath::Dot(v0, v0);
+
+    for (int pt = 2; pt < numPts; pt++)
+    {
+        double v1[3], cross[3];
+        for (int i = 0; i < 3; i++)
+            v1[i] = pts[pt][i] - pts[0][i];
+
+        vtkMath::Cross(v0, v1, cross);
+
+        double cross2 = vtkMath::Dot(cross, cross);
+        double len1 = vtkMath::Dot(v1, v1);
+
+        if (cross2 > DBL_EPSILON * DBL_EPSILON * len0 * len1)
+            return false;
+    }
+
+    return true;
+}
+
+static void
+GetLongestSegment(double pts[4][3], int numPts, double p0[3], double p1[3])
+{
+    double maxDist = -1.;
+
+    for (int i = 0; i < numPts; i++)
+    {
+        for (int j = i + 1; j < numPts; j++)
+        {
+            double dist = vtkMath::Distance2BetweenPoints(pts[i], pts[j]);
+            if (dist > maxDist)
+            {
+                maxDist = dist;
+                CopyPoint(p0, pts[i]);
+                CopyPoint(p1, pts[j]);
+            }
+        }
+    }
+}
+
+static int
+EvaluateDegenerateFace(vtkCell *face, vtkTriangle *tri, double x[3],
+    double closestPoint[3], double &dist2)
+{
+    int numFacePts = face->GetNumberOfPoints();
+    if (numFacePts < 1 || numFacePts > 4)
+        return -1;
+
+    double uniquePts[4][3];
+    int numUnique = GetUniqueCellPoints(face, uniquePts);
+    bool collapsed = numUnique < numFacePts;
+    if (!collapsed && !PointsAreCollinear(uniquePts, numUnique))
+        return -1;
+
+    if (numUnique == 1)
+    {
+        CopyPoint(closestPoint, uniquePts[0]);
+        dist2 = vtkMath::Distance2BetweenPoints(x, closestPoint);
+        return 1;
+    }
+
+    if (numUnique == 2 || PointsAreCollinear(uniquePts, numUnique))
+    {
+        double pt0[3], pt1[3];
+        double lineT = 0.;
+        GetLongestSegment(uniquePts, numUnique, pt0, pt1);
+        dist2 = vtkLine::DistanceToLine(x, pt0, pt1, lineT, closestPoint);
+        return 1;
+    }
+
+    tri->Points->SetPoint(0, uniquePts[0]);
+    tri->Points->SetPoint(1, uniquePts[1]);
+    tri->Points->SetPoint(2, uniquePts[2]);
+
+    double pc[3] = {0., 0., 0.};
+    double wts[3];
+    int subId = 0;
+    int stat = tri->EvaluatePosition(x, closestPoint, subId, pc, dist2, wts);
+    return (stat == 1 ? 1 : 0);
+}
+
+} // end namespace
 
 // ****************************************************************************
 // Method: vtkVisItUtility_GetPointsRectilinear
@@ -524,6 +661,10 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
 //    attempts have failed. Fixes bug with extremely zoomed in plot containing
 //    extremely long thin hexes.
 //
+//    Kathleen Biagas, Wed Sep 2, 2026
+//    Replace 'cell->EvaluatePosition' with vtkVisItUtility::EvaluatePosition.
+//    The new function has a fallback to handle degenerate cells.
+//
 // ****************************************************************************
 
 int
@@ -595,8 +736,8 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
             {
                 cellId = cellIds->GetId(0);
                 cell = ds->GetCell(cellId);
-                int evaluate = cell->EvaluatePosition
-                    (x, closestPoint, subId, pcoords, dist2, weights);
+                int evaluate = vtkVisItUtility::EvaluatePosition
+                    (cell, x, closestPoint, subId, pcoords, dist2, weights);
 
                 if (evaluate == 1 && dist2 <= tol && dist2 < minDist2)
                 {
@@ -622,9 +763,10 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
                     }
                     if (cell)
                     {
-                        int eval = cell->EvaluatePosition
-                            (x, closestPoint, subId, pcoords, dist2, weights);
-                        if (eval == 1 && dist2 <= tol && dist2 < minDist2)
+                        int eval = vtkVisItUtility::EvaluatePosition
+                            (cell, x, closestPoint, subId, pcoords, dist2,
+                             weights);
+                        if (eval != -1 && dist2 <= tol && dist2 < minDist2)
                         {
                             minDist2 = dist2;
                             found = static_cast<int>(cellId);
@@ -987,6 +1129,10 @@ vtkVisItUtility::ContainsMixedGhostZoneTypes(vtkDataSet *ds)
 //    to determine if a cell contains a point, since the VTK routine had
 //    numeric issues.
 //
+//    Kathleen Biagas, Wed Sep 2, 2026
+//    Replace 'cell->EvaluatePosition' with vtkVisItUtility::EvaluatePosition.
+//    The new function has a fallback to handle degenerate cells.
+//
 // ****************************************************************************
 
 bool
@@ -1297,8 +1443,101 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
     non_const_pt[0] = pt[0];
     non_const_pt[1] = pt[1];
     non_const_pt[2] = pt[2];
-    return (cell->EvaluatePosition(non_const_pt, closestPt, subId,
-                                  pcoords, dist2, weights) > 0);
+    return (vtkVisItUtility::EvaluatePosition(cell, non_const_pt, closestPt,
+                                             subId, pcoords, dist2,
+                                             weights) > 0);
+}
+
+// ****************************************************************************
+//  Function: EvaluatePosition
+//
+//  Purpose:
+//     Calls vtkCell::EvaluatePosition, with a fallback for degenerate 3D cells
+//     whose parametric inverse is singular.  The fallback treats the cell as
+//     the lower-dimensional object represented by its faces.
+//
+//  Arguments:
+//      cell          The cell to evaluate.
+//      x             The point to evaluate.
+//      closestPoint  The closest point on the cell.
+//      subId         The sub id returned by EvaluatePosition.
+//      pcoords       Parametric coordinates returned by EvaluatePosition.
+//      dist2         The squared distance to the closest point.
+//      weights       Interpolation weights returned by EvaluatePosition.
+//
+//  Returns:
+//      The vtkCell::EvaluatePosition return value, or the equivalent status
+//      from the degenerate fallback: 1 when x lies on the collapsed cell, 0
+//      when x is outside but a closest point was found, and -1 on failure.
+//
+// ****************************************************************************
+
+int
+vtkVisItUtility::EvaluatePosition(vtkCell *cell, double x[3],
+    double closestPoint[3], int &subId, double pcoords[3], double &dist2,
+    double *weights)
+{
+    int stat = cell->EvaluatePosition(x, closestPoint, subId, pcoords,
+                                      dist2, weights);
+    if (stat != -1)
+        return stat;
+
+    vtkTriangle *tri = vtkTriangle::New();
+    double minDist2 = DBL_MAX;
+    double bestPoint[3] = {0., 0., 0.};
+    int found = 0;
+
+    if (cell->GetNumberOfFaces() == 0)
+    {
+        int degenerateStat = EvaluateDegenerateFace(cell, tri, x, bestPoint,
+                                                   minDist2);
+        if (degenerateStat != -1)
+            found = 1;
+    }
+    else
+    {
+        for (int i = 0; i < cell->GetNumberOfFaces(); i++)
+        {
+            vtkCell *face = cell->GetFace(i);
+            double cp[3] = {0., 0., 0.};
+            double faceDist2 = DBL_MAX;
+            int faceStat = EvaluateDegenerateFace(face, tri, x, cp, faceDist2);
+
+            if (faceStat == -1)
+            {
+                int faceSubId = 0;
+                double facePcoords[3] = {0., 0., 0.};
+                double faceWeights[4];
+                faceStat = face->EvaluatePosition(x, cp, faceSubId,
+                                                  facePcoords, faceDist2,
+                                                  faceWeights);
+            }
+
+            if (faceStat != -1 && faceDist2 < minDist2)
+            {
+                found = 1;
+                minDist2 = faceDist2;
+                CopyPoint(bestPoint, cp);
+            }
+        }
+    }
+
+    tri->Delete();
+
+    if (!found)
+        return stat;
+
+    CopyPoint(closestPoint, bestPoint);
+    pcoords[0] = pcoords[1] = pcoords[2] = 0.;
+    dist2 = minDist2;
+
+    if (weights != NULL)
+    {
+        for (int i = 0; i < cell->GetNumberOfPoints(); i++)
+            weights[i] = 0.;
+    }
+
+    return (minDist2 == 0. ? 1 : 0);
 }
 
 

@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QCloseEvent>
+#include <QColor>
 #include <QComboBox>
 #include <QFrame>
 #include <QHideEvent>
@@ -12,13 +13,18 @@
 #include <QLayout>
 #include <QMenu>
 #include <QMenuBar>
+#include <QPainter>
 #include <QPixmap>
 #include <QPushButton>
 #include <QRect>
 #include <QScreen>
 #include <QShowEvent>
 #include <QSplitter>
+#include <QSplitterHandle>
 #include <QStatusBar>
+#include <QStyle>
+#include <QStyleFactory>
+#include <QStyleOption>
 #include <QTimer>
 #include <QToolTip>
 
@@ -82,6 +88,110 @@
 #include <icons/lock.xpm>
 
 #define MIN_WINDOW_HEIGHT_BEFORE_POSTING_MAIN 1024
+
+// New QSplitter and QSplitterHandle classes plus helpers.
+// Makes the splitter handle from 'Fusion' style be applied to all
+// styles and darkens the dots for better visibility.
+namespace
+{
+QStyle *
+QvisMainWindowFusionStyle()
+{
+    static QStyle *style = QStyleFactory::create("Fusion");
+    return style;
+}
+
+void
+QvisMainWindowDrawSplitterGrip(QPainter *painter, const QStyleOption &option)
+{
+    if(option.rect.width() <= 1 || option.rect.height() <= 1)
+        return;
+
+    QColor gripColor = option.palette.color(QPalette::WindowText);
+    gripColor.setAlpha((option.state & QStyle::State_MouseOver) ? 240 : 190);
+
+    const QPoint center = option.rect.center();
+    if(option.state & QStyle::State_Horizontal)
+    {
+        // A horizontal splitter orientation has a vertical handle, so the grip
+        // is a column of dots. The +1 keeps the 2-pixel-wide dots visually
+        // aligned in the narrow handle instead of biased to the left.
+        for(int j = -6 ; j < 12 ; j += 3)
+            painter->fillRect(center.x() + 1, center.y() + j, 2, 2,
+                gripColor);
+    }
+    else
+    {
+        // The other orientation has a horizontal handle, so the same dots are
+        // drawn as a row centered on the handle.
+        for(int i = -6; i < 12 ; i += 3)
+            painter->fillRect(center.x() + i, center.y(), 2, 2,
+                gripColor);
+    }
+}
+
+class QvisMainWindowSplitterHandle : public QSplitterHandle
+{
+public:
+    QvisMainWindowSplitterHandle(Qt::Orientation orientation, QSplitter *parent)
+        : QSplitterHandle(orientation, parent)
+    {
+        setAttribute(Qt::WA_Hover, true);
+        setAttribute(Qt::WA_OpaquePaintEvent, false);
+    }
+
+protected:
+    void paintEvent(QPaintEvent *event) override
+    {
+        QStyle *fusionStyle = QvisMainWindowFusionStyle();
+        if(fusionStyle == 0)
+        {
+            QSplitterHandle::paintEvent(event);
+            return;
+        }
+
+        QPainter painter(this);
+        QStyleOption option;
+        option.initFrom(this);
+        option.rect = contentsRect();
+        if(orientation() == Qt::Horizontal)
+            option.state |= QStyle::State_Horizontal;
+        else
+            option.state &= ~QStyle::State_Horizontal;
+
+        fusionStyle->drawControl(QStyle::CE_Splitter, &option, &painter,
+            splitter());
+        QvisMainWindowDrawSplitterGrip(&painter, option);
+    }
+};
+
+class QvisMainWindowSplitter : public QSplitter
+{
+public:
+    QvisMainWindowSplitter(QWidget *parent)
+        : QSplitter(parent)
+    {
+        QStyle *fusionStyle = QvisMainWindowFusionStyle();
+        int handleWidth = 4;
+        if(fusionStyle != 0)
+        {
+            QStyleOption option;
+            option.initFrom(this);
+            handleWidth = fusionStyle->pixelMetric(QStyle::PM_SplitterWidth,
+                &option, this);
+        }
+        if(handleWidth < 4)
+            handleWidth = 4;
+        setHandleWidth(handleWidth);
+    }
+
+protected:
+    QSplitterHandle *createHandle() override
+    {
+        return new QvisMainWindowSplitterHandle(orientation(), this);
+    }
+};
+}
 
 // ****************************************************************************
 // Method: QvisMainWindow::QvisMainWindow
@@ -358,6 +468,9 @@
 //   Replace 'primaryScreen()->geometry()' with
 //   'primaryScreen()->availableGeometry()' since the latter takes into
 //   account window manager reserved space like the Windows taskbar. 
+//
+//   Kathleen Biagas, Thu Jul 30, 2026
+//   Use new QvisMainWindowSplitter class.
 //
 // ****************************************************************************
 #include <InstallationFunctions.h>
@@ -786,7 +899,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
         layout->addWidget(CreateGlobalArea(central));
 
-        splitter = new QSplitter(central);
+        splitter = new QvisMainWindowSplitter(central);
         splitter->setOrientation(Qt::Vertical);
         layout->addWidget(splitter);
 
@@ -973,28 +1086,18 @@ QvisMainWindow::SetDefaultSplitterSizes(int h)
 //   Cyrus Harrison, Tue Aug 13 15:40:11 PDT 2019
 //   Remove update visit entry.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Make Help a direct menubar action. 'About' has been moved to Help window.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::AddHelpMenu(void)
 {
     menuBar()->addSeparator();
-    helpPopup = menuBar()->addMenu(tr("&Help"));
-
-    helpPopup->addAction(tr("About . . ."),
-                         this, SIGNAL(activateAboutWindow()));
-
-    helpPopup->addAction(tr("Copyright . . ."),
-                         this, SIGNAL(activateCopyrightWindow()));
-
-    helpPopup->addAction(tr("Help . . ."),
-                         this, SIGNAL(activateHelpWindow()),
-                         QKeySequence(Qt::Key_F1));
-
-    helpPopup->addAction(tr("Release notes . . ."),
-                         this, SIGNAL(activateReleaseNotesWindow()));
-
-    helpPopup->addSeparator();
+    helpAction = menuBar()->addAction(tr("&Help"),
+                                      this, SIGNAL(activateHelpWindow()));
+    helpAction->setShortcut(QKeySequence(Qt::Key_F1));
 }
 
 // ****************************************************************************
@@ -1086,6 +1189,9 @@ QvisMainWindow::CreateMainContents(QSplitter *parent)
 //    Brad Whitlock, Fri May  7 12:09:35 PDT 2010
 //    Add global area before the splitter.
 //
+//    Kathleen Biagas, Thu Jul 30, 2026
+//    Use new QvisMainWindowSplitter class.
+//
 // ****************************************************************************
 
 void
@@ -1093,7 +1199,7 @@ QvisMainWindow::CreateMainContents(QvisPostableMainWindow *win)
 {
     win->ContentsLayout()->addWidget(CreateGlobalArea(win->ContentsWidget()));
 
-    splitter = new QSplitter(win->ContentsWidget());
+    splitter = new QvisMainWindowSplitter(win->ContentsWidget());
     splitter->setOrientation(Qt::Vertical);
     win->ContentsLayout()->setContentsMargins(3,3,3,3);
     win->ContentsLayout()->addWidget(splitter);

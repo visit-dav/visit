@@ -22,7 +22,7 @@ class QVBoxLayout;
 // Purpose:
 //   This is class creates a splashscreen.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Sean Ahern
 // Creation:   Thu Sep 6 16:34:45 PST 2001
@@ -43,6 +43,10 @@ class QVBoxLayout;
 //   Brad Whitlock, Fri May 30 15:21:37 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Removed contributors, content being moved out of help window to on-line
+//   manual.
+//
 // ****************************************************************************
 
 class SplashScreen : public QFrame
@@ -57,14 +61,12 @@ public:
     void About();
 signals:
     void showCopyright();
-    void showContributors();
 public slots:
     virtual void show();
     virtual void hide();
     void nextPicture();
 private slots:
     void emitShowCopyright();
-    void emitShowContributors();
 protected:
     void CreateAboutButtons();
 
@@ -77,7 +79,6 @@ protected:
     QProgressBar           *progress;
     QPushButton            *dismissButton;
     QPushButton            *copyrightButton;
-    QPushButton            *contributorButton;
     QVBoxLayout            *topLayout;
     QVBoxLayout            *lLayout;
     QVBoxLayout            *rLayout;

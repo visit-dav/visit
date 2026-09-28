@@ -13,26 +13,25 @@
 #include <vtkSmartPointer.h>
 
 #include <LabelAttributes.h>
-#include <avtViewInfo.h>
 
 
 class vtkRenderer;
-class vtkTextMapper;
-class vtkTextProperty;
 
 // ****************************************************************************
 // Class: vtkLabelMapper
 //
 // Purpose:  vtk mapper for labels
-//   
 //
-// Programmer: Kathleen Biagas 
+//
+// Programmer: Kathleen Biagas
 // Creation:   April 13, 2017
 //
 // Modifications:
+//   Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//   Added GetPositionScale.
 //
-//    Alister Maguire, Mon May 24 10:06:23 PDT 2021
-//    Added GetPositionScale.
+//   Kathleen Biagas, Tue Aug 4, 2026
+//   Removed zBufferWarningIssued.
 //
 // ****************************************************************************
 
@@ -63,8 +62,8 @@ protected:
 
     void PopulateBinsWithCellLabels3D(vtkDataSet *, vtkRenderer *);
     void PopulateBinsWithNodeLabels3D(vtkDataSet *, vtkRenderer *);
-    void PopulateBinsHelper(vtkRenderer *, const unsigned char *, 
-                            const char *, const double *, vtkIdType, int, 
+    void PopulateBinsHelper(vtkRenderer *, const unsigned char *,
+                            const char *, const double *, vtkIdType, int,
                             const double *);
     void ClearZBuffer();
     void InitializeZBuffer(vtkDataSet *, vtkRenderer *, bool, bool);
@@ -85,7 +84,6 @@ protected:
     int                    zBufferWidth;
     int                    zBufferHeight;
     float                  zTolerance;
-    static bool            zBufferWarningIssued;
 
 private:
     vtkLabelMapper(const vtkLabelMapper&) = delete;

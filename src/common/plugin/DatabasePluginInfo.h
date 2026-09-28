@@ -87,6 +87,8 @@ class DatabasePluginManager;
 //    Add a method to return license.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    ChatGPT+Mark C. Miller, Fri Aug 14 17:51:42 PDT 2026
+//    Add support for scalar component REs.
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
@@ -99,6 +101,7 @@ class PLUGIN_API GeneralDatabasePluginInfo
     virtual bool  EnabledByDefault() const { return true; }
     virtual bool  HasWriter() const { return false; }
     virtual std::vector<std::string>  GetDefaultFilePatterns() const = 0;
+    virtual std::vector<std::string>  GetDefaultScalarComponentREs() const;
     virtual bool  AreDefaultFilePatternsStrict() const { return false; }
     virtual bool  OpensWholeDirectory() const { return false; }
 };

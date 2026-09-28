@@ -287,6 +287,10 @@
 //    Cyrus Harrison, Mon Mar 30 17:03:12 PDT 2026
 //    Changed the date on the splash screen to April 2026.
 //
+//    Kathleen Biagas, Mon Aug 31, 2026
+//    Removed contributors, content being moved out of help window to on-line
+//    manual.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -343,7 +347,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
     {
         QPainter painter(&pictures[i]);
         QFont font("helvetica", 30, QFont::Bold);
-        
+
         painter.setFont(font);
         QFontMetrics fmtx = painter.fontMetrics();
         painter.setPen(QColor(0,0,0));
@@ -398,7 +402,6 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2026", this));
 
     copyrightButton = 0;
-    contributorButton = 0;
     dismissButton = 0;
 
     QFrame *splitter1 = new QFrame(this);
@@ -452,6 +455,10 @@ SplashScreen::~SplashScreen()
 //   Cyrus Harrison, Tue Jul  1 10:33:10 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Mon Aug 31, 2026
+//   Removed contributors, content being moved out of help window to on-line
+//   manual.
+//
 // ****************************************************************************
 
 void
@@ -464,16 +471,6 @@ SplashScreen::CreateAboutButtons()
         connect(copyrightButton, SIGNAL(clicked()),
                 this, SLOT(emitShowCopyright()));
         rLayout->addWidget(copyrightButton, Qt::AlignRight);
-    }
-
-    // Add a contributor button.
-    if(contributorButton == 0)
-    {
-        contributorButton = new QPushButton(tr("Contributors..."));
-        connect(contributorButton, SIGNAL(clicked()),
-                this, SLOT(emitShowContributors()));
-        rLayout->addWidget(contributorButton, Qt::AlignRight);
-        rLayout->addStretch(1);
     }
 
     // Add a dismiss button
@@ -500,10 +497,10 @@ SplashScreen::CreateAboutButtons()
 //   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //   Replace obosolete desktop() with primaryScreen().
 //
-//   Kathleen Biagas, Mon Aug 18, 2025 
+//   Kathleen Biagas, Mon Aug 18, 2025
 //   Replace 'primaryScreen()->geometry()' with
 //   'primaryScreen()->availableGeometry()' since the latter takes into
-//   account window manager reserved space like the Windows taskbar. 
+//   account window manager reserved space like the Windows taskbar.
 //
 // ****************************************************************************
 
@@ -612,6 +609,10 @@ SplashScreen::About()
 //    Brad Whitlock, Tue Jan  8 13:51:23 PST 2008
 //    Hide/Show the new buttons.
 //
+//    Kathleen Biagas, Mon Aug 31, 2026
+//    Removed contributors, content being moved out of help window to on-line
+//    manual.
+//
 // ****************************************************************************
 
 void
@@ -629,7 +630,6 @@ SplashScreen::SetDisplayAsSplashScreen(bool asSplash)
         CreateAboutButtons();
         dismissButton->show();
         copyrightButton->show();
-        contributorButton->show();
     }
     else
     {
@@ -639,8 +639,6 @@ SplashScreen::SetDisplayAsSplashScreen(bool asSplash)
             dismissButton->hide();
         if(copyrightButton != 0)
             copyrightButton->hide();
-        if(contributorButton != 0)
-            contributorButton->hide();
     }
 
     // Save the mode
@@ -681,11 +679,5 @@ SplashScreen::emitShowCopyright()
 {
     hide();
     emit showCopyright();
-}
 
-void
-SplashScreen::emitShowContributors()
-{
-    hide();
-    emit showContributors();
 }

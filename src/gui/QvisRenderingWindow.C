@@ -25,9 +25,17 @@
 
 #ifdef HAVE_ANARI
     #include <AnariRenderingWidget.h>
+    #include <AnariDeviceInfoAttributes.h>
+    #include <EngineList.h>
+    #include <MapNode.h>
+    #include <XMLNode.h>
 #endif
 
 #include <DebugStream.h>
+
+#ifdef HAVE_ANARI
+const std::string QvisRenderingWindow::ANARI_REQUESTOR = "surface";
+#endif
 
 // ****************************************************************************
 // Method: QvisRenderingWindow::QvisRenderingWindow
@@ -77,6 +85,11 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
 {
     renderAtts = 0;
     windowInfo = 0;
+#ifdef HAVE_ANARI
+    anariDeviceInfo = 0;
+    engineList = 0;
+    anariRenderingWidget = 0;
+#endif
     lastAA = 0;
 
     stereoType = 0;
@@ -114,6 +127,10 @@ QvisRenderingWindow::~QvisRenderingWindow()
 
     if(windowInfo)
         windowInfo->Detach(this);
+#ifdef HAVE_ANARI
+    if(engineList)
+        engineList->Detach(this);
+#endif
 }
 
 
@@ -607,6 +624,9 @@ QvisRenderingWindow::CreateBasicPage()
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //   Added controls for setting the tiled rendering width and height.
 //
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added ability to toggle tiled rendering on and off.
+//
 // ****************************************************************************
 
 QWidget *
@@ -760,35 +780,32 @@ QvisRenderingWindow::CreateAdvancedPage()
     row++;
 
     // Create the tiled rendering widgets.
-    tiledRenderingGroup = new QGroupBox(tr("Tiled rendering"), advancedOptions);
-    tiledRenderingGroup->setCheckable(false);
-    tiledRenderingGroup->setChecked(false);
-    advLayout->addWidget(tiledRenderingGroup, row, 0, 2, 4);
-    row += 2;
-
-    QGridLayout *tiledRenderingLayout = new QGridLayout(tiledRenderingGroup);
-    tiledRenderingLayout->setContentsMargins(5,5,5,5);
-    tiledRenderingLayout->setSpacing(10);
+    tiledRenderingToggle = new QCheckBox(tr("Tiled rendering"), advancedOptions);
+    connect(tiledRenderingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(tiledRenderingToggled(bool)));
+    advLayout->addWidget(tiledRenderingToggle, row, 0, 1, 4);
+    row++;
 
     tiledRenderingWidthLabel = new QLabel(tr("Tile width"), advancedOptions);
-    tiledRenderingLayout->addWidget(tiledRenderingWidthLabel, 0, 0);
+    advLayout->addWidget(tiledRenderingWidthLabel, row, 0);
 
     tiledRenderingWidth = new QLineEdit("2048");
     QIntValidator *widthValidator = new QIntValidator(100,8192);
     tiledRenderingWidth->setValidator(widthValidator);
     connect(tiledRenderingWidth, SIGNAL(textChanged(const QString &)),
             this, SLOT(tiledRenderingWidthChanged(void)));
-    tiledRenderingLayout->addWidget(tiledRenderingWidth, 0, 1);
+    advLayout->addWidget(tiledRenderingWidth, row, 1);
 
     tiledRenderingHeightLabel = new QLabel(tr("Tile height"), advancedOptions);
-    tiledRenderingLayout->addWidget(tiledRenderingHeightLabel, 0, 2);
+    advLayout->addWidget(tiledRenderingHeightLabel, row, 2);
 
     tiledRenderingHeight = new QLineEdit("2048");
     QIntValidator *heightValidator = new QIntValidator(100,8192);
     tiledRenderingHeight->setValidator(heightValidator);
     connect(tiledRenderingHeight, SIGNAL(textChanged(const QString &)),
             this, SLOT(tiledRenderingHeightChanged(void)));
-    tiledRenderingLayout->addWidget(tiledRenderingHeight, 0, 3);
+    advLayout->addWidget(tiledRenderingHeight, row, 3);
+    row++;
 
 #ifdef HAVE_ANARI
     // Divider
@@ -1013,6 +1030,8 @@ QvisRenderingWindow::CreateWindowContents()
 // Creation:   Mon Sep 23 14:48:24 PST 2002
 //
 // Modifications:
+//   Kevin Griffin, Thu Sep  3 05:17:06 PM CDT 2026
+//   Added UpdateAnariDeviceInfo and UpdateAnariEngineAvailability
 //
 // ****************************************************************************
 
@@ -1023,6 +1042,12 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
         UpdateOptions(doAll);
     if(SelectedSubject() == windowInfo || doAll)
         UpdateInformation(doAll);
+#ifdef HAVE_ANARI
+    if(SelectedSubject() == (Subject*)anariDeviceInfo || doAll)
+        UpdateAnariDeviceInfo(doAll);
+    if(SelectedSubject() == (Subject*)engineList || doAll)
+        UpdateAnariEngineAvailability();
+#endif
 }
 
 // ****************************************************************************
@@ -1109,6 +1134,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //   Added controls for setting the tiled rendering width and height.
+//
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added ability to toggle tiled rendering on and off.
 //
 // ****************************************************************************
 
@@ -1240,6 +1268,11 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->blockSignals(true);
             renderNotifyToggle->setChecked(renderAtts->GetNotifyForEachRender());
             renderNotifyToggle->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_tiledRendering:
+            tiledRenderingToggle->blockSignals(true);
+            tiledRenderingToggle->setChecked(renderAtts->GetTiledRendering());
+            tiledRenderingToggle->blockSignals(false);
             break;
         case RenderingAttributes::ID_tiledRenderingWidth:
             tmp = IntToQString(renderAtts->GetTiledRenderingWidth());
@@ -1463,6 +1496,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //    Removed setting of widgets whose enablement is controlled by their
 //    containing QGroupBox.
 //
+//    Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//    Added ability to toggle tiled rendering on and off.
+//
 // ****************************************************************************
 
 void
@@ -1475,6 +1511,7 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     bool shadowOn = renderAtts->GetDoShadowing();
     bool depthCueingOn = renderAtts->GetDoDepthCueing();
     bool depthCueingAuto = renderAtts->GetDepthCueingAutomatic();
+    bool tiledRendering = renderAtts->GetTiledRendering();
 
     scalrenAutoThreshold->setEnabled(scalableAuto);
     compactDomainsAutoThreshold->setEnabled(compactAuto);
@@ -1486,6 +1523,11 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     depthCueingStartLabel->setEnabled(depthCueingOn && !depthCueingAuto);
     depthCueingEndEdit->setEnabled(depthCueingOn && !depthCueingAuto);
     depthCueingEndLabel->setEnabled(depthCueingOn && !depthCueingAuto);
+
+    tiledRenderingWidthLabel->setEnabled(tiledRendering);
+    tiledRenderingWidth->setEnabled(tiledRendering);
+    tiledRenderingHeightLabel->setEnabled(tiledRendering);
+    tiledRenderingHeight->setEnabled(tiledRendering);
 }
 
 // ****************************************************************************
@@ -1631,6 +1673,78 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
     }
 }
 
+#ifdef HAVE_ANARI
+// ****************************************************************************
+// Method: QvisRenderingWindow::UpdateAnariDeviceInfo
+//
+// Purpose:
+//   Forwards the engine's ANARI library/subtype/renderer/parameter info
+//   (delivered as a MapNode-in-XML by AnariDeviceInfoAttributes) to the
+//   ANARI rendering widget, so it can populate its UI without the client
+//   creating a local ANARI device.
+//
+// Arguments:
+//   doAll : Whether or not to ignore field selection.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   AnariDeviceInfoAttributes is now shared by more than one ANARI settings
+//   panel (surface rendering, volume plots). Ignore replies not addressed
+//   to this window's panel (checked before the empty-xml check, since an
+//   empty result from another panel's failed request must not revert this
+//   window's checkbox).
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::UpdateAnariDeviceInfo(bool doAll)
+{
+    if(anariDeviceInfo == 0 || anariRenderingWidget == 0)
+        return;
+
+    if(anariDeviceInfo->GetRequestor() != ANARI_REQUESTOR)
+        return;
+
+    const std::string &xml = anariDeviceInfo->GetXmlResult();
+    if(xml.empty())
+    {
+        // The request failed (e.g. no engine is running to service it).
+        // Revert the checkbox so AnariAttributes.anariRendering doesn't
+        // stay true for a feature that isn't actually working.
+        anariRenderingWidget->SetChecked(false);
+        return;
+    }
+
+    MapNode info{XMLNode(xml)};
+    anariRenderingWidget->UpdateDeviceInfo(info);
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::UpdateAnariEngineAvailability
+//
+// Purpose:
+//   Enables/disables the ANARI rendering panel based on whether an engine
+//   is currently running, since ANARI device info can only be retrieved
+//   from a running engine.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 03 Sep 2026
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::UpdateAnariEngineAvailability()
+{
+    if(engineList == 0 || anariRenderingWidget == 0)
+        return;
+
+    anariRenderingWidget->setEnabled(!engineList->GetEngineName().empty());
+}
+#endif
+
 // ****************************************************************************
 // Method: QvisRenderingWindow::Apply
 //
@@ -1684,6 +1798,12 @@ QvisRenderingWindow::SubjectRemoved(Subject *TheRemovedSubject)
         renderAtts = 0;
     else if(TheRemovedSubject == windowInfo)
         windowInfo = 0;
+#ifdef HAVE_ANARI
+    else if(TheRemovedSubject == (Subject*)anariDeviceInfo)
+        anariDeviceInfo = 0;
+    else if(TheRemovedSubject == (Subject*)engineList)
+        engineList = 0;
+#endif
 }
 
 // ****************************************************************************
@@ -1731,6 +1851,89 @@ QvisRenderingWindow::ConnectWindowInformation(WindowInformation *w)
     windowInfo = w;
     windowInfo->Attach(this);
 }
+
+#ifdef HAVE_ANARI
+// ****************************************************************************
+// Method: QvisRenderingWindow::ConnectAnariDeviceInfoAttributes
+//
+// Purpose:
+//   Makes this window observe the ANARI device info the engine reports,
+//   so the ANARI rendering settings can be populated without the client
+//   creating a local ANARI device.
+//
+// Arguments:
+//   w : The ANARI device info attributes.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::ConnectAnariDeviceInfoAttributes(AnariDeviceInfoAttributes *w)
+{
+    anariDeviceInfo = w;
+    anariDeviceInfo->Attach(this);
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::ConnectEngineList
+//
+// Purpose:
+//   Makes this window observe the EngineList so the ANARI rendering panel
+//   can be enabled/disabled based on whether an engine is running, since
+//   ANARI device info can only be retrieved from a running engine.
+//
+// Arguments:
+//   el : The engine list.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 03 Sep 2026
+//
+// Modifications:
+//   Kevin Griffin, Thu Sep  3 05:17:06 PM CDT 2026
+//   Watch the EngineList so the ANARI rendering panel can be grayed out
+//   when no engine is running to service ANARI device info requests.
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::ConnectEngineList(EngineList *el)
+{
+    engineList = el;
+    engineList->Attach(this);
+    UpdateAnariEngineAvailability();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::RequestAnariDeviceInfo
+//
+// Purpose:
+//   Forwards an ANARI device info request (issued by AnariRenderingWidget)
+//   to the viewer/engine. GetViewerMethods() is protected on GUIBase, so
+//   AnariRenderingWidget (which is not a GUIBase subclass) goes through
+//   this method rather than calling it directly.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Pass ANARI_REQUESTOR so the reply can be routed back to this window's
+//   panel and not another one (e.g. a Volume plot window) sharing the same
+//   AnariDeviceInfoAttributes result.
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::RequestAnariDeviceInfo(const std::string &libraryName,
+                                            const std::string &librarySubtype,
+                                            const std::string &rendererSubtype)
+{
+    GetViewerMethods()->GetAnariDeviceInfo(libraryName, librarySubtype, rendererSubtype,
+                                           ANARI_REQUESTOR);
+}
+#endif
 
 //
 // Qt slot functions
@@ -2874,6 +3077,32 @@ void
 QvisRenderingWindow::colorTexturingToggled(bool val)
 {
     renderAtts->SetColorTexturingFlag(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::tiledRenderingToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when the tiledRendering check
+//   box is toggled.
+//
+// Arguments:
+//   val : The new on/off value for the widget.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Aug 26 14:29:54 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::tiledRenderingToggled(bool val)
+{
+    renderAtts->SetTiledRendering(val);
+    UpdateWindowSensitivity();
     SetUpdate(false);
     Apply();
 }

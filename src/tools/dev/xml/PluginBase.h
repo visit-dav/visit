@@ -78,6 +78,8 @@
 //    Remove WIN32DEFINES (windefs) support, now handled as a Conditional
 //    Definitions in .code file.
 //
+//    ChatGPT as prompted by Mark C. Miller, Fri Aug 14 17:53:16 PDT 2026
+//    Add support for scalar component REs
 // ****************************************************************************
 
 class PluginBase
@@ -111,6 +113,7 @@ public:
     std::vector<QString> libs;
     std::vector<QString> defs;
     std::vector<QString> filePatterns;        // for DB plugins
+    std::vector<QString> scalarComponentREs;  // for DB plugins
     bool                 filePatternsStrict;  // for DB plugins
     bool                 opensWholeDirectory; // for DB plugins
     bool customgfiles;
@@ -177,6 +180,7 @@ public:
           libs(),
           defs(),
           filePatterns(),
+          scalarComponentREs(),
           filePatternsStrict(false),
           opensWholeDirectory(false),
           customgfiles(false),

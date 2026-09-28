@@ -11,6 +11,9 @@
 #   Kathleen Biagas, Friday June 13, 2025
 #   Ensure libraries are installed on Windows, needs a different 'glob'.
 #
+#   Kathleen Biagas, Thur Aug 20, 2026
+#   Add call to generate_lib_setup_cmake.
+#
 #*****************************************************************************
 
 #[=======================================================================[.rst:
@@ -150,6 +153,7 @@ if(anari_FOUND)
                            NAMESPACE "anari::"
                            INCBASE "anari"
                            ITEMS ${target_list})
+    generate_lib_setup_cmake(NAME "ANARI")
     unset(target_list)
 endif()
 

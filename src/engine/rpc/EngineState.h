@@ -24,6 +24,7 @@
 #include <ProcInfoRPC.h>
 #include <QueryRPC.h>
 #include <QueryParametersRPC.h>
+#include <AnariDeviceInfoRPC.h>
 #include <ReleaseDataRPC.h>
 #include <SetWinAnnotAttsRPC.h>
 #include <SimulationCommand.h>
@@ -64,6 +65,7 @@ public:
     ClearCacheRPC&              GetClearCacheRPC() { return clearCacheRPC; }
     QueryRPC&                   GetQueryRPC() { return queryRPC; }
     QueryParametersRPC&         GetQueryParametersRPC() { return queryParametersRPC; }
+    AnariDeviceInfoRPC&         GetAnariDeviceInfoRPC() { return anariDeviceInfoRPC; }
     ReleaseDataRPC&             GetReleaseDataRPC() { return releaseDataRPC; }
     OpenDatabaseRPC&            GetOpenDatabaseRPC() { return openDatabaseRPC; }
     DefineVirtualDatabaseRPC&   GetDefineVirtualDatabaseRPC() { return defineVirtualDatabaseRPC; }
@@ -95,6 +97,7 @@ private:
     ClearCacheRPC            clearCacheRPC;
     QueryRPC                 queryRPC;
     QueryParametersRPC       queryParametersRPC;
+    AnariDeviceInfoRPC       anariDeviceInfoRPC;
     ReleaseDataRPC           releaseDataRPC;
     OpenDatabaseRPC          openDatabaseRPC;
     DefineVirtualDatabaseRPC defineVirtualDatabaseRPC;

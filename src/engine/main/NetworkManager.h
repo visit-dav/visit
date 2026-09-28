@@ -21,6 +21,10 @@
 #include <vector>
 #include <engine_main_exports.h>
 
+#ifdef HAVE_ANARI
+#include <anari/anari_cpp.hpp>
+#endif
+
 class AttributeGroup;
 class CompactSILRestrictionAttributes;
 class DatabasePluginManager;
@@ -547,6 +551,9 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     void          PickForIntersection(const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
     std::string   GetQueryParameters(const std::string &qName);
+    std::string   GetAnariDeviceInfo(const std::string &libraryName,
+                                     const std::string &librarySubtype,
+                                     const std::string &rendererSubtype);
     void          ExportDatabases(const intVector &, ExportDBAttributes *,
                                   const std::string &timeSuffix);
     void          ConstructDataBinning(const int, ConstructDataBinningAttributes *);
@@ -730,6 +737,12 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     void            SetWindowAttributes(EngineVisWinInfo &viswinInfo,
                         const WindowAttributes &atts, const std::string& extstr,
                         const double *vexts, const std::string& ctName);
+
+#ifdef HAVE_ANARI
+    static void     AnariEngineStatusCallback(const void *, ANARIDevice, ANARIObject, ANARIDataType,
+                                              ANARIStatusSeverity, ANARIStatusCode, const char *);
+    std::string     AnariValueToString(ANARIDataType, const void *);
+#endif
 
     // The plugin managers
     DatabasePluginManager      *databasePlugins;

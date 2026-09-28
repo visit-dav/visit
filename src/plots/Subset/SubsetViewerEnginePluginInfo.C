@@ -194,13 +194,17 @@ SubsetViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
 //    Changed API.
 //
+//    Kathleen Biagas, Thu Sep 3, 2026
+//    Send 'false' for 'setDefaultAtts' argument of PrivateSetPlotAtts so that
+//    defaultAtts won't be changed.
+//
 // ****************************************************************************
 
 void
 SubsetViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
-    PrivateSetPlotAtts(atts, plot);
+    PrivateSetPlotAtts(atts, plot, false);
 }
 
 // ****************************************************************************
@@ -242,6 +246,7 @@ SubsetViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
 {
     PrivateSetPlotAtts(atts, plot);
 }
+
 
 // ****************************************************************************
 //  Method: SubsetViewerEnginePluginInfo::GetMenuName
@@ -319,6 +324,10 @@ SubsetViewerEnginePluginInfo::GetMenuName() const
 //    Kathleen Biagas, Thu Dec 15 16:13:57 PST 2016
 //    Removed Material as a subset option.
 //
+//    Kathleen Biagas, Thu Sep 3, 2026
+//    Add 'setDefaultAtts' argument, default to true. When false, no changes
+//    are made to defaultAtts. ReInitializePlotAtts sets to 'false'.
+//
 // ****************************************************************************
 #include <stdio.h>
 
@@ -334,7 +343,7 @@ SubsetViewerEnginePluginInfo::GetMenuName() const
 
 void
 SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
-    const avtPlotMetaData &plot)
+    const avtPlotMetaData &plot, const bool setDefaultAtts)
 {
     SubsetAttributes *subsetAtts = (SubsetAttributes *)atts;
 
@@ -374,7 +383,6 @@ SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
       case AVT_DOMAIN_SUBSET :
           debug5 << "Variable for subset plot is a domain Mesh." << endl;
           subsetAtts->SetSubsetType(SubsetAttributes::Domain);
-          defaultAtts->SetSubsetType(SubsetAttributes::Domain);
           if (mesh->blockNames.empty())
           {
               for (int i = 0; i < mesh->numBlocks; i++)
@@ -396,7 +404,6 @@ SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
       case AVT_GROUP_SUBSET :
           debug5 << "Variable for subset plot is a group Mesh." << endl;
           subsetAtts->SetSubsetType(SubsetAttributes::Group);
-          defaultAtts->SetSubsetType(SubsetAttributes::Group);
           if (!mesh->groupNames.empty())
           {
               for (size_t i = 0; i < mesh->groupNames.size(); ++i)
@@ -437,7 +444,6 @@ SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
       case AVT_ENUMSCALAR_SUBSET :
           debug5 << "Variable for subset plot is an enumerated Scalar."<<endl;
           subsetAtts->SetSubsetType(SubsetAttributes::EnumScalar);
-          defaultAtts->SetSubsetType(SubsetAttributes::EnumScalar);
           smd = md->GetScalar(vn);
           if (smd != NULL)
           {
@@ -454,7 +460,6 @@ SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           {
               debug5 << "Variable for subset plot is a mesh."<<endl;
               subsetAtts->SetSubsetType(SubsetAttributes::Mesh);
-              defaultAtts->SetSubsetType(SubsetAttributes::Mesh);
               sprintf(temp, "Whole mesh (%s)", vn.c_str());
               sv.push_back(temp);
           }
@@ -525,7 +530,11 @@ SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Set the subset names and colors in the subsetAtts.
     subsetAtts->SetSubsetNames(sv);
     subsetAtts->SetMultiColor(cal);
-    defaultAtts->SetSubsetNames(sv);
-    defaultAtts->SetMultiColor(cal);
+    if(setDefaultAtts)
+    {
+        defaultAtts->SetSubsetType(subsetAtts->GetSubsetType());
+        defaultAtts->SetSubsetNames(sv);
+        defaultAtts->SetMultiColor(cal);
+    }
 }
 

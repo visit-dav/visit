@@ -38,6 +38,7 @@ class PixieGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual bool  EnabledByDefault() const;
     virtual bool  HasWriter() const;
     virtual std::vector<std::string> GetDefaultFilePatterns() const;
+    virtual std::vector<std::string> GetDefaultScalarComponentREs() const;
     virtual bool  AreDefaultFilePatternsStrict() const;
     virtual bool  OpensWholeDirectory() const;
 };

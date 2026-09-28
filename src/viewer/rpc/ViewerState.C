@@ -8,6 +8,7 @@
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
+#include <AnariDeviceInfoAttributes.h>
 #include <AppearanceAttributes.h>
 #include <CinemaAttributes.h>
 #include <ClientMethod.h>

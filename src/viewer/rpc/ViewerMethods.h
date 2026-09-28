@@ -423,6 +423,11 @@ public:
     void Query(const MapNode &queryParams);
     void GetQueryParameters(const std::string &qName);
 
+    void GetAnariDeviceInfo(const std::string &libraryName,
+                            const std::string &librarySubtype,
+                            const std::string &rendererSubtype,
+                            const std::string &requestor);
+
     void QueryProcessAttributes(int id,
                                 const std::string engineHostName,
                                 const std::string engineDbName);

@@ -66,6 +66,9 @@
     <Field name="notifyForEachRender" label="notifyForEachRender" type="bool">
       false
     </Field>
+    <Field name="tiledRendering" label="tiledRendering" type="bool">
+      true
+    </Field>
     <Field name="tiledRenderingWidth" label="tiledRenderingWidth" type="int">
       2048
     </Field>

@@ -39,11 +39,13 @@
 #include <InvalidDimensionsException.h>
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
+#include <StringHelpers.h>
 
 #include <avtExecutionManager.h>
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -67,6 +69,247 @@ ConvertSlashes(char *str)
     }
 }
 
+// ****************************************************************************
+// Helper function for adding expressions based on scalar components.
+// Defines vector expressions from candidate scalar component groupings.
+// The candidate groupings are constructed in the caller according to 
+// scalar component name RE matching and whether all candidates share the same
+// mesh, centering.
+//
+// ChatGPT+Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
+// ****************************************************************************
+
+static bool
+AddScalarComponentVectorExpression(
+    const StringHelpers::REStringGroup &grp,
+    int spatialDimension,
+    avtDatabaseMetaData *md)
+{
+    if (grp.ids.empty())
+        return false;
+
+    //
+    // GroupAndOrderStringsByRE guarantees uniform identifier lengths and
+    // lexicographic ordering. Single-character identifiers denote vectors.
+    //
+    if (grp.ids[0].size() != 1)
+        return false;
+
+    const int ncomps = (int)grp.strings.size();
+
+    //
+    // A 2D mesh may have either a 2- or 3-component vector.
+    // A 3D mesh requires all three components.
+    //
+    if (ncomps < spatialDimension || ncomps > 3)
+        return false;
+
+    string def = "{";
+
+    for (int c = 0; c < ncomps; ++c)
+    {
+        if (c > 0)
+            def += ",";
+
+        def += "<";
+        def += grp.strings[c];
+        def += ">";
+    }
+
+    def += "}";
+
+    Expression e;
+    e.SetName(grp.name);
+    e.SetDefinition(def);
+    e.SetType(Expression::VectorMeshVar);
+    e.SetAutoExpression(true);
+
+    md->AddExpression(&e);
+
+    return true;
+}
+
+// ****************************************************************************
+// Helper function for adding expressions based on scalar components.
+// Defines tensor expressions from candidate scalar component groupings.
+// The candidate groupings are constructed in the caller according to 
+// scalar component name RE matching and whether all candidates share the same
+// mesh, centering.
+//
+// ChatGPT+Mark C. Miller, Sat Aug 15 11:21:04 PDT 2026
+// ****************************************************************************
+
+static bool
+AddScalarComponentTensorExpression(
+    const StringHelpers::REStringGroup &grp,
+    int spatialDimension,
+    avtDatabaseMetaData *md)
+{
+    if (grp.ids.empty() || grp.ids[0].size() != 2)
+        return false;
+
+    //
+    // Determine the logical tensor axes from the characters occurring in
+    // the two-character component identifiers. std::set gives us their
+    // lexicographic order.
+    //
+    std::set<char> axisChars;
+
+    for (size_t i = 0; i < grp.ids.size(); ++i)
+    {
+        axisChars.insert(grp.ids[i][0]);
+        axisChars.insert(grp.ids[i][1]);
+    }
+
+    if ((int)axisChars.size() != spatialDimension)
+        return false;
+
+    char prev = 0;
+    bool first = true;
+
+    for (std::set<char>::const_iterator it = axisChars.begin();
+         it != axisChars.end(); ++it)
+    {
+        if (!first && *it != prev + 1)
+            return false;
+
+        prev = *it;
+        first = false;
+    }
+
+    map<char, int> axisIndex;
+
+    int index = 0;
+    for (std::set<char>::const_iterator it = axisChars.begin();
+         it != axisChars.end(); ++it, ++index)
+    {
+        axisIndex[*it] = index;
+    }
+
+    string comp[3][3];
+
+    for (size_t i = 0; i < grp.ids.size(); ++i)
+    {
+        int r = axisIndex[grp.ids[i][0]];
+        int c = axisIndex[grp.ids[i][1]];
+
+        if (!comp[r][c].empty())
+            return false;
+
+        comp[r][c] = grp.strings[i];
+    }
+
+    //
+    // First test for a complete general tensor.
+    //
+    bool full = true;
+
+    for (int r = 0; r < spatialDimension; ++r)
+        for (int c = 0; c < spatialDimension; ++c)
+            if (comp[r][c].empty())
+                full = false;
+
+    if (full)
+    {
+        string def = "{";
+
+        for (int r = 0; r < spatialDimension; ++r)
+        {
+            if (r > 0)
+                def += ",";
+
+            def += "{";
+
+            for (int c = 0; c < spatialDimension; ++c)
+            {
+                if (c > 0)
+                    def += ",";
+
+                def += "<";
+                def += comp[r][c];
+                def += ">";
+            }
+
+            def += "}";
+        }
+
+        def += "}";
+
+        Expression e;
+        e.SetName(grp.name);
+        e.SetDefinition(def);
+        e.SetType(Expression::TensorMeshVar);
+        e.SetAutoExpression(true);
+
+        md->AddExpression(&e);
+
+        return true;
+    }
+
+    //
+    // Otherwise determine whether exactly one triangular half is present.
+    //
+    bool upper = true;
+    bool lower = true;
+
+    for (int r = 0; r < spatialDimension; ++r)
+    {
+        for (int c = 0; c < spatialDimension; ++c)
+        {
+            if (c >= r && comp[r][c].empty())
+                upper = false;
+
+            if (c <= r && comp[r][c].empty())
+                lower = false;
+        }
+    }
+
+    if (!upper && !lower)
+        return false;
+
+    const int expected =
+        spatialDimension * (spatialDimension + 1) / 2;
+
+    if ((int)grp.strings.size() != expected)
+        return false;
+
+    string def = "{";
+
+    for (int r = 0; r < spatialDimension; ++r)
+    {
+        if (r > 0)
+            def += ",";
+
+        def += "{";
+
+        for (int c = 0; c < spatialDimension; ++c)
+        {
+            if (c > 0)
+                def += ",";
+
+            const string &v =
+                !comp[r][c].empty() ? comp[r][c] : comp[c][r];
+
+            def += "<";
+            def += v;
+            def += ">";
+        }
+
+        def += "}";
+    }
+
+    def += "}";
+
+    Expression e;
+    e.SetName(grp.name);
+    e.SetDefinition(def);
+    e.SetType(Expression::SymmetricTensorMeshVar);
+    e.SetAutoExpression(true);
+
+    md->AddExpression(&e);
+
+    return true;
+}
 
 // size of MD/SIL caches
 unsigned int avtDatabase::mdMaxCacheSize   = 20;
@@ -77,7 +320,7 @@ bool      avtDatabase::onlyServeUpMetaData = false;
 
 // ****************************************************************************
 // The following methods are convenience methods to help database plugins
-// do dynamic domain decomposion for rectilinear grids. There are four 
+// do dynamic domain decomposition for rectilinear grids. There are four 
 // methods...
 //
 // 1 DetermineRectilinearDecomposition: Used to compute a domain decomposition
@@ -1306,6 +1549,8 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
         if (avtDatabaseFactory::GetCreateTimeDerivativeExpressions())
             AddTimeDerivativeExpressions(md);
 
+        AddScalarComponentExpressions(md);
+
         if (avtDatabaseFactory::GetCreateVectorMagnitudeExpressions())
             AddVectorMagnitudeExpressions(md);
     }
@@ -1807,6 +2052,225 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                  }
              }
          }
+    }
+}
+
+// ****************************************************************************
+//  Infer vector/tensor expressions from scalar components matching
+//  plugin-provided regular expressions. Candidate scalars are bucketed by mesh
+//  and centering before grouping. In addition no new expression will be
+//  defined if it collides with any existing variable or expression.
+//
+//  ChatGPT+Mark C. Miller, Fri Aug 14 17:49:13 PDT 2026
+// ****************************************************************************
+void
+avtDatabase::AddScalarComponentExpressions(avtDatabaseMetaData *md)
+{
+    if (scalarComponentREs.empty())
+        return;
+
+    struct BucketKey
+    {
+        string meshName;
+        int centering;
+        bool operator<(const BucketKey &rhs) const
+        {
+            if (meshName < rhs.meshName) return true;
+            if (meshName > rhs.meshName) return false;
+            return centering < rhs.centering;
+        }
+    };
+
+    std::set<string> occupiedNames;
+
+    for (int i = 0; i < md->GetNumScalars(); ++i)
+        occupiedNames.insert(md->GetScalars(i).name);
+
+    for (int i = 0; i < md->GetNumVectors(); ++i)
+        occupiedNames.insert(md->GetVectors(i).name);
+
+    for (int i = 0; i < md->GetNumTensors(); ++i)
+        occupiedNames.insert(md->GetTensors(i).name);
+
+    for (int i = 0; i < md->GetNumSymmTensors(); ++i)
+        occupiedNames.insert(md->GetSymmTensors(i).name);
+
+    const ExpressionList &elist = md->GetExprList();
+
+    for (int i = 0; i < elist.GetNumExpressions(); ++i)
+        occupiedNames.insert(elist[i].GetName());
+
+    map<string, int> meshDims;
+    for (int i = 0; i < md->GetNumMeshes(); ++i)
+    {
+        const avtMeshMetaData *mmd = md->GetMesh(i);
+        meshDims[mmd->name] = mmd->spatialDimension;
+    }
+
+    map<BucketKey, vector<string> > buckets;
+    for (int i = 0; i < md->GetNumScalars(); ++i)
+    {
+        const avtScalarMetaData *smd = md->GetScalar(i);
+        occupiedNames.insert(smd->name);
+        if (!smd->validVariable)
+            continue;
+
+        BucketKey key;
+        key.meshName = smd->meshName;
+        key.centering = (int)smd->centering;
+        buckets[key].push_back(smd->name);
+    }
+
+    for (map<BucketKey, vector<string> >::const_iterator bit = buckets.begin();
+         bit != buckets.end(); ++bit)
+    {
+        map<string, int>::const_iterator mit = meshDims.find(bit->first.meshName);
+        if (mit == meshDims.end())
+            continue;
+
+        int spatialDimension = mit->second;
+        if (spatialDimension < 2 || spatialDimension > 3)
+            continue;
+
+        //
+        // FIRST PASS: Handle tensor-looking groups and establish precedence
+        // over possible vector interpretations of the same scalar names.
+        //
+        // Alphabetic tensor component identifiers (xx,xy,...,uv,...) and
+        // conventional one-based numeric identifiers (11,12,...,33) are
+        // sufficiently strong tensor syntax that their scalar names are
+        // protected from reinterpretation as vector components even when the
+        // tensor itself is incomplete. This prevents, for example,
+        // stress_xx/stress_xy from producing a bogus vector "stress_x", and
+        // partial11/partial12 from producing "partial1".
+        //
+        // Zero-based numeric identifiers are different because a family such
+        // as e000,e001,e002 has two equally plausible parses:
+        //
+        //     tensor candidate: e0 + {00,01,02}   (incomplete)
+        //     vector candidate: e00 + {0,1,2}     (complete)
+        //
+        // Therefore zero-based numeric tensor-looking groups get tensor
+        // precedence only when they actually form a tensor/symmetric tensor.
+        //
+        std::set<string> tensorComponentScalarNames;
+
+        for (size_t r = 0; r < scalarComponentREs.size(); ++r)
+        {
+            vector<StringHelpers::REStringGroup> groups;
+
+            if (!StringHelpers::GroupAndOrderStringsByRE(bit->second,
+                                                 scalarComponentREs[r],
+                                                 1, 2, groups))
+            {
+                debug3 << "Invalid scalar-component regular expression \""
+                       << scalarComponentREs[r] << "\"" << endl;
+                continue;
+            }
+
+            for (size_t g = 0; g < groups.size(); ++g)
+            {
+                const StringHelpers::REStringGroup &grp = groups[g];
+
+                if (grp.ids.empty() || grp.ids[0].size() != 2)
+                    continue;
+
+                bool allNumeric = true;
+                bool hasZero = false;
+
+                for (size_t j = 0; j < grp.ids.size(); ++j)
+                {
+                    if (grp.ids[j].size() != 2)
+                    {
+                        allNumeric = false;
+                        break;
+                    }
+
+                    for (size_t k = 0; k < 2; ++k)
+                    {
+                        char c = grp.ids[j][k];
+
+                        if (c < '0' || c > '9')
+                            allNumeric = false;
+
+                        if (c == '0')
+                            hasZero = true;
+                    }
+                }
+
+                bool added = false;
+
+                if (occupiedNames.find(grp.name) == occupiedNames.end())
+                {
+                    added = AddScalarComponentTensorExpression(
+                                grp, spatialDimension, md);
+
+                    if (added)
+                        occupiedNames.insert(grp.name);
+                }
+
+                //
+                // Non-numeric tensor syntax, one-based numeric syntax, or an
+                // actually-created zero-based tensor all take precedence over
+                // a possible vector interpretation.
+                //
+                if (!allNumeric || !hasZero || added)
+                {
+                    for (size_t j = 0; j < grp.strings.size(); ++j)
+                        tensorComponentScalarNames.insert(grp.strings[j]);
+                }
+            }
+        }
+
+        //
+        // SECOND PASS: Create vectors from groups not claimed by the tensor
+        // precedence rules above.
+        //
+        for (size_t r = 0; r < scalarComponentREs.size(); ++r)
+        {
+            vector<StringHelpers::REStringGroup> groups;
+
+            if (!StringHelpers::GroupAndOrderStringsByRE(bit->second,
+                                                 scalarComponentREs[r],
+                                                 1, 2, groups))
+            {
+                debug3 << "Invalid scalar-component regular expression \""
+                       << scalarComponentREs[r] << "\"" << endl;
+                continue;
+            }
+
+            for (size_t g = 0; g < groups.size(); ++g)
+            {
+                const StringHelpers::REStringGroup &grp = groups[g];
+
+                if (grp.ids.empty() || grp.ids[0].size() != 1)
+                    continue;
+
+                if (occupiedNames.find(grp.name) != occupiedNames.end())
+                    continue;
+
+                bool usesTensorComponent = false;
+
+                for (size_t j = 0; j < grp.strings.size(); ++j)
+                {
+                    if (tensorComponentScalarNames.find(grp.strings[j]) !=
+                        tensorComponentScalarNames.end())
+                    {
+                        usesTensorComponent = true;
+                        break;
+                    }
+                }
+
+                if (usesTensorComponent)
+                    continue;
+
+                if (AddScalarComponentVectorExpression(
+                        grp, spatialDimension, md))
+                {
+                    occupiedNames.insert(grp.name);
+                }
+            }
+        }
     }
 }
 

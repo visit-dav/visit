@@ -162,6 +162,12 @@ public:
                                     const std::string &qname,
                                     std::string *params);
 
+    virtual bool GetAnariDeviceInfo(const EngineKey &ek,
+                                    const std::string &libraryName,
+                                    const std::string &librarySubtype,
+                                    const std::string &rendererSubtype,
+                                    std::string *result);
+
     // network management
     virtual bool ClearCache(const EngineKey &ek, const std::string &dbName);
     virtual bool GetProcInfo(const EngineKey &ek, ProcessAttributes &retAtts);

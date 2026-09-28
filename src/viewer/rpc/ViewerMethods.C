@@ -5078,6 +5078,61 @@ ViewerMethods::GetQueryParameters(const std::string &queryName)
 }
 
 
+// ****************************************************************************
+// Method: ViewerMethods::GetAnariDeviceInfo
+//
+// Purpose:
+//   Tells the viewer to ask the engine which ANARI libraries/subtypes/
+//   renderers/parameters are actually available, so the client's ANARI
+//   settings dialog can be populated without creating a local ANARI device.
+//   Any of the three arguments may be passed empty; see
+//   NetworkManager::GetAnariDeviceInfo() for what each combination returns.
+//
+// Arguments:
+//   libraryName     : ANARI library name, or empty.
+//   librarySubtype  : ANARI device subtype, or empty.
+//   rendererSubtype : ANARI renderer subtype, or empty.
+//   requestor       : Identifies which ANARI settings panel is asking
+//                      (e.g. "surface", "volume"), so the reply can be
+//                      routed back to only that panel. See
+//                      AnariDeviceInfoAttributes.
+//
+// Programmer: Kevin Griffin
+// Creation:   Thu 27 Aug 2026
+//
+// Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Added requestor so multiple ANARI settings panels (surface rendering,
+//   volume plots) sharing the single AnariDeviceInfoAttributes result can
+//   tell their own replies apart.
+//
+// ****************************************************************************
+
+void
+ViewerMethods::GetAnariDeviceInfo(const std::string &libraryName,
+                                  const std::string &librarySubtype,
+                                  const std::string &rendererSubtype,
+                                  const std::string &requestor)
+{
+    MapNode params;
+    params["libraryName"] = libraryName;
+    params["librarySubtype"] = librarySubtype;
+    params["rendererSubtype"] = rendererSubtype;
+    params["requestor"] = requestor;
+
+    //
+    // Set the rpc type.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::GetAnariDeviceInfoRPC);
+    state->GetViewerRPC()->SetQueryParams(params);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+
 
 // ****************************************************************************
 //  Method: ViewerMethods::SetGlobalLineotuAttributes

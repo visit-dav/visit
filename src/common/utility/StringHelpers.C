@@ -415,6 +415,208 @@ StringHelpers::GroupStringsFixedAlpha(
     }
 }
 
+// ****************************************************************************
+// Groups strings according to a subexpression of a regular expression.
+// A second subexpression identifies each member within its group.
+//
+// Strings which do not match the regular expression are ignored.
+//
+// All member identifiers in a returned group must have the same length.
+// Members of each returned group are ordered lexicographically according
+// to their member identifiers. Groups containing duplicate member
+// identifiers or member identifiers of differing lengths are discarded.
+// Any text occurring between the group-name and member-id subexpressions is
+// treated as a separator, and all members of a group must use the same
+// separator (which may be empty). Groups using mixed separators are discarded.
+//
+// For example, given
+//
+//     B^3 B^1 B^2 E^2 E^1 rho
+//
+// and the regular expression
+//
+//     ^(.+)\^([0-9]+)$
+//
+// with groupNameSubexp=1 and memberIdSubexp=2, this produces groups named
+// "B" and "E". The B group contains B^1, B^2, B^3 in that order.
+//
+// Group names themselves are returned in lexical order.
+//
+// When member identifiers are a single character, we then also require
+// them to to be successive numerical values (e.g. abc, xyz, QRS, etc.)
+//
+//  Returns:
+//      true on success. false if the regular expression is invalid or either
+//      requested subexpression does not exist.
+//
+//  Programmer: ChatGPT+Mark C. Miller August 13, 2026
+//
+// ****************************************************************************
+
+bool
+StringHelpers::GroupAndOrderStringsByRE(
+    const vector<string> &stringList,
+    const string &re,
+    int groupNameSubexp,
+    int memberIdSubexp,
+    vector<REStringGroup> &groups)
+{
+    groups.clear();
+
+    std::regex cre;
+    try
+    {
+        cre = std::regex(re, std::regex::extended);
+    }
+    catch (std::regex_error&)
+    {
+        return false;
+    }
+
+    if (groupNameSubexp < 0 ||
+        memberIdSubexp < 0 ||
+        static_cast<size_t>(groupNameSubexp) > cre.mark_count() ||
+        static_cast<size_t>(memberIdSubexp) > cre.mark_count())
+    {
+        return false;
+    }
+
+    map<string, REStringGroup> groupMap;
+    map<string, string> groupSeparators;
+    std::set<string> inconsistentSeparatorGroups;
+
+    for (size_t i = 0; i < stringList.size(); ++i)
+    {
+        std::smatch m;
+
+        if (!std::regex_match(stringList[i], m, cre))
+            continue;
+
+        if (!m[groupNameSubexp].matched ||
+            !m[memberIdSubexp].matched)
+            continue;
+
+        string groupName = m[groupNameSubexp].str();
+        string memberId  = m[memberIdSubexp].str();
+
+        //
+        // Treat whatever text occurs between the group-name and member-id
+        // subexpressions as a separator. All members of a group must use the
+        // same separator. The separator may be empty.
+        //
+        const std::smatch::difference_type groupEnd =
+            m.position(groupNameSubexp) + m.length(groupNameSubexp);
+        const std::smatch::difference_type memberBegin =
+            m.position(memberIdSubexp);
+
+        if (memberBegin < groupEnd)
+            continue;
+
+        string separator = stringList[i].substr(
+            static_cast<size_t>(groupEnd),
+            static_cast<size_t>(memberBegin - groupEnd));
+
+        REStringGroup &group = groupMap[groupName];
+
+        if (group.strings.empty())
+        {
+            group.name = groupName;
+            groupSeparators[groupName] = separator;
+        }
+        else if (groupSeparators[groupName] != separator)
+        {
+            inconsistentSeparatorGroups.insert(groupName);
+        }
+
+        group.strings.push_back(stringList[i]);
+        group.ids.push_back(memberId);
+    }
+
+    for (map<string, REStringGroup>::iterator it = groupMap.begin();
+         it != groupMap.end(); ++it)
+    {
+        REStringGroup &group = it->second;
+
+        if (inconsistentSeparatorGroups.find(group.name) !=
+            inconsistentSeparatorGroups.end())
+            continue;
+
+        if (group.ids.empty())
+            continue;
+
+        const size_t idLength = group.ids[0].size();
+
+        if (idLength == 0)
+            continue;
+
+        bool valid = true;
+
+        vector<std::pair<string, string> > members;
+
+        for (size_t i = 0; i < group.ids.size(); ++i)
+        {
+            if (group.ids[i].size() != idLength)
+            {
+                valid = false;
+                break;
+            }
+
+            members.push_back(
+                std::make_pair(group.ids[i], group.strings[i]));
+        }
+
+        if (!valid)
+            continue;
+
+        std::sort(members.begin(), members.end());
+
+        //
+        // Single-character member identifiers must form a contiguous lexical
+        // sequence. This prevents, for example, x,z from being interpreted as a
+        // complete 2-component vector.
+        //
+        if (idLength == 1)
+        {
+            for (size_t i = 1; i < members.size(); ++i)
+            {
+                if (members[i].first[0] != members[i-1].first[0] + 1)
+                {
+                    valid = false;
+                    break;
+                }
+            }
+        }
+
+        //
+        // Multiple strings claiming the same member identifier make the
+        // grouping ambiguous.
+        //
+        for (size_t i = 1; i < members.size(); ++i)
+        {
+            if (members[i-1].first == members[i].first)
+            {
+                valid = false;
+                break;
+            }
+        }
+
+        if (!valid)
+            continue;
+
+        group.ids.clear();
+        group.strings.clear();
+
+        for (size_t i = 0; i < members.size(); ++i)
+        {
+            group.ids.push_back(members[i].first);
+            group.strings.push_back(members[i].second);
+        }
+
+        groups.push_back(group);
+    }
+
+    return true;
+}
 
 // ****************************************************************************
 //  Function: FindRE

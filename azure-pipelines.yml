@@ -114,6 +114,28 @@ stages:
 
       - script: |
            #################################
+           # Fetch subset of test data (silo + blueprint).
+           # Do as early as possible to fail fast if no LFS budget 
+           #################################
+           set -e
+
+           echo "Fetching data-repository LFS objects..."
+           cd data
+           git lfs pull --include "**/silo*.tar.xz"
+           git lfs pull --include "**/blueprint*.tar.xz"
+
+           echo "Fetching VisIt baseline LFS objects..."
+           cd ..
+           git lfs pull --include="test/baseline/databases/silo/**"
+           git lfs pull --include="test/baseline/databases/blueprint/**"
+           git lfs pull --include="test/baseline/databases/blueprint_export/**"
+           git lfs pull --include="test/baseline/hybrid/ddf/**"
+
+           echo "LFS test-data fetch completed successfully."
+        displayName: 'Fetch LFS Test Data'
+
+      - script: |
+           #################################
            # configure
            #################################
            # setup path to cmake
@@ -137,21 +159,13 @@ stages:
 
       - script: |
            #################################
-           # fetch subset of test data (silo + blueprint)
+           # unpack test data
            #################################
-           cd data
-           git lfs pull --include "**/silo*.tar.xz"
-           git lfs pull --include "**/blueprint*.tar.xz"
-           cd ../
-           git lfs pull  --include="test/baseline/databases/silo/**"
-           git lfs pull  --include="test/baseline/databases/blueprint/**"
-           git lfs pull  --include="test/baseline/databases/blueprint_export/**"
-           git lfs pull  --include="test/baseline/hybrid/ddf/**"
            cd build/testdata/
            for f in ../../data/silo*.tar.xz ../../data/blueprint*.tar.xz; do
              tar xvf "$f"
            done
-        displayName: 'Prep Test Data'
+        displayName: 'Unpack Test Data'
 
       - script: |
            #################################

@@ -20,6 +20,8 @@ class QSlider;
 class QSpinBox;
 class RenderingAttributes;
 class WindowInformation;
+class AnariDeviceInfoAttributes;
+class EngineList;
 class QvisOpacitySlider;
 class QLineEdit;
 class AnariRenderingWidget;
@@ -125,6 +127,9 @@ class AnariRenderingWidget;
 //   Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //   Added controls for setting the tiled rendering width and height.
 //
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added ability to toggle tiled rendering on and off.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -140,6 +145,13 @@ public:
 
     void ConnectRenderingAttributes(RenderingAttributes *);
     void ConnectWindowInformation(WindowInformation *);
+#ifdef HAVE_ANARI
+    void ConnectAnariDeviceInfoAttributes(AnariDeviceInfoAttributes *);
+    void ConnectEngineList(EngineList *);
+    void RequestAnariDeviceInfo(const std::string &libraryName,
+                                const std::string &librarySubtype,
+                                const std::string &rendererSubtype);
+#endif
     void SetUpdateApply(bool val) { SetUpdate(val); Apply(); }
 protected slots:
     virtual void apply();
@@ -147,6 +159,10 @@ protected:
     virtual void UpdateWindow(bool doAll);
     void UpdateOptions(bool doAll);
     void UpdateInformation(bool doAll);
+#ifdef HAVE_ANARI
+    void UpdateAnariDeviceInfo(bool doAll);
+    void UpdateAnariEngineAvailability();
+#endif
     void Apply(bool ignore = false);
     void InterpretScalableAutoThreshold(int,int*,QString*,int*) const;
     void GetCurrentValues();
@@ -190,6 +206,7 @@ private slots:
     void depthCueingStartChanged();
     void depthCueingEndChanged();
     void colorTexturingToggled(bool);
+    void tiledRenderingToggled(bool);
     void tiledRenderingWidthChanged();
     void tiledRenderingHeightChanged();
     void osprayRenderingToggled(bool);
@@ -201,12 +218,24 @@ private:
     void UpdateAAControls(int);
     void UpdateMSAAButton();
 
+#ifdef HAVE_ANARI
+    // Identifies this window's ANARI settings panel ("<rendertype>") when
+    // requesting device info, so replies meant for other panels (e.g. a
+    // Volume plot window) sharing the same AnariDeviceInfoAttributes result
+    // can be ignored.
+    static const std::string ANARI_REQUESTOR;
+#endif
+
     QWidget *CreateBasicPage();
     QWidget *CreateAdvancedPage();
     QWidget *CreateInformationPage();
 
     RenderingAttributes *renderAtts;
     WindowInformation   *windowInfo;
+#ifdef HAVE_ANARI
+    AnariDeviceInfoAttributes *anariDeviceInfo;
+    EngineList                *engineList;
+#endif
     int                 lastAA;
 
     // Basic controls
@@ -279,7 +308,7 @@ private:
     QLabel            *depthCueingEndLabel;
     QLineEdit         *depthCueingEndEdit;
     QCheckBox         *colorTexturingToggle;
-    QGroupBox         *tiledRenderingGroup;
+    QCheckBox         *tiledRenderingToggle;
     QLabel            *tiledRenderingWidthLabel;
     QLineEdit         *tiledRenderingWidth;
     QLabel            *tiledRenderingHeightLabel;

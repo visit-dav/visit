@@ -104,6 +104,7 @@ public:
     void SetStereoRendering(bool stereoRendering_);
     void SetStereoType(StereoTypes stereoType_);
     void SetNotifyForEachRender(bool notifyForEachRender_);
+    void SetTiledRendering(bool tiledRendering_);
     void SetTiledRenderingWidth(int tiledRenderingWidth_);
     void SetTiledRenderingHeight(int tiledRenderingHeight_);
     void SetScalableActivationMode(TriStateMode scalableActivationMode_);
@@ -147,6 +148,7 @@ public:
     bool                  GetStereoRendering() const;
     StereoTypes           GetStereoType() const;
     bool                  GetNotifyForEachRender() const;
+    bool                  GetTiledRendering() const;
     int                   GetTiledRenderingWidth() const;
     int                   GetTiledRenderingHeight() const;
     TriStateMode          GetScalableActivationMode() const;
@@ -226,6 +228,7 @@ public:
         ID_stereoRendering,
         ID_stereoType,
         ID_notifyForEachRender,
+        ID_tiledRendering,
         ID_tiledRenderingWidth,
         ID_tiledRenderingHeight,
         ID_scalableActivationMode,
@@ -270,6 +273,7 @@ private:
     bool            stereoRendering;
     int             stereoType;
     bool            notifyForEachRender;
+    bool            tiledRendering;
     int             tiledRenderingWidth;
     int             tiledRenderingHeight;
     int             scalableActivationMode;
@@ -298,6 +302,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfbibiiiibffabdbbDDibiibiiba"
+#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfbibbiiiibffabdbbDDibiibiiba"
 
 #endif

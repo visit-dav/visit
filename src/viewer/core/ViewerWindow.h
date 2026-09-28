@@ -492,6 +492,9 @@ class ViewerPlotList;
 //    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
 //    Added ResetAnariScene
 //
+//    Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//    Added TiledRendering to support tiled rendering.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -720,6 +723,8 @@ public:
     bool GetMultiresolutionMode() const;
     void SetMultiresolutionCellSize(double size);
     double GetMultiresolutionCellSize() const;
+    void SetTiledRendering(bool mode);
+    bool GetTiledRendering() const;
     void SetTiledRenderingWidth(int width);
     int GetTiledRenderingWidth() const;
     void SetTiledRenderingHeight(int height);

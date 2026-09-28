@@ -6,6 +6,7 @@
 #define QVIS_VOLUME_PLOT_WINDOW_H
 #include <QvisPostableWindowObserver.h>
 #include <AttributeSubject.h>
+#include <string>
 
 // Forward declarations
 class VolumeAttributes;
@@ -29,6 +30,8 @@ class QvisScribbleOpacityBar;
 class QvisSpectrumBar;
 class QvisVariableButton;
 class AnariVolumeWidget;
+class AnariDeviceInfoAttributes;
+class EngineList;
 typedef int WidgetID;
 
 // ****************************************************************************
@@ -137,15 +140,25 @@ public:
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisVolumePlotWindow();
     virtual void CreateWindowContents();
+    virtual void SubjectRemoved(Subject *TheRemovedSubject);
 
     virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
     void SetApply(bool ignore = false) { Apply(ignore); }
+#ifdef HAVE_ANARI
+    void RequestAnariDeviceInfo(const std::string &libraryName,
+                                const std::string &librarySubtype,
+                                const std::string &rendererSubtype);
+#endif
 public slots:
     virtual void apply();
     virtual void makeDefault();
     virtual void reset();
 protected:
     void UpdateWindow(bool doAll);
+#ifdef HAVE_ANARI
+    void UpdateAnariDeviceInfo(bool doAll);
+    void UpdateAnariEngineAvailability();
+#endif
     void UpdateHistogram();
     void UpdateColorControlPoints();
     void UpdateGaussianControlPoints();
@@ -364,7 +377,15 @@ private:
     QDoubleSpinBox          *osprayMaxContribution;
     
 #ifdef HAVE_ANARI
-    AnariVolumeWidget       *anariVolumeWidget;
+    AnariVolumeWidget         *anariVolumeWidget;
+    AnariDeviceInfoAttributes *anariDeviceInfo;
+    EngineList                *engineList;
+
+    // Identifies this window's ANARI settings panel ("<rendertype>") when
+    // requesting device info, so replies meant for other panels (e.g. the
+    // surface Rendering window) sharing the same AnariDeviceInfoAttributes
+    // result can be ignored.
+    static const std::string ANARI_REQUESTOR;
 #endif
 
     //Sampling group

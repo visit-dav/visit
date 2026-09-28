@@ -15,11 +15,13 @@
 
 visit_add_library(
     NAME        viewerrpc
-    SOURCES     PostponedAction.C
+    SOURCES     AnariDeviceInfoAttributes.C
+                PostponedAction.C
                 ViewerMethods.C
                 ViewerRPC.C
                 ViewerState.C
-    HEADERS     PostponedAction.h
+    HEADERS     AnariDeviceInfoAttributes.h
+                PostponedAction.h
                 ViewerMethods.h
                 ViewerRPC.h
                 ViewerState.h

@@ -247,6 +247,7 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::GetProcInfoRPC,                new GetProcInfoAction(win));
     mgr->SetLogic(ViewerRPC::GetQueryParametersRPC,         new GetQueryParametersAction(win));
     mgr->SetLogic(ViewerRPC::GetQueryParametersRPC,         new GetQueryParametersAction(win));
+    mgr->SetLogic(ViewerRPC::GetAnariDeviceInfoRPC,         new GetAnariDeviceInfoAction(win));
     mgr->SetLogic(ViewerRPC::HideActiveAnnotationObjectsRPC,new HideActiveAnnotationObjectsAction(win));
     mgr->SetLogic(ViewerRPC::HideActivePlotsRPC,            new HideActivePlotsAction(win));
     mgr->SetLogic(ViewerRPC::HideAllWindowsRPC,             new HideAllWindowsAction(win));

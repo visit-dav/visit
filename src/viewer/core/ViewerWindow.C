@@ -2398,6 +2398,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Added TiledRenderingWidth and TiledRenderingHeight to support
 //   tiled rendering.
 //
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added TiledRendering to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -2424,6 +2427,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetNumberOfPeels(source->GetNumberOfPeels());
     SetMultiresolutionMode(source->GetMultiresolutionMode());
     SetMultiresolutionCellSize(source->GetMultiresolutionCellSize());
+    SetTiledRendering(source->GetTiledRendering());
     SetTiledRenderingWidth(source->GetTiledRenderingWidth());
     SetTiledRenderingHeight(source->GetTiledRenderingHeight());
     SetStereoRendering(source->GetStereo(), source->GetStereoType());
@@ -6508,6 +6512,9 @@ RotateAroundY(const avtView3D &curView, double angle,
 //   Added TiledRenderingWidth and TiledRenderingHeight to support
 //   tiled rendering.
 //
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added TiledRendering to support tiled rendering.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -6608,6 +6615,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
     renderAtts.SetMultiresolutionMode(GetMultiresolutionMode());
     renderAtts.SetMultiresolutionCellSize(GetMultiresolutionCellSize());
 
+    renderAtts.SetTiledRendering(GetTiledRendering());
     renderAtts.SetTiledRenderingWidth(GetTiledRenderingWidth());
     renderAtts.SetTiledRenderingHeight(GetTiledRenderingHeight());
 
@@ -7818,6 +7826,47 @@ ViewerWindow::GetMultiresolutionCellSize() const
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::SetTiledRendering
+//
+// Purpose:
+//   Sets the window's tiled rendering mode.
+//
+// Arguments:
+//   mode    : The tiled rendering mode.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Aug 26 14:29:54 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetTiledRendering(bool mode)
+{
+    visWindow->SetTiledRendering(mode);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetTiledRendering
+//
+// Purpose:
+//   Returns the window's tiled rendering mode.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Aug 26 14:29:54 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetTiledRendering() const
+{
+    return visWindow->GetTiledRendering();
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::SetTiledRenderingWidth
 //
 // Purpose:
@@ -8934,6 +8983,29 @@ void
 ViewerWindow::SetAnariAttributes(const AnariAttributes &atts)
 {
     visWindow->SetAnariAttributes(atts);
+
+    // ANARI only ever renders on the engine (the client may not have any
+    // ANARI backend libraries installed -- see
+    // VisWinRendering::SetAnariDeviceCreationEnabled), so an ANARI-enabled
+    // window must always be in scalable/engine rendering mode. Without this,
+    // ExternalRenderAuto() (ViewerWindow.C) bails out immediately for a
+    // window that was never in SR mode, no RenderRPC is ever sent to the
+    // engine, and NetworkManager::RenderSetup()'s ANARI-forcing logic never
+    // runs -- the plot just keeps showing its old client-side VTK render.
+    if(atts.GetAnariRendering())
+    {
+        SendScalableRenderingModeChangeMessage(true);
+    }
+    else
+    {
+        // ANARI no longer needs SR mode forced on; re-evaluate whether this
+        // window should still be in scalable rendering mode based on the
+        // user's actual scalable-rendering preference, rather than
+        // unconditionally forcing it off.
+        bool newMode;
+        if(ShouldSendScalableRenderingModeChangeMessage(&newMode))
+            SendScalableRenderingModeChangeMessage(newMode);
+    }
 }
 
 // ****************************************************************************
@@ -9066,6 +9138,9 @@ ViewerWindow::ResetAnariScene()
 //   Added TiledRenderingWidth and TiledRenderingHeight to support
 //   tiled rendering.
 //
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added TiledRendering to support tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -9165,6 +9240,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("multiresolutionMode", GetMultiresolutionMode()));
         windowNode->AddNode(new DataNode("multiresolutionCellSize", GetMultiresolutionCellSize()));
 
+        windowNode->AddNode(new DataNode("tiledRendering", GetTiledRendering()));
         windowNode->AddNode(new DataNode("tiledRenderingWidth", GetTiledRenderingWidth()));
         windowNode->AddNode(new DataNode("tiledRenderingHeight", GetTiledRenderingHeight()));
 
@@ -9412,6 +9488,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Added TiledRenderingWidth and TiledRenderingHeight to support
 //   tiled rendering.
 //
+//   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
+//   Added TiledRendering to support tiled rendering.
+//
 // ****************************************************************************
 
 bool
@@ -9575,6 +9654,8 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetMultiresolutionMode(node->AsBool());
     if((node = windowNode->GetNode("multiresolutionCellSize")) != 0)
         SetMultiresolutionCellSize(node->AsDouble());
+    if((node = windowNode->GetNode("tiledRendering")) != 0)
+        SetTiledRendering(node->AsBool());
     if((node = windowNode->GetNode("tiledRenderingWidth")) != 0)
         SetTiledRenderingWidth(node->AsInt());
     if((node = windowNode->GetNode("tiledRenderingHeight")) != 0)
