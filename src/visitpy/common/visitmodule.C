@@ -7048,6 +7048,9 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
 //    Jeremy Meredith, Tue Apr 29 15:24:51 EDT 2008
 //    Added better error message for when plugin wasn't found.
 //
+//    Kathleen Biagas, Mon Sep 28, 2026
+//    Pass plugin name to SetDefaultFileOpenOptions.
+//
 // ****************************************************************************
 STATIC PyObject *
 visit_SetDefaultFileOpenOptions(PyObject *self, PyObject *args)
@@ -7082,7 +7085,7 @@ visit_SetDefaultFileOpenOptions(PyObject *self, PyObject *args)
                 *opts = newopts;
                 MUTEX_LOCK();
                 GetViewerState()->GetFileOpenOptions()->Notify();
-                GetViewerMethods()->SetDefaultFileOpenOptions();
+                GetViewerMethods()->SetDefaultFileOpenOptions(plugin);
                 MUTEX_UNLOCK();
             }
             break;

@@ -17,8 +17,9 @@
 
 #include <PyAnnotationAttributes.h>
 #include <PyConstructDataBinningAttributes.h>
-#include <PyExportDBAttributes.h>
 #include <PyDBOptionsAttributes.h>
+#include <PyDBOptionsAttributes_Helpers.h>
+#include <PyExportDBAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
 #include <PyImageObject.h>
 #include <PyInteractorAttributes.h>
@@ -55,6 +56,7 @@
 #include <AnnotationObjectList.h>
 #include <Expression.h>
 #include <ExpressionList.h>
+#include <FileOpenOptions.h>
 #include <GlobalAttributes.h>
 #include <LightAttributes.h>
 #include <LightList.h>
@@ -2096,6 +2098,37 @@ static std::string log_SetPlotFollowsTimeRPC(ViewerRPC *rpc)
     return visitmodule() + std::string("SetPlotFollowsTime()\n");
 }
 
+static std::string log_SetDefaultFileOpenOptionsRPC(ViewerRPC *rpc)
+{
+    std::string s;
+    FileOpenOptions *fileOpenOptions =
+        viewer->GetViewerState()->GetFileOpenOptions();
+    const stringVector &typeNames = fileOpenOptions->GetTypeNames();
+    const std::string &pluginName = rpc->GetStringArg1();
+
+    for(int i = 0; i < fileOpenOptions->GetNumOpenOptions(); ++i)
+    {
+        if(typeNames[i] != pluginName)
+            continue;
+
+        const DBOptionsAttributes &opts = fileOpenOptions->GetOpenOptions(i);
+        if(opts.GetNumberOfOptions() == 0)
+            break;
+
+        const std::string typeName =
+            StringHelpers::EscapeSpecialChars(pluginName);
+        s += "opts = " + visitmodule() + "GetDefaultFileOpenOptions(\"";
+        s += typeName + "\")\n";
+        s += PyDBOptionsAttributes_CreateDictionaryAssignmentsFromDBOptions(
+            opts, "opts", false);
+        s += visitmodule() + "SetDefaultFileOpenOptions(\"";
+        s += typeName + "\", opts)\n";
+        break;
+    }
+
+    return s;
+}
+
 static std::string log_CreateNamedSelectionRPC(ViewerRPC *rpc)
 {
     return visitmodule() + std::string("CreateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
@@ -2226,6 +2259,9 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 //
 //   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
 //   Added operator keyframing.
+//
+//   Kathleen Biagas, Mon Sep 28, 2026
+//   Added SetDefaultFileOpenOptions.
 //
 // ****************************************************************************
 
@@ -2742,6 +2778,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::SetPlotFollowsTimeRPC:
         str = log_SetPlotFollowsTimeRPC(rpc);
+        break;
+    case ViewerRPC::SetDefaultFileOpenOptionsRPC:
+        str = log_SetDefaultFileOpenOptionsRPC(rpc);
         break;
     case ViewerRPC::CreateNamedSelectionRPC:
         str = log_CreateNamedSelectionRPC(rpc);

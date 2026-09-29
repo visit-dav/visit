@@ -161,6 +161,10 @@ class ViewerState;
 //   Kathleen Biagas, Tue Aug 26, 2025
 //   Added QueryMSAAAvailability.
 //
+//   Kathleen Biagas, Mon Sep 28, 2026
+//   Added SetDefaultFileOpenOptions override with string argument designating
+//   the plugin name, used in Logging.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -415,6 +419,7 @@ public:
     void SetPlotSILRestriction();
 
     void SetDefaultFileOpenOptions();
+    void SetDefaultFileOpenOptions(const std::string &pluginName);
 
     // Methods for querying
     void SuppressQueryOutput(bool onOff);

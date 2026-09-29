@@ -923,6 +923,9 @@ QvisFileOpenWindow::show()
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Mon Sep 28, 2026
+//   Add format arg to SetDefaultFileOpenOptions, for logging.
+//
 // ****************************************************************************
 void
 QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked()
@@ -943,7 +946,8 @@ QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked()
             if (result == QDialog::Accepted)
             {
                 foo->Notify();
-                GetViewerMethods()->SetDefaultFileOpenOptions();
+                GetViewerMethods()->SetDefaultFileOpenOptions(
+                    format.toStdString());
             }
             break;
         }

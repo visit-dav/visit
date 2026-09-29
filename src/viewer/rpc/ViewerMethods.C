@@ -3863,16 +3863,26 @@ ViewerMethods::InvertBackgroundColor()
 //  Creation:   January 18, 2008
 //
 //  Modifications:
+//   Kathleen Biagas, Mon Sep 28, 2026
+//   Added SetDefaultFileOpenOptions override with string argument designating
+//   the plugin name, used in Logging.
 //
 // ****************************************************************************
 
 void
 ViewerMethods::SetDefaultFileOpenOptions()
 {
+    SetDefaultFileOpenOptions(std::string());
+}
+
+void
+ViewerMethods::SetDefaultFileOpenOptions(const std::string &pluginName)
+{
     //
     // Set the rpc type.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::SetDefaultFileOpenOptionsRPC);
+    state->GetViewerRPC()->SetStringArg1(pluginName);
 
     //
     // Issue the RPC.

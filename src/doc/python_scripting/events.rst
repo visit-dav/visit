@@ -470,7 +470,7 @@ should accept.
     +----------------------------------------------+------------+
     | SetDefaultAnnotationObjectListRPC            | 0          |
     +----------------------------------------------+------------+
-    | SetDefaultFileOpenOptionsRPC                 | 0          |
+    | SetDefaultFileOpenOptionsRPC                 | 1          |
     +----------------------------------------------+------------+
     | SetDefaultInteractorAttributesRPC            | 0          |
     +----------------------------------------------+------------+

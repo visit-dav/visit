@@ -556,11 +556,22 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Tue Feb  9 13:50:28 PST 2010
 //    I rewrote the plot and operator portion.
 //
+//    Kathleen Biagas, Mon Sep 28, 2026
+//    Retrieve pluginName, pass it to SetDefaultFileOpenOptions.
+//
 // ****************************************************************************
 
 void
 QvisPluginWindow::Apply(bool dontIgnore)
 {
+    std::string pluginName;
+    int selectedDBIndex = getCurrentlySelectedDBIndex();
+    if(selectedDBIndex >= 0)
+    {
+        pluginName = fileOpenOptions->GetTypeNames()[
+            databaseIndexes[selectedDBIndex]];
+    }
+
     // See if the plot and operator enabled states changed.
     bool dirty = pluginAtts->GetEnabled() != enabledPlugins;
 
@@ -579,7 +590,7 @@ QvisPluginWindow::Apply(bool dontIgnore)
 
     // And then about the new file opening options
     fileOpenOptions->Notify();
-    GetViewerMethods()->SetDefaultFileOpenOptions();
+    GetViewerMethods()->SetDefaultFileOpenOptions(pluginName);
 
     if (dirty)
     {

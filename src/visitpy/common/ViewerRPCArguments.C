@@ -792,7 +792,10 @@ static PyObject *args_SetCreateVectorMagnitudeExpressionsRPC(ViewerRPC *rpc)
 static PyObject *args_CopyActivePlotsRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_SetPlotFollowsTimeRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_TurnOffAllLocksRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
-static PyObject *args_SetDefaultFileOpenOptionsRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
+static PyObject *args_SetDefaultFileOpenOptionsRPC(ViewerRPC *rpc)
+{
+    return ViewerRPC_one_string(rpc->GetStringArg1());
+}
 
 // ****************************************************************************
 // Method: args_ViewerRPC
