@@ -918,20 +918,43 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 {
     AVT_MFEM_INFO("Converting Low Order Grid Function To VTK");
 
+    enum class tupleAssociation
+    {
+        Dof,
+        Vertex,
+        Element
+    };
+
     mfem::FiniteElementSpace *fespace = gf->FESpace();
     mfem::Mesh *mesh = fespace->GetMesh();
     const int ncomps = fespace->GetVectorDim();
     const int ndofs = fespace->GetNDofs();
-    const bool use_vertex_values =
-        mesh != NULL &&
-        ndofs == mesh->GetNV() &&
-        fespace->FEColl()->GetContType() == mfem::FiniteElementCollection::CONTINUOUS;
-    const bool use_element_values =
-        mesh != NULL &&
-        ndofs == mesh->GetNE() &&
-        fespace->FEColl()->GetContType() == mfem::FiniteElementCollection::DISCONTINUOUS;
-    const int ntuples = use_vertex_values ? mesh->GetNV() :
-                        use_element_values ? mesh->GetNE() : ndofs;
+
+    tupleAssociation assoc = tupleAssociation::Dof;
+    if (mesh != nullptr)
+    {
+        const int cont_type = fespace->FEColl()->GetContType();
+        if (cont_type == mfem::FiniteElementCollection::CONTINUOUS &&
+            ndofs == mesh->GetNV())
+        {
+            assoc = tupleAssociation::Vertex;
+        }
+        else if (cont_type == mfem::FiniteElementCollection::DISCONTINUOUS &&
+                 ndofs == mesh->GetNE())
+        {
+            assoc = tupleAssociation::Element;
+        }
+    }
+
+    int ntuples = ndofs;
+    if (assoc == tupleAssociation::Vertex)
+    {
+        ntuples = mesh->GetNV();
+    }
+    else if (assoc == tupleAssociation::Element)
+    {
+        ntuples = mesh->GetNE();
+    }
 
     AVT_MFEM_INFO("VTKDataArray num_tuples = " << ntuples << " "
                     << " num_comps = " << ncomps);
@@ -942,7 +965,7 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     // set number of tuples
     retval->SetNumberOfTuples(ntuples);
 
-    if (use_vertex_values)
+    if (assoc == tupleAssociation::Vertex)
     {
         for (int comp = 0; comp < ncomps; comp++)
         {
@@ -975,7 +998,7 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 
     const double *values = gf->HostRead();
 
-    if (use_element_values)
+    if (assoc == tupleAssociation::Element)
     {
         const bool bynodes = fespace->GetOrdering() == mfem::Ordering::byNODES;
         mfem::Array<int> dofs;
