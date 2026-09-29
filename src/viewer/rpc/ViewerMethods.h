@@ -161,6 +161,10 @@ class ViewerState;
 //   Kathleen Biagas, Tue Aug 26, 2025
 //   Added QueryMSAAAvailability.
 //
+//   Kathleen Biagas, Thu Sep 24, 2026
+//   Add private UpdateColorTable with an int arg specifying whether
+//   a default continuous(1) or discrete(2) table is being changed.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -458,6 +462,9 @@ public:
 
     void QueryMSAAAvailability();
 private:
+    void UpdateColorTable(const std::string &colorTableName,
+                          int  defaultChanged);
+
     ViewerState *state;
 };
 
