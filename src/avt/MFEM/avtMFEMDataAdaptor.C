@@ -965,9 +965,14 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf,
 
     if (vertex_assoc)
     {
+        // GetNodalValues uses MFEM's vector-dof access internally, so it
+        // handles the GridFunction storage ordering. This vertex-associated
+        // path requires one scalar dof per mesh vertex, so each component
+        // should return one value per vertex.
+        mfem::Vector nodal_values;
+        // loop over comps, then tuples
         for (int comp = 0; comp < ncomps; comp++)
         {
-            mfem::Vector nodal_values;
             // MFEM's GetNodalValues API uses 1-based component indices,
             // while VTK component indices are 0-based.
             gf->GetNodalValues(nodal_values, comp + 1);
@@ -988,12 +993,11 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf,
     else // (! vertex_assoc)
     {
         // GetElementDofValues uses MFEM's vector-dof access internally, so it
-        // handles both component-major Ordering::byNODES storage
-        // (x0 x1 ... y0 y1 ...) and dof-major Ordering::byVDIM storage
-        // (x0 y0 ... x1 y1 ...). This element-associated path requires one
-        // scalar dof per element, so each element should return exactly one
-        // value per component.
+        // handles the GridFunction storage ordering. This element-associated
+        // path requires one scalar dof per element, so each element should
+        // return exactly one value per component.
         mfem::Vector element_values;
+        // loop over tuples, then comps
         for (vtkIdType tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
             gf->GetElementDofValues(static_cast<int>(tuple_id), element_values);
@@ -1014,6 +1018,9 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf,
 
     if (ncomps == 2)
     {
+        // VTK/VisIt vector handling expects 2D vectors as 3-component tuples
+        // lying in the XY plane. The array was allocated with 3 components
+        // above, so fill the synthetic z component with zero.
         for (vtkIdType tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
             retval->SetComponent(tuple_id, 2, 0.0);
