@@ -26,6 +26,9 @@
 # 
 #    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
 #    Reworked and added tests for MFEM LOR.
+# 
+#    Justin Privitera, Wed Sep 30 16:50:02 PDT 2026
+#    Added new vector magnitude test.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("MFEM")

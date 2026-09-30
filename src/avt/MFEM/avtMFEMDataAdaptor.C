@@ -913,6 +913,13 @@ avtMFEMDataAdaptor::DiscontinuousRefineGridFunctionToVTK(mfem::Mesh *mesh,
 //    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
 //    Properly handle ncomps.
 // 
+//    Justin Privitera, Wed Sep 30 16:50:02 PDT 2026
+//    Rewrote this method:
+//     - takes a boolean argument vertex_assoc. The method now checks that the
+//       data it received matches the requested association.
+//     - uses MFEM's own gf->GetNodalValues() and gf->GetElementDofValues()
+//       methods to extract data instead of manually handling striding.
+// 
 // ****************************************************************************
 
 vtkDataArray *
@@ -1147,6 +1154,10 @@ ConvertGridFunctionToScalar(mfem::GridFunction *org_gf,
 //    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
 //    Rewrote this method to handle new LOR options, new basis types, and
 //    conversions to low order.
+// 
+//    Justin Privitera, Wed Sep 30 16:50:02 PDT 2026
+//    Passed the ordering to the mfem::FiniteElementSpace constructor.
+//    Also passed the vertex/element association to LowOrderGridFunctionToVTK.
 //
 // ****************************************************************************
 vtkDataArray *
