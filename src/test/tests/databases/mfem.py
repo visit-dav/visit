@@ -52,6 +52,9 @@ mfem_selected_meshes = glob.glob(data_path("mfem_test_data/amr-hex.mfem_root")) 
                        glob.glob(data_path("mfem_test_data/square-disc-surf.mfem_root")) +\
                        glob.glob(data_path("mfem_test_data/star.mfem_root"))
 
+# mfem vector field data
+mfem_vector_field_data = data_path("mfem_vector_field_data/EX2_field_data_000000.mfem_root")
+
 def set_test_view():
     v = View3DAttributes()
     v.viewNormal = (-0.510614, 0.302695, 0.804767)
@@ -524,6 +527,31 @@ def test_lor_vector_field_controls():
     for dbfile in mfem_hdiv_hcurl_files:
         test_mfem_lor_controls_on_grid_function("LOR_vector_gf", dbfile, vector=True, varname="solution")
 
+def test_lor_vector_magnitude():
+    TestSection("LOR Vector Field Magnitude")
+
+    base = os.path.splitext(os.path.basename(mfem_vector_field_data))[0]
+    OpenDatabase(mfem_vector_field_data)
+    AddPlot("Pseudocolor", "Displacement_magnitude")
+    DrawPlots()
+
+    AddOperator("MultiresControl", 1)
+    DrawPlots()
+    SetActivePlots(0)
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 0
+    MultiresControlAtts.maxResolution = 32
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR  # Default_LOR, Continuous_LOR, Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection  # Default_Projection, Zonal_Projection, Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default  # Gauss_Lobatto_Default, Closed_Uniform
+    MultiresControlAtts.info = ""
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+
+    Test("LOR_vector_magnitude_" + base + "_default_continuous")
+
+    DeleteAllPlots()
+    CloseDatabase(mfem_vector_field_data)
+
 def main():
     test_input_mesh_files()
     test_mfem_expressions()
@@ -534,6 +562,7 @@ def main():
     test_lor_scalar_field_controls()
     test_lor_vector_field_controls_close_up()
     test_lor_vector_field_controls()
+    test_lor_vector_magnitude()
 
 main()
 Exit()
