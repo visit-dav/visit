@@ -994,67 +994,60 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     const bool bynodes = fespace->GetOrdering() == mfem::Ordering::byNODES;
     mfem::Array<int> dofs;
 
+    auto fetch_dof_and_check = [&](const vtkIdType tuple_id) -> int
+    {
+        fespace->GetElementDofs(static_cast<int>(tuple_id), dofs);
+        if (dofs.Size() != 1)
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                "LowOrderGridFunctionToVTK: element " << tuple_id
+                << " has no finite element space dofs.");
+        }
+
+        // GetElementDofs can return MFEM sign-encoded dof indices to
+        // represent orientation. DecodeDof strips that encoding and gives
+        // the underlying local dof index needed to read the GridFunction.
+        const int dof = mfem::FiniteElementSpace::DecodeDof(dofs[0]);
+        if (dof < 0 || dof >= ndofs)
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                "LowOrderGridFunctionToVTK: finite element space dof "
+                << dof << " is outside of the grid function range [0, "
+                << ndofs << ").");
+        }
+
+        return dof;
+    };
+
     if (bynodes)
     {
-        for (vtkIdType i = 0; i < ntuples; i++)
+        for (vtkIdType tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
-            fespace->GetElementDofs(static_cast<int>(i), dofs);
-            if (dofs.Size() < 1)
+            const int dof = fetch_dof_and_check(tuple_id);
+            for (int comp = 0; comp < ncomps; comp ++)
             {
-                AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                    "LowOrderGridFunctionToVTK: element " << i
-                    << " has no finite element space dofs.");
-            }
-
-            int dof = dofs[0] >= 0 ? dofs[0] : -1 - dofs[0];
-            if (dof < 0 || dof >= ndofs)
-            {
-                AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                    "LowOrderGridFunctionToVTK: finite element space dof "
-                    << dof << " is outside of the grid function range [0, "
-                    << ndofs << ").");
-            }
-
-            for (int comp = 0; comp < ncomps; comp++)
-            {
-                retval->SetComponent(i, comp, values[comp * ndofs + dof]);
+                retval->SetComponent(tuple_id, comp, values[comp * ndofs + dof]);
             }
         }
     }
     else
     {
-        for (vtkIdType i = 0; i < ntuples; i++)
+        for (vtkIdType tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
-            fespace->GetElementDofs(static_cast<int>(i), dofs);
-            if (dofs.Size() < 1)
-            {
-                AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                    "LowOrderGridFunctionToVTK: element " << i
-                    << " has no finite element space dofs.");
-            }
-
-            int dof = dofs[0] >= 0 ? dofs[0] : -1 - dofs[0];
-            if (dof < 0 || dof >= ndofs)
-            {
-                AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                    "LowOrderGridFunctionToVTK: finite element space dof "
-                    << dof << " is outside of the grid function range [0, "
-                    << ndofs << ").");
-            }
-
+            const int dof = fetch_dof_and_check(tuple_id);
             const int offset = dof * ncomps;
-            for (int comp = 0; comp < ncomps; comp++)
+            for (int comp = 0; comp < ncomps; comp ++)
             {
-                retval->SetComponent(i, comp, values[offset + comp]);
+                retval->SetComponent(tuple_id, comp, values[offset + comp]);
             }
         }
     }
 
     if (ncomps == 2)
     {
-        for (vtkIdType i = 0; i < ntuples; i++)
+        for (vtkIdType tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
-            retval->SetComponent(i, 2, 0.0);
+            retval->SetComponent(tuple_id, 2, 0.0);
         }
     }
 
