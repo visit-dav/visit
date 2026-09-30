@@ -900,6 +900,8 @@ avtMFEMDataAdaptor::DiscontinuousRefineGridFunctionToVTK(mfem::Mesh *mesh,
 //
 //  Arguments:
 //   gf:           MFEM Grid Function for the field
+//   vertex_assoc: true when the field should be emitted as vertex-associated
+//                 VTK data; false for element-associated VTK data.
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri May  6 15:23:56 PDT 2022
@@ -914,14 +916,15 @@ avtMFEMDataAdaptor::DiscontinuousRefineGridFunctionToVTK(mfem::Mesh *mesh,
 // ****************************************************************************
 
 vtkDataArray *
-avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
+avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf,
+                                              const bool vertex_assoc)
 {
     AVT_MFEM_INFO("Converting Low Order Grid Function To VTK");
 
     mfem::FiniteElementSpace *fespace = gf->FESpace();
     mfem::Mesh *mesh = fespace->GetMesh();
     const int ncomps = fespace->GetVectorDim();
-    const int ndofs = fespace->GetNDofs();
+    const int ntuples = fespace->GetNDofs();
 
     if (mesh == nullptr)
     {
@@ -931,24 +934,25 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     }
 
     const int cont_type = fespace->FEColl()->GetContType();
-    bool use_vertex_values = false;
-    if (cont_type == mfem::FiniteElementCollection::CONTINUOUS &&
-        ndofs == mesh->GetNV())
-    {
-        use_vertex_values = true;
-    }
-    else if (!(cont_type == mfem::FiniteElementCollection::DISCONTINUOUS &&
-               ndofs == mesh->GetNE()))
+    const int expected_cont_type =
+        vertex_assoc ? mfem::FiniteElementCollection::CONTINUOUS
+                     : mfem::FiniteElementCollection::DISCONTINUOUS;
+    const int expected_ntuples = vertex_assoc ? mesh->GetNV() : mesh->GetNE();
+
+    if (cont_type != expected_cont_type || ntuples != expected_ntuples)
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
-            "LowOrderGridFunctionToVTK: expected a low-order continuous "
-            "vertex space or discontinuous element space; basis "
-            << fespace->FEColl()->Name() << ", ndofs " << ndofs
+            "LowOrderGridFunctionToVTK: expected a projected low-order "
+            << (vertex_assoc ? "vertex" : "element")
+            << "-associated space; basis " << fespace->FEColl()->Name()
+            << ", scalar dofs " << ntuples
             << ", mesh vertices " << mesh->GetNV()
             << ", mesh elements " << mesh->GetNE() << ".");
     }
 
-    const int ntuples = use_vertex_values ? mesh->GetNV() : mesh->GetNE();
+    // The caller determines field association from the multires projection
+    // option before creating the low-order space. The checks above verify that
+    // the projected space matches the requested VTK association.
 
     AVT_MFEM_INFO("VTKDataArray num_tuples = " << ntuples << " "
                     << " num_comps = " << ncomps);
@@ -959,11 +963,13 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     // set number of tuples
     retval->SetNumberOfTuples(ntuples);
 
-    if (use_vertex_values)
+    if (vertex_assoc)
     {
         for (int comp = 0; comp < ncomps; comp++)
         {
             mfem::Vector nodal_values;
+            // MFEM's GetNodalValues API uses 1-based component indices,
+            // while VTK component indices are 0-based.
             gf->GetNodalValues(nodal_values, comp + 1);
 
             if (nodal_values.Size() != ntuples)
@@ -973,72 +979,35 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
                     << " nodal values, got " << nodal_values.Size() << ".");
             }
 
-            for (vtkIdType i = 0; i < ntuples; i++)
+            for (vtkIdType tuple_id = 0; tuple_id < ntuples; tuple_id ++)
             {
-                retval->SetComponent(i, comp, nodal_values(i));
-            }
-        }
-
-        if (ncomps == 2)
-        {
-            for (vtkIdType i = 0; i < ntuples; i++)
-            {
-                retval->SetComponent(i, 2, 0.0);
-            }
-        }
-
-        return retval;
-    }
-
-    const double *values = gf->HostRead();
-    const bool bynodes = fespace->GetOrdering() == mfem::Ordering::byNODES;
-    mfem::Array<int> dofs;
-
-    auto fetch_dof_and_check = [&](const vtkIdType tuple_id) -> int
-    {
-        fespace->GetElementDofs(static_cast<int>(tuple_id), dofs);
-        if (dofs.Size() != 1)
-        {
-            AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                "LowOrderGridFunctionToVTK: element " << tuple_id
-                << " has no finite element space dofs.");
-        }
-
-        // GetElementDofs can return MFEM sign-encoded dof indices to
-        // represent orientation. DecodeDof strips that encoding and gives
-        // the underlying local dof index needed to read the GridFunction.
-        const int dof = mfem::FiniteElementSpace::DecodeDof(dofs[0]);
-        if (dof < 0 || dof >= ndofs)
-        {
-            AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                "LowOrderGridFunctionToVTK: finite element space dof "
-                << dof << " is outside of the grid function range [0, "
-                << ndofs << ").");
-        }
-
-        return dof;
-    };
-
-    if (bynodes)
-    {
-        for (vtkIdType tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            const int dof = fetch_dof_and_check(tuple_id);
-            for (int comp = 0; comp < ncomps; comp ++)
-            {
-                retval->SetComponent(tuple_id, comp, values[comp * ndofs + dof]);
+                retval->SetComponent(tuple_id, comp, nodal_values(tuple_id));
             }
         }
     }
-    else
+    else // (! vertex_assoc)
     {
+        // GetElementDofValues uses MFEM's vector-dof access internally, so it
+        // handles both component-major Ordering::byNODES storage
+        // (x0 x1 ... y0 y1 ...) and dof-major Ordering::byVDIM storage
+        // (x0 y0 ... x1 y1 ...). This element-associated path requires one
+        // scalar dof per element, so each element should return exactly one
+        // value per component.
+        mfem::Vector element_values;
         for (vtkIdType tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
-            const int dof = fetch_dof_and_check(tuple_id);
-            const int offset = dof * ncomps;
+            gf->GetElementDofValues(static_cast<int>(tuple_id), element_values);
+            if (element_values.Size() != ncomps)
+            {
+                AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                    "LowOrderGridFunctionToVTK: expected " << ncomps
+                    << " element dof values for element " << tuple_id
+                    << ", got " << element_values.Size() << ".");
+            }
+
             for (int comp = 0; comp < ncomps; comp ++)
             {
-                retval->SetComponent(tuple_id, comp, values[offset + comp]);
+                retval->SetComponent(tuple_id, comp, element_values(comp));
             }
         }
     }
@@ -1379,7 +1348,9 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     lo_fes.GetTransferOperator(*gf_to_use->FESpace(), hi_to_lo);
     hi_to_lo.Ptr()->Mult(*gf_to_use, lo_gf);
 
-    vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
+    const bool vertex_assoc =
+        field_proj_method_to_use == fieldProjectionMethod::Nodal_Projection;
+    vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf, vertex_assoc);
 
     if (delete_gf_to_use)
     {

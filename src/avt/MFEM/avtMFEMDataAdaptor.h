@@ -104,7 +104,8 @@ public:
                                                                 const int lod,
                                                                 const bool var_is_nodal);
 
-      static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
+      static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf,
+                                                     const bool vertex_assoc);
 
       static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                    mfem::GridFunction *gf,
