@@ -409,7 +409,7 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     viewInfo.imageZoom   = imageZoom;
 
     //
-    // Set the vew shear.
+    // Set the view shear.
     //
     viewInfo.shear[0] = shear[0];
     viewInfo.shear[1] = shear[1];
