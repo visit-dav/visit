@@ -1539,6 +1539,7 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
                                                       string const &mesh_name,
                                                       const Node &n_mesh_info)
 {
+
     if (!n_mesh_info.has_child("matsets"))
     {
         BP_PLUGIN_INFO("Input data file has no matsets.");
@@ -1553,14 +1554,16 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         const Node &n_mset = msets_itr.next();
         string mset_name = msets_itr.name();
 
-        // the material names are in the "material_map" index entry
-        if( !n_mset.has_child("material_map") )
+        // the material names are in the "materials" or "material_map" index
+        // entries
+        if( !n_mset.has_child("materials") && 
+            !n_mset.has_child("material_map") )
         {
             BP_PLUGIN_INFO("mesh: "
                            << mesh_name
                            << " matset index: "
                            << mset_name
-                           << " missing `material_map`;"
+                           << " missing `material_map` or `materials`,"
                            << " skipping matset" );
             return;
         }
@@ -1585,10 +1588,29 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         BP_PLUGIN_INFO("adding material set "
                         <<  mesh_topo_name << " " <<  mesh_matset_name);
 
-        BP_PLUGIN_INFO("material map " << n_mset["material_map"].to_yaml());
+        if ( n_mset.has_child("material_map") )
+        {
+            BP_PLUGIN_INFO("material map " << n_mset["material_map"].to_yaml());
         
-        m_matset_info[mesh_matset_name]["material_map"].set(n_mset["material_map"]);
+            m_matset_info[mesh_matset_name]["material_map"].set(n_mset["material_map"]);
+        }
+        else // "materials" case, old path
+        {
+            BP_PLUGIN_INFO("material names " << n_mset["materials"].to_yaml());
 
+            NodeConstIterator itr = n_mset["materials"].children();
+            while (itr.has_next())
+            {
+                itr.next();
+                int32 mat_id = static_cast<int32>(itr.index());
+                const std::string mat_name = itr.name();
+                // cache mat names and idx (implied order)
+                m_matset_info[mesh_matset_name]["material_map"][mat_name] = mat_id;
+            }
+        }
+
+        BP_PLUGIN_INFO("material map " << m_matset_info[mesh_matset_name]["material_map"].to_yaml());
+        
         // get matnames vec. No need to sort
         std::vector<string> matnames = m_matset_info[mesh_matset_name]["material_map"].child_names();
 
