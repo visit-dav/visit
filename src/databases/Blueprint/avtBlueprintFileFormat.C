@@ -3379,6 +3379,18 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                             mat_name,
                             n_matset);
 
+        Node matset_verify_info;
+        if(!blueprint::mesh::matset::verify(n_matset,matset_verify_info))
+        {
+            BP_PLUGIN_INFO("blueprint::mesh::matset::verify failed for matset "
+                           << mat_name << " [domain " << domain << "]" << endl
+                           << "Verify Info " << endl
+                           << matset_verify_info.to_yaml() << endl
+                           << "Data Schema " << endl
+                           << n_matset.schema().to_yaml());
+            return nullptr;
+        }
+
         std::vector<std::string> matnames = n_matset["material_map"].child_names();
         // package up char ptrs
         std::vector<const char *> matnames_ptrs;
@@ -3401,6 +3413,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         Node n_silo_matset;
         conduit::blueprint::mesh::matset::to_silo(n_matset,
                                                   n_silo_matset);
+
+        n_silo_matset.print();
 
         const int nmats = static_cast<int>(matnames.size());
         const int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
