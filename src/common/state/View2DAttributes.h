@@ -63,6 +63,7 @@ public:
     virtual void SelectAll();
     void SelectWindowCoords();
     void SelectViewportCoords();
+    void SelectTilePan();
 
     // Property setting methods
     void SetWindowCoords(const double *windowCoords_);
@@ -71,6 +72,8 @@ public:
     void SetFullFrameAutoThreshold(double fullFrameAutoThreshold_);
     void SetXScale(int xScale_);
     void SetYScale(int yScale_);
+    void SetTilePan(const double *tilePan_);
+    void SetTileZoom(double tileZoom_);
     void SetWindowValid(bool windowValid_);
 
     // Property getting methods
@@ -82,6 +85,9 @@ public:
     double       GetFullFrameAutoThreshold() const;
     int          GetXScale() const;
     int          GetYScale() const;
+    const double *GetTilePan() const;
+          double *GetTilePan();
+    double       GetTileZoom() const;
     bool         GetWindowValid() const;
 
     // Persistence methods
@@ -114,6 +120,8 @@ public:
         ID_fullFrameAutoThreshold,
         ID_xScale,
         ID_yScale,
+        ID_tilePan,
+        ID_tileZoom,
         ID_windowValid,
         ID__LAST
     };
@@ -125,12 +133,14 @@ private:
     double fullFrameAutoThreshold;
     int    xScale;
     int    yScale;
+    double tilePan[2];
+    double tileZoom;
     bool   windowValid;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEW2DATTRIBUTES_TMFS "DDidiib"
+#define VIEW2DATTRIBUTES_TMFS "DDidiiDdb"
 
 #endif
