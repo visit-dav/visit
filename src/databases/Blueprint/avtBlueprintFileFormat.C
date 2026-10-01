@@ -755,6 +755,9 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
 //
 //    Brad Whitlock, Wed Jul 19 13:56:42 PDT 2023
 //    I added display_name support.
+// 
+//    Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//    Use material map not matnames.
 //
 // ****************************************************************************
 
@@ -1532,6 +1535,9 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 // 
 //   Justin Privitera, Fri Mar 15 15:56:13 PDT 2024
 //   Revert previous change.
+// 
+//   Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//   Use material map not matnames. Properly copy the material map.
 //
 // ****************************************************************************
 void
@@ -2088,7 +2094,10 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 //
 //  Programmer: cyrush
 //  Creation:   Wed Nov  1 15:10:15 PDT 2023
-//
+// 
+//  Modifications:
+//     Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//     Use material map not materials.
 //
 // ****************************************************************************
 void
@@ -2657,6 +2666,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //    Added override for handling centering changes.
 //    Pass centering change reference down to MFEM.
 //    Use new LOR options for refinement.
+// 
+//    Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//    Ensure existence of material map before entering to_silo().
 //
 // ****************************************************************************
 
@@ -3188,6 +3200,18 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname, avtCentering
                                 mat_name,
                                 n_matset);
 
+            Node matset_verify_info;
+            if(!blueprint::mesh::matset::verify(n_matset,matset_verify_info))
+            {
+                BP_PLUGIN_INFO("blueprint::mesh::matset::verify failed for matset "
+                               << mat_name << " [domain " << domain << "]" << endl
+                               << "Verify Info " << endl
+                               << matset_verify_info.to_yaml() << endl
+                               << "Data Schema " << endl
+                               << n_matset.schema().to_yaml());
+                return nullptr;
+            }
+
             if (! n_matset.has_child("material_map"))
             {
                 std::ostringstream err_oss;
@@ -3362,6 +3386,10 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 // 
 //     Justin Privitera, Fri Mar 15 15:56:13 PDT 2024
 //     Revert previous change.
+// 
+//     Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//     Ensure existence of material map before entering to_silo().
+//     Call Blueprint verify on matsets to catch bad behavior.
 //
 // ****************************************************************************
 avtMaterial *
@@ -3391,6 +3419,13 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             return nullptr;
         }
 
+        if (! n_matset.has_child("material_map"))
+        {
+            std::ostringstream err_oss;
+            err_oss <<  "Missing material map for matset " << mat_name << endl;
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException, err_oss.str());
+        }
+
         std::vector<std::string> matnames = n_matset["material_map"].child_names();
         // package up char ptrs
         std::vector<const char *> matnames_ptrs;
@@ -3403,18 +3438,9 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         // use to_silo util to convert from bp to the mixslot rep
         // that silo and visit use
 
-        if (! n_matset.has_child("material_map"))
-        {
-            std::ostringstream err_oss;
-            err_oss <<  "Missing material map for matset " << mat_name << endl;
-            BP_PLUGIN_EXCEPTION1(InvalidVariableException, err_oss.str());
-        }
-
         Node n_silo_matset;
         conduit::blueprint::mesh::matset::to_silo(n_matset,
                                                   n_silo_matset);
-
-        n_silo_matset.print();
 
         const int nmats = static_cast<int>(matnames.size());
         const int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
@@ -3516,6 +3542,9 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 // 
 //     Justin Privitera, Thu Sep  3 20:57:04 PDT 2026
 //     Fixed type conversion issue.
+// 
+//     Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//     Ensure existence of material map before entering to_silo().
 //
 // ****************************************************************************
 avtSpecies *
@@ -3545,6 +3574,18 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         ReadBlueprintMatset(domain,
                             matset_name,
                             n_matset);
+
+        Node matset_verify_info;
+        if(!blueprint::mesh::matset::verify(n_matset,matset_verify_info))
+        {
+            BP_PLUGIN_INFO("blueprint::mesh::matset::verify failed for matset "
+                           << matset_name << " [domain " << domain << "]" << endl
+                           << "Verify Info " << endl
+                           << matset_verify_info.to_yaml() << endl
+                           << "Data Schema " << endl
+                           << n_matset.schema().to_yaml());
+            return nullptr;
+        }
 
         if (! n_matset.has_child("material_map"))
         {
