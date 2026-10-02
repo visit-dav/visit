@@ -1183,11 +1183,15 @@ avtXRayImageQuery::SetOutputDir(const std::string &dir)
 void
 avtXRayImageQuery::ValidateAndNormalizeViewVectors()
 {
-    // View vectors are often copied from the UI with limited precision.
+    // We treat extremely small vectors as zero so normalization does not
+    // amplify numerical noise into an arbitrary direction. The orthogonality
+    // tolerance is intentionally looser because view vectors are often copied
+    // from the UI with limited precision; rounded values that are effectively
+    // orthogonal can otherwise have a small non-zero dot product.
+    const double minVectorLength = 1e-12;
     const double orthogonalityTolerance = 1e-3;
-    const double parallelTolerance = 1e-6;
 
-    if (!(normal.length2() > 0.0))
+    if (!(normal.length() > minVectorLength))
     {
         std::ostringstream err_oss;
         err_oss << "ERROR: VisIt is unable to execute this query because "
@@ -1196,7 +1200,7 @@ avtXRayImageQuery::ValidateAndNormalizeViewVectors()
         EXCEPTION1(VisItException, err_oss.str());
     }
 
-    if (!(viewUp.length2() > 0.0))
+    if (!(viewUp.length() > minVectorLength))
     {
         std::ostringstream err_oss;
         err_oss << "ERROR: VisIt is unable to execute this query because "
@@ -1215,16 +1219,8 @@ avtXRayImageQuery::ValidateAndNormalizeViewVectors()
     {
         std::ostringstream err_oss;
         err_oss << "ERROR: VisIt is unable to execute this query because "
-                << "the X Ray Image view normal and up vectors ";
-        if ((1.0 - absDot) <= parallelTolerance)
-        {
-            err_oss << "are parallel. ";
-        }
-        else
-        {
-            err_oss << "are not orthogonal. ";
-        }
-        err_oss << "They must be orthogonal.";
+                << "the X Ray Image view normal and up vectors are not "
+                << "orthogonal. They must be orthogonal.";
         SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
