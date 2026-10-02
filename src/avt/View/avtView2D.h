@@ -79,7 +79,7 @@ struct AVTVIEW_API avtView2D
     bool     havePerformedLogY;
 
     double   tilePan[2];
-    double   tileZoom;
+    double   tileZoom[2];
 
   public:
                     avtView2D();

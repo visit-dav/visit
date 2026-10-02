@@ -86,9 +86,10 @@ avtView2D::operator=(const avtView2D &vi)
     havePerformedLogX = vi.havePerformedLogX;
     havePerformedLogY = vi.havePerformedLogY;
 
-    tilePan[0] = vi.tilePan[0];
-    tilePan[1] = vi.tilePan[1];
-    tileZoom   = vi.tileZoom;
+    tilePan[0]  = vi.tilePan[0];
+    tilePan[1]  = vi.tilePan[1];
+    tileZoom[0] = vi.tileZoom[0];
+    tileZoom[1] = vi.tileZoom[1];
 
     return *this;
 }
@@ -155,7 +156,7 @@ avtView2D::EqualViews(const avtView2D &vi)
     {
         return false;
     }
-    if (tileZoom != vi.tileZoom)
+    if (tileZoom[0] != vi.tileZoom[0] || tileZoom[1] != vi.tileZoom[1])
     {
         return false;
     }
@@ -254,9 +255,10 @@ avtView2D::SetToDefault()
     havePerformedLogX = false;
     havePerformedLogY = false;
 
-    tilePan[0] = 0.;
-    tilePan[1] = 0.;
-    tileZoom   = 1.;
+    tilePan[0]  = 0.;
+    tilePan[1]  = 0.;
+    tileZoom[0] = 1.;
+    tileZoom[1] = 1.;
 }
 
 // ****************************************************************************
@@ -374,9 +376,10 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
     //
     // Set the tile pan and zoom.
     //
-    viewInfo.tilePan[0] = tilePan[0];
-    viewInfo.tilePan[1] = tilePan[1];
-    viewInfo.tileZoom   = tileZoom;
+    viewInfo.tilePan[0]  = tilePan[0];
+    viewInfo.tilePan[1]  = tilePan[1];
+    viewInfo.tileZoom[0] = tileZoom[0];
+    viewInfo.tileZoom[1] = tileZoom[1];
 }
 
 // ****************************************************************************
@@ -562,9 +565,10 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
 
     windowValid = view2DAtts->GetWindowValid();
 
-    tilePan[0] = view2DAtts->GetTilePan()[0];
-    tilePan[1] = view2DAtts->GetTilePan()[1];
-    tileZoom   = view2DAtts->GetTileZoom();
+    tilePan[0]  = view2DAtts->GetTilePan()[0];
+    tilePan[1]  = view2DAtts->GetTilePan()[1];
+    tileZoom[0] = view2DAtts->GetTileZoom()[0];
+    tileZoom[1] = view2DAtts->GetTileZoom()[1];
 }
 
 // ****************************************************************************
