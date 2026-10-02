@@ -50,7 +50,7 @@ Using VisIt with the system Python
 
 There are situations where you may want to import the VisIt_ module into the system Python.
 Some common use cases are using VisIt_ as part of a larger Python workflow or when you need to use a Python module that VisIt_'s Python does not include.
-You should always try to use VisIt_'s Python interpreter directly, since importing VisIt's Python module may not always work.
+You should always try to use VisIt_'s Python interpreter directly, since importing VisIt_'s Python module may not always work.
 
 When importing the VisIt_ module into the system Python, at a minimum the major version numbers must match and ideally the major and minor version numbers would match.
 As of VisIt_ 3.5.0, the python import process uses a frontend module ``visit_launcher`` to locate and launch VisIt_.
