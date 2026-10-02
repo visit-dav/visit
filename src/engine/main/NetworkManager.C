@@ -3110,6 +3110,9 @@ NetworkManager::CopyTileToImage(int imageWidth, int imageHeight,
 //    viewportedMode to instead base it on the capture region, which is
 //    really what the intent was all along.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    I added logic to set the 2D view for tiled rendering.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -3170,9 +3173,6 @@ NetworkManager::RenderTiledInternal()
         return output;
     }
 
-    // Calculate the tile zoom factor.
-    const double zoomTile = double(imageHeight) / double(tileHeight);
-
     //
     // Determine the tile parameters for the 2D view.
     //
@@ -3180,10 +3180,14 @@ NetworkManager::RenderTiledInternal()
 
     const double xWindowInit = view2D.window[0];
     const double yWindowInit = view2D.window[2];
-    const double xWindowDelta = (view2D.window[1] - view2D.window[0]) / zoomTile;
-    const double yWindowDelta = (view2D.window[3] - view2D.window[2]) / zoomTile;
+    const double xWindowDelta = (view2D.window[1] - view2D.window[0]) *
+                                (double(tileWidth) / double(imageWidth));
+    const double yWindowDelta = (view2D.window[3] - view2D.window[2]) *
+                                (double(tileHeight) / double(imageHeight));
 
     debug5 << "NetworkManager::RenderTiledInternal: xWindowInit=" << xWindowInit << ",yWindowInit=" << yWindowInit << ",xWindowDelta=" << xWindowDelta << ",yWindowDelta=" << yWindowDelta << endl;
+    double zoomTileX = double(imageWidth) / double(tileWidth);
+    double zoomTileY = double(imageHeight) / double(tileHeight);
 
     //
     // Determine the tile parameters for the 3D view.
@@ -3193,6 +3197,9 @@ NetworkManager::RenderTiledInternal()
     const double zoomUser = view3D.imageZoom;
     const double xPanUser = view3D.imagePan[0];
     const double yPanUser = view3D.imagePan[1];
+
+    // Calculate the tile zoom factor.
+    const double zoomTile = double(imageHeight) / double(tileHeight);
 
     debug5 << "NetworkManager::RenderTiledInternal: zoomUser=" << zoomUser << ",xPanUser=" << xPanUser << ",yPanUser=" << yPanUser << endl;
     debug5 << "NetworkManager::RenderTiledInternal: zoomTile=" << zoomTile << endl;
@@ -3227,6 +3234,11 @@ NetworkManager::RenderTiledInternal()
     view2DTile.window[1] = xWindowInit + xWindowDelta;
     view2DTile.window[2] = yWindowInit;
     view2DTile.window[3] = yWindowInit + yWindowDelta;
+    view2DTile.tilePan[0] = 0.;
+    view2DTile.tilePan[1] = 0.;
+    view2DTile.tileZoom[0] = zoomTileX;
+    view2DTile.tileZoom[1] = zoomTileY;
+
     viswin->SetView2D(view2DTile);
 
     View2DAttributes view2DAtts = renderState.windowInfo->windowAttributes.GetView2D();
@@ -3236,6 +3248,8 @@ NetworkManager::RenderTiledInternal()
     windowCoords[2] = yWindowInit;
     windowCoords[3] = yWindowInit + yWindowDelta;
     view2DAtts.SetWindowCoords(windowCoords);
+    view2DAtts.SetTilePan(view2DTile.tilePan);
+    view2DAtts.SetTileZoom(view2DTile.tileZoom);
     renderState.windowInfo->windowAttributes.SetView2D(view2DAtts);
 
     // Set the initial 3D view.
@@ -3268,8 +3282,9 @@ NetworkManager::RenderTiledInternal()
     int rank = PAR_Rank();
     for (int iyTile = 0; iyTile < nyTiles; iyTile++)
     {
-	view2DTile.window[0] = xWindowInit;
-	view2DTile.window[1] = xWindowInit + xWindowDelta;
+        view2DTile.window[0] = xWindowInit;
+        view2DTile.window[1] = xWindowInit + xWindowDelta;
+        view2DTile.tilePan[0] = 0.;
         view3DTile.imagePan[0] = xPanInit;
         view3DTile.tilePan[0] = xPanInit - xPanUser;
         foregroundPan[0] = xPanInit2;
@@ -3278,7 +3293,7 @@ NetworkManager::RenderTiledInternal()
         {
             //
             // Set the viswin view2D, view3D, background and foreground
-	    // cameras for the tile.
+            // cameras for the tile.
             //
             viswin->SetView2D(view2DTile);
             viswin->SetView3D(view3DTile);
@@ -3302,7 +3317,8 @@ NetworkManager::RenderTiledInternal()
             //
             // Set the windowAttributes view2D and view3D for the tile.
             //
-	    view2DAtts.SetWindowCoords(view2DTile.window);
+            view2DAtts.SetWindowCoords(view2DTile.window);
+            view2DAtts.SetTilePan(view2DTile.tilePan);
             renderState.windowInfo->windowAttributes.SetView2D(view2DAtts);
 
             view3DAtts.SetImagePan(view3DTile.imagePan);
@@ -3325,8 +3341,9 @@ NetworkManager::RenderTiledInternal()
             }
 
             remainingNxCanvas -= tileWidth;
-	    view2DTile.window[0] += xWindowDelta;
-	    view2DTile.window[1] += xWindowDelta;
+            view2DTile.window[0] += xWindowDelta;
+            view2DTile.window[1] += xWindowDelta;
+            view2DTile.tilePan[0] += xWindowDelta;
             view3DTile.imagePan[0] -= xPanDelta;
             view3DTile.tilePan[0] -= xPanDelta;
             foregroundPan[0] -= xPanDelta2;
@@ -3334,6 +3351,7 @@ NetworkManager::RenderTiledInternal()
         remainingNyCanvas -= tileHeight;
         view2DTile.window[2] += yWindowDelta;
         view2DTile.window[3] += yWindowDelta;
+        view2DTile.tilePan[1] += yWindowDelta;
         view3DTile.imagePan[1] -= yPanDelta;
         view3DTile.tilePan[1] -= yPanDelta;
         foregroundPan[1] -= yPanDelta2;
