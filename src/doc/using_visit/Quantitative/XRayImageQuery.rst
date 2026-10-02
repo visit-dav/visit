@@ -312,6 +312,10 @@ The complete version consists of:
 |                  | 1 indicates perspective projection.                  |
 +------------------+------------------------------------------------------+
 
+VisIt_ normalizes ``normal`` and ``view_up`` before ray tracing.
+Each vector must have non-zero length, and the two vectors must be orthogonal.
+Parallel or otherwise non-orthogonal vectors cause an error.
+
 *If any of the above properties are specified in the parameters, the query will use the complete version and disregard all arguments pertaining to the simplified version.*
 
 When a Conduit Blueprint output type is specified, these parameters will appear in the metadata.
@@ -344,6 +348,8 @@ The simplified version consists of:
 +--------------+----------------------------------------------------------+
 
 During execution, the simplified camera specification parameters are converted to the complete ones.
+VisIt_ normalizes ``up_vector`` after conversion.
+It must have non-zero length and be orthogonal to the view normal computed from ``theta`` and ``phi``.
 
 Calling the Query
 """""""""""""""""
@@ -1162,15 +1168,15 @@ The following is included:
 
 +--------------------------+----------------------------------------------+
 | *normal*                 | The x, y, and z components represent the     |
-|                          | view normal vector that was used in          |
-|                          | the calculations.                            |
+|                          | normalized view normal vector that was used  |
+|                          | in the calculations.                         |
 +--------------------------+----------------------------------------------+
 | *focus*                  | The x, y, and z components represent the     |
 |                          | focal point that was used in the             |
 |                          | calculations.                                |    
 +--------------------------+----------------------------------------------+
 | *view_up*                | The x, y, and z components represent the up  |
-|                          | vector that was used in the                  |
+|                          | vector, normalized before it was used in the |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
 | *view_angle*             | The view angle, only used in the             |
@@ -2890,4 +2896,3 @@ This produces the following:
      [0.         0.         0.         0.        ]]]
 
 The number of values is so small because I picked an image size of 4x3 pixels and 2 energy groups to demonstrate this.
-

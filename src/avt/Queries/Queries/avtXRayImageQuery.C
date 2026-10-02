@@ -1169,6 +1169,64 @@ avtXRayImageQuery::SetOutputDir(const std::string &dir)
 }
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::ValidateAndNormalizeViewVectors
+//
+//  Purpose:
+//    Validate the view normal and up vectors, then normalize them before they
+//    are used to construct rays or written to metadata.
+//
+//  Programmer: Justin Privitera
+//  Creation:   October 2, 2026
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::ValidateAndNormalizeViewVectors()
+{
+    // We treat extremely small vectors as zero so normalization does not
+    // amplify numerical noise into an arbitrary direction. The orthogonality
+    // tolerance is intentionally looser because view vectors are often copied
+    // from the UI with limited precision; rounded values that are effectively
+    // orthogonal can otherwise have a small non-zero dot product.
+    const double minVectorLength = 1e-12;
+    const double orthogonalityTolerance = 1e-3;
+
+    if (!(normal.length() > minVectorLength))
+    {
+        std::ostringstream err_oss;
+        err_oss << "ERROR: VisIt is unable to execute this query because "
+                << "the X Ray Image view normal vector has zero length.";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+
+    if (!(viewUp.length() > minVectorLength))
+    {
+        std::ostringstream err_oss;
+        err_oss << "ERROR: VisIt is unable to execute this query because "
+                << "the X Ray Image up vector (view_up or up_vector) has "
+                << "zero length.";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+
+    normal.normalize();
+    viewUp.normalize();
+
+    const double dot = normal.dot(viewUp);
+    const double absDot = fabs(dot);
+    if (absDot > orthogonalityTolerance)
+    {
+        std::ostringstream err_oss;
+        err_oss << "ERROR: VisIt is unable to execute this query because "
+                << "the X Ray Image view normal and up vectors are not "
+                << "orthogonal. They must be orthogonal.";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+}
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::Execute
 //
 //  Purpose:
@@ -1471,6 +1529,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
     if (useOldView && !useNewView)
         ConvertOldImagePropertiesToNew();
+    ValidateAndNormalizeViewVectors();
     filt->SetImageProperties(normal, focus, viewUp, viewAngle, parallelScale,
         viewWidthOverride, nonSquarePixels, nearPlane, farPlane, imagePan, 
         imageZoom, perspective, imageSize);
