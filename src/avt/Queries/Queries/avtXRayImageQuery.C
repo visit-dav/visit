@@ -1169,6 +1169,68 @@ avtXRayImageQuery::SetOutputDir(const std::string &dir)
 }
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::ValidateAndNormalizeViewVectors
+//
+//  Purpose:
+//    Validate the view normal and up vectors, then normalize them before they
+//    are used to construct rays or written to metadata.
+//
+//  Programmer: Justin Privitera
+//  Creation:   October 2, 2026
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::ValidateAndNormalizeViewVectors()
+{
+    // View vectors are often copied from the UI with limited precision.
+    const double orthogonalityTolerance = 1e-3;
+    const double parallelTolerance = 1e-6;
+
+    if (!(normal.length2() > 0.0))
+    {
+        std::ostringstream err_oss;
+        err_oss << "ERROR: VisIt is unable to execute this query because "
+                << "the X Ray Image view normal vector has zero length.";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+
+    if (!(viewUp.length2() > 0.0))
+    {
+        std::ostringstream err_oss;
+        err_oss << "ERROR: VisIt is unable to execute this query because "
+                << "the X Ray Image up vector (view_up or up_vector) has "
+                << "zero length.";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+
+    normal.normalize();
+    viewUp.normalize();
+
+    const double dot = normal.dot(viewUp);
+    const double absDot = fabs(dot);
+    if (absDot > orthogonalityTolerance)
+    {
+        std::ostringstream err_oss;
+        err_oss << "ERROR: VisIt is unable to execute this query because "
+                << "the X Ray Image view normal and up vectors ";
+        if ((1.0 - absDot) <= parallelTolerance)
+        {
+            err_oss << "are parallel. ";
+        }
+        else
+        {
+            err_oss << "are not orthogonal. ";
+        }
+        err_oss << "They must be orthogonal.";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+}
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::Execute
 //
 //  Purpose:
@@ -1471,6 +1533,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
     if (useOldView && !useNewView)
         ConvertOldImagePropertiesToNew();
+    ValidateAndNormalizeViewVectors();
     filt->SetImageProperties(normal, focus, viewUp, viewAngle, parallelScale,
         viewWidthOverride, nonSquarePixels, nearPlane, farPlane, imagePan, 
         imageZoom, perspective, imageSize);
