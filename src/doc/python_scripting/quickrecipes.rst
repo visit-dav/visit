@@ -45,6 +45,56 @@ To make sure that the plot gets drawn, call the DrawPlots function.
     :end-before: # getting something on the screen }
     :dedent: 4
 
+Getting the list of variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is possible to query the list of variables using Python: ::
+
+    db = "testdata/silo_hdf5_test_data/noise.silo"
+
+    OpenDatabase(db)
+    md = GetMetaData(db)
+
+    scalars   = [md.GetScalars(i).name   for i in range(md.GetNumScalars())]
+    vectors   = [md.GetVectors(i).name   for i in range(md.GetNumVectors())]
+    meshes    = [md.GetMeshes(i).name    for i in range(md.GetNumMeshes())]
+    tensors   = [md.GetTensors(i).name   for i in range(md.GetNumTensors())]
+    arrays    = [md.GetArrays(i).name    for i in range(md.GetNumArrays())]
+    materials = [md.GetMaterials(i).name for i in range(md.GetNumMaterials())]
+    curves    = [md.GetCurves(i).name    for i in range(md.GetNumCurves())]
+    labels    = [md.GetLabels(i).name    for i in range(md.GetNumLabels())]
+
+    print("scalars:",   scalars)
+    print("vectors:",   vectors)
+    print("meshes:",    meshes)
+    print("tensors:",   tensors)
+    print("arrays:",    arrays)
+    print("materials:", materials)
+    print("curves:",    curves)
+    print("labels:",    labels)
+
+This yields the following: ::
+
+    scalars: ['airVf', 'chromeVf', 'hardyglobal', 'hgslice', 'radial', 'shepardglobal', 'x', 'PointVar', 'tensor_comps/grad_tensor_ii', 'tensor_comps/grad_tensor_ij', 'tensor_comps/grad_tensor_ik', 'tensor_comps/grad_tensor_ji', 'tensor_comps/grad_tensor_jj', 'tensor_comps/grad_tensor_jk', 'tensor_comps/grad_tensor_ki', 'tensor_comps/grad_tensor_kj', 'tensor_comps/grad_tensor_kk']
+    vectors: ['airVfGradient', 'grad']
+    meshes: ['Mesh', 'Mesh2D', 'PointMesh']
+    tensors: []
+    arrays: []
+    materials: ['mat1']
+    curves: []
+    labels: []
+
+It is then possible to check if particular variables are present: ::
+
+    varname = "airVf"
+
+    if varname in scalars:
+        print("found " + varname)
+
+Which will print the following: ::
+
+    found airVf
+
 Using VisIt with the system Python
 ----------------------------------
 
