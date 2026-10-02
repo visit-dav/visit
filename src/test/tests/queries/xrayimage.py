@@ -193,6 +193,12 @@ if not os.path.isdir(conduit_dir_far_plane_empty):
 conduit_dir_far_plane_non_empty = pjoin(outdir_set, "far_plane_non_empty")
 if not os.path.isdir(conduit_dir_far_plane_non_empty):
     os.mkdir(conduit_dir_far_plane_non_empty)
+conduit_dir_normalized_vectors = pjoin(outdir_set, "normalized_vectors")
+if not os.path.isdir(conduit_dir_normalized_vectors):
+    os.mkdir(conduit_dir_normalized_vectors)
+conduit_dir_invalid_vectors = pjoin(outdir_set, "invalid_vectors")
+if not os.path.isdir(conduit_dir_invalid_vectors):
+    os.mkdir(conduit_dir_invalid_vectors)
 
 dir_dne = pjoin(outdir_set, "doesnotexist")
 if os.path.isdir(dir_dne):
@@ -721,6 +727,17 @@ z: {"kev" if qro.units == UNITS_ON else "no units provided"}"""
     xlabel = xray_coordsets["spectra_coords/labels/x"];
     TestValueEQ(testname + "_data_spectra_XLabels", xlabel, "energy_group")
 
+def test_bp_normalized_view_vectors(testname, conduit_db):
+    xrayout = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+
+    xray_view = xrayout["domain_000000/state/xray_view"]
+    normal = [xray_view["normal/x"], xray_view["normal/y"], xray_view["normal/z"]]
+    view_up = [xray_view["view_up/x"], xray_view["view_up/y"], xray_view["view_up/z"]]
+
+    TestValueEQ(testname + "_normal", normal, [0.0, 0.0, 1.0])
+    TestValueEQ(testname + "_view_up", view_up, [0.0, 1.0, 0.0])
+
 def calc_midpoints(arr):
     midpts = []
     for i in range(0, len(arr) - 1):
@@ -955,6 +972,31 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
 blueprint_test("blueprint hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
 blueprint_test("blueprint json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
 blueprint_test("blueprint yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
+
+#
+# test normal and up vectors are normalized in blueprint metadata
+#
+
+setup_bp_test()
+
+params = GetQueryParameters("XRay Image")
+params["image_size"] = (4, 3)
+params["output_type"] = "blueprint hdf5"
+params["output_dir"] = conduit_dir_normalized_vectors
+params["filename_scheme"] = "none"
+params["focus"] = (0., 2.5, 10.)
+params["normal"] = (0., 0., 2.)
+params["view_up"] = (0., 3., 0.)
+params["parallel_scale"] = 5.
+params["near_plane"] = -50.
+params["far_plane"] = 50.
+params["vars"] = ("d", "p")
+Query("XRay Image", params)
+
+teardown_bp_test()
+
+conduit_db = pjoin(conduit_dir_normalized_vectors, "output.root")
+test_bp_normalized_view_vectors("Blueprint_Normalized_View_Vectors", conduit_db)
 
 #
 # test detector height and width are always positive in blueprint output
@@ -1278,6 +1320,55 @@ if not platform.system() == "Windows":
     output_obj = GetQueryOutputObject()
     TestValueEQ("xrayimage39", output_obj, None)
     teardown_bp_test()
+
+def test_xray_view_vector_exception(testname, view_params, expected_substrings):
+    setup_bp_test()
+
+    params = GetQueryParameters("XRay Image")
+    params["image_size"] = (4, 3)
+    params["output_type"] = "blueprint hdf5"
+    params["output_dir"] = conduit_dir_invalid_vectors
+    params["filename_scheme"] = "none"
+    params["focus"] = (0., 2.5, 10.)
+    params["normal"] = (0., 0., 1.)
+    params["view_up"] = (0., 1., 0.)
+    params["parallel_scale"] = 5.
+    params["near_plane"] = -50.
+    params["far_plane"] = 50.
+    params["vars"] = ("d", "p")
+    params.update(view_params)
+
+    try:
+        Query("XRay Image", params)
+        TestFOA(testname, LINE())
+    except (visit.VisItException, VisItException) as e:
+        msg = str(e.args[0]) if len(e.args) > 0 else ""
+        for i in range(0, len(expected_substrings)):
+            TestValueIN(testname + "_message" + str(i), msg, expected_substrings[i])
+    except:
+        TestFOA(testname, LINE())
+    finally:
+        teardown_bp_test()
+
+test_xray_view_vector_exception(
+    "XRay_View_Vector_Zero_Normal",
+    {"normal" : (0., 0., 0.)},
+    ["view normal vector", "zero length"])
+
+test_xray_view_vector_exception(
+    "XRay_View_Vector_Zero_Up",
+    {"view_up" : (0., 0., 0.)},
+    ["up vector", "zero length"])
+
+test_xray_view_vector_exception(
+    "XRay_View_Vector_Parallel",
+    {"normal" : (0., 0., 2.), "view_up" : (0., 0., 3.)},
+    ["view normal and up vectors", "orthogonal"])
+
+test_xray_view_vector_exception(
+    "XRay_View_Vector_NonOrthogonal",
+    {"normal" : (0., 0., 2.), "view_up" : (0., 3., 1.)},
+    ["view normal and up vectors", "orthogonal"])
 
 # 
 # Test filenames and output types
