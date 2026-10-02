@@ -517,6 +517,10 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
 //    Kathleen Biagas, Tue Aug 4, 2026
 //    Modified to use AddRenderedLabel.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    I added logic to do the binning across the entire image when doing
+//    tiled rendering.
+//
 // ****************************************************************************
 
 void
@@ -536,6 +540,27 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
     double upperright[3] = {1., 1., 0.};
     ren->NormalizedViewportToView(upperright[0], upperright[1], upperright[2]);
     ren->ViewToWorld(upperright[0], upperright[1], upperright[2]);
+
+    // Get the tile pan and zoom. The tile pan comes from the first 2
+    // entries in the eye position and the tile zoom comes from the 3rd
+    // entry in the eye position and the focal disk.
+    double eyePosition[3];
+    ren->GetActiveCamera()->GetEyePosition(eyePosition);
+    double tilePan[2], tileZoom[2];
+    tilePan[0]  = eyePosition[0];
+    tilePan[1]  = eyePosition[1];
+    tileZoom[0] = eyePosition[2];
+    tileZoom[1] = ren->GetActiveCamera()->GetFocalDisk();
+
+    //
+    // Get the lowerleft and upperright for the untiled image.
+    //
+    double imageDeltaX = (upperright[0] - lowerleft[0]) * tileZoom[0];
+    double imageDeltaY = (upperright[1] - lowerleft[1]) * tileZoom[1];
+    lowerleft[0] -= tilePan[0];
+    lowerleft[1] -= tilePan[1];
+    upperright[0] = lowerleft[0] + imageDeltaX;
+    upperright[1] = lowerleft[1] + imageDeltaY;
 
     //
     // figure out the size and aspect of the window in world coordinates.
@@ -1210,6 +1235,10 @@ vtkLabelMapper::PopulateBinsWithCellLabels3D(vtkDataSet *input, vtkRenderer *ren
 //   Replaced pointXForm with pointXFormImage and pointXFormTile to properly
 //   access the z-buffer with tiled rendering.
 //
+//   Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//   I modified the routine to handle the changes made to how the image pan
+//   and zoom are packed into the camera eye position and focal disk.
+//
 // ****************************************************************************
 
 void
@@ -1306,7 +1335,8 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
         izt->Register(this);
 
     // Get the image zoom and tile zoom. The image zoom comes from the
-    // user transform and the tile zoom comes from the focal disk.
+    // user transform and the tile zoom comes from the 3rd entry in the
+    // eye position.
     double imageZoom = 1.;
     if (izt)
     {
@@ -1315,14 +1345,18 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
         imageZoom = izm->GetElement(0,0);
         izm->Delete();
     }
-    double tileZoom = ren->GetActiveCamera()->GetFocalDisk();
+    double eyePosition[3];
+    ren->GetActiveCamera()->GetEyePosition(eyePosition);
+    double tileZoom = eyePosition[2];
 
     // Get the image pan and tile pan. The image pan comes from the
-    // window center and the tile pan comes from the eye position.
+    // window center and the tile pan comes from the first 2 entries
+    // in the eye position.
     double imagePan[2];
     ren->GetActiveCamera()->GetWindowCenter(imagePan);
-    double tilePan[3];
-    ren->GetActiveCamera()->GetEyePosition(tilePan);
+    double tilePan[2];
+    tilePan[0] = eyePosition[0];
+    tilePan[1] = eyePosition[1];
 
     // Set the pan and zoom to the untiled image.
     double origPan[2];
