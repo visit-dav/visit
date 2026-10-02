@@ -11,8 +11,12 @@ You can invoke VisIt_'s Python scripting interface from the command line by typi
     visit -cli 
 
 VisIt_ provides a Python module if you instead wish to import VisIt functions in an existing Python script.
-On Linux, before running a script with VisIt_'s Python, add VisIt_'s library directory to ``LD_LIBRARY_PATH`` so that ``visit_launcher`` and the launched VisIt_ components can find VisIt_'s shared libraries.
-This must be done before invoking ``visit -s``; changing ``LD_LIBRARY_PATH`` with ``os.environ`` inside the script is too late for libraries loaded by that process.
+For VisIt_ 3.5.0 and newer, this import path starts with the `visit_launcher` frontend module, which locates VisIt_, launches the viewer, and makes the full ``visit`` module available.
+
+.. danger:: The visit_launcher module was introduced in VisIt 3.5.0. It is the strategy for python importing of VisIt 3.5.0 and newer. It is not compatible with older VisIt installs.
+
+On Linux, scripts that import `visit_launcher` need VisIt_'s library directory in ``LD_LIBRARY_PATH`` before VisIt_'s Python interpreter starts.
+Set this in the shell or command environment before invoking ``visit -s``; changing ``LD_LIBRARY_PATH`` later with ``os.environ`` inside the script is too late for libraries loaded by that process.
 
 For Bourne-compatible shells such as ``sh``, ``bash``, or ``zsh``, you can set it for your current shell session before running the script: ::
 
@@ -35,17 +39,16 @@ For ``csh`` or ``tcsh``, use ``setenv`` before invoking ``visit -s``: ::
 For example, to use the LLNL ``/usr/gapps`` VisIt_ 3.5.0 install, replace the library path above with ``/usr/gapps/visit/3.5.0/linux-x86_64/lib/``.
 If ``LD_LIBRARY_PATH`` is not already set, omit ``:$LD_LIBRARY_PATH`` from the commands above.
 
-In that case, you must first import the `visit_launcher` module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_.
+In the script, you must first import the `visit_launcher` module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_.
 After ``visit_launcher.Launch()`` you can access the full visit module using ``import visit``.
 
-.. danger:: The visit_launcher module was introduced in VisIt 3.5.0. It is the strategy for python importing of VisIt 3.5.0 and newer. It is not compatible with older VisIt installs.
-
-You can tell the Python interpreter where visit is located either by appending a new path to the ``sys.path`` variable as in ::
+When running a script through ``visit -s``, VisIt_'s Python interpreter normally knows where `visit_launcher` is installed.
+If you are using another Python interpreter, you can tell it where `visit_launcher` is located either by appending a new path to the ``sys.path`` variable as in ::
 
     import sys
     sys.path.append("/path/to/visit/<version>/<architecture>/lib/site-packages")
 
-or by setting the ``PYTHONPATH`` environment variable as in ::
+or by setting the ``PYTHONPATH`` environment variable before running the script as in ::
 
     env PYTHONPATH=/path/to/visit/<version>/<architecture>/lib/site-packages ./myscript.py
 
