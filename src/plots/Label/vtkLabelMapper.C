@@ -519,7 +519,9 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
 //
 //    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
 //    I added logic to do the binning across the entire image when doing
-//    tiled rendering.
+//    tiled rendering. I also simplified the calculation of bin_x_offset
+//    and bin_y_offset since they seemed unnecessarily complex as well as
+//    being numerically unstable.
 //
 // ****************************************************************************
 
@@ -619,12 +621,8 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
     // Compute the offset to the first cell and the number of cells in
     // each dimension.
     //
-    double minMeshX = this->SpatialExtents[0];
-    double minMeshY = this->SpatialExtents[2];
-    double bin_x_offset = floor ((lowerleft[0] - minMeshX) / bin_x_size) *
-                    bin_x_size + minMeshX;
-    double bin_y_offset = floor ((lowerleft[1] - minMeshY) / bin_y_size) *
-                    bin_y_size + minMeshY;
+    double bin_x_offset = lowerleft[0];
+    double bin_y_offset = lowerleft[1];
     int bin_x_n = int(ceil (win_dx / bin_x_size)) + 1;
     int bin_y_n = int(ceil (win_dy / bin_y_size)) + 1;
 
