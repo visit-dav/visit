@@ -56,6 +56,9 @@ class View2DAttributes;
 //    Eric Brugger, Thu Jan 23 16:22:54 PST 2014
 //    Added GetCompositeProjectionTransformMatrix and CalculateExtentsAndArea.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    Added tilePan and tileZoom.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView2D
@@ -74,6 +77,9 @@ struct AVTVIEW_API avtView2D
 
     bool     havePerformedLogX;
     bool     havePerformedLogY;
+
+    double   tilePan[2];
+    double   tileZoom[2];
 
   public:
                     avtView2D();
