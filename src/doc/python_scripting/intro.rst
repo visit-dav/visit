@@ -11,7 +11,7 @@ You can invoke VisIt_'s Python scripting interface from the command line by typi
     visit -cli 
 
 VisIt_ provides a Python module if you instead wish to import VisIt functions in an existing Python script.
-In that case, you must first import the ``visit_launcher`` module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_. 
+In that case, you must first import the ``visit_launcher`` module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_ functionality.
 After ``visit_launcher.Launch()`` you can access the full visit module using ``import visit``. 
 
 .. danger:: The ``visit_launcher`` module was introduced in VisIt 3.5.0. It is the strategy for python importing of VisIt_ 3.5.0 and newer. It is not compatible with older VisIt installs. 
@@ -30,18 +30,11 @@ or set it only for the Python command: ::
 
 For ``csh`` or ``tcsh``, use ``setenv`` before starting Python: ::
 
-    if ($?LD_LIBRARY_PATH) then
-        setenv LD_LIBRARY_PATH /path/to/visit/<version>/<architecture>/lib:$LD_LIBRARY_PATH
-    else
-        setenv LD_LIBRARY_PATH /path/to/visit/<version>/<architecture>/lib
-    endif
+    setenv LD_LIBRARY_PATH /path/to/visit/<version>/<architecture>/lib:$LD_LIBRARY_PATH
     python ./myscript.py
 
-For example, to use the LLNL ``/usr/gapps`` VisIt_ 3.5.0 install, replace the library path above with ``/usr/gapps/visit/3.5.0/linux-x86_64/lib/``.
-If ``LD_LIBRARY_PATH`` is not already set, omit ``:$LD_LIBRARY_PATH`` from the commands above.
-
-In the script, you must first import the ``visit_launcher`` module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_.
-After ``visit_launcher.Launch()`` you can access the full visit module using ``import visit``.
+If ``LD_LIBRARY_PATH`` is not already set, omit ``:$LD_LIBRARY_PATH`` from the command above.
+In practice, to use the LLNL ``/usr/gapps`` VisIt_ 3.5.0 install, replace the library path above with ``/usr/gapps/visit/3.5.0/linux-x86_64/lib/``.
 
 You can tell the Python interpreter where ``visit_launcher`` is located either by appending a new path to the ``sys.path`` variable as in ::
 

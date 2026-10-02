@@ -74,11 +74,7 @@ or set it only for the Python command: ::
 
 For ``csh`` or ``tcsh``, use ``setenv`` before starting Python: ::
 
-    if ($?LD_LIBRARY_PATH) then
-        setenv LD_LIBRARY_PATH /usr/gapps/visit/3.5.0/linux-x86_64/lib/:$LD_LIBRARY_PATH
-    else
-        setenv LD_LIBRARY_PATH /usr/gapps/visit/3.5.0/linux-x86_64/lib/
-    endif
+    setenv LD_LIBRARY_PATH /usr/gapps/visit/3.5.0/linux-x86_64/lib/:$LD_LIBRARY_PATH
     python ./myscript.py
 
 If ``LD_LIBRARY_PATH`` is not already set, omit ``:$LD_LIBRARY_PATH`` from the commands above.
