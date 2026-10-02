@@ -25,26 +25,26 @@ or by setting the ``PYTHONPATH`` environment variable as in ::
 
     env PYTHONPATH=/path/to/visit/<version>/<architecture>/lib/site-packages ./myscript.py
 
-On Linux, before starting Python, add VisIt_'s library directory to ``LD_LIBRARY_PATH`` so that ``visit_launcher`` and the launched VisIt_ components can find VisIt_'s shared libraries.
-This must be done before the Python interpreter is launched; changing ``LD_LIBRARY_PATH`` with ``os.environ`` inside the script is too late for libraries loaded by that process.
+On Linux, before running a script with VisIt_'s Python, add VisIt_'s library directory to ``LD_LIBRARY_PATH`` so that ``visit_launcher`` and the launched VisIt_ components can find VisIt_'s shared libraries.
+This must be done before invoking ``visit -s``; changing ``LD_LIBRARY_PATH`` with ``os.environ`` inside the script is too late for libraries loaded by that process.
 
 For Bourne-compatible shells such as ``sh``, ``bash``, or ``zsh``, you can set it for your current shell session before running the script: ::
 
     export LD_LIBRARY_PATH=/path/to/visit/<version>/<architecture>/lib:$LD_LIBRARY_PATH
-    python ./myscript.py
+    visit -s myscript.py
 
-or set it only for the Python command: ::
+or set it only for the ``visit`` command: ::
 
-    env LD_LIBRARY_PATH=/path/to/visit/<version>/<architecture>/lib:$LD_LIBRARY_PATH python ./myscript.py
+    env LD_LIBRARY_PATH=/path/to/visit/<version>/<architecture>/lib:$LD_LIBRARY_PATH visit -s myscript.py
 
-For ``csh`` or ``tcsh``, use ``setenv`` before starting Python: ::
+For ``csh`` or ``tcsh``, use ``setenv`` before invoking ``visit -s``: ::
 
     if ($?LD_LIBRARY_PATH) then
         setenv LD_LIBRARY_PATH /path/to/visit/<version>/<architecture>/lib:$LD_LIBRARY_PATH
     else
         setenv LD_LIBRARY_PATH /path/to/visit/<version>/<architecture>/lib
     endif
-    python ./myscript.py
+    visit -s myscript.py
 
 For example, to use the LLNL ``/usr/gapps`` VisIt_ 3.5.0 install, replace the library path above with ``/usr/gapps/visit/3.5.0/linux-x86_64/lib/``.
 If ``LD_LIBRARY_PATH`` is not already set, omit ``:$LD_LIBRARY_PATH`` from the commands above.
