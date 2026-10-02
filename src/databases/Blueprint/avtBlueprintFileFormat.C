@@ -755,6 +755,9 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
 //
 //    Brad Whitlock, Wed Jul 19 13:56:42 PDT 2023
 //    I added display_name support.
+// 
+//    Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//    Use material map not matnames.
 //
 // ****************************************************************************
 
@@ -779,12 +782,12 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     string mesh_name = mset_info["mesh_name"].as_string();
     string topo_name = mset_info["topo_name"].as_string();
     string matset_name = mset_info["matset_name"].as_string();
-    const Node &n_mat_names = mset_info["matnames"];
+    const Node &n_material_map = mset_info["material_map"];
 
     BP_PLUGIN_INFO("mesh name: " << mesh_name);
     BP_PLUGIN_INFO("topo name: " << topo_name);
     BP_PLUGIN_INFO("matset name: " << matset_name);
-    BP_PLUGIN_INFO("matnames: " << n_mat_names.to_yaml());
+    BP_PLUGIN_INFO("material_map: " << n_material_map.to_yaml());
 
     if (!m_root_node["blueprint_index"].has_child(mesh_name))
     {
@@ -804,9 +807,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     const string data_path = bp_index_matset["path"].as_string();
 
     // See whether the materials in the index correspond to HO fields.
-    std::vector<std::string> matNames;
-    for(conduit::index_t i = 0; i < n_mat_names.number_of_children(); i++)
-        matNames.push_back(n_mat_names[i].name());
+    std::vector<std::string> matNames = n_material_map.child_names();
     std::map<std::string, std::string> matFields;
     std::string freeMatName;
     if(DetectHOMaterial(mesh_name, topo_name, matNames, matFields, freeMatName))
@@ -821,7 +822,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
         std::vector<float> freevf;
 
         conduit::Node &vf = out["volume_fractions"];
-        conduit::Node &mn = out["matnames"];
+        conduit::Node &mn = out["material_map"];
         int idx = 0;
         for(auto it = matFields.begin(); it != matFields.end(); it++)
         {
@@ -907,7 +908,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
         }
 
         // provide material_map
-        out["matnames"] = n_mat_names;
+        out["material_map"] = n_material_map;
     }
 }
 
@@ -1534,6 +1535,9 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 // 
 //   Justin Privitera, Fri Mar 15 15:56:13 PDT 2024
 //   Revert previous change.
+// 
+//   Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//   Use material map not matnames. Properly copy the material map.
 //
 // ****************************************************************************
 void
@@ -1541,6 +1545,7 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
                                                       string const &mesh_name,
                                                       const Node &n_mesh_info)
 {
+
     if (!n_mesh_info.has_child("matsets"))
     {
         BP_PLUGIN_INFO("Input data file has no matsets.");
@@ -1593,14 +1598,7 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         {
             BP_PLUGIN_INFO("material map " << n_mset["material_map"].to_yaml());
         
-            NodeConstIterator itr = n_mset["material_map"].children();
-            while (itr.has_next())
-            {
-                const Node &curr_mat = itr.next();
-                const int32 mat_id = curr_mat.to_int32();
-                const std::string matname = itr.name();
-                m_matset_info[mesh_matset_name]["matnames"][matname] = mat_id;
-            }
+            m_matset_info[mesh_matset_name]["material_map"].set(n_mset["material_map"]);
         }
         else // "materials" case, old path
         {
@@ -1611,14 +1609,16 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
             {
                 itr.next();
                 int32 mat_id = static_cast<int32>(itr.index());
-                std::string mat_name = itr.name();
+                const std::string mat_name = itr.name();
                 // cache mat names and idx (implied order)
-                m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
+                m_matset_info[mesh_matset_name]["material_map"][mat_name] = mat_id;
             }
         }
 
+        BP_PLUGIN_INFO("material map " << m_matset_info[mesh_matset_name]["material_map"].to_yaml());
+        
         // get matnames vec. No need to sort
-        std::vector<string> matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
+        std::vector<string> matnames = m_matset_info[mesh_matset_name]["material_map"].child_names();
 
         // If the materials were HO then we may need to add a "free" material
         // to the list.
@@ -1627,7 +1627,9 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         if(DetectHOMaterial(mesh_name, topo_name, matnames, matFields, freeMatName))
         {
             if(!freeMatName.empty())
+            {
                 matnames.push_back(freeMatName);
+            }
         }
 
         m_matset_info[mesh_matset_name]["full_mesh_name"] = mesh_topo_name;
@@ -2092,7 +2094,10 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 //
 //  Programmer: cyrush
 //  Creation:   Wed Nov  1 15:10:15 PDT 2023
-//
+// 
+//  Modifications:
+//     Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//     Use material map not materials.
 //
 // ****************************************************************************
 void
@@ -2134,7 +2139,7 @@ avtBlueprintFileFormat::AugmentBlueprintIndex(conduit::Node &blueprint_index)
                 mset["topology"] = mesh["fields/volume_fraction_001/topology"];
                 // fake it
                 mset["path"] = mesh["fields/volume_fraction_001/path"];
-                Node &mats_list = mset["materials"];
+                Node &mats_list = mset["material_map"];
                 for(index_t idx=1;idx<num_volfracs+1;idx++)
                 {
                     mats_list[conduit_fmt::format("{:03d}",idx)] = idx;
@@ -2661,6 +2666,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //    Added override for handling centering changes.
 //    Pass centering change reference down to MFEM.
 //    Use new LOR options for refinement.
+// 
+//    Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//    Ensure existence of material map before entering to_silo().
 //
 // ****************************************************************************
 
@@ -3192,6 +3200,25 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname, avtCentering
                                 mat_name,
                                 n_matset);
 
+            Node matset_verify_info;
+            if(!blueprint::mesh::matset::verify(n_matset,matset_verify_info))
+            {
+                BP_PLUGIN_INFO("blueprint::mesh::matset::verify failed for matset "
+                               << mat_name << " [domain " << domain << "]" << endl
+                               << "Verify Info " << endl
+                               << matset_verify_info.to_yaml() << endl
+                               << "Data Schema " << endl
+                               << n_matset.schema().to_yaml());
+                return nullptr;
+            }
+
+            if (! n_matset.has_child("material_map"))
+            {
+                std::ostringstream err_oss;
+                err_oss <<  "Missing material map for matset " << mat_name << endl;
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException, err_oss.str());
+            }
+
             Node n_silo_matset;
             conduit::blueprint::mesh::field::to_silo(*field_ptr,
                                                      n_matset,
@@ -3359,6 +3386,10 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 // 
 //     Justin Privitera, Fri Mar 15 15:56:13 PDT 2024
 //     Revert previous change.
+// 
+//     Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//     Ensure existence of material map before entering to_silo().
+//     Call Blueprint verify on matsets to catch bad behavior.
 //
 // ****************************************************************************
 avtMaterial *
@@ -3376,11 +3407,32 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                             mat_name,
                             n_matset);
 
-        std::vector<std::string> matnames = n_matset["matnames"].child_names();
+        Node matset_verify_info;
+        if(!blueprint::mesh::matset::verify(n_matset,matset_verify_info))
+        {
+            BP_PLUGIN_INFO("blueprint::mesh::matset::verify failed for matset "
+                           << mat_name << " [domain " << domain << "]" << endl
+                           << "Verify Info " << endl
+                           << matset_verify_info.to_yaml() << endl
+                           << "Data Schema " << endl
+                           << n_matset.schema().to_yaml());
+            return nullptr;
+        }
+
+        if (! n_matset.has_child("material_map"))
+        {
+            std::ostringstream err_oss;
+            err_oss <<  "Missing material map for matset " << mat_name << endl;
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException, err_oss.str());
+        }
+
+        std::vector<std::string> matnames = n_matset["material_map"].child_names();
         // package up char ptrs
         std::vector<const char *> matnames_ptrs;
         for (const auto &matname : matnames)
+        {
             matnames_ptrs.push_back(matname.c_str());
+        }
         auto names = const_cast<char **>(matnames_ptrs.data());
 
         // use to_silo util to convert from bp to the mixslot rep
@@ -3390,11 +3442,11 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         conduit::blueprint::mesh::matset::to_silo(n_matset,
                                                   n_silo_matset);
 
-        int nmats = static_cast<int>(matnames.size());
-        int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
-        int *matlist  = NULL;
-        int *mix_mat  = NULL;
-        int *mix_next = NULL;
+        const int nmats = static_cast<int>(matnames.size());
+        const int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
+        int *matlist  = nullptr;
+        int *mix_mat  = nullptr;
+        int *mix_next = nullptr;
 
         // get the material numbers
         std::vector<int> matnos;
@@ -3427,7 +3479,7 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 
         int mix_len  = static_cast<int>(n_silo_matset["mix_mat"].dtype().number_of_elements());
 
-        float *mix_vf = NULL;
+        float *mix_vf = nullptr;
         if(n_silo_matset["mix_vf"].dtype().is_float())
         {
             mix_vf = n_silo_matset["mix_vf"].as_float_ptr();
@@ -3490,6 +3542,9 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 // 
 //     Justin Privitera, Thu Sep  3 20:57:04 PDT 2026
 //     Fixed type conversion issue.
+// 
+//     Justin Privitera, Thu Oct  1 16:41:20 PDT 2026
+//     Ensure existence of material map before entering to_silo().
 //
 // ****************************************************************************
 avtSpecies *
@@ -3519,6 +3574,25 @@ avtBlueprintFileFormat::GetSpecies(int domain,
         ReadBlueprintMatset(domain,
                             matset_name,
                             n_matset);
+
+        Node matset_verify_info;
+        if(!blueprint::mesh::matset::verify(n_matset,matset_verify_info))
+        {
+            BP_PLUGIN_INFO("blueprint::mesh::matset::verify failed for matset "
+                           << matset_name << " [domain " << domain << "]" << endl
+                           << "Verify Info " << endl
+                           << matset_verify_info.to_yaml() << endl
+                           << "Data Schema " << endl
+                           << n_matset.schema().to_yaml());
+            return nullptr;
+        }
+
+        if (! n_matset.has_child("material_map"))
+        {
+            std::ostringstream err_oss;
+            err_oss <<  "Missing material map for matset " << matset_name << endl;
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException, err_oss.str());
+        }
 
         Node n_silo_specset;
         conduit::blueprint::mesh::specset::to_silo(n_specset,
