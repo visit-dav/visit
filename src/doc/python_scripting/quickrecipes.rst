@@ -53,9 +53,9 @@ Some common use cases are using VisIt_ as part of a larger Python workflow or wh
 You should always try to use VisIt_'s Python interpreter directly, since importing VisIt's Python module may not always work.
 
 When importing the VisIt_ module into the system Python, at a minimum the major version numbers must match and ideally the major and minor version numbers would match.
-As of VisIt_ 3.5.0, the python import process uses a frontend module `visit_launcher` to locate and launch VisIt_.
-On Linux, the Python process that imports `visit_launcher` must start with the directory containing VisIt_'s shared libraries in ``LD_LIBRARY_PATH``; changing ``LD_LIBRARY_PATH`` later in the script with ``os.environ`` is too late for libraries loaded by that process.
-For example, the LLNL ``/usr/gapps`` VisIt_ 3.5.0 install uses ``/usr/gapps/visit/3.5.0/linux-x86_64/lib/``.
+As of VisIt_ 3.5.0, the python import process uses a frontend module ``visit_launcher`` to locate and launch VisIt_.
+On Linux, scripts that import ``visit_launcher`` need VisIt_'s library directory in ``LD_LIBRARY_PATH`` before the Python interpreter starts.
+Make sure to set this in the shell or command environment before running the script; changing ``LD_LIBRARY_PATH`` later with ``os.environ`` inside the script is too late for libraries loaded by that process.
 In general, there are four things you must do to import the VisIt_ module into the system Python.
 
 1. Before starting Python, add VisIt_'s library directory to ``LD_LIBRARY_PATH``.
@@ -78,6 +78,7 @@ For ``csh`` or ``tcsh``, use ``setenv`` before starting Python: ::
     python ./myscript.py
 
 If ``LD_LIBRARY_PATH`` is not already set, omit ``:$LD_LIBRARY_PATH`` from the commands above.
+In practice, to use the LLNL ``/usr/gapps`` VisIt_ 3.5.0 install, replace the library path above with ``/usr/gapps/visit/3.5.0/linux-x86_64/lib/``.
 
 In this example VisIt_ is imported into the system Python and used to save an image from one of our sample datasets. ::
 
