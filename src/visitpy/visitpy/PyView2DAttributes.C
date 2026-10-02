@@ -117,8 +117,22 @@ PyView2DAttributes_ToString(const View2DAttributes *atts, const char *prefix, co
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    snprintf(tmpStr, 1000, "%stileZoom = %g\n", prefix, atts->GetTileZoom());
-    str += tmpStr;
+    {   const double *tileZoom = atts->GetTileZoom();
+        snprintf(tmpStr, 1000, "%stileZoom = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 2; ++i)
+        {
+            snprintf(tmpStr, 1000, "%g", tileZoom[i]);
+            str += tmpStr;
+            if(i < 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     if(atts->GetWindowValid())
         snprintf(tmpStr, 1000, "%swindowValid = 1\n", prefix);
     else
@@ -606,47 +620,62 @@ View2DAttributes_SetTileZoom(PyObject *self, PyObject *args)
     PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
 
     PyObject *packaged_args = 0;
+    double *vals = obj->data->GetTileZoom();
 
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
         packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
             args = packaged_args;
     }
 
-    if (PySequence_Check(args))
+    if (PySequence_Size(args) != 2)
     {
         Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
     }
 
-    if (!PyNumber_Check(args))
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
     {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
+        PyObject *item = PySequence_GetItem(args, i);
 
-    double val = PyFloat_AsDouble(args);
-    double cval = double(val);
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
 
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
     }
 
     Py_XDECREF(packaged_args);
 
-    // Set the tileZoom in the object.
-    obj->data->SetTileZoom(cval);
+    // Mark the tileZoom in the object as modified.
+    obj->data->SelectTileZoom();
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -656,7 +685,11 @@ View2DAttributes_SetTileZoom(PyObject *self, PyObject *args)
 View2DAttributes_GetTileZoom(PyObject *self, PyObject *args)
 {
     PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetTileZoom());
+    // Allocate a tuple the with enough entries to hold the tileZoom.
+    PyObject *retval = PyTuple_New(2);
+    const double *tileZoom = obj->data->GetTileZoom();
+    for(int i = 0; i < 2; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(tileZoom[i]));
     return retval;
 }
 

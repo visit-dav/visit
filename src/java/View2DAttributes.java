@@ -54,7 +54,9 @@ public class View2DAttributes extends AttributeSubject
         tilePan = new double[2];
         tilePan[0] = 0;
         tilePan[1] = 0;
-        tileZoom = 1;
+        tileZoom = new double[2];
+        tileZoom[0] = 1;
+        tileZoom[1] = 1;
         windowValid = false;
     }
 
@@ -79,7 +81,9 @@ public class View2DAttributes extends AttributeSubject
         tilePan = new double[2];
         tilePan[0] = 0;
         tilePan[1] = 0;
-        tileZoom = 1;
+        tileZoom = new double[2];
+        tileZoom[0] = 1;
+        tileZoom[1] = 1;
         windowValid = false;
     }
 
@@ -105,7 +109,10 @@ public class View2DAttributes extends AttributeSubject
         tilePan[0] = obj.tilePan[0];
         tilePan[1] = obj.tilePan[1];
 
-        tileZoom = obj.tileZoom;
+        tileZoom = new double[2];
+        tileZoom[0] = obj.tileZoom[0];
+        tileZoom[1] = obj.tileZoom[1];
+
         windowValid = obj.windowValid;
 
         SelectAll();
@@ -140,6 +147,11 @@ public class View2DAttributes extends AttributeSubject
         for(i = 0; i < 2 && tilePan_equal; ++i)
             tilePan_equal = (tilePan[i] == obj.tilePan[i]);
 
+        // Compare the tileZoom arrays.
+        boolean tileZoom_equal = true;
+        for(i = 0; i < 2 && tileZoom_equal; ++i)
+            tileZoom_equal = (tileZoom[i] == obj.tileZoom[i]);
+
         // Create the return value
         return (windowCoords_equal &&
                 viewportCoords_equal &&
@@ -148,7 +160,7 @@ public class View2DAttributes extends AttributeSubject
                 (xScale == obj.xScale) &&
                 (yScale == obj.yScale) &&
                 tilePan_equal &&
-                (tileZoom == obj.tileZoom) &&
+                tileZoom_equal &&
                 (windowValid == obj.windowValid));
     }
 
@@ -227,9 +239,17 @@ public class View2DAttributes extends AttributeSubject
         Select(6);
     }
 
-    public void SetTileZoom(double tileZoom_)
+    public void SetTileZoom(double[] tileZoom_)
     {
-        tileZoom = tileZoom_;
+        tileZoom[0] = tileZoom_[0];
+        tileZoom[1] = tileZoom_[1];
+        Select(7);
+    }
+
+    public void SetTileZoom(double e0, double e1)
+    {
+        tileZoom[0] = e0;
+        tileZoom[1] = e1;
         Select(7);
     }
 
@@ -247,7 +267,7 @@ public class View2DAttributes extends AttributeSubject
     public int      GetXScale() { return xScale; }
     public int      GetYScale() { return yScale; }
     public double[] GetTilePan() { return tilePan; }
-    public double   GetTileZoom() { return tileZoom; }
+    public double[] GetTileZoom() { return tileZoom; }
     public boolean  GetWindowValid() { return windowValid; }
 
     // Write and read methods.
@@ -268,7 +288,7 @@ public class View2DAttributes extends AttributeSubject
         if(WriteSelect(6, buf))
             buf.WriteDoubleArray(tilePan);
         if(WriteSelect(7, buf))
-            buf.WriteDouble(tileZoom);
+            buf.WriteDoubleArray(tileZoom);
         if(WriteSelect(8, buf))
             buf.WriteBool(windowValid);
     }
@@ -299,7 +319,7 @@ public class View2DAttributes extends AttributeSubject
             SetTilePan(buf.ReadDoubleArray());
             break;
         case 7:
-            SetTileZoom(buf.ReadDouble());
+            SetTileZoom(buf.ReadDoubleArray());
             break;
         case 8:
             SetWindowValid(buf.ReadBool());
@@ -324,7 +344,7 @@ public class View2DAttributes extends AttributeSubject
         str = str + intToString("xScale", xScale, indent);
         str = str + intToString("yScale", yScale, indent);
         str = str + doubleArrayToString("tilePan", tilePan, indent) + "\n";
-        str = str + doubleToString("tileZoom", tileZoom, indent) + "\n";
+        str = str + doubleArrayToString("tileZoom", tileZoom, indent) + "\n";
         str = str + boolToString("windowValid", windowValid, indent) + "\n";
         return str;
     }
@@ -338,7 +358,7 @@ public class View2DAttributes extends AttributeSubject
     private int      xScale;
     private int      yScale;
     private double[] tilePan;
-    private double   tileZoom;
+    private double[] tileZoom;
     private boolean  windowValid;
 }
 

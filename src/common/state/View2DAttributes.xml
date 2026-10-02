@@ -33,7 +33,8 @@
       0
       0
     </Field>
-    <Field name="tileZoom" label="tileZoom" type="double">
+    <Field name="tileZoom" label="tileZoom" type="doubleArray" length="2">
+      1
       1
     </Field>
     <Field name="windowValid" label="windowValid" type="bool">

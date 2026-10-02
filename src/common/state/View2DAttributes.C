@@ -76,7 +76,8 @@ void View2DAttributes::Init()
     yScale = 0;
     tilePan[0] = 0;
     tilePan[1] = 0;
-    tileZoom = 1;
+    tileZoom[0] = 1;
+    tileZoom[1] = 1;
     windowValid = false;
 
     View2DAttributes::SelectAll();
@@ -113,7 +114,9 @@ void View2DAttributes::Copy(const View2DAttributes &obj)
     tilePan[0] = obj.tilePan[0];
     tilePan[1] = obj.tilePan[1];
 
-    tileZoom = obj.tileZoom;
+    tileZoom[0] = obj.tileZoom[0];
+    tileZoom[1] = obj.tileZoom[1];
+
     windowValid = obj.windowValid;
 
     View2DAttributes::SelectAll();
@@ -286,6 +289,11 @@ View2DAttributes::operator == (const View2DAttributes &obj) const
     for(int i = 0; i < 2 && tilePan_equal; ++i)
         tilePan_equal = (tilePan[i] == obj.tilePan[i]);
 
+    // Compare the tileZoom arrays.
+    bool tileZoom_equal = true;
+    for(int i = 0; i < 2 && tileZoom_equal; ++i)
+        tileZoom_equal = (tileZoom[i] == obj.tileZoom[i]);
+
     // Create the return value
     return (windowCoords_equal &&
             viewportCoords_equal &&
@@ -294,7 +302,7 @@ View2DAttributes::operator == (const View2DAttributes &obj) const
             (xScale == obj.xScale) &&
             (yScale == obj.yScale) &&
             tilePan_equal &&
-            (tileZoom == obj.tileZoom) &&
+            tileZoom_equal &&
             (windowValid == obj.windowValid));
 }
 
@@ -446,7 +454,7 @@ View2DAttributes::SelectAll()
     Select(ID_xScale,                  (void *)&xScale);
     Select(ID_yScale,                  (void *)&yScale);
     Select(ID_tilePan,                 (void *)tilePan, 2);
-    Select(ID_tileZoom,                (void *)&tileZoom);
+    Select(ID_tileZoom,                (void *)tileZoom, 2);
     Select(ID_windowValid,             (void *)&windowValid);
 }
 
@@ -525,7 +533,7 @@ View2DAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     if(completeSave || !FieldsEqual(ID_tileZoom, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("tileZoom", tileZoom));
+        node->AddNode(new DataNode("tileZoom", tileZoom, 2));
     }
 
     if(completeSave || !FieldsEqual(ID_windowValid, &defaultObject))
@@ -599,7 +607,7 @@ View2DAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("tilePan")) != 0)
         SetTilePan(node->AsDoubleArray());
     if((node = searchNode->GetNode("tileZoom")) != 0)
-        SetTileZoom(node->AsDouble());
+        SetTileZoom(node->AsDoubleArray());
     if((node = searchNode->GetNode("windowValid")) != 0)
         SetWindowValid(node->AsBool());
 }
@@ -727,10 +735,11 @@ View2DAttributes::SetTilePan(const double *tilePan_)
 }
 
 void
-View2DAttributes::SetTileZoom(double tileZoom_)
+View2DAttributes::SetTileZoom(const double *tileZoom_)
 {
-    tileZoom = tileZoom_;
-    Select(ID_tileZoom, (void *)&tileZoom);
+    tileZoom[0] = tileZoom_[0];
+    tileZoom[1] = tileZoom_[1];
+    Select(ID_tileZoom, (void *)tileZoom, 2);
 }
 
 void
@@ -804,8 +813,14 @@ View2DAttributes::GetTilePan()
     return tilePan;
 }
 
-double
+const double *
 View2DAttributes::GetTileZoom() const
+{
+    return tileZoom;
+}
+
+double *
+View2DAttributes::GetTileZoom()
 {
     return tileZoom;
 }
@@ -836,6 +851,12 @@ void
 View2DAttributes::SelectTilePan()
 {
     Select(ID_tilePan, (void *)tilePan, 2);
+}
+
+void
+View2DAttributes::SelectTileZoom()
+{
+    Select(ID_tileZoom, (void *)tileZoom, 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -902,7 +923,7 @@ View2DAttributes::GetFieldType(int index) const
     case ID_xScale:                  return FieldType_scalemode;
     case ID_yScale:                  return FieldType_scalemode;
     case ID_tilePan:                 return FieldType_doubleArray;
-    case ID_tileZoom:                return FieldType_double;
+    case ID_tileZoom:                return FieldType_doubleArray;
     case ID_windowValid:             return FieldType_bool;
     default:  return FieldType_unknown;
     }
@@ -935,7 +956,7 @@ View2DAttributes::GetFieldTypeName(int index) const
     case ID_xScale:                  return "scalemode";
     case ID_yScale:                  return "scalemode";
     case ID_tilePan:                 return "doubleArray";
-    case ID_tileZoom:                return "double";
+    case ID_tileZoom:                return "doubleArray";
     case ID_windowValid:             return "bool";
     default:  return "invalid index";
     }
@@ -1015,7 +1036,12 @@ View2DAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         break;
     case ID_tileZoom:
         {  // new scope
-        retval = (tileZoom == obj.tileZoom);
+        // Compare the tileZoom arrays.
+        bool tileZoom_equal = true;
+        for(int i = 0; i < 2 && tileZoom_equal; ++i)
+            tileZoom_equal = (tileZoom[i] == obj.tileZoom[i]);
+
+        retval = tileZoom_equal;
         }
         break;
     case ID_windowValid:

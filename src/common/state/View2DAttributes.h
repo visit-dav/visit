@@ -64,6 +64,7 @@ public:
     void SelectWindowCoords();
     void SelectViewportCoords();
     void SelectTilePan();
+    void SelectTileZoom();
 
     // Property setting methods
     void SetWindowCoords(const double *windowCoords_);
@@ -73,7 +74,7 @@ public:
     void SetXScale(int xScale_);
     void SetYScale(int yScale_);
     void SetTilePan(const double *tilePan_);
-    void SetTileZoom(double tileZoom_);
+    void SetTileZoom(const double *tileZoom_);
     void SetWindowValid(bool windowValid_);
 
     // Property getting methods
@@ -87,7 +88,8 @@ public:
     int          GetYScale() const;
     const double *GetTilePan() const;
           double *GetTilePan();
-    double       GetTileZoom() const;
+    const double *GetTileZoom() const;
+          double *GetTileZoom();
     bool         GetWindowValid() const;
 
     // Persistence methods
@@ -134,13 +136,13 @@ private:
     int    xScale;
     int    yScale;
     double tilePan[2];
-    double tileZoom;
+    double tileZoom[2];
     bool   windowValid;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEW2DATTRIBUTES_TMFS "DDidiiDdb"
+#define VIEW2DATTRIBUTES_TMFS "DDidiiDDb"
 
 #endif
