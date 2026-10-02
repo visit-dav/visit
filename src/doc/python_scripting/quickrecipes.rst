@@ -54,11 +54,35 @@ You should always try to use VisIt_'s Python interpreter directly, since importi
 
 When importing the VisIt_ module into the system Python, at a minimum the major version numbers must match and ideally the major and minor version numbers would match.
 As of VisIt_ 3.5.0, the python import process uses a frontend module `visit_launcher` to locate and launch VisIt_.
-In general, there are three things you must do to import the VisIt_ module into the system Python.
+On Linux, the directory containing VisIt_'s shared libraries must be in ``LD_LIBRARY_PATH`` before the system Python interpreter starts.
+For example, the LLNL ``/usr/gapps`` VisIt_ 3.5.0 install uses ``/usr/gapps/visit/3.5.0/linux-x86_64/lib/``.
+Set this in the shell or command environment used to launch Python; changing ``LD_LIBRARY_PATH`` later in the Python script with ``os.environ`` is too late for libraries loaded by that process.
+In general, there are four things you must do to import the VisIt_ module into the system Python.
 
-1. Tell the Python interpreter where the `visit_launcher` module is located.
-2. Set launch options
-3. Launch and `import visit`
+1. Before starting Python, add VisIt_'s library directory to ``LD_LIBRARY_PATH``.
+2. Tell the Python interpreter where the `visit_launcher` module is located.
+3. Set launch options.
+4. Launch and `import visit`.
+
+For Bourne-compatible shells such as ``sh``, ``bash``, or ``zsh``, you can set ``LD_LIBRARY_PATH`` for your current shell session before running the script: ::
+
+    export LD_LIBRARY_PATH=/usr/gapps/visit/3.5.0/linux-x86_64/lib/:$LD_LIBRARY_PATH
+    python ./myscript.py
+
+or set it only for the Python command: ::
+
+    env LD_LIBRARY_PATH=/usr/gapps/visit/3.5.0/linux-x86_64/lib/:$LD_LIBRARY_PATH python ./myscript.py
+
+For ``csh`` or ``tcsh``, use ``setenv`` before starting Python: ::
+
+    if ($?LD_LIBRARY_PATH) then
+        setenv LD_LIBRARY_PATH /usr/gapps/visit/3.5.0/linux-x86_64/lib/:$LD_LIBRARY_PATH
+    else
+        setenv LD_LIBRARY_PATH /usr/gapps/visit/3.5.0/linux-x86_64/lib/
+    endif
+    python ./myscript.py
+
+If ``LD_LIBRARY_PATH`` is not already set, omit ``:$LD_LIBRARY_PATH`` from the commands above.
 
 In this example VisIt_ is imported into the system Python and used to save an image from one of our sample datasets. ::
 
