@@ -42,7 +42,7 @@ VsFile::VsFile(VsRegistry* r, std::string name, hid_t id):
 //  }
   
 // Quiet HDF5 stderr output
-  H5Eset_auto(H5E_DEFAULT , 0, 0);
+  H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
   
   
 }
@@ -88,4 +88,3 @@ std::string VsFile::getName() const {
 void VsFile::write() const {
   VsLog::debugLog() <<"File: " <<fileName <<std::endl;  
 }
-

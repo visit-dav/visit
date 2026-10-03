@@ -6,12 +6,6 @@
 #include <stdlib.h>
 #include <math.h>
  
-// Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
-// in this file uses version 1.6 of the HDF5 API. This is harmless for
-// versions of HDF5 before 1.8 and ensures correct compilation with
-// version 1.8 and thereafter. When, and if, the HDF5 code in this file
-// is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
  
 // disable set but unused warning as much of the code
@@ -92,8 +86,8 @@ write_hdf5_data()
         dims[1] = (NX + 1);
         dataspace_id = H5Screate_simple(2, dims, NULL);
  
-        dataset_id = H5Dcreate(file_id, coordNames[did], H5T_NATIVE_FLOAT, dataspace_id,
-                               H5P_DEFAULT);
+        dataset_id = H5Dcreate2(file_id, coordNames[did], H5T_NATIVE_FLOAT, dataspace_id,
+                               H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
  
         status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                           H5P_DEFAULT, did == 0 ? x : y);
@@ -108,8 +102,8 @@ write_hdf5_data()
     dims[1] = NX;
     dataspace_id = H5Screate_simple(2, dims, NULL);
  
-    dataset_id = H5Dcreate(file_id, "/Pressure", H5T_NATIVE_FLOAT,
-                           dataspace_id, H5P_DEFAULT);
+    dataset_id = H5Dcreate2(file_id, "/Pressure", H5T_NATIVE_FLOAT,
+                           dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
  
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, pressure);
@@ -122,8 +116,8 @@ write_hdf5_data()
     dims[1] = NX + 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
  
-    dataset_id = H5Dcreate(file_id, "/VelocityX", H5T_NATIVE_FLOAT,
-                           dataspace_id, H5P_DEFAULT);
+    dataset_id = H5Dcreate2(file_id, "/VelocityX", H5T_NATIVE_FLOAT,
+                           dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
  
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, velocityx);

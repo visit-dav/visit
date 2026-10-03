@@ -491,7 +491,7 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
                 "Element '" + std::string(meshStr) + "' was not found." );
 
   // Open the group.
-  hid_t meshId = H5Gopen( m_fileID, meshStr, H5P_DEFAULT);
+  hid_t meshId = H5Gopen2( m_fileID, meshStr, H5P_DEFAULT);
   if ( meshId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
                 "Group '" + std::string(meshStr) + "' was not found." );
@@ -507,7 +507,7 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
                 "Time step 'nelms' does not match equilibrium 'nelms'" );
  
   // Open the dataset and space info for the elements.  
-  hid_t datasetId = H5Dopen(meshId, "elements", H5P_DEFAULT);
+  hid_t datasetId = H5Dopen2(meshId, "elements", H5P_DEFAULT);
   hid_t spaceId = H5Dget_space(datasetId);
   size_t rank = H5Sget_simple_extent_ndims(spaceId);
   std::vector<hsize_t> sdim(rank);
@@ -1074,7 +1074,7 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
   vtkDataArray * dataArray = NULL; ///TODO: check on fix for uninitialized warning
 
   // Header variables are at the top level group.
-  hid_t rootID = H5Gopen( m_fileID, "/", H5P_DEFAULT);
+  hid_t rootID = H5Gopen2( m_fileID, "/", H5P_DEFAULT);
   if ( rootID < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
                 "The root group '/' was not found" );
@@ -1233,13 +1233,13 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   }
 
   // Open the group.
-  hid_t groupId = H5Gopen( m_fileID, groupStr, H5P_DEFAULT);
+  hid_t groupId = H5Gopen2( m_fileID, groupStr, H5P_DEFAULT);
   if ( groupId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
                 "Group '" + std::string(groupStr) + "' was not found" );
 
   // Open the field dataset
-  hid_t datasetId = H5Dopen(groupId, varStr, H5P_DEFAULT);
+  hid_t datasetId = H5Dopen2(groupId, varStr, H5P_DEFAULT);
   if ( datasetId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Open",
                 "Dataset '" + std::string(varStr) + "' was not found" );
@@ -1589,7 +1589,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
     avtM3DC1Field m3dField(elements, nelms, element_dimension, nplanes);
 
     // Header variables are at the top level group.
-    hid_t rootID = H5Gopen( m_fileID, "/", H5P_DEFAULT);
+    hid_t rootID = H5Gopen2( m_fileID, "/", H5P_DEFAULT);
     if ( rootID < 0 )
       EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
                   "The root group '/' was not found" );
@@ -2134,22 +2134,23 @@ avtM3DC1FileFormat::linkIterator(hid_t locId, const char* name,
 herr_t
 avtM3DC1FileFormat::groupIterator(hid_t locId, const char* name, void* opdata) {
 
-  avtM3DC1FileFormat* M3DC1FF = static_cast< avtM3DC1FileFormat* >(opdata);
+	  avtM3DC1FileFormat* M3DC1FF = static_cast< avtM3DC1FileFormat* >(opdata);
 
-  H5G_stat_t statbuf;
-  H5Gget_objinfo (locId, name, true, &statbuf);
+	  H5O_info_t objInfo;
+	  if (H5Oget_info_by_name(locId, name, &objInfo, H5P_DEFAULT) < 0)
+	    return 0;
 
-  switch (statbuf.type) {
+	  switch (objInfo.type) {
 
-    case H5G_DATASET: {
-      hid_t datasetId = H5Dopen(locId, name, H5P_DEFAULT);
-      hid_t spaceId = H5Dget_space(datasetId);
-      size_t rank = H5Sget_simple_extent_ndims(spaceId);
-      std::vector<hsize_t> sdim(rank);
-      H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
+	    case H5O_TYPE_DATASET: {
+	      hid_t datasetId = H5Dopen2(locId, name, H5P_DEFAULT);
+	      hid_t spaceId = H5Dget_space(datasetId);
+	      int rank = H5Sget_simple_extent_ndims(spaceId);
+	      std::vector<hsize_t> sdim(rank);
+	      H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
 
-      H5Dclose(spaceId);
-      H5Dclose(datasetId);
+	      H5Sclose(spaceId);
+	      H5Dclose(datasetId);
 
       if( rank != 2 ||
           (size_t)sdim[0] != M3DC1FF->nelms ||
@@ -2191,13 +2192,13 @@ avtM3DC1FileFormat::groupIterator(hid_t locId, const char* name, void* opdata) {
 //    Close all open ids when returning an exception.
 // ****************************************************************************
 void
-avtM3DC1FileFormat::LoadFile()
-{
-    debug1 << "Attempting to open M3D C1 file " << m_filename << std::endl;
+	avtM3DC1FileFormat::LoadFile()
+	{
+	    debug1 << "Attempting to open M3D C1 file " << m_filename << std::endl;
 
-    // Init HDF5 and turn off error message printing.
-    H5open();
-    H5Eset_auto( 0, NULL, NULL ); ///TODO: 1st arg should not be NULL 
+	    // Init HDF5 and turn off error message printing.
+	    H5open();
+	    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     // Check for a valid M3D C1 file
     if( H5Fis_hdf5( m_filename.c_str() ) < 0 )
@@ -2208,7 +2209,7 @@ avtM3DC1FileFormat::LoadFile()
       EXCEPTION1( InvalidFilesException, m_filename.c_str() );
 
     // Root group
-    hid_t rootID = H5Gopen( m_fileID, "/", H5P_DEFAULT);
+	    hid_t rootID = H5Gopen2(m_fileID, "/", H5P_DEFAULT);
     if ( rootID < 0 )
     {
         H5Fclose(m_fileID);        
@@ -2326,7 +2327,7 @@ avtM3DC1FileFormat::LoadFile()
     // EQUILIBRIUM
 
     // Read in equilibrium mesh element information.
-    hid_t groupId = H5Gopen( m_fileID, "/equilibrium/mesh", H5P_DEFAULT);
+    hid_t groupId = H5Gopen2( m_fileID, "/equilibrium/mesh", H5P_DEFAULT);
     if ( groupId < 0 )
     {
       H5Fclose(m_fileID);
@@ -2337,13 +2338,13 @@ avtM3DC1FileFormat::LoadFile()
       if ( ! ReadAttribute( groupId, "nelms", &nelms ) )
         EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nelms' was not found or was the wrong type." );
 
-      hid_t datasetId = H5Dopen(groupId, "elements", H5P_DEFAULT);
+      hid_t datasetId = H5Dopen2(groupId, "elements", H5P_DEFAULT);
       hid_t spaceId = H5Dget_space(datasetId);
       size_t rank = H5Sget_simple_extent_ndims(spaceId);
       std::vector<hsize_t> sdim(rank);
       H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
     
-      H5Dclose(spaceId);
+	      H5Sclose(spaceId);
       H5Dclose(datasetId);
       
       if( rank != 2 ||
@@ -2356,7 +2357,7 @@ avtM3DC1FileFormat::LoadFile()
       H5Gclose( groupId );
 
       // Read in equilibrium field information.
-      groupId = H5Gopen( m_fileID, "/equilibrium/fields", H5P_DEFAULT);
+      groupId = H5Gopen2( m_fileID, "/equilibrium/fields", H5P_DEFAULT);
       if ( groupId < 0 )
       {
         EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - '/equilibrium/fields' was not found" );
@@ -2385,7 +2386,7 @@ avtM3DC1FileFormat::LoadFile()
         char timeStep[64];
         sprintf( timeStep, "/time_%03d", t );
 
-        hid_t groupID = H5Gopen( m_fileID, timeStep, H5P_DEFAULT);
+        hid_t groupID = H5Gopen2( m_fileID, timeStep, H5P_DEFAULT);
         if ( groupID < 0 )
         {
           char buf[1024];
@@ -2420,7 +2421,7 @@ avtM3DC1FileFormat::LoadFile()
         m_cycles.push_back( t );
 
         // Read in the mesh information.
-        hid_t meshId = H5Gopen( groupID, "mesh", H5P_DEFAULT);
+        hid_t meshId = H5Gopen2( groupID, "mesh", H5P_DEFAULT);
 
         int nElements;
         if ( ! ReadAttribute( meshId, "nelms", &nElements ) )
@@ -2431,13 +2432,13 @@ avtM3DC1FileFormat::LoadFile()
           EXCEPTION1( InvalidVariableException,
                       "M3DC1 Element Check - Time step 'nelms' does not match equilibrium 'nelms'" );
 
-        hid_t datasetId = H5Dopen(meshId, "elements", H5P_DEFAULT);
+        hid_t datasetId = H5Dopen2(meshId, "elements", H5P_DEFAULT);
         hid_t spaceId = H5Dget_space(datasetId);
         size_t rank = H5Sget_simple_extent_ndims(spaceId);
         std::vector<hsize_t> sdim(rank);
         H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
     
-        H5Dclose(spaceId);
+	        H5Sclose(spaceId);
         H5Dclose(datasetId);
 
         if( rank != 2 ||
@@ -2451,7 +2452,7 @@ avtM3DC1FileFormat::LoadFile()
 
 
         // Read in the field information.
-        hid_t fieldID = H5Gopen( groupID, "fields", H5P_DEFAULT);
+        hid_t fieldID = H5Gopen2( groupID, "fields", H5P_DEFAULT);
         if ( fieldID < 0 )
           EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - 'fields' was not found" );
 
@@ -2464,7 +2465,7 @@ avtM3DC1FileFormat::LoadFile()
         for ( size_t i=0; i<m_fieldVarNames.size(); ++i )
         {
             hid_t datasetId =
-              H5Dopen(fieldID, m_fieldVarNames[i].c_str(), H5P_DEFAULT);
+              H5Dopen2(fieldID, m_fieldVarNames[i].c_str(), H5P_DEFAULT);
             if ( datasetId < 0 )
               EXCEPTION1( InvalidVariableException, "M3DC1 Dataset Open - '" + std::string(timeStep) + std::string("/fields/") +
                           m_fieldVarNames[i] + "' was not found" );
@@ -2475,7 +2476,7 @@ avtM3DC1FileFormat::LoadFile()
             std::vector<hsize_t> sdim(rank);
             H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
             
-            H5Dclose(spaceId);
+	            H5Sclose(spaceId);
             H5Dclose(datasetId);
 
             if( rank != 2 ||

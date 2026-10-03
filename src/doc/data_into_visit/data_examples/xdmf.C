@@ -98,7 +98,7 @@ write_hdf5_2d_curv_data(hid_t file_id)
     dims[1] = 2;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/XY", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/XY", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -115,7 +115,7 @@ write_hdf5_2d_curv_data(hid_t file_id)
     dims[1] = NX;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Pressure_2D", H5T_NATIVE_UCHAR,
+    dataset_id = H5Dcreate2(file_id, "/Pressure_2D", H5T_NATIVE_UCHAR,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL,
@@ -129,7 +129,7 @@ write_hdf5_2d_curv_data(hid_t file_id)
     dims[1] = NX + 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/VelocityX_2D", H5T_NATIVE_CHAR,
+    dataset_id = H5Dcreate2(file_id, "/VelocityX_2D", H5T_NATIVE_CHAR,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL,
@@ -182,7 +182,7 @@ write_hdf5_3d_rect_data(hid_t file_id)
     dims[0] = (NX + 1);
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/X_1D", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/X_1D", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -196,7 +196,7 @@ write_hdf5_3d_rect_data(hid_t file_id)
     dims[0] = (NY + 1);
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Y_1D", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/Y_1D", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -210,7 +210,7 @@ write_hdf5_3d_rect_data(hid_t file_id)
     dims[0] = (NZ + 1);
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Z_1D", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/Z_1D", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -258,7 +258,7 @@ write_hdf5_3d_point_data(hid_t file_id)
      */
     dims[0] = (NX+1)*(NY+1)*(NZ+1);
     dataspace_id = H5Screate_simple(1, dims, NULL);
-    dataset_id = H5Dcreate(file_id, "/Indexes", H5T_NATIVE_INT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/Indexes", H5T_NATIVE_INT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     status = H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, indexes);
@@ -267,7 +267,7 @@ write_hdf5_3d_point_data(hid_t file_id)
 
     dims[0] = (NX2+1)*(NY2+1)*(NZ2+1);
     dataspace_id = H5Screate_simple(1, dims, NULL);
-    dataset_id = H5Dcreate(file_id, "/Indexes2", H5T_NATIVE_INT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/Indexes2", H5T_NATIVE_INT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     status = H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, indexes);
@@ -574,13 +574,13 @@ write_hdf5_3d_curv_data(hid_t file_id)
     /* Write Origin and DxDyDz. */
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
-    dataset_id = H5Dcreate(file_id, "/Origin", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/Origin", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, origin);
     status = H5Dclose(dataset_id);
 
-    dataset_id = H5Dcreate(file_id, "/DxDyDz", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/DxDyDz", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, dxdydz);
@@ -590,13 +590,13 @@ write_hdf5_3d_curv_data(hid_t file_id)
     /* Write Origin2 and DxDy. */
     dims[0] = 2;
     dataspace_id = H5Screate_simple(1, dims, NULL);
-    dataset_id = H5Dcreate(file_id, "/Origin2", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/Origin2", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, origin);
     status = H5Dclose(dataset_id);
 
-    dataset_id = H5Dcreate(file_id, "/DxDy", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/DxDy", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, dxdydz);
@@ -607,7 +607,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[0] = (NZ + 1) * (NY + 1) * (NX + 1);
     dataspace_id = H5Screate_simple(1, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/X", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/X", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -615,7 +615,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
 
     status = H5Dclose(dataset_id);
 
-    dataset_id = H5Dcreate(file_id, "/Y", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/Y", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -623,7 +623,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
 
     status = H5Dclose(dataset_id);
 
-    dataset_id = H5Dcreate(file_id, "/Z", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/Z", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -638,7 +638,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[1] = 3;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/XYZ", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/XYZ", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -653,7 +653,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[1] = 3;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/XYZ2", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/XYZ2", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -668,7 +668,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[1] = 3;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/XYZ3", H5T_NATIVE_FLOAT, dataspace_id,
+    dataset_id = H5Dcreate2(file_id, "/XYZ3", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -686,7 +686,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX;
     dataspace_id = H5Screate_simple(3, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Pressure", H5T_NATIVE_UINT,
+    dataset_id = H5Dcreate2(file_id, "/Pressure", H5T_NATIVE_UINT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL,
@@ -701,7 +701,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX2;
     dataspace_id = H5Screate_simple(3, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Pressure2", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/Pressure2", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -716,7 +716,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX3;
     dataspace_id = H5Screate_simple(3, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Pressure3", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/Pressure3", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -731,7 +731,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX+1;
     dataspace_id = H5Screate_simple(3, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/VelocityZ", H5T_NATIVE_INT,
+    dataset_id = H5Dcreate2(file_id, "/VelocityZ", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
@@ -746,7 +746,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX2+1;
     dataspace_id = H5Screate_simple(3, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/VelocityZ2", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/VelocityZ2", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -761,7 +761,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX3+1;
     dataspace_id = H5Screate_simple(3, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/VelocityZ3", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/VelocityZ3", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -780,7 +780,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[3] = 3;
     dataspace_id = H5Screate_simple(4, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Velocity", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/Velocity", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -795,7 +795,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX2+1;
     dataspace_id = H5Screate_simple(4, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Velocity2", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/Velocity2", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -810,7 +810,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX3+1;
     dataspace_id = H5Screate_simple(4, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Velocity3", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/Velocity3", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -829,7 +829,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[3] = 6;
     dataspace_id = H5Screate_simple(4, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Stress", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/Stress", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -844,7 +844,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX2+1;
     dataspace_id = H5Screate_simple(4, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Stress2", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/Stress2", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
@@ -859,7 +859,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX3+1;
     dataspace_id = H5Screate_simple(4, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Stress3", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate2(file_id, "/Stress3", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
