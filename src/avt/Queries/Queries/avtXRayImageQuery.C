@@ -1174,13 +1174,15 @@ avtXRayImageQuery::SetOutputDir(const std::string &dir)
 //  Purpose:
 //    Validate the view normal and up vectors, then normalize them before they
 //    are used to construct rays or written to metadata.
+//    Returns false after setting the query result message if the vectors are
+//    not valid.
 //
 //  Programmer: Justin Privitera
 //  Creation:   October 2, 2026
 //
 // ****************************************************************************
 
-void
+bool
 avtXRayImageQuery::ValidateAndNormalizeViewVectors()
 {
     // We treat extremely small vectors as zero so normalization does not
@@ -1197,7 +1199,7 @@ avtXRayImageQuery::ValidateAndNormalizeViewVectors()
         err_oss << "ERROR: VisIt is unable to execute this query because "
                 << "the X Ray Image view normal vector has zero length.";
         SetResultMessage(err_oss.str());
-        EXCEPTION1(VisItException, err_oss.str());
+        return false;
     }
 
     if (!(viewUp.length() > minVectorLength))
@@ -1207,7 +1209,7 @@ avtXRayImageQuery::ValidateAndNormalizeViewVectors()
                 << "the X Ray Image up vector (view_up or up_vector) has "
                 << "zero length.";
         SetResultMessage(err_oss.str());
-        EXCEPTION1(VisItException, err_oss.str());
+        return false;
     }
 
     normal.normalize();
@@ -1222,8 +1224,10 @@ avtXRayImageQuery::ValidateAndNormalizeViewVectors()
                 << "the X Ray Image view normal and up vectors are not "
                 << "orthogonal. They must be orthogonal.";
         SetResultMessage(err_oss.str());
-        EXCEPTION1(VisItException, err_oss.str());
+        return false;
     }
+
+    return true;
 }
 
 // ****************************************************************************
@@ -1515,6 +1519,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
     }
 
+    if (useOldView && !useNewView)
+        ConvertOldImagePropertiesToNew();
+    if (!ValidateAndNormalizeViewVectors())
+        return;
+
     int t1 = visitTimer->StartTimer();
 
     //
@@ -1527,9 +1536,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
     avtXRayFilter *filt = new avtXRayFilter;
 
-    if (useOldView && !useNewView)
-        ConvertOldImagePropertiesToNew();
-    ValidateAndNormalizeViewVectors();
     filt->SetImageProperties(normal, focus, viewUp, viewAngle, parallelScale,
         viewWidthOverride, nonSquarePixels, nearPlane, farPlane, imagePan, 
         imageZoom, perspective, imageSize);

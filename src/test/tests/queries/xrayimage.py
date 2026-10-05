@@ -1321,7 +1321,7 @@ if not platform.system() == "Windows":
     TestValueEQ("xrayimage39", output_obj, None)
     teardown_bp_test()
 
-def test_xray_view_vector_exception(testname, view_params, expected_substrings):
+def test_xray_view_vector_error(testname, view_params, expected_msg):
     setup_bp_test()
 
     params = GetQueryParameters("XRay Image")
@@ -1340,35 +1340,40 @@ def test_xray_view_vector_exception(testname, view_params, expected_substrings):
 
     try:
         Query("XRay Image", params)
-        TestFOA(testname, LINE())
-    except (visit.VisItException, VisItException) as e:
-        msg = str(e.args[0]) if len(e.args) > 0 else ""
-        for i in range(0, len(expected_substrings)):
-            TestValueIN(testname + "_message" + str(i), msg, expected_substrings[i])
+        output_obj = GetQueryOutputObject()
+        msg = GetQueryOutputString()
+        TestValueEQ(testname + "_object", output_obj, None)
+        TestValueEQ(testname + "_message", msg, expected_msg)
     except:
         TestFOA(testname, LINE())
     finally:
         teardown_bp_test()
 
-test_xray_view_vector_exception(
+test_xray_view_vector_error(
     "XRay_View_Vector_Zero_Normal",
     {"normal" : (0., 0., 0.)},
-    ["view normal vector", "zero length"])
+    "ERROR: VisIt is unable to execute this query because "
+    "the X Ray Image view normal vector has zero length.")
 
-test_xray_view_vector_exception(
+test_xray_view_vector_error(
     "XRay_View_Vector_Zero_Up",
     {"view_up" : (0., 0., 0.)},
-    ["up vector", "zero length"])
+    "ERROR: VisIt is unable to execute this query because "
+    "the X Ray Image up vector (view_up or up_vector) has zero length.")
 
-test_xray_view_vector_exception(
+test_xray_view_vector_error(
     "XRay_View_Vector_Parallel",
     {"normal" : (0., 0., 2.), "view_up" : (0., 0., 3.)},
-    ["view normal and up vectors", "orthogonal"])
+    "ERROR: VisIt is unable to execute this query because "
+    "the X Ray Image view normal and up vectors are not orthogonal. "
+    "They must be orthogonal.")
 
-test_xray_view_vector_exception(
+test_xray_view_vector_error(
     "XRay_View_Vector_NonOrthogonal",
     {"normal" : (0., 0., 2.), "view_up" : (0., 3., 1.)},
-    ["view normal and up vectors", "orthogonal"])
+    "ERROR: VisIt is unable to execute this query because "
+    "the X Ray Image view normal and up vectors are not orthogonal. "
+    "They must be orthogonal.")
 
 # 
 # Test filenames and output types

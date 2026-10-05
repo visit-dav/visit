@@ -233,7 +233,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     std::string               WriteFloats(const char *, int, int, T*);
     std::string               WriteBOVHeader(const char *, const char *,
                                   int, int, int, const char *);
-    void                      ValidateAndNormalizeViewVectors();
+    bool                      ValidateAndNormalizeViewVectors();
 #ifdef HAVE_CONDUIT
     template <typename T>
     void                      WriteArrays(vtkDataSet **leaves, 
