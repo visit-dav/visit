@@ -150,6 +150,10 @@
 #    Justin Privitera, Wed Oct 29 12:12:31 PDT 2025
 #    Updated spatial extents meshes tests to take into account that now they
 #    are centered at the origin.
+# 
+#    Justin Privitera, Mon Oct  5 14:06:38 PDT 2026
+#    Added tests for demonstrating normalization of input vectors and catching
+#    non-orthogonal/parallel/zero-length input vectors.
 # ----------------------------------------------------------------------------
 
 import os
