@@ -273,11 +273,17 @@ Complete Camera Specification
 The complete version consists of:
 
 +------------------+------------------------------------------------------+
-| *normal*         | The view normal. The default is (0., 0., 1.).        |
+| *normal*         | The view normal. The default is (0., 0., 1.). This   |
+|                  | vector will be normalized before being used in       |
+|                  | any calculations. It must have non-zero length and   |
+|                  | must be orthogonal to the ``view_up`` vector.        |
 +------------------+------------------------------------------------------+
 | *focus*          | The focal point. The default is (0., 0., 0.).        |
 +------------------+------------------------------------------------------+
-| *view_up*        | The up vector. The default is (0., 1., 0.).          |
+| *view_up*        | The up vector. The default is (0., 1., 0.). This     |
+|                  | vector will be normalized before being used in       |
+|                  | any calculations. It must have non-zero length and   |
+|                  | must be orthogonal to the ``normal`` vector.         |
 +------------------+------------------------------------------------------+
 | *view_angle*     | The view angle. The default is 30. This is only used |
 |                  | if perspective projection is enabled.                |
@@ -312,10 +318,6 @@ The complete version consists of:
 |                  | 1 indicates perspective projection.                  |
 +------------------+------------------------------------------------------+
 
-VisIt_ normalizes ``normal`` and ``view_up`` before ray tracing.
-Each vector must have non-zero length, and the two vectors must be orthogonal.
-Parallel or otherwise non-orthogonal vectors cause an error.
-
 *If any of the above properties are specified in the parameters, the query will use the complete version and disregard all arguments pertaining to the simplified version.*
 
 When a Conduit Blueprint output type is specified, these parameters will appear in the metadata.
@@ -344,12 +346,13 @@ The simplified version consists of:
 |              | When looking at an R-Z mesh, phi has no effect           |
 |              | because of symmetry.                                     |
 +--------------+----------------------------------------------------------+
-| *up_vector*  | The up vector.                                           |
+| *up_vector*  | The up vector. This vector will be normalized before     |
+|              | being used in any calculations. It must have non-zero    |
+|              | length and be orthogonal to the view normal computed     |
+|              | from ``theta`` and ``phi``.                              |
 +--------------+----------------------------------------------------------+
 
 During execution, the simplified camera specification parameters are converted to the complete ones.
-VisIt_ normalizes ``up_vector`` after conversion.
-It must have non-zero length and be orthogonal to the view normal computed from ``theta`` and ``phi``.
 
 Calling the Query
 """""""""""""""""
@@ -1175,8 +1178,8 @@ The following is included:
 |                          | focal point that was used in the             |
 |                          | calculations.                                |    
 +--------------------------+----------------------------------------------+
-| *view_up*                | The x, y, and z components represent the up  |
-|                          | vector, normalized before it was used in the |
+| *view_up*                | The x, y, and z components represent the     |
+|                          | normalized up vector that was used in the    |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
 | *view_angle*             | The view angle, only used in the             |

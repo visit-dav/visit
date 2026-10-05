@@ -127,6 +127,9 @@
 //    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
 //    Functions that write files now return the name of the file they wrote.
 //
+//    Justin Privitera, Mon Oct  5 14:06:38 PDT 2026
+//    Added ValidateAndNormalizeViewVectors().
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery

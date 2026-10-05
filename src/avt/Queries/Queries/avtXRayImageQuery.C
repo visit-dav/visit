@@ -1447,6 +1447,12 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Fri Oct 17 16:39:39 PDT 2025
 //    Use new file_types array in lieu of file_protocols, which is now only
 //    used to specify the Blueprint file protocol.
+// 
+//    Justin Privitera, Mon Oct  5 14:06:38 PDT 2026
+//    Call ValidateAndNormalizeViewVectors() which requires 
+//    ConvertOldImagePropertiesToNew(); moved both of them up and out of the
+//    timer and object creation part of the function so that if something goes
+//    wrong, we end early so we avoid creating things and not cleaning them up.
 //
 // ****************************************************************************
 
@@ -1520,9 +1526,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     }
 
     if (useOldView && !useNewView)
+    {
         ConvertOldImagePropertiesToNew();
+    }
     if (!ValidateAndNormalizeViewVectors())
+    {
         return;
+    }
 
     int t1 = visitTimer->StartTimer();
 
