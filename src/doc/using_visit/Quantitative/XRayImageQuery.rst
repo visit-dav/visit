@@ -2899,3 +2899,4 @@ This produces the following:
      [0.         0.         0.         0.        ]]]
 
 The number of values is so small because I picked an image size of 4x3 pixels and 2 energy groups to demonstrate this.
+
