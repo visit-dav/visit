@@ -2205,6 +2205,10 @@ avtConnComponentsExpression::BoundarySet::GetIntersectionSet(
 //  Programmer: Cyrus Harrison
 //  Creation:   February 15, 2007
 //
+//  Modifications:
+//    Kathleen Biagas Fri Oct 2, 2026
+//    Fix bz_l, az_l, az_h, bz_h if test indices to use 4,5 instead of 2,3.
+//
 // ****************************************************************************
 bool
 avtConnComponentsExpression::BoundarySet::GetBoundsIntersection
@@ -2284,8 +2288,8 @@ avtConnComponentsExpression::BoundarySet::GetBoundsIntersection
         res[4] = b[4];
         res[5] = b[5];
     }
-    // bz_l, ay_l, az_h, bz_h
-    else if( b[2] <= a[2] && a[3] <= b[3])
+    // bz_l, az_l, az_h, bz_h
+    else if( b[4] <= a[4] && a[5] <= b[5])
     {
         res[4] = a[4];
         res[5] = a[5];
