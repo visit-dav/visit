@@ -15,7 +15,7 @@
 #include <avtDatabaseFactory.h>
 #include <DatabasePluginManager.h>
 
-#ifdef HAVE_CONDUIT
+#if defined(HAVE_CONDUIT) && defined(HAVE_MFEM)
 #include <avtConduitBlueprintDataAdaptor.h>
 #endif
 
@@ -129,7 +129,7 @@ MDServerMain(int argc, char *argv[])
     VisItInit::Initialize(argc, argv);
     InitVTKLite::Initialize("mdserver");
     avtDatabase::SetOnlyServeUpMetaData(true);
-#ifdef HAVE_CONDUIT
+#if defined(HAVE_CONDUIT) && defined(HAVE_MFEM)
     avtConduitBlueprintDataAdaptor::Initialize();
 #endif
 
