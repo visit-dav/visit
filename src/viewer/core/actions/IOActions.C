@@ -5,6 +5,7 @@
 #include <IOActions.h>
 
 #include <EngineKey.h>
+#include <Expression.h>
 #include <ViewerEngineManagerInterface.h>
 #include <ViewerMessaging.h>
 #include <ViewerPlot.h>
@@ -116,6 +117,47 @@ ExportDBAction::GetActivePlotNetworkIds(ViewerPlotList *plist, intVector &networ
 }
 
 // ****************************************************************************
+// Method: ExportDBAction::UpdateExportExpressions
+//
+// Purpose:
+//   Makes sure the engine has the expressions needed to export requested
+//   expression variables as secondary variables.
+//
+// ****************************************************************************
+
+void
+ExportDBAction::UpdateExportExpressions(ViewerPlotList *plist,
+    const EngineKey &key)
+{
+    intVector plotIDs;
+    plist->GetActivePlotIDs(plotIDs);
+
+    ExpressionList expressions;
+    bool havePlot = false;
+    for(size_t i = 0; i < plotIDs.size(); ++i)
+    {
+        const ViewerPlot *plot = plist->GetPlot(plotIDs[i]);
+        if(plot == 0 || plot->GetEngineKey() != key)
+            continue;
+
+        ExpressionList plotExpressions(plot->GetExpressions());
+        for(int j = 0; j < plotExpressions.GetNumExpressions(); ++j)
+        {
+            const Expression &expr = plotExpressions.GetExpressions(j);
+            Expression *existing = expressions[expr.GetName().c_str()];
+            if(existing != 0)
+                *existing = expr;
+            else
+                expressions.AddExpressions(expr);
+        }
+        havePlot = true;
+    }
+
+    if(havePlot)
+        GetViewerEngineManager()->UpdateExpressions(key, expressions);
+}
+
+// ****************************************************************************
 // Method: ExportDBAction::Execute
 //
 // Purpose: 
@@ -191,6 +233,8 @@ ExportDBAction::Execute()
                     int err = GetActivePlotNetworkIds(plist, networkIds, key);
                     if(err == 0)
                     {
+                        UpdateExportExpressions(plist, key);
+
                         // If we're trying to export to a simulation but the data is not from
                         // a simulation then issue an error message.
                         if((GetViewerState()->GetExportDBAttributes()->GetDb_type() == "SimV1" || 
@@ -253,29 +297,34 @@ ExportDBAction::Execute()
             plist->SetTimeSliderState(state);
         }
         // Do export of current time state.
-        else if (GetViewerEngineManager()->ExportDatabases(key,
-                 networkIds, &exportAtts, "", exportAtts))
-        {
-            std::string host = key.OriginalHostName();
-            if (host == "localhost")
-                host = "";
-            else
-                host += ":";
-            std::string path = exportAtts.GetDirname();
-            // don't add '/' if dir name is empty,
-            // b/c it will make it look like we wrote
-            // to the root file system
-            if(!path.empty())
-              path += "/";
-            GetViewerMessaging()->Message(
-                TR("Exported database to %1%2%3").
-                arg(host).
-                arg(path).
-                arg(exportAtts.GetFilename()));
-        }
         else
         {
-            GetViewerMessaging()->Error(TR("Unable to export database"));
+            UpdateExportExpressions(plist, key);
+
+            if (GetViewerEngineManager()->ExportDatabases(key,
+                     networkIds, &exportAtts, "", exportAtts))
+            {
+                std::string host = key.OriginalHostName();
+                if (host == "localhost")
+                    host = "";
+                else
+                    host += ":";
+                std::string path = exportAtts.GetDirname();
+                // don't add '/' if dir name is empty,
+                // b/c it will make it look like we wrote
+                // to the root file system
+                if(!path.empty())
+                  path += "/";
+                GetViewerMessaging()->Message(
+                    TR("Exported database to %1%2%3").
+                    arg(host).
+                    arg(path).
+                    arg(exportAtts.GetFilename()));
+            }
+            else
+            {
+                GetViewerMessaging()->Error(TR("Unable to export database"));
+            }
         }
     }
     CATCH2(VisItException, e)
@@ -476,4 +525,3 @@ WriteConfigFileAction::Execute()
     GetViewerStateManager()->WriteConfigFile();
     GetViewerStateManager()->WriteHostProfiles();
 }
-

@@ -61,6 +61,8 @@ private:
     int GetActivePlotNetworkIds(ViewerPlotList *plist,
                                 intVector &networkIds,
                                 EngineKey &key);
+    void UpdateExportExpressions(ViewerPlotList *plist,
+                                 const EngineKey &key);
 };
 
 // ****************************************************************************
