@@ -525,3 +525,4 @@ WriteConfigFileAction::Execute()
     GetViewerStateManager()->WriteConfigFile();
     GetViewerStateManager()->WriteHostProfiles();
 }
+
