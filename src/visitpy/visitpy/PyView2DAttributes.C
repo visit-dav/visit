@@ -101,6 +101,38 @@ PyView2DAttributes_ToString(const View2DAttributes *atts, const char *prefix, co
     const char *yScale_values[] = {"LINEAR", "LOG"};
     snprintf(tmpStr, 1000, "%syScale = %s%s  # LINEAR, LOG\n", prefix, prefix, yScale_values[atts->GetYScale()]);
     str += tmpStr;
+    {   const double *tilePan = atts->GetTilePan();
+        snprintf(tmpStr, 1000, "%stilePan = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 2; ++i)
+        {
+            snprintf(tmpStr, 1000, "%g", tilePan[i]);
+            str += tmpStr;
+            if(i < 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const double *tileZoom = atts->GetTileZoom();
+        snprintf(tmpStr, 1000, "%stileZoom = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 2; ++i)
+        {
+            snprintf(tmpStr, 1000, "%g", tileZoom[i]);
+            str += tmpStr;
+            if(i < 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     if(atts->GetWindowValid())
         snprintf(tmpStr, 1000, "%swindowValid = 1\n", prefix);
     else
@@ -504,6 +536,164 @@ View2DAttributes_GetYScale(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+View2DAttributes_SetTilePan(PyObject *self, PyObject *args)
+{
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetTilePan();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
+    }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Mark the tilePan in the object as modified.
+    obj->data->SelectTilePan();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+View2DAttributes_GetTilePan(PyObject *self, PyObject *args)
+{
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tilePan.
+    PyObject *retval = PyTuple_New(2);
+    const double *tilePan = obj->data->GetTilePan();
+    for(int i = 0; i < 2; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(tilePan[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+View2DAttributes_SetTileZoom(PyObject *self, PyObject *args)
+{
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetTileZoom();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
+    }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Mark the tileZoom in the object as modified.
+    obj->data->SelectTileZoom();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+View2DAttributes_GetTileZoom(PyObject *self, PyObject *args)
+{
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tileZoom.
+    PyObject *retval = PyTuple_New(2);
+    const double *tileZoom = obj->data->GetTileZoom();
+    for(int i = 0; i < 2; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(tileZoom[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
 View2DAttributes_SetWindowValid(PyObject *self, PyObject *args)
 {
     PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
@@ -704,6 +894,10 @@ PyMethodDef PyView2DAttributes_methods[VIEW2DATTRIBUTES_NMETH] = {
     {"GetXScale", View2DAttributes_GetXScale, METH_VARARGS},
     {"SetYScale", View2DAttributes_SetYScale, METH_VARARGS},
     {"GetYScale", View2DAttributes_GetYScale, METH_VARARGS},
+    {"SetTilePan", View2DAttributes_SetTilePan, METH_VARARGS},
+    {"GetTilePan", View2DAttributes_GetTilePan, METH_VARARGS},
+    {"SetTileZoom", View2DAttributes_SetTileZoom, METH_VARARGS},
+    {"GetTileZoom", View2DAttributes_GetTileZoom, METH_VARARGS},
     {"SetWindowValid", View2DAttributes_SetWindowValid, METH_VARARGS},
     {"GetWindowValid", View2DAttributes_GetWindowValid, METH_VARARGS},
     {"Add", View2DAttributes_Add, METH_VARARGS},
@@ -761,6 +955,10 @@ PyView2DAttributes_getattro(PyObject *self, PyObject *attr_name)
     else if(strcmp(name, "LOG") == 0)
         return PyInt_FromLong(long(1));
 
+    if(strcmp(name, "tilePan") == 0)
+        return View2DAttributes_GetTilePan(self, NULL);
+    if(strcmp(name, "tileZoom") == 0)
+        return View2DAttributes_GetTileZoom(self, NULL);
     if(strcmp(name, "windowValid") == 0)
         return View2DAttributes_GetWindowValid(self, NULL);
 
@@ -790,6 +988,10 @@ PyView2DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
         obj = View2DAttributes_SetXScale(self, args);
     else if(strcmp(name, "yScale") == 0)
         obj = View2DAttributes_SetYScale(self, args);
+    else if(strcmp(name, "tilePan") == 0)
+        obj = View2DAttributes_SetTilePan(self, args);
+    else if(strcmp(name, "tileZoom") == 0)
+        obj = View2DAttributes_SetTileZoom(self, args);
     else if(strcmp(name, "windowValid") == 0)
         obj = View2DAttributes_SetWindowValid(self, args);
 
@@ -857,21 +1059,21 @@ typedef struct {
      unaryfunc nb_negative;
      unaryfunc nb_positive;
      unaryfunc nb_absolute;
-     inquiry nb_nonzero;       // Used by PyObject_IsTrue 
+     inquiry nb_nonzero;       // Used by PyObject_IsTrue
      unaryfunc nb_invert;
      binaryfunc nb_lshift;
      binaryfunc nb_rshift;
      binaryfunc nb_and;
      binaryfunc nb_xor;
      binaryfunc nb_or;
-     coercion nb_coerce;     // MISSING IN PYTHON 3   // Used by the coerce() function 
+     coercion nb_coerce;     // MISSING IN PYTHON 3   // Used by the coerce() function
      unaryfunc nb_int;
      unaryfunc nb_long;   // MUST BE NULL IN PYTHON 3
      unaryfunc nb_float;
      unaryfunc nb_oct;    // MISSING IN PYTHON 3
      unaryfunc nb_hex;    // MISSING IN PYTHON 3
 
-     // Added in release 2.0 
+     // Added in release 2.0
      binaryfunc nb_inplace_add;
      binaryfunc nb_inplace_subtract;
      binaryfunc nb_inplace_multiply;
@@ -884,13 +1086,13 @@ typedef struct {
      binaryfunc nb_inplace_xor;
      binaryfunc nb_inplace_or;
 
-     // Added in release 2.2 
+     // Added in release 2.2
      binaryfunc nb_floor_divide;
      binaryfunc nb_true_divide;
      binaryfunc nb_inplace_floor_divide;
      binaryfunc nb_inplace_true_divide;
 
-     // Added in release 2.5 
+     // Added in release 2.5
      unaryfunc nb_index;
 } PyNumberMethods;
 

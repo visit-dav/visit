@@ -330,6 +330,11 @@ avtView3D::SetToDefault()
 //    I added tilePan and tileZoom to track the changes to the image pan
 //    and zoom for tiled rendering.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    I modified the routine to handle the fact that tileZoom was changed
+//    to be an array of length 2 so that it can store seperate zoom factors
+//    for X and Y in 2D.
+//
 // ****************************************************************************
 
 void
@@ -409,7 +414,7 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     viewInfo.imageZoom   = imageZoom;
 
     //
-    // Set the vew shear.
+    // Set the view shear.
     //
     viewInfo.shear[0] = shear[0];
     viewInfo.shear[1] = shear[1];
@@ -418,9 +423,10 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     //
     // Set the tile pan and zoom.
     //
-    viewInfo.tilePan[0] = tilePan[0];
-    viewInfo.tilePan[1] = tilePan[1];
-    viewInfo.tileZoom = tileZoom;
+    viewInfo.tilePan[0]  = tilePan[0];
+    viewInfo.tilePan[1]  = tilePan[1];
+    viewInfo.tileZoom[0] = tileZoom;
+    viewInfo.tileZoom[1] = 1.;
 }
 
 // ****************************************************************************
