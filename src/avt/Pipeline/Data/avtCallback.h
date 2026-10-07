@@ -123,6 +123,25 @@ class PIPELINE_API avtCallback
                                      { return useOSPRay; }
 #endif
 
+#if defined(HAVE_ANARI)
+    // Process-wide gate on real ANARI device creation, set true only by
+    // engine startup code (see NetworkManager::CreateVisWindow), so only the
+    // engine ever creates a real ANARI device. Currently, the engine is the only
+    // process guaranteed to have ANARI backend libraries installed, and (with
+    // client-server ANARI) the only one that actually renders with ANARI.
+    // VisWinRendering::SetAnariDeviceCreationEnabled gates ANARI device
+    // creation the same way for surface rendering, but that gate is
+    // per VisWindow instance and lives in avt/VisWindow, which plot
+    // plugins (e.g. the Volume plot's avtVisItVTKRenderer, which owns its
+    // own separate vtkAnariPass) don't link against. This lives in
+    // avtCallback/avt/Pipeline instead, since that's linked by both
+    // engine/main and every plot plugin.
+    static void                  SetAnariDeviceCreationEnabled(bool b)
+                                     { anariDeviceCreationEnabled = b; }
+    static bool                  GetAnariDeviceCreationEnabled(void)
+                                     { return anariDeviceCreationEnabled; }
+#endif
+
     static void                  RegisterGetDatabaseCallback(
                                                   GetDatabaseCallback, void *);
     static ref_ptr<avtDatabase>  GetDatabase(const std::string &, int,
@@ -166,6 +185,10 @@ class PIPELINE_API avtCallback
 
 #if defined(HAVE_OSPRAY)
     static bool                  useOSPRay;
+#endif
+
+#if defined(HAVE_ANARI)
+    static bool                  anariDeviceCreationEnabled;
 #endif
 
     static bool                  safeMode;

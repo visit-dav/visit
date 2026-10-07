@@ -10,11 +10,16 @@
 //  Programmer:  Kevin Griffin
 //  Creation:    Thu 27 Aug 2026
 //
+//  Modifications:
+//    Kevin Griffin, Tue 22 Sep 2026
+//    Added requestor field ("ss" codetype).
+//
 // ****************************************************************************
 
-AnariDeviceInfoAttributes::AnariDeviceInfoAttributes() : AttributeSubject("s")
+AnariDeviceInfoAttributes::AnariDeviceInfoAttributes() : AttributeSubject("ss")
 {
     xmlResult = "";
+    requestor = "";
 }
 
 // ****************************************************************************
@@ -23,12 +28,17 @@ AnariDeviceInfoAttributes::AnariDeviceInfoAttributes() : AttributeSubject("s")
 //  Programmer:  Kevin Griffin
 //  Creation:    Thu 27 Aug 2026
 //
+//  Modifications:
+//    Kevin Griffin, Tue 22 Sep 2026
+//    Added requestor field ("ss" codetype).
+//
 // ****************************************************************************
 
 AnariDeviceInfoAttributes::AnariDeviceInfoAttributes(const AnariDeviceInfoAttributes &obj)
-    : AttributeSubject("s")
+    : AttributeSubject("ss")
 {
     xmlResult = obj.xmlResult;
+    requestor = obj.requestor;
 }
 
 // ****************************************************************************
@@ -49,13 +59,20 @@ AnariDeviceInfoAttributes::~AnariDeviceInfoAttributes()
 //  Programmer:  Kevin Griffin
 //  Creation:    Thu 27 Aug 2026
 //
+//  Modifications:
+//    Kevin Griffin, Tue 22 Sep 2026
+//    Added requestor field.
+//
 // ****************************************************************************
 
 AnariDeviceInfoAttributes &
 AnariDeviceInfoAttributes::operator=(const AnariDeviceInfoAttributes &obj)
 {
     if(this != &obj)
+    {
         xmlResult = obj.xmlResult;
+        requestor = obj.requestor;
+    }
     return *this;
 }
 
@@ -65,12 +82,16 @@ AnariDeviceInfoAttributes::operator=(const AnariDeviceInfoAttributes &obj)
 //  Programmer:  Kevin Griffin
 //  Creation:    Thu 27 Aug 2026
 //
+//  Modifications:
+//    Kevin Griffin, Tue 22 Sep 2026
+//    Added requestor field.
+//
 // ****************************************************************************
 
 bool
 AnariDeviceInfoAttributes::operator==(const AnariDeviceInfoAttributes &obj) const
 {
-    return xmlResult == obj.xmlResult;
+    return xmlResult == obj.xmlResult && requestor == obj.requestor;
 }
 
 bool
@@ -145,6 +166,10 @@ AnariDeviceInfoAttributes::CopyAttributes(const AttributeGroup *atts)
 //  Programmer:  Kevin Griffin
 //  Creation:    Thu 27 Aug 2026
 //
+//  Modifications:
+//    Kevin Griffin, Tue 22 Sep 2026
+//    Added requestor field (index 1).
+//
 // ****************************************************************************
 
 bool
@@ -156,6 +181,9 @@ AnariDeviceInfoAttributes::FieldsEqual(int index, const AttributeGroup *rhs) con
     {
     case 0:
         retval = (xmlResult == obj.xmlResult);
+        break;
+    case 1:
+        retval = (requestor == obj.requestor);
         break;
     default:
         retval = false;
@@ -172,12 +200,17 @@ AnariDeviceInfoAttributes::FieldsEqual(int index, const AttributeGroup *rhs) con
 //  Programmer:  Kevin Griffin
 //  Creation:    Thu 27 Aug 2026
 //
+//  Modifications:
+//    Kevin Griffin, Tue 22 Sep 2026
+//    Added requestor field (index 1).
+//
 // ****************************************************************************
 
 void
 AnariDeviceInfoAttributes::SelectAll()
 {
     Select(0, (void*)&xmlResult);
+    Select(1, (void*)&requestor);
 }
 
 // ****************************************************************************
@@ -193,4 +226,23 @@ AnariDeviceInfoAttributes::SetXmlResult(const std::string &xmlResult_)
 {
     xmlResult = xmlResult_;
     Select(0, (void *)&xmlResult);
+}
+
+// ****************************************************************************
+//  Method:  AnariDeviceInfoAttributes::SetRequestor
+//
+//  Purpose:
+//    Identifies which ANARI settings panel this result is meant for, as a
+//    "<rendertype>" (e.g. "surface", "volume").
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    Tue 22 Sep 2026
+//
+// ****************************************************************************
+
+void
+AnariDeviceInfoAttributes::SetRequestor(const std::string &requestor_)
+{
+    requestor = requestor_;
+    Select(1, (void *)&requestor);
 }

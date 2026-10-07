@@ -247,6 +247,15 @@ NetworkManager_CreateVisWindow(int winID, VisWindow *&viswindow, bool &owns, voi
     // backends installed, and (with client-server ANARI) the only one that
     // actually renders with ANARI. See VisWinRendering::SetAnariDeviceCreationEnabled.
     viswindow->SetAnariDeviceCreationEnabled(true);
+
+    // Plot-owned ANARI renderers (e.g. the Volume plot's
+    // avtVisItVTKRenderer, which owns its own separate vtkAnariPass) live
+    // in plugins that don't link against avt/VisWindow, so they can't see
+    // the per-VisWindow gate above. avtCallback (avt/Pipeline) is linked by
+    // both engine/main and every plot plugin, so it's used as the
+    // process-wide equivalent for those. Idempotent, so it's fine that this
+    // function may run once per VisWindow.
+    avtCallback::SetAnariDeviceCreationEnabled(true);
 #endif
     owns = true;
 }

@@ -1169,6 +1169,68 @@ avtXRayImageQuery::SetOutputDir(const std::string &dir)
 }
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::ValidateAndNormalizeViewVectors
+//
+//  Purpose:
+//    Validate the view normal and up vectors, then normalize them before they
+//    are used to construct rays or written to metadata.
+//    Returns false after setting the query result message if the vectors are
+//    not valid.
+//
+//  Programmer: Justin Privitera
+//  Creation:   October 2, 2026
+//
+// ****************************************************************************
+
+bool
+avtXRayImageQuery::ValidateAndNormalizeViewVectors()
+{
+    // We treat extremely small vectors as zero so normalization does not
+    // amplify numerical noise into an arbitrary direction. The orthogonality
+    // tolerance is intentionally looser because view vectors are often copied
+    // from the UI with limited precision; rounded values that are effectively
+    // orthogonal can otherwise have a small non-zero dot product.
+    const double minVectorLength = 1e-12;
+    const double orthogonalityTolerance = 1e-3;
+
+    if (!(normal.length() > minVectorLength))
+    {
+        std::ostringstream err_oss;
+        err_oss << "ERROR: VisIt is unable to execute this query because "
+                << "the X Ray Image view normal vector has zero length.";
+        SetResultMessage(err_oss.str());
+        return false;
+    }
+
+    if (!(viewUp.length() > minVectorLength))
+    {
+        std::ostringstream err_oss;
+        err_oss << "ERROR: VisIt is unable to execute this query because "
+                << "the X Ray Image up vector (view_up or up_vector) has "
+                << "zero length.";
+        SetResultMessage(err_oss.str());
+        return false;
+    }
+
+    normal.normalize();
+    viewUp.normalize();
+
+    const double dot = normal.dot(viewUp);
+    const double absDot = fabs(dot);
+    if (absDot > orthogonalityTolerance)
+    {
+        std::ostringstream err_oss;
+        err_oss << "ERROR: VisIt is unable to execute this query because "
+                << "the X Ray Image view normal and up vectors are not "
+                << "orthogonal. They must be orthogonal.";
+        SetResultMessage(err_oss.str());
+        return false;
+    }
+
+    return true;
+}
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::Execute
 //
 //  Purpose:
@@ -1385,6 +1447,12 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Fri Oct 17 16:39:39 PDT 2025
 //    Use new file_types array in lieu of file_protocols, which is now only
 //    used to specify the Blueprint file protocol.
+// 
+//    Justin Privitera, Mon Oct  5 14:06:38 PDT 2026
+//    Call ValidateAndNormalizeViewVectors() which requires 
+//    ConvertOldImagePropertiesToNew(); moved both of them up and out of the
+//    timer and object creation part of the function so that if something goes
+//    wrong, we end early so we avoid creating things and not cleaning them up.
 //
 // ****************************************************************************
 
@@ -1457,6 +1525,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
     }
 
+    if (useOldView && !useNewView)
+    {
+        ConvertOldImagePropertiesToNew();
+    }
+    if (!ValidateAndNormalizeViewVectors())
+    {
+        return;
+    }
+
     int t1 = visitTimer->StartTimer();
 
     //
@@ -1469,8 +1546,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
     avtXRayFilter *filt = new avtXRayFilter;
 
-    if (useOldView && !useNewView)
-        ConvertOldImagePropertiesToNew();
     filt->SetImageProperties(normal, focus, viewUp, viewAngle, parallelScale,
         viewWidthOverride, nonSquarePixels, nearPlane, farPlane, imagePan, 
         imageZoom, perspective, imageSize);

@@ -33,6 +33,10 @@
 
 #include <DebugStream.h>
 
+#ifdef HAVE_ANARI
+const std::string QvisRenderingWindow::ANARI_REQUESTOR = "surface";
+#endif
+
 // ****************************************************************************
 // Method: QvisRenderingWindow::QvisRenderingWindow
 //
@@ -1685,12 +1689,23 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
 // Programmer: Kevin Griffin
 // Creation:   Thu 27 Aug 2026
 //
+// Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   AnariDeviceInfoAttributes is now shared by more than one ANARI settings
+//   panel (surface rendering, volume plots). Ignore replies not addressed
+//   to this window's panel (checked before the empty-xml check, since an
+//   empty result from another panel's failed request must not revert this
+//   window's checkbox).
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::UpdateAnariDeviceInfo(bool doAll)
 {
     if(anariDeviceInfo == 0 || anariRenderingWidget == 0)
+        return;
+
+    if(anariDeviceInfo->GetRequestor() != ANARI_REQUESTOR)
         return;
 
     const std::string &xml = anariDeviceInfo->GetXmlResult();
@@ -1902,6 +1917,12 @@ QvisRenderingWindow::ConnectEngineList(EngineList *el)
 // Programmer: Kevin Griffin
 // Creation:   Thu 27 Aug 2026
 //
+// Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Pass ANARI_REQUESTOR so the reply can be routed back to this window's
+//   panel and not another one (e.g. a Volume plot window) sharing the same
+//   AnariDeviceInfoAttributes result.
+//
 // ****************************************************************************
 
 void
@@ -1909,7 +1930,8 @@ QvisRenderingWindow::RequestAnariDeviceInfo(const std::string &libraryName,
                                             const std::string &librarySubtype,
                                             const std::string &rendererSubtype)
 {
-    GetViewerMethods()->GetAnariDeviceInfo(libraryName, librarySubtype, rendererSubtype);
+    GetViewerMethods()->GetAnariDeviceInfo(libraryName, librarySubtype, rendererSubtype,
+                                           ANARI_REQUESTOR);
 }
 #endif
 

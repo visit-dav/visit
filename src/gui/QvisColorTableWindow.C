@@ -69,25 +69,25 @@
 //
 //   Brad Whitlock, Wed Apr  9 11:59:35 PDT 2008
 //   QString for caption, shortName.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added new tag-related vars to constructor.
-// 
+//
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added new searching-related vars to the constructor.
-// 
+//
 //   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //   TagEdit added.
-// 
+//
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed `tagsVisible`.
-// 
+//
 //   Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //   Removed `searchingOn`.
-// 
+//
 //   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
 //   Removed `tagsMatchAny`.
-// 
+//
 //   Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
 //   Added `actuallyUpdateWindow`.
 //
@@ -108,6 +108,8 @@ QvisColorTableWindow::QvisColorTableWindow(
     searchTerm = QString("");
     tagEdit = QString("");
     actuallyUpdateWindow = true;
+    defaultContinuousChanged = false;
+    defaultDiscreteChanged = false;
 }
 
 // ****************************************************************************
@@ -188,39 +190,39 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //
 //   Kathleen Biagas, Thu Jan 21, 2021
 //   Remove unused var 'QString n'.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Completely redid the gui to remove categories and add tags.
-// 
+//
 //   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
 //   Called `QvisNoDefaultColorTableButton` constructor with its new boolean
 //   argument that signals if the button is discrete or continuous.
 //
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added searchbox gui element and hooked up signals and slots for searching.
-// 
+//
 //   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //   Added tag editor gui elements.
 //
 //   Justin Privitera, Thu Nov 17 12:28:10 PST 2022
 //   Resolved window resizing off the screen issue by limiting maximum height.
 //   Adjusted location of several buttons and labels to use less screen space.
-// 
+//
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Moved namelistbox to what was its position when tagging was enabled.
 //   Removed tagFilterToggle.
 //   Added tagsSelectAllButton in its place.
-// 
+//
 //   Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //   Removed code for the search toggle and replaced with search bar.
 //   Cleaned up code, added comments, and organized the different sections.
 //
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
-// 
+//
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Moved tagsMatchAny to the CTAtts, so we must access it through them.
 //
@@ -271,7 +273,7 @@ QvisColorTableWindow::CreateWindowContents()
     connect(defaultContinuous, SIGNAL(selectedColorTable(const QString &)),
             this, SLOT(setDefaultContinuous(const QString &)));
     defaultColorTableLayout->addWidget(defaultContinuous, 0, 1);
-    
+
     // create the default continuous color table label and button
     QLabel *defaultDiscreteLabel = new QLabel(tr("Discrete"), defaultColorTableGroup);
     defaultColorTableLayout->addWidget(defaultDiscreteLabel, 1, 0);
@@ -318,7 +320,7 @@ QvisColorTableWindow::CreateWindowContents()
     if (colorAtts->GetTagsMatchAny())
         tagCombiningBehaviorChoice->setCurrentIndex(0);
     else
-        tagCombiningBehaviorChoice->setCurrentIndex(1);        
+        tagCombiningBehaviorChoice->setCurrentIndex(1);
     connect(tagCombiningBehaviorChoice, SIGNAL(activated(int)),
             this, SLOT(tagCombiningChanged(int)));
     managerLayout->addWidget(tagCombiningBehaviorChoice, 1, 2, 1, 4);
@@ -338,7 +340,7 @@ QvisColorTableWindow::CreateWindowContents()
     tagTable->setHeaderLabels(headers);
     tagTable->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     tagTable->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    connect(tagTable, SIGNAL(itemChanged(QTreeWidgetItem *, int)), 
+    connect(tagTable, SIGNAL(itemChanged(QTreeWidgetItem *, int)),
             this, SLOT(tagTableItemSelected(QTreeWidgetItem *, int)));
     tagTable->clear();
     tagTable->setSortingEnabled(true);
@@ -578,24 +580,24 @@ QvisColorTableWindow::CreateWindowContents()
 // Modifications:
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added ability for tag settings to be written to config/session files.
-// 
+//
 //   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //   Write tag changes to node.
-// 
+//
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Now plays nice with the new tag data structure.
-// 
+//
 //   Cyrus Harrison, Fri Sep 16 14:28:51 PDT 2022
 //   Avoid emplace_back due to evil nature of std::vector<bool>
-// 
+//
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   `tagsVisible` is gone so it is no longer written to nodes.
-// 
+//
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
-//   Moved all of the tagging infrastructure to the CTAtts, so we no longer 
+//   Moved all of the tagging infrastructure to the CTAtts, so we no longer
 //   write so much here.
 //
 // ****************************************************************************
@@ -630,24 +632,24 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // Modifications:
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added ability for tag settings to be read from config/session files.
-// 
+//
 //   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //   Read tag changes from node if possible.
-// 
+//
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Now plays nice with the new tag data structure.
-// 
+//
 //   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //   Error on size mismatch of tagnames and active tags vectors and recovery.
-// 
+//
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   `tagsVisible` is gone so it is no longer read from nodes.
-// 
+//
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
-//   Moved all of the tagging infrastructure to the CTAtts, so we no longer 
+//   Moved all of the tagging infrastructure to the CTAtts, so we no longer
 //   read so much here.
 //
 // ****************************************************************************
@@ -660,8 +662,8 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
         return;
 
     // Get the active tab and show it.
-    DataNode *node, *node2;
-    if((node = winNode->GetNode("currentColorTable")) != 0)
+    DataNode *node = winNode->GetNode("currentColorTable");
+    if(node != 0)
         currentColorTable = QString(node->AsString().c_str());
 
     // Call the base class's function.
@@ -706,29 +708,29 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //
 //   Kathleen Biagas, Mon Aug  4 15:45:44 PDT 2014
 //   Handle new groupingFlag, change in default/discrete button types.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added tags.
-// 
+//
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   The tag label and tag line edit are now always visible so they do not
 //   need to have their visibility set in this function.
-// 
+//
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   The tagging flag is gone, so all the logic associated with it is gone.
-// 
+//
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
-// 
+//
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Added a case for when the tag list is selected.
-// 
+//
 //   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //   Changing tags match all or any now triggers updateNames.
-// 
+//
 //   Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
 //   Check if we actually want to update the window and allow for early return
 //   if not.
@@ -853,10 +855,10 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 //
 //   Mark C. Miller, Wed Feb 28 14:28:01 PST 2018
 //   Handle "smoothing" label correctly.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 // ****************************************************************************
 
 void
@@ -919,7 +921,7 @@ QvisColorTableWindow::UpdateEditor()
 //
 // Programmer: Justin Privitera
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
-// 
+//
 // Notes:
 //    Signal blocking and unblocking SHOULD occur in the caller.
 //
@@ -928,37 +930,37 @@ QvisColorTableWindow::UpdateEditor()
 //    Renamed `run_before` to `first_time`.
 //    Added guard to make sure code to fill tag table and tag list
 //    is only run as much as it needs to be run.
-// 
+//
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    Run the tag table generation the first time so we can set up the tagInfo
 //    map. Purge tagList and tagTable entries that have 0 refcount.
-// 
+//
 //    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //    Make sure the refcount for the "No Tags" tag is updated properly.
-// 
+//
 //    Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
 //    Replaced braces w/ equals to avoid init list behavior.
-// 
+//
 //    Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //    Tagging is always enabled, so any code relating to making it optional
 //    has been removed.
-// 
+//
 //    Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
-//    This function has been completely rewritten. I wanted to transform the 
+//    This function has been completely rewritten. I wanted to transform the
 //    tag update process into a pipeline of discrete steps. I have removed the
 //    dependence on helper functions. We take advantage of the CTAtts functions
 //    for working with the tag list.
-// 
+//
 //    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
-//    Changed the name form UpdateTags to UpdateTagTable since this function 
+//    Changed the name form UpdateTags to UpdateTagTable since this function
 //    no longer updates tags and only updates the table.
 //    Removed the second step, which was adding tags to the tag list, since
 //    this now happens in the CTAtts.
-//    Made the adding tags to tag table step (old step 3, now step 2) 
+//    Made the adding tags to tag table step (old step 3, now step 2)
 //    unconditional since we can guarantee that all tag names that arrive there
 //    do not have a tag table entry.
 //    Added a const to the last step.
-// 
+//
 //    Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
 //    Notify the CTAtts observers that it has changed. See note below.
 //
@@ -1000,20 +1002,20 @@ QvisColorTableWindow::UpdateTagTable()
 
     tagTable->sortByColumn(1, Qt::AscendingOrder);
 
-    // Why do we need to do this? The Color Table Window (CTWindow) modifies 
-    // the Color Table Attributes (CTAtts) by calling 
+    // Why do we need to do this? The Color Table Window (CTWindow) modifies
+    // the Color Table Attributes (CTAtts) by calling
     //     colorAtts->SetTagTableItemFlag(currtag, true);
-    // up above, which tells the CTAtts that a tag table item exists for a 
-    // given tag. We need to notify all the CTAtts observers that the CTAtts 
-    // has changed so they can update accordingly. Thus we call 
+    // up above, which tells the CTAtts that a tag table item exists for a
+    // given tag. We need to notify all the CTAtts observers that the CTAtts
+    // has changed so they can update accordingly. Thus we call
     //     colorAtts->Notify();
-    // However, the CTWindow is itself a CTAtts watcher, and notifying the 
-    // observers that the CTAtts have changed has the unwanted effect of 
+    // However, the CTWindow is itself a CTAtts watcher, and notifying the
+    // observers that the CTAtts have changed has the unwanted effect of
     // causing the CTWindow to update itself, leading to this function being
     // called, which again calls Notify(), which leads to infinite recursion.
-    // We do need the observers to know about these changes, but we need the 
-    // CTWindow to not react, since it is making the changes, so we need a 
-    // switch to control whether or not the CTWindow should actually get 
+    // We do need the observers to know about these changes, but we need the
+    // CTWindow to not react, since it is making the changes, so we need a
+    // switch to control whether or not the CTWindow should actually get
     // updated. We turn it off, call Notify(), and then turn it back on.
     actuallyUpdateWindow = false;
     colorAtts->Notify();
@@ -1040,49 +1042,49 @@ QvisColorTableWindow::UpdateTagTable()
 //
 //   Kathleen Biagas, Mon Aug  4 15:46:54 PDT 2014
 //   Handle grouping if requested.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
-//   Removed categories and added tags (so lots of logic to control what 
-//   happens when tags are enabled). Also added guard at the end to make 
-//   sure the observer updates the color table buttons if settings are 
+//   Removed categories and added tags (so lots of logic to control what
+//   happens when tags are enabled). Also added guard at the end to make
+//   sure the observer updates the color table buttons if settings are
 //   loaded from config files.
-// 
+//
 //   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //   Refactored the block that fills the namelistbox.
-// 
+//
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added logic for searching for color tables. Now there is a search filter
 //   applied at the end of the function.
-// 
+//
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   The tag line edit only needs to be populated if searching is disabled.
-// 
+//
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Rework for accessing tag information b/c of refactor.
 //   Ensure current CT name is one of the existing names.
-// 
+//
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //    - Call UpdateEditor to make sure the editor reflects the change in
 //   selected color table.
 //    - Tagging is no longer optional, so all code relating to providing it
 //   as a choice has been stripped out.
-// 
+//
 //   Justin Privitera, Thu May 11 12:31:12 PDT 2023
-//   Stripped out all code relating to searching being on or off; it is 
+//   Stripped out all code relating to searching being on or off; it is
 //   always on now.
-// 
+//
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
-// 
+//
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Moved the tag filtering to the CTAtts, called it here. Added comments.
-// 
+//
 //   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
-//   Removed failsafe logic at the end of the function for reading 
+//   Removed failsafe logic at the end of the function for reading
 //   config/session files as it is no longer necessary.
 // ****************************************************************************
 
@@ -1094,14 +1096,14 @@ QvisColorTableWindow::UpdateNames()
     defaultDiscrete->blockSignals(true);
     defaultContinuous->blockSignals(true);
 
-    // 
+    //
     // Populate tag list
-    // 
+    //
     UpdateTagTable();
 
-    // 
+    //
     // Populate Color Table Name List
-    // 
+    //
 
     // Clear out the existing names.
     nameListBox->clear();
@@ -1126,9 +1128,9 @@ QvisColorTableWindow::UpdateNames()
         }
     }
 
-    // 
+    //
     // Select the default color table.
-    // 
+    //
 
     // First, make sure that the nameListBox is not currently empty.
     if (nameListBox->topLevelItemCount() != 0)
@@ -1238,7 +1240,7 @@ QvisColorTableWindow::GetDefaultColorControlPoints()
 //
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 // ****************************************************************************
 
 void
@@ -1359,7 +1361,7 @@ QvisColorTableWindow::UpdateColorControlPoints()
 //
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 //
@@ -1500,10 +1502,10 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 //
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Added new `skip_update` argument which will prevent the current ctrl pt
 //    from having its color changed if enabled.
@@ -1578,7 +1580,7 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c, bool skip_update)
 //
 //    Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //    Added alpha channel support.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 //
@@ -1693,13 +1695,13 @@ QvisColorTableWindow::GetNextColor()
 //
 //   Kathleen Biagas, Fri Aug 8 08:43:49 PDT 2014
 //   Handle category.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added logic to preserve the tags.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Logic to preserve builtin attribute.
 //
@@ -1784,9 +1786,13 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
 // Modifications:
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    Handle category.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories.
+//
+//   Kathleen Biagas, Thu Sep 24, 2026
+//   Changed which ViewerMethods function is called based on whether or
+//   not the default continuous and/or discrete color tables were changed.
 //
 // ****************************************************************************
 
@@ -1799,8 +1805,37 @@ QvisColorTableWindow::Apply(bool ignore)
         GetCurrentValues(1);
         colorAtts->Notify();
 
+        bool skipGeneralUpdate = false;
+
+        // save current color table so it won't be overwritten by
+        // possible calls to SetDefaultContinuous/DiscreteColorTable
+        std::string currCT = currentColorTable.toStdString();
+
         // Make the viewer update the plots that use the specified colortable.
-        GetViewerMethods()->UpdateColorTable(currentColorTable.toStdString());
+
+        // To aid in logging when a default color table is changed, call the
+        // appropriate ViewerMethod (which in turn will call UpdateColorTable).
+        if (defaultContinuousChanged)
+        {
+            skipGeneralUpdate = (colorAtts->GetDefaultContinuous() == currCT);
+            GetViewerMethods()->SetDefaultContinuousColorTable(colorAtts->GetDefaultContinuous());
+        }
+        if (defaultDiscreteChanged)
+        {
+            skipGeneralUpdate = (colorAtts->GetDefaultDiscrete() == currCT);
+            GetViewerMethods()->SetDefaultDiscreteColorTable(colorAtts->GetDefaultDiscrete());
+        }
+
+        // still may need to track curentColorTable changes, but prevent
+        // unnecessary calls to UpdateColorTable when it may have been called
+        // by one of the above ViewerMethods calls
+        if(!skipGeneralUpdate)
+        {
+            GetViewerMethods()->UpdateColorTable(currCT);
+        }
+
+        defaultContinuousChanged = false;
+        defaultDiscreteChanged = false;
     }
     else
         colorAtts->Notify();
@@ -1843,7 +1878,7 @@ QvisColorTableWindow::apply()
 // Modifications:
 //   Brad Whitlock, Mon Jul 14 15:04:07 PST 2003
 //   Added code to block signals.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table.
 //
@@ -1923,10 +1958,10 @@ QvisColorTableWindow::controlPointMoved(int index, float position)
         }
         QColor selectedColor = spectrumBar->controlPointColor(index);
         ShowSelectedColor(selectedColor, true);
-        spectrumBar->blockSignals(false);        
+        spectrumBar->blockSignals(false);
         return;
     }
-    
+
     // Get the current attributes.
     GetCurrentValues(0);
     SetUpdate(false);
@@ -2003,10 +2038,10 @@ QvisColorTableWindow::chooseDiscreteColor(const QColor &c, int, int,
 //   Brad Whitlock, Thu Nov 21 12:54:01 PDT 2002
 //   I modified the routine so it behaves differently if the menu was
 //   activated by choosing a discrete color table.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
-// 
+//
 //    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
 //    Removed useless smoothing method change.
 //
@@ -2066,10 +2101,10 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 // Modifications:
 //   Brad Whitlock, Fri Apr 27 15:14:20 PDT 2012
 //   Added more types of smoothing.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
 //
@@ -2136,10 +2171,10 @@ QvisColorTableWindow::showIndexHintsToggled(bool val)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2193,31 +2228,31 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 //
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    Handle category.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added default tag for user defined tables.
-// 
+//
 //   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //   SetTagChangesMade for copied color tables.
-// 
+//
 //   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //   Added error if users try to add a color table while searching is enabled.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Set builtin flag to false for new color tables.
 //
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Update tag refcount on creation of a new CT.
-// 
+//
 //   Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //   No more error when searching is on; searching is always on.
-// 
+//
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Use the CTAtts functions to update the tag reference count.
-// 
+//
 //    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //    Moved tag numrefs increment on addition to CTAtts.
 //    Removed obsolete SetTagChangesMade.
@@ -2294,28 +2329,28 @@ QvisColorTableWindow::addColorTable()
 //
 //    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //    Error when deleting a CT while searching is enabled.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table.
-// 
+//
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    Error when attempting to delete a CT when there are no CTs.
 //    Error when attempting to delete a CT when one is not selected.
 //    Error when attempting to delete the last continuous or discrete CT.
 //    Update tag refcount before deleting CT.
-// 
+//
 //     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
 //     Replaced braces w/ parens to avoid init list behavior.
-// 
+//
 //     Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //     No more error when searching is enabled; searching is always on.
-// 
+//
 //     Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //     Use the new CTAtts functions to get at the tag list.
-// 
+//
 //    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //    Moved tag numrefs decrement on removal to CTAtts.
-// 
+//
 // ****************************************************************************
 
 void
@@ -2398,10 +2433,10 @@ QvisColorTableWindow::deleteColorTable()
 //
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    Rewritten to reflect changes in how the names are stored.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added tags.
-// 
+//
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   The tag line edit is always visible now so it must be updated even if
 //   tagging is disabled.
@@ -2440,10 +2475,10 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    The secret tag table column is gone; there is no need to read the index
 //    from it anymore. We can use the map instead.
-// 
+//
 //    Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //    Use the CTAtts function to update the tag list.
-// 
+//
 //    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //    Removed redundant update names and buttons pattern.
 //
@@ -2471,10 +2506,10 @@ QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
-// 
+//
 //    Justin Privitera, Thu Sep 28 13:33:44 PDT 2023
 //    Remove the Discrete tag if changing to Continuous, and vice versa.
 //    Do proper bookkeeping.
@@ -2526,14 +2561,14 @@ QvisColorTableWindow::setColorTableType(int index)
                 colorAtts->IncrementTagNumRefs(newtag);
             }
         };
-        
+
         if (index == discrete)
             swap_tag("Continuous", "Discrete");
         else // continuous
             swap_tag("Discrete", "Continuous");
         colorAtts->SelectTagChanges();
         colorAtts->SelectColorTables();
-        
+
         // When discrete set the smoothing to none so the legend is correct.
         if (index == discrete)
           ccpl->SetSmoothing(ColorControlPointList::None);
@@ -2604,7 +2639,7 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // Creation:   09/22/23
 //
 // Modifications:
-// 
+//
 // ****************************************************************************
 
 void
@@ -2629,9 +2664,9 @@ QvisColorTableWindow::colorValueChanged(int rgba, int value)
                   tr(" is built-in. You cannot edit a built-in color table.");
             Error(tmp);
 
-            int reset_value = (rgba == 0 ? c.red()   : 
-                              (rgba == 1 ? c.green() : 
-                              (rgba == 2 ? c.blue()  : 
+            int reset_value = (rgba == 0 ? c.red()   :
+                              (rgba == 1 ? c.green() :
+                              (rgba == 2 ? c.blue()  :
                                            c.alpha())));
 
             componentSpinBoxes[rgba]->blockSignals(true);
@@ -2669,13 +2704,13 @@ QvisColorTableWindow::colorValueChanged(int rgba, int value)
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
-// 
+//
 //    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
 //    Now use colorValueChanged.
 //
@@ -2703,13 +2738,13 @@ QvisColorTableWindow::redValueChanged(int r)
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
-// 
+//
 //    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
 //    Now use colorValueChanged.
 //
@@ -2737,13 +2772,13 @@ QvisColorTableWindow::greenValueChanged(int g)
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
-// 
+//
 //    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
 //    Now use colorValueChanged.
 //
@@ -2771,10 +2806,10 @@ QvisColorTableWindow::blueValueChanged(int b)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
-// 
+//
 //    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
 //    Now use colorValueChanged.
 //
@@ -2846,11 +2881,15 @@ QvisColorTableWindow::sliderReleased()
 //   Changed *active* to *default* for everything related to color tables.
 //   In this case I changed the name of the function.
 //
+//   Kathleen Biagas, Thu Sep 24, 2026
+//   Track whether the default continuous has changed.
+//
 // ****************************************************************************
 
 void
 QvisColorTableWindow::setDefaultContinuous(const QString &ct)
 {
+    defaultContinuousChanged = ct.toStdString() != colorAtts->GetDefaultContinuous();
     colorAtts->SetDefaultContinuous(ct.toStdString());
     Apply();
 }
@@ -2872,11 +2911,15 @@ QvisColorTableWindow::setDefaultContinuous(const QString &ct)
 //   Changed *active* to *default* for everything related to color tables.
 //   In this case I changed the name of the function.
 //
+//   Kathleen Biagas, Thu Sep 24, 2026
+//   Track whether the default discrete has changed.
+//
 // ****************************************************************************
 
 void
 QvisColorTableWindow::setDefaultDiscrete(const QString &ct)
 {
+    defaultDiscreteChanged = ct.toStdString() != colorAtts->GetDefaultDiscrete();
     colorAtts->SetDefaultDiscrete(ct.toStdString());
     Apply();
 }
@@ -2884,7 +2927,7 @@ QvisColorTableWindow::setDefaultDiscrete(const QString &ct)
 // ****************************************************************************
 // Method: QvisColorTableWindow::resizeColorTable
 //
-// Purpose:
+// Purpose
 //   This routine resizes the color table.
 //
 // Arguments:
@@ -2900,10 +2943,10 @@ QvisColorTableWindow::setDefaultDiscrete(const QString &ct)
 //
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on resize of a builtin color table.
 //
@@ -3026,13 +3069,13 @@ QvisColorTableWindow::resizeColorTable(int size)
 // Modifications:
 //    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //    Error when trying to export a CT while searching is enabled.
-// 
+//
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on export of a builtin color table.
-// 
+//
 //    Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //    No more error when searching is on; searching is always on.
-// 
+//
 //    Justin Privitera, Wed Aug 19 16:23:51 PDT 2026
 //    Error for built-in color table export is descriptive and explains how to
 //    get around it.
@@ -3073,7 +3116,7 @@ QvisColorTableWindow::exportColorTable()
 // Modifications:
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Use new CTAtts functions.
-// 
+//
 //   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //   Removed redundant update names and buttons pattern.
 // ****************************************************************************
@@ -3113,9 +3156,9 @@ QvisColorTableWindow::tagsSelectAll()
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Simplified the logic a bit. Also update to reflect that tagsMatchAny lives
 //   in the CTAtts now.
-// 
+//
 //   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
-//   Simplified this function and removed redundant update names and buttons 
+//   Simplified this function and removed redundant update names and buttons
 //   pattern.
 // ****************************************************************************
 
@@ -3144,10 +3187,10 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // Modifications:
 //   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //   Added guard to prevent Apply() from being called when searching is off.
-// 
+//
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   The tag line edit is cleared when searching is ongoing.
-// 
+//
 //   Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //   Simplified the function because searching is always on.
 //
@@ -3194,10 +3237,10 @@ QvisColorTableWindow::tagEdited()
 // Modifications:
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace braces with parens for auto.
-// 
+//
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
-// 
+//
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Updated to reflect the fact that add and remove functions were moved to
 //   the CTAtts.

@@ -45,20 +45,90 @@ To make sure that the plot gets drawn, call the DrawPlots function.
     :end-before: # getting something on the screen }
     :dedent: 4
 
+Getting the list of variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is possible to query the list of variables using Python: ::
+
+    db = "testdata/silo_hdf5_test_data/noise.silo"
+
+    OpenDatabase(db)
+    md = GetMetaData(db)
+
+    scalars   = [md.GetScalars(i).name   for i in range(md.GetNumScalars())]
+    vectors   = [md.GetVectors(i).name   for i in range(md.GetNumVectors())]
+    meshes    = [md.GetMeshes(i).name    for i in range(md.GetNumMeshes())]
+    tensors   = [md.GetTensors(i).name   for i in range(md.GetNumTensors())]
+    arrays    = [md.GetArrays(i).name    for i in range(md.GetNumArrays())]
+    materials = [md.GetMaterials(i).name for i in range(md.GetNumMaterials())]
+    curves    = [md.GetCurves(i).name    for i in range(md.GetNumCurves())]
+    labels    = [md.GetLabels(i).name    for i in range(md.GetNumLabels())]
+
+    print("scalars:",   scalars)
+    print("vectors:",   vectors)
+    print("meshes:",    meshes)
+    print("tensors:",   tensors)
+    print("arrays:",    arrays)
+    print("materials:", materials)
+    print("curves:",    curves)
+    print("labels:",    labels)
+
+This yields the following: ::
+
+    scalars: ['airVf', 'chromeVf', 'hardyglobal', 'hgslice', 'radial', 'shepardglobal', 'x', 'PointVar', 'tensor_comps/grad_tensor_ii', 'tensor_comps/grad_tensor_ij', 'tensor_comps/grad_tensor_ik', 'tensor_comps/grad_tensor_ji', 'tensor_comps/grad_tensor_jj', 'tensor_comps/grad_tensor_jk', 'tensor_comps/grad_tensor_ki', 'tensor_comps/grad_tensor_kj', 'tensor_comps/grad_tensor_kk']
+    vectors: ['airVfGradient', 'grad']
+    meshes: ['Mesh', 'Mesh2D', 'PointMesh']
+    tensors: []
+    arrays: []
+    materials: ['mat1']
+    curves: []
+    labels: []
+
+It is then possible to check if particular variables are present: ::
+
+    varname = "airVf"
+
+    if varname in scalars:
+        print("found " + varname)
+
+Which will print the following: ::
+
+    found airVf
+
 Using VisIt with the system Python
 ----------------------------------
 
 There are situations where you may want to import the VisIt_ module into the system Python.
 Some common use cases are using VisIt_ as part of a larger Python workflow or when you need to use a Python module that VisIt_'s Python does not include.
-You should always try to use VisIt_'s Python interpreter directly, since importing VisIt's Python module may not always work.
+You should always try to use VisIt_'s Python interpreter directly, since importing VisIt_'s Python module may not always work.
 
 When importing the VisIt_ module into the system Python, at a minimum the major version numbers must match and ideally the major and minor version numbers would match.
-As of VisIt_ 3.5.0, the python import process uses a frontend module `visit_launcher` to locate and launch VisIt_.
-In general, there are three things you must do to import the VisIt_ module into the system Python.
+As of VisIt_ 3.5.0, the python import process uses a frontend module ``visit_launcher`` to locate and launch VisIt_.
+On Linux, scripts that import ``visit_launcher`` need VisIt_'s library directory in ``LD_LIBRARY_PATH`` before the Python interpreter starts.
+Make sure to set this in the shell or command environment before running the script; changing ``LD_LIBRARY_PATH`` later with ``os.environ`` inside the script is too late for libraries loaded by that process.
+In general, there are four things you must do to import the VisIt_ module into the system Python.
 
-1. Tell the Python interpreter where the `visit_launcher` module is located.
-2. Set launch options
-3. Launch and `import visit`
+1. Before starting Python, add VisIt_'s library directory to ``LD_LIBRARY_PATH``.
+2. Tell the Python interpreter where the `visit_launcher` module is located.
+3. Set launch options.
+4. Launch and `import visit`.
+
+For Bourne-compatible shells such as ``sh``, ``bash``, or ``zsh``, you can set ``LD_LIBRARY_PATH`` for your current shell session before running the script: ::
+
+    export LD_LIBRARY_PATH=/usr/gapps/visit/3.5.0/linux-x86_64/lib/:$LD_LIBRARY_PATH
+    python ./myscript.py
+
+or set it only for the Python command: ::
+
+    env LD_LIBRARY_PATH=/usr/gapps/visit/3.5.0/linux-x86_64/lib/:$LD_LIBRARY_PATH python ./myscript.py
+
+For ``csh`` or ``tcsh``, use ``setenv`` before starting Python: ::
+
+    setenv LD_LIBRARY_PATH /usr/gapps/visit/3.5.0/linux-x86_64/lib/:$LD_LIBRARY_PATH
+    python ./myscript.py
+
+If ``LD_LIBRARY_PATH`` is not already set, omit ``:$LD_LIBRARY_PATH`` from the commands above.
+In practice, to use the LLNL ``/usr/gapps`` VisIt_ 3.5.0 install, replace the library path above with ``/usr/gapps/visit/3.5.0/linux-x86_64/lib/``.
 
 In this example VisIt_ is imported into the system Python and used to save an image from one of our sample datasets. ::
 
