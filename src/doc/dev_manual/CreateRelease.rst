@@ -12,7 +12,7 @@ When we put out a new release we create two initial assets and tag the release c
 Creating the release
 --------------------
 
-We will describe creating a release by way of example using the steps used to create the 3.3.3 release.
+We will describe creating a release by way of example using the steps used to create the 3.6.0 release.
 
 Before tagging a release
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,44 +23,44 @@ When a new release tag is added to our GitHub repo, Read the Docs will automatic
 
 Tagging the release
 ~~~~~~~~~~~~~~~~~~~
-Commit a change that references the tagged release, which in our case is 3.3.3. ::
+Commit a change that references the tagged release, which in our case is 3.6.0. ::
 
-    git checkout 3.3RC
+    git checkout 3.6RC
     git pull
-    git checkout -b task/brugger1/2023_03_30_build_visit
+    git checkout -b task/3_6_0_build_visit
     vi src/tools/dev/scripts/build_visit
     git add src/tools/dev/scripts/build_visit
-    git commit -m "Temporarily set release in build_visit to v3.3.3."
-    git push --set-upstream origin task/brugger1/2023_03_30_build_visit
-    git branch -D task/brugger1/2023_03_30_build_visit
+    git commit -m "Temporarily set release in build_visit to v3.6.0."
+    git push --set-upstream origin task/3_6_0_build_visit
+    git branch -D task/brugger1/3_6_0_build_visit
 
 At this point you are ready to tag the release. ::
 
-    git checkout 3.3RC
+    git checkout 3.6RC
     git pull
-    git tag v3.3.3
-    git push origin v3.3.3
+    git tag v3.6.0
+    git push origin v3.6.0
 
 Creating first two release assets: source tarball and build_visit script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now you are ready to create the distribution tar file. ::
 
-    scripts/visit-dist visit3.3.3
+    scripts/visit-dist visit3_6_0.src
 
 Now you are ready to create the unified ``build_visit`` script. ::
 
-    src/tools/dev/scripts/build_visit --write-unified-file build_visit3_3_3
+    src/tools/dev/scripts/build_visit --write-unified-file build_visit3_6_0
 
-Now we revert the ``build_visit`` script on the 3.3RC branch to point at the 3.3RC. ::
+Now we revert the ``build_visit`` script on the 3.6RC branch to point at the 3.6RC. ::
 
-    git checkout -b task/brugger1/2023_03_30_build_visit_v2
+    git checkout -b task/3_6_0_build_visit_v2
     vi src/tools/dev/scripts/build_visit
     git add src/tools/dev/scripts/build_visit
-    git commit -m "Restore the release in build_visit to 3.3RC."
-    git push --set-upstream origin task/brugger1/2023_03_30_build_visit_v2
-    git checkout 3.3RC
-    git branch -D task/brugger1/2023_03_30_build_visit_v2
+    git commit -m "Restore the release in build_visit to 3.6RC."
+    git push --set-upstream origin task/3_6_0_build_visit_v2
+    git checkout 3.6RC
+    git branch -D task/3_6_0_build_visit_v2
 
 Creating the release assets page at GitHub
 ------------------------------------------
@@ -74,7 +74,7 @@ Click on *Draft a new release* to bring up the form to create a new release.
    Drafting the new release.
 
 Now you can choose the tag for the release.
-Click on *Choose a tag* and select the ``v3.3.3`` tag.
+Click on *Choose a tag* and select the ``v3.6.0`` tag.
 
 .. figure:: images/Release-GitHubStep2.png
 
@@ -82,7 +82,7 @@ Click on *Choose a tag* and select the ``v3.3.3`` tag.
 
 Now you can describe the release.
 Occasionally, we update the description of a release after the release is completed to deal with minor changes post-release.
-Enter ``v3.3.3`` for the title and add the description as shown below.
+Enter ``v3.6.0`` for the title and add the description as shown below.
 
 .. figure:: images/Release-GitHubStep3.png
 

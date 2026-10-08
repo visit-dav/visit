@@ -168,6 +168,9 @@
 #    VisIt to be built with CMake 4.0 and newer. Update minimum CMake
 #    version to 3.26, due to requirements introduced by previous work.
 #
+#    Kathleen Biagas, Thu Oct 8, 2026
+#    Use UL_VERSION instead of VISIT_VERSION for release-tarball naming.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
@@ -398,6 +401,10 @@ list(GET v_list 0 VISIT_VERSION_MAJOR)
 list(GET v_list 1 VISIT_VERSION_MINOR)
 list(GET v_list 2 VISIT_VERSION_PATCH)
 unset(v_list)
+
+# need an underscore version for use with names of release tarballs
+# like visit3_6_0.src.tar.gz
+set(UL_VERSION "${VISIT_VERSION_MAJOR}_${VISIT_VERSION_MINOR}_${VISIT_VERSION_PATCH}")
 
 #-----------------------------------------------------------------------------
 # Init BLT
@@ -910,7 +917,6 @@ if(NOT WIN32)
         set(CPACK_PACKAGE_VERSION_MINOR ${VISIT_VERSION_MINOR})
         set(CPACK_PACKAGE_VERSION_PATCH ${VISIT_VERSION_PATCH})
 
-        set(UL_VERSION "${VISIT_VERSION_MAJOR}_${VISIT_VERSION_MINOR}_${VISIT_VERSION_PATCH}")
         set(CPACK_PACKAGE_FILE_NAME "visit${UL_VERSION}.${VISIT_INSTALL_PLATFORM}")
 
         if(NOT APPLE)
@@ -957,7 +963,7 @@ endif()
 # This only tars up src as-is, so use at own discretion if there
 # are modifications or temporary files in your checkout
 
-set(dist_name visit${VISIT_VERSION})
+set(dist_name visit${UL_VERSION}.src)
 
 # cannot use "${CMAKE_COMMAND} -E tar hzcf" because cmake doesn't
 # support the use of the '-h' option, which resolve symlinks

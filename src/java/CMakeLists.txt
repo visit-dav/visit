@@ -43,6 +43,9 @@
 #   Kevin Griffin, Mon Oct 13 10:43:00 AM CDT 2025
 #   Add AnariAttributes.
 #
+#   Kathleen Biagas, Thu Oct 8, 2026
+#   Use UL_VERSION in place of VISIT_VERSION for tarball name.
+#
 #****************************************************************************
 
 PROJECT(JavaClient)
@@ -454,9 +457,9 @@ ADD_CUSTOM_TARGET(pack ${Java_JAR_EXECUTABLE} cvf visit.jar llnl
 
 # Add a command that will create the tarball after the jar file is finished.
 ADD_CUSTOM_COMMAND(TARGET pack POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E tar "zcf" jvisit${VISIT_VERSION}.tar.gz visit.jar src docs *.class images
+    COMMAND ${CMAKE_COMMAND} -E tar "zcf" jvisit${UL_VERSION}.tar.gz visit.jar src docs *.class images
     WORKING_DIRECTORY ${JavaClient_BINARY_DIR}
-    COMMENT "Creating jvisit${VISIT_VERSION}.tar.gz"
+    COMMENT "Creating jvisit${UL_VERSION}.tar.gz"
 )
 
 
