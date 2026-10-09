@@ -23,6 +23,10 @@
 # 
 #    Justin Privitera, Fri Jun 27 18:52:37 PDT 2025
 #    Added yaml and json tests.
+# 
+#    Justin Privitera, Fri Oct  9 14:06:08 PDT 2026
+#    Added test for ensuring variables generated via expression are not
+#    omitted by export database in CLI mode.
 # ----------------------------------------------------------------------------
 import time
 import sys

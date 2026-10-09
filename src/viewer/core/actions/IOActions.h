@@ -46,6 +46,8 @@ public:
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
+//    Justin Privitera, Fri Oct  9 14:06:08 PDT 2026
+//    Added UpdateExportExpressions().
 //   
 // ****************************************************************************
 

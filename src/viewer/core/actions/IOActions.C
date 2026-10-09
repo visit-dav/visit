@@ -122,6 +122,9 @@ ExportDBAction::GetActivePlotNetworkIds(ViewerPlotList *plist, intVector &networ
 // Purpose:
 //   Makes sure the engine has the expressions needed to export requested
 //   expression variables as secondary variables.
+// 
+// Programmer: Justin Privitera
+// Creation:   Fri Oct  9 14:06:08 PDT 2026
 //
 // ****************************************************************************
 
@@ -173,6 +176,10 @@ ExportDBAction::UpdateExportExpressions(ViewerPlotList *plist,
 //
 //   Cyrus Harrison, Mon Jun 13 12:08:19 PDT 2022
 //   Fix how path is display when dirname is empty.
+// 
+//   Justin Privitera, Fri Oct  9 14:06:08 PDT 2026
+//   Call UpdateExportExpressions() before exporting to ensure that we have
+//   the current list of expressions.
 //
 // ****************************************************************************
 
