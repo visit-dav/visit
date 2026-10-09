@@ -23,6 +23,10 @@
 # 
 #    Justin Privitera, Fri Jun 27 18:52:37 PDT 2025
 #    Added yaml and json tests.
+# 
+#    Justin Privitera, Fri Oct  9 14:06:08 PDT 2026
+#    Added test for ensuring variables generated via expression are not
+#    omitted by export database in CLI mode.
 # ----------------------------------------------------------------------------
 import time
 import sys
@@ -798,6 +802,38 @@ def roundtrip_braid_mixed(mixed_topo, export_name, test_name):
     DeleteAllPlots()
     CloseDatabase(mixed_topo)
 
+def test_inclusion_of_expressions_in_export():
+    silo_db = silo_data_path("multi_curv3d.silo")
+    OpenDatabase(silo_db)
+    AddPlot("Pseudocolor","d")
+    DrawPlots()
+
+    # define some variables for export
+    DefineVectorExpression("logical_zoneid", "logical_zoneid(mesh1)")
+    DefineScalarExpression("i", "logical_zoneid[0]")
+    DefineScalarExpression("j", "logical_zoneid[2]")
+
+    # set up export
+    e = ExportDBAttributes()
+    e.db_type = "Blueprint"
+    e.filename = "silo_blueprint_export"
+    e.variables = ('d', 'p', 'i', 'j')
+    ExportDatabase(e)
+
+    DeleteAllPlots()
+    CloseDatabase(silo_db)
+
+    bp_db = "silo_blueprint_export.cycle_000048.root"
+
+    OpenDatabase(bp_db)
+    md = GetMetaData(bp_db)
+    scalars = [md.GetScalars(i).name for i in range(md.GetNumScalars())]
+    TestValueEQ("inclusion_of_expressions_in_export_i", "mesh_topo/i" in scalars, True)
+    TestValueEQ("inclusion_of_expressions_in_export_j", "mesh_topo/j" in scalars, True)
+
+    DeleteAllPlots()
+    CloseDatabase(bp_db)
+    
 
 RequiredDatabasePlugin("Blueprint")
 test_basic()
@@ -818,5 +854,7 @@ mixed_braid_2d = data_path(pjoin(bp_mixed_topos_dir, "braid_2d_examples_hdf5.roo
 roundtrip_simple_mixed_topo(mixed_topo_2d, "mixed_topo_2d", "Mixed_topo_simple_2d_export")
 roundtrip_simple_mixed_topo(mixed_topo_3d, "mixed_topo_3d", "Mixed_topo_simple_3d_export")
 roundtrip_braid_mixed(mixed_braid_2d, "mixed_braid_2d", "Mixed_topo_braid_2d_export")
+
+test_inclusion_of_expressions_in_export()
 
 Exit()
