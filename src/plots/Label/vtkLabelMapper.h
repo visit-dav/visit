@@ -33,6 +33,10 @@ class vtkRenderer;
 //   Kathleen Biagas, Tue Aug 4, 2026
 //   Removed zBufferWarningIssued.
 //
+//   Eric Brugger, Mon Sep 21 08:41:16 PDT 2026
+//   Replaced pointXForm with pointXFormImage and pointXFormTile to properly
+//   access the z-buffer with tiled rendering.
+//
 // ****************************************************************************
 
 class vtkLabelMapper : public vtkLabelMapperBase
@@ -77,7 +81,8 @@ protected:
                            vtkViewport *,
                            double *);
 
-    double                 pointXForm[4][4];
+    double                 pointXFormImage[4][4];
+    double                 pointXFormTile[4][4];
 
     int                    zBufferMode;
     float                 *zBuffer;
