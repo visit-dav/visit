@@ -6226,16 +6226,18 @@ VisWindow::GetMSAASamples() const
 // ****************************************************************************
 // Method: VisWindow::MSAAAvailable
 //
-// Returns:    Whether or not MSAA is available.
+// Returns:    Tri-state MSAA availability.
 //
 // Programmer: Kathleen Biagas
 // Creation:   August 26, 2025
 //
 // Modifications:
+//   Kathleen Biagas, Mon Spe 14, 2026
+//   Change return type from bool to int.
 //
 // ****************************************************************************
 
-bool
+int
 VisWindow::MSAAAvailable() const
 {
     return rendering->MSAAAvailable();
@@ -7216,7 +7218,7 @@ VisWindow::GetAnariAttributes() const
 //
 // ****************************************************************************
 
-void 
+void
 VisWindow::ResetAnariScene()
 {
     return rendering->ResetAnariScene();
