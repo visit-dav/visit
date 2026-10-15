@@ -56,6 +56,10 @@ class vtkCamera;
 //   I added tilePan and tileZoom to track the changes to the image pan
 //   and zoom for tiled rendering.
 //
+//   Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//   I modified tileZoom to be an array of length 2 so that it can store
+//   seperate zoom factors for X and Y in 2D. 
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtViewInfo
@@ -74,7 +78,7 @@ struct AVTVIEW_API avtViewInfo
     bool     orthographic;
     double   shear[3];
     double   tilePan[2];
-    double   tileZoom;
+    double   tileZoom[2];
 
     bool     useOSPRay;
 
