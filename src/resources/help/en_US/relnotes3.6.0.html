@@ -47,6 +47,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>ANARI rendering now uses a client-server model: the compute engine is responsible for creating the ANARI device and rendering, while the GUI and viewer only need to send and receive ANARI settings. This allows ANARI rendering to be used from a client machine that has no ANARI back-ends installed, such as a laptop or workstation connecting to a remote engine.</li>
   <li>ANARI volume rendering now uses the same client-server model as ANARI surface rendering: the Volume plot's ANARI settings are populated by querying the connected compute engine instead of creating a local ANARI device.</li>
+  <li>Turned off point merging in the filter used to clean the geometry before rendering it to improve performance when there are many nearly identical geometric primitives.</li>
 </ul>
 
 <a name="GUI_changes"></a>
