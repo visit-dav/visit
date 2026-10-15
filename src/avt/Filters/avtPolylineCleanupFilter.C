@@ -72,6 +72,10 @@ avtPolylineCleanupFilter::~avtPolylineCleanupFilter()
 //    Support unstructured grids, use vtkGometryFIlter to convert them to
 //    polydata.
 //
+//    Eric Brugger, Thu Oct 15 15:23:20 PDT 2026
+//    Turn off point merging in the vtkCleanPolyData filter to eliminate
+//    a serious performance issue with some data sets.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -99,6 +103,7 @@ avtPolylineCleanupFilter::ExecuteData(avtDataRepresentation *inDR)
     // Clean duplicate points from the polydata.
     vtkNew<vtkCleanPolyData> cleanFilter;
     vtkNew<vtkGeometryFilter> geoFilter;
+    cleanFilter->PointMergingOff();
     if (inDS->GetDataObjectType() == VTK_POLY_DATA)
     {
         cleanFilter->SetInputData(vtkPolyData::SafeDownCast(inDS));
