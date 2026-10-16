@@ -2634,7 +2634,6 @@ class MainLauncher(object):
                 args = [tracker]
                 args = args + ["-n", "visit"]
                 args = args + ["-v", self.visitver]
-                print("Launching logging command: %s" % args)
                 p = subprocess.Popen(args,
                                      universal_newlines=True)
                 p.communicate()
