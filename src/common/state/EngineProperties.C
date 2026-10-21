@@ -24,7 +24,6 @@ void EngineProperties::Init()
 {
     numNodes = -1;
     numProcessors = 1;
-    numProcessorsUsingGPUs = 0;
     dynamicLoadBalancing = false;
 
     EngineProperties::SelectAll();
@@ -49,7 +48,6 @@ void EngineProperties::Copy(const EngineProperties &obj)
 {
     numNodes = obj.numNodes;
     numProcessors = obj.numProcessors;
-    numProcessorsUsingGPUs = obj.numProcessorsUsingGPUs;
     dynamicLoadBalancing = obj.dynamicLoadBalancing;
     loadBalancingScheme = obj.loadBalancingScheme;
 
@@ -211,7 +209,6 @@ EngineProperties::operator == (const EngineProperties &obj) const
     // Create the return value
     return ((numNodes == obj.numNodes) &&
             (numProcessors == obj.numProcessors) &&
-            (numProcessorsUsingGPUs == obj.numProcessorsUsingGPUs) &&
             (dynamicLoadBalancing == obj.dynamicLoadBalancing) &&
             (loadBalancingScheme == obj.loadBalancingScheme));
 }
@@ -357,11 +354,10 @@ EngineProperties::NewInstance(bool copy) const
 void
 EngineProperties::SelectAll()
 {
-    Select(ID_numNodes,               (void *)&numNodes);
-    Select(ID_numProcessors,          (void *)&numProcessors);
-    Select(ID_numProcessorsUsingGPUs, (void *)&numProcessorsUsingGPUs);
-    Select(ID_dynamicLoadBalancing,   (void *)&dynamicLoadBalancing);
-    Select(ID_loadBalancingScheme,    (void *)&loadBalancingScheme);
+    Select(ID_numNodes,             (void *)&numNodes);
+    Select(ID_numProcessors,        (void *)&numProcessors);
+    Select(ID_dynamicLoadBalancing, (void *)&dynamicLoadBalancing);
+    Select(ID_loadBalancingScheme,  (void *)&loadBalancingScheme);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -404,12 +400,6 @@ EngineProperties::CreateNode(DataNode *parentNode, bool completeSave, bool force
     {
         addToParent = true;
         node->AddNode(new DataNode("numProcessors", numProcessors));
-    }
-
-    if(completeSave || !FieldsEqual(ID_numProcessorsUsingGPUs, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("numProcessorsUsingGPUs", numProcessorsUsingGPUs));
     }
 
     if(completeSave || !FieldsEqual(ID_dynamicLoadBalancing, &defaultObject))
@@ -464,8 +454,6 @@ EngineProperties::SetFromNode(DataNode *parentNode)
         SetNumNodes(node->AsInt());
     if((node = searchNode->GetNode("numProcessors")) != 0)
         SetNumProcessors(node->AsInt());
-    if((node = searchNode->GetNode("numProcessorsUsingGPUs")) != 0)
-        SetNumProcessorsUsingGPUs(node->AsInt());
     if((node = searchNode->GetNode("dynamicLoadBalancing")) != 0)
         SetDynamicLoadBalancing(node->AsBool());
     if((node = searchNode->GetNode("loadBalancingScheme")) != 0)
@@ -488,13 +476,6 @@ EngineProperties::SetNumProcessors(int numProcessors_)
 {
     numProcessors = numProcessors_;
     Select(ID_numProcessors, (void *)&numProcessors);
-}
-
-void
-EngineProperties::SetNumProcessorsUsingGPUs(int numProcessorsUsingGPUs_)
-{
-    numProcessorsUsingGPUs = numProcessorsUsingGPUs_;
-    Select(ID_numProcessorsUsingGPUs, (void *)&numProcessorsUsingGPUs);
 }
 
 void
@@ -525,12 +506,6 @@ int
 EngineProperties::GetNumProcessors() const
 {
     return numProcessors;
-}
-
-int
-EngineProperties::GetNumProcessorsUsingGPUs() const
-{
-    return numProcessorsUsingGPUs;
 }
 
 bool
@@ -585,11 +560,10 @@ EngineProperties::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_numNodes:               return "numNodes";
-    case ID_numProcessors:          return "numProcessors";
-    case ID_numProcessorsUsingGPUs: return "numProcessorsUsingGPUs";
-    case ID_dynamicLoadBalancing:   return "dynamicLoadBalancing";
-    case ID_loadBalancingScheme:    return "loadBalancingScheme";
+    case ID_numNodes:             return "numNodes";
+    case ID_numProcessors:        return "numProcessors";
+    case ID_dynamicLoadBalancing: return "dynamicLoadBalancing";
+    case ID_loadBalancingScheme:  return "loadBalancingScheme";
     default:  return "invalid index";
     }
 }
@@ -614,11 +588,10 @@ EngineProperties::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_numNodes:               return FieldType_int;
-    case ID_numProcessors:          return FieldType_int;
-    case ID_numProcessorsUsingGPUs: return FieldType_int;
-    case ID_dynamicLoadBalancing:   return FieldType_bool;
-    case ID_loadBalancingScheme:    return FieldType_string;
+    case ID_numNodes:             return FieldType_int;
+    case ID_numProcessors:        return FieldType_int;
+    case ID_dynamicLoadBalancing: return FieldType_bool;
+    case ID_loadBalancingScheme:  return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -643,11 +616,10 @@ EngineProperties::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_numNodes:               return "int";
-    case ID_numProcessors:          return "int";
-    case ID_numProcessorsUsingGPUs: return "int";
-    case ID_dynamicLoadBalancing:   return "bool";
-    case ID_loadBalancingScheme:    return "string";
+    case ID_numNodes:             return "int";
+    case ID_numProcessors:        return "int";
+    case ID_dynamicLoadBalancing: return "bool";
+    case ID_loadBalancingScheme:  return "string";
     default:  return "invalid index";
     }
 }
@@ -682,11 +654,6 @@ EngineProperties::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_numProcessors:
         {  // new scope
         retval = (numProcessors == obj.numProcessors);
-        }
-        break;
-    case ID_numProcessorsUsingGPUs:
-        {  // new scope
-        retval = (numProcessorsUsingGPUs == obj.numProcessorsUsingGPUs);
         }
         break;
     case ID_dynamicLoadBalancing:

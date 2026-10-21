@@ -57,14 +57,12 @@ public:
     // Property setting methods
     void SetNumNodes(int numNodes_);
     void SetNumProcessors(int numProcessors_);
-    void SetNumProcessorsUsingGPUs(int numProcessorsUsingGPUs_);
     void SetDynamicLoadBalancing(bool dynamicLoadBalancing_);
     void SetLoadBalancingScheme(const std::string &loadBalancingScheme_);
 
     // Property getting methods
     int               GetNumNodes() const;
     int               GetNumProcessors() const;
-    int               GetNumProcessorsUsingGPUs() const;
     bool              GetDynamicLoadBalancing() const;
     const std::string &GetLoadBalancingScheme() const;
           std::string &GetLoadBalancingScheme();
@@ -85,7 +83,6 @@ public:
     enum {
         ID_numNodes = 0,
         ID_numProcessors,
-        ID_numProcessorsUsingGPUs,
         ID_dynamicLoadBalancing,
         ID_loadBalancingScheme,
         ID__LAST
@@ -94,7 +91,6 @@ public:
 private:
     int         numNodes;
     int         numProcessors;
-    int         numProcessorsUsingGPUs;
     bool        dynamicLoadBalancing;
     std::string loadBalancingScheme;
 
@@ -102,6 +98,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define ENGINEPROPERTIES_TMFS "iiibs"
+#define ENGINEPROPERTIES_TMFS "iibs"
 
 #endif
