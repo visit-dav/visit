@@ -58,10 +58,6 @@
 #include <StringHelpers.h>
 #include <StackTimer.h>
 #include <Utility.h>
-#include <VisItDisplay.h>
-#if !defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
-# include <XDisplay.h>
-#endif
 
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectReader.h>
@@ -335,6 +331,9 @@ protected:
 //    Kevin Griffin, Tue Jan 26 17:45:52 PST 2016
 //    Enable IceT by default.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 Engine::Engine() : EngineBase(), viewerArgs(), destinationFormat(), rpcExecutors()
@@ -385,11 +384,6 @@ Engine::Engine() : EngineBase(), viewerArgs(), destinationFormat(), rpcExecutors
 #else
     useIceT = false;
 #endif
-    X_Args = "";
-    X_Display = "";
-    nDisplays = 0;
-    renderingDisplay = NULL;
-    launchXServers = false;
     alarmEnabled = true;
 }
 
@@ -431,6 +425,9 @@ Engine::Engine() : EngineBase(), viewerArgs(), destinationFormat(), rpcExecutors
 //    Eric Brugger, Tue Oct 28 13:39:08 PDT 2025
 //    I added code to delete the plot and operator plugin AttributeSubjects.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 Engine::~Engine()
@@ -452,8 +449,6 @@ Engine::~Engine()
 
     delete viewer;
     delete viewerP;
-
-    delete renderingDisplay;
 
 #ifdef DEBUG_MEMORY_LEAKS
     delete parsingExprList;
@@ -602,7 +597,6 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 
     // Configure external options.
     RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
-    this->X_Args = RuntimeSetting::lookups("x-args");
 
     //
     // Set a different new handler for the engine
@@ -664,15 +658,14 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 //    Remove unmatched StartTimer call.  (The resulting timing can't be
 //    dumped anyways.)
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 void
 Engine::Finalize(void)
 {
-    delete this->renderingDisplay;
-    // Now null it out; in case the destructor actually *does* get called.
-    this->renderingDisplay = NULL;
-
     VisItInit::Finalize();
 }
 
@@ -794,6 +787,9 @@ public:
 //   It will be used for creating a vtkLogger callback to write their log
 //   info to VisIt's debug log.
 //
+//   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//   Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 void
@@ -821,21 +817,6 @@ Engine::InitializeCompute()
 #if defined(HAVE_CONDUIT) && defined(HAVE_MFEM)
     avtConduitBlueprintDataAdaptor::Initialize();
 #endif
-    if (avtCallback::GetSoftwareRendering())
-    {
-        debug1 << mName << "Setting up for offscreen rendering." << endl;
-    }
-    else
-    {
-        std::ostringstream s;
-        s << mName << "Setting up " << this->nDisplays << " GPUs for HW rendering";
-        if (DebugStream::Level3())
-        {
-            debug1 << mName << "Setting up X displays for " << this->nDisplays << " GPUs."
-               << "  Using X arguments: '" << this->X_Args << "'" << std::endl;
-        }
-        TimedCodeBlock(s.str(), this->SetupDisplay());
-    }
     avtCallback::SetNowinMode(true);
 
     //
@@ -2072,6 +2053,9 @@ Engine::ProcessInput()
 //    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
 //    Added "-compositer-debug" to enable programmable compositing debug.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 void
@@ -2079,36 +2063,12 @@ Engine::ProcessCommandLine(int argc, char **argv)
 {
     // process arguments.
     bool timingsAllowed = true;
-    bool haveHWAccel = false;
     for (int i=1; i<argc; i++)
     {
         if (strcmp(argv[i], "-allowdynamic") == 0)
             LoadBalancer::AllowDynamic();
         else if (strcmp(argv[i], "-stereo") == 0)
             NetworkManager::SetStereoEnabled();
-        else if (strcmp(argv[i], "-hw-accel") == 0)
-        {
-            haveHWAccel = true;
-            this->useIceT = false;
-            if (this->nDisplays == 0)
-                this->nDisplays = 1;
-        }
-        else if (strcmp(argv[i], "-n-gpus-per-node") == 0 && i+1 < argc)
-        {
-            if(!StringHelpers::str_to_u_numeric<size_t>(argv[i+1],
-                                                        &this->nDisplays))
-            {
-                if (DebugStream::Level1())
-                {
-                    debug1 << "Could not parse '-n-gpus-per-node' argument "
-                       << "'" << argv[i+1] << "'. "
-                       << "Disabling hardware acceleration!" << std::endl;
-                }
-                this->nDisplays = 0;
-                haveHWAccel = false;
-            }
-            i++;
-        }
         else if ((strcmp(argv[i], "-timing") == 0 ||
                   strcmp(argv[i], "-timings") == 0) && timingsAllowed)
             visitTimer->Enable();
@@ -2327,18 +2287,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-icet") == 0)
         {
-            if(!haveHWAccel)
-            {
-              this->useIceT = true;
-            }
-            else
-            {
-              if (DebugStream::Level1())
-              {
-                  debug1 << "Ignoring IceT request: currently incompatible with "
-                            "parallel HW acceleration.\n";
-              }
-            }
+            this->useIceT = true;
         }
         else if (strcmp(argv[i], "-no-icet") == 0)
         {
@@ -2353,14 +2302,6 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 i++;
             }
         }
-        else if (strcmp(argv[i], "-launch-x") == 0)
-        {
-            this->launchXServers = true;
-        }
-        else if (strcmp(argv[i], "-no-launch-x") == 0)
-        {
-            this->launchXServers = false;
-        }
 #if defined(HAVE_OSPRAY)
         else if (strcmp(argv[i], "-ospray") == 0)
         {
@@ -2369,7 +2310,6 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
 #endif
     }
-    avtCallback::SetSoftwareRendering(!haveHWAccel);
 }
 
 // ****************************************************************************
@@ -4105,6 +4045,8 @@ Engine::GetProcessAttributes()
 // Creation:   Mon Oct 10 12:01:23 PDT 2011
 //
 // Modifications:
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
 //
 // ****************************************************************************
 
@@ -4116,16 +4058,6 @@ Engine::GetEngineProperties()
     // The number of processors
     props.SetNumProcessors(PAR_Size());
 
-    // Determine how many of the processors are using GPUs.
-    int usingGPU = 0;
-    if(this->renderingDisplay != NULL &&
-       this->renderingDisplay->GetDisplayType() == VisItDisplay::D_X)
-    {
-        usingGPU = 1;
-    }
-    SumIntAcrossAllProcessors(usingGPU);
-    props.SetNumProcessorsUsingGPUs(usingGPU);
-
     // Determine the load balancing method.
     props.SetDynamicLoadBalancing(LoadBalancer::GetAllowDynamic());
     props.SetLoadBalancingScheme(LoadBalancer::GetSchemeAsString());
@@ -4133,136 +4065,6 @@ Engine::GetEngineProperties()
     // Should we stick arbitrary stuff in a MapNode?
 
     return props;
-}
-
-// ****************************************************************************
-//  Method: SetupDisplay
-//
-//  Purpose:
-//    Figure out which processes should start HW displays, and which should
-//    start Mesa (SW) displays.  Use VisItDisplay to initialize those displays.
-//
-//  Programmer: Tom Fogal
-//  Creation:   July 27, 2008
-//
-//  Modifications:
-//
-//    Tom Fogal, Tue Jul 29 10:28:07 EDT 2008
-//    Add a check to make sure we don't start too many X servers.
-//    Wait for the X server to start up correctly before connecting.
-//
-//    Tom Fogal, Mon Aug 11 13:55:38 EDT 2008
-//    Cast to avoid a warning.
-//    Use cog_set_max instead of calling '_min twice.
-//
-//    Tom Fogal, Fri Aug 29 10:19:00 EDT 2008
-//    Reorganize so we only call InitVTK::*orceMesa once; this seems to work
-//    more reliably.
-//
-//    Brad Whitlock, Fri Aug 29 09:55:09 PDT 2008
-//    Added Mac-specific code for unsetenv since it returns void on Mac.
-//
-//    Tom Fogal, Mon Sep  1 12:54:29 EDT 2008
-//    Change to a method from a static function, and delegate to VisItDisplay.
-//
-//    Tom Fogal, Sun Mar  8 00:25:52 MST 2009
-//    Allow a HW context even in serial mode.
-//
-//    Tom Fogal, Tue Jun  9 20:12:21 MDT 2009
-//    Set the callback HW/SW rendering, since code outside of the Engine will
-//    use that to query what kind of rendering to do.
-//
-//    Tom Fogal, Tue May 25 16:09:31 MDT 2010
-//    Namespace was renamed to avoid X conflict
-//    Detect connection errors.
-//
-//    Tom Fogal, Wed May 26 09:28:12 MDT 2010
-//    Tell the display whether or not to launch servers.
-//
-//    Tom Fogal, Wed May  4 15:57:22 MDT 2011
-//    Handle displays as a string, to support variations more easily.
-//
-//    Tom Fogal, Wed May 11 07:14:04 MDT 2011
-//    (Hopefully) fix Win32 compilation problem.
-//
-//    Tom Fogal, Thu Sep 22 17:23:51 MDT 2011
-//    Add missing newline to debug print.
-//
-// ****************************************************************************
-
-void
-Engine::SetupDisplay()
-{
-    int display_num = -1;  // Display ID to create.
-#ifdef PARALLEL
-    cog_set lnodes;
-
-    cog_identify();
-
-    cog_set_local(&lnodes, PAR_Rank());
-    int rank;
-    int min = cog_set_min(&lnodes);
-    int max = cog_set_max(&lnodes);
-
-    // Explicitly nullify it.  If it's still null after the loop, we'll know we
-    // should setup a SW display.
-    this->renderingDisplay = NULL;
-
-    for(rank = min; rank <= max; ++rank)
-    {
-        if(cog_set_intersect(&lnodes, rank))
-        {
-            if(PAR_Rank() == rank &&
-               static_cast<size_t>(rank-min) < this->nDisplays)
-            {
-                display_num = rank-min;
-                this->renderingDisplay = VDisplay::Create(VisItDisplay::D_X);
-            }
-        }
-    }
-#else
-    if(this->nDisplays > 0)
-    {
-        this->renderingDisplay = VDisplay::Create(VisItDisplay::D_X);
-        avtCallback::SetSoftwareRendering(false);
-        display_num = 0;
-    }
-#endif
-    std::string X_Display = RuntimeSetting::lookups("x-display");
-    std::string disp = display_format(X_Display, PAR_Rank(), display_num);
-#if !defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
-    // Tell the display whether or not it should start X servers.  This must be
-    // done before ::Initialize!
-    XDisplay* xd = dynamic_cast<XDisplay*>(this->renderingDisplay);
-    if(xd != NULL)
-    {
-        xd->Launch(this->launchXServers);
-    }
-#endif
-
-    if(this->renderingDisplay == NULL)
-    {
-        this->renderingDisplay = VDisplay::Create(VisItDisplay::D_MESA);
-        avtCallback::SetSoftwareRendering(true);
-    }
-    if(this->renderingDisplay->Initialize(disp,
-                               split(this->X_Args, PAR_Rank(), display_num)))
-    {
-        if(false == this->renderingDisplay->Connect())
-        {
-            debug1 << "Display initialization succeeded, but connection "
-                      "failed.  Try running with -debug_engine 5 and "
-                      "examining the log files.\n";
-        }
-    }
-    else
-    {
-        if (DebugStream::Level1())
-        {
-            debug1 << "Display initialization failed.  Rendering in this state "
-                   << "has undefined results ..." << std::endl;
-        }
-    }
 }
 
 // ****************************************************************************
