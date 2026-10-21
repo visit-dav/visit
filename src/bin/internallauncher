@@ -3370,6 +3370,7 @@ class MainLauncher(object):
             #
             if ( (self.generalArgs.osmesa) or
                  (self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
+                 (self.generalArgs.exe_name.startswith("engine")) ):
                 SETENV("VTK_DEFAULT_OPENGL_WINDOW","vtkOSOpenGLRenderWindow")
                 # osmesa will be in visit's lib dir, make sure this is in LD_LIBRARY_PATH
                 SETENV("LD_LIBRARY_PATH", self.joinpaths([self.visitlibdir, GETENV("LD_LIBRARY_PATH")]))
