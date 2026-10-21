@@ -24,7 +24,7 @@ import java.lang.Integer;
 
 public class LaunchProfile extends AttributeSubject
 {
-    private static int LaunchProfile_numAdditionalAtts = 38;
+    private static int LaunchProfile_numAdditionalAtts = 33;
 
     public LaunchProfile()
     {
@@ -59,11 +59,6 @@ public class LaunchProfile extends AttributeSubject
         machinefileSet = false;
         machinefile = new String("");
         visitSetsUpEnv = false;
-        canDoHWAccel = false;
-        GPUsPerNode = 1;
-        XArguments = new String("");
-        launchXServers = false;
-        XDisplay = new String(":%l");
         numThreads = 0;
         constrainNodeProcs = false;
         allowableNodes = new Vector();
@@ -103,11 +98,6 @@ public class LaunchProfile extends AttributeSubject
         machinefileSet = false;
         machinefile = new String("");
         visitSetsUpEnv = false;
-        canDoHWAccel = false;
-        GPUsPerNode = 1;
-        XArguments = new String("");
-        launchXServers = false;
-        XDisplay = new String(":%l");
         numThreads = 0;
         constrainNodeProcs = false;
         allowableNodes = new Vector();
@@ -152,11 +142,6 @@ public class LaunchProfile extends AttributeSubject
         machinefileSet = obj.machinefileSet;
         machinefile = new String(obj.machinefile);
         visitSetsUpEnv = obj.visitSetsUpEnv;
-        canDoHWAccel = obj.canDoHWAccel;
-        GPUsPerNode = obj.GPUsPerNode;
-        XArguments = new String(obj.XArguments);
-        launchXServers = obj.launchXServers;
-        XDisplay = new String(obj.XDisplay);
         numThreads = obj.numThreads;
         constrainNodeProcs = obj.constrainNodeProcs;
         allowableNodes = new Vector();
@@ -246,11 +231,6 @@ public class LaunchProfile extends AttributeSubject
                 (machinefileSet == obj.machinefileSet) &&
                 (machinefile.equals(obj.machinefile)) &&
                 (visitSetsUpEnv == obj.visitSetsUpEnv) &&
-                (canDoHWAccel == obj.canDoHWAccel) &&
-                (GPUsPerNode == obj.GPUsPerNode) &&
-                (XArguments.equals(obj.XArguments)) &&
-                (launchXServers == obj.launchXServers) &&
-                (XDisplay.equals(obj.XDisplay)) &&
                 (numThreads == obj.numThreads) &&
                 (constrainNodeProcs == obj.constrainNodeProcs) &&
                 allowableNodes_equal &&
@@ -432,58 +412,28 @@ public class LaunchProfile extends AttributeSubject
         Select(28);
     }
 
-    public void SetCanDoHWAccel(boolean canDoHWAccel_)
-    {
-        canDoHWAccel = canDoHWAccel_;
-        Select(29);
-    }
-
-    public void SetGPUsPerNode(int GPUsPerNode_)
-    {
-        GPUsPerNode = GPUsPerNode_;
-        Select(30);
-    }
-
-    public void SetXArguments(String XArguments_)
-    {
-        XArguments = XArguments_;
-        Select(31);
-    }
-
-    public void SetLaunchXServers(boolean launchXServers_)
-    {
-        launchXServers = launchXServers_;
-        Select(32);
-    }
-
-    public void SetXDisplay(String XDisplay_)
-    {
-        XDisplay = XDisplay_;
-        Select(33);
-    }
-
     public void SetNumThreads(int numThreads_)
     {
         numThreads = numThreads_;
-        Select(34);
+        Select(29);
     }
 
     public void SetConstrainNodeProcs(boolean constrainNodeProcs_)
     {
         constrainNodeProcs = constrainNodeProcs_;
-        Select(35);
+        Select(30);
     }
 
     public void SetAllowableNodes(Vector allowableNodes_)
     {
         allowableNodes = allowableNodes_;
-        Select(36);
+        Select(31);
     }
 
     public void SetAllowableProcs(Vector allowableProcs_)
     {
         allowableProcs = allowableProcs_;
-        Select(37);
+        Select(32);
     }
 
     // Property getting methods
@@ -516,11 +466,6 @@ public class LaunchProfile extends AttributeSubject
     public boolean GetMachinefileSet() { return machinefileSet; }
     public String  GetMachinefile() { return machinefile; }
     public boolean GetVisitSetsUpEnv() { return visitSetsUpEnv; }
-    public boolean GetCanDoHWAccel() { return canDoHWAccel; }
-    public int     GetGPUsPerNode() { return GPUsPerNode; }
-    public String  GetXArguments() { return XArguments; }
-    public boolean GetLaunchXServers() { return launchXServers; }
-    public String  GetXDisplay() { return XDisplay; }
     public int     GetNumThreads() { return numThreads; }
     public boolean GetConstrainNodeProcs() { return constrainNodeProcs; }
     public Vector  GetAllowableNodes() { return allowableNodes; }
@@ -588,22 +533,12 @@ public class LaunchProfile extends AttributeSubject
         if(WriteSelect(28, buf))
             buf.WriteBool(visitSetsUpEnv);
         if(WriteSelect(29, buf))
-            buf.WriteBool(canDoHWAccel);
-        if(WriteSelect(30, buf))
-            buf.WriteInt(GPUsPerNode);
-        if(WriteSelect(31, buf))
-            buf.WriteString(XArguments);
-        if(WriteSelect(32, buf))
-            buf.WriteBool(launchXServers);
-        if(WriteSelect(33, buf))
-            buf.WriteString(XDisplay);
-        if(WriteSelect(34, buf))
             buf.WriteInt(numThreads);
-        if(WriteSelect(35, buf))
+        if(WriteSelect(30, buf))
             buf.WriteBool(constrainNodeProcs);
-        if(WriteSelect(36, buf))
+        if(WriteSelect(31, buf))
             buf.WriteIntVector(allowableNodes);
-        if(WriteSelect(37, buf))
+        if(WriteSelect(32, buf))
             buf.WriteIntVector(allowableProcs);
     }
 
@@ -699,30 +634,15 @@ public class LaunchProfile extends AttributeSubject
             SetVisitSetsUpEnv(buf.ReadBool());
             break;
         case 29:
-            SetCanDoHWAccel(buf.ReadBool());
-            break;
-        case 30:
-            SetGPUsPerNode(buf.ReadInt());
-            break;
-        case 31:
-            SetXArguments(buf.ReadString());
-            break;
-        case 32:
-            SetLaunchXServers(buf.ReadBool());
-            break;
-        case 33:
-            SetXDisplay(buf.ReadString());
-            break;
-        case 34:
             SetNumThreads(buf.ReadInt());
             break;
-        case 35:
+        case 30:
             SetConstrainNodeProcs(buf.ReadBool());
             break;
-        case 36:
+        case 31:
             SetAllowableNodes(buf.ReadIntVector());
             break;
-        case 37:
+        case 32:
             SetAllowableProcs(buf.ReadIntVector());
             break;
         }
@@ -760,11 +680,6 @@ public class LaunchProfile extends AttributeSubject
         str = str + boolToString("machinefileSet", machinefileSet, indent) + "\n";
         str = str + stringToString("machinefile", machinefile, indent) + "\n";
         str = str + boolToString("visitSetsUpEnv", visitSetsUpEnv, indent) + "\n";
-        str = str + boolToString("canDoHWAccel", canDoHWAccel, indent) + "\n";
-        str = str + intToString("GPUsPerNode", GPUsPerNode, indent) + "\n";
-        str = str + stringToString("XArguments", XArguments, indent) + "\n";
-        str = str + boolToString("launchXServers", launchXServers, indent) + "\n";
-        str = str + stringToString("XDisplay", XDisplay, indent) + "\n";
         str = str + intToString("numThreads", numThreads, indent) + "\n";
         str = str + boolToString("constrainNodeProcs", constrainNodeProcs, indent) + "\n";
         str = str + intVectorToString("allowableNodes", allowableNodes, indent) + "\n";
@@ -803,11 +718,6 @@ public class LaunchProfile extends AttributeSubject
     private boolean machinefileSet;
     private String  machinefile;
     private boolean visitSetsUpEnv;
-    private boolean canDoHWAccel;
-    private int     GPUsPerNode;
-    private String  XArguments;
-    private boolean launchXServers;
-    private String  XDisplay;
     private int     numThreads;
     private boolean constrainNodeProcs;
     private Vector  allowableNodes; // vector of Integer objects
