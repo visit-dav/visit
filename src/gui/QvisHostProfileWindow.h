@@ -231,17 +231,7 @@ private slots:
     void gatewayHostChanged();
     void clientHostNameMethodChanged(int);
     void clientHostNameChanged();
-#if 0
-    void toggleCanDoHW(bool);
-    void nGPUsChanged(int);
-#endif
     void toggleTunnelSSH(bool);
-#if 0
-    void toggleXArgs(bool);
-    void xArgsChanged();
-    void toggleLaunchX(bool);
-    void xDisplayChanged();
-#endif
     void toggleUseMaxNodes(bool);
     void maxNodesChanged(int);
     void toggleUseMaxProcessors(bool);
@@ -284,9 +274,6 @@ private:
     QWidget    *CreateParallelSettingsGroup();
     QWidget    *CreateLaunchSettingsGroup();
     QWidget    *CreateAdvancedSettingsGroup();
-#if 0
-    QWidget    *CreateHWAccelSettingsGroup();
-#endif
 
     // Parallel Basic Settings
     QTabWidget   *parallelTabs;
@@ -323,17 +310,6 @@ private:
     QSpinBox     *timeout;
     QLabel       *threadsLabel;
     QSpinBox     *threads;
-
-#if 0
-    // Launch HW Accel Settings
-    QLabel       *hwdisclaimer;
-    QGroupBox    *hardwareGroup;
-    QCheckBox    *cbLaunchX;
-    QSpinBox     *sbNGPUs;
-    QCheckBox    *cbXArgs;
-    QLineEdit    *txtXArgs;
-    QLineEdit    *txtXDisplay;
-#endif
 
     // Machine Settings
     QLabel       *hostNameLabel;
