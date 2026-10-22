@@ -2621,35 +2621,21 @@ class MainLauncher(object):
     # Date: Fri May 25 10:48:41 PDT 2012
     #
     # Modifications:
+    #   Eric Brugger, Fri Oct 16 13:30:25 PDT 2026
+    #   I modified the logging to use tracker.
     #
     ############################################################################
 
     def Logging(self, args):
         if self.logging and self.generalArgs.exe_name in self.loggedComponents:
-            user_info = self.username()
-            host_info = self.hostname().split(".")[0]
-            date_info = time.asctime()
-            cs_info = ""
-            if self.generalArgs.clientserver:
-                cs_info = "client/server"
-            info = " ".join([user_info, host_info, date_info, cs_info])+"\n"
-
-            # Read in the existing data. (TODO: change to open for append)
-            filename = os.path.join(self.visitdir, "usagelog")
-            lines = []
-            try:
-                lines = open(filename, "rt").readlines() + [info]
-            except (OSError, IOError):
-                lines = [info]
-
-            # Write out the new data.
-            try:
-                f = open(filename, "wt")
-                for line in lines:
-                    f.write(line)
-                f.close()
-            except (OSError, IOError):
-                self.error("Could not write usagelog.")
+            tracker = os.path.join(os.sep, "usr", "apps", "tracker", "bin", "tracker")
+            if os.path.exists(tracker):
+                args = [tracker]
+                args = args + ["-n", "visit"]
+                args = args + ["-v", self.visitver]
+                p = subprocess.Popen(args,
+                                     universal_newlines=True)
+                p.communicate()
 
     ############################################################################
     # Method: PrintUsage
