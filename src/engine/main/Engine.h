@@ -54,7 +54,6 @@ class ParentProcess;
 class ParsingExprList;
 class ProcessAttributes;
 class ViewerRemoteProcess;
-class VisItDisplay;
 class Xfer;
 
 #include <vector>
@@ -203,6 +202,9 @@ class Xfer;
 //    Brad Whitlock, Wed Sep 17 18:21:40 PDT 2014
 //    Lots of changes to support in situ.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API Engine : public EngineBase
@@ -299,9 +301,6 @@ class ENGINE_MAIN_API Engine : public EngineBase
     static void     AlarmHandler(int signal);
     static void     NewHandler(void);
 
-  private:
-    void            SetupDisplay();
-
   protected:
     // The Viewer
     ParentProcess       *viewerP;       // Used when the viewer launches engine
@@ -370,11 +369,6 @@ class ENGINE_MAIN_API Engine : public EngineBase
 
  private:
     bool                      useIceT;
-    std::string               X_Args;
-    std::string               X_Display;
-    size_t                    nDisplays;
-    VisItDisplay             *renderingDisplay;
-    bool                      launchXServers;
     bool                      alarmEnabled;
 };
 

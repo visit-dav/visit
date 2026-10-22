@@ -1,7 +1,6 @@
 Engine Properties:
 numNodes = -1
 numProcessors = 4
-numProcessorsUsingGPUs = 0
 dynamicLoadBalancing = 0
 loadBalancingScheme = "Restricted"
 
