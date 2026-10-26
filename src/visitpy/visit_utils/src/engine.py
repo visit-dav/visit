@@ -45,6 +45,10 @@ def open(**kwargs):
 
       engine.open(nprocs=96, part="pbatch")
 
+    Launch engine with 96 MPI tasks, across 2 nodes
+
+      engine.open(nprocs=96, nnodes=2)
+
     Launch engine with 96 MPI tasks, ask for 60 minute time limit:
 
       engine.open(nprocs=96, rtime=60)
