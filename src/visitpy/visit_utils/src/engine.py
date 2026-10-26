@@ -66,7 +66,8 @@ def open(**kwargs):
       engine.open(method="lsf")
 
     This reads the LSB_DJOB_NUMPROC env var and uses it
-    the to launch with mpirun.
+   This reads the LSB_DJOB_NUMPROC env var and uses it
+   to launch with mpirun.
 
     """
     args = {"ppn":    1,
