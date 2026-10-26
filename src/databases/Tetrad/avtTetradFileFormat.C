@@ -37,6 +37,8 @@ using std::vector;
 
 static herr_t       CGetTimesteps(hid_t, const char *, void *);
 static herr_t       CGetVars(hid_t, const char *, void *);
+static herr_t       CGetTimestepsLiterate(hid_t, const char *, const H5L_info_t *, void *);
+static herr_t       CGetVarsLiterate(hid_t, const char *, const H5L_info_t *, void *);
 static int          TimeIndexPairSorter(const void *, const void *);
 
 
@@ -69,8 +71,8 @@ avtTetradFileFormat::avtTetradFileFormat(const char *fname)
                                            "it is not even an HDF5 file.");
     }
     // Turn off error statements in case the array doesn't exist.
-    H5Eset_auto(NULL, NULL);
-    int cell_array = H5Dopen(file_handle, "CellArray");
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
+    hid_t cell_array = H5Dopen2(file_handle, "CellArray", H5P_DEFAULT);
     if (cell_array < 0)
     {
         H5Fclose(file_handle);
@@ -191,12 +193,12 @@ avtTetradFileFormat::ConstructMesh(void)
     // Start off by reading in the "CellArray".  This is the connectivity of 
     // the hexahedrons.
     //
-    int cell_array = H5Dopen(file_handle, "CellArray");
+    hid_t cell_array = H5Dopen2(file_handle, "CellArray", H5P_DEFAULT);
     if (cell_array < 0)
     {
         EXCEPTION1(InvalidVariableException, "mesh");
     }
-    int space_id = H5Dget_space(cell_array);
+    hid_t space_id = H5Dget_space(cell_array);
     hsize_t vdims[3];
     H5Sget_simple_extent_dims(space_id, vdims, NULL);
     debug5 << "The connectivity has dimensions = " << int(vdims[0]) << " x "
@@ -209,12 +211,13 @@ avtTetradFileFormat::ConstructMesh(void)
     int *connectivity = new int[8*vdims[0]];
     H5Dread(cell_array, H5T_NATIVE_INT, H5S_ALL, space_id, H5P_DEFAULT,
             connectivity);
+    H5Sclose(space_id);
     H5Dclose(cell_array);
 
     //
     // Now read in the "VertArray".  These are the points.
     //
-    int vert_array = H5Dopen(file_handle, "VertArray");
+    hid_t vert_array = H5Dopen2(file_handle, "VertArray", H5P_DEFAULT);
     if (vert_array < 0)
     {
         EXCEPTION1(InvalidVariableException, "mesh");
@@ -237,6 +240,7 @@ avtTetradFileFormat::ConstructMesh(void)
     float *pts_ptr = (float *) pts->GetVoidPointer(0);
     H5Dread(vert_array, H5T_NATIVE_FLOAT, H5S_ALL, space_id, H5P_DEFAULT,
             pts_ptr);
+    H5Sclose(space_id);
     H5Dclose(vert_array);
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -290,7 +294,7 @@ avtTetradFileFormat::GetVar(int ts, const char *var)
     //
     // Tell HDF5 that this is the dataset we are interested in.
     //
-    int var_handle = H5Dopen(file_handle, buffer);
+    hid_t var_handle = H5Dopen2(file_handle, buffer, H5P_DEFAULT);
     if (var_handle < 0)
     {
         EXCEPTION1(InvalidVariableException, var);
@@ -299,7 +303,7 @@ avtTetradFileFormat::GetVar(int ts, const char *var)
     //
     // Determine how big the variable is.
     //
-    int space_id = H5Dget_space(var_handle);
+    hid_t space_id = H5Dget_space(var_handle);
     hsize_t vdims[3];
     H5Sget_simple_extent_dims(space_id, vdims, NULL);
     debug5 << "The variable has dimensions " << int(vdims[0]) << endl;
@@ -316,6 +320,7 @@ avtTetradFileFormat::GetVar(int ts, const char *var)
     // The actual HDF5 call to get the variable.
     //
     H5Dread(var_handle, H5T_NATIVE_FLOAT, H5S_ALL, space_id, H5P_DEFAULT, ptr);
+    H5Sclose(space_id);
     H5Dclose(var_handle);
     
     return arr;
@@ -351,12 +356,26 @@ avtTetradFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // Start off by walking through the HDF5 file and determining the
     // variables and times in this file.
     //
-    H5Giterate(file_handle, "root", NULL, CGetVars, this);
+    {
+        hid_t root = H5Gopen2(file_handle, "/root", H5P_DEFAULT);
+        if (root >= 0)
+        {
+            hsize_t idx = 0;
+            H5Literate(root, H5_INDEX_NAME, H5_ITER_INC, &idx, CGetVarsLiterate, this);
+            H5Gclose(root);
+        }
+    }
     if (variables.size() > 0)
     {
         char buffer[1024];
         sprintf(buffer, "/root/%s", variables[0].c_str());
-        H5Giterate(file_handle, buffer, NULL, CGetTimesteps, this);
+        hid_t grp = H5Gopen2(file_handle, buffer, H5P_DEFAULT);
+        if (grp >= 0)
+        {
+            hsize_t idx = 0;
+            H5Literate(grp, H5_INDEX_NAME, H5_ITER_INC, &idx, CGetTimestepsLiterate, this);
+            H5Gclose(grp);
+        }
 
         //
         // The timesteps were added in lexicographical order -- we need to
@@ -459,6 +478,12 @@ CGetVars(hid_t loc_id, const char *name, void *tetrad)
     return 0;
 }
 
+static herr_t
+CGetVarsLiterate(hid_t loc_id, const char *name, const H5L_info_t *, void *tetrad)
+{
+    return CGetVars(loc_id, name, tetrad);
+}
+
 
 // ****************************************************************************
 //  Function: CGetTimesteps
@@ -479,6 +504,12 @@ CGetTimesteps(hid_t loc_id, const char *name, void *tetrad)
     ff->GetTimesteps(name);
 
     return 0;
+}
+
+static herr_t
+CGetTimestepsLiterate(hid_t loc_id, const char *name, const H5L_info_t *, void *tetrad)
+{
+    return CGetTimesteps(loc_id, name, tetrad);
 }
 
 
@@ -516,5 +547,3 @@ TimeIndexPairSorter(const void *arg1, const void *arg2)
 
     return 0;
 }
-
-

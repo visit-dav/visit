@@ -176,7 +176,7 @@ H5NIMROD_read_dims (hid_t parent_id,
     hsize_t dims[16];
     int i, j;
 
-    hid_t dataset_id = H5Dopen (parent_id, dataset_name);
+    hid_t dataset_id = H5Dopen2(parent_id, dataset_name, H5P_DEFAULT);
     if (dataset_id < 0)
         return H5NIMROD_ERR;
     hid_t dataspace_id = H5Dget_space (dataset_id);
@@ -200,7 +200,7 @@ H5NIMROD_read_float32_array (hid_t parent_id,
         int ndims, hsize_t * dims, float *array)
 {
     hid_t dataspace, dataset, memspace;
-    dataset = H5Dopen (parent_id, dataset_name);
+    dataset = H5Dopen2(parent_id, dataset_name, H5P_DEFAULT);
     if (dataset < 0)
     {
         printf ("H5Utils:H5NIMROD Could not open dataset %s\n", dataset_name);
@@ -242,25 +242,22 @@ H5NIMROD_read_float32_array (hid_t parent_id,
     return H5NIMROD_SUCCESS;
 }
 
-herr_t
-_iteration_operator (hid_t group_id,        /*!< [in]  group id */
-        const char *member_name,        /*!< [in]  group name */
-        void *operator_data        /*!< [in,out] data passed to the iterator */
-        )
+static herr_t
+_iteration_operator(hid_t group_id, const char *member_name, const H5L_info_t *, void *operator_data)
 {
 
     struct _iter_op_data *data = (struct _iter_op_data *) operator_data;
-    herr_t herr;
-    H5G_stat_t objinfo;
 
     if (data->type != H5G_UNKNOWN)
     {
-        herr = H5Gget_objinfo (group_id, member_name, 1, &objinfo);
-        if (herr < 0)
-            return herr;
+        H5O_info_t objInfo;
+        if (H5Oget_info_by_name(group_id, member_name, &objInfo, H5P_DEFAULT) < 0)
+            return 0;
 
-        if (objinfo.type != data->type)
-            return 0;                /* don't count, continue iteration */
+        if (data->type == H5G_GROUP && objInfo.type != H5O_TYPE_GROUP)
+            return 0; /* don't count, continue iteration */
+        if (data->type == H5G_DATASET && objInfo.type != H5O_TYPE_DATASET)
+            return 0; /* don't count, continue iteration */
     }
 
     if (data->name && (data->stop_idx == data->count))
@@ -288,15 +285,20 @@ H5NIMROD_get_num_objects_matching_pattern (hid_t group_id,
         char *const pattern)
 {
 
-    int herr;
-    int idx = 0;
+    herr_t herr;
+    hsize_t idx = 0;
     struct _iter_op_data data;
 
     memset (&data, 0, sizeof (data));
     data.type = type;
     data.pattern = pattern;
 
-    herr = H5Giterate (group_id, group_name, &idx, _iteration_operator, &data);
+    hid_t grp = H5Gopen2(group_id, group_name, H5P_DEFAULT);
+    if (grp < 0)
+        return H5NIMROD_ERR;
+
+    herr = H5Literate(grp, H5_INDEX_NAME, H5_ITER_INC, &idx, _iteration_operator, &data);
+    H5Gclose(grp);
     if (herr < 0)
         return herr;
 
@@ -313,7 +315,7 @@ H5NIMROD_get_object_name (hid_t group_id,
 
     herr_t herr;
     struct _iter_op_data data;
-    int iterator_idx = 0;
+    hsize_t iterator_idx = 0;
 
     memset (&data, 0, sizeof (data));
     data.stop_idx = idx;
@@ -321,8 +323,13 @@ H5NIMROD_get_object_name (hid_t group_id,
     data.name = obj_name;
     data.len = len_obj_name;
 
-    herr = H5Giterate (group_id, group_name, &iterator_idx,
+    hid_t grp = H5Gopen2(group_id, group_name, H5P_DEFAULT);
+    if (grp < 0)
+        return H5NIMROD_ERR;
+
+    herr = H5Literate(grp, H5_INDEX_NAME, H5_ITER_INC, &iterator_idx,
             _iteration_operator, &data);
+    H5Gclose(grp);
     if (herr < 0)
         return herr;
 
