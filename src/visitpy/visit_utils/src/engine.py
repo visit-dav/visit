@@ -137,8 +137,6 @@ def launch(host,nprocs,nnodes,ppn,method,part,bank,rtime,vdir,extra_args=None):
         msg+= " on %s" % part
     msg +="]"
     print(msg)
-    if nnodes is None:
-        nnodes = int(math.ceil(float(nprocs) / float(ppn)))
     ehost = host
     if host == hostname(False):
         ehost = "localhost"
@@ -148,7 +146,12 @@ def launch(host,nprocs,nnodes,ppn,method,part,bank,rtime,vdir,extra_args=None):
     if not vdir is None:
         args.extend(["-dir",vdir])
     if not part is None:
+        if nnodes is None:
+            nnodes = int(math.ceil(float(nprocs) / float(ppn)))
         args.extend(["-nn",str(nnodes),"-p", part])
+    else:
+        if not nnodes is None:
+            args.extend(["-nn",str(nnodes)])
     if not extra_args is None:
         args.extend(extra_args)
     if method == "msub/srun":
