@@ -39,7 +39,7 @@ def open(**kwargs):
     
     Launch engine with 96 MPI tasks using default options for this host:
 
-      engine.open(nprocs=36)
+      engine.open(nprocs=96)
 
     Launch engine with 96 MPI tasks using a specific partition:
 
@@ -66,8 +66,7 @@ def open(**kwargs):
       engine.open(method="lsf")
 
     This reads the LSB_DJOB_NUMPROC env var and uses it
-   This reads the LSB_DJOB_NUMPROC env var and uses it
-   to launch with mpirun.
+    to launch with mpirun.
 
     """
     args = {"ppn":    1,
