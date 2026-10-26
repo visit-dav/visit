@@ -81,6 +81,9 @@ class vtkPolyData;
 //    Kathleen Biagas, Wed Nov 18 2020
 //    Replace VISIT_LONG_LONG with long long.
 //
+//    Cyrus Harrison, Wed Jul 16 09:08:30 PDT 2025
+//    Added helper to remove unused points during export.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
@@ -221,6 +224,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
                                    const std::vector<std::string> &materialList,
                                    int numTotalChunks, int startIndex,
                                    int tag, bool writeUsingGroups, int groupSize);
+    vtkDataSet         *RemoveUnusedPoints(vtkDataSet *ds);
     void                WaitForTurn(int tag, int &nWritten);
     void                GrantTurn(int tag, int &nWritten);
 };
