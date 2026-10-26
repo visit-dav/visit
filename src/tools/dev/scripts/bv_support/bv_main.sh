@@ -384,10 +384,19 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=13.0
         elif [[ ${VER_MAJOR} == 23 ]] ; then
             # keep 13 (ventura)
-            export MACOSX_DEPLOYMENT_TARGET=13.0 
+            export MACOSX_DEPLOYMENT_TARGET=13.0
         elif [[ ${VER_MAJOR} == 24 ]] ; then
             # keep 13 (ventura)
             export MACOSX_DEPLOYMENT_TARGET=13.0
+        elif [[ ${VER_MAJOR} == 25 ]] ; then
+            # use 15 (sequoia) (prior vers are eol)
+            export MACOSX_DEPLOYMENT_TARGET=15.0
+        elif [[ ${VER_MAJOR} == 26 ]] ; then
+            # use 15 (sequoia) (prior vers are eol)
+            export MACOSX_DEPLOYMENT_TARGET=15.0
+        elif [[ ${VER_MAJOR} == 27 ]] ; then
+            # use 15 (sequoia) (prior vers are eol)
+            export MACOSX_DEPLOYMENT_TARGET=15.0
         else
             echo "Unsupported Darwin major version, ${VER_MAJOR}."
             echo "Maybe add a new case for MACOSX_DEPLOYMENT_TARGET"
