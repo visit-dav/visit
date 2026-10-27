@@ -3211,6 +3211,10 @@ class MainLauncher(object):
     #   Mark C. Miller, Tue May 26 16:32:50 PDT 2026
     #   As a precaution, disable HDF5 file locking via HDF5_USE_FILE_LOCKING
     #   env. variable.
+    #
+    #   Kathleen Biagas, Mon Oct 26, 2026
+    #   Unset MPICH_GPU_SUPPORT_ENABLED.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -3284,6 +3288,9 @@ class MainLauncher(object):
 
         # Unset QT_SCALE_FACTOR
         UNSETENV("QT_SCALE_FACTOR")
+
+        # Unset MPICH_GPU_SUPPORT_ENABLED
+        UNSETENV("MPICH_GPU_SUPPORT_ENABLED")
 
         # Turn off trapping of floating point exceptions.
         SETENV("TRAP_FPE", "")
