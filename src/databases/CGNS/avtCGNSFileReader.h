@@ -79,6 +79,9 @@ using namespace std;
 //    Kathleen Biagas, Mon Apr 27 09:58:29 PDT 2026
 //    Add GetAuxiliaryData and GetStructuredDomainBoundaries.
 //
+//    Adrien Bruneton, Wed Oct 28 2026
+//    Add HasInvariantMetaData.
+//
 // ****************************************************************************
 
 class avtCGNSFileReader
@@ -103,6 +106,8 @@ public:
                                             DestructorFunction &);
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+
+    bool                   HasInvariantMetaData(void);
 
 protected:
     struct VarInfo
