@@ -412,6 +412,87 @@ static hid_t OpenHDF5File(char const *fname)
 }
 
 //
+// Read a refinement ratio from any of the encodings used by Chombo files.
+// Older files use a scalar integer, while newer files may use an integer
+// array or an IntVect compound type.  The attribute name does not reliably
+// identify its encoding.
+//
+static bool
+ReadRefinementRatio(hid_t attr, int dimension, hid_t intvect2d_id,
+    hid_t intvect3d_id, hid_t intvect4d_id, std::vector<int> &ratio)
+{
+    hid_t space = H5Aget_space(attr);
+    if (space < 0)
+        return false;
+
+    hssize_t nvals = H5Sget_simple_extent_npoints(space);
+    H5Sclose(space);
+    if (nvals < 1)
+        return false;
+
+    hid_t type = H5Aget_type(attr);
+    if (type < 0)
+        return false;
+
+    H5T_class_t typeClass = H5Tget_class(type);
+    H5Tclose(type);
+
+    std::vector<int> tmp;
+    if (typeClass == H5T_COMPOUND)
+    {
+        // A single IntVect is the only supported compound representation.
+        if (nvals != 1)
+            return false;
+
+        if (dimension == 2)
+        {
+            intvect2d value = {0, 0};
+            if (H5Aread(attr, intvect2d_id, &value) < 0)
+                return false;
+            tmp.push_back(value.i);
+            tmp.push_back(value.j);
+        }
+        else if (dimension == 3)
+        {
+            intvect3d value = {0, 0, 0};
+            if (H5Aread(attr, intvect3d_id, &value) < 0)
+                return false;
+            tmp.push_back(value.i);
+            tmp.push_back(value.j);
+            tmp.push_back(value.k);
+        }
+        else if (dimension == 4)
+        {
+            intvect4d value = {0, 0, 0, 0};
+            if (H5Aread(attr, intvect4d_id, &value) < 0)
+                return false;
+            tmp.push_back(value.i);
+            tmp.push_back(value.j);
+            tmp.push_back(value.k);
+            tmp.push_back(value.l);
+        }
+        else
+            return false;
+    }
+    else
+    {
+        std::vector<int> values((size_t)nvals);
+        if (H5Aread(attr, H5T_NATIVE_INT, &values[0]) < 0)
+            return false;
+
+        for (int d = 0; d < dimension; ++d)
+            tmp.push_back(values[d < nvals ? d : 0]);
+    }
+
+    for (size_t d = 0; d < tmp.size(); ++d)
+        if (tmp[d] <= 0)
+            return false;
+
+    ratio.swap(tmp);
+    return true;
+}
+
+//
 //  Modifications
 //    Mark C. Miller, Wed Feb  9 13:37:12 PST 2022
 //    Use new method, OpenHDF5File, to open the file.
@@ -941,64 +1022,24 @@ avtChomboFileFormat::InitializeReader(void)
         if (i != num_levels - 1)
         {
             hid_t rr_id = H5Aopen_name(level, "vec_ref_ratio");
-            if (rr_id >= 0)
-            {
-                int itmp[4];
-                if (dimension == 2)
-                {
-                    intvect2d rr_tmp;
-                    if (H5Aread(rr_id, intvect2d_id, &rr_tmp) < 0)
-                    {
-                        if (H5Aread(rr_id, H5T_NATIVE_INT, &itmp[0]) >= 0) // try as simple array
-                        {
-                            rr_tmp.i = itmp[0];
-                            rr_tmp.j = itmp[1];
-                        }
-                    }
-                    refinement_ratio[i].push_back(rr_tmp.i);
-                    refinement_ratio[i].push_back(rr_tmp.j);
-                }
-                else if (dimension == 3)
-                {
-                    intvect3d rr_tmp;
-                    if (H5Aread(rr_id, intvect3d_id, &rr_tmp) < 0)
-                    {
-                        if (H5Aread(rr_id, H5T_NATIVE_INT, &itmp[0]) >= 0) // try as simple array
-                        {
-                            rr_tmp.i = itmp[0];
-                            rr_tmp.j = itmp[1];
-                            rr_tmp.k = itmp[2];
-                        }
-                    }
-                    refinement_ratio[i].push_back(rr_tmp.i);
-                    refinement_ratio[i].push_back(rr_tmp.j);
-                    refinement_ratio[i].push_back(rr_tmp.k);
-                }
-                else
-                {
-                    EXCEPTION1(InvalidDBTypeException, "vec_ref_ratio not yet supported for 4D data");
-                }
-
-            }
-            else
+            if (rr_id < 0)
             {
                 rr_id = H5Aopen_name(level, "ref_ratio");
 
                 if (rr_id < 0)
                     EXCEPTION1(InvalidDBTypeException,
                             "Does not contain \"vec_ref_ratio\" or \"ref_ratio\".");
-
-                // Figure out how many values in this attribute
-                hid_t rr_sid = H5Aget_space(rr_id);
-                int nvals = (int) H5Sget_simple_extent_npoints(rr_sid);
-                H5Sclose(rr_sid);
-
-                std::vector<int> rr_tmp(nvals);
-                H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp[0]);
-                for (int d = 0; d < dimension; ++d)
-                    refinement_ratio[i].push_back(rr_tmp[d<nvals?d:0]);
             }
+
+            bool ratioRead = ReadRefinementRatio(rr_id, dimension,
+                intvect2d_id, intvect3d_id, intvect4d_id,
+                refinement_ratio[i]);
             H5Aclose(rr_id);
+
+            if (!ratioRead)
+                EXCEPTION1(InvalidDBTypeException,
+                    "Cannot read a positive refinement ratio from "
+                    "\"vec_ref_ratio\" or \"ref_ratio\".");
         }
 
         if (!hasTime && i == 0)

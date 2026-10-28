@@ -384,10 +384,19 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=13.0
         elif [[ ${VER_MAJOR} == 23 ]] ; then
             # keep 13 (ventura)
-            export MACOSX_DEPLOYMENT_TARGET=13.0 
+            export MACOSX_DEPLOYMENT_TARGET=13.0
         elif [[ ${VER_MAJOR} == 24 ]] ; then
             # keep 13 (ventura)
             export MACOSX_DEPLOYMENT_TARGET=13.0
+        elif [[ ${VER_MAJOR} == 25 ]] ; then
+            # use 15 (sequoia) (prior vers are eol)
+            export MACOSX_DEPLOYMENT_TARGET=15.0
+        elif [[ ${VER_MAJOR} == 26 ]] ; then
+            # use 15 (sequoia) (prior vers are eol)
+            export MACOSX_DEPLOYMENT_TARGET=15.0
+        elif [[ ${VER_MAJOR} == 27 ]] ; then
+            # use 15 (sequoia) (prior vers are eol)
+            export MACOSX_DEPLOYMENT_TARGET=15.0
         else
             echo "Unsupported Darwin major version, ${VER_MAJOR}."
             echo "Maybe add a new case for MACOSX_DEPLOYMENT_TARGET"
@@ -607,7 +616,7 @@ function initialize_build_visit()
     if [[ "$VISIT_FILE" != "" ]] ; then
         USE_VISIT_FILE="yes"
     fi
-    export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
+    export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_UL_VERSION}.src.tar.gz"}
 
     for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
@@ -1052,7 +1061,8 @@ function run_build_visit()
                 tarball) VISIT_FILE="${arg}";;
                 thirdparty-path) THIRD_PARTY_PATH="${arg}";;
                 version) VISIT_VERSION="${arg}"
-                         VISIT_FILE="visit${VISIT_VERSION}.tar.gz";;
+                         VISIT_UL_VERSION=${VISIT_VERSION//./_}
+                         VISIT_FILE="visit${VISIT_UL_VERSION}.src.tar.gz";;
                 *) error "Unknown next_arg value '$next_arg'!"
             esac
             # Make sure we process the next option as an option and not an

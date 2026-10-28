@@ -56,6 +56,9 @@ avtView2D::avtView2D()
 //    Added windowValid to support adding a multi resolution display
 //    capability for AMR data.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    Added tilePan and tileZoom.
+//
 // ****************************************************************************
 
 avtView2D &
@@ -79,8 +82,14 @@ avtView2D::operator=(const avtView2D &vi)
 
     xScale = vi.xScale;
     yScale = vi.yScale;
+
     havePerformedLogX = vi.havePerformedLogX;
     havePerformedLogY = vi.havePerformedLogY;
+
+    tilePan[0]  = vi.tilePan[0];
+    tilePan[1]  = vi.tilePan[1];
+    tileZoom[0] = vi.tileZoom[0];
+    tileZoom[1] = vi.tileZoom[1];
 
     return *this;
 }
@@ -106,6 +115,9 @@ avtView2D::operator=(const avtView2D &vi)
 //    Eric, Brugger, Thu Oct 27 09:30:07 PDT 2011
 //    Added windowValid to support adding a multi resolution display
 //    capability for AMR data.
+//
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    Added tilePan and tileZoom.
 //
 // ****************************************************************************
 
@@ -137,6 +149,14 @@ avtView2D::EqualViews(const avtView2D &vi)
     }
     if (havePerformedLogX != vi.havePerformedLogX || 
         havePerformedLogY != vi.havePerformedLogY)
+    {
+        return false;
+    }
+    if (tilePan[0] != vi.tilePan[0] || tilePan[1] != vi.tilePan[1])
+    {
+        return false;
+    }
+    if (tileZoom[0] != vi.tileZoom[0] || tileZoom[1] != vi.tileZoom[1])
     {
         return false;
     }
@@ -204,6 +224,9 @@ avtView2D::operator==(const avtView2D &vi)
 //    Added windowValid to support adding a multi resolution display
 //    capability for AMR data.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    Added tilePan and tileZoom.
+//
 // ****************************************************************************
 
 void
@@ -228,8 +251,14 @@ avtView2D::SetToDefault()
 
     xScale = LINEAR;
     yScale = LINEAR;
+
     havePerformedLogX = false;
     havePerformedLogY = false;
+
+    tilePan[0]  = 0.;
+    tilePan[1]  = 0.;
+    tileZoom[0] = 1.;
+    tileZoom[1] = 1.;
 }
 
 // ****************************************************************************
@@ -269,6 +298,9 @@ avtView2D::SetToDefault()
 //
 //    Hank Childs, Mon Feb 27 14:22:10 PST 2012
 //    Set camera further away for large 2D data.
+//
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    Added tilePan and tileZoom.
 //
 // ****************************************************************************
 
@@ -340,6 +372,14 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
                         // 1+espilon, near at 1 and far at 1+2*epsilon.
     viewInfo.nearPlane = 1-fudge;
     viewInfo.farPlane  = 1+fudge+2*height;
+
+    //
+    // Set the tile pan and zoom.
+    //
+    viewInfo.tilePan[0]  = tilePan[0];
+    viewInfo.tilePan[1]  = tilePan[1];
+    viewInfo.tileZoom[0] = tileZoom[0];
+    viewInfo.tileZoom[1] = tileZoom[1];
 }
 
 // ****************************************************************************
@@ -503,6 +543,9 @@ avtView2D::GetScaleFactor(int *size)
 //    Added windowValid to support adding a multi resolution display
 //    capability for AMR data.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    Added tilePan and tileZoom.
+//
 // ****************************************************************************
 
 void
@@ -521,6 +564,11 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
     yScale = (ScaleMode)view2DAtts->GetYScale();
 
     windowValid = view2DAtts->GetWindowValid();
+
+    tilePan[0]  = view2DAtts->GetTilePan()[0];
+    tilePan[1]  = view2DAtts->GetTilePan()[1];
+    tileZoom[0] = view2DAtts->GetTileZoom()[0];
+    tileZoom[1] = view2DAtts->GetTileZoom()[1];
 }
 
 // ****************************************************************************
@@ -552,6 +600,9 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
 //    Added windowValid to support adding a multi resolution display
 //    capability for AMR data.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    Added tilePan and tileZoom.
+//
 // ****************************************************************************
 
 void
@@ -568,6 +619,9 @@ avtView2D::SetToView2DAttributes(View2DAttributes *view2DAtts) const
     view2DAtts->SetYScale(yScale);
 
     view2DAtts->SetWindowValid(windowValid);
+
+    view2DAtts->SetTilePan(tilePan);
+    view2DAtts->SetTileZoom(tileZoom);
 }
 
 // ****************************************************************************

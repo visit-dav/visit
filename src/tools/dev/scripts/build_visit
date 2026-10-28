@@ -31,6 +31,7 @@
 # //https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/CreatingABuildVisItModule.html
 
 export VISIT_VERSION=${VISIT_VERSION:-"3.6.0"}
+export VISIT_UL_VERSION=${VISIT_VERSION//./_}
 
 ####
 # Trunk:
@@ -351,7 +352,7 @@ function bv_write_unified_file
     # in a sed command to add the checksums when bv_visit.sh is added to
     # the output file.
     #
-    tarfile="visit${VISIT_VERSION}.tar.gz"
+    tarfile="visit${VISIT_UL_VERSION}.src.tar.gz"
     md5sum=""
     sha256sum=""
     if [[ -f "$tarfile" ]]; then
@@ -381,6 +382,7 @@ function bv_write_unified_file
 
     echo "#!/bin/bash" > $OUTPUT_bv_FILE
     echo "export VISIT_VERSION=\${VISIT_VERSION:-\"$VISIT_VERSION\"}" >> $OUTPUT_bv_FILE
+    echo "export VISIT_UL_VERSION=\${VISIT_UL_VERSION:-\"$VISIT_UL_VERSION\"}" >> $OUTPUT_bv_FILE
 
     echo "export TRUNK_BUILD=\"$TRUNK_BUILD\"" >> $OUTPUT_bv_FILE
     echo "export RC_BUILD=\"$RC_BUILD\"" >> $OUTPUT_bv_FILE
