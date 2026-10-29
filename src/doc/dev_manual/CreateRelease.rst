@@ -44,9 +44,11 @@ At this point you are ready to tag the release. ::
 Creating first two release assets: source tarball and build_visit script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now you are ready to create the distribution tar file. ::
+Now you are ready to create the distribution tar file using ``visit-dist``.
+``visit-dist`` requires a version number argument, and will create a tarball with the name visitX_Y_Z.src.tar.gz where X_Y_Z is the provided version number.
+The version can be provided with ``.`` or ``_``. ::
 
-    scripts/visit-dist visit3_6_0.src
+    scripts/visit-dist 3.6.0
 
 Now you are ready to create the unified ``build_visit`` script. ::
 

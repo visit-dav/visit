@@ -1,222 +1,106 @@
-#! /bin/sh
-exec perl -x $0 ${1+"$@"};
-#!perl
+#!/usr/bin/env bash
 
-# This script packages up visit for distribution on the net.  It tars up
-# files and gzips the tar.
-#
-#       USAGE: $0 package_file
-#
-# Programmer: Sean Ahern (ahern@llnl.gov)
-# Creation date: July 31, 1996
-#
-# Modifications:
-#     Brad Whitlock, Mon May 22 14:58:40 PST 2000
-#     Adapted the script to handle VisIt.
-#
-#     Eric Brugger, Tue Sep  4 09:22:51 PDT 2001
-#     I removed the creation and distribution of help files.
-#
-#     Sean Ahern, Mon Nov  5 16:35:00 PST 2001
-#     Retired "package" in favor of tar and gzip.
-#
-#     Eric Brugger, Mon Nov 19 09:50:18 PST 2001
-#     I modified the tar command which creates the distribution file to
-#     pipe the results of tar into gzip instead of using the -z option to
-#     tar which only exists in gnu's version of tar.
-#
-#     Eric Brugger, Wed Nov 21 08:43:19 PST 2001
-#     I replaced the tar command used to copy the distribution files with
-#     a cpio command.  I also added user write permissions to all the
-#     files in the distribution.
-#
-#     Jeremy Meredith, Tue Nov 27 14:58:37 PST 2001
-#     Allowed a path in the distribution filename.  This path is only
-#     a location to store the .tar.gz file, and is ignored when unpacking.
-#
-#     Hank Childs, Thu Mar  7 11:31:29 PST 2002
-#     Allow for Exodus files not to be distributed.
-#
-#     Sean Ahern, Mon May 20 13:40:48 PDT 2002
-#     Added a check to see if you specified a distribution file.
-#
-#     Brad Whitlock, Fri Jul 12 17:38:10 PST 2002
-#     Added the option of creating and distributing the help files.
-#
-#     Hank Childs, Tue Aug 20 08:34:21 PDT 2002
-#     Added support for not distributing the Verdict library.
-#
-#     Jeremy Meredith, Tue Aug 27 11:07:45 PDT 2002
-#     Changed the way exodus is removed from the distribution.
-#
-#     Eric Brugger, Wed Nov 20 11:25:21 PST 2002
-#     Modified the script to take into account the new location of the
-#     verdict library.
-#
-#     Eric Brugger, Wed May 21 13:16:22 PDT 2003
-#     Removed the -noexodus and -noverdict options.
-#
-#     Eric Brugger, Thu Nov 20 08:23:40 PST 2003
-#     Pass along -withhelp option to source_files command.
-#
-#     Mark C. Miller, Thu Jun  3 10:12:39 PDT 2004
-#     Added '-f' flag to the recursive chmod
-#
-#     Mark C. Miller, Mon Nov 29 18:52:41 PST 2004
-#     Added -withtest option and code to add relevant test
-#     files to list of files
-#
-#     Brad Whitlock, Thu Feb 17 16:37:11 PST 2005
-#     I removed the -withhelp option from source_files because now it
-#     returns at least the static HTML files in the help directory.
-#
-#     Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
-#     Updated the tail syntax
-#
-#     Thomas R. Treadway, Wed May  9 14:30:35 PDT 2007
-#     Updated the tail syntax
-#
-#     Hank Childs, Wed May 30 21:26:29 PDT 2007
-#     Copied script from clearcase_bin, added support for SVN.
-#     Still need to do "makehelp"
-#
-#     Mark C. Miller, Tue Jun 19 09:09:42 PDT 2007
-#     Added support for 'makehelp'
-#
-#     Eric Brugger, Thu Jul  5 13:11:23 PDT 2007
-#     Modified so that it would work correctly with the source tree
-#     organization of the subversion repository.
-#
-#     Hank Childs, Tue Dec 18 15:58:52 PST 2007    
-#     Create file SVN_VERSION
-#
-#     Mark C. Miller, Thu Mar  5 17:58:08 PST 2009
-#     Added support for dbio-only distribution
-# 
-#     Brad Whitlock, Fri Oct 12 16:52:21 PDT 2012
-#     Removed -withhelp option.
-#
-#     Eric Brugger, Wed May  5 16:25:11 PDT 2021
-#     Modified the code that gets the git version to grab 10 characters
-#     instead of 7, to match what "git rev-parse --short HEAD" produces.
-# 
-#     Justin Privitera, Thu Feb 13 15:17:44 PST 2025
-#     Updated usage message.
-#
-require "newgetopt.pl";
+# Package the VisIt source tree for distribution.
 
-$USAGE = "USAGE: $0 dist_file [-withtest] [-dbioonly]\nwhere dist_file is typically named visitX.X.X\n";
+set -o errexit
+set -o nounset
+set -o pipefail
 
-if (! -d "src")
+usage()
 {
-    print STDERR "Invoke $0 from the the root of the source tree.\n";
-    print STDERR $USAGE;
-    exit(-1);
-}
+    cat <<EOF
+USAGE: $0 version
 
-system("git log -1 | grep \"^commit\" | cut -d' ' -f2 | head -c 10 > ./src/GIT_VERSION");
-
-# Parse the argument list.
-&NGetOpt("withtest","dbioonly");
-
-$dist = "";
-if($opt_dbioonly)
-{
-    $filelist = "./src/tools/dev/scripts/source_files -dbio-only";
-}
-else
-{
-    $filelist = "./src/tools/dev/scripts/source_files";
-}
-
-$fulldist = shift;
-if (!defined($fulldist))
-{
-    print STDERR "No distribution file specified.\n\n";
-    print STDERR "$USAGE";
-    exit(1);
-}
-chomp($dist = `basename $fulldist`);
-
-# Check that a distribution name was specified.
-if ($dist eq ".")
-{
-    print STDERR "No dist file specified.\n";
-    print STDERR $USAGE;
-    exit(-1);
-}
-
-print "Getting the list of files to package up...\n";
-@files = `$filelist`;
-if ($opt_withtest)
-{
-    system("( cd test/baseline ; mkcksums )");
-    push @files, `find ./test -name 'baseline' -prune -o -print`;
-    push @files, "./test/baseline/cksums.txt ";
-}
-grep(chop,@files);
-
-open(FILELIST,">/tmp/visit-dist$$") || die "Can't create file \"/tmp/visit-dist$$\": $!\n";
-print FILELIST join("\n",@files),"\n";
-close(FILELIST);
-
-print "Creating distribution...\n";
-if (!mkdir($dist, 0755))
-{
-    print STDERR <<"EOF";
-ERROR: $!
-Unable to create distribution subdirectory \"$dist\".
-EOF
-    exit(-4);
-}
-
-$status = system("cat /tmp/visit-dist$$ | cpio -pmud $dist");
-$status /= 256;
-if ($status != 0)
-{
-    print STDERR <<"EOF";
-ERROR: $!
-Unable to move distribution files to subdirectory \"$dist\".
-EOF
-    exit(-5);
-}
-
-$status = system("chmod -Rf u+w $dist");
-$status /= 256;
-if ($status != 0)
-{
-    print STDERRR <<"EOF";
-ERROR: $!
-Unable to add user write permissions to subdirectory \"$dist\".
-EOF
-    exit(-6);
-}
-
-$status = system("tar cf - $dist | gzip > $fulldist.tar.gz");
-$status /= 256;
-
-if ($status != 0)
-{
-    print STDERR <<"EOF";
-ERROR: $!
-An error occurred while attempting to run "tar".  The distribution was left
-in the subdirectory \"$dist\".
-EOF
-    exit(-2);
-} else
-{
-    unlink("/tmp/visit-dist$$");
-}
-
-print "Cleaning up...\n";
-$status = system("rm -rf $dist");
-if ($status != 0)
-{
-    print STDERR <<"EOF";
-ERROR: $!
-Unable to remove temporary directory \"$dist\".
+version may use '.' or '_' separators (for example, 3.6.0 or 3_6_0).
 EOF
 }
 
-system("rm -f ./src/GIT_VERSION");
-print "Finished.\nYour distribution is in the file \"$fulldist.tar.gz\".\n";
+if (( $# == 1 )) && [[ $1 == -h || $1 == --help ]]; then
+    usage
+    exit 0
+fi
+
+if (( $# != 1 )); then
+    echo "A version argument is required." >&2
+    usage >&2
+    exit 1
+fi
+
+if [[ ! -d src ]]; then
+    echo "Invoke $0 from the root of the VisIt source tree." >&2
+    usage >&2
+    exit 1
+fi
+
+version_arg=$1
+if [[ ! $version_arg =~ ^[0-9]+([._][0-9]+){2}$ ]]; then
+    echo "Invalid version: '$version_arg'" >&2
+    usage >&2
+    exit 1
+fi
+
+version=${version_arg//./_}
+dist_dir="visit${version}"
+archive="visit${version}.src.tar.gz"
+file_list=$(mktemp /tmp/visit-dist.XXXXXX)
+archive_tmp=""
+dist_created=false
+git_version_existed=false
+git_version_backup=""
+
+cleanup()
+{
+    status=$?
+
+    rm -f -- "$file_list"
+    if [[ -n $archive_tmp ]]; then
+        rm -f -- "$archive_tmp"
+    fi
+    if $dist_created; then
+        rm -rf -- "$dist_dir"
+    fi
+
+    if $git_version_existed; then
+        mv -- "$git_version_backup" src/GIT_VERSION
+    else
+        rm -f -- src/GIT_VERSION
+    fi
+
+    exit "$status"
+}
+trap cleanup EXIT
+
+if [[ -e src/GIT_VERSION ]]; then
+    git_version_existed=true
+    git_version_backup=$(mktemp /tmp/visit-git-version.XXXXXX)
+    cp -- src/GIT_VERSION "$git_version_backup"
+fi
+
+git rev-parse --short=10 HEAD > src/GIT_VERSION
+
+echo "Getting the list of files to package up..."
+./src/tools/dev/scripts/source_files > "$file_list"
+
+if [[ -e $dist_dir ]]; then
+    echo "Unable to create distribution subdirectory '$dist_dir': it already exists." >&2
+    exit 1
+fi
+
+echo "Creating distribution..."
+mkdir -m 0755 -- "$dist_dir"
+dist_created=true
+cpio -pmud "$dist_dir" < "$file_list"
+chmod -Rf u+w -- "$dist_dir"
+
+archive_tmp=$(mktemp "./.${archive}.XXXXXX")
+tar cf - "$dist_dir" | gzip > "$archive_tmp"
+chmod 0644 "$archive_tmp"
+mv -f -- "$archive_tmp" "$archive"
+archive_tmp=""
+
+echo "Cleaning up..."
+rm -rf -- "$dist_dir"
+dist_created=false
+
+echo "Finished."
+echo "Your distribution is in the file '$archive'."
