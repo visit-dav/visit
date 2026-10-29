@@ -588,10 +588,7 @@ function(visit_install_thirdparty_targets)
         else()
             if(APPLE)
                 get_target_property(_isFramework ${targetName} FRAMEWORK)
-                # message(STATUS "is ${targetName} a FRAMEWORK! ${_isFramework}")
                 if(_isFramework)
-                    # get_target_property(_FrameworkPath ${targetName} IMPORTED_LOCATION)
-                    # message(STATUS "PATH $<TARGET_PROPERTY:${targetName},IMPORTED_LOCATION>")
                     install(DIRECTORY "$<TARGET_PROPERTY:${targetName},IMPORTED_LOCATION>"
                             DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                             DIRECTORY_PERMISSIONS ${VISIT_TP_PERMS}
