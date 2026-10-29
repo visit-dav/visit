@@ -13,6 +13,8 @@
 #include "timer.h"
 #include <algorithm>
 #include "paradis_version.h"
+
+#include "visit_fmt/visit_fmt.h"
 //#include "visit_writer.h"
 
 #ifndef _WIN32
@@ -24,9 +26,8 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/format.hpp>
+
+#include <memory> // for std::make_shared
 
 // GRRR.  Visit hooks are lame.  This is bad code but if I don't structure it like this, the SVN hooks complain. 
 #ifdef  USE_ABORT
@@ -60,16 +61,24 @@ void dbstream_printf(int level, const char *fmt, ...) {
 #define dbecho(level, msg) cerr << msg; dbprintf(level, string(msg).c_str())
 
 std::string GetLibraryVersionString(const char *progname) {
-  return str(boost::format("%s: using paraDIS_lib version %s compiled on %s")% progname% RC_PARADIS_VERSION% RC_PARADIS_VERSION_DATE); 
+  return visit_fmt::format("{}: using paraDIS_lib version {} compiled on {}", progname, RC_PARADIS_VERSION, RC_PARADIS_VERSION_DATE); 
 }
 
 std::string GetLibraryVersionNumberString(void) {
-  return str(boost::format("%1%")% RC_PARADIS_VERSION); 
+  return visit_fmt::format("{}",RC_PARADIS_VERSION);
 }
 
-std::string INDENT(int i) {
-  if (!i) return "";
-  return str(boost::format(str(boost::format("%%1$%1%s")%(i*3)))%" "); 
+std::string INDENT(int level) {
+  if (!level) return "";
+  // the logic below replaces this old boost format call:
+  // return str(boost::format(str(boost::format("%%1$%1%s")%(level*3)))%" ");
+  std::string res;
+  for(int i=0;i<level;i++)
+  {
+    // 3 spaces per indent level
+    res += "   ";
+  }
+  return res;
 }
 #define STARTPROGRESS()                                       \
   timer theTimer;  theTimer.start();            \
@@ -242,7 +251,7 @@ namespace paraDIS {
     string filename = filebase + ".txt"; 
     std::ofstream textfile(filename.c_str());
     if (!textfile) {
-      string errmsg = str(boost::format("\nWarning:    cannot open text file %1%: %2%.")%filename%strerror(errno));
+      string errmsg = visit_fmt::format("\nWarning:    cannot open text file {}: {}.", filename, strerror(errno));
       cerr << errmsg << endl; 
       dbprintf(1, "%s\n", errmsg.c_str()); 
       return; 
@@ -252,13 +261,13 @@ namespace paraDIS {
     uint32_t level = 0; 
     for (uint32_t arm = 0; arm < arms.size(); arm++) {
       if (armdepths[arm] == level) { // this is weird, don't worry
-        textfile << str(boost::format("\n****************\nARM LEVEL %1%\n****************\n\n")%level); 
+        textfile << visit_fmt::format("\n****************\nARM LEVEL {0}\n****************\n\n",level);
         textfile.flush(); 
         level++; 
       }
       textfile << arms[arm]->Stringify(0) ; 
     }
-    string msg = str(boost::format("\n*** Wrote text tracefile %s for %s\n") % filename % description);
+    string msg = visit_fmt::format("\n*** Wrote text tracefile {} for {}\n", filename, description);
     dbprintf(0, msg.c_str()); 
     cerr << msg; 
     textfile.flush(); 
@@ -271,7 +280,7 @@ namespace paraDIS {
     filename = filebase+"-segments.vtk";
     std::ofstream vtkfile(filename.c_str());
     if (!vtkfile) {
-      string errmsg = str(boost::format("\n*** Warning:    cannot open vtk file %1%: %2%.")%filename%strerror(errno));
+      string errmsg = visit_fmt::format("\n*** Warning:    cannot open vtk file {}: {}.", filename, strerror(errno));
       cerr << errmsg << endl; 
       dbprintf(1, "%s\n", errmsg.c_str()); 
       return; 
@@ -293,7 +302,7 @@ namespace paraDIS {
     }
     uint32_t armnum = 0, armnode = 0; 
     vector<float> previous; 
-    vtkfile << str(boost::format("POINTS %d float") % nodes.size()) << endl;
+    vtkfile << "POINTS " << nodes.size() << " float" << endl;
     for (uint32_t point = 0; point < nodes.size(); point++) {
       if (armnode == numArmNodes[armnum]) {
         armnode = 0;         
@@ -314,20 +323,20 @@ namespace paraDIS {
       previous = xyz; 
       string note = ""; 
       /*if (armnode == numArmNodes[armnum]) {
-        note = str(boost::format("# End arm %1%")%armnum); 
+        note = visit_fmt::format("# End arm {}", armnum);
         } */     
-      vtkfile << str(boost::format("%1% %2% %3% %4%") % xyz[0] % xyz[1] % xyz[2] % note) << endl; 
+      vtkfile << xyz[0] << " " <<  xyz[1] << " " << xyz[2] << " " << note << endl;
     }  
     vtkfile << endl; 
   
     // next the lines
     int numlines = nodes.size() - arms.size(); 
-    vtkfile << str(boost::format("LINES %d %d") % numlines % (3*numlines)) << endl;
+    vtkfile << "LINES " << numlines << " " << (3*numlines) << endl;
     uint32_t currentIndex = 0; 
     for (uint32_t arm = 0; arm < arms.size(); arm++) {
       if (numArmNodes[arm]) {
         for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
-          vtkfile << str(boost::format("2 %d %d")% currentIndex % (currentIndex+1)) << endl;
+          vtkfile << "2 " << currentIndex << " " << (currentIndex+1) << endl;
           currentIndex++; 
         }
         currentIndex ++; 
@@ -336,7 +345,7 @@ namespace paraDIS {
     vtkfile << endl << endl; 
   
     // next the arm numbers for each line
-    vtkfile << str(boost::format("CELL_DATA %d") % numlines) << endl;
+    vtkfile << "CELL_DATA " << numlines << endl;
     vtkfile << "SCALARS armnum int" << endl;
     vtkfile << "LOOKUP_TABLE default" << endl;
     vtkfile.flush(); 
@@ -396,7 +405,7 @@ namespace paraDIS {
     vtkfile.flush(); 
     vtkfile.close(); 
   
-    msg = str(boost::format("*** Wrote VTK arm segment tracefile %s for %s\n")% filename % description);
+    msg = visit_fmt::format("*** Wrote VTK arm segment tracefile {} for {}\n", filename, description);
     dbprintf(0, msg.c_str()); 
     cerr << msg; 
   
@@ -405,7 +414,7 @@ namespace paraDIS {
     filename = filebase+"-nodes.vtk";
     vtkfile.open(filename.c_str());
     if (!vtkfile) {
-      string errmsg = str(boost::format("\n*** Warning:    cannot open vtk file %1%: %2%.")%filename%strerror(errno));
+      string errmsg = visit_fmt::format("\n*** Warning:    cannot open vtk file {}: {}.", filename, strerror(errno));
       cerr << errmsg << endl; 
       dbprintf(1, "%s\n", errmsg.c_str()); 
       return; 
@@ -420,7 +429,7 @@ namespace paraDIS {
   
     // next, the points
     armnum = 0; armnode = 0; 
-    vtkfile << str(boost::format("POINTS %d float") % nodes.size()) << endl;
+    vtkfile << "POINTS " << nodes.size() << " float" << endl;
     for (uint32_t point = 0; point < nodes.size(); point++) {
       if (armnode == numArmNodes[armnum]) {
         armnode = 0;         
@@ -441,14 +450,14 @@ namespace paraDIS {
       previous = xyz; 
       string note = ""; 
       /*if (armnode == numArmNodes[armnum]) {
-        note = str(boost::format("# End arm %1%")%armnum); 
+        note = visit_fmt::format("# End arm {}", armnum);
         } */     
-      vtkfile << str(boost::format("%1% %2% %3% %4%") % xyz[0] % xyz[1] % xyz[2] % note) << endl; 
+      vtkfile << xyz[0] << " " << xyz[1] << " " << xyz[2] << " " << note<< endl; 
     }  
     vtkfile << endl; 
   
     // now node vertices to allow node plotting
-    vtkfile << str(boost::format("VERTICES %d %d") % nodes.size() % (2*nodes.size())) << endl;
+    vtkfile << "VERTICES " << nodes.size() << " " << (2*nodes.size()) << endl;
     for (uint32_t point = 0; point < nodes.size(); point++) {
       vtkfile << "1 " << point << endl; 
       vtkfile.flush(); 
@@ -456,7 +465,7 @@ namespace paraDIS {
     vtkfile << endl; 
   
     // now node indices from analyzeParaDIS
-    vtkfile << str(boost::format("CELL_DATA %d") % nodes.size()) << endl;
+    vtkfile << "CELL_DATA " << nodes.size() << endl;
     vtkfile << "SCALARS node_index int" << endl;
     vtkfile << "LOOKUP_TABLE default" << endl;
     for (uint32_t point = 0; point < nodes.size(); point++) {
@@ -467,7 +476,7 @@ namespace paraDIS {
     vtkfile << endl << endl; 
     vtkfile.close(); 
   
-    msg = str(boost::format("*** Wrote VTK arm node tracefile %s for %s\n")% filename % description);
+    msg = visit_fmt::format("*** Wrote VTK arm node tracefile {} for {}\n", filename, description);
     dbprintf(0, msg.c_str()); 
     cerr << msg; 
     return; 
@@ -580,7 +589,7 @@ namespace paraDIS {
    */ 
   void FullNode::WriteTraceFiles(string stepname) {
     dbprintf(5, "Node::WriteTraceFiles(node %d)\n", mNodeIndex); 
-    string filebase = str(boost::format("%s-%s-Node_%d") % mTraceFileBasename % stepname % mNodeIndex); 
+    string filebase = visit_fmt::format("{}-{}-Node_{}", mTraceFileBasename, stepname, mNodeIndex);
     vector<Arm *> arms; 
     vector<uint32_t> armdepths; 
     vector<int> action; 
@@ -599,7 +608,7 @@ namespace paraDIS {
       dbprintf(2, "Node::WriteTraceFiles(node %d) adding BFS neighbors for arm %d\n", mNodeIndex, mNeighborSegments[0]->mParentArm->mArmID);       
       mNeighborSegments[0]->mParentArm -> FindBFSNeighbors(arms, armdepths, action); 
     }
-    string description = str(boost::format("node %1%")%mNodeIndex); 
+    string description = visit_fmt::format("node {}", mNodeIndex);
     paraDIS::WriteTraceFiles(filebase, description, arms, armdepths, action); 
     return; 
   
@@ -617,7 +626,7 @@ namespace paraDIS {
         return; 
       }
     }
-    string err = str(boost::format("Error: segment %1%  to replace is not a neighbor of node %2%\n")%newseg->Stringify(0)%Stringify(0)); 
+    string err = visit_fmt::format("Error: segment {} to replace is not a neighbor of node {}\n", newseg->Stringify(0), Stringify(0));
     throw err; 
   }
   
@@ -662,8 +671,8 @@ namespace paraDIS {
     vector<int> idarray = GetNeighborArmIDs(); 
     string armids = arrayToString(idarray); 
     std::string s = INDENT(indent) + 
-      str(boost::format("FullNode index %1%, %2%, type %3%, neighbor arms: %4%, %5% neighbor segments, location: (%6% %7% %8%), address %9%")
-          % mNodeIndex % mID.Stringify(0) % ntype % armids % mNeighborSegments.size() % mLocation[0] % mLocation[1] % mLocation[2] % this); 
+        visit_fmt::format("FullNode index {}, {}, type {}, neighbor arms: {}, {} neighbor segments, location: ({} {} {}), address {}",
+                        mNodeIndex, mID.Stringify(0), ntype, armids, mNeighborSegments.size(), mLocation[0], mLocation[1], mLocation[2], (void*)this); 
       s += "\n"; 
       s+= INDENT(indent) + "Neighbor segments:"; 
 
@@ -768,7 +777,7 @@ namespace paraDIS {
     for (uint32_t segnum = 0; segnum < mNeighborSegments.size()-1; segnum++) {
       if (!matched[segnum] &&
           mNeighborSegments[segnum]->mParentArm->mTerminalNodes.size() == 1) {
-        dbprintf(4, str(boost::format("FullNode::IdentifyCrossArms(): node(%1%): found crossing loop arm %2%.\n") % GetNodeIDString() % mNeighborSegments[segnum]->mParentArm->mArmID).c_str()); 
+        dbprintf(4, visit_fmt::format("FullNode::IdentifyCrossArms(): node({}): found crossing loop arm {}.\n", GetNodeIDString(), mNeighborSegments[segnum]->mParentArm->mArmID).c_str());
         armpair[0] = NULL;
         for (uint32_t match = segnum+1; match < mNeighborSegments.size(); ++match) {
           if (!matched[match] && 
@@ -784,7 +793,7 @@ namespace paraDIS {
         }
         if (armpair[0] == NULL) {
           dbprintf(0, "************************************************************************************\n");
-          dbprintf(0, str(boost::format("FullNode::IdentifyCrossArms(): node(%1%): ERROR! Could not find matching arm for crossing loop arm %2%.\n") % GetNodeIDString() % mNeighborSegments[segnum]->mParentArm->mArmID).c_str());
+          dbprintf(0, visit_fmt::format("FullNode::IdentifyCrossArms(): node({}): ERROR! Could not find matching arm for crossing loop arm {}.\n", GetNodeIDString(), mNeighborSegments[segnum]->mParentArm->mArmID).c_str());
           dbprintf(0, "************************************************************************************\n");
         }
       }
@@ -835,12 +844,12 @@ namespace paraDIS {
      
   //===========================================================================
   std::string ArmSegment::Stringify(int indent) const {
-    string s = str(boost::format("ArmSegment at %1%")%this);  
+    string s = visit_fmt::format("ArmSegment at {}", (void*)this);
     s +=  " number " + intToString(mSegmentID); 
     int btype = mBurgersType; 
-    s += str(boost::format(", %1%, parentArm ") %BurgersTypeNames(btype)); 
+    s += visit_fmt::format(", {}, parentArm ", BurgersTypeNames(btype));
     if (mParentArm) {
-      s += str(boost::format("%1%\n") % mParentArm->mArmID);
+      s += visit_fmt::format("{}\n", mParentArm->mArmID);
     } else {
       s += "(NONE)\n"; 
     }
@@ -1028,13 +1037,13 @@ namespace paraDIS {
     if (!trace || !mTerminalNodes.size()) return; 
 
     dbprintf(5, "Arm::WriteTraceFiles(arm %d)\n", mArmID); 
-    string filebase = str(boost::format("%s-%s-arm_%d") % mTraceFileBasename % stepname % mArmID); 
+    string filebase = visit_fmt::format("{}-{}-arm_{}", mTraceFileBasename, stepname, mArmID);
     
     vector<Arm *> arms; 
     vector<uint32_t> armdepths; 
     vector<int> action; 
     FindBFSNeighbors(arms, armdepths, action); 
-    string description = str(boost::format("arm %1%")%mArmID); 
+    string description = visit_fmt::format("arm {}",mArmID);
     paraDIS::WriteTraceFiles(filebase, description, arms, armdepths, action); 
     return; 
   }
@@ -1134,8 +1143,7 @@ namespace paraDIS {
           Only check exterior segments (those which don't belong to *this).
         */ 
         if (arm == this) continue; 
-         s1 += str(boost::format("%1% %2% ")
-                   % arm->mArmID % BurgersTypeNames(arm->GetBurgersType())); 
+         s1 += visit_fmt::format("{} {} ", arm->mArmID,  BurgersTypeNames(arm->GetBurgersType()));
       }
     }
     return s1 + ">"; 
@@ -1428,7 +1436,7 @@ namespace paraDIS {
     }
     dbprintf(5, "Arm::GetNodes(arm %d) got %d nodes\n\n", mArmID, nodes.size()); 
     if (nodes.size() != mNumSegments + 1 + mNumWrappedSegments*2) {
-      dbecho(0, str(boost::format("ERROR: Arm::GetNodes(arm %d) got %d nodes but should have gotten %d\n\n")% mArmID% (nodes.size())% (mNumSegments+1 + mNumWrappedSegments*2))); 
+      dbecho(0, visit_fmt::format("ERROR: Arm::GetNodes(arm {}) got {} nodes but should have gotten {}\n\n", mArmID, (nodes.size()), (mNumSegments+1 + mNumWrappedSegments*2)));
     }
       
     return nodes;
@@ -1458,7 +1466,7 @@ namespace paraDIS {
     } while (nodenum > -1 && !startSegment);
 
     if (!startSegment) {
-      dbprintf(0, "Arm::GetSegments(%d): Cannot find matching terminal segment in arm for given start node %s\n", mArmID, startNode->GetNodeIDString().c_str()); 
+      dbprintf(0, "Arm::GetSegments(%d): Cannot find matching terminal segment in arm for given start node %s\n", mArmID, startNode->GetNodeIDString().c_str());
       errexit1; 
     } 
     ArmSegment *lastSegment = startSegment; 
@@ -1559,31 +1567,31 @@ namespace paraDIS {
   
   //===========================================================================
   void Arm::DetachLoopFromNode(FullNode *node) {
-    dbprintf(4, str(boost::format("Arm::DetachLoopFromNode(arm %1%, node %2%)\n")%mArmID% node->GetNodeIDString()).c_str());
+    dbprintf(4, visit_fmt::format("Arm::DetachLoopFromNode(arm {}, node {})\n",mArmID, node->GetNodeIDString()).c_str());
 
     if (node->GetNumNeighborArms() == 1) {
       dbprintf(4, "Arm::DetachLoopFromNode(arm %d): the node to detach from only has us as a neighbor -- not detaching \n", mArmID); 
       return;
     }
     
-    dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): Before detaching, the looped arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());    
+    dbprintf(5, visit_fmt::format("Arm::DetachAndFuse(arm {}): Before detaching, the looped arm looks like this: {}\n", mArmID, Stringify(0, false)).c_str());    
     FullNode *replacement = new FullNode(*node, true); // skip neighbors   
     dbprintf(4, "Arm::DetachLoopFromNode(arm %d): Created a duplicate node to serve as a new interior node for the fused arm. \n", mArmID); 
     
 
     DetachAndReplaceNode(node, replacement); 
     mTerminalNodes[0] = replacement; 
-    dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): After detaching, the looped arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());
+    dbprintf(5, visit_fmt::format("Arm::DetachAndFuse(arm {}): After detaching, the looped arm looks like this:  {}\n", mArmID, Stringify(0, false)).c_str());
 
     return; 
   }
 
   //===========================================================================
   void Arm::DetachAndFuse(FullNode *node, Arm *other) {
-    dbprintf(4, str(boost::format("Arm::DetachAndFuse(arm %1%, node %2%, other %3%)\n")% mArmID% node->GetNodeIDString()% other->mArmID).c_str());
+    dbprintf(4, visit_fmt::format("Arm::DetachAndFuse(arm {}, node {}, other {})\n", mArmID, node->GetNodeIDString(), other->mArmID).c_str());
 
-    dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): Before fusing, this arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());
-    dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): Before fusing, the other arm looks like this: %2%\n") % mArmID % other->Stringify(0, false)).c_str());
+    dbprintf(5, visit_fmt::format("Arm::DetachAndFuse(arm {}): Before fusing, this arm looks like this: {}\n", mArmID, Stringify(0, false)).c_str());
+    dbprintf(5, visit_fmt::format("Arm::DetachAndFuse(arm {}): Before fusing, the other arm looks like this: {}\n", mArmID, other->Stringify(0, false)).c_str());
 
     // OK, now we just have to absorb the other arm: 
     vector<ArmSegment*> segs = other->GetSegments(node); 
@@ -1606,11 +1614,11 @@ namespace paraDIS {
     }
 
     if (nodenum < 0) {
-      dbprintf(0, str(boost::format("Arm::DetachAndFuse(arm %1%): ERROR: cannot find terminal node that matches the node %2% this is supposed to detach from!\n")% mArmID % node->GetNodeIDString()).c_str()); 
+      dbprintf(0, visit_fmt::format("Arm::DetachAndFuse(arm {}): ERROR: cannot find terminal node that matches the node {} this is supposed to detach from!\n", mArmID, node->GetNodeIDString()).c_str());
       return; 
     }
     if (othernodenum < 0) {
-       dbprintf(0, str(boost::format("Arm::DetachAndFuse(arm %1%): ERROR: cannot find terminal node in other arm %2% that matches the node %3% it is supposed to detach from!\n")% mArmID % other->mArmID % node->GetNodeIDString()).c_str());  
+       dbprintf(0, visit_fmt::format("Arm::DetachAndFuse(arm {}): ERROR: cannot find terminal node in other arm {} that matches the node {} it is supposed to detach from!\n", mArmID, other->mArmID, node->GetNodeIDString()).c_str());
       return; 
     }
     // now find the associated  terminal segments
@@ -1627,18 +1635,18 @@ namespace paraDIS {
       }
     }
     if (segnum < 0) {
-      dbprintf(0, str(boost::format("Arm::DetachAndFuse(arm %1%): ERROR: cannot find terminal segment that has the node %2% this is supposed to detach from!\n")% mArmID % node->GetNodeIDString()).c_str()); 
+      dbprintf(0, visit_fmt::format("Arm::DetachAndFuse(arm {}): ERROR: cannot find terminal segment that has the node {} this is supposed to detach from!\n", mArmID, node->GetNodeIDString()).c_str());
       return; 
     }
     if (othersegnum < 0) {
-       dbprintf(0, str(boost::format("Arm::DetachAndFuse(arm %1%): ERROR: cannot find terminal segment in other arm %2% that has the node %3% it is supposed to detach from!\n")% mArmID % other->mArmID % node->GetNodeIDString()).c_str());  
+       dbprintf(0, visit_fmt::format("Arm::DetachAndFuse(arm {}): ERROR: cannot find terminal segment in other arm {} that has the node {} it is supposed to detach from!\n", mArmID, other->mArmID, node->GetNodeIDString()).c_str()); 
       return; 
     }
           
     FullNode *discrete = NULL; 
     if (node->GetNumNeighborSegments() > 2) {      
       discrete = new FullNode(*node, true); // skip neighbors   
-      dbprintf(4, "Arm::DetachAndFuse(arm %d): Node %s is not an interior node; created a duplicate node to serve as a new interior node for the fused arm. \n", mArmID, node->GetNodeIDString().c_str()); 
+      dbprintf(4, "Arm::DetachAndFuse(arm %d): Node %s is not an interior node; created a duplicate node to serve as a new interior node for the fused arm. \n", mArmID, node->GetNodeIDString().c_str());
       DetachAndReplaceNode(node, discrete); 
       other->DetachAndReplaceNode(node,discrete);  
     }  else {
@@ -1682,8 +1690,8 @@ namespace paraDIS {
 
     mNumDestroyedInDetachment++; 
     
-    dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): After fusing, this arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());
-    dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): After fusing, the other destroyed arm looks like this: %2%\n") % mArmID % other->Stringify(0, false)).c_str());
+    dbprintf(5, visit_fmt::format("Arm::DetachAndFuse(arm {}): After fusing, this arm looks like this: {}n", mArmID, Stringify(0, false)).c_str());
+    dbprintf(5, visit_fmt::format("Arm::DetachAndFuse(arm {}): After fusing, the other destroyed arm looks like this: {}\n", mArmID, other->Stringify(0, false)).c_str());
     return; 
   }
 
@@ -1981,7 +1989,7 @@ namespace paraDIS {
         decomposedLength += mArmLength; 
         extendedArmIDs.push_back(neighborArm->mArmID); 
         neighborArm->mExtendOrDetach = true; 
-        WriteTraceFiles(str(boost::format("%d-after-decompose-%d_ID-%d")%(2+decomposed)%decomposed%neighborArm->mArmID));  
+        WriteTraceFiles(visit_fmt::format("{}-after-decompose-{}_ID-{}",(2+decomposed),decomposed%neighborArm->mArmID));
         neighborArm->mExtendOrDetach = false; 
         ++decomposed; 
       }
@@ -2040,8 +2048,8 @@ namespace paraDIS {
     string btypestring = BurgersTypeNames(GetBurgersType()); 
     string armtypestring = ArmTypeNames(mArmType);
     std::string s  = INDENT(indent) + 
-      str(boost::format("(arm): number %1%, mSeen = %2%, mSeenInMeta = %3%, numSegments = %4%, numWrappedSegments = %13%, length = %5%, Burgers = %6% (%7%), numTermNodes = %8%, Type = %9% (%10%), ExternalArms = %11%, AncestorArms = %12%") 
-          % mArmID % seen % seenMeta % mNumSegments % GetLength() % btype % btypestring % mTerminalNodes.size()  % atype % armtypestring  % StringifyExternalArms(0) % arrayToString(mAncestorArms) % ((int)mNumWrappedSegments)); 
+      visit_fmt::format("(arm): number {}, mSeen = {}, mSeenInMeta = {}, numSegments = {}, numWrappedSegments = {}, length = {}, Burgers = {} ({}), numTermNodes = {}, Type = {} ({}), ExternalArms = {}, AncestorArms = {}", 
+         mArmID, seen, seenMeta, mNumSegments, GetLength(), btype, btypestring, mTerminalNodes.size(), atype, armtypestring, StringifyExternalArms(0), arrayToString(mAncestorArms), ((int)mNumWrappedSegments)); 
 
 #if LINKED_LOOPS
     if (mPartOfLinkedLoop) {
@@ -2083,18 +2091,18 @@ namespace paraDIS {
   //===========================================================================
   string MetaArm::Stringify(int indent) {
     int atype = mMetaArmType;
-    string s = INDENT(indent) + str(boost::format("(MetaArm): mLength: %1%, mMetaArmType: %2% (%3%), mMetaArmID: %4%\n\n")%mLength % atype % MetaArmTypeNames(mMetaArmType) % mMetaArmID); 
+    string s = INDENT(indent) + visit_fmt::format("(MetaArm): mLength: {}, mMetaArmType: {} ({}), mMetaArmID: {}\n\n", mLength, atype, MetaArmTypeNames(mMetaArmType), mMetaArmID); 
     uint32_t i = 0; 
     while (i<mTerminalNodes.size()) {
       string s2 = mTerminalNodes[i]->Stringify(indent+1);
       s += INDENT(indent+1);
-      s+=  str(boost::format("Terminal Node %1%: %2%\n") % i % s2);
+      s+=  visit_fmt::format("Terminal Node {}: {}\n", i, s2);
       ++i; 
     } 
     s += "\n"; 
     i = 0; 
     while (i<mTerminalArms.size()) {
-      s += INDENT(indent+1) + str(boost::format("Terminal Arm %1%: %2%") % i % mTerminalArms[i]->Stringify(indent + 1));
+      s += INDENT(indent+1) + visit_fmt::format("Terminal Arm {}: {}", i, mTerminalArms[i]->Stringify(indent + 1));
       ++i; 
     }
     return s; 
@@ -2589,7 +2597,7 @@ namespace paraDIS {
     fprintf(thefile, "Total decomposed length (computed independently): %.2f (delta %f)\n", Arm::mDecomposedLength, delta); 
     double ratio = delta / Arm::mTotalArmLengthAfterDecomposition;
     if (Arm::mTotalArmLengthAfterDecomposition && fabs(ratio) > 0.00001 ) {
-      string errmsg = str(boost::format("\n\nError:  mDecomposedLength %1% + mTotalArmLengthBeforeDecomposition %2% != mTotalArmLengthAfterDecomposition %3% (ratio is %4%)!\n\n\n")%Arm::mDecomposedLength%Arm::mTotalArmLengthBeforeDecomposition%Arm::mTotalArmLengthAfterDecomposition%ratio);
+      string errmsg = visit_fmt::format("\n\nError:  mDecomposedLength {} + mTotalArmLengthBeforeDecomposition {} != mTotalArmLengthAfterDecomposition {} (ratio is {})!\n\n\n", Arm::mDecomposedLength, Arm::mTotalArmLengthBeforeDecomposition, Arm::mTotalArmLengthAfterDecomposition, ratio);
       cerr  << errmsg; 
       fprintf(thefile, "%s", errmsg.c_str()); 
     }
@@ -2862,7 +2870,7 @@ namespace paraDIS {
       datafile >> nodeID >> old_id_junk;
     }
     if (!datafile.good()) {
-      throw str(boost::format("DataSet::CopyNodeFromFile line %1%: error reading node")% __LINE__); 
+      throw visit_fmt::format("DataSet::CopyNodeFromFile line {}: error reading node", __LINE__); 
     }
     //dbprintf(5, "Got node ID (%d, %d) at line %d\n", domainID, nodeID, lineno); 
     datafile >> x >> y >> z >> numNeighbors >> tag;    
@@ -2870,7 +2878,7 @@ namespace paraDIS {
       datafile  >> domainID >>  old_id_junk; 
     }
     if (!datafile.good()) {
-      throw str(boost::format("DataSet::CopyNodeFromFile line %1%: error reading node")% __LINE__); 
+      throw visit_fmt::format("DataSet::CopyNodeFromFile line {}: error reading node", __LINE__); 
     }
     //dbprintf(5, "Got loc (%f, %f, %f), neighbors %d, and tag %d at line %d\n", x,y,z,numNeighbors, tag, lineno);  
     ++lineno;
@@ -2878,7 +2886,7 @@ namespace paraDIS {
     
     FullNode *matchNode = nodehash[theID.Hash()]; 
     if (!matchNode) {
-      throw str(boost::format("DataSet::CopyNodeFromFile line %1%: cannot match NodeID %s in FullNodes hash")% __LINE__%(theID.Stringify(0))); 
+      throw visit_fmt::format("DataSet::CopyNodeFromFile line {}: cannot match NodeID {} in FullNodes hash",  __LINE__, (theID.Stringify(0))); 
     }
       
     // match the ID to our fullNode
@@ -2894,14 +2902,14 @@ namespace paraDIS {
     string linebuf; 
     // Write back out the first line of node information
     if (mFileVersion > 0) {
-      linebuf = str(boost::format("%1%,%2% ")%domainID%nodeID); 
+      linebuf = visit_fmt::format("{},{} ", domainID, nodeID); 
     }
     else { // old-style
-      linebuf = str(boost::format("%1%,%2% ")%nodeID%old_id_junk);
+      linebuf = visit_fmt::format("{}, {} ", nodeID%old_id_junk);
     }
-    linebuf +=  str(boost::format("%.8f %.8f %8f %d %d")%x%y%z%numNeighbors % tag); 
+    linebuf +=  visit_fmt::format("{.8f} {.8f} {8f} {} {}", x, y, z, numNeighbors, tag); 
     if (mFileVersion == 0){
-      linebuf +=  str(boost::format("%1% %2%")% domainID % old_id_junk); 
+      linebuf +=  visit_fmt::format("{} {}", domainID, old_id_junk); 
     }
     tagfile << linebuf << endl; 
  
@@ -2914,7 +2922,7 @@ namespace paraDIS {
       getline(datafile, linebuf); 
       tagfile << linebuf << endl; 
       if (!datafile.good()) {
-        throw str(boost::format("DataSet::CopyNodeFromFile line %1%: error reading node index %1%, neighbor %2%")% __LINE__% matchNode->GetIndex()% neighbornum); 
+        throw visit_fmt::format("DataSet::CopyNodeFromFile line {}: error reading node index {}, neighbor {}", __LINE__, matchNode->GetIndex(), neighbornum); 
       }      
       ++neighbornum;
       lineno += 2; 
@@ -3114,7 +3122,7 @@ namespace paraDIS {
   //===========================================================================
   void DataSet::DebugPrintMinimalNodes(void) {
     std::string filename = mOutputDir + "/" + mOutputBasename + "-MinimalNodes-debug.txt"; 
-    dbecho(1, str(boost::format("Writing minimal nodes to debug file %1%... ")%filename)); 
+    dbecho(1, visit_fmt::format("Writing minimal nodes to debug file {}... ", filename)); 
     ofstream debugfile (filename.c_str()); 
     if (!debugfile) {
       string errmsg = string("Warning:  cannot open debug file ")+filename+". " + strerror(errno);
@@ -3470,9 +3478,9 @@ namespace paraDIS {
       if (seg && seg->Wrap(mDataSize, newSegment, newnode0, newnode1)) {
         newnode0->SetWrappedCopy(true); 
         newnode1->SetWrappedCopy(true); 
-        dbprintf(5, str(boost::format("\n***********\nWrapBoundarySegments: Created new wrapped node %1% at %2%\n")% (newnode0->GetNodeID().Stringify(0)) %newnode0).c_str()); 
-        dbprintf(5, str(boost::format("\n***********\nWrapBoundarySegments: Created new wrapped node %1% at %2%\n")% (newnode1->GetNodeID().Stringify(0)) %newnode1).c_str()); 
-        dbprintf(5, str(boost::format("\n***********\nWrapBoundarySegments: Created new wrapped segment %1% at %2%\n")% (newSegment->Stringify(0))%newSegment).c_str());        
+        dbprintf(5, visit_fmt::format("\n***********\nWrapBoundarySegments: Created new wrapped node {} at {}\n", (newnode0->GetNodeID().Stringify(0)), (void*) newnode0).c_str()); 
+        dbprintf(5, visit_fmt::format("\n***********\nWrapBoundarySegments: Created new wrapped node {} at {}\n", (newnode1->GetNodeID().Stringify(0)), (void*) newnode1).c_str()); 
+        dbprintf(5, visit_fmt::format("\n***********\nWrapBoundarySegments: Created new wrapped segment {} at {}\n",  (newSegment->Stringify(0)), (void*)newSegment).c_str());        
       } 
       UPDATEPROGRESS(segnum, totalsegs, "WrapBoundarySegments"); 
     }
@@ -3496,10 +3504,10 @@ namespace paraDIS {
       }
     }    
     string s; 
-    s += str(boost::format("Total monster nodes: %1%\n") %monsterTypes[0]); 
+    s += visit_fmt::format("Total monster nodes: {}\n", monsterTypes[0]); 
     for (uint8_t t = 1; t < monsterTypes.size(); t++) {
       if (monsterTypes[t]) {
-        s += str(boost::format("Type -%1% monster nodes: %2%\n") % (int)t % monsterTypes[t]); 
+        s += visit_fmt::format("Type -{} monster nodes: {}\n", (int)t % monsterTypes[t]);
       }
     }
     return s; 
@@ -3508,7 +3516,7 @@ namespace paraDIS {
   //===========================================================================
   void DataSet::DebugPrintFullNodes(void) {
     std::string filename = mOutputDir + "/" + mOutputBasename + "-FullNodes-debug.txt";
-    dbecho(1, str(boost::format("Writing full nodes to debug file %s... ")%filename)); 
+    dbecho(1, visit_fmt::format("Writing full nodes to debug file {}... ", filename)); 
 
 
     ofstream debugfile (filename.c_str()); 
@@ -3651,13 +3659,13 @@ namespace paraDIS {
           }
         }
 
-        UPDATEPROGRESS(nodenum, totalNodes, str(boost::format("BuildArms: %1% arms created.")%armnum)); 
+        UPDATEPROGRESS(nodenum, totalNodes, visit_fmt::format("BuildArms: {} arms created.", armnum)); 
         
       }   
     } catch (string err) {
       throw string("Arm #")+intToString(armnum)+": "+err;
     }
-    COMPLETEPROGRESS(totalNodes, str(boost::format("BuildArms: %1% arms created.")%armnum)); 
+    COMPLETEPROGRESS(totalNodes, visit_fmt::format("BuildArms: {} arms created.", armnum)); 
     return; 
   }
 
@@ -3682,9 +3690,9 @@ namespace paraDIS {
           numDecomposed[energyLevel]++;
         }
         ++pos; ++armnum;        
-        UPDATEPROGRESS(armnum, numarms, str(boost::format("DecomposeArms: level %1% (%2%), arm %3%, %4% decomp.") % energyLevel % BurgersTypeNames(energyLevel*10) % armnum % numDecomposed[energyLevel]));         
+        UPDATEPROGRESS(armnum, numarms, visit_fmt::format("DecomposeArms: level {} ({}), arm {}, {} decomp.", energyLevel, BurgersTypeNames(energyLevel*10), armnum, numDecomposed[energyLevel]));         
       }
-      COMPLETEPROGRESS(numarms, str(boost::format("DecomposeArms: level %1% (%2%), arm %3%, %4% decomp.") % energyLevel % BurgersTypeNames(energyLevel*10) % armnum % numDecomposed[energyLevel])); 
+      COMPLETEPROGRESS(numarms, visit_fmt::format("DecomposeArms: level {} ({}), arm {}, {} decomp.", energyLevel, BurgersTypeNames(energyLevel*10), armnum, numDecomposed[energyLevel])); 
     }
     Arm::mTotalArmLengthAfterDecomposition = ComputeArmLengths(); 
     
@@ -3698,7 +3706,7 @@ namespace paraDIS {
       string altstring = string("-") + altname; 
       filename = mOutputDir + string("/Arms-debug") + altstring + ".txt"; 
     }
-    dbecho(1, str(boost::format("Writing arms to debug file %s... ")% filename)); 
+    dbecho(1, visit_fmt::format("Writing arms to debug file {}... ", filename)); 
     if (!Mkdir (mOutputDir.c_str())) {
       cerr << "Error: Cannot create output directory for arm file"; 
       return; 
@@ -3733,7 +3741,7 @@ namespace paraDIS {
   //===========================================================================
   void DataSet::DebugPrintMetaArms(void) {
     std::string filename = mOutputDir + "/" + mOutputBasename + "-metaarms-debug.txt"; 
-    dbecho(1, str(boost::format("Writing MetaArms to debug file %s... ")% filename)); 
+    dbecho(1, visit_fmt::format("Writing MetaArms to debug file {}... ", filename)); 
     if (!Mkdir (mOutputDir.c_str())) {
       cerr << "Error: Cannot create output directory for arm file"; 
       return; 
@@ -3744,7 +3752,7 @@ namespace paraDIS {
     debugfile << "Meta-Arms file written on " << timestamp() << " by " << GetLibraryVersionString("DebugPrintMetaArms") << endl; 
 
     debugfile <<"There are " << mMetaArms.size() << " MetaArms." << endl; 
-    vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end(); 
+    vector<std::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end(); 
     uint32_t armnum = 0; 
     while (pos != endpos) {
       debugfile << "MetaArm #" << armnum << ": " << (*pos)->Stringify(0) << endl; 
@@ -3798,11 +3806,11 @@ namespace paraDIS {
     // SEGMENT FILES 
     // We go by arm by arm to save writing duplicate points everywhere. 
     uint32_t numsegfiles = ArmSegment::mArmSegments.size()/mElementsPerVTKFile + 1; 
-    dbecho(0, str(boost::format("DataSet::WriteVTKFiles() will write %d segment files. \n")% numsegfiles));
+    dbecho(0, visit_fmt::format("DataSet::WriteVTKFiles() will write {} segment files. \n", numsegfiles));
     vector<FILE *> segfiles;
     vector<string> segfilenames; 
     for (uint32_t fileno = 0; fileno < numsegfiles; fileno++) {
-      string filename = str(boost::format("%s/%s-segments-%04d.vtk")%mOutputDir%mOutputBasename%fileno); 
+      string filename = visit_fmt::format("{}/{}-segments-{04d}.vtk", mOutputDir, mOutputBasename, fileno); 
       FILE * fp = fopen(filename.c_str(), "w"); 
       if (!fp) {
         dbprintf(0, "DataSet::WriteVTKFiles(): ERROR: cannot open VTK file %s for writing\n", filename.c_str()); 
@@ -3826,7 +3834,8 @@ namespace paraDIS {
       // ----------------------------------------------------------
       // 1. Segment file: the header
       fprintf(segfile, "# vtk DataFile Version 3.0\n" );
-      fprintf(segfile, "%s", str(boost::format("%s, written by paraDIS_lib. mBounds are %s, number of arms = %d\n")% filename % (FullNode::mBoundsSize.Stringify()) % (lastarm-firstarm+1)).c_str()); 
+      // TODO this is pretty nasty, we should just use fprintf
+      fprintf(segfile, "%s", visit_fmt::format("{}, written by paraDIS_lib. mBounds are {}, number of arms = {}\n", filename, (FullNode::mBoundsSize.Stringify()), (lastarm-firstarm+1)).c_str()); 
       fprintf(segfile, "ASCII\n" );
       fprintf(segfile, "DATASET POLYDATA\n" );
       
@@ -3884,7 +3893,7 @@ namespace paraDIS {
             previous = *node;            
           }
           if (armsegs != theArm->mNumSegments) {
-            dbecho(0, str(boost::format("DataSet::WriteVTKFiles(): ERROR! armsegs  %d != theArm->mNumSegments %d for arm %d\n")%armsegs%(theArm->mNumSegments)%(theArm->mArmID))); 
+            dbecho(0, visit_fmt::format("DataSet::WriteVTKFiles(): ERROR! armsegs {} != theArm->mNumSegments {} for arm {}\n", armsegs, (theArm->mNumSegments), (theArm->mArmID))); 
           }
           
         } 
@@ -3900,7 +3909,7 @@ namespace paraDIS {
         
         dbprintf(5, "DataSet::WriteVTKFiles(): For arm %d with %d segments, %d wrapped segments, wrote %d segments. Current node is now %d. \n", theArm->mArmID, theArm->mNumSegments, theArm->mNumWrappedSegments, armsegs, nodenum);
         if (nodenum - previousnodenum != nodecounts[armnum]) {
-          dbecho(0, str(boost::format("DataSet::WriteVTKFiles(): ERROR! nodenum - previousnodenum + 1 != nodecounts[armnum] %d for arm %d\n") %(nodecounts[armnum])%(theArm->mArmID))); 
+          dbecho(0, visit_fmt::format("DataSet::WriteVTKFiles(): ERROR! nodenum - previousnodenum + 1 != nodecounts[armnum] {} for arm {}\n", (nodecounts[armnum]), (theArm->mArmID))); 
         }
         previousnodenum = nodenum; 
         
@@ -3921,7 +3930,7 @@ namespace paraDIS {
       }
       fprintf(segfile, "\n"); 
       if (testsegs != numsegs) {
-        dbecho(0, str(boost::format("DataSet::WriteVTKFiles(): ERROR!  testsegs %d != numsegs %d\n")%testsegs%numsegs)); 
+        dbecho(0, visit_fmt::format("DataSet::WriteVTKFiles(): ERROR!  testsegs {} != numsegs {}\n", testsegs, numsegs)); 
       }
       // ----------------------------------------------------------
       // 5. Segment file: Segment Burgers type
@@ -3968,30 +3977,30 @@ namespace paraDIS {
 
 
       // ----------------------------------------------------------
-      dbecho(1, str(boost::format("DataSet::WriteVTKFiles(): Wrote segment file %s\n")% filename)); 
+      dbecho(1, visit_fmt::format("DataSet::WriteVTKFiles(): Wrote segment file {}\n", filename)); 
       fclose(segfile); 
     }
     // ============================================================
     // Write out the VisIt file declaring the segfiles as blocks
-    string visitsegfilename = str(boost::format("%s/%s-segments.visit")%mOutputDir%mOutputBasename); 
+    string visitsegfilename = visit_fmt::format("{}/{}-segments.visit", mOutputDir, mOutputBasename); 
     FILE *visitsegfile = fopen(visitsegfilename.c_str(), "w"); 
     fprintf(visitsegfile, "!NBLOCKS %d\n", (int)segfiles.size()); 
     for (uint32_t fileno = 0; fileno < segfiles.size(); fileno++) {
       fprintf(visitsegfile, "%s\n", Basename(segfilenames[fileno]).c_str()); 
     }
     fclose(visitsegfile); 
-    dbecho(1, str(boost::format("DataSet::WriteVTKFiles(): Wrote visit file %s\n")% visitsegfilename)); 
+    dbecho(1, visit_fmt::format("DataSet::WriteVTKFiles(): Wrote visit file {}\n", visitsegfilename)); 
 
     
     // ============================================================
     // NODE FILES 
     // We use mElementsPerVTKFile to limit our node file size too.
     uint32_t numnodefiles = FullNode::mFullNodes.size()/mElementsPerVTKFile + 1; 
-    dbecho(0, str(boost::format("DataSet::WriteVTKFiles() will write %d node files. \n")% numnodefiles));
+    dbecho(0, visit_fmt::format("DataSet::WriteVTKFiles() will write {} node files. \n", numnodefiles));
     vector<FILE *> nodefiles;
     vector<string> nodefilenames; 
     for (uint32_t fileno = 0; fileno < numnodefiles; fileno++) {
-      string filename = str(boost::format("%s/%s-nodes-%04d.vtk")%mOutputDir%mOutputBasename%fileno); 
+      string filename = visit_fmt::format("{}/{}-nodes-{04d}.vtk", mOutputDir, mOutputBasename, fileno); 
       FILE * fp = fopen(filename.c_str(), "w"); 
       if (!fp) {
         dbprintf(0, "Error: cannot open VTK file %s for writing\n", filename.c_str()); 
@@ -4021,7 +4030,7 @@ namespace paraDIS {
       // ----------------------------------------------------------
       // 1. Node file: the header
       fprintf(nodefile, "# vtk DataFile Version 3.0\n" );
-      fprintf(nodefile, "%s", str(boost::format("%s, written by paraDIS_lib. mBounds are %s\n")% filename % (FullNode::mBoundsSize.Stringify())).c_str()); 
+      fprintf(nodefile, "%s, written by paraDIS_lib. mBounds are %s\n", filename.c_str(), FullNode::mBoundsSize.Stringify().c_str()); 
       fprintf(nodefile, "ASCII\n" );
       fprintf(nodefile, "DATASET POLYDATA\n" );
       
@@ -4036,7 +4045,7 @@ namespace paraDIS {
         
       }
       if (nodecount < numnodes) {
-        dbecho(0, str(boost::format("DataSet::WriteVTKFiles() PROGRAMMING ERROR: ran out of nodes.  \n")));
+        dbecho(0, "DataSet::WriteVTKFiles() PROGRAMMING ERROR: ran out of nodes.  \n");
       }
       
       // ----------------------------------------------------------
@@ -4078,7 +4087,7 @@ namespace paraDIS {
     }
 
     string tagfilename = mOutputDir + "/" + mOutputBasename + "-tagged.data";
-    dbecho(1, str(boost::format("DataSet::WriteTagFile: Writing node tags to file %s... ")% tagfilename)); 
+    dbecho(1, visit_fmt::format("DataSet::WriteTagFile: Writing node tags to file {}... ", tagfilename)); 
 
     
     uint32_t nodenum = 0;
@@ -4121,7 +4130,7 @@ namespace paraDIS {
       }
       COMPLETEPROGRESS(mTotalDumpNodes, "WriteTagFile: creating new tagged datafile"); 
     } catch (string err) {
-      string outs = str(boost::format("Error in WriteTagFile while translating node %1% at line %2%: %3%\n") % nodenum % lineno %  err); 
+      string outs = visit_fmt::format("Error in WriteTagFile while translating node {} at line {}: {}\n", nodenum, lineno,  err); 
       dbprintf(0, outs.c_str()); 
       throw outs; 
     }
@@ -4133,7 +4142,7 @@ namespace paraDIS {
   // Print out all MetaArms in a simple format in a file for analysis, just for Meijie
   void DataSet::PrintMetaArmFile(void) {
     string metaArmFile = mOutputDir + "/" + mOutputBasename + ".metaarms"; 
-    dbecho(0, str(boost::format("Writing metaarms to metaarm file %s... ")% metaArmFile));
+    dbecho(0, visit_fmt::format("Writing metaarms to metaarm file {}... ", metaArmFile));
     
     uint32_t a = Arm::mArms.size(); 
     while (a--) {
@@ -4147,7 +4156,7 @@ namespace paraDIS {
     }
     fprintf(armfile, "DISCUSSION: \n%s\n", doctext.c_str()); 
     
-    vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end(); 
+    vector<std::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end(); 
     uint32_t armnum = 0, metaarmcounts[7]={0}; 
     double metaarmtypelengths[7] = {0.0}, totalEPDist = 0.0; 
     uint32_t numarms = 0; 
@@ -4173,7 +4182,7 @@ namespace paraDIS {
     armnum = 0; 
     while (armpos != endarm) {   
       if ((*armpos)->mArmType != ARM_EMPTY && !(*armpos)->mSeen) {
-        string msg = str(boost::format("\n******** \n   Error: arm %1% has not been seen in a metaarm.\n*********\n")%armnum); 
+        string msg = visit_fmt::format("\n******** \n   Error: arm {} has not been seen in a metaarm.\n*********\n", armnum); 
         cerr << msg; 
         dbprintf(0, msg.c_str()); 
         // errexit; 
@@ -4244,9 +4253,9 @@ namespace paraDIS {
           (*pos)->mTerminalNodes[i]->GetLocation(loc[i]);
           ntypes[i] = (*pos)->mTerminalNodes[i]->GetNodeType();
           numNeighbors[i] = (*pos)->mTerminalNodes[i]->GetNumNeighborSegments();
-          ids[i]  = str(boost::format("(%1%,%2%)") 
-                        % (*pos)->mTerminalNodes[i]->GetNodeSimulationDomain()
-                        % (*pos)->mTerminalNodes[i]->GetNodeSimulationID());  
+          ids[i]  = visit_fmt::format("({},{})",
+                        (*pos)->mTerminalNodes[i]->GetNodeSimulationDomain(),
+                        (*pos)->mTerminalNodes[i]->GetNodeSimulationID());  
         }
         if (numtermnodes == 2) {
           eplength = (*pos)->mTerminalNodes[0]->Distance(*( (*pos)->mTerminalNodes[1]), true); 
@@ -4287,7 +4296,7 @@ namespace paraDIS {
     if (altname) {
       armfilename = mOutputDir + "/" + mOutputBasename + "-" + altname + ".arms"; 
     } 
-    dbecho(0, str(boost::format("Writing arms to arm file %s... ") % armfilename)); 
+    dbecho(0, visit_fmt::format("Writing arms to arm file {}... ", armfilename)); 
 
     FILE *armfile = fopen (armfilename.c_str(), "w"); 
     if (!armfile) {
@@ -4327,9 +4336,9 @@ namespace paraDIS {
         (*pos)->mTerminalNodes[i]->GetLocation(loc[i]);
         ntypes[i] = (*pos)->mTerminalNodes[i]->IsTypeM()? 'M':'N';
         numNeighbors[i] = (*pos)->mTerminalNodes[i]->GetNumNeighborSegments();
-        ids[i]  = str(boost::format("(%1%,%2%)") 
-                      % (*pos)->mTerminalNodes[i]->GetNodeSimulationDomain()
-                      % (*pos)->mTerminalNodes[i]->GetNodeSimulationID());  
+        ids[i]  = visit_fmt::format("({},{})", 
+                      (*pos)->mTerminalNodes[i]->GetNodeSimulationDomain(),
+                      (*pos)->mTerminalNodes[i]->GetNodeSimulationID());  
       }
       
       fprintf(armfile, "%-12d%-6d%-6d%-15f%-15f%-10s%-10c%-10d%-15f%-15f%-15f%-10s%-10c%-10d%-15f%-15f%-15f\n",
@@ -4504,7 +4513,7 @@ namespace paraDIS {
            ! (*currentArm)->isTypeUnknown() && 
            (*currentArm)->mArmType != ARM_EMPTY
         ) {
-        boost::shared_ptr<MetaArm> metaArmSPtr = boost::make_shared<MetaArm>();
+        std::shared_ptr<MetaArm> metaArmSPtr = std::make_shared<MetaArm>();
         metaArmSPtr->mMetaArmID = mMetaArms.size();
         metaArmSPtr->FindEndpoints(*currentArm); 
         if (metaArmSPtr->mMetaArmType != METAARM_UNKNOWN) {
@@ -4541,9 +4550,9 @@ namespace paraDIS {
       } else {
         dbprintf(4, "Skipping currentArm %d (type %d) as it was either seen (%d) and was type 111 or an unknown arm, or else FindEndpoints could not handle it.\n", (*currentArm)->mArmID, (*currentArm)->mArmType, (*currentArm)->mSeen);  
       }
-      UPDATEPROGRESS(numArms, totalArms, str(boost::format("FindMetaArms: %1% MetaArms created")%numMetaArms)); 
+      UPDATEPROGRESS(numArms, totalArms, visit_fmt::format("FindMetaArms: {} MetaArms created",numMetaArms)); 
     }
-    COMPLETEPROGRESS(totalArms, str(boost::format("FindMetaArms: %1% MetaArms created")%numMetaArms)); 
+    COMPLETEPROGRESS(totalArms, visit_fmt::format("FindMetaArms: {} MetaArms created", numMetaArms)); 
 
     for (vector<Arm*>::iterator currentArm = Arm::mArms.begin(); currentArm != Arm::mArms.end(); ++currentArm) {
       if (!(*currentArm)->mSeen && (*currentArm)->mArmType != ARM_EMPTY) {
@@ -4632,7 +4641,7 @@ namespace paraDIS {
     dbprintf(0, "DataSet::Test(): checking meta-arms \n"); 
      uint32_t manum = 0;
     numsegs = 0; 
-    for (vector<boost::shared_ptr<MetaArm> >::iterator metaarm = mMetaArms.begin(); metaarm != mMetaArms.end(); ++metaarm, ++manum) {
+    for (vector<std::shared_ptr<MetaArm> >::iterator metaarm = mMetaArms.begin(); metaarm != mMetaArms.end(); ++metaarm, ++manum) {
       uint32_t masegs = (*metaarm)->GetNumSegments(false); 
       uint32_t shouldbe = segspermetaarm[(*metaarm)->GetMetaArmID()]; 
       if (masegs != shouldbe) {

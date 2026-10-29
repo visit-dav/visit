@@ -6,7 +6,9 @@
 #include <vector>
 #include <stdio.h>
 #include <algorithm>
-#include "boost/format.hpp"
+
+#include "visit_fmt/visit_fmt.h"
+
 //#include <inttypes.h>
 //#include "RCDebugStream.h"
 
@@ -163,7 +165,7 @@ string arrayToString(const vector<T>  &array) {
   string value("<");
   typename vector<T>::const_iterator pos = array.begin(), endpos = array.end(); 
   while (pos != endpos) {
-    value += str(boost::format("%1%")%(*pos++));
+    value += visit_fmt::format("{}", (*pos++));
     if (pos == endpos) value += ", "; 
     else value += ">"; 
   }

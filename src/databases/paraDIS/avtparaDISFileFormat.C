@@ -232,9 +232,9 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     node_type->AddEnumNameValue("LESS THAN -10", -11);
     for (int i = -10; i<7; i++) {
       if (i<-3 || i>0)
-        node_type->AddEnumNameValue(str(boost::format("%d")%i), i); 
+        node_type->AddEnumNameValue(visit_fmt::format("{}",i), i);
     }
-    node_type->AddEnumNameValue("GREATER THAN 10", 10);      
+    node_type->AddEnumNameValue("GREATER THAN 10", 10);
     md->Add(node_type);
 
     avtScalarMetaData *node_loop =

@@ -589,7 +589,7 @@ function(visit_install_thirdparty_targets)
             if(APPLE)
                 get_target_property(_isFramework ${targetName} FRAMEWORK)
                 if(_isFramework)
-                    install(DIRECTORY "$<TARGET_BUNDLE_DIR:${targetName}>"
+                    install(DIRECTORY "$<TARGET_PROPERTY:${targetName},IMPORTED_LOCATION>"
                             DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                             DIRECTORY_PERMISSIONS ${VISIT_TP_PERMS}
                             FILE_PERMISSIONS ${VISIT_TP_PERMS}
