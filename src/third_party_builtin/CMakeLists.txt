@@ -19,6 +19,7 @@
 project(thirdparty_builtins)
 
 add_subdirectory(bow)
+add_subdirectory(fmt-12.1.0)
 add_subdirectory(nek5000/jl)
 add_subdirectory(rapidjson)
 add_subdirectory(tess2)
