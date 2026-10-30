@@ -17607,6 +17607,9 @@ ExecuteClientMethodHelper(Subject *subj, void *)
 //   fixes the problem of CLI not truly exiting when the GUI initiates the
 //   Quit.
 //
+//   Kathleen Biagas, Mon Sep 28 13:49:00 PDT 2026
+//   Acquire the Python interpreter lock before executing 'sys.exit(0)'.
+//
 // ****************************************************************************
 
 static void
@@ -17653,7 +17656,9 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
     }
     else if(method->GetMethodName() == "Quit")
     {
+        VISIT_PY_THREAD_LOCK_STATE threadState = VisItLockPythonInterpreter();
         PyRun_SimpleString("import sys; sys.exit(0)");
+        VisItUnlockPythonInterpreter(threadState);
     }
     else if(method->GetMethodName() == "MacroStart")
     {

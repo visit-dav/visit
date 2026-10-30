@@ -37,17 +37,21 @@ def open(**kwargs):
 
     Example usage:
     
-    Launch engine with 36 MPI tasks using default options for this host:
+    Launch engine with 96 MPI tasks using default options for this host:
 
-      engine.open(nprocs=36)
+      engine.open(nprocs=96)
 
-    Launch engine with 36 MPI tasks using a specific partition:
+    Launch engine with 96 MPI tasks using a specific partition:
 
-      engine.open(nprocs=36, part="pbatch")
+      engine.open(nprocs=96, part="pbatch")
 
-    Launch engine with 36 MPI tasks, ask for 60 minute time limit:
+    Launch engine with 96 MPI tasks, across 2 nodes
 
-      engine.open(nprocs=36, rtime=60)
+      engine.open(nprocs=96, nnodes=2)
+
+    Launch engine with 96 MPI tasks, ask for 60 minute time limit:
+
+      engine.open(nprocs=96, rtime=60)
 
     If you already have a slurm batch allocation, you can use:
 
@@ -62,10 +66,15 @@ def open(**kwargs):
       engine.open(method="lsf")
 
     This reads the LSB_DJOB_NUMPROC env var and uses it
-    the to launch with mpirun.
+    to launch with mpirun.
 
     """
-    args = {"ppn":1,"part":None,"bank":None,"rtime":None,"vdir":None}
+    args = {"ppn":    1,
+            "nnodes": None,
+            "part":   None,
+            "bank":   None,
+            "rtime":  None,
+            "vdir":   None}
     if "method" not in kwargs:
         hname = hostname(False)
         # when the visit module is imported (vs used in the CLI), 
@@ -121,14 +130,13 @@ def close(ename=None):
             raise VisItException("Failed to close compute engine '%s'." % ename)
 
 @require_visit
-def launch(host,nprocs,ppn,method,part,bank,rtime,vdir,extra_args=None):
+def launch(host,nprocs,nnodes,ppn,method,part,bank,rtime,vdir,extra_args=None):
     """ Launch helper. """
     msg = "[%s: opening engine" % host
     if not part is None:
         msg+= " on %s" % part
     msg +="]"
     print(msg)
-    nnodes = int(math.ceil(float(nprocs) / float(ppn)))
     ehost = host
     if host == hostname(False):
         ehost = "localhost"
@@ -138,7 +146,12 @@ def launch(host,nprocs,ppn,method,part,bank,rtime,vdir,extra_args=None):
     if not vdir is None:
         args.extend(["-dir",vdir])
     if not part is None:
+        if nnodes is None:
+            nnodes = int(math.ceil(float(nprocs) / float(ppn)))
         args.extend(["-nn",str(nnodes),"-p", part])
+    else:
+        if not nnodes is None:
+            args.extend(["-nn",str(nnodes)])
     if not extra_args is None:
         args.extend(extra_args)
     if method == "msub/srun":
