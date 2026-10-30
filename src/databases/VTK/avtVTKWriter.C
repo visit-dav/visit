@@ -8,6 +8,7 @@
 
 #include <avtVTKWriter.h>
 
+#include <string>
 #include <vector>
 
 #include <vtkDataSet.h>
@@ -31,6 +32,7 @@
 #include <FileFunctions.h>
 
 #include <DBOptionsAttributes.h>
+#include <visit-config.h>
 #ifdef _WIN32
 #include <direct.h>
 #endif
@@ -228,13 +230,11 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 void
 avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
-    char chunkname[1024];
-    char filename[1024];
-    filename[0] = '\0';
+    string chunkname;
     if (nblocks > 1)
-        snprintf(chunkname, 1024, "%s/%s.%d", stem.c_str(), mbDirName.c_str(), chunk);
+        chunkname = stem + VISIT_SLASH_STRING + mbDirName + "." + std::to_string(chunk);
     else
-        snprintf(chunkname, 1024, "%s", stem.c_str());
+        chunkname = stem;
 
     if (!meshName.empty())
     {
@@ -289,12 +289,12 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     if (!doXML)
     {
-        snprintf(filename, 1024, "%s.vtk", chunkname);
+        string filename = chunkname + ".vtk";
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
         if (doBinary)
             wrtr->SetFileTypeToBinary();
         wrtr->SetInputData(ds);
-        wrtr->SetFileName(filename);
+        wrtr->SetFileName(filename.c_str());
         wrtr->SetFileVersion(42);
         wrtr->Write();
 
@@ -305,24 +305,25 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
     {
         vtkXMLWriter *wrtr = NULL;
+        string filename;
         if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-           snprintf(filename, 1024, "%s.vtr", chunkname);
+           filename = chunkname + ".vtr";
            wrtr = vtkXMLRectilinearGridWriter::New();
         }
         else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
         {
-           snprintf(filename, 1024, "%s.vts", chunkname);
+           filename = chunkname + ".vts";
            wrtr = vtkXMLStructuredGridWriter::New();
         }
         else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
         {
-           snprintf(filename, 1024, "%s.vtu", chunkname);
+           filename = chunkname + ".vtu";
            wrtr = vtkXMLUnstructuredGridWriter::New();
         }
         else if (ds->GetDataObjectType() == VTK_POLY_DATA)
         {
-           snprintf(filename, 1024, "%s.vtp", chunkname);
+           filename = chunkname + ".vtp";
            wrtr = vtkXMLPolyDataWriter::New();
         }
 
@@ -340,7 +341,7 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
                 wrtr->SetCompressorTypeToNone();
             }
             wrtr->SetInputData(ds);
-            wrtr->SetFileName(filename);
+            wrtr->SetFileName(filename.c_str());
             wrtr->Write();
 
             wrtr->Delete();
@@ -401,7 +402,8 @@ avtVTKWriter::WriteRootFile()
         // shorten our full-path-filenames to just the filename
         for (size_t i = 0; i < fileNames.size(); ++i)
         {
-            fileNames[i] = mbDirName + string("/") + FileFunctions::Basename(fileNames[i]);
+            fileNames[i] = mbDirName + string(VISIT_SLASH_STRING) +
+                FileFunctions::Basename(fileNames[i]);
         }
     }
 #ifdef PARALLEL
@@ -452,14 +454,14 @@ avtVTKWriter::WriteRootFile()
 #endif
     if (nblocks > 1 && writeContext.Rank() == 0)
     {
-        char filename[1024];
+        string filename;
         if(doXML)
         {
             if(writeContext.GroupSize() > 1)
-                snprintf(filename, 1024, "%s.%d.vtm", stem.c_str(), writeContext.GroupRank());
+                filename = stem + "." + std::to_string(writeContext.GroupRank()) + ".vtm";
             else
-                snprintf(filename, 1024, "%s.vtm", stem.c_str());
-            ofstream ofile(filename);
+                filename = stem + ".vtm";
+            ofstream ofile(filename.c_str());
             ofile << "<?xml version=\"1.0\"?>" << endl;
             ofile << "<VTKFile type=\"vtkMultiBlockDataSet\" version=\"1.0\">" << endl;
             ofile << "  <vtkMultiBlockDataSet>"<< endl;
@@ -475,8 +477,8 @@ avtVTKWriter::WriteRootFile()
         }
         else
         {
-            sprintf(filename, "%s.visit", stem.c_str());
-            ofstream ofile(filename);
+            filename = stem + ".visit";
+            ofstream ofile(filename.c_str());
             ofile << "!NBLOCKS " << nblocks << endl;
             for (int i = 0 ; i < nblocks ; i++)
             {
