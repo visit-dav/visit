@@ -1133,6 +1133,14 @@ avtTecplotFileFormat::ReadFile()
             GetNextToken(); // skip the equals sign
             title = GetNextToken();
             debug5 << "Tecplot: parsed title as: '"<<title<<"'\n";
+            // Older VisIt versions could write unescaped quotes in TITLE
+            // strings. Ignore any leftover tokens on the title record.
+            tok = GetNextToken();
+            while (READING_UNTIL_END_OF_LINE)
+            {
+                tok = GetNextToken();
+            }
+            got_next_token_already = true;
         }
         else if (tok == "FILETYPE")
         {

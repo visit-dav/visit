@@ -229,10 +229,12 @@ void
 avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     char chunkname[1024];
+    char filename[1024];
+    filename[0] = '\0';
     if (nblocks > 1)
-        sprintf(chunkname, "%s/%s.%d", stem.c_str(), mbDirName.c_str(), chunk);
+        snprintf(chunkname, 1024, "%s/%s.%d", stem.c_str(), mbDirName.c_str(), chunk);
     else
-        sprintf(chunkname, "%s", stem.c_str());
+        snprintf(chunkname, 1024, "%s", stem.c_str());
 
     if (!meshName.empty())
     {
@@ -287,47 +289,47 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     if (!doXML)
     {
-        sprintf(chunkname, "%s.vtk", chunkname);
+        snprintf(filename, 1024, "%s.vtk", chunkname);
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
         if (doBinary)
             wrtr->SetFileTypeToBinary();
         wrtr->SetInputData(ds);
-        wrtr->SetFileName(chunkname);
+        wrtr->SetFileName(filename);
         wrtr->SetFileVersion(42);
         wrtr->Write();
 
         wrtr->Delete();
         if (nblocks > 1)
-            fileNames.push_back(chunkname);
+            fileNames.push_back(filename);
     }
     else
     {
         vtkXMLWriter *wrtr = NULL;
         if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-           sprintf(chunkname, "%s.vtr", chunkname);
+           snprintf(filename, 1024, "%s.vtr", chunkname);
            wrtr = vtkXMLRectilinearGridWriter::New();
         }
         else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
         {
-           sprintf(chunkname, "%s.vts", chunkname);
+           snprintf(filename, 1024, "%s.vts", chunkname);
            wrtr = vtkXMLStructuredGridWriter::New();
         }
         else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
         {
-           sprintf(chunkname, "%s.vtu", chunkname);
+           snprintf(filename, 1024, "%s.vtu", chunkname);
            wrtr = vtkXMLUnstructuredGridWriter::New();
         }
         else if (ds->GetDataObjectType() == VTK_POLY_DATA)
         {
-           sprintf(chunkname, "%s.vtp", chunkname);
+           snprintf(filename, 1024, "%s.vtp", chunkname);
            wrtr = vtkXMLPolyDataWriter::New();
         }
 
         if (wrtr)
         {
             if (nblocks > 1)
-                fileNames.push_back(chunkname);
+                fileNames.push_back(filename);
             if(doBinary)
             {
                 wrtr->SetDataModeToBinary();
@@ -338,7 +340,7 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
                 wrtr->SetCompressorTypeToNone();
             }
             wrtr->SetInputData(ds);
-            wrtr->SetFileName(chunkname);
+            wrtr->SetFileName(filename);
             wrtr->Write();
 
             wrtr->Delete();
