@@ -46,8 +46,8 @@ protected:
   virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
-  vtkMergeConsecutivePolyDataPoints(const vtkMergeConsecutivePolyDataPoints&);
-  void operator=(const vtkMergeConsecutivePolyDataPoints&);
+  vtkMergeConsecutivePolyDataPoints(const vtkMergeConsecutivePolyDataPoints&)=delete;
+  void operator=(const vtkMergeConsecutivePolyDataPoints&)=delete;
 };
 
 #endif
