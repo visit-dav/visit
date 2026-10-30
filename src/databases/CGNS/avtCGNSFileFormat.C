@@ -292,6 +292,42 @@ avtCGNS_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 }
 
 // ****************************************************************************
+//  Method: avtCGNS_MTMDFileReader::HasInvariantMetaData
+//
+//  Purpose:
+//    The metadata changes with time when the zones change with time
+//    (BaseIterativeData_t/ZonePointers).
+//
+//  Programmer: Adrien Bruneton
+//  Creation:   Wed Oct 28 2026
+//
+// ****************************************************************************
+
+bool
+avtCGNS_MTMDFileFormat::HasInvariantMetaData(void) const
+{
+    return reader->HasInvariantMetaData();
+}
+
+// ****************************************************************************
+//  Method: avtCGNS_MTMDFileReader::HasInvariantSIL
+//
+//  Purpose:
+//    The SIL (the domains of the meshes) changes with time when the zones
+//    change with time (BaseIterativeData_t/ZonePointers).
+//
+//  Programmer: Adrien Bruneton
+//  Creation:   Wed Oct 28 2026
+//
+// ****************************************************************************
+
+bool
+avtCGNS_MTMDFileFormat::HasInvariantSIL(void) const
+{
+    return reader->HasInvariantMetaData();
+}
+
+// ****************************************************************************
 //  Method: avtCGNS_MTSDFileReader constructor
 //
 //  Programmer: Eric Brugger

@@ -33,6 +33,10 @@ class avtCGNSFileReader;
 //    Kathleen Biagas, Mon Apr 27 09:57:31 PDT 2026
 //    Add GetAuxiliaryData.
 //
+//    Adrien Bruneton, Wed Oct 28 2026
+//    Add HasInvariantMetaData and HasInvariantSIL to the MTMD variant, since
+//    the zones may change with time (BaseIterativeData_t/ZonePointers).
+//
 // ****************************************************************************
 
 class avtCGNS_MTMDFileFormat : public avtMTMDFileFormat
@@ -57,6 +61,9 @@ public:
                                             DestructorFunction &);
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+
+    virtual bool           HasInvariantMetaData(void) const;
+    virtual bool           HasInvariantSIL(void) const;
 
 protected:
     avtCGNSFileReader     *reader;

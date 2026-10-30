@@ -38,6 +38,10 @@
 #    Kathleen Biagas, Tue Apr 21 12:04:40 PDT 2026
 #    Add 'testTimeVarying' for SIDS-style data.
 #
+#    Adrien Bruneton, Wed Oct 28 2026
+#    Add 'testZonePointers' for SIDS-style data where the number of zones
+#    changes with time (ZonePointers smaller than the number of zones).
+#
 # ----------------------------------------------------------------------------
 
 RequiredDatabasePlugin("CGNS")
@@ -398,6 +402,38 @@ def testTimeVarying(datapath):
     DeleteAllPlots()
     CloseDatabase(pjoin(datapath, "multi_zone", "FTD_IBC_3D_VEF_POST1.cgns"))
 
+def testZonePointers(datapath):
+    TestSection("time varying number of zones (ZonePointers)")
+
+    # zone_pointers.cgns: 4 zones over 3 states, MaxNumberOfZones=2,
+    # NumberOfZones=(1,1,2), unused ZonePointers entries are "Null".
+    # multizone_pointers.cgns: 12 zones over 3 states, 4 zones per state.
+    cases = (("zone_pointers.cgns",
+              (["Interface_0"], ["Interface_1"], ["Interface_2", "Drop_2"]),
+              (1, 2, 4)),
+             ("multizone_pointers.cgns",
+              [["Z%d_%d" % (s, k) for k in range(4)] for s in range(3)],
+              (10, 10, 10)))
+    for name, blocks, ncells in cases:
+        db = pjoin(datapath, "zone_pointers", name)
+        OpenDatabase(db)
+        TestValueEQ("%s number of states" % name, TimeSliderGetNStates(), 3)
+        AddPlot("Mesh", "Base")
+        DrawPlots()
+        for state in range(TimeSliderGetNStates()):
+            SetTimeSliderState(state)
+            Query("NumZones", use_actual_data=1)
+            TestValueEQ("%s cells at state %d" % (name, state),
+                        int(GetQueryOutputValue()), ncells[state])
+        DeleteAllPlots()
+        # Done last, since getting the metadata of a state changes the
+        # time slider state.
+        for state in range(3):
+            mmd = GetMetaData(db, state).GetMeshes(0)
+            TestValueEQ("%s domains at state %d" % (name, state),
+                        list(mmd.blockNames), blocks[state])
+        CloseDatabase(db)
+
 
 def main():
     # Draw antialiased lines
@@ -414,6 +450,7 @@ def main():
     testNGonElements(datapath)
     testNFaceElements(datapath)
     testTimeVarying(datapath)
+    testZonePointers(datapath)
 
 main()
 Exit()

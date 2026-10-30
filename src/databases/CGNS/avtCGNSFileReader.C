@@ -91,9 +91,11 @@ TrimCgnsFixedString(const char *s, size_t len)
 
 bool
 ReadSidsCharPointerArrayAtCurrentNode(const char *arrayName,
-    std::vector<std::string> &out)
+    std::vector<std::string> &out, std::vector<cgsize_t> *dimsOut = nullptr)
 {
     out.clear();
+    if(dimsOut != nullptr)
+        dimsOut->clear();
 
     int narrays = 0;
     if(cg_narrays(&narrays) != CG_OK)
@@ -135,6 +137,9 @@ ReadSidsCharPointerArrayAtCurrentNode(const char *arrayName,
             const char *p = raw.data() + si * strLen;
             out.push_back(TrimCgnsFixedString(p, strLen));
         }
+
+        if(dimsOut != nullptr)
+            dimsOut->assign(dims, dims + ndims);
 
         return true;
     }
@@ -605,6 +610,13 @@ avtCGNSFileReader::ReadTimes()
 //   and cache it for later use (e.g. mapping domains, selecting per-timestep
 //   zones in unsteady datasets).
 //
+// Modifications:
+//   Adrien Bruneton, Wed Oct 28 2026
+//   Use the actual SIDS shape of ZonePointers, [32][MaxNumberOfZones]
+//   [NumberOfSteps], where MaxNumberOfZones can be smaller than the number
+//   of zones in the base, and honor NumberOfZones (number of valid entries
+//   per step, the remaining ones being "Null").
+//
 // ****************************************************************************
 
 void
@@ -633,18 +645,60 @@ avtCGNSFileReader::ReadZonePointersFromBaseIterativeData(int base)
         return;
 
     std::vector<std::string> flat;
-    if(!ReadSidsCharPointerArrayAtCurrentNode("ZonePointers", flat) &&
-       !ReadSidsCharPointerArrayAtCurrentNode("ZonePointer", flat))
+    std::vector<cgsize_t> dims;
+    if(!ReadSidsCharPointerArrayAtCurrentNode("ZonePointers", flat, &dims) &&
+       !ReadSidsCharPointerArrayAtCurrentNode("ZonePointer", flat, &dims))
     {
         return;
     }
 
-    // Expected SIDS dims are typically [32][nZones][nStates] (Fortran ordering),
-    // but tolerate flattened shapes as well.
+    // SIDS dims are [32][MaxNumberOfZones][NumberOfSteps] (Fortran ordering),
+    // where MaxNumberOfZones is the maximum number of zones over the steps
+    // (not the number of zones in the base). Tolerate flattened shapes too.
     if(flat.empty())
         return;
 
-    if(static_cast<int>(flat.size()) == nstates)
+    if(dims.size() == 3 && dims[2] == nstates && dims[1] > 0)
+    {
+        const int maxZones = static_cast<int>(dims[1]);
+
+        // NumberOfZones gives the number of valid entries for each step.
+        std::vector<int> nZonesPerState(nstates, maxZones);
+        int narrays = 0;
+        if(cg_narrays(&narrays) == CG_OK)
+        {
+            for(int i = 0; i < narrays; ++i)
+            {
+                char name[33];
+                int ndims = 0;
+                cgsize_t adims[10];
+                DataType_t dt = DataTypeNull;
+                if(cg_array_info(i+1, name, &dt, &ndims, adims) == CG_OK &&
+                   strcmp(name, "NumberOfZones") == 0 && ndims == 1 &&
+                   adims[0] == nstates)
+                {
+                    if(cg_array_read_as(i+1, Integer, nZonesPerState.data()) != CG_OK)
+                        nZonesPerState.assign(nstates, maxZones);
+                    break;
+                }
+            }
+        }
+
+        debug4 << "ReadZonePointersFromBaseIterativeData: base " << base
+               << ", ZonePointers[32][" << maxZones << "][" << nstates
+               << "], zones per state:";
+        baseZonePointers[base].resize(nstates);
+        for(int ts = 0; ts < nstates; ++ts)
+        {
+            const int n = std::max(0, std::min(nZonesPerState[ts], maxZones));
+            debug4 << " " << n;
+            baseZonePointers[base][ts].reserve(n);
+            for(int zi = 0; zi < n; ++zi)
+                baseZonePointers[base][ts].push_back(flat[ts * maxZones + zi]);
+        }
+        debug4 << endl;
+    }
+    else if(static_cast<int>(flat.size()) == nstates)
     {
         // One zone pointer per time state.
         baseZonePointers[base].resize(nstates);
@@ -1703,6 +1757,30 @@ avtCGNSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // Indicate that we've initialized maps.
     initializedMaps = true;
     initializedMapsTimeState = timeState;
+}
+
+// ****************************************************************************
+// Method: avtCGNSFileReader::HasInvariantMetaData
+//
+// Purpose:
+//   Returns false when the zones change with time (ZonePointers), in which
+//   case the metadata (and the domains of the meshes) must be populated for
+//   each time state.
+//
+// Programmer: Adrien Bruneton
+// Creation:   Wed Oct 28 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtCGNSFileReader::HasInvariantMetaData(void)
+{
+    if(!cgnsIsMTMD)
+        return true;
+    ReadTimes();
+    return !mapsDependOnTimeState;
 }
 
 // ****************************************************************************
