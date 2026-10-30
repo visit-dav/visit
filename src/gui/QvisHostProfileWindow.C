@@ -492,7 +492,12 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
 //    Remove '/' betweeen remoteUrl and new url text, as remoteUrl contains a
 //    trailing '/'.  Having '//' in the url was causing a redirect error,
 //    and redirects aren't currently allowed/handled. Also remove extra call
-//    to manager->get using removteUrl, doesn't seem to be needed.
+//    to manager->get using removeUrl, doesn't seem to be needed.
+//
+//    Kathleen Biagas, Fri Oct 30, 2026
+//    Disable HTTP/2 for QNetworkRequest to work around an HTTP/2
+//    header-compression failure in Qt may possibly be removed when Qt is
+//    next updated.
 //
 // ****************************************************************************
 
@@ -514,6 +519,10 @@ QvisHostProfileWindow::retrieveLatestProfiles()
     remoteData.clear();
 
     QNetworkRequest maprequest(QUrl(remoteUrl->currentText() + "networks.dat"));
+    // to work around a possible HTTP/2 header-compression failure in Qt
+    // may possibly be removed when Qt is next updated.
+    maprequest.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
+
     QNetworkReply* reply = manager->get(maprequest);
     reply->waitForReadyRead(-1);
 }
@@ -610,6 +619,11 @@ QvisHostProfileWindow::addRemoteProfile(const QString& inputUrl, const QString &
 //    trailing '/'.  Having '//' in the url was causing a redirect error,
 //    and redirects aren't currently allowed/handled.
 //
+//    Kathleen Biagas, Fri Oct 30, 2026
+//    Disable HTTP/2 for QNetworkRequest to work around an HTTP/2
+//    header-compression failure in Qt may possibly be removed when Qt is
+//    next updated.
+//
 // ****************************************************************************
 
 void
@@ -659,6 +673,9 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
         }
         // change the url to retieve hosts directory structure from json file
         QNetworkRequest request(QUrl(remoteUrl->currentText() + "networks.json"));
+        // to work around a possible HTTP/2 header-compression failure in Qt
+        // may possibly be removed when Qt is next updated.
+        request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
         manager->get(request);
     }
     else if(QFileInfo(inputUrl).fileName() == "networks.json")
@@ -1153,7 +1170,7 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 //   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
 //   Replace `currentIndexChanged` signal for QComboBox with
 //   'currentTextChanged' as the former is not available in Qt 6.
-// 
+//
 //   Eric Brugger, Tue May 21 13:35:51 PDT 2024
 //   Add flux.
 //
