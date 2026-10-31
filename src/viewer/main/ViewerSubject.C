@@ -5695,6 +5695,9 @@ ViewerSubject::GetNowinMode() const
 //   Brad Whitlock, Tue Apr 14 11:28:20 PDT 2009
 //   Use ViewerProperties.
 //
+//   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//   Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 void
@@ -5702,7 +5705,6 @@ ViewerSubject::SetNowinMode(bool value)
 {
     GetViewerProperties()->SetNowin(value);
 
-    avtCallback::SetSoftwareRendering(value);
     avtCallback::SetNowinMode(value);
 }
 

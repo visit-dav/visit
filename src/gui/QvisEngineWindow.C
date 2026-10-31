@@ -116,6 +116,9 @@ QvisEngineWindow::~QvisEngineWindow()
 //    Alister Maguire, Thu Nov 12 09:58:35 PST 2020
 //    Removed the interrupt engine logic as it is no longer used.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 void
@@ -153,16 +156,6 @@ QvisEngineWindow::CreateWindowContents()
     infoLayout->addWidget(engineNP, row, 1);
     QLabel *engineNPLabel = new QLabel(tr("Processors:"),engineInfo);
     infoLayout->addWidget(engineNPLabel, row, 0);
-    ++row;
-
-    QString gpuTxt(tr("The number of processors using GPUs is affected using "
-        "the controls of the GPU Acceleration tab in the Host Profiles window."));
-    engineNP_GPU = new QLabel(engineInfo);
-    engineNP_GPU->setToolTip(gpuTxt);
-    infoLayout->addWidget(engineNP_GPU, row, 1);
-    QLabel *engineNPGPULabel = new QLabel(tr("Processors using GPUs:"),engineInfo);
-    engineNPGPULabel->setToolTip(gpuTxt);
-    infoLayout->addWidget(engineNPGPULabel, row, 0);
     ++row;
 
     engineLB = new QLabel(engineInfo);
@@ -410,6 +403,9 @@ QvisEngineWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Mon Oct 10 12:49:25 PDT 2011
 //    I added more information.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 void
@@ -423,7 +419,6 @@ QvisEngineWindow::UpdateInformation(int index)
         engineLabel->setText(tr("Engine:"));
         engineNN->setText("");
         engineNP->setText("");
-        engineNP_GPU->setText("");
         engineLB->setText("");
         engineLB_Scheme->setText("");
         engineInfo->setEnabled(false);
@@ -449,7 +444,6 @@ QvisEngineWindow::UpdateInformation(int index)
             engineNN->setText(QString("%1").arg(props.GetNumNodes()));
 
         engineNP->setText(QString("%1").arg(props.GetNumProcessors()));
-        engineNP_GPU->setText(QString("%1").arg(props.GetNumProcessorsUsingGPUs()));
 
         if(props.GetDynamicLoadBalancing())
         {
