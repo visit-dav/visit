@@ -605,6 +605,33 @@ def test_htg():
 
     DeleteAllPlots()
 
+def test_tecplot_title_quotes():
+    TestSection("Test Tecplot export of a database comment containing quotes.")
+    db = data_path("silo_db_comment", "timestep0.silo")
+    OpenDatabase(db)
+    AddPlot("Pseudocolor", "mass")
+    DrawPlots()
+
+    e = ExportDBAttributes()
+    e.db_type = "Tecplot"
+    e.filename = "silo_db_comment"
+    e.variables = ("default")
+    ExportDatabase(e)
+    time.sleep(1)
+
+    firstLine = open("silo_db_comment.tec").readline().rstrip()
+    prefix = "TITLE = \""
+    if firstLine.startswith(prefix) and firstLine.endswith("\""):
+        title = firstLine[len(prefix):-1]
+    else:
+        title = firstLine
+
+    TestValueEQ("Tecplot_file_info_0", "\"" in title, False)
+    TestValueEQ("Tecplot_file_info_1", "TITLE = 'None'" in firstLine, True)
+
+    DeleteAllPlots()
+    CloseDatabase(db)
+
 def main():
     test0()
     test1()
@@ -619,7 +646,7 @@ def main():
     test_bov()
     test_vtk_tetrahedralize()
     test_htg()
+    test_tecplot_title_quotes()
 
 main()
 Exit()
-
