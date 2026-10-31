@@ -8,6 +8,7 @@
 
 #include <avtTecplotWriter.h>
 
+#include <algorithm>
 #include <vector>
 
 #include <avtDatabaseMetaData.h>
@@ -39,20 +40,6 @@ using     std::vector;
 
 #define FLOAT_COLUMN_WIDTH 14
 #define INT_COLUMN_WIDTH   11
-
-static string
-SanitizeTecplotTitleText(const string &text)
-{
-    string sanitized(text);
-    for(string::size_type i = 0; i < sanitized.size(); ++i)
-    {
-        if(sanitized[i] == '\"')
-            sanitized[i] = '\'';
-        else if(sanitized[i] == '\n' || sanitized[i] == '\r')
-            sanitized[i] = ' ';
-    }
-    return sanitized;
-}
 
 avtTecplotWriter::avtTecplotWriter(const DBOptionsAttributes *writeOpts)
 {
@@ -157,8 +144,10 @@ avtTecplotWriter::WriteHeaders(const avtDatabaseMetaData *md,
 
     if(writeContext.Rank() == 0)
     {
-        const string title = SanitizeTecplotTitleText(md->GetDatabaseName()) +
-            ": " + SanitizeTecplotTitleText(md->GetDatabaseComment());
+        string title = md->GetDatabaseName() + ": " + md->GetDatabaseComment();
+        std::replace(title.begin(), title.end(), '\"', '\'');
+        std::replace(title.begin(), title.end(), '\n', ' ');
+        std::replace(title.begin(), title.end(), '\r', ' ');
         file() << "TITLE = \"" << title.c_str() <<"\"" << endl;
         variablesWritten = false;
     }
