@@ -83,6 +83,9 @@ typedef   void  (*ResetTimeoutCallback)(void *, int);
 //    HAVE_OSPRAY is defined instead of VISIT_OSPRAY.
 //    Add Set/GetUseOSPRay.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -110,11 +113,6 @@ class PIPELINE_API avtCallback
 
     static bool                  GetNowinInteractionMode()
                                      { return nowinInteractionMode; }
-
-    static void                  SetSoftwareRendering(bool b)
-                                     { swRendering = b; }
-    static bool                  GetSoftwareRendering(void)
-                                     { return swRendering; }
 
 #if defined(HAVE_OSPRAY)
     static void                  SetUseOSPRay(bool b)
@@ -181,7 +179,6 @@ class PIPELINE_API avtCallback
 
     static bool                  nowinMode;
     static bool                  nowinInteractionMode;
-    static bool                  swRendering;
 
 #if defined(HAVE_OSPRAY)
     static bool                  useOSPRay;

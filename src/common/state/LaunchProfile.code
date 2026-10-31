@@ -28,6 +28,9 @@ Definition:
 //   Brad Whitlock, Wed Oct 22 17:38:43 PDT 2014
 //   I added code for node/proc constraints.
 //
+//   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//   Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 bool
 LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
@@ -208,36 +211,6 @@ LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("visitSetsUpEnv", visitSetsUpEnv));
     }
 
-    if(completeSave || IsSelected(ID_canDoHWAccel))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("canDoHWAccel", canDoHWAccel));
-    }
-
-    if(completeSave || IsSelected(ID_GPUsPerNode))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("GPUsPerNode", GPUsPerNode));
-    }
-
-    if(completeSave || IsSelected(ID_XArguments))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("XArguments", XArguments));
-    }
-
-    if(completeSave || IsSelected(ID_launchXServers))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("launchXServers", launchXServers));
-    }
-
-    if(completeSave || IsSelected(ID_XDisplay))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("XDisplay", XDisplay));
-    }
-
     if(completeSave || IsSelected(ID_numThreads))
     {
         addToParent = true;
@@ -299,6 +272,9 @@ Definition:
 //
 //   Brad Whitlock, Wed Oct 22 17:38:43 PDT 2014
 //   I added code for node/proc constraints.
+//
+//   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//   Remove code related to hardware accelerated parallel rendering.
 //
 // ****************************************************************************
 void
@@ -364,16 +340,6 @@ LaunchProfile::SelectOnlyDifferingFields(LaunchProfile &other)
         Select(ID_machinefile,         (void *)&machinefile);
     if (visitSetsUpEnv != other.GetVisitSetsUpEnv())
         Select(ID_visitSetsUpEnv,      (void *)&visitSetsUpEnv);
-    if (canDoHWAccel != other.GetCanDoHWAccel())
-        Select(ID_canDoHWAccel,        (void *)&canDoHWAccel);
-    if(GPUsPerNode != other.GetGPUsPerNode())
-        Select(ID_GPUsPerNode,        (void *)&GPUsPerNode);
-    if(XArguments != other.GetXArguments())
-        Select(ID_XArguments,        (void *)&XArguments);
-    if(launchXServers != other.GetLaunchXServers())
-        Select(ID_launchXServers,        (void *)&launchXServers);
-    if(XDisplay != other.GetXDisplay())
-        Select(ID_XDisplay,        (void *)&XDisplay);
     if(numThreads != other.GetNumThreads())
         Select(ID_numThreads,      (void *)&numThreads);
     if(constrainNodeProcs != other.GetConstrainNodeProcs())

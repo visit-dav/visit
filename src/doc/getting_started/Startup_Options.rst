@@ -127,29 +127,6 @@ USAGE: visit [options]::
                              image compositor (default).
         -no-icet             Do not use the IceT parallel compositor.
 
-    Hardware accelerated parallel (scalable) rendering options
-    ---------------------------------------------------------------------------
-        Notes: These options should only be used with parallel clusters that
-        have graphics cards.  If you are using a serial version of VisIt, you
-        are already getting hardware acceleration and these options are not
-        needed.  Furthermore, you must be in scalable rendering mode for VisIt
-        to utilize a cluster's GPUs.  By default, VisIt is configured to
-        switch into scalable rendering mode when rendering complexity exceeds
-        a predefined limit.
-
-        VisIt can manage the creation and tear down of X servers for you.  It
-        will do this automatically if you specify the -launch-x parameter,
-        but you can customize the process with the -x-args and -display
-        parameters, which respect %l and %n format specifiers.
-
-    ---------------------------------------------------------------------------
-        -hw-accel              Tells VisIt that it should use graphics cards.
-        -n-gpus-per-node <int> Number of GPUs per node of the cluster (1).
-        -launch-x              Tell VisIt to manage the X servers
-        -no-launch-x           Let the cluster manager X servers [default]
-        -display               Tells VisIt which display to use.
-        -x-args '<string>'     Extra arguments to X server.
-
     Load balance options
     ---------------------------------------------------------------------------
         Note: Each time VisIt executes a pipeline the relevant domains for the

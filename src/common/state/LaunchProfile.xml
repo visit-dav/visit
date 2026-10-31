@@ -77,20 +77,6 @@
     <Field name="visitSetsUpEnv" label="visitSetsUpEnv" type="bool">
       false
     </Field>
-    <Field name="canDoHWAccel" label="Machine can do hardware acceleration" type="bool">
-      false
-    </Field>
-    <Field name="GPUsPerNode" label="Number of GPUs Per Node" type="int">
-      1
-    </Field>
-    <Field name="XArguments" label="Arguments to pass to X servers" type="string">
-    </Field>
-    <Field name="launchXServers" label="Have VisIt launch the X servers" type="bool">
-      false
-    </Field>
-    <Field name="XDisplay" label="DISPLAY to use for X servers" type="string">
-      :%l
-    </Field>
     <Field name="numThreads" label="numThreads" type="int">
       0
     </Field>

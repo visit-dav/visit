@@ -46,8 +46,6 @@ PyEngineProperties_ToString(const EngineProperties *atts, const char *prefix, co
     str += tmpStr;
     snprintf(tmpStr, 1000, "%snumProcessors = %d\n", prefix, atts->GetNumProcessors());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%snumProcessorsUsingGPUs = %d\n", prefix, atts->GetNumProcessorsUsingGPUs());
-    str += tmpStr;
     if(atts->GetDynamicLoadBalancing())
         snprintf(tmpStr, 1000, "%sdynamicLoadBalancing = 1\n", prefix);
     else
@@ -216,66 +214,6 @@ EngineProperties_GetNumProcessors(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-EngineProperties_SetNumProcessorsUsingGPUs(PyObject *self, PyObject *args)
-{
-    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    int cval = int(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the numProcessorsUsingGPUs in the object.
-    obj->data->SetNumProcessorsUsingGPUs(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-EngineProperties_GetNumProcessorsUsingGPUs(PyObject *self, PyObject *args)
-{
-    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetNumProcessorsUsingGPUs()));
-    return retval;
-}
-
-/*static*/ PyObject *
 EngineProperties_SetDynamicLoadBalancing(PyObject *self, PyObject *args)
 {
     PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
@@ -393,8 +331,6 @@ PyMethodDef PyEngineProperties_methods[ENGINEPROPERTIES_NMETH] = {
     {"GetNumNodes", EngineProperties_GetNumNodes, METH_VARARGS},
     {"SetNumProcessors", EngineProperties_SetNumProcessors, METH_VARARGS},
     {"GetNumProcessors", EngineProperties_GetNumProcessors, METH_VARARGS},
-    {"SetNumProcessorsUsingGPUs", EngineProperties_SetNumProcessorsUsingGPUs, METH_VARARGS},
-    {"GetNumProcessorsUsingGPUs", EngineProperties_GetNumProcessorsUsingGPUs, METH_VARARGS},
     {"SetDynamicLoadBalancing", EngineProperties_SetDynamicLoadBalancing, METH_VARARGS},
     {"GetDynamicLoadBalancing", EngineProperties_GetDynamicLoadBalancing, METH_VARARGS},
     {"SetLoadBalancingScheme", EngineProperties_SetLoadBalancingScheme, METH_VARARGS},
@@ -427,8 +363,6 @@ PyEngineProperties_getattro(PyObject *self, PyObject *attr_name)
         return EngineProperties_GetNumNodes(self, NULL);
     if(strcmp(name, "numProcessors") == 0)
         return EngineProperties_GetNumProcessors(self, NULL);
-    if(strcmp(name, "numProcessorsUsingGPUs") == 0)
-        return EngineProperties_GetNumProcessorsUsingGPUs(self, NULL);
     if(strcmp(name, "dynamicLoadBalancing") == 0)
         return EngineProperties_GetDynamicLoadBalancing(self, NULL);
     if(strcmp(name, "loadBalancingScheme") == 0)
@@ -452,8 +386,6 @@ PyEngineProperties_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
         obj = EngineProperties_SetNumNodes(self, args);
     else if(strcmp(name, "numProcessors") == 0)
         obj = EngineProperties_SetNumProcessors(self, args);
-    else if(strcmp(name, "numProcessorsUsingGPUs") == 0)
-        obj = EngineProperties_SetNumProcessorsUsingGPUs(self, args);
     else if(strcmp(name, "dynamicLoadBalancing") == 0)
         obj = EngineProperties_SetDynamicLoadBalancing(self, args);
     else if(strcmp(name, "loadBalancingScheme") == 0)
