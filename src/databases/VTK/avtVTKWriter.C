@@ -224,6 +224,11 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //    Kathleen Biagas, Jan 10, 2025
 //    Set file version to 4.2 for legacy versions.
+// 
+//    Justin Privitera, Fri Oct 30 19:28:59 PDT 2026
+//    Use VISIT_SLASH_STRING and avoid sprintf in lieu of std::string
+//    operations. Fixed a bug where we were causing undefined behavior:
+//    `sprintf(chunkname, "%s.vtk", chunkname);`.
 //
 // ****************************************************************************
 
@@ -391,6 +396,9 @@ avtVTKWriter::CloseFile(void)
 //    Kathleen Biagas, Fri Feb 17 15:45:30 PST 2017
 //    Use short filenames instead of full-path for writing names to root.
 //    .vtm expects relative not full paths.
+// 
+//    Justin Privitera, Fri Oct 30 19:28:59 PDT 2026
+//    Use VISIT_SLASH_STRING and std::string operations.
 //
 // ****************************************************************************
 

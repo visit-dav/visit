@@ -117,6 +117,11 @@ avtTecplotWriter::OpenFile(const string &stemname, int)
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   Wed Feb 9 13:44:32 PST 2005
+// 
+//  Modifications:
+//    Justin Privitera, Fri Oct 30 19:28:59 PDT 2026
+//    Fix a bug where quotes or newlines could result in an invalid Tecplot
+//    header.
 //
 // ****************************************************************************
 

@@ -65,6 +65,11 @@
 #    off here to restore the previous behavior of this test. There is a bug
 #    currently with reading the exported colors from OBJ files written with
 #    our writer.
+# 
+#    Justin Privitera, Fri Oct 30 19:28:59 PDT 2026
+#    Added a test for writing Tecplot files when there are bad characters in
+#    the db comment. This ensures that the Tecplot writer will safely remove
+#    these characters.
 #
 # ----------------------------------------------------------------------------
 import time
