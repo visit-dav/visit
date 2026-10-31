@@ -8,6 +8,7 @@
 
 #include <avtTecplotWriter.h>
 
+#include <algorithm>
 #include <vector>
 
 #include <avtDatabaseMetaData.h>
@@ -116,6 +117,11 @@ avtTecplotWriter::OpenFile(const string &stemname, int)
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   Wed Feb 9 13:44:32 PST 2005
+// 
+//  Modifications:
+//    Justin Privitera, Fri Oct 30 19:28:59 PDT 2026
+//    Fix a bug where quotes or newlines could result in an invalid Tecplot
+//    header.
 //
 // ****************************************************************************
 
@@ -143,8 +149,11 @@ avtTecplotWriter::WriteHeaders(const avtDatabaseMetaData *md,
 
     if(writeContext.Rank() == 0)
     {
-        file() << "TITLE = \"" << md->GetDatabaseName().c_str() << ": "
-             << md->GetDatabaseComment().c_str() <<"\"" << endl;
+        string title = md->GetDatabaseName() + ": " + md->GetDatabaseComment();
+        std::replace(title.begin(), title.end(), '\"', '\'');
+        std::replace(title.begin(), title.end(), '\n', ' ');
+        std::replace(title.begin(), title.end(), '\r', ' ');
+        file() << "TITLE = \"" << title.c_str() <<"\"" << endl;
         variablesWritten = false;
     }
     else
