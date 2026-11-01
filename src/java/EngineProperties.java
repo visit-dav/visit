@@ -22,7 +22,7 @@ package llnl.visit;
 
 public class EngineProperties extends AttributeSubject
 {
-    private static int EngineProperties_numAdditionalAtts = 5;
+    private static int EngineProperties_numAdditionalAtts = 4;
 
     public EngineProperties()
     {
@@ -30,7 +30,6 @@ public class EngineProperties extends AttributeSubject
 
         numNodes = -1;
         numProcessors = 1;
-        numProcessorsUsingGPUs = 0;
         dynamicLoadBalancing = false;
         loadBalancingScheme = new String("");
     }
@@ -41,7 +40,6 @@ public class EngineProperties extends AttributeSubject
 
         numNodes = -1;
         numProcessors = 1;
-        numProcessorsUsingGPUs = 0;
         dynamicLoadBalancing = false;
         loadBalancingScheme = new String("");
     }
@@ -52,7 +50,6 @@ public class EngineProperties extends AttributeSubject
 
         numNodes = obj.numNodes;
         numProcessors = obj.numProcessors;
-        numProcessorsUsingGPUs = obj.numProcessorsUsingGPUs;
         dynamicLoadBalancing = obj.dynamicLoadBalancing;
         loadBalancingScheme = new String(obj.loadBalancingScheme);
 
@@ -74,7 +71,6 @@ public class EngineProperties extends AttributeSubject
         // Create the return value
         return ((numNodes == obj.numNodes) &&
                 (numProcessors == obj.numProcessors) &&
-                (numProcessorsUsingGPUs == obj.numProcessorsUsingGPUs) &&
                 (dynamicLoadBalancing == obj.dynamicLoadBalancing) &&
                 (loadBalancingScheme.equals(obj.loadBalancingScheme)));
     }
@@ -92,28 +88,21 @@ public class EngineProperties extends AttributeSubject
         Select(1);
     }
 
-    public void SetNumProcessorsUsingGPUs(int numProcessorsUsingGPUs_)
-    {
-        numProcessorsUsingGPUs = numProcessorsUsingGPUs_;
-        Select(2);
-    }
-
     public void SetDynamicLoadBalancing(boolean dynamicLoadBalancing_)
     {
         dynamicLoadBalancing = dynamicLoadBalancing_;
-        Select(3);
+        Select(2);
     }
 
     public void SetLoadBalancingScheme(String loadBalancingScheme_)
     {
         loadBalancingScheme = loadBalancingScheme_;
-        Select(4);
+        Select(3);
     }
 
     // Property getting methods
     public int     GetNumNodes() { return numNodes; }
     public int     GetNumProcessors() { return numProcessors; }
-    public int     GetNumProcessorsUsingGPUs() { return numProcessorsUsingGPUs; }
     public boolean GetDynamicLoadBalancing() { return dynamicLoadBalancing; }
     public String  GetLoadBalancingScheme() { return loadBalancingScheme; }
 
@@ -125,10 +114,8 @@ public class EngineProperties extends AttributeSubject
         if(WriteSelect(1, buf))
             buf.WriteInt(numProcessors);
         if(WriteSelect(2, buf))
-            buf.WriteInt(numProcessorsUsingGPUs);
-        if(WriteSelect(3, buf))
             buf.WriteBool(dynamicLoadBalancing);
-        if(WriteSelect(4, buf))
+        if(WriteSelect(3, buf))
             buf.WriteString(loadBalancingScheme);
     }
 
@@ -143,12 +130,9 @@ public class EngineProperties extends AttributeSubject
             SetNumProcessors(buf.ReadInt());
             break;
         case 2:
-            SetNumProcessorsUsingGPUs(buf.ReadInt());
-            break;
-        case 3:
             SetDynamicLoadBalancing(buf.ReadBool());
             break;
-        case 4:
+        case 3:
             SetLoadBalancingScheme(buf.ReadString());
             break;
         }
@@ -159,7 +143,6 @@ public class EngineProperties extends AttributeSubject
         String str = new String();
         str = str + intToString("numNodes", numNodes, indent) + "\n";
         str = str + intToString("numProcessors", numProcessors, indent) + "\n";
-        str = str + intToString("numProcessorsUsingGPUs", numProcessorsUsingGPUs, indent) + "\n";
         str = str + boolToString("dynamicLoadBalancing", dynamicLoadBalancing, indent) + "\n";
         str = str + stringToString("loadBalancingScheme", loadBalancingScheme, indent) + "\n";
         return str;
@@ -169,7 +152,6 @@ public class EngineProperties extends AttributeSubject
     // Attributes
     private int     numNodes;
     private int     numProcessors;
-    private int     numProcessorsUsingGPUs;
     private boolean dynamicLoadBalancing;
     private String  loadBalancingScheme;
 }

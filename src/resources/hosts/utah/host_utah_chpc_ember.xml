@@ -45,11 +45,6 @@
         <Field name="machinefileSet" type="bool">false</Field>
         <Field name="machinefile" type="string"></Field>
         <Field name="visitSetsUpEnv" type="bool">false</Field>
-        <Field name="canDoHWAccel" type="bool">false</Field>
-        <Field name="GPUsPerNode" type="int">1</Field>
-        <Field name="XArguments" type="string"></Field>
-        <Field name="launchXServers" type="bool">false</Field>
-        <Field name="XDisplay" type="string">:%l</Field>
         <Field name="profileName" type="string">"ember parallel"</Field>
     </Object>
     <Field name="activeProfile" type="int">0</Field>

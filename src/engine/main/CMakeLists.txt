@@ -59,6 +59,9 @@
 #    Remove visit_vtk_offscreen, no longer needed (VTK 9.5).
 #    Remove unnecessary LIBRARY_OUTPUT_DIRECTORY in link_directories call.
 #
+#    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+#    Remove VisItDisplay, MesaDispaly and XDisplay.
+#
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
@@ -68,11 +71,9 @@ set(LIBENGINE_SOURCES
     Engine.C
     EngineBase.C
     LoadBalancer.C
-    MesaDisplay.C
     Netnodes.C
     NetworkManager.C
-    ProgrammableCompositer.C
-    VisItDisplay.C)
+    ProgrammableCompositer.C)
 
 set(LIBENGINE_HEADERS
     ClonedDataNetwork.h
@@ -83,21 +84,14 @@ set(LIBENGINE_HEADERS
     EngineRPCExecutor.h
     Executors.h
     LoadBalancer.h
-    MesaDisplay.h
     Netnodes.h
     NetworkManager.h
     ProgrammableCompositer.h
-    VisItDisplay.h
     engine_main_exports.h)
 
 # If the engine is static then we need some static symbol lookup functions
 if(VISIT_STATIC)
     list(APPEND LIBENGINE_SOURCES EngineStaticSymbolLocator.C)
-endif()
-
-if(NOT WIN32 AND NOT APPLE AND VISIT_USE_X)
-    list(APPEND LIBENGINE_SOURCES XDisplay.C)
-    list(APPEND LIBENGINE_HEADERS XDisplay.h)
 endif()
 
 

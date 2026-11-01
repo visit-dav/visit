@@ -56,6 +56,9 @@ class StatusAttributes;
 //    Removed interruptEngine and interruptEngineButton. We decided this
 //    is very unlikely to ever be implemented.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 class GUI_API QvisEngineWindow : public QvisPostableWindowObserver
@@ -96,7 +99,6 @@ private:
     QGroupBox        *engineInfo;
     QLabel           *engineNN;
     QLabel           *engineNP;
-    QLabel           *engineNP_GPU;
     QLabel           *engineLB;
     QLabel           *engineLB_Scheme;
     QLabel           *totalStatusLabel;
