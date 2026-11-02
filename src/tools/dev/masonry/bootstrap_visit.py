@@ -183,9 +183,6 @@ def steps_configure(opts,build_type,ctx):
         cmake_opts += ' -DVISIT_C_COMPILER:PATH="%s"' % opts["c_compiler"]
     if "cxx_compiler" in opts:
         cmake_opts += ' -DVISIT_CXX_COMPILER:PATH="%s"' % opts["cxx_compiler"]
-    if "boost_dir" in opts:
-        cmake_opts += ' -DVISIT_USE_BOOST:BOOL="ON"'
-        cmake_opts += ' -DBOOST_ROOT:PATH="%s"' % opts["boost_dir"]
     if "build_xdb" in opts:
         if opts["build_xdb"]:
             cmake_opts += " -DVISIT_ENABLE_XDB:BOOL=ON"    

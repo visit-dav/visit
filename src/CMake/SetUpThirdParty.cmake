@@ -668,10 +668,6 @@ endif()
 
 include(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
 
-include(${VISIT_SOURCE_DIR}/CMake/FindVisItDamaris.cmake)
-
-include(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
-
 if((VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
     include(${VISIT_SOURCE_DIR}/CMake/FindVisItPython.cmake)
     if(NOT PYTHON_FOUND)
@@ -721,7 +717,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
 
-
     include(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindCFITSIO.cmake)
@@ -748,7 +743,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     include(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
-
 
     include(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
 

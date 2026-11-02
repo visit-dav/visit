@@ -3834,8 +3834,7 @@ namespace paraDIS {
       // ----------------------------------------------------------
       // 1. Segment file: the header
       fprintf(segfile, "# vtk DataFile Version 3.0\n" );
-      // TODO this is pretty nasty, we should just use fprintf
-      fprintf(segfile, "%s", visit_fmt::format("{}, written by paraDIS_lib. mBounds are {}, number of arms = {}\n", filename, (FullNode::mBoundsSize.Stringify()), (lastarm-firstarm+1)).c_str()); 
+      fprintf(segfile, "%s, written by paraDIS_lib. mBounds are %s, number of arms = %d\n", filename, FullNode::mBoundsSize.Stringify().c_str(), (lastarm-firstarm+1))
       fprintf(segfile, "ASCII\n" );
       fprintf(segfile, "DATASET POLYDATA\n" );
       
@@ -4550,7 +4549,7 @@ namespace paraDIS {
       } else {
         dbprintf(4, "Skipping currentArm %d (type %d) as it was either seen (%d) and was type 111 or an unknown arm, or else FindEndpoints could not handle it.\n", (*currentArm)->mArmID, (*currentArm)->mArmType, (*currentArm)->mSeen);  
       }
-      UPDATEPROGRESS(numArms, totalArms, visit_fmt::format("FindMetaArms: {} MetaArms created",numMetaArms)); 
+      UPDATEPROGRESS(numArms, totalArms, visit_fmt::format("FindMetaArms: {} MetaArms created", numMetaArms)); 
     }
     COMPLETEPROGRESS(totalArms, visit_fmt::format("FindMetaArms: {} MetaArms created", numMetaArms)); 
 
