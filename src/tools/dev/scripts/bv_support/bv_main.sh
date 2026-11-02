@@ -1161,7 +1161,6 @@ function run_build_visit()
             --makeflags) next_arg="makeflags";;
             --cleanup) CLEANUP="yes";;
             --no-hostconf) DO_HOSTCONF="no";;
-            --no-boost) DO_BOOST="no";;
             --no-qt-silent) DO_QT_SILENT="no";;
             --parallel) parallel="yes"; DO_ICET="yes";;
             --prefix) next_arg="prefix";;
