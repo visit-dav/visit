@@ -947,6 +947,9 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
 //   Set the minimum height of the tab to keep all 3 tabs the same.
 //   The GPU tab would drop the tab height down.
 //
+//   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//   Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 QWidget *
@@ -989,9 +992,6 @@ QvisHostProfileWindow::CreateLaunchProfilesGroup()
 
     parallelSettingsGroup = CreateParallelSettingsGroup();
     profileTabs->addTab(parallelSettingsGroup, tr("Parallel"));
-
-    hwAccelSettingsGroup = CreateHWAccelSettingsGroup();
-    profileTabs->addTab(hwAccelSettingsGroup, tr("GPU Acceleration"));
 
     return currentGroup;
 }
@@ -1438,107 +1438,6 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
 }
 
 // ****************************************************************************
-// Method:  QvisHostProfileWindow::CreateHWAccelSettingsGroup
-//
-// Purpose:
-//   Creates the hardware acceleration settings tab for a launch profile.
-//
-// Arguments:
-//   none
-//
-// Programmer:  Jeremy Meredith
-// Creation:    February 18, 2010
-//
-// Modifications:
-//
-//   Tom Fogal, Fri May  6 18:13:49 MDT 2011
-//   Add new X configuration widgets.
-//   Remove preCommand/postCommand widgets.
-//
-//   Brad Whitlock, Thu Oct  6 11:56:32 PDT 2011
-//   Return the created widget.
-//
-//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
-//   Replace `valueChanged(const QString)` signal for QSpinBox with
-//   'valueChanged(int)' as the former is not available in Qt 6.
-//
-// ****************************************************************************
-
-QWidget *
-QvisHostProfileWindow::CreateHWAccelSettingsGroup()
-{
-    QWidget *currentGroup = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(currentGroup);
-    layout->setContentsMargins(5,5,5,5);
-
-    QString str1(
-       QString("<i>") +
-       tr("These options are for hardware accelerating the scalable rendering "
-          "feature on a compute cluster. In other modes, VisIt will automatically "
-          "use hardware acceleration. This tab only needs to be modified for "
-          "compute clusters that have graphics cards.") +
-       QString("</i>"));
-
-    hwdisclaimer = new QLabel(str1, currentGroup);
-    hwdisclaimer->setWordWrap(true);
-    layout->addWidget(hwdisclaimer);
-
-    // Spacer.
-    layout->addWidget(new QLabel(currentGroup));
-
-    //
-    // Hardware group
-    //
-    hardwareGroup = new QGroupBox(tr("Use cluster's graphics cards"), currentGroup);
-    hardwareGroup->setCheckable(true);
-    connect(hardwareGroup, SIGNAL(toggled(bool)),
-            this, SLOT(toggleCanDoHW(bool)));
-    layout->addWidget(hardwareGroup);
-    int hRow = 0;
-    QGridLayout *hLayout = new QGridLayout(hardwareGroup);
-    hLayout->setContentsMargins(5,5,5,5);
-    hLayout->setSpacing(HOST_PROFILE_SPACING);
-
-    QLabel* lblXDisplay = new QLabel(tr("DISPLAY:"), hardwareGroup);
-    txtXDisplay = new QLineEdit(hardwareGroup);
-    txtXDisplay->setText(":%l");
-    connect(txtXDisplay, SIGNAL(editingFinished()), this,
-            SLOT(xDisplayChanged()));
-    hLayout->addWidget(lblXDisplay, hRow,0, 1,1);
-    hLayout->addWidget(txtXDisplay, hRow,1, 1,1);
-    hRow++;
-
-    cbLaunchX = new QCheckBox(tr("Have VisIt launch X servers"), hardwareGroup);
-    connect(cbLaunchX, SIGNAL(toggled(bool)), this, SLOT(toggleLaunchX(bool)));
-    hLayout->addWidget(cbLaunchX, hRow,0, 1,2);
-    hRow++;
-
-    QLabel* lblNGPUs = new QLabel(tr("Number of GPUs per node:"), hardwareGroup);
-    sbNGPUs = new QSpinBox();
-    sbNGPUs->setKeyboardTracking(false);
-    sbNGPUs->setRange(0, 2048);
-    sbNGPUs->setEnabled(true);
-    connect(sbNGPUs, SIGNAL(valueChanged(int)), this,
-            SLOT(nGPUsChanged(int)));
-    hLayout->addWidget(lblNGPUs, hRow,0, 1,1);
-    hLayout->addWidget(sbNGPUs, hRow,1, 1,1);
-    hRow++;
-
-    cbXArgs = new QCheckBox(tr("X server arguments"), hardwareGroup);
-    txtXArgs = new QLineEdit(hardwareGroup);
-    connect(cbXArgs, SIGNAL(toggled(bool)), this, SLOT(toggleXArgs(bool)));
-    connect(txtXArgs, SIGNAL(editingFinished()), this,
-            SLOT(xArgsChanged()));
-    hLayout->addWidget(cbXArgs, hRow,0, 1,1);
-    hLayout->addWidget(txtXArgs, hRow,1, 1,1);
-    hRow++;
-
-    layout->addStretch(5);
-
-    return currentGroup;
-}
-
-// ****************************************************************************
 // Method: QvisHostProfileWindow::UpdateWindow
 //
 // Purpose:
@@ -1824,6 +1723,9 @@ QvisHostProfileWindow::UpdateMachineProfile()
 //   Brad Whitlock, Wed Oct 22 17:07:49 PDT 2014
 //   Added node/proc constraints.
 //
+//   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//   Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 void
@@ -1856,15 +1758,9 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     launchCheckBox->blockSignals(true);
     launchMethod->blockSignals(true);
     loadBalancing->blockSignals(true);
-    hardwareGroup->blockSignals(true);
     timeout->blockSignals(true);
     threads->blockSignals(true);
     engineArguments->blockSignals(true);
-    cbLaunchX->blockSignals(true);
-    sbNGPUs->blockSignals(true);
-    cbXArgs->blockSignals(true);
-    txtXArgs->blockSignals(true);
-    txtXDisplay->blockSignals(true);
 
     if (currentLaunch == NULL)
     {
@@ -1899,11 +1795,6 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         timeout->setValue(60*4);   // 4 hour default
         threads->setValue(4);      // 4 thread default
         engineArguments->setText("");
-        cbLaunchX->setChecked(false);
-        sbNGPUs->setValue(0);
-        cbXArgs->setChecked(false);
-        txtXArgs->setText("");
-        txtXDisplay->setText(":%l");
     }
     else
     {
@@ -1991,7 +1882,6 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         if (currentLaunch->GetForceDynamic())
             lb = 2;
         loadBalancing->setCurrentIndex(lb);
-        hardwareGroup->setChecked(currentLaunch->GetCanDoHWAccel());
         timeout->setValue(currentLaunch->GetTimeout());
         threads->setValue(currentLaunch->GetNumThreads());
 
@@ -2026,12 +1916,6 @@ QvisHostProfileWindow::UpdateLaunchProfile()
             }
         }
         engineArguments->setText(temp);
-
-        cbLaunchX->setChecked(currentLaunch->GetLaunchXServers());
-        sbNGPUs->setValue(currentLaunch->GetGPUsPerNode());
-        txtXArgs->setText(currentLaunch->GetXArguments().c_str());
-        cbXArgs->setChecked(!currentLaunch->GetXArguments().empty());
-        txtXDisplay->setText(currentLaunch->GetXDisplay().c_str());
 
         // Update the node/proc constraints.
         constraintGroup->setChecked(currentLaunch->GetConstrainNodeProcs());
@@ -2082,15 +1966,9 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     launchCheckBox->blockSignals(false);
     launchMethod->blockSignals(false);
     loadBalancing->blockSignals(false);
-    hardwareGroup->blockSignals(false);
     timeout->blockSignals(false);
     threads->blockSignals(false);
     engineArguments->blockSignals(false);
-    cbLaunchX->blockSignals(false);
-    sbNGPUs->blockSignals(false);
-    cbXArgs->blockSignals(false);
-    txtXArgs->blockSignals(false);
-    txtXDisplay->blockSignals(false);
 }
 
 
@@ -2207,6 +2085,9 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    David Camp, Mon Aug  4 10:46:09 PDT 2014
 //    Added the threads option.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 void
@@ -2318,15 +2199,6 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     loadBalancingLabel->setEnabled(false);
     loadBalancing->setEnabled(false);
 #endif
-
-    hwdisclaimer->setEnabled(launchEnabled);
-    hardwareGroup->setEnabled(launchEnabled);
-    sbNGPUs->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
-    cbXArgs->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
-    txtXArgs->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel() &&
-                         cbXArgs->isChecked());
-    cbLaunchX->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
-    txtXDisplay->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
 
     useVisItScriptForEnvCheckBox->setEnabled(parEnabled);
 }
@@ -4319,169 +4191,6 @@ QvisHostProfileWindow::toggleTunnelSSH(bool tunnel)
     }
 
     UpdateWindowSensitivity();
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-//  Method:  QvisHostProfileWindow::toggleXArgs
-//
-//  Purpose:
-//      Toggles where the user has X arguments to pass.
-//
-//  Arguments:
-//      on       True if we can, false if we can't.
-//
-//  Programmer:  Tom Fogal
-//  Creation:    May 6, 2011
-//
-//  Modifications:
-// ****************************************************************************
-void QvisHostProfileWindow::toggleXArgs(bool on)
-{
-    if(NULL == currentLaunch) { return; }
-
-    txtXArgs->blockSignals(true);
-      txtXArgs->setEnabled(on);
-    txtXArgs->blockSignals(false);
-
-    if(false == on)
-    {
-        currentLaunch->SetXArguments(std::string(""));
-        SetUpdate(false);
-        Apply();
-    }
-    // ignore the on/true case: we'll update currentLaunch when the
-    // associated LineEdit changes.
-}
-
-// ****************************************************************************
-//  Method:  QvisHostProfileWindow::xArgsChanged
-//
-//  Purpose:
-//      Grab the X arguments when the user modifies them.
-//
-//  Arguments:
-//      args     The arguments for the X server.
-//
-//  Programmer:  Tom Fogal
-//  Creation:    May 6, 2011
-//
-//  Modifications:
-// ****************************************************************************
-void QvisHostProfileWindow::xArgsChanged()
-{
-    QString args(txtXArgs->text());
-    if(NULL == currentLaunch || args.isEmpty()) { return; }
-
-    currentLaunch->SetXArguments(args.toStdString());
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-//  Method:  QvisHostProfileWindow::toggleLaunchX
-//
-//  Purpose:
-//      Set whether or not VisIt should launch the X servers.
-//
-//  Arguments:
-//      on       true if VisIt should launch X servers
-//
-//  Programmer:  Tom Fogal
-//  Creation:    May 6, 2011
-//
-//  Modifications:
-// ****************************************************************************
-void QvisHostProfileWindow::toggleLaunchX(bool on)
-{
-    if(NULL == currentLaunch) { return; }
-
-    currentLaunch->SetLaunchXServers(on);
-
-    cbXArgs->blockSignals(true);
-    txtXArgs->blockSignals(true);
-      cbXArgs->setEnabled(on);
-      txtXArgs->setEnabled(on);
-    txtXArgs->blockSignals(false);
-    cbXArgs->blockSignals(false);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-//  Method:  QvisHostProfileWindow::xDisplayChanged
-//
-//  Purpose:
-//      Grab the X display setting when the user changes it
-//
-//  Arguments:
-//      display  the new display
-//
-//  Programmer:  Tom Fogal
-//  Creation:    May 6, 2011
-//
-//  Modifications:
-// ****************************************************************************
-void QvisHostProfileWindow::xDisplayChanged()
-{
-    if(NULL == currentLaunch) { return; }
-
-    currentLaunch->SetXDisplay(txtXDisplay->text().toStdString());
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-//  Method:  QvisHostProfileWindow::toggleCanDoHW
-//
-//  Purpose:
-//      Toggles whether or not we can do hardware acceleration.
-//
-//  Arguments:
-//      state    True if we can, false if we can't.
-//
-//  Programmer:  Hank Childs
-//  Creation:    December 2, 2005
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
-//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
-//
-// ****************************************************************************
-void
-QvisHostProfileWindow::toggleCanDoHW(bool state)
-{
-    if (currentLaunch == NULL)
-        return;
-
-    currentLaunch->SetCanDoHWAccel(state);
-    UpdateWindowSensitivity();
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-//  Method:  QvisHostProfileWindow::nGPUsChanged
-//
-//  Purpose:
-//      Notification that the user changed the number of GPUs in use.
-//
-//  Arguments:
-//    unused, required by Qt prototype.
-//
-//  Programmer:  Tom Fogal
-//  Creation:    May 5, 2011
-//
-//  Modifications:
-// ****************************************************************************
-void
-QvisHostProfileWindow::nGPUsChanged(int value)
-{
-    if(NULL == currentLaunch)
-        return;
-
-    currentLaunch->SetGPUsPerNode(value);
     SetUpdate(false);
     Apply();
 }

@@ -63,8 +63,6 @@ public:
     void SelectSublaunchPreCmd();
     void SelectSublaunchPostCmd();
     void SelectMachinefile();
-    void SelectXArguments();
-    void SelectXDisplay();
     void SelectAllowableNodes();
     void SelectAllowableProcs();
 
@@ -98,11 +96,6 @@ public:
     void SetMachinefileSet(bool machinefileSet_);
     void SetMachinefile(const std::string &machinefile_);
     void SetVisitSetsUpEnv(bool visitSetsUpEnv_);
-    void SetCanDoHWAccel(bool canDoHWAccel_);
-    void SetGPUsPerNode(int GPUsPerNode_);
-    void SetXArguments(const std::string &XArguments_);
-    void SetLaunchXServers(bool launchXServers_);
-    void SetXDisplay(const std::string &XDisplay_);
     void SetNumThreads(int numThreads_);
     void SetConstrainNodeProcs(bool constrainNodeProcs_);
     void SetAllowableNodes(const intVector &allowableNodes_);
@@ -149,13 +142,6 @@ public:
     const std::string  &GetMachinefile() const;
           std::string  &GetMachinefile();
     bool               GetVisitSetsUpEnv() const;
-    bool               GetCanDoHWAccel() const;
-    int                GetGPUsPerNode() const;
-    const std::string  &GetXArguments() const;
-          std::string  &GetXArguments();
-    bool               GetLaunchXServers() const;
-    const std::string  &GetXDisplay() const;
-          std::string  &GetXDisplay();
     int                GetNumThreads() const;
     bool               GetConstrainNodeProcs() const;
     const intVector    &GetAllowableNodes() const;
@@ -208,11 +194,6 @@ public:
         ID_machinefileSet,
         ID_machinefile,
         ID_visitSetsUpEnv,
-        ID_canDoHWAccel,
-        ID_GPUsPerNode,
-        ID_XArguments,
-        ID_launchXServers,
-        ID_XDisplay,
         ID_numThreads,
         ID_constrainNodeProcs,
         ID_allowableNodes,
@@ -250,11 +231,6 @@ private:
     bool         machinefileSet;
     std::string  machinefile;
     bool         visitSetsUpEnv;
-    bool         canDoHWAccel;
-    int          GPUsPerNode;
-    std::string  XArguments;
-    bool         launchXServers;
-    std::string  XDisplay;
     int          numThreads;
     bool         constrainNodeProcs;
     intVector    allowableNodes;
@@ -264,6 +240,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LAUNCHPROFILE_TMFS "siibibsbsbsbsbbbs*bbsbsbsbsbsbbisbsibi*i*"
+#define LAUNCHPROFILE_TMFS "siibibsbsbsbsbbbs*bbsbsbsbsbsbibi*i*"
 
 #endif

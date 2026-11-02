@@ -47,6 +47,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>ANARI rendering now uses a client-server model: the compute engine is responsible for creating the ANARI device and rendering, while the GUI and viewer only need to send and receive ANARI settings. This allows ANARI rendering to be used from a client machine that has no ANARI back-ends installed, such as a laptop or workstation connecting to a remote engine.</li>
   <li>ANARI volume rendering now uses the same client-server model as ANARI surface rendering: the Volume plot's ANARI settings are populated by querying the connected compute engine instead of creating a local ANARI device.</li>
+  <li>Removed existing support for hardware accelerated parallel rendering since the implementation was obsolete.</li>
   <li>The usage logging was modified to use tracker.</li>
 </ul>
 
@@ -78,6 +79,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>XDMF database plugin was updated to treat multiple top-level grids as separate meshes, resolve variables by the owning grid name, avoid leaking fields between sibling grids, and guard against NULL/out-of-range grids instead of crashing. It also skips unsupported top-level grids cleanly, adds debug messages for ignored/unsupported grid cases, and fixes an XdmfGrid ownership leak in metadata population.</li>
   <li>Fixed an issue with MFEM LOR vector fields (displaying incorrectly with patches) caused by incorrect striding on read.</li>
   <li>Fixed a bug with Chombo reader incorrectly reading refinement ratios, causing VisIt to hang.</li>
+  <li>Fixed a bug with the VTK writer that caused files to be written with no name (`.vtk` only) in rare cases on some systems.</li>
+  <li>Fixed a bug with the Tecplot writer which allowed invalid Tecplot header characters (like `"`, `\n`, `\r`) to be written to the header.</li>
   <li>Ported paraDIS plugin to remove use of boost.</li>
 </ul>
 
