@@ -963,7 +963,7 @@ endif()
 # This only tars up src as-is, so use at own discretion if there
 # are modifications or temporary files in your checkout
 
-set(dist_name visit${UL_VERSION}.src)
+set(dist_name visit${UL_VERSION})
 
 # cannot use "${CMAKE_COMMAND} -E tar hzcf" because cmake doesn't
 # support the use of the '-h' option, which resolve symlinks
@@ -982,10 +982,9 @@ add_custom_target(visit-dist
   COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-install  ${dist_name}/scripts/visit-install
   COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-install-run  ${dist_name}/scripts/visit-install-run
   # Tar it up, resolving symlinks
-  COMMAND tar hzcf ${dist_name}.tar.gz ${dist_name}
+  COMMAND tar hzcf ${dist_name}.src.tar.gz ${dist_name}
   # get the checksums
-  COMMAND ${CMAKE_COMMAND} -E sha256sum ${dist_name}.tar.gz > visit-dist-sha256sum.txt
-  COMMAND ${CMAKE_COMMAND} -E md5sum ${dist_name}.tar.gz > visit-dist-md5sum.txt
+  COMMAND ${CMAKE_COMMAND} -E sha256sum ${dist_name}.src.tar.gz > visit-dist-sha256sum.txt
   # clean up
   COMMAND ${CMAKE_COMMAND} -E rm ${VISIT_SOURCE_DIR}/GIT_VERSION
   COMMAND ${CMAKE_COMMAND} -E rm -rf ${dist_name}
