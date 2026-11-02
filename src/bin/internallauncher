@@ -1963,6 +1963,9 @@ class DebugMallocDebugger(Debugger):
 #   Brad Whitlock, Tue Sep 12 12:26:50 PDT 2017
 #   Added Cinema.
 #
+#   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+#   Remove argumnents related to hardware accelerated parallel rendering.
+#
 ###############################################################################
 
 class GeneralArguments(object):
@@ -2000,7 +2003,6 @@ class GeneralArguments(object):
         self.setupenv = 0
         self.nowin = 0
         self.threads = 0
-        self.hw_accel = False
         self.osmesa   = False
         self.hosttoip = False
         self.startdir = None
@@ -2095,9 +2097,6 @@ class GeneralArguments(object):
             n = 2
         else:
             self.arguments = self.arguments + [args[i]]
-        # snoop this without affecting any other parsing
-        if not self.hw_accel and "-hw-accel" in args:
-            self.hw_accel = True
         # snoop this without affecting any other parsing
         if "-osmesa" in args:
             self.osmesa = True
@@ -3364,7 +3363,7 @@ class MainLauncher(object):
             #
             if ( (self.generalArgs.osmesa) or
                  (self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
-                 (self.generalArgs.exe_name.startswith("engine") and not self.generalArgs.hw_accel)):
+                 (self.generalArgs.exe_name.startswith("engine")) ):
                 SETENV("VTK_DEFAULT_OPENGL_WINDOW","vtkOSOpenGLRenderWindow")
                 # osmesa will be in visit's lib dir, make sure this is in LD_LIBRARY_PATH
                 SETENV("LD_LIBRARY_PATH", self.joinpaths([self.visitlibdir, GETENV("LD_LIBRARY_PATH")]))

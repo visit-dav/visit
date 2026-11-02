@@ -41,10 +41,6 @@ void LaunchProfile::Init()
     sublaunchPostCmdSet = false;
     machinefileSet = false;
     visitSetsUpEnv = false;
-    canDoHWAccel = false;
-    GPUsPerNode = 1;
-    launchXServers = false;
-    XDisplay = ":%l";
     numThreads = 0;
     constrainNodeProcs = false;
 
@@ -97,11 +93,6 @@ void LaunchProfile::Copy(const LaunchProfile &obj)
     machinefileSet = obj.machinefileSet;
     machinefile = obj.machinefile;
     visitSetsUpEnv = obj.visitSetsUpEnv;
-    canDoHWAccel = obj.canDoHWAccel;
-    GPUsPerNode = obj.GPUsPerNode;
-    XArguments = obj.XArguments;
-    launchXServers = obj.launchXServers;
-    XDisplay = obj.XDisplay;
     numThreads = obj.numThreads;
     constrainNodeProcs = obj.constrainNodeProcs;
     allowableNodes = obj.allowableNodes;
@@ -292,11 +283,6 @@ LaunchProfile::operator == (const LaunchProfile &obj) const
             (machinefileSet == obj.machinefileSet) &&
             (machinefile == obj.machinefile) &&
             (visitSetsUpEnv == obj.visitSetsUpEnv) &&
-            (canDoHWAccel == obj.canDoHWAccel) &&
-            (GPUsPerNode == obj.GPUsPerNode) &&
-            (XArguments == obj.XArguments) &&
-            (launchXServers == obj.launchXServers) &&
-            (XDisplay == obj.XDisplay) &&
             (numThreads == obj.numThreads) &&
             (constrainNodeProcs == obj.constrainNodeProcs) &&
             (allowableNodes == obj.allowableNodes) &&
@@ -473,11 +459,6 @@ LaunchProfile::SelectAll()
     Select(ID_machinefileSet,      (void *)&machinefileSet);
     Select(ID_machinefile,         (void *)&machinefile);
     Select(ID_visitSetsUpEnv,      (void *)&visitSetsUpEnv);
-    Select(ID_canDoHWAccel,        (void *)&canDoHWAccel);
-    Select(ID_GPUsPerNode,         (void *)&GPUsPerNode);
-    Select(ID_XArguments,          (void *)&XArguments);
-    Select(ID_launchXServers,      (void *)&launchXServers);
-    Select(ID_XDisplay,            (void *)&XDisplay);
     Select(ID_numThreads,          (void *)&numThreads);
     Select(ID_constrainNodeProcs,  (void *)&constrainNodeProcs);
     Select(ID_allowableNodes,      (void *)&allowableNodes);
@@ -513,6 +494,9 @@ LaunchProfile::SelectAll()
 //
 //   Brad Whitlock, Wed Oct 22 17:38:43 PDT 2014
 //   I added code for node/proc constraints.
+//
+//   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//   Remove code related to hardware accelerated parallel rendering.
 //
 // ****************************************************************************
 bool
@@ -694,36 +678,6 @@ LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("visitSetsUpEnv", visitSetsUpEnv));
     }
 
-    if(completeSave || IsSelected(ID_canDoHWAccel))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("canDoHWAccel", canDoHWAccel));
-    }
-
-    if(completeSave || IsSelected(ID_GPUsPerNode))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("GPUsPerNode", GPUsPerNode));
-    }
-
-    if(completeSave || IsSelected(ID_XArguments))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("XArguments", XArguments));
-    }
-
-    if(completeSave || IsSelected(ID_launchXServers))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("launchXServers", launchXServers));
-    }
-
-    if(completeSave || IsSelected(ID_XDisplay))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("XDisplay", XDisplay));
-    }
-
     if(completeSave || IsSelected(ID_numThreads))
     {
         addToParent = true;
@@ -845,16 +799,6 @@ LaunchProfile::SetFromNode(DataNode *parentNode)
         SetMachinefile(node->AsString());
     if((node = searchNode->GetNode("visitSetsUpEnv")) != 0)
         SetVisitSetsUpEnv(node->AsBool());
-    if((node = searchNode->GetNode("canDoHWAccel")) != 0)
-        SetCanDoHWAccel(node->AsBool());
-    if((node = searchNode->GetNode("GPUsPerNode")) != 0)
-        SetGPUsPerNode(node->AsInt());
-    if((node = searchNode->GetNode("XArguments")) != 0)
-        SetXArguments(node->AsString());
-    if((node = searchNode->GetNode("launchXServers")) != 0)
-        SetLaunchXServers(node->AsBool());
-    if((node = searchNode->GetNode("XDisplay")) != 0)
-        SetXDisplay(node->AsString());
     if((node = searchNode->GetNode("numThreads")) != 0)
         SetNumThreads(node->AsInt());
     if((node = searchNode->GetNode("constrainNodeProcs")) != 0)
@@ -1070,41 +1014,6 @@ LaunchProfile::SetVisitSetsUpEnv(bool visitSetsUpEnv_)
 {
     visitSetsUpEnv = visitSetsUpEnv_;
     Select(ID_visitSetsUpEnv, (void *)&visitSetsUpEnv);
-}
-
-void
-LaunchProfile::SetCanDoHWAccel(bool canDoHWAccel_)
-{
-    canDoHWAccel = canDoHWAccel_;
-    Select(ID_canDoHWAccel, (void *)&canDoHWAccel);
-}
-
-void
-LaunchProfile::SetGPUsPerNode(int GPUsPerNode_)
-{
-    GPUsPerNode = GPUsPerNode_;
-    Select(ID_GPUsPerNode, (void *)&GPUsPerNode);
-}
-
-void
-LaunchProfile::SetXArguments(const std::string &XArguments_)
-{
-    XArguments = XArguments_;
-    Select(ID_XArguments, (void *)&XArguments);
-}
-
-void
-LaunchProfile::SetLaunchXServers(bool launchXServers_)
-{
-    launchXServers = launchXServers_;
-    Select(ID_launchXServers, (void *)&launchXServers);
-}
-
-void
-LaunchProfile::SetXDisplay(const std::string &XDisplay_)
-{
-    XDisplay = XDisplay_;
-    Select(ID_XDisplay, (void *)&XDisplay);
 }
 
 void
@@ -1379,48 +1288,6 @@ LaunchProfile::GetVisitSetsUpEnv() const
     return visitSetsUpEnv;
 }
 
-bool
-LaunchProfile::GetCanDoHWAccel() const
-{
-    return canDoHWAccel;
-}
-
-int
-LaunchProfile::GetGPUsPerNode() const
-{
-    return GPUsPerNode;
-}
-
-const std::string &
-LaunchProfile::GetXArguments() const
-{
-    return XArguments;
-}
-
-std::string &
-LaunchProfile::GetXArguments()
-{
-    return XArguments;
-}
-
-bool
-LaunchProfile::GetLaunchXServers() const
-{
-    return launchXServers;
-}
-
-const std::string &
-LaunchProfile::GetXDisplay() const
-{
-    return XDisplay;
-}
-
-std::string &
-LaunchProfile::GetXDisplay()
-{
-    return XDisplay;
-}
-
 int
 LaunchProfile::GetNumThreads() const
 {
@@ -1528,18 +1395,6 @@ LaunchProfile::SelectMachinefile()
 }
 
 void
-LaunchProfile::SelectXArguments()
-{
-    Select(ID_XArguments, (void *)&XArguments);
-}
-
-void
-LaunchProfile::SelectXDisplay()
-{
-    Select(ID_XDisplay, (void *)&XDisplay);
-}
-
-void
 LaunchProfile::SelectAllowableNodes()
 {
     Select(ID_allowableNodes, (void *)&allowableNodes);
@@ -1604,11 +1459,6 @@ LaunchProfile::GetFieldName(int index) const
     case ID_machinefileSet:      return "machinefileSet";
     case ID_machinefile:         return "machinefile";
     case ID_visitSetsUpEnv:      return "visitSetsUpEnv";
-    case ID_canDoHWAccel:        return "canDoHWAccel";
-    case ID_GPUsPerNode:         return "GPUsPerNode";
-    case ID_XArguments:          return "XArguments";
-    case ID_launchXServers:      return "launchXServers";
-    case ID_XDisplay:            return "XDisplay";
     case ID_numThreads:          return "numThreads";
     case ID_constrainNodeProcs:  return "constrainNodeProcs";
     case ID_allowableNodes:      return "allowableNodes";
@@ -1666,11 +1516,6 @@ LaunchProfile::GetFieldType(int index) const
     case ID_machinefileSet:      return FieldType_bool;
     case ID_machinefile:         return FieldType_string;
     case ID_visitSetsUpEnv:      return FieldType_bool;
-    case ID_canDoHWAccel:        return FieldType_bool;
-    case ID_GPUsPerNode:         return FieldType_int;
-    case ID_XArguments:          return FieldType_string;
-    case ID_launchXServers:      return FieldType_bool;
-    case ID_XDisplay:            return FieldType_string;
     case ID_numThreads:          return FieldType_int;
     case ID_constrainNodeProcs:  return FieldType_bool;
     case ID_allowableNodes:      return FieldType_intVector;
@@ -1728,11 +1573,6 @@ LaunchProfile::GetFieldTypeName(int index) const
     case ID_machinefileSet:      return "bool";
     case ID_machinefile:         return "string";
     case ID_visitSetsUpEnv:      return "bool";
-    case ID_canDoHWAccel:        return "bool";
-    case ID_GPUsPerNode:         return "int";
-    case ID_XArguments:          return "string";
-    case ID_launchXServers:      return "bool";
-    case ID_XDisplay:            return "string";
     case ID_numThreads:          return "int";
     case ID_constrainNodeProcs:  return "bool";
     case ID_allowableNodes:      return "intVector";
@@ -1908,31 +1748,6 @@ LaunchProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (visitSetsUpEnv == obj.visitSetsUpEnv);
         }
         break;
-    case ID_canDoHWAccel:
-        {  // new scope
-        retval = (canDoHWAccel == obj.canDoHWAccel);
-        }
-        break;
-    case ID_GPUsPerNode:
-        {  // new scope
-        retval = (GPUsPerNode == obj.GPUsPerNode);
-        }
-        break;
-    case ID_XArguments:
-        {  // new scope
-        retval = (XArguments == obj.XArguments);
-        }
-        break;
-    case ID_launchXServers:
-        {  // new scope
-        retval = (launchXServers == obj.launchXServers);
-        }
-        break;
-    case ID_XDisplay:
-        {  // new scope
-        retval = (XDisplay == obj.XDisplay);
-        }
-        break;
     case ID_numThreads:
         {  // new scope
         retval = (numThreads == obj.numThreads);
@@ -1982,6 +1797,9 @@ LaunchProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //
 //   Brad Whitlock, Wed Oct 22 17:38:43 PDT 2014
 //   I added code for node/proc constraints.
+//
+//   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//   Remove code related to hardware accelerated parallel rendering.
 //
 // ****************************************************************************
 void
@@ -2047,16 +1865,6 @@ LaunchProfile::SelectOnlyDifferingFields(LaunchProfile &other)
         Select(ID_machinefile,         (void *)&machinefile);
     if (visitSetsUpEnv != other.GetVisitSetsUpEnv())
         Select(ID_visitSetsUpEnv,      (void *)&visitSetsUpEnv);
-    if (canDoHWAccel != other.GetCanDoHWAccel())
-        Select(ID_canDoHWAccel,        (void *)&canDoHWAccel);
-    if(GPUsPerNode != other.GetGPUsPerNode())
-        Select(ID_GPUsPerNode,        (void *)&GPUsPerNode);
-    if(XArguments != other.GetXArguments())
-        Select(ID_XArguments,        (void *)&XArguments);
-    if(launchXServers != other.GetLaunchXServers())
-        Select(ID_launchXServers,        (void *)&launchXServers);
-    if(XDisplay != other.GetXDisplay())
-        Select(ID_XDisplay,        (void *)&XDisplay);
     if(numThreads != other.GetNumThreads())
         Select(ID_numThreads,      (void *)&numThreads);
     if(constrainNodeProcs != other.GetConstrainNodeProcs())

@@ -6,9 +6,6 @@
     <Field name="numProcessors" label="numProcessors" type="int">
       1
     </Field>
-    <Field name="numProcessorsUsingGPUs" label="numProcessorsUsingGPUs" type="int">
-      0
-    </Field>
     <Field name="dynamicLoadBalancing" label="dynamicLoadBalancing" type="bool">
       false
     </Field>
