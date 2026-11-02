@@ -14,7 +14,7 @@
 #include <algorithm>
 #include "paradis_version.h"
 
-#include "visit_fmt/visit_fmt.h"
+#include <visit_fmt/visit_fmt.h>
 //#include "visit_writer.h"
 
 #ifndef _WIN32

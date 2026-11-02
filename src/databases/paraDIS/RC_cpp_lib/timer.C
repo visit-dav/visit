@@ -2,7 +2,7 @@
 #include "timer.h"
 #include <iostream>
 #include <string> 
-#include "visit_fmt/visit_fmt.h"
+#include <visit_fmt/visit_fmt.h>
 
 /*!
   Progress(theTimer, nodenum, numnodes, thePercent, 5, theTime, 60, "Reading dumpfile"); 
