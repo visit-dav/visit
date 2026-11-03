@@ -161,6 +161,7 @@ For example, to run the python script, ``myscript.py`` with two arguments like s
 
 these arguments can be accessed using the ``Argv()`` method which returns the Python tuple, ``('myarg1', 'myarg2')``.
 Similarly, ``sys.argv`` will return the Python list, ``['myscript.py', 'myarg1', 'myarg2']`` which includes the script name itself as the zeroth argument.
+All arguments after ``-s myscript.py`` are treated as script arguments, even if they have the same names as VisIt_ command line arguments.
 
 Saving images
 -------------

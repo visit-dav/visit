@@ -189,6 +189,9 @@ extern "C" void cli_runscript(const char *);
 //    Add 'python/lib/site-packages' to sys.path on Windows to get things
 //    working with Python 3.13.  Remove automatic py2to3.
 //
+//    Justin Privitera, Tue Nov  3 15:37:10 PST 2026
+//    Treat all arguments after "-s script.py" as script arguments only.
+//
 // ****************************************************************************
 
 int
@@ -231,7 +234,11 @@ main(int argc, char *argv[])
     // Parse the arguments
     for(i = 0; i < argc; ++i)
     {
-        if(strcmp(argv[i], "-debug") == 0)
+        if(s_found)
+        {
+            argv_after_s[argc_after_s++] = argv[i];
+        }
+        else if(strcmp(argv[i], "-debug") == 0)
         {
             debugLevel = 1;
             if (i+1 < argc && isdigit(*(argv[i+1])))
@@ -426,21 +433,13 @@ main(int argc, char *argv[])
         {
             // Pass the array along to the visitmodule.
             argv2[argc2++] = argv[i];
-
-            // This argument is after -s file.py so count it unless it's
-            // the -dv argument.
-            if(s_found &&
-               strcmp(argv[i], "-dv") != 0)
-            {
-                argv_after_s[argc_after_s++] = argv[i];
-            }
         }
     }
 
     //for now this does not make sense
-    for(int i = 0; i < argc; ++i)
+    for(int i = 0; i < argc2; ++i)
     {
-        std::string tmp = argv[i];
+        std::string tmp = argv2[i];
 
         if(run_code.length() > 0 && tmp == "-reverse_launch") {
            run_code = ""; //don't execute scripts during reverse launches..
