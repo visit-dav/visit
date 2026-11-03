@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -51,6 +52,11 @@ def run(command):
     subprocess.check_call(command)
 
 
+def run_status(command):
+    print("+ {}".format(" ".join(shlex.quote(part) for part in command)), flush=True)
+    return subprocess.call(command)
+
+
 def platform_label(platform, os_version):
     if os_version is None:
         return platform
@@ -76,6 +82,143 @@ def temporary_build_context(script_dir, dockerfile, archive, build_script, temp_
         stage_file(archive, context / archive.name)
         stage_file(build_script, context / build_script.name)
         yield context
+
+
+def container_name(version, label, step):
+    value = "visit-{}-{}-{}-{}".format(
+        version.underscored, label, step, os.getpid()
+    )
+    return re.sub(r"[^a-zA-Z0-9_.-]", "-", value)
+
+
+def recovery_instructions(engine, name, image, step):
+    print("\n{} step failed.".format(step.capitalize()), file=sys.stderr)
+    print("Recovery image: {}".format(image), file=sys.stderr)
+    print("Stopped container: {}".format(name), file=sys.stderr)
+    print(
+        "Copy a missing file with: {} cp FILE {}:/home/visit/".format(
+            engine, name
+        ),
+        file=sys.stderr,
+    )
+    print(
+        "Retry the same command with: {} start -a {}".format(engine, name),
+        file=sys.stderr,
+    )
+    print(
+        "After copying files, update the recovery image with: {} commit {} {}".format(
+            engine, name, image
+        ),
+        file=sys.stderr,
+    )
+    print(
+        "Resume through this driver with: --recoverable --resume-from {} --resume-step {}".format(
+            image, step
+        ),
+        file=sys.stderr,
+    )
+
+
+def run_checkpointed_step(
+    engine,
+    version,
+    label,
+    step,
+    input_image,
+    success_image,
+    failure_image,
+    command,
+    copies=(),
+):
+    name = container_name(version, label, step)
+    run([engine, "create", "--name", name, input_image] + list(command))
+    for source, destination in copies:
+        run([engine, "cp", str(source), "{}:{}".format(name, destination)])
+
+    status = run_status([engine, "start", "-a", name])
+    if status != 0:
+        run([engine, "commit", name, failure_image])
+        recovery_instructions(engine, name, failure_image, step)
+        return status, failure_image
+
+    run([engine, "commit", name, success_image])
+    run([engine, "rm", "-f", name])
+    print("Created checkpoint image {}".format(success_image))
+    return 0, success_image
+
+
+def recoverable_build(
+    args, version, label, tag, archive, script_dir, environment_image, os_version
+):
+    steps = ("core", "optional", "visit")
+    start_step = args.resume_step or "core"
+    start_index = steps.index(start_step)
+    current_image = args.resume_from or environment_image
+    toolchain = ""
+    if args.platform == "rocky" and str(os_version).startswith("8."):
+        toolchain = "source /opt/rh/gcc-toolset-10/enable && "
+
+    definitions = {
+        "core": {
+            "success": "{}-core".format(tag),
+            "command": (
+                "/bin/bash",
+                "-lc",
+                "{}python3 run_build_visit.py".format(toolchain),
+            ),
+            "copies": (),
+        },
+        "optional": {
+            "success": "{}-thirdparty".format(tag),
+            "command": (
+                "/bin/bash",
+                "-lc",
+                "{}python3 run_build_visit.py --optional".format(toolchain),
+            ),
+            "copies": (),
+        },
+        "visit": {
+            "success": tag,
+            "command": (
+                "/bin/bash",
+                "-lc",
+                "{}python3 build_test_visit.py && python3 build_visit_docker_cleanup.py".format(
+                    toolchain
+                ),
+            ),
+            "copies": (
+                (archive, "/home/visit/{}".format(archive.name)),
+                (
+                    script_dir / "build_test_visit.py",
+                    "/home/visit/build_test_visit.py",
+                ),
+                (
+                    script_dir / "build_visit_docker_cleanup.py",
+                    "/home/visit/build_visit_docker_cleanup.py",
+                ),
+                (script_dir / "test_visit.py", "/home/visit/test_visit.py"),
+            ),
+        },
+    }
+
+    for step in steps[start_index:]:
+        definition = definitions[step]
+        failure_image = "{}-{}-failed".format(tag, step)
+        status, checkpoint = run_checkpointed_step(
+            args.engine,
+            version,
+            label,
+            step,
+            current_image,
+            definition["success"],
+            failure_image,
+            definition["command"],
+            definition["copies"],
+        )
+        if status != 0:
+            return status
+        current_image = checkpoint
+    return 0
 
 
 def parse_args(argv=None):
@@ -113,11 +256,30 @@ def parse_args(argv=None):
     parser.add_argument(
         "--build-only", action="store_true", help="build the image without copying artifacts"
     )
+    parser.add_argument(
+        "--recoverable",
+        action="store_true",
+        help="run fragile build steps in named containers and create checkpoint images",
+    )
+    parser.add_argument(
+        "--resume-from",
+        metavar="IMAGE",
+        help="recovery image from a previous --recoverable build",
+    )
+    parser.add_argument(
+        "--resume-step",
+        choices=("core", "optional", "visit"),
+        help="step to rerun from --resume-from",
+    )
     args = parser.parse_args(argv)
 
     config = PLATFORMS[args.platform]
     if args.userns_uid_map and args.engine != "podman":
         parser.error("--userns-uid-map requires --engine podman")
+    if args.resume_from and not args.recoverable:
+        parser.error("--resume-from requires --recoverable")
+    if bool(args.resume_from) != bool(args.resume_step):
+        parser.error("--resume-from and --resume-step must be used together")
     return args
 
 
@@ -159,19 +321,40 @@ def main(argv=None):
                 print("error: refusing to overwrite {}".format(output), file=sys.stderr)
                 return 2
 
-    with temporary_build_context(
-        script_dir, dockerfile, archive, build_script, temp_dir
-    ) as context:
-        build_command = [args.engine, "build"]
-        for uid_map in args.userns_uid_map:
-            build_command.extend(("--userns-uid-map", uid_map))
-        build_command.extend(("-f", str(context / dockerfile.name), "-t", tag))
-        if config["build_arg"]:
-            build_command.extend(
-                ("--build-arg", "{}={}".format(config["build_arg"], os_version))
-            )
-        build_command.append(str(context))
-        run(build_command)
+    environment_image = "{}-environment".format(tag)
+    if not args.resume_from:
+        with temporary_build_context(
+            script_dir, dockerfile, archive, build_script, temp_dir
+        ) as context:
+            build_command = [args.engine, "build"]
+            for uid_map in args.userns_uid_map:
+                build_command.extend(("--userns-uid-map", uid_map))
+            build_command.extend(("-f", str(context / dockerfile.name)))
+            if args.recoverable:
+                build_command.extend(("--target", "visit-build-environment"))
+                build_command.extend(("-t", environment_image))
+            else:
+                build_command.extend(("-t", tag))
+            if config["build_arg"]:
+                build_command.extend(
+                    ("--build-arg", "{}={}".format(config["build_arg"], os_version))
+                )
+            build_command.append(str(context))
+            run(build_command)
+
+    if args.recoverable:
+        status = recoverable_build(
+            args,
+            version,
+            label,
+            tag,
+            archive,
+            script_dir,
+            environment_image,
+            os_version,
+        )
+        if status != 0:
+            return status
 
     if args.build_only:
         return 0
