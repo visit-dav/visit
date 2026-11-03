@@ -1,56 +1,59 @@
-#
-# Helper script to cleanup tpl build dirs to reduce
-# our docker image size
-#
+#!/usr/bin/env python3
+"""Remove downloaded tarballs after the complete VisIt build succeeds."""
+
+import argparse
 import sys
-import glob
-import os
-import shutil
+from pathlib import Path
 
-from os.path import join as pjoin
+from visit_version import find_visit_archive
 
-def home_dir():
-    return "/home/visit/"
 
-def check_to_keep(path):
-    res = False
-    if path.count("third_party") > 0:
-        res = True
-    elif path.count("build_visit") > 0:
-        res = True
-    elif path.count("test_visit.py") > 0:
-        res = True
-    elif path.count("build_test_visit.py") > 0:
-        res = True
-    elif path.count("run_build_visit.py") > 0:
-        res = True
-    elif path.count("visit_version.py") > 0:
-        res = True
-    elif path.endswith(".src.tar.gz"):
-        res = True
-    elif path.endswith(".cmake"):
-        res = True
-    return res
+TARBALL_SUFFIXES = (
+    ".tar",
+    ".tar.gz",
+    ".tar.bz2",
+    ".tar.xz",
+    ".tbz",
+    ".tbz2",
+    ".tgz",
+    ".txz",
+)
 
-def cleanup_tpl_build_dirs():
-    paths = glob.glob( pjoin(home_dir(),"*") )
-    for path in paths:
-        if not check_to_keep(path):
-            print ("[removing %s]" % path)
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            else:
-                os.remove(path)
 
-def copy_config_site():
-     cfg_site = glob.glob( pjoin(home_dir(),"*.cmake") )[0]
-     dest = pjoin(home_dir(),"visit-config.cmake")
-     print ("[copying %s to %s]" % (cfg_site,dest))
-     shutil.copyfile(cfg_site,dest)
+def is_tarball(path):
+    return path.is_file() and path.name.endswith(TARBALL_SUFFIXES)
 
-def main():
-    cleanup_tpl_build_dirs()
-    copy_config_site()
+
+def cleanup_tarballs(home):
+    home = Path(home)
+    source_archive, version = find_visit_archive(home)
+    removed = []
+    for path in sorted(home.iterdir()):
+        if not is_tarball(path):
+            continue
+
+        is_binary_package = (
+            path != source_archive and path.name.startswith(version.package_prefix)
+        )
+        if is_binary_package:
+            continue
+
+        print("Removing {}".format(path))
+        path.unlink()
+        removed.append(path)
+    return removed
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--home", default="/home/visit")
+    args = parser.parse_args(argv)
+    try:
+        cleanup_tarballs(args.home)
+    except RuntimeError as error:
+        parser.error(str(error))
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

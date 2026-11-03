@@ -1,5 +1,5 @@
 ARG FEDORA_VERSION=40
-FROM fedora:${FEDORA_VERSION}
+FROM fedora:${FEDORA_VERSION} AS visit-build-environment
 
 # fetch build env
 ENV TZ=America/Los_Angeles
@@ -65,14 +65,17 @@ WORKDIR /home/visit
 # Build the third-party libraries before copying the source archive so that a
 # new source archive does not invalidate this expensive Docker cache layer.
 COPY --chown=visit:visit build_visit[0-9]* /home/visit/
-COPY --chown=visit:visit visit_version.py run_build_visit.py \
-    build_visit_docker_cleanup.py /home/visit/
+COPY --chown=visit:visit visit_version.py run_build_visit.py /home/visit/
 RUN chmod +x build_visit[0-9]*
+
+FROM visit-build-environment AS visit-release
+
 RUN python3 run_build_visit.py
 RUN python3 run_build_visit.py --optional
-RUN python3 build_visit_docker_cleanup.py
 
 # Build, package, install, and test VisIt.
 COPY --chown=visit:visit visit*.src.tar.gz /home/visit/
-COPY --chown=visit:visit build_test_visit.py test_visit.py /home/visit/
+COPY --chown=visit:visit build_test_visit.py build_visit_docker_cleanup.py \
+    test_visit.py /home/visit/
 RUN python3 build_test_visit.py
+RUN python3 build_visit_docker_cleanup.py
