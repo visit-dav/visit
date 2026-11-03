@@ -14,13 +14,13 @@ BUILD_OPTIONS = (
     "-j4",
     "--skip-opengl-context-check",
     "--no-visit",
+    "--cleanup",
     "--parallel",
     "--mpich",
     "--llvm",
     "--mesagl",
     "--anari",
     "--ospray",
-    "--no-moab",
 )
 
 

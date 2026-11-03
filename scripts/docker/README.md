@@ -9,7 +9,12 @@ release number.
 The third-party build uses two Docker layers. The first builds the core
 libraries; the second repeats the same `build_visit` command with `--optional`.
 If an optional library fails, Docker can reuse the completed core-library
-layer on the next build.
+layer on the next build. Both invocations use `build_visit --cleanup`, which
+removes successfully built third-party source and build directories.
+
+Downloaded tarballs are removed only after VisIt has been built, installed,
+and smoke-tested successfully. The binary VisIt package is retained for
+extraction from the completed image.
 
 The recommended interface is `create_release.py`. It accepts the two inputs
 from any location and creates an automatically cleaned temporary Docker build
@@ -58,3 +63,35 @@ To build an image without extracting its package and smoke-test image, add
 `--build-only`. Use `--temp-dir` to choose where the temporary build context is
 created. Run `python3 create_release.py --help` for output directory, image tag,
 and artifact label options.
+
+## Recovering failed builds
+
+Add `--recoverable` to run the core third-party, optional third-party, and VisIt
+build/test steps in named containers. Each successful step creates a visible
+checkpoint image. If a step fails, the driver commits its partial filesystem to
+an image ending in `-core-failed`, `-optional-failed`, or `-visit-failed` and
+retains the stopped container.
+
+For example:
+
+```console
+python3 create_release.py --recoverable \
+  --source "$src" --build-visit "$bv" \
+  --platform rocky --os-version 8.9
+```
+
+The failure message gives the exact container and image names. A missing source
+archive can be supplied without losing completed work:
+
+```console
+docker cp conduit.tar.gz CONTAINER:/home/visit/
+docker commit CONTAINER RECOVERY_IMAGE
+python3 create_release.py --recoverable \
+  --resume-from RECOVERY_IMAGE --resume-step optional \
+  --source "$src" --build-visit "$bv" \
+  --platform rocky --os-version 8.9
+```
+
+The VisIt build records extraction, configuration, packaging, installation,
+and testing milestones in the image. Resuming a failed VisIt step reuses each
+completed milestone and performs an incremental build when compilation failed.
