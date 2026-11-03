@@ -35,10 +35,16 @@ def prepare_config_site(home):
     if destination.is_file():
         return destination
 
-    source = find_one(
-        (path for path in home.glob("*.cmake") if path != destination),
-        "VisIt config-site file",
-    )
+    candidates = [path for path in home.glob("*.cmake") if path != destination]
+    if not candidates:
+        raise RuntimeError("no VisIt config-site file found in {}".format(home))
+    source = max(candidates, key=lambda path: (path.stat().st_mtime_ns, path.name))
+    if len(candidates) > 1:
+        print(
+            "Found {} generated config-site files; using newest: {}".format(
+                len(candidates), source
+            )
+        )
     print("Copying {} to {}".format(source, destination))
     shutil.copyfile(str(source), str(destination))
     return destination

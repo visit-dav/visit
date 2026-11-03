@@ -2,6 +2,7 @@
 """Build VisIt's third-party dependencies inside a container."""
 
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -31,6 +32,35 @@ def build_options(include_optional=False):
     return options
 
 
+def config_site_snapshot(home):
+    """Record generated config sites so a newly written one can be identified."""
+    destination = home / "visit-config.cmake"
+    return {
+        path: (path.stat().st_mtime_ns, path.stat().st_size)
+        for path in home.glob("*.cmake")
+        if path != destination
+    }
+
+
+def save_config_site(home, before):
+    """Copy the config site written by build_visit to a stable filename."""
+    destination = home / "visit-config.cmake"
+    candidates = [
+        path
+        for path in home.glob("*.cmake")
+        if path != destination
+        and before.get(path) != (path.stat().st_mtime_ns, path.stat().st_size)
+    ]
+    if not candidates:
+        candidates = [path for path in home.glob("*.cmake") if path != destination]
+    if not candidates:
+        raise RuntimeError("build_visit did not create a VisIt config-site file")
+
+    source = max(candidates, key=lambda path: (path.stat().st_mtime_ns, path.name))
+    print("Saving {} as {}".format(source, destination))
+    shutil.copyfile(str(source), str(destination))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -53,13 +83,22 @@ def main(argv=None):
             phase, version.dotted
         )
     )
+    config_sites = config_site_snapshot(home)
     process = subprocess.Popen(
         [str(build_script)] + build_options(args.optional),
         cwd=str(home),
         stdin=subprocess.PIPE,
     )
     process.communicate(b"yes\n")
-    return process.returncode
+    if process.returncode != 0:
+        return process.returncode
+
+    try:
+        save_config_site(home, config_sites)
+    except RuntimeError as error:
+        print("error: {}".format(error), file=sys.stderr)
+        return 2
+    return 0
 
 
 if __name__ == "__main__":
