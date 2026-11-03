@@ -73,8 +73,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">File format reader changes in version 3.6</font></b></p>
 <ul>
   <li>Database plugins now recognize and automatically define aggregate expressions (e.g. vector, tensor) for a group of similarly named scalar components (e.g. velX, velY, velZ ==> vector(vel)).</li>
-  <li>Updated Conduit to 0.9.8. This speeds up Blueprint material and mixed material plots dramatically.</li>
+  <li>Updated Conduit to 0.9.10. This speeds up Blueprint material and mixed material plots dramatically.</li>
   <li>Fixed a crash in the Blueprint reader caused by poorly specified material data.</li>
+  <li>Fixed a bug in the Blueprint reader in which material ids were not properly recorded across domains, leading to incorrect filled boundary plots.</li>
   <li>CGNS reader was enhanced to handle SIDS-style time-varying data.</li>
   <li>CGNS reader now handles SIDS-style time-varying data in which the number of zones changes with time: the shape of ZonePointers ([32][MaxNumberOfZones][NumberOfSteps]) and NumberOfZones are honored, and the domains of the meshes are updated at each time state.</li>
   <li>Support for 10-node tetrahedrons was added to the PVLD reader.</li>
