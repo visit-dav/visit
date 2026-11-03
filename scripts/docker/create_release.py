@@ -25,15 +25,15 @@ PLATFORMS = {
         "build_arg": "ROCKY_VERSION",
         "default_version": "9.3",
     },
-    "debian12": {
-        "dockerfile": "Dockerfile-debian12",
-        "build_arg": None,
-        "default_version": None,
+    "debian": {
+        "dockerfile": "Dockerfile-debian",
+        "build_arg": "DEBIAN_VERSION",
+        "default_version": "12",
     },
-    "fedora40": {
-        "dockerfile": "Dockerfile-fedora40",
-        "build_arg": None,
-        "default_version": None,
+    "fedora": {
+        "dockerfile": "Dockerfile-fedora",
+        "build_arg": "FEDORA_VERSION",
+        "default_version": "40",
     },
 }
 
@@ -93,7 +93,7 @@ def parse_args(argv=None):
         required=True,
         help="path to the matching build_visitMAJOR_MINOR_PATCH script",
     )
-    parser.add_argument("--os-version", help="base image version for Ubuntu or Rocky")
+    parser.add_argument("--os-version", help="base image version for the selected platform")
     parser.add_argument("--engine", choices=("docker", "podman"), default="docker")
     parser.add_argument("--output-dir", type=Path, default=Path.cwd())
     parser.add_argument(
@@ -116,8 +116,6 @@ def parse_args(argv=None):
     args = parser.parse_args(argv)
 
     config = PLATFORMS[args.platform]
-    if args.os_version and config["build_arg"] is None:
-        parser.error("--os-version is only supported for Ubuntu and Rocky")
     if args.userns_uid_map and args.engine != "podman":
         parser.error("--userns-uid-map requires --engine podman")
     return args

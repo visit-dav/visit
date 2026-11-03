@@ -72,6 +72,9 @@ RUN chmod +x build_visit[0-9]*
 RUN if [[ "${ROCKY_VERSION}" == 8.* ]]; then \
         source /opt/rh/gcc-toolset-10/enable; \
     fi && python3 run_build_visit.py
+RUN if [[ "${ROCKY_VERSION}" == 8.* ]]; then \
+        source /opt/rh/gcc-toolset-10/enable; \
+    fi && python3 run_build_visit.py --optional
 RUN python3 build_visit_docker_cleanup.py
 
 COPY visit*.src.tar.gz /home/visit/
