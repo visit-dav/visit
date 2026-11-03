@@ -24,9 +24,6 @@ Configuration
 ``arch``: **required**
    The build architecture (e.g., darwin-x86_64).
 
-``boost_dir``: **optional**
-   The path to boost if installed on your system. This also triggers the setting of two CMake options (**VISIT_USE_BOOST:BOOL** and **BOOST_ROOT:PATH**).
-
 ``branch``: **required** 
    The git branch to checkout and build.
    

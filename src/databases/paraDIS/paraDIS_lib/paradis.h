@@ -29,14 +29,12 @@
 
 
 /* now for the API */  
-#include <boost/cstdint.hpp>
-using boost::int8_t;
-using boost::int16_t;
-using boost::int32_t;
-using boost::uint8_t;
-using boost::uint32_t;
-#include <boost/shared_ptr.hpp>
-#include <boost/format.hpp>
+#include <cstdint>
+using std::int8_t;
+using std::int16_t;
+using std::int32_t;
+using std::uint8_t;
+using std::uint32_t;
 
 #include <stdio.h>
 #include <vector>
@@ -47,6 +45,10 @@ using boost::uint32_t;
 #include <iostream>
 #include <ostream> 
 #include <math.h>
+
+#include <memory>
+#include <visit_fmt/visit_fmt.h>
+
 
 #include "Point.h"
 #include "pathutil.h"
@@ -152,7 +154,7 @@ namespace paraDIS {
     }
     // -------------------------------------------------
     std::string Stringify(int indent) const {      
-      return INDENT(indent) + str(boost::format("NodeID: (%1%,%2%)")% mDomainID % mNodeID);
+      return INDENT(indent) + visit_fmt::format("NodeID: ({},{})", mDomainID, mNodeID);
     }
     
     uint32_t mDomainID; 
@@ -1095,7 +1097,7 @@ namespace paraDIS {
         mEndpoints[1] = node1; 
         mEndpoints[0] = node2; 
       } else {
-        string err = str(boost::format("Error in SetEndpoints -- endpoints are identical!  Endpoints are %1% and %2%")%node1->Stringify(0)%node2->Stringify(0)); 
+        string err = visit_fmt::format("Error in SetEndpoints -- endpoints are identical!  Endpoints are {} and {}", node1->Stringify(0), node2->Stringify(0)); 
         dbprintf(0, (err + "\n").c_str()); 
         throw err;
       }
@@ -2036,7 +2038,7 @@ s      Tell the data set which file to read
  
 
     /* Starting from the given arm, trace out the containing meta arm and return a shared_ptr to the result */
-    boost::shared_ptr<MetaArm> TraceMetaArm(vector<Arm>::const_iterator arm); 
+    std::shared_ptr<MetaArm> TraceMetaArm(vector<Arm>::const_iterator arm); 
 
     
     /*!
@@ -2107,7 +2109,7 @@ s      Tell the data set which file to read
     /*!
       Accessor function
     */
-    boost::shared_ptr<MetaArm> GetMetaArm(uint32_t metaArmNum) {
+    std::shared_ptr<MetaArm> GetMetaArm(uint32_t metaArmNum) {
       return mMetaArms[metaArmNum]; 
     }
 
@@ -2293,7 +2295,7 @@ s      Tell the data set which file to read
     /*!
       A MetaArm is a chain of arms with all the same Burgers vector value, but can also include 200, 020, and 002 types as "unzipped" portions along the meta-arm.  
     */  
-     std::vector<boost::shared_ptr<MetaArm> > mMetaArms; 
+     std::vector<std::shared_ptr<MetaArm> > mMetaArms; 
 
     /*!
       Extents of the full data set: 

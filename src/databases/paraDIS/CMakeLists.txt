@@ -23,7 +23,7 @@ visit_add_database_plugin(
                RC_cpp_lib/timer.C
     DEFINES    ${paraDIS_DEFINES}
     INCLUDES   ${paraDIS_INCLUDES}
-    MLIBS      boost
-    ESERLIBS   boost
-    EPARLIBS   boost)
+    MLIBS      visit_fmt
+    ESERLIBS   visit_fmt
+    EPARLIBS   visit_fmt)
 
