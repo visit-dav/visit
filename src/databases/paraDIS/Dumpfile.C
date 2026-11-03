@@ -19,7 +19,6 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
-#include <boost/format.hpp>
 #include "paradis.h"
 using namespace std; 
 
@@ -312,13 +311,12 @@ Dumpfile::GetMesh(std::string meshname) {
             nodenum++; 
           }
           if (segnum > segsInArm) {
-            dbprintf(0, "ERROR: metaarm %d: numsegs (%d) has exceeded number of segements from paraDIS_GetMetaArmPoints (%d)\n", manum, segnum, segsInArm); 
+            dbprintf(0, "ERROR: metaarm %d: numsegs (%d) has exceeded number of segements from paraDIS_GetMetaArmPoints (%d)\n", manum, segnum, segsInArm);
             
           }
         } 
         if (segnum != segsInArm) {
-          throw str(boost::format("ERROR: metaarm %1%: number of segements from paraDIS_GetMetaArmPoints (%2%) does not match number of segments from paraDIS_GetMetaArmNumSegments() (%3%)\n")% manum% segnum% segsInArm);
-          
+          throw visit_fmt::format("ERROR: metaarm {}: number of segements from paraDIS_GetMetaArmPoints ({})) does not match number of segments from paraDIS_GetMetaArmNumSegments() ({})\n",manum, segnum, segsInArm);
         }
         dbprintf(5, "Done with metaarm %d\n\n", manum); 
         ++manum;

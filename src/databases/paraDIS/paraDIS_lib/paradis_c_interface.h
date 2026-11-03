@@ -6,11 +6,14 @@
 #ifndef PARADIS_C_INTERFACE_H
 #define PARADIS_C_INTERFACE_H
 
-#include <boost/cstdint.hpp>
-using boost::int8_t;
-using boost::int32_t;
-using boost::uint8_t;
-using boost::uint32_t;
+#include <cstddef>
+#include <cstdint>
+
+#include <visit_fmt/visit_fmt.h>
+using std::int8_t;
+using std::int32_t;
+using std::uint8_t;
+using std::uint32_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,9 +79,8 @@ extern "C" {
     The hash function is simple and readable:  
     domain * 1000,000 + nodeID so (3,32) -->  3000032
   */ 
-  boost::int64_t  paraDIS_GetNodeHash(uint32_t nodenum);
-  
-   
+  std::int64_t  paraDIS_GetNodeHash(uint32_t nodenum);
+
   uint32_t paraDIS_GetNumArmSegments(void);
   
   int paraDIS_TestSegment(uint32_t segnum);

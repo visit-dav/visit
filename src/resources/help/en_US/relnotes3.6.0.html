@@ -82,6 +82,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with Chombo reader incorrectly reading refinement ratios, causing VisIt to hang.</li>
   <li>Fixed a bug with the VTK writer that caused files to be written with no name (`.vtk` only) in rare cases on some systems.</li>
   <li>Fixed a bug with the Tecplot writer which allowed invalid Tecplot header characters (like `"`, `\n`, `\r`) to be written to the header.</li>
+  <li>Ported paraDIS plugin to remove use of boost.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -138,6 +139,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>MOAB was updated to version 5.6.0.</li>
   <li>The `--print-files` and `--print-files-html` options were fixed so that no libraries are missing from the printed lists.</li>
   <li>Issues with running build_visit on Fedora44 with gcc16 were resolved with patches to some modules.</li>
+  <li>Removed use of boost.</li>
 </ul>
 
 <a name="Dev_changes"></a>

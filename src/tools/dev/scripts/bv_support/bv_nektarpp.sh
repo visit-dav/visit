@@ -27,7 +27,7 @@ function bv_nektarpp_depends_on
     if [[ "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "yes" ]]; then
         echo ""
     else
-        echo "cmake boost zlib"
+        echo "cmake zlib"
     fi
 }
 
@@ -262,7 +262,6 @@ function build_nektarpp
 #    ntopts="${ntopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
 
     # Nektar++ specific options for a faster build.
-#    ntopts="${ntopts} -DTHIRDPARTY_BUILD_BOOST:BOOL=ON"
     ntopts="${ntopts} -DNEKTAR_BUILD_DEMOS:BOOL=OFF"
     ntopts="${ntopts} -DNEKTAR_BUILD_SOLVERS:BOOL=OFF"
     ntopts="${ntopts} -DNEKTAR_BUILD_UTILITIES:BOOL=OFF"
@@ -274,17 +273,6 @@ function build_nektarpp
 #    if test "${OPSYS}" = "Darwin" ; then
 #        ntopts="${ntopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${nektar_plus_plus_inst_path}/lib"
 #    fi
-
-    if [[ "$DO_BOOST" == "yes" ]] ; then
-        info "boost requested.  Configuring NEKTAR++ with boost support."
-        ntopts="${ntopts} -DBOOST_ROOT:PATH=${VISITDIR}/boost/${BOOST_VERSION}/${VISITARCH}"
-
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            export DYLD_LIBRARY_PATH="$VISITDIR/boost/$BOOST_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-        else
-            export LD_LIBRARY_PATH="$VISITDIR/boost/$BOOST_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-        fi
-    fi
 
     info "Configuring NEKTAR++ with zlib support."
     ntopts="${ntopts} -DZLIB_ROOT:PATH=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
