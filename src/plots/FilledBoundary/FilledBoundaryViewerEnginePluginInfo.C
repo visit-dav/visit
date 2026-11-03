@@ -191,13 +191,17 @@ FilledBoundaryViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //   Brad Whitlock, Fri Mar 26 15:19:50 PST 2004
 //   I made it use passed in metadata.
 //
+//   Kathleen Biagas, Thu Sep 3, 2026
+//   Send 'false' for 'setDefaultAtts' argument of PrivateSetPlotAtts so that
+//   defaultAtts won't be changed.
+//
 // ****************************************************************************
 
 void
 FilledBoundaryViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
-    PrivateSetPlotAtts(atts, plot);
+    PrivateSetPlotAtts(atts, plot, false);
 }
 
 // ****************************************************************************
@@ -239,6 +243,7 @@ FilledBoundaryViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
 {
     PrivateSetPlotAtts(atts, plot);
 }
+
 
 // ****************************************************************************
 //  Method: FilledBoundaryViewerEnginePluginInfo::GetMenuName
@@ -317,6 +322,10 @@ FilledBoundaryViewerEnginePluginInfo::GetMenuName() const
 //    Removed Subset type logic as Material is the only subset this plot
 //    supports.
 //
+//    Kathleen Biagas, Thu Sep 3, 2026
+//    Add 'setDefaultAtts' argument, default to true. When false, no changes
+//    are made to defaultAtts. ReInitializePlotAtts sets to 'false'.
+//
 // ****************************************************************************
 
 #include <stdio.h>
@@ -333,7 +342,7 @@ FilledBoundaryViewerEnginePluginInfo::GetMenuName() const
 
 void
 FilledBoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
-    const avtPlotMetaData &plot)
+    const avtPlotMetaData &plot, const bool setDefaultAtts)
 {
     FilledBoundaryAttributes *boundaryAtts = (FilledBoundaryAttributes *)atts;
 
@@ -474,7 +483,10 @@ FilledBoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Set the boundary names and colors in the boundaryAtts.
     boundaryAtts->SetBoundaryNames(sv);
     boundaryAtts->SetMultiColor(cal);
-    defaultAtts->SetBoundaryNames(sv);
-    defaultAtts->SetMultiColor(cal);
+    if(setDefaultAtts)
+    {
+        defaultAtts->SetBoundaryNames(sv);
+        defaultAtts->SetMultiColor(cal);
+    }
 }
 

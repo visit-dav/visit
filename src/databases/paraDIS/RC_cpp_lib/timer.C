@@ -2,8 +2,7 @@
 #include "timer.h"
 #include <iostream>
 #include <string> 
-#include <boost/format.hpp>
-
+#include <visit_fmt/visit_fmt.h>
 
 /*!
   Progress(theTimer, nodenum, numnodes, thePercent, 5, theTime, 60, "Reading dumpfile"); 
@@ -207,7 +206,7 @@ bool GetTimeFromString(string s, struct tm &tms) {
     for (vector<string>::iterator base = bases.begin(); base != bases.end(); base++) {
       for (vector<string>::iterator mod = mods.begin(); mod != mods.end(); mod++) {
         for (vector<string>::iterator zone = zones.begin(); zone != zones.end(); zone++) {
-          timeformats.push_back(str(boost::format("%1% %2% %3% %4%")%(*prefix)%(*base)%(*mod)%(*zone)));
+          timeformats.push_back(visit_fmt::format("{} {} {} {}", (*prefix), (*base), (*mod), (*zone)));
         }
       }
     }
@@ -225,13 +224,13 @@ bool GetTimeFromString(string s, struct tm &tms) {
             continue;
           }
           vector<string>timestrings; 
-          timestrings.push_back(str(boost::format("%1% %2% %3% %4%")%(*weekday)%(*dateformat)%(*yearformat)%(*timeformat))); 
-          timestrings.push_back(str(boost::format("%1% %2% %3% %4%")%(*weekday)%(*dateformat)%(*timeformat)%(*yearformat))); 
+          timestrings.push_back(visit_fmt::format("{} {} {} {}",(*weekday),(*dateformat),(*yearformat),(*timeformat)));
+          timestrings.push_back(visit_fmt::format("{} {} {} {}",(*weekday),(*dateformat),(*timeformat),(*yearformat)));
           for (vector<string>::iterator de1 = delims.begin(); de1 != delims.end(); de1++) {
             for (vector<string>::iterator de2 = delims.begin(); de2 != delims.end(); de2++) {
               if (*de1 != " " || *de2 != " ") {
-                timestrings.push_back(str(boost::format("%1% %2% %3% %4% %5% %6%")%(*weekday)%(*de1)%(*dateformat)%(*de2)%(*yearformat)%(*timeformat))); 
-                timestrings.push_back(str(boost::format("%1% %2% %3% %4% %5%")%(*weekday)%(*dateformat)%(*timeformat)%(*de2)%(*yearformat))); 
+                timestrings.push_back(visit_fmt::format("{} {} {} {} {} {}",(*weekday),(*de1),(*dateformat),(*de2),(*yearformat),(*timeformat)));
+                timestrings.push_back(visit_fmt::format("{} {} {} {} {}",(*weekday),(*dateformat),(*timeformat),(*de2),(*yearformat)));
               }
             }
             for (uint32_t i = 0; i < timestrings.size(); i++) {

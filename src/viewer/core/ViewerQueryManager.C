@@ -51,6 +51,7 @@
 #include <ViewerWindowManager.h>
 #include <GlobalLineoutAttributes.h>
 #include <VisItException.h>
+#include <AnariDeviceInfoAttributes.h>
 
 #include <float.h>
 #include <math.h>
@@ -6448,4 +6449,62 @@ ViewerQueryManager::GetQueryParameters(const string &qName)
         GetViewerState()->GetQueryAttributes()->SetXmlResult(params);
         GetViewerState()->GetQueryAttributes()->Notify();
     }
+}
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::GetAnariDeviceInfo
+//
+//  Purpose:
+//    Asks the (first available) engine which ANARI libraries/subtypes/
+//    renderers/parameters it actually has available, and relays the result
+//    back to clients via AnariDeviceInfoAttributes. This lets the ANARI
+//    rendering settings dialog be populated without the client creating a
+//    local ANARI device, since the client (e.g. a laptop) may not have any
+//    ANARI backend libraries installed at all.
+//
+//  Arguments:
+//    libraryName     ANARI library name, or empty.
+//    librarySubtype  ANARI device subtype, or empty.
+//    rendererSubtype ANARI renderer subtype, or empty.
+//    requestor       Identifies which ANARI settings panel is asking (e.g.
+//                     "surface", "volume"). Stamped onto the reply so the
+//                     panel that issued the request can tell it's meant for
+//                     it and ignore replies addressed to other panels, since
+//                     AnariDeviceInfoAttributes is a single shared result.
+//
+//  Programmer: Kevin Griffin
+//  Creation:   Thu 27 Aug 2026
+//
+//  Modifications:
+//    Kevin Griffin, Tue 22 Sep 2026
+//    Added requestor, now that more than one ANARI settings panel (surface
+//    rendering, volume plots) can share this result object.
+//
+// ****************************************************************************
+void
+ViewerQueryManager::GetAnariDeviceInfo(const string &libraryName,
+                                       const string &librarySubtype,
+                                       const string &rendererSubtype,
+                                       const string &requestor)
+{
+    const EngineList *engines = GetViewerState()->GetEngineList();
+    const stringVector &hosts = engines->GetEngineName();
+    const stringVector &sims  = engines->GetSimulationName();
+    if (hosts.empty())
+    {
+        GetViewerMessaging()->Error(
+            TR("VisIt needs a running engine to retrieve ANARI device info."));
+        GetViewerState()->GetAnariDeviceInfoAttributes()->SetXmlResult("");
+        GetViewerState()->GetAnariDeviceInfoAttributes()->SetRequestor(requestor);
+        GetViewerState()->GetAnariDeviceInfoAttributes()->Notify();
+        return;
+    }
+
+    EngineKey ek(hosts[0], sims[0]);
+    string result;
+    GetViewerEngineManager()->GetAnariDeviceInfo(ek, libraryName, librarySubtype,
+                                                  rendererSubtype, &result);
+    GetViewerState()->GetAnariDeviceInfoAttributes()->SetXmlResult(result);
+    GetViewerState()->GetAnariDeviceInfoAttributes()->SetRequestor(requestor);
+    GetViewerState()->GetAnariDeviceInfoAttributes()->Notify();
 }

@@ -29,6 +29,7 @@
 #include <avtNullData.h>
 
 
+#include <AnariDeviceInfoRPC.h>
 #include <ApplyOperatorRPC.h>
 #include <ClearCacheRPC.h>
 #include <CloneNetworkRPC.h>
@@ -1227,6 +1228,39 @@ EngineRPCExecutor<QueryParametersRPC>::Execute(QueryParametersRPC *rpc)
     {
         QueryParametersRPC::MapNodeString s(
             netmgr->GetQueryParameters(rpc->GetQueryName()));
+        rpc->SendReply(&s);
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method: EngineRPCExecutor<AnariDeviceInfoRPC>::Execute
+//
+//  Purpose:  Retrieve ANARI library/device/renderer/parameter info that is
+//            actually available on this engine.
+//
+//  Programmer: Kevin Griffin
+//  Creation:   Thu 27 Aug 2026
+//
+// ****************************************************************************
+template<>
+void
+EngineRPCExecutor<AnariDeviceInfoRPC>::Execute(AnariDeviceInfoRPC *rpc)
+{
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
+
+    debug2 << "Executing AnariDeviceInfoRPC: " << endl;
+
+    TRY
+    {
+        AnariDeviceInfoRPC::MapNodeString s(netmgr->GetAnariDeviceInfo(rpc->GetLibraryName(),
+                                                                       rpc->GetLibrarySubtype(),
+                                                                       rpc->GetRendererSubtype()));
         rpc->SendReply(&s);
     }
     CATCH2(VisItException, e)

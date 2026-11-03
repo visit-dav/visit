@@ -6,6 +6,7 @@
 #include <anari/AnariParameterInfo.h>
 #include <QvisVolumePlotWindow.h>
 #include <VolumeAttributes.h>
+#include <MapNode.h>
 #include <DebugStream.h>
 
 #include <QGroupBox>
@@ -24,54 +25,12 @@
 #include <QDir>
 #include <QPushButton>
 #include <QFileDialog>
-#include <QMessageBox>
+#include <QColorDialog>
 
 #include <limits>
 
 const std::string AnariVolumeWidget::USD_WIDGET_KEY = "usd";
 const std::string AnariVolumeWidget::DEFAULT_WIDGET_KEY = "default";
-
-namespace anari_visit
-{
-    void StatusCallback(const void* userData, anari::Device device,
-                        anari::Object source, anari::DataType sourceType, anari::StatusSeverity severity,
-                        anari::StatusCode code, const char* message)
-    {
-        if (severity == ANARI_SEVERITY_FATAL_ERROR)
-        {
-            debug5 << "[ANARI::FATAL] " << message << std::endl;
-        }
-        else if (severity == ANARI_SEVERITY_ERROR)
-        {
-            debug5 << "[ANARI::ERROR] " << message << ", DataType: " << (int)sourceType << std::endl;
-        }
-        else if (severity == ANARI_SEVERITY_WARNING)
-        {
-            debug5 << "[ANARI::WARN] " << message << ", DataType: " << (int)sourceType << std::endl;
-        }
-        else if (severity == ANARI_SEVERITY_PERFORMANCE_WARNING)
-        {
-            debug5 << "[ANARI::PERF] " << message << std::endl;
-        }
-        else if (severity == ANARI_SEVERITY_INFO)
-        {
-            debug5 << "[ANARI::INFO] " << message << std::endl;
-        }
-        else if (severity == ANARI_SEVERITY_DEBUG)
-        {
-            debug5 << "[ANARI::DEBUG] " << message << std::endl;
-        }
-        else
-        {
-            debug5 << "[ANARI::STATUS] " << message << std::endl;
-        }
-
-        (void)userData;
-        (void)device;
-        (void)source;
-        (void)code;
-    }
-}
 
 // ****************************************************************************
 // Method: AnariVolumeWidget::AnariVolumeWidget
@@ -83,13 +42,17 @@ namespace anari_visit
 //   qrw        Window that displays rendering settings
 //   va         Contains ANARI volume attributes
 //   parent     If parent is another widget, this widget becomes a
-//              child window inside parent. The new widget is deleted when 
+//              child window inside parent. The new widget is deleted when
 //              its parent is deleted.
 //
 // Programmer:  Kevin Griffin
 // Creation:    Fri Mar 11 12:27:45 PDT 2022
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   libraryName is now a (non-editable) combo box populated from the
+//   engine's reported library list, matching AnariRenderingWidget, instead
+//   of a free-text line edit with an "environment" sentinel string.
 //
 // ****************************************************************************
 
@@ -160,6 +123,9 @@ AnariVolumeWidget::AnariVolumeWidget(QvisVolumePlotWindow *qrw,
 // Creation:    Fri Mar 11 12:27:45 PDT 2022
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   libraryName is now a non-editable combo box, populated from the
+//   engine's reported library list.
 //
 // ****************************************************************************
 
@@ -176,8 +142,8 @@ AnariVolumeWidget::CreateGeneralWidget(int &rows)
     gridLayout->setColumnStretch(3, 2);
     gridLayout->setColumnStretch(4, 5);
 
-    libraryName = new QLineEdit("", generalOptionsWidget);
-    connect(libraryName, &QLineEdit::editingFinished,
+    libraryName = new QComboBox(generalOptionsWidget);
+    connect(libraryName, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &AnariVolumeWidget::libraryChanged);
 
     // Back-end and subtype
@@ -344,8 +310,8 @@ AnariVolumeWidget::CreateUSDWidget(int &rows)
 // Method: AnariVolumeWidget::MakeWidgetFromParameterInfo
 //
 // Purpose:
-//   Creates the individual UI element from the parameter information obtained
-//   from ANARI's object introspection.
+//   Creates the individual UI element from the parameter information
+//   reported by the engine.
 //
 // Arguments:
 //   paramInfo  Contains information (description, min, max, default value, etc.)
@@ -355,51 +321,66 @@ AnariVolumeWidget::CreateUSDWidget(int &rows)
 // Creation:    Fri Mar 11 12:27:45 PDT 2022
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Build from the text-based fields of AnariParameterInfo (as reported by
+//   the engine in a MapNode) instead of the raw ANARI-device pointers, since
+//   this widget no longer creates a local ANARI device.
+//
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Added a color-picker button for color-named parameters, matching
+//   AnariRenderingWidget.
 //
 // ****************************************************************************
 
 QWidget *
 AnariVolumeWidget::MakeWidgetFromParameterInfo(const AnariParameterInfo &paramInfo)
 {
-    if(paramInfo.GetName() == "name" || paramInfo.GetName() == "background")
+    const auto paramName = QString::fromStdString(paramInfo.GetName());
+    const auto paramType = paramInfo.GetType();
+
+    if(paramName == "name" || paramName == "background")
     {
         // Skip these parameters
         // name is used internally for USD and background is handled by VisIt
         return nullptr;
     }
 
-    auto anariDataType = paramInfo.GetType();
+    // Color-based parameters
+    if ( paramName.contains("ambientColor", Qt::CaseInsensitive) ||
+         paramName.contains("color", Qt::CaseInsensitive))
+    {
+        auto* container = new QWidget(this);
+        auto* hbox = new QHBoxLayout(container);
+        hbox->setContentsMargins(0, 0, 0, 0);
+        auto* button = CreateColorButton(container, paramType, paramInfo.GetDefaultValueText());
+        button->setObjectName(paramInfo.GetName().c_str());
+        hbox->addWidget(button);
 
-    switch(anariDataType)
+        return container;
+    }
+
+    switch(paramType)
     {
         case ANARI_INT32:
         {
             QSpinBox *spinBox = new QSpinBox();
             spinBox->setObjectName(paramInfo.GetName().c_str());
 
-            if(paramInfo.m_defaultValue)
+            if(!paramInfo.GetDefaultValueText().empty())
             {
-                auto intPtr = static_cast<const int *>(paramInfo.m_defaultValue);
-                spinBox->setValue(*intPtr);
+                spinBox->setValue(QString::fromStdString(paramInfo.GetDefaultValueText()).toInt());
             }
 
             int min = std::numeric_limits<int>::min();
             int max = std::numeric_limits<int>::max();
 
-            if(paramInfo.HasMinimum())
-            {
-                auto minPtr = static_cast<const int *>(paramInfo.m_minimum);
-                min = *minPtr;
-            }
+            if(paramInfo.HasMinimumText())
+                min = QString::fromStdString(paramInfo.GetMinimumText()).toInt();
 
-            if(paramInfo.HasMaximum())
-            {
-                auto maxPtr = static_cast<const int *>(paramInfo.m_maximum);
-                max = *maxPtr;
-            }
+            if(paramInfo.HasMaximumText())
+                max = QString::fromStdString(paramInfo.GetMaximumText()).toInt();
 
-            spinBox->setMinimum(min);
-            spinBox->setMaximum(max);
+            spinBox->setRange(min, max);
 
             connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
                     this, &AnariVolumeWidget::spinBoxValueChanged);
@@ -414,23 +395,14 @@ AnariVolumeWidget::MakeWidgetFromParameterInfo(const AnariParameterInfo &paramIn
             float min = std::numeric_limits<float>::min();
             float max = std::numeric_limits<float>::max();
 
-            if(paramInfo.m_defaultValue)
-            {
-                auto floatPtr = static_cast<const float *>(paramInfo.m_defaultValue);
-                lineEdit->setText(QString::number(*floatPtr));
-            }
+            if(!paramInfo.GetDefaultValueText().empty())
+                lineEdit->setText(QString::fromStdString(paramInfo.GetDefaultValueText()));
 
-            if(paramInfo.HasMinimum())
-            {
-                auto minPtr = static_cast<const float *>(paramInfo.m_minimum);
-                min = *minPtr;
-            }
+            if(paramInfo.HasMinimumText())
+                min = QString::fromStdString(paramInfo.GetMinimumText()).toFloat();
 
-            if(paramInfo.HasMaximum())
-            {
-                auto maxPtr = static_cast<const float *>(paramInfo.m_maximum);
-                max = *maxPtr;
-            }
+            if(paramInfo.HasMaximumText())
+                max = QString::fromStdString(paramInfo.GetMaximumText()).toFloat();
 
             QDoubleValidator *dv = new QDoubleValidator(min, max, 4);
             lineEdit->setValidator(dv);
@@ -448,23 +420,14 @@ AnariVolumeWidget::MakeWidgetFromParameterInfo(const AnariParameterInfo &paramIn
             double min = std::numeric_limits<double>::min();
             double max = std::numeric_limits<double>::max();
 
-            if(paramInfo.m_defaultValue)
-            {
-                auto doublePtr = static_cast<const double *>(paramInfo.m_defaultValue);
-                lineEdit->setText(QString::number(*doublePtr));
-            }
+            if(!paramInfo.GetDefaultValueText().empty())
+                lineEdit->setText(QString::fromStdString(paramInfo.GetDefaultValueText()));
 
-            if(paramInfo.HasMinimum())
-            {
-                auto minPtr = static_cast<const double *>(paramInfo.m_minimum);
-                min = *minPtr;
-            }
+            if(paramInfo.HasMinimumText())
+                min = QString::fromStdString(paramInfo.GetMinimumText()).toDouble();
 
-            if(paramInfo.HasMaximum())
-            {
-                auto maxPtr = static_cast<const double *>(paramInfo.m_maximum);
-                max = *maxPtr;
-            }
+            if(paramInfo.HasMaximumText())
+                max = QString::fromStdString(paramInfo.GetMaximumText()).toDouble();
 
             QDoubleValidator *dv = new QDoubleValidator(min, max, 4);
             lineEdit->setValidator(dv);
@@ -497,10 +460,8 @@ AnariVolumeWidget::MakeWidgetFromParameterInfo(const AnariParameterInfo &paramIn
             QLineEdit *lineEdit = new QLineEdit();
             lineEdit->setObjectName(paramInfo.GetName().c_str());
 
-            if(paramInfo.m_defaultValue)
-            {
-                lineEdit->setText(static_cast<const char *>(paramInfo.m_defaultValue));
-            }
+            if(!paramInfo.GetDefaultValueText().empty())
+                lineEdit->setText(QString::fromStdString(paramInfo.GetDefaultValueText()));
 
             connect(lineEdit, &QLineEdit::editingFinished,
                     this, &AnariVolumeWidget::lineEditingFinished);
@@ -519,98 +480,21 @@ AnariVolumeWidget::MakeWidgetFromParameterInfo(const AnariParameterInfo &paramIn
                 checkBox->setToolTip(tr(toolTip.c_str()));
             }
 
-            if(paramInfo.m_defaultValue)
-            {
-                auto boolPtr = static_cast<const int32_t *>(paramInfo.m_defaultValue);
-                checkBox->setChecked(boolPtr && *boolPtr);
-            }
+            if(!paramInfo.GetDefaultValueText().empty())
+                checkBox->setChecked(paramInfo.GetDefaultValueText() == "true");
 
             connect(checkBox, &QCheckBox::toggled,
                     this, &AnariVolumeWidget::checkBoxToggled);
 
             return checkBox;
         }
-        case ANARI_INT32_VEC3: case ANARI_FLOAT32_VEC3: case ANARI_FLOAT64_VEC3:
-        {
-            QLineEdit *lineEdit = new QLineEdit();
-            lineEdit->setObjectName(paramInfo.GetName().c_str());
-
-            if(paramInfo.m_defaultValue)
-            {
-                auto vecPtr = paramInfo.m_defaultValue;
-
-                if(anariDataType == ANARI_INT32_VEC3)
-                {
-                    auto intVecPtr = static_cast<const int *>(vecPtr);
-                    lineEdit->setText(QString::number(intVecPtr[0]) + " " +
-                                      QString::number(intVecPtr[1]) + " " +
-                                      QString::number(intVecPtr[2]));
-                }
-                else if(anariDataType == ANARI_FLOAT32_VEC3)
-                {
-                    auto floatVecPtr = static_cast<const float *>(vecPtr);
-                    lineEdit->setText(QString::number(floatVecPtr[0]) + " " +
-                                      QString::number(floatVecPtr[1]) + " " +
-                                      QString::number(floatVecPtr[2]));
-                }
-                else if(anariDataType == ANARI_FLOAT64_VEC3)
-                {
-                    auto doubleVecPtr = static_cast<const double *>(vecPtr);
-                    lineEdit->setText(QString::number(doubleVecPtr[0]) + " " +
-                                      QString::number(doubleVecPtr[1]) + " " +
-                                      QString::number(doubleVecPtr[2]));
-                }
-            }
-
-            connect(lineEdit, &QLineEdit::editingFinished,
-                    this, &AnariVolumeWidget::lineEditingFinished);
-
-            return lineEdit;
-        }
-        case ANARI_INT32_VEC4: case ANARI_FLOAT32_VEC4: case ANARI_FLOAT64_VEC4:
-        {
-            QLineEdit *lineEdit = new QLineEdit();
-            lineEdit->setObjectName(paramInfo.GetName().c_str());
-
-            if(paramInfo.m_defaultValue)
-            {
-                auto vecPtr = paramInfo.m_defaultValue;
-
-                if(anariDataType == ANARI_INT32_VEC4)
-                {
-                    auto intVecPtr = static_cast<const int *>(vecPtr);
-                    lineEdit->setText(QString::number(intVecPtr[0]) + " " +
-                                      QString::number(intVecPtr[1]) + " " +
-                                      QString::number(intVecPtr[2]) + " " +
-                                      QString::number(intVecPtr[3]));
-                }
-                else if(anariDataType == ANARI_FLOAT32_VEC4)
-                {
-                    auto floatVecPtr = static_cast<const float *>(vecPtr);
-                    lineEdit->setText(QString::number(floatVecPtr[0]) + " " +
-                                      QString::number(floatVecPtr[1]) + " " +
-                                      QString::number(floatVecPtr[2]) + " " +
-                                      QString::number(floatVecPtr[3]));
-                }
-                else if(anariDataType == ANARI_FLOAT64_VEC4)
-                {
-                    auto doubleVecPtr = static_cast<const double *>(vecPtr);
-                    lineEdit->setText(QString::number(doubleVecPtr[0]) + " " +
-                                      QString::number(doubleVecPtr[1]) + " " +
-                                      QString::number(doubleVecPtr[2]) + " " +
-                                      QString::number(doubleVecPtr[3]));
-                }
-            }
-
-            connect(lineEdit, &QLineEdit::editingFinished,
-                    this, &AnariVolumeWidget::lineEditingFinished);
-
-            return lineEdit;
-        }
         default:
         {
             QLineEdit *lineEdit = new QLineEdit();
             lineEdit->setObjectName(paramInfo.GetName().c_str());
+
+            if(!paramInfo.GetDefaultValueText().empty())
+                lineEdit->setText(QString::fromStdString(paramInfo.GetDefaultValueText()));
 
             connect(lineEdit, &QLineEdit::editingFinished,
                     this, &AnariVolumeWidget::lineEditingFinished);
@@ -628,8 +512,8 @@ AnariVolumeWidget::MakeWidgetFromParameterInfo(const AnariParameterInfo &paramIn
 //   back-end subtype, and renderer subtype.
 //
 // Arguments:
-//   anariDevice  The ANARI device
-//   subtype      The renderer subtype
+//   parameters   MapNode of parameter name -> parameter info, as reported by
+//                the engine's AnariDeviceInfoRPC (see BuildParameterInfoFromMapNode)
 //   key          The key to the dynamic layout map
 //   isUSD        If the back-end is USD
 //
@@ -637,11 +521,14 @@ AnariVolumeWidget::MakeWidgetFromParameterInfo(const AnariParameterInfo &paramIn
 // Creation:    Fri Mar 11 12:27:45 PDT 2022
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Build from a MapNode reported by the engine instead of a live
+//   anari::Device, since the client may not have ANARI backends installed.
 //
 // ****************************************************************************
 
 void
-AnariVolumeWidget::CreateDynamicWidget(anari::Device anariDevice, const char *subtype, const std::string &key, bool isUSD)
+AnariVolumeWidget::CreateDynamicWidget(const MapNode &parameters, const std::string &key, bool isUSD)
 {
     int stackLayoutIndex = this->dynamicLayoutMap[AnariVolumeWidget::DEFAULT_WIDGET_KEY];
 
@@ -664,16 +551,16 @@ AnariVolumeWidget::CreateDynamicWidget(anari::Device anariDevice, const char *su
             int rows = 0;
             int cols = 0;
 
-            const ANARIParameter *parameterList =
-                static_cast<const ANARIParameter*>(anariGetObjectInfo(anariDevice,
-                                                                      ANARI_RENDERER,
-                                                                      subtype,
-                                                                      "parameter",
-                                                                      ANARI_PARAMETER_LIST));
+            stringVector paramNames;
+            parameters.GetEntryNames(paramNames);
 
-            for(const ANARIParameter *param = parameterList; param && param->name != nullptr; ++param)
+            for(const std::string &paramName : paramNames)
             {
-                AnariParameterInfo paramInfo = std::move(GetParameterInfo(anariDevice, ANARI_RENDERER, subtype, param));
+                const MapNode *paramNode = parameters.GetEntry(paramName);
+                if(paramNode == nullptr)
+                    continue;
+
+                AnariParameterInfo paramInfo = BuildParameterInfoFromMapNode(paramName, *paramNode);
 
                 // Create the UI
                 QWidget *uiWidget = MakeWidgetFromParameterInfo(paramInfo);
@@ -685,7 +572,7 @@ AnariVolumeWidget::CreateDynamicWidget(anari::Device anariDevice, const char *su
 
                 if(paramInfo.GetType() != ANARI_BOOL)
                 {
-                    QLabel *label = new QLabel(param->name);
+                    QLabel *label = new QLabel(paramName.c_str());
                     std::string toolTip = paramInfo.GetDescription();
 
                     if(!toolTip.empty())
@@ -724,6 +611,330 @@ AnariVolumeWidget::CreateDynamicWidget(anari::Device anariDevice, const char *su
 }
 
 // ****************************************************************************
+// Method: AnariVolumeWidget::CreateColorButton
+//
+// Purpose:
+//   Creates a push button used to edit a color-valued ANARI parameter. The
+//   button's swatch/label reflect the current color; clicking it opens a
+//   QColorDialog and, if a new color is picked, updates the swatch and the
+//   ANARI rendering attributes.
+//
+// Arguments:
+//   parent parent widget
+//   type ANARI data type
+//   defaultValueText the default value as a string
+//
+// Programmer:  Kevin Griffin
+// Creation:    Tue 22 Sep 2026
+//
+// ****************************************************************************
+QPushButton*
+AnariVolumeWidget::CreateColorButton(QWidget* parent, ANARIDataType type, const std::string &defaultValueText)
+{
+    auto* button = new QPushButton(parent);
+    QColor initial = TextToColor(type, defaultValueText);
+
+    SetColorButtonSwatch(button, initial);
+    button->setProperty("color", initial);
+    button->setProperty("anariType", static_cast<int>(type));
+
+    connect(button, &QPushButton::clicked, this, [this, button, parent]() {
+        QColor c = button->property("color").value<QColor>();
+        QColor picked = QColorDialog::getColor(c, parent,
+                                               tr("Pick parameter color"),
+                                               QColorDialog::ShowAlphaChannel);
+        if (picked.isValid())
+        {
+            button->setProperty("color", picked);
+            this->SetColorButtonSwatch(button, picked);
+            this->UpdateRenderingAttributes(false);
+        }
+    });
+
+    return button;
+}
+
+// ****************************************************************************
+// Method: AnariVolumeWidget::SetColorButtonSwatch
+//
+// Purpose:
+//   Updates a color button's label and style sheet to display the given
+//   color as a swatch, with the button's text color (black/white) chosen
+//   for contrast against the swatch.
+//
+// Arguments:
+//   button the color button to update
+//   color  the color to display
+//
+// Programmer:  Kevin Griffin
+// Creation:    Tue 22 Sep 2026
+//
+// ****************************************************************************
+void
+AnariVolumeWidget::SetColorButtonSwatch(QPushButton* button, const QColor& color)
+{
+    button->setText(color.name(QColor::HexArgb));
+    QString style = QStringLiteral("QPushButton { background-color: %1; color: %2; }").arg(
+        color.name(),color.lightness() > 128 ? QStringLiteral("black") : QStringLiteral("white"));
+    button->setStyleSheet(style);
+}
+
+// ****************************************************************************
+// Method: AnariVolumeWidget::TextToColor
+//
+// Purpose:
+//   Parses the space-separated component string the engine reports for a
+//   color-valued ANARI parameter's default value (see
+//   NetworkManager::AnariValueToString) into a QColor, normalizing each
+//   component according to type. Returns black if defaultValueText is
+//   empty, type isn't a recognized color type, or the component count
+//   doesn't match what type expects.
+//
+// Arguments:
+//   type ANARI data type
+//   defaultValueText the default value as a string
+//
+// Programmer:  Kevin Griffin
+// Creation:    Tue 22 Sep 2026
+//
+// ****************************************************************************
+QColor
+AnariVolumeWidget::TextToColor(ANARIDataType type, const std::string &defaultValueText)
+{
+    if (defaultValueText.empty())
+    {
+        return QColor(Qt::black);
+    }
+
+    // Component count and normalization divisor for this ANARI color type.
+    // The engine formats these as space-separated components (see
+    // NetworkManager::AnariValueToString): FLOAT32 components are already
+    // in [0,1]; UFIXED8/16/32 (including the *_SRGB variants) are their raw
+    // unsigned integer storage value, normalized here by the type's max.
+    int numComponents = 0;
+    double maxValue = 1.0;
+
+    switch(type)
+    {
+        case ANARI_FLOAT32:
+            numComponents = 1;
+            break;
+        case ANARI_FLOAT32_VEC2:
+            numComponents = 2;
+            break;
+        case ANARI_FLOAT32_VEC3:
+            numComponents = 3;
+            break;
+        case ANARI_FLOAT32_VEC4:
+            numComponents = 4;
+            break;
+        case ANARI_UFIXED8: case ANARI_UFIXED8_R_SRGB:
+            numComponents = 1; maxValue = 255.0;
+            break;
+        case ANARI_UFIXED8_VEC2: case ANARI_UFIXED8_RA_SRGB:
+            numComponents = 2; maxValue = 255.0;
+            break;
+        case ANARI_UFIXED8_VEC3: case ANARI_UFIXED8_RGB_SRGB:
+            numComponents = 3; maxValue = 255.0;
+            break;
+        case ANARI_UFIXED8_VEC4: case ANARI_UFIXED8_RGBA_SRGB:
+            numComponents = 4; maxValue = 255.0;
+            break;
+        case ANARI_UFIXED16:
+            numComponents = 1; maxValue = 65535.0;
+            break;
+        case ANARI_UFIXED16_VEC2:
+            numComponents = 2; maxValue = 65535.0;
+            break;
+        case ANARI_UFIXED16_VEC3:
+            numComponents = 3; maxValue = 65535.0;
+            break;
+        case ANARI_UFIXED16_VEC4:
+            numComponents = 4; maxValue = 65535.0;
+            break;
+        case ANARI_UFIXED32:
+            numComponents = 1; maxValue = 4294967295.0;
+            break;
+        case ANARI_UFIXED32_VEC2:
+            numComponents = 2; maxValue = 4294967295.0;
+            break;
+        case ANARI_UFIXED32_VEC3:
+            numComponents = 3; maxValue = 4294967295.0;
+            break;
+        case ANARI_UFIXED32_VEC4:
+            numComponents = 4; maxValue = 4294967295.0;
+            break;
+        default:
+            return QColor(Qt::black);
+    }
+
+    QStringList tokens = QString::fromStdString(defaultValueText).split(' ', Qt::SkipEmptyParts);
+
+    if(tokens.size() != numComponents)
+    {
+        debug1 << "[ANARI] TextToColor - expected " << numComponents
+               << " components but got " << tokens.size()
+               << " for value '" << defaultValueText << "'" << std::endl;
+        return QColor(Qt::black);
+    }
+
+    // components[0..2] default to black, components[3] (alpha) defaults to
+    // opaque, for the 1- and 2-component cases filled in below.
+    double components[4] = {0.0, 0.0, 0.0, 1.0};
+    bool ok = true;
+
+    for(int i = 0; i < numComponents && ok; ++i)
+    {
+        components[i] = qBound(0.0, tokens[i].toDouble(&ok) / maxValue, 1.0);
+    }
+
+    if(!ok)
+    {
+        return QColor(Qt::black);
+    }
+
+    QColor color;
+
+    switch(numComponents)
+    {
+        // Single channel (e.g. UFIXED8_R_SRGB): grayscale, opaque.
+        case 1:
+            color.setRgbF(components[0], components[0], components[0], 1.0);
+            break;
+        // Two channels (e.g. UFIXED8_RA_SRGB): grayscale + alpha.
+        case 2:
+            color.setRgbF(components[0], components[0], components[0], components[1]);
+            break;
+        case 3:
+            color.setRgbF(components[0], components[1], components[2], 1.0);
+            break;
+        default:
+            color.setRgbF(components[0], components[1], components[2], components[3]);
+            break;
+    }
+
+    return color;
+}
+
+// ****************************************************************************
+// Method: AnariVolumeWidget::ColorToText
+//
+// Purpose:
+//   Inverse of TextToColor: formats a QColor as the space-separated
+//   component string expected by the engine for the given ANARI color
+//   type (see NetworkManager::AnariValueToString).
+//
+// Arguments:
+//   type  ANARI data type
+//   color the color to format
+//
+// Programmer:  Kevin Griffin
+// Creation:    Tue 22 Sep 2026
+//
+// ****************************************************************************
+
+std::string
+AnariVolumeWidget::ColorToText(ANARIDataType type, const QColor &color)
+{
+    int numComponents = 0;
+    double maxValue = 1.0;
+
+    switch(type)
+    {
+        case ANARI_FLOAT32:
+            numComponents = 1;
+            break;
+        case ANARI_FLOAT32_VEC2:
+            numComponents = 2;
+            break;
+        case ANARI_FLOAT32_VEC3:
+            numComponents = 3;
+            break;
+        case ANARI_FLOAT32_VEC4:
+            numComponents = 4;
+            break;
+        case ANARI_UFIXED8: case ANARI_UFIXED8_R_SRGB:
+            numComponents = 1; maxValue = 255.0;
+            break;
+        case ANARI_UFIXED8_VEC2: case ANARI_UFIXED8_RA_SRGB:
+            numComponents = 2; maxValue = 255.0;
+            break;
+        case ANARI_UFIXED8_VEC3: case ANARI_UFIXED8_RGB_SRGB:
+            numComponents = 3; maxValue = 255.0;
+            break;
+        case ANARI_UFIXED8_VEC4: case ANARI_UFIXED8_RGBA_SRGB:
+            numComponents = 4; maxValue = 255.0;
+            break;
+        case ANARI_UFIXED16:
+            numComponents = 1; maxValue = 65535.0;
+            break;
+        case ANARI_UFIXED16_VEC2:
+            numComponents = 2; maxValue = 65535.0;
+            break;
+        case ANARI_UFIXED16_VEC3:
+            numComponents = 3; maxValue = 65535.0;
+            break;
+        case ANARI_UFIXED16_VEC4:
+            numComponents = 4; maxValue = 65535.0;
+            break;
+        case ANARI_UFIXED32:
+            numComponents = 1; maxValue = 4294967295.0;
+            break;
+        case ANARI_UFIXED32_VEC2:
+            numComponents = 2; maxValue = 4294967295.0;
+            break;
+        case ANARI_UFIXED32_VEC3:
+            numComponents = 3; maxValue = 4294967295.0;
+            break;
+        case ANARI_UFIXED32_VEC4:
+            numComponents = 4; maxValue = 4294967295.0;
+            break;
+        default:
+            return std::string();
+    }
+
+    // components[0] is gray for the 1- and 2-component cases (mirrors
+    // TextToColor, which reads r==g==b into a single gray channel).
+    double components[4] = {0.0, 0.0, 0.0, 0.0};
+
+    switch(numComponents)
+    {
+        case 1:
+            components[0] = color.redF();
+            break;
+        case 2:
+            components[0] = color.redF();
+            components[1] = color.alphaF();
+            break;
+        case 3:
+            components[0] = color.redF();
+            components[1] = color.greenF();
+            components[2] = color.blueF();
+            break;
+        default:
+            components[0] = color.redF();
+            components[1] = color.greenF();
+            components[2] = color.blueF();
+            components[3] = color.alphaF();
+            break;
+    }
+
+    QStringList tokens;
+
+    for(int i = 0; i < numComponents; ++i)
+    {
+        double val = components[i] * maxValue;
+
+        if(maxValue == 1.0)
+            tokens << QString::number(val);
+        else
+            tokens << QString::number(qRound(val));
+    }
+
+    return tokens.join(' ').toStdString();
+}
+
+// ****************************************************************************
 // Method: AnariVolumeWidget::GetBackendType
 //
 // Purpose:
@@ -737,6 +948,9 @@ AnariVolumeWidget::CreateDynamicWidget(anari::Device anariDevice, const char *su
 // Creation:
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Added phenocryst, matching AnariRenderingWidget/the engine's known
+//   back-end list.
 //
 // ****************************************************************************
 
@@ -767,81 +981,62 @@ AnariVolumeWidget::GetBackendType(const std::string &libname) const
     {
         return BackendType::RADEONPRORENDER;
     }
+    else if(libname == "phenocryst")
+    {
+        return BackendType::PHENOCRYST;
+    }
 
     return BackendType::NONE;
 }
 
 // ****************************************************************************
-// Method: AnariVolumeWidget::GetParameterInfo
+// Method: AnariVolumeWidget::BuildParameterInfoFromMapNode
 //
 // Purpose:
-//   Gets the parameter information for the given object.
+//   Builds an AnariParameterInfo from the MapNode the engine reported for
+//   one ANARI renderer parameter (see NetworkManager::GetAnariDeviceInfo).
+//   This replaces the old device-based GetParameterInfo(), which called
+//   anariGetParameterInfo() on a locally-created anari::Device -- the client
+//   may not have any ANARI backend libraries installed at all, so all of
+//   that introspection now happens on the engine instead.
 //
 // Arguments:
-//   device         The ANARI device
-//   objectType     The type of object (Renderer, Camera, etc.)
-//   objectSubtype  The subtype of the object
-//   param          The parameter to get information for
-//
+//   name       The parameter name.
+//   paramNode  The MapNode describing this parameter (type/description/
+//              default/minimum/maximum/acceptedValues).
 //
 // Programmer: Kevin Griffin
-// Creation:
-//
-// Modifications:
+// Creation:   Tue 22 Sep 2026
 //
 // ****************************************************************************
 
 AnariParameterInfo
-AnariVolumeWidget::GetParameterInfo(anari::Device device,
-                                       ANARIDataType objectType,
-                                       const char *objectSubtype,
-                                       const ANARIParameter *param)
+AnariVolumeWidget::BuildParameterInfoFromMapNode(const std::string &name,
+                                                 const MapNode &paramNode)
 {
     AnariParameterInfo paramInfo;
+    paramInfo.SetName(name.c_str());
 
-    paramInfo.SetName(param->name);
-    paramInfo.SetType(param->type);
+    if(paramNode.HasEntry("type"))
+        paramInfo.SetType((ANARIDataType)paramNode.GetEntry("type")->AsInt());
 
-    // Explanation of the parameter, e.g., for a tooltip
-    paramInfo.SetDescription(anariGetParameterInfo(device,
-                                                   objectType,
-                                                   objectSubtype,
-                                                   param->name,
-                                                   param->type,
-                                                   "description",
-                                                   ANARI_STRING));
-    // set values will be clamped to this minimum
-    paramInfo.m_minimum = anariGetParameterInfo(device,
-                                                objectType,
-                                                objectSubtype,
-                                                param->name,
-                                                param->type,
-                                                "minimum",
-                                                param->type);
-    // set values will be clamped to this maximum
-    paramInfo.m_maximum = anariGetParameterInfo(device,
-                                                objectType,
-                                                objectSubtype,
-                                                param->name,
-                                                param->type,
-                                                "maximum",
-                                                param->type);
-    // default value, must be in minumum and maximum if present
-    paramInfo.m_defaultValue = anariGetParameterInfo(device,
-                                                     objectType,
-                                                     objectSubtype,
-                                                     param->name,
-                                                     param->type,
-                                                     "default",
-                                                     param->type);
-    // list of accepted values
-    paramInfo.SetAcceptedValues((const char **)anariGetParameterInfo(device,
-                                                                     objectType,
-                                                                     objectSubtype,
-                                                                     param->name,
-                                                                     param->type,
-                                                                     "value",
-                                                                     ANARI_STRING_LIST));
+    if(paramNode.HasEntry("description"))
+    {
+        std::string desc = paramNode.GetEntry("description")->AsString();
+        paramInfo.SetDescription(desc.c_str());
+    }
+
+    if(paramNode.HasEntry("default"))
+        paramInfo.SetDefaultValueText(paramNode.GetEntry("default")->AsString());
+
+    if(paramNode.HasEntry("minimum"))
+        paramInfo.SetMinimumText(paramNode.GetEntry("minimum")->AsString());
+
+    if(paramNode.HasEntry("maximum"))
+        paramInfo.SetMaximumText(paramNode.GetEntry("maximum")->AsString());
+
+    if(paramNode.HasEntry("acceptedValues"))
+        paramInfo.SetAcceptedValues(paramNode.GetEntry("acceptedValues")->AsStringVector());
 
     return paramInfo;
 }
@@ -923,6 +1118,8 @@ AnariVolumeWidget::UpdateLibrarySubtypes(const std::string &subtype)
 // Creation:
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   libraryName is now a combo box; add libname if not already present.
 //
 // ****************************************************************************
 
@@ -930,7 +1127,14 @@ void
 AnariVolumeWidget::UpdateLibraryName(const std::string &libname)
 {
     libraryName->blockSignals(true);
-    libraryName->setText(QString::fromStdString(libname));
+
+    QString textItem = QString::fromStdString(libname);
+    if(libraryName->findText(textItem) == -1)
+    {
+        libraryName->addItem(textItem);
+    }
+    libraryName->setCurrentText(textItem);
+
     libraryName->blockSignals(false);
 }
 
@@ -987,7 +1191,7 @@ AnariVolumeWidget::UpdateRendererParameters(const stringVector &params)
 {
     // Loop through all widgets in the current layout
     for(int i = 0; i < dynamicLayouts->count(); ++i)
-    {        
+    {
         if(i == this->dynamicLayoutMap[AnariVolumeWidget::DEFAULT_WIDGET_KEY] ||
            i == this->dynamicLayoutMap[AnariVolumeWidget::USD_WIDGET_KEY])
         {
@@ -1165,6 +1369,10 @@ AnariVolumeWidget::SetChecked(const bool val)
 // Creation:    Fri Mar 11 12:27:45 PDT 2022
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   The first time ANARI rendering is enabled, ask the engine which
+//   libraries are available (populating the libraryName combo box) instead
+//   of assuming a library is already selected.
 //
 // ****************************************************************************
 
@@ -1172,19 +1380,26 @@ void
 AnariVolumeWidget::renderingToggled(bool val)
 {
     anariAttributes->SetAnariRendering(val);
-    
+
     if(!val)
     {
         volumeAttributes->SetRendererType(VolumeAttributes::Serial);
     }
-    
+
     renderingWindow->SetApply(false);
-    
-    if(val) 
+
+    if(val)
     {
         // Allows VisIt to check if a valid back-end is available before trying
         // to render with ANARI.
-        this->libraryChanged();
+        if(libraryName->count() == 0)
+        {
+            RequestDeviceInfo("", "", "");
+        }
+        else
+        {
+            this->libraryChanged();
+        }
     }
 }
 
@@ -1192,106 +1407,40 @@ AnariVolumeWidget::renderingToggled(bool val)
 // Method: AnariVolumeWidget::libraryChanged
 //
 // Purpose:
-//      Triggered when ANARI Back-end rendering library has changed. If no
-//      library is specified, it will first look to see if the ANARI_LIBRARY 
-//      environment variable is set. If not, the default library (helide) will 
-//      be used.
+//      Triggered when the selected ANARI Back-end rendering library has
+//      changed.
 //
 // Programmer:  Kevin Griffin
 // Creation:    Fri Mar 11 12:27:45 PDT 2022
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Ask the engine which ANARI libraries/subtypes/renderers/parameters are
+//   available instead of loading a library locally since the client may not
+//   have any ANARI backend libraries installed at all. The result arrives
+//   asynchronously via UpdateDeviceInfo(). libraryName is now a
+//   (non-editable) combo box populated from the engine's reported library
+//   list, so there's no "environment" sentinel to resolve here anymore --
+//   ANARI_LIBRARY is resolved on the engine (see
+//   NetworkManager::GetAnariDeviceInfo).
 //
 // ****************************************************************************
 
 void
 AnariVolumeWidget::libraryChanged()
 {
-    anariAttributes->SetUsingUsdDevice(false);
-    std::string libname = libraryName->text().trimmed().toStdString();
-    
+    std::string libname = libraryName->currentText().trimmed().toStdString();
+
     if(libname.empty())
     {
-        libname = "environment";
+        RequestDeviceInfo("", "", "");
+        return;
     }
-    
-    auto anariLibrary = anari::loadLibrary(libname.c_str(), anari_visit::StatusCallback);
 
-    if(anariLibrary)
-    {
-        // Get ANARI_LIBRARY environment variable
-        if(libname == "environment")
-        {
-            libname = std::string(getenv("ANARI_LIBRARY"));
-        }
-        
-        libraryName->blockSignals(true);
-        libraryName->setText(libname.c_str());
-        libraryName->blockSignals(false);
-        
-        UpdateLibraryUI(anariLibrary, libname);
-        anariUnloadLibrary(anariLibrary);
-        UpdateRenderingAttributes(false);
-    }
-    else
-    {
-        QString message;
+    anariAttributes->SetUsingUsdDevice(GetBackendType(libname) == BackendType::USD);
+    anariAttributes->SetAnariLibrary(libname);
 
-        if(libname == "environment")
-        {
-            message.append(tr("ANARI_LIBRARY environment variable not set or set incorrectly. ") +
-                           tr("Using default back-end (helide)"));
-        }
-        else
-        {
-            message.append(tr("%1 is not a valid back-end name or not on your library path. ").arg(libname.c_str()) + 
-                           tr("Using default back-end (helide)"));
-        }
-
-        QMessageBox::critical(this, tr("ANARI"), message);
-        debug1 << "Could not load the ANARI library (" << libname << ") using default back-end (helide)." << std::endl;
-        
-        libname = "helide";        
-        anariLibrary = anari::loadLibrary(libname.c_str(), anari_visit::StatusCallback);
-        
-        if(anariLibrary)
-        {
-            libraryName->blockSignals(true);
-            libraryName->setText(libname.c_str());
-            libraryName->blockSignals(false);
-        
-            UpdateLibraryUI(anariLibrary, libname);
-            anariUnloadLibrary(anariLibrary);
-            UpdateRenderingAttributes(false);
-        }
-        else
-        {
-            QString message1 = tr("Could not load the default ANARI library (helide). ") +
-                               tr("Disabling ANARI rendering.");
-            QMessageBox::critical(this, tr("ANARI"), message1);
-            debug1 << "Could not load the default ANARI library (helide)." << std::endl;        
-        
-            // Reset Back-end Subtype and Renderer to "default"
-            librarySubtypes->blockSignals(true);
-            librarySubtypes->clear();
-            librarySubtypes->addItem("default");
-            librarySubtypes->blockSignals(false);
-            auto libSubtype =  librarySubtypes->currentText().toStdString();
-            anariAttributes->SetAnariLibrarySubtype(libSubtype);
-
-            rendererSubtypes->blockSignals(true);
-            rendererSubtypes->clear();
-            rendererSubtypes->addItem("default");
-            rendererSubtypes->blockSignals(false);
-            auto rendererSubtype = rendererSubtypes->currentText().toStdString();
-            anariAttributes->SetAnariRendererSubtype(rendererSubtype);
-
-            // Reset to blank widget
-            emit currentBackendChanged(0);
-            ClearAnariParameterAttributes();
-            renderingGroup->setChecked(false);
-        }
-    }
+    RequestDeviceInfo(libname, "", "");
 }
 
 // ****************************************************************************
@@ -1307,6 +1456,9 @@ AnariVolumeWidget::libraryChanged()
 // Creation:    Fri Mar 11 12:27:45 PDT 2022
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Ask the engine for the available renderer subtypes instead of creating
+//   a local ANARI device.
 //
 // ****************************************************************************
 
@@ -1315,56 +1467,10 @@ AnariVolumeWidget::librarySubtypeChanged(const QString &subtype)
 {
     auto libSubtype = subtype.toStdString();
     anariAttributes->SetAnariLibrarySubtype(libSubtype);
-    auto libname = libraryName->text().trimmed().toStdString();
 
-    auto anariLibrary = anari::loadLibrary(libname.c_str(), anari_visit::StatusCallback);
-    auto anariDevice = anari::newDevice(anariLibrary, libSubtype.c_str());
+    auto libname = libraryName->currentText().trimmed().toStdString();
 
-    if(anariDevice)
-    {
-        // Update renderers
-        rendererSubtypes->blockSignals(true);
-        rendererSubtypes->clear();
-        const char **renderers = anariGetObjectSubtypes(anariDevice, ANARI_RENDERER);
-
-        if(renderers)
-        {
-            for(const char **d = renderers; *d != NULL; d++)
-            {
-                rendererSubtypes->addItem(*d);
-            }
-        }
-        else
-        {
-            rendererSubtypes->addItem("default");
-        }
-
-        auto rendererSubtype =  rendererSubtypes->currentText().toStdString();
-        anariAttributes->SetAnariRendererSubtype(rendererSubtype);
-        rendererSubtypes->blockSignals(false);
-
-        // Create Dynamic Widget
-        std::string key = libname + ":" + libSubtype + ":" + rendererSubtype;
-        CreateDynamicWidget(anariDevice, rendererSubtype.c_str(), key, GetBackendType(libname) == BackendType::USD);
-
-        // Clean-up
-        anari::release(anariDevice, anariDevice);
-        anariUnloadLibrary(anariLibrary);
-
-        UpdateRenderingAttributes(false);
-    }
-    else
-    {
-        if(anariLibrary)
-        {
-            anariUnloadLibrary(anariLibrary);
-        }
-
-        debug1 << "Could not create the ANARI back-end device (" << libname << ") to update the Rendering UI." << std::endl;
-        emit currentBackendChanged(0);
-        ClearAnariParameterAttributes();
-        renderingWindow->SetApply(false);
-    }
+    RequestDeviceInfo(libname, libSubtype, "");
 }
 
 // ****************************************************************************
@@ -1380,6 +1486,9 @@ AnariVolumeWidget::librarySubtypeChanged(const QString &subtype)
 // Creation:    Fri Mar 11 12:27:45 PDT 2022
 //
 // Modifications:
+//   Kevin Griffin, Tue 22 Sep 2026
+//   Ask the engine for the renderer's parameters instead of creating a
+//   local ANARI device.
 //
 // ****************************************************************************
 
@@ -1389,37 +1498,166 @@ AnariVolumeWidget::rendererSubtypeChanged(const QString &subtype)
     auto rendererSubtype = subtype.toStdString();
     anariAttributes->SetAnariRendererSubtype(rendererSubtype);
 
-    auto libname = libraryName->text().trimmed().toStdString();
+    auto libname = libraryName->currentText().trimmed().toStdString();
     auto libSubtype = librarySubtypes->currentText().toStdString();
 
-    auto anariLibrary = anari::loadLibrary(libname.c_str(), anari_visit::StatusCallback);
-    auto anariDevice = anari::newDevice(anariLibrary, libSubtype.c_str());
+    RequestDeviceInfo(libname, libSubtype, rendererSubtype);
+}
 
-    if(anariDevice)
+// ****************************************************************************
+// Method: AnariVolumeWidget::RequestDeviceInfo
+//
+// Purpose:
+//   Asks the engine (via the viewer) for whichever ANARI info can be
+//   determined from the given library/subtype/renderer combination. Any of
+//   the three may be empty; see NetworkManager::GetAnariDeviceInfo() for
+//   what each combination returns. The result arrives asynchronously via
+//   UpdateDeviceInfo().
+//
+// Programmer: Kevin Griffin
+// Creation:   Tue 22 Sep 2026
+//
+// ****************************************************************************
+
+void
+AnariVolumeWidget::RequestDeviceInfo(const std::string &libraryName_,
+                                     const std::string &librarySubtype,
+                                     const std::string &rendererSubtype)
+{
+    renderingWindow->RequestAnariDeviceInfo(libraryName_, librarySubtype, rendererSubtype);
+}
+
+// ****************************************************************************
+// Method: AnariVolumeWidget::UpdateDeviceInfo
+//
+// Purpose:
+//   Consumes the ANARI library/subtype/renderer/parameter info the engine
+//   reported in response to RequestDeviceInfo(), and continues the
+//   library -> subtype -> renderer -> parameters cascade by issuing the
+//   next request as each level of the UI is populated.
+//
+// Arguments:
+//   info : The MapNode reported by the engine (see
+//          NetworkManager::GetAnariDeviceInfo()).
+//
+// Programmer: Kevin Griffin
+// Creation:   Tue 22 Sep 2026
+//
+// ****************************************************************************
+
+void
+AnariVolumeWidget::UpdateDeviceInfo(const MapNode &info)
+{
+    if(info.HasEntry("available") && info.GetEntry("available")->AsInt() == 0)
     {
-        // Create Dynamic Widget
-        auto key = libname + ":" + libSubtype + ":" + rendererSubtype;
-        CreateDynamicWidget(anariDevice, rendererSubtype.c_str(), key, GetBackendType(libname) == BackendType::USD);
-
-        // Clean-up
-        anari::release(anariDevice, anariDevice);
-        anariUnloadLibrary(anariLibrary);
-
-        UpdateRenderingAttributes(false);
-    }
-    else
-    {
-        if(anariLibrary)
-        {
-            anariUnloadLibrary(anariLibrary);
-        }
-
-        debug1 << "Could not create the ANARI back-end device (" << libname << ") to update the Rendering UI." << std::endl;
+        auto libname = libraryName->currentText().trimmed().toStdString();
+        debug1 << "[ANARI] Engine could not load ANARI library/device for '"
+               << libname << "'." << std::endl;
         emit currentBackendChanged(0);
-
-        // Clear Parameters
         ClearAnariParameterAttributes();
         renderingWindow->SetApply(false);
+        return;
+    }
+
+    if(info.HasEntry("libraries"))
+    {
+        stringVector libraries = info.GetEntry("libraries")->AsStringVector();
+
+        libraryName->blockSignals(true);
+        libraryName->clear();
+
+        for(const std::string &l : libraries)
+        {
+            libraryName->addItem(QString::fromStdString(l));
+        }
+
+        std::string selected;
+
+        if(libraryName->count() > 0)
+        {
+            selected = libraryName->itemText(0).toStdString();
+        }
+
+        if(!selected.empty())
+        {
+            libraryName->setCurrentText(QString::fromStdString(selected));
+        }
+
+        libraryName->blockSignals(false);
+
+        if(selected.empty())
+        {
+            debug1 << "[ANARI] Engine reported no available ANARI libraries." << std::endl;
+            return;
+        }
+
+        anariAttributes->SetUsingUsdDevice(GetBackendType(selected) == BackendType::USD);
+        anariAttributes->SetAnariLibrary(selected);
+
+        RequestDeviceInfo(selected, "", "");
+        return;
+    }
+
+    auto libname = libraryName->currentText().trimmed().toStdString();
+    auto backendType = GetBackendType(libname);
+
+    if(info.HasEntry("parameters"))
+    {
+        auto libSubtype = librarySubtypes->currentText().toStdString();
+        auto rendererSubtype = rendererSubtypes->currentText().toStdString();
+        std::string key = libname + ":" + libSubtype + ":" + rendererSubtype;
+
+        CreateDynamicWidget(*info.GetEntry("parameters"), key, backendType == BackendType::USD);
+        UpdateRenderingAttributes(false);
+    }
+    else if(info.HasEntry("renderers"))
+    {
+        stringVector renderers = info.GetEntry("renderers")->AsStringVector();
+
+        rendererSubtypes->blockSignals(true);
+        rendererSubtypes->clear();
+
+        for(const std::string &r : renderers)
+        {
+            rendererSubtypes->addItem(QString::fromStdString(r));
+        }
+
+        if(rendererSubtypes->count() == 0)
+        {
+            rendererSubtypes->addItem("default");
+        }
+
+        rendererSubtypes->blockSignals(false);
+
+        auto libSubtype = librarySubtypes->currentText().toStdString();
+        auto rendererSubtype = rendererSubtypes->currentText().toStdString();
+        anariAttributes->SetAnariRendererSubtype(rendererSubtype);
+
+        RequestDeviceInfo(libname, libSubtype, rendererSubtype);
+    }
+    else if(info.HasEntry("subtypes"))
+    {
+        stringVector subtypes = info.GetEntry("subtypes")->AsStringVector();
+
+        librarySubtypes->blockSignals(true);
+        librarySubtypes->clear();
+
+        for(const std::string &s : subtypes)
+        {
+            librarySubtypes->addItem(QString::fromStdString(s));
+        }
+
+        if(librarySubtypes->count() == 0)
+        {
+            librarySubtypes->addItem("default");
+        }
+
+        librarySubtypes->blockSignals(false);
+
+        auto libSubtype = librarySubtypes->currentText().toStdString();
+        anariAttributes->SetAnariLibrarySubtype(libSubtype);
+
+        RequestDeviceInfo(libname, libSubtype, "");
     }
 }
 
@@ -1571,7 +1809,7 @@ AnariVolumeWidget::UpdateRenderingAttributes(const bool updateApply)
     {
         std::string name = child->objectName().toStdString();
 
-        // Check if name begins with "qt_", which indicates it's a child widget created by 
+        // Check if name begins with "qt_", which indicates it's a child widget created by
         // Qt (e.g., the line edits in a combo box) rather than a parameter widget. If so, skip it.
         if(name.empty() || name.rfind("qt_", 0) == 0)
         {
@@ -1606,6 +1844,24 @@ AnariVolumeWidget::UpdateRenderingAttributes(const bool updateApply)
             std::string valStr = name + ";" + val;
             params.push_back(valStr);
         }
+        else if(qobject_cast<QPushButton *>(child) != nullptr)
+        {
+            auto pushButton = qobject_cast<QPushButton *>(child);
+            const QVariant color = pushButton->property("color");
+            const QVariant anariType = pushButton->property("anariType");
+
+            if(color.isValid() && anariType.isValid())
+            {
+                auto type = static_cast<ANARIDataType>(anariType.toInt());
+                std::string colorText = ColorToText(type, color.value<QColor>());
+
+                if(!colorText.empty())
+                {
+                    std::string valStr = name + ";" + colorText;
+                    params.push_back(valStr);
+                }
+            }
+        }
     }
 
     if(!this->anariAttributes->GetUsingUsdDevice())
@@ -1638,89 +1894,4 @@ void AnariVolumeWidget::ClearAnariParameterAttributes()
     stringVector params;
     anariAttributes->SetAnariRendererParameters(params);
     anariAttributes->SetAnariUSDParameters(params);
-}
-
-// ****************************************************************************
-// Method: AnariVolumeWidget::UpdateLibraryUI
-//
-// Purpose:
-//      Updates the UI elements related to the ANARI rendering library.
-// 
-// Arguments:
-//      anariLibrary the ANARI library
-//      libname     the name of the ANARI library
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri Mar 11 12:27:45 PDT 2022
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-AnariVolumeWidget::UpdateLibraryUI(anari::Library anariLibrary, const std::string &libname)
-{
-    anariAttributes->SetAnariLibrary(libname);
-    auto backendType = GetBackendType(libname);
-
-    if(backendType == BackendType::USD)
-    {
-        anariAttributes->SetUsingUsdDevice(true);
-    }
-    else
-    {
-        anariAttributes->SetUsingUsdDevice(false);
-    }
-
-    // Update back-end subtypes
-    librarySubtypes->blockSignals(true);
-    librarySubtypes->clear();
-    const char **devices = anariGetDeviceSubtypes(anariLibrary);
-
-    if(devices)
-    {
-        for(const char **d = devices; *d != NULL; d++)
-        {
-            librarySubtypes->addItem(*d);
-        }
-    }
-    else
-    {
-        librarySubtypes->addItem("default");
-    }
-
-    librarySubtypes->blockSignals(false);
-    auto libSubtype =  librarySubtypes->currentText().toStdString();
-    anariAttributes->SetAnariLibrarySubtype(libSubtype);
-
-    auto anariDevice = anari::newDevice(anariLibrary, libSubtype.c_str());
-
-    // Update renderers
-    rendererSubtypes->blockSignals(true);
-    rendererSubtypes->clear();
-
-    const char **renderers = anariGetObjectSubtypes(anariDevice, ANARI_RENDERER);
-
-    if(renderers)
-    {
-        for(const char **d = renderers; *d != NULL; d++)
-        {
-            rendererSubtypes->addItem(*d);
-        }
-    }
-    else
-    {
-        rendererSubtypes->addItem("default");
-    }
-
-    auto rendererSubtype = rendererSubtypes->currentText().toStdString();
-    anariAttributes->SetAnariRendererSubtype(rendererSubtype);
-    rendererSubtypes->blockSignals(false);
-
-    // Create Dynamic Widget
-    std::string key = libname + ":" + libSubtype + ":" + rendererSubtype;
-    CreateDynamicWidget(anariDevice, rendererSubtype.c_str(), key, backendType == BackendType::USD);
-
-    // Clean-up
-    anari::release(anariDevice, anariDevice);
 }

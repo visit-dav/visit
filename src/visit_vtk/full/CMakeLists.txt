@@ -62,6 +62,9 @@
 #   Kathleen Biagas, Mon Jun 15, 2026
 #   Remove vtkVisItCellDataToPointData.
 #
+#   Eric Brugger, Thu Oct 15 15:23:20 PDT 2026
+#   Add vtkMergeConsecutivePolyDataPoints.
+#
 #****************************************************************************/
 
 
@@ -75,6 +78,7 @@ set(visit_vtk_SOURCES
     vtkDataSetRemoveGhostCells.C
     vtkLineoutFilter.C
     vtkLinesFromOriginalCells.C
+    vtkMergeConsecutivePolyDataPoints.C
     vtkMergeTree.C
     vtkMultiSplitter.C
     vtkOnionPeelFilter.C
@@ -126,6 +130,7 @@ set(visit_vtk_HEADERS
     vtkDataSetRemoveGhostCells.h
     vtkLineoutFilter.h
     vtkLinesFromOriginalCells.h
+    vtkMergeConsecutivePolyDataPoints.h
     vtkMergeTree.h
     vtkMultiSplitter.h
     vtkOnionPeelFilter.h
@@ -191,10 +196,5 @@ target_include_directories(visit_vtk PRIVATE
 
 if(HAVE_OPENEXR)
     target_link_libraries(visit_vtk PRIVATE openexr)
-endif()
-
-
-if(HAVE_BOOST)
-    target_link_libraries(visit_vtk PRIVATE boost)
 endif()
 

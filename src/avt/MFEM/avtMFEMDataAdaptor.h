@@ -56,6 +56,10 @@ class vtkDataArray;
 //    DiscontinuousRefineGridFunctionToVTK.
 //    Added LOR enum arguments to the refinement methods.
 //    Added printing methods for the enums for debugging.
+// 
+//    Justin Privitera, Wed Sep 30 16:50:02 PDT 2026
+//    Added boolean argument to LowOrderGridFunctionToVTK to select node or 
+//    element association.
 //
 // ****************************************************************************
 
@@ -104,7 +108,8 @@ public:
                                                                 const int lod,
                                                                 const bool var_is_nodal);
 
-      static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
+      static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf,
+                                                     const bool vertex_assoc);
 
       static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                    mfem::GridFunction *gf,

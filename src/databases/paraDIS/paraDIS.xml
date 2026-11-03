@@ -14,7 +14,7 @@
       -IRC_cpp_lib
     </CXXFLAGS>
     <LIBS components="E,M">
-      boost
+      visit_fmt
     </LIBS>
     <DEFINES>
       RC_CPP_VISIT_BUILD

@@ -1398,6 +1398,9 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
 //    Now exports color-valued DB options back to Python as a 4-tuple
 //    (r, g, b, a).
 //
+//    Kathleen Biagas, Wed Sep 23, 2026
+//    For enums, check enumIndex is inside the range for accessing enumStrings.
+//
 // ****************************************************************************
 PyObject *
 CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
@@ -1440,22 +1443,33 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetMultiLineString(name).c_str()));
             break;
           case DBOptionsAttributes::Enum:
-            // If you modify this section, also check the Enum case in
-            // FillDBOptionsFromDictionary
-            int enumIndex = opts.GetEnum(name);
-            stringVector enumStrings = opts.GetEnumStrings(name);
-            std::string itemString(enumStrings[enumIndex]);
-            if (enumStrings.size() > 1)
             {
-                itemString += " # Options are: ";
-                for (size_t i = 0; i < enumStrings.size(); ++i)
+                // If you modify this section, also check the Enum case in
+                // FillDBOptionsFromDictionary
+                int enumIndex = opts.GetEnum(name);
+                stringVector enumStrings = opts.GetEnumStrings(name);
+                if (enumIndex >= 0 &&
+                    static_cast<size_t>(enumIndex) < enumStrings.size())
                 {
-                    itemString += enumStrings[i];
-                    if (i != enumStrings.size()-1)
-                        itemString += ", ";
+                    std::string itemString(enumStrings[enumIndex]);
+                    if (enumStrings.size() > 1)
+                    {
+                        itemString += " # Options are: ";
+                        for (size_t i = 0; i < enumStrings.size(); ++i)
+                        {
+                            itemString += enumStrings[i];
+                            if (i != enumStrings.size()-1)
+                                itemString += ", ";
+                        }
+                    }
+                    PyDict_SetItemString(
+                        dict, name, PyString_FromString(itemString.c_str()));
                 }
+                else
+                    PyDict_SetItemString(dict, name,
+                                         PyInt_FromLong(enumIndex));
             }
-            PyDict_SetItemString(dict,name,PyString_FromString(itemString.c_str()));
+            break;
         }
         delete[] name;
     }
@@ -17593,6 +17607,9 @@ ExecuteClientMethodHelper(Subject *subj, void *)
 //   fixes the problem of CLI not truly exiting when the GUI initiates the
 //   Quit.
 //
+//   Kathleen Biagas, Mon Sep 28 13:49:00 PDT 2026
+//   Acquire the Python interpreter lock before executing 'sys.exit(0)'.
+//
 // ****************************************************************************
 
 static void
@@ -17639,7 +17656,9 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
     }
     else if(method->GetMethodName() == "Quit")
     {
+        VISIT_PY_THREAD_LOCK_STATE threadState = VisItLockPythonInterpreter();
         PyRun_SimpleString("import sys; sys.exit(0)");
+        VisItUnlockPythonInterpreter(threadState);
     }
     else if(method->GetMethodName() == "MacroStart")
     {

@@ -38,7 +38,7 @@ class QvisNoDefaultColorTableButton;
 // Purpose:
 //   This class contains the widgets that manipulate the color table.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jun 8 09:58:12 PDT 2001
@@ -78,28 +78,28 @@ class QvisNoDefaultColorTableButton;
 //
 //   Mark C. Miller, Wed Feb 28 14:56:09 PST 2018
 //   Handling "smoothing" label correctly.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-// 
+//
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added infrastructure for tags.
-// 
+//
 //   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //   Added new function `AddToTagTable()`.
-// 
+//
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added search capabilities for color tables. In this file, added boolean
-//   `searchingOn`, QString `searchTerm`, QCheckBox `searchToggle`, and 
+//   `searchingOn`, QString `searchTerm`, QCheckBox `searchToggle`, and
 //   functions `searchingToggled` and `searchEdited`.
-// 
+//
 //   Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //   Added `skip_update` option to `ShowSelectedColor()`.
-// 
+//
 //   Justin Privitera, Wed Aug 10 13:24:26 PDT 2022
-//   Reorganized gui elements so they appear in the header file in the same 
+//   Reorganized gui elements so they appear in the header file in the same
 //   order they appear in the gui.
-// 
+//
 //   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //   Made the following changes:
 //    - Included set
@@ -107,32 +107,32 @@ class QvisNoDefaultColorTableButton;
 //      addRemoveTag, addTagToColorTable, and removeTagFromColorTable.
 //    - Added tagEdit (a string for editing tags)
 //    - Added a data structure to store changes to tags
-// 
+//
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Added `TagInfo` class to store tag info all in one place.
 //   I removed the tagList and activeTags stringVectors and replaced them with
 //   the new tagList, which is a map from tagnames to `TagInfo`s.
-// 
+//
 //   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //   `TagInfo` now includes lengthy comments describing each member.
 //   The tagList and tagChanges data structures have been merged into
-//   the tagList. Thus TagInfo contains a new member representing the 
+//   the tagList. Thus TagInfo contains a new member representing the
 //   tag changes.
-// 
+//
 //   Justin Privitera, Thu Sep 22 10:50:46 PDT 2022
 //   Moved TagInfo class implementation to the .C file.
-// 
+//
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed taggingToggled and added tagsSelectAll.
 //   Removed tagFilterToggle and added tagsSelectAllButton.
 //   Removed tagsVisible.
-// 
+//
 //   Justin Privitera, Thu May 11 12:31:12 PDT 2023
-//   Removed searchingToggled(), removed bool searchingOn, and added QLineEdit 
+//   Removed searchingToggled(), removed bool searchingOn, and added QLineEdit
 //   *searchBar, as searching is always enabled now.
 //   Removed gui elements from the header that were not used outside the
 //   CreateWindowContents() function.
-// 
+//
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Removed the tagList and TagInfo class declaration.
 //   Removed the tagsMatchAny flag.
@@ -140,17 +140,23 @@ class QvisNoDefaultColorTableButton;
 //   UnstringifyAndMergeTagChanges(), addTagToColorTable(), and
 //   removeTagFromColorTable() functions.
 //   All tagging infrastructure has been moved to the CTAtts.
-// 
+//
 //   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //   Change UpdateTags to UpdateTagTable.
-// 
+//
 //   Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
 //   Added colorValueChanged and changed the argument name for
 //   alphaValueChanged.
-// 
+//
 //   Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
 //   Added `actuallyUpdateWindow` to give greater control over when we want the
 //   window to be updated.
+//
+//   Kathleen Biagas, Thu Sep 24, 2026
+//   Added defaultContinuousChanged and defaultDisreteChanged to inform
+//   which viewer method is called on Apply. This aids in Logging of
+//   SetDefaultContinuous/SetDefaultDiscreteColorTable.
+//
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -227,15 +233,18 @@ private:
     QString                  tagEdit;
     bool                     actuallyUpdateWindow;
 
+    bool defaultContinuousChanged;
+    bool defaultDiscreteChanged;
+
     // a map from tag names to tab table item pointers
     std::map<std::string, QTreeWidgetItem*> tagTableItems;
 
     // This object also observes the color table attributes.
-    ColorTableObserver       ctObserver;    
+    ColorTableObserver       ctObserver;
 
-    // 
+    //
     // Widgets and layouts.
-    // 
+    //
 
     // Default Color Table
     QvisNoDefaultColorTableButton *defaultContinuous;
@@ -271,7 +280,7 @@ private:
     QLabel                   *smoothLabel;
     QComboBox                *smoothingMethod;
     QCheckBox                *equalCheckBox;
-    
+
     QvisSpectrumBar          *spectrumBar;
     QvisColorSelectionWidget *colorSelect;
     QCheckBox                *showIndexHintsCheckBox;

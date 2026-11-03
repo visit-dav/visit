@@ -168,6 +168,9 @@
 #    VisIt to be built with CMake 4.0 and newer. Update minimum CMake
 #    version to 3.26, due to requirements introduced by previous work.
 #
+#    Kathleen Biagas, Thu Oct 8, 2026
+#    Use UL_VERSION instead of VISIT_VERSION for release-tarball naming.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
@@ -352,11 +355,11 @@ set(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 
 # Set up placeholders for package vars: XXX_DIR
-foreach(pkg ADIOS ADIOS2 ADVIO ANARI BLOSC2 BOOST BOXLIB CFITSIO CGNS
-            CONDUIT DAMARIS EMBREE FMS GDAL HDF5 H5PART ICET
+foreach(pkg ADIOS ADIOS2 ADVIO ANARI BLOSC2 BOXLIB CFITSIO CGNS
+            CONDUIT EMBREE FMS GDAL HDF5 H5PART ICET
             ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB NEKTAR++ NETCDF
             OPENGL OPENEXR OSPRAY PIDX PYTHON QT QWT SILO SZIP TBB
-            TIFF UINTAH VTK VTKM XDMF XSD ZLIB)
+            TIFF UINTAH VTK VTKM XDMF ZLIB)
     VISIT_3RDPARTY_DIR(${pkg})
 endforeach()
 
@@ -398,6 +401,10 @@ list(GET v_list 0 VISIT_VERSION_MAJOR)
 list(GET v_list 1 VISIT_VERSION_MINOR)
 list(GET v_list 2 VISIT_VERSION_PATCH)
 unset(v_list)
+
+# need an underscore version for use with names of release tarballs
+# like visit3_6_0.src.tar.gz
+set(UL_VERSION "${VISIT_VERSION_MAJOR}_${VISIT_VERSION_MINOR}_${VISIT_VERSION_PATCH}")
 
 #-----------------------------------------------------------------------------
 # Init BLT
@@ -910,7 +917,6 @@ if(NOT WIN32)
         set(CPACK_PACKAGE_VERSION_MINOR ${VISIT_VERSION_MINOR})
         set(CPACK_PACKAGE_VERSION_PATCH ${VISIT_VERSION_PATCH})
 
-        set(UL_VERSION "${VISIT_VERSION_MAJOR}_${VISIT_VERSION_MINOR}_${VISIT_VERSION_PATCH}")
         set(CPACK_PACKAGE_FILE_NAME "visit${UL_VERSION}.${VISIT_INSTALL_PLATFORM}")
 
         if(NOT APPLE)
@@ -957,7 +963,7 @@ endif()
 # This only tars up src as-is, so use at own discretion if there
 # are modifications or temporary files in your checkout
 
-set(dist_name visit${VISIT_VERSION})
+set(dist_name visit${UL_VERSION})
 
 # cannot use "${CMAKE_COMMAND} -E tar hzcf" because cmake doesn't
 # support the use of the '-h' option, which resolve symlinks
@@ -976,10 +982,9 @@ add_custom_target(visit-dist
   COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-install  ${dist_name}/scripts/visit-install
   COMMAND  ${CMAKE_COMMAND} -E create_symlink ${VISIT_SOURCE_DIR}/../scripts/visit-install-run  ${dist_name}/scripts/visit-install-run
   # Tar it up, resolving symlinks
-  COMMAND tar hzcf ${dist_name}.tar.gz ${dist_name}
+  COMMAND tar hzcf ${dist_name}.src.tar.gz ${dist_name}
   # get the checksums
-  COMMAND ${CMAKE_COMMAND} -E sha256sum ${dist_name}.tar.gz > visit-dist-sha256sum.txt
-  COMMAND ${CMAKE_COMMAND} -E md5sum ${dist_name}.tar.gz > visit-dist-md5sum.txt
+  COMMAND ${CMAKE_COMMAND} -E sha256sum ${dist_name}.src.tar.gz > visit-dist-sha256sum.txt
   # clean up
   COMMAND ${CMAKE_COMMAND} -E rm ${VISIT_SOURCE_DIR}/GIT_VERSION
   COMMAND ${CMAKE_COMMAND} -E rm -rf ${dist_name}

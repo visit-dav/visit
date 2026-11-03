@@ -50,6 +50,10 @@ class vtkRectilinearGrid;
 //    Kathleen Biagas, Thu Dec 7, 2023
 //    Added IntersectBox.
 //
+//    Kathleen Biagas, Wed Sep 2, 2026
+//    Add EvaluatePosition. It calls vtkCell::EvaluatePosition, and on failure
+//    attempts evaluation of possibly degenerate cells.
+//
 // ****************************************************************************
 
 namespace vtkVisItUtility
@@ -84,6 +88,10 @@ namespace vtkVisItUtility
     VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, double center[3]);
     VISIT_VTK_LIGHT_API bool       ContainsMixedGhostZoneTypes(vtkDataSet *);
     VISIT_VTK_LIGHT_API bool       CellContainsPoint(vtkCell *, const double *);
+    VISIT_VTK_LIGHT_API int        EvaluatePosition(vtkCell *, double [3],
+                                                   double [3], int &,
+                                                   double [3], double &,
+                                                   double *);
     VISIT_VTK_LIGHT_API void       WriteDataSet(vtkDataSet*, const char *);
     VISIT_VTK_LIGHT_API vtkRectilinearGrid *
                                    Create1DRGrid(int nXCoords,

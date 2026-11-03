@@ -83,6 +83,9 @@ typedef   void  (*ResetTimeoutCallback)(void *, int);
 //    HAVE_OSPRAY is defined instead of VISIT_OSPRAY.
 //    Add Set/GetUseOSPRay.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -111,16 +114,30 @@ class PIPELINE_API avtCallback
     static bool                  GetNowinInteractionMode()
                                      { return nowinInteractionMode; }
 
-    static void                  SetSoftwareRendering(bool b)
-                                     { swRendering = b; }
-    static bool                  GetSoftwareRendering(void)
-                                     { return swRendering; }
-
 #if defined(HAVE_OSPRAY)
     static void                  SetUseOSPRay(bool b)
                                      { useOSPRay = b; }
     static bool                  GetUseOSPRay(void)
                                      { return useOSPRay; }
+#endif
+
+#if defined(HAVE_ANARI)
+    // Process-wide gate on real ANARI device creation, set true only by
+    // engine startup code (see NetworkManager::CreateVisWindow), so only the
+    // engine ever creates a real ANARI device. Currently, the engine is the only
+    // process guaranteed to have ANARI backend libraries installed, and (with
+    // client-server ANARI) the only one that actually renders with ANARI.
+    // VisWinRendering::SetAnariDeviceCreationEnabled gates ANARI device
+    // creation the same way for surface rendering, but that gate is
+    // per VisWindow instance and lives in avt/VisWindow, which plot
+    // plugins (e.g. the Volume plot's avtVisItVTKRenderer, which owns its
+    // own separate vtkAnariPass) don't link against. This lives in
+    // avtCallback/avt/Pipeline instead, since that's linked by both
+    // engine/main and every plot plugin.
+    static void                  SetAnariDeviceCreationEnabled(bool b)
+                                     { anariDeviceCreationEnabled = b; }
+    static bool                  GetAnariDeviceCreationEnabled(void)
+                                     { return anariDeviceCreationEnabled; }
 #endif
 
     static void                  RegisterGetDatabaseCallback(
@@ -162,10 +179,13 @@ class PIPELINE_API avtCallback
 
     static bool                  nowinMode;
     static bool                  nowinInteractionMode;
-    static bool                  swRendering;
 
 #if defined(HAVE_OSPRAY)
     static bool                  useOSPRay;
+#endif
+
+#if defined(HAVE_ANARI)
+    static bool                  anariDeviceCreationEnabled;
 #endif
 
     static bool                  safeMode;

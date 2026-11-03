@@ -2922,6 +2922,14 @@ return type : CLI_return_t
   e.dirname = "."
   ExportDatabase(e)
 
+  # Export with Database specific options
+  e.db_type = "Xmdv"
+  e.filename = "test_ex_db_2"
+  xmdvOpts = GetExportOptions("Xmdv")
+  xmdvOpts['Export coordinates?'] = 1
+  xmdvOpts['Output precision'] = 32
+  ExportDatabase(e, xmdvOpts)
+
 
 Expressions
 -----------

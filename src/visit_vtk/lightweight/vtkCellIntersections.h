@@ -25,6 +25,13 @@ class vtkWedge;
 class vtkPyramid;
 class vtkQuadraticHexahedron;
 
+// ***************************************************************************
+//   Modifications:
+//     Kathleen Biagas, Wed Sep 2, 2026
+//     Add DegnerateQuadIntersectWithLine.
+//
+// ***************************************************************************
+
 class VISIT_VTK_LIGHT_API vtkCellIntersections : public vtkObject
 {
 public:
@@ -40,7 +47,7 @@ public:
   vtkGetMacro(TestCoPlanar,bool);
   vtkBooleanMacro(TestCoPlanar,bool);
 
-  int CellIntersectWithLine(vtkCell *, double [3], double [3], 
+  int CellIntersectWithLine(vtkCell *, double [3], double [3],
                                 double&, double [3]);
 
   static int IntersectBox(const double[6], const double [3],
@@ -57,49 +64,51 @@ private:
   void operator=(const vtkCellIntersections&);  // Not implemented.
 
 
-  int VertexIntersectWithLine(vtkVertex *, double [3], double [3], 
+  int VertexIntersectWithLine(vtkVertex *, double [3], double [3],
                                 double&, double [3]);
 
-  int PolyVertexIntersectWithLine(vtkPolyVertex *, double [3], double [3], 
+  int PolyVertexIntersectWithLine(vtkPolyVertex *, double [3], double [3],
                                 double&, double [3]);
 
-  int LineIntersectWithLine(vtkLine *, double [3], double [3], 
+  int LineIntersectWithLine(vtkLine *, double [3], double [3],
                                 double&, double [3]);
 
-  int PolyLineIntersectWithLine(vtkPolyLine *, double [3], double [3], 
+  int PolyLineIntersectWithLine(vtkPolyLine *, double [3], double [3],
                                 double&, double [3]);
 
-  int TriangleIntersectWithLine(vtkTriangle *, double [3], double [3], 
+  int TriangleIntersectWithLine(vtkTriangle *, double [3], double [3],
                                 double&, double [3]);
 
-  int TriStripIntersectWithLine(vtkTriangleStrip *, double [3], double [3], 
+  int TriStripIntersectWithLine(vtkTriangleStrip *, double [3], double [3],
                                 double&, double [3]);
 
-  int PolygonIntersectWithLine(vtkPolygon *, double [3], double [3], 
+  int PolygonIntersectWithLine(vtkPolygon *, double [3], double [3],
                                 double&, double [3]);
 
-  int PixelIntersectWithLine(vtkPixel *, double [3], double [3], 
+  int PixelIntersectWithLine(vtkPixel *, double [3], double [3],
                                 double&, double [3]);
 
-  int QuadIntersectWithLine(vtkQuad *, double [3], double [3], 
+  int QuadIntersectWithLine(vtkQuad *, double [3], double [3],
+                                double&, double [3]);
+  int DegenerateQuadIntersectWithLine(double [4][3], int, double [3],
+                                double [3], double&, double [3]);
+
+  int TetraIntersectWithLine(vtkTetra *, double [3], double [3],
                                 double&, double [3]);
 
-  int TetraIntersectWithLine(vtkTetra *, double [3], double [3], 
+  int VoxelIntersectWithLine(vtkVoxel *, double [3], double [3],
                                 double&, double [3]);
 
-  int VoxelIntersectWithLine(vtkVoxel *, double [3], double [3], 
+  int HexIntersectWithLine(vtkHexahedron *, double [3], double [3],
                                 double&, double [3]);
 
-  int HexIntersectWithLine(vtkHexahedron *, double [3], double [3], 
+  int WedgeIntersectWithLine(vtkWedge *, double [3], double [3],
                                 double&, double [3]);
 
-  int WedgeIntersectWithLine(vtkWedge *, double [3], double [3], 
+  int PyramidIntersectWithLine(vtkPyramid *, double [3], double [3],
                                 double&, double [3]);
 
-  int PyramidIntersectWithLine(vtkPyramid *, double [3], double [3], 
-                                double&, double [3]);
-
-  int QuadraticHexahedronIntersectWithLine(vtkQuadraticHexahedron *, 
+  int QuadraticHexahedronIntersectWithLine(vtkQuadraticHexahedron *,
                                 double [3], double [3], double&, double [3]);
 
   vtkTriangle *triangle;

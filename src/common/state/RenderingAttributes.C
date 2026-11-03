@@ -161,6 +161,7 @@ void RenderingAttributes::Init()
     stereoRendering = false;
     stereoType = CrystalEyes;
     notifyForEachRender = false;
+    tiledRendering = true;
     tiledRenderingWidth = 2048;
     tiledRenderingHeight = 2048;
     scalableActivationMode = Auto;
@@ -224,6 +225,7 @@ void RenderingAttributes::Copy(const RenderingAttributes &obj)
     stereoRendering = obj.stereoRendering;
     stereoType = obj.stereoType;
     notifyForEachRender = obj.notifyForEachRender;
+    tiledRendering = obj.tiledRendering;
     tiledRenderingWidth = obj.tiledRenderingWidth;
     tiledRenderingHeight = obj.tiledRenderingHeight;
     scalableActivationMode = obj.scalableActivationMode;
@@ -439,6 +441,7 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
             (stereoRendering == obj.stereoRendering) &&
             (stereoType == obj.stereoType) &&
             (notifyForEachRender == obj.notifyForEachRender) &&
+            (tiledRendering == obj.tiledRendering) &&
             (tiledRenderingWidth == obj.tiledRenderingWidth) &&
             (tiledRenderingHeight == obj.tiledRenderingHeight) &&
             (scalableActivationMode == obj.scalableActivationMode) &&
@@ -622,6 +625,7 @@ RenderingAttributes::SelectAll()
     Select(ID_stereoRendering,              (void *)&stereoRendering);
     Select(ID_stereoType,                   (void *)&stereoType);
     Select(ID_notifyForEachRender,          (void *)&notifyForEachRender);
+    Select(ID_tiledRendering,               (void *)&tiledRendering);
     Select(ID_tiledRenderingWidth,          (void *)&tiledRenderingWidth);
     Select(ID_tiledRenderingHeight,         (void *)&tiledRenderingHeight);
     Select(ID_scalableActivationMode,       (void *)&scalableActivationMode);
@@ -783,6 +787,12 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("notifyForEachRender", notifyForEachRender));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tiledRendering, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tiledRendering", tiledRendering));
     }
 
     if(completeSave || !FieldsEqual(ID_tiledRenderingWidth, &defaultObject))
@@ -1029,6 +1039,8 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("notifyForEachRender")) != 0)
         SetNotifyForEachRender(node->AsBool());
+    if((node = searchNode->GetNode("tiledRendering")) != 0)
+        SetTiledRendering(node->AsBool());
     if((node = searchNode->GetNode("tiledRenderingWidth")) != 0)
         SetTiledRenderingWidth(node->AsInt());
     if((node = searchNode->GetNode("tiledRenderingHeight")) != 0)
@@ -1240,6 +1252,13 @@ RenderingAttributes::SetNotifyForEachRender(bool notifyForEachRender_)
 {
     notifyForEachRender = notifyForEachRender_;
     Select(ID_notifyForEachRender, (void *)&notifyForEachRender);
+}
+
+void
+RenderingAttributes::SetTiledRendering(bool tiledRendering_)
+{
+    tiledRendering = tiledRendering_;
+    Select(ID_tiledRendering, (void *)&tiledRendering);
 }
 
 void
@@ -1519,6 +1538,12 @@ RenderingAttributes::GetNotifyForEachRender() const
     return notifyForEachRender;
 }
 
+bool
+RenderingAttributes::GetTiledRendering() const
+{
+    return tiledRendering;
+}
+
 int
 RenderingAttributes::GetTiledRenderingWidth() const
 {
@@ -1756,6 +1781,7 @@ RenderingAttributes::GetFieldName(int index) const
     case ID_stereoRendering:              return "stereoRendering";
     case ID_stereoType:                   return "stereoType";
     case ID_notifyForEachRender:          return "notifyForEachRender";
+    case ID_tiledRendering:               return "tiledRendering";
     case ID_tiledRenderingWidth:          return "tiledRenderingWidth";
     case ID_tiledRenderingHeight:         return "tiledRenderingHeight";
     case ID_scalableActivationMode:       return "scalableActivationMode";
@@ -1820,6 +1846,7 @@ RenderingAttributes::GetFieldType(int index) const
     case ID_stereoRendering:              return FieldType_bool;
     case ID_stereoType:                   return FieldType_enum;
     case ID_notifyForEachRender:          return FieldType_bool;
+    case ID_tiledRendering:               return FieldType_bool;
     case ID_tiledRenderingWidth:          return FieldType_int;
     case ID_tiledRenderingHeight:         return FieldType_int;
     case ID_scalableActivationMode:       return FieldType_enum;
@@ -1884,6 +1911,7 @@ RenderingAttributes::GetFieldTypeName(int index) const
     case ID_stereoRendering:              return "bool";
     case ID_stereoType:                   return "enum";
     case ID_notifyForEachRender:          return "bool";
+    case ID_tiledRendering:               return "bool";
     case ID_tiledRenderingWidth:          return "int";
     case ID_tiledRenderingHeight:         return "int";
     case ID_scalableActivationMode:       return "enum";
@@ -2016,6 +2044,11 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_notifyForEachRender:
         {  // new scope
         retval = (notifyForEachRender == obj.notifyForEachRender);
+        }
+        break;
+    case ID_tiledRendering:
+        {  // new scope
+        retval = (tiledRendering == obj.tiledRendering);
         }
         break;
     case ID_tiledRenderingWidth:

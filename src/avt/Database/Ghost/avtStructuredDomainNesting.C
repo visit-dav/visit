@@ -304,6 +304,10 @@ avtStructuredDomainNesting::GetSelectedDescendents(
 //    Hank Childs, Mon May 12 08:13:45 PDT 2008
 //    Cache the lookup table to prevent an O(n^2) type algorithm.
 //
+//    Kathleen Biagas, Mon Oct 26, 2026
+//    Add test for positive refinement ratios to prevent hang when mapping
+//    descendants.
+//
 // ****************************************************************************
 
 bool
@@ -451,6 +455,15 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                 ratio[0] *= levelRatios[l][0];
                 ratio[1] *= (numDimensions >= 2 ? levelRatios[l][1] : 1);
                 ratio[2] *= (numDimensions >= 3 ? levelRatios[l][2] : 1);
+            }
+
+            // A non-positive ratio cannot map the descendant extents and
+            // makes the offset loops below unable to advance.
+            for (int d = 0; d < numDimensions; ++d)
+            {
+                if (ratio[d] <= 0)
+                    EXCEPTION2(UnexpectedValueException,
+                        "a positive refinement ratio", ratio[d]);
             }
 
             //

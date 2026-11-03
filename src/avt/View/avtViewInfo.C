@@ -59,6 +59,10 @@ avtViewInfo::avtViewInfo()
 //    I added tilePan and tileZoom to track the changes to the image pan
 //    and zoom for tiled rendering.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    I modified tileZoom to be an array of length 2 so that it can store
+//    seperate zoom factors for X and Y in 2D.
+//
 // ****************************************************************************
 
 avtViewInfo &
@@ -88,7 +92,8 @@ avtViewInfo::operator=(const avtViewInfo &vi)
     shear[2]     = vi.shear[2];
     tilePan[0]   = vi.tilePan[0];
     tilePan[1]   = vi.tilePan[1];
-    tileZoom     = vi.tileZoom;
+    tileZoom[0]  = vi.tileZoom[0];
+    tileZoom[1]  = vi.tileZoom[1];
     useOSPRay    = vi.useOSPRay;
     return *this;
 }
@@ -125,6 +130,10 @@ avtViewInfo::operator=(const avtViewInfo &vi)
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //    I added tilePan and tileZoom to track the changes to the image pan
 //    and zoom for tiled rendering.
+//
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    I modified tileZoom to be an array of length 2 so that it can store
+//    seperate zoom factors for X and Y in 2D.
 //
 // ****************************************************************************
 
@@ -187,7 +196,7 @@ avtViewInfo::operator==(const avtViewInfo &vi)
     }
 
     if (tilePan[0] != vi.tilePan[0] || tilePan[1] != vi.tilePan[1] ||
-        tileZoom != vi.tileZoom)
+        tileZoom[0] != vi.tileZoom[0] || tileZoom[1] != vi.tileZoom[1])
     {
         return false;
     }
@@ -233,6 +242,10 @@ avtViewInfo::operator==(const avtViewInfo &vi)
 //    I added tilePan and tileZoom to track the changes to the image pan
 //    and zoom for tiled rendering.
 //
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    I modified tileZoom to be an array of length 2 so that it can store
+//    seperate zoom factors for X and Y in 2D.
+//
 // ****************************************************************************
 
 void
@@ -262,7 +275,8 @@ avtViewInfo::SetToDefault()
     shear[2]     =  1.;
     tilePan[0]   = 0.;
     tilePan[1]   = 0.;
-    tileZoom     = 1.;
+    tileZoom[0]  = 1.;
+    tileZoom[1]  = 1.;
     useOSPRay    = false;
 }
 
@@ -286,6 +300,10 @@ avtViewInfo::SetToDefault()
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //    I added tilePan and tileZoom to track the changes to the image pan
 //    and zoom for tiled rendering.
+//
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    I modified tileZoom to be an array of length 2 so that it can store
+//    seperate zoom factors for X and Y in 2D.
 //
 // ****************************************************************************
 
@@ -323,11 +341,12 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
     // store the tilePan and tileZoom. This allows us to get those values
     // from the vtkCamera.
     //
-    double tilePan3[3];
-    vtkcam->GetEyePosition(tilePan3);
-    tilePan[0] = tilePan3[0];
-    tilePan[1] = tilePan3[1];
-    tileZoom = vtkcam->GetFocalDisk();
+    double eyePosition[3];
+    vtkcam->GetEyePosition(eyePosition);
+    tilePan[0]  = eyePosition[0];
+    tilePan[1]  = eyePosition[1];
+    tileZoom[0] = eyePosition[2];
+    tileZoom[1] = vtkcam->GetFocalDisk();
 }
 
 
@@ -375,6 +394,10 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    Eric Brugger, Mon Feb  2 14:37:47 PST 2026
 //    I added tilePan and tileZoom to track the changes to the image pan
 //    and zoom for tiled rendering.
+//
+//    Eric Brugger, Thu Oct  1 16:31:26 PDT 2026
+//    I modified tileZoom to be an array of length 2 so that it can store
+//    seperate zoom factors for X and Y in 2D.
 //
 // ****************************************************************************
 #include<vtkMatrix4x4.h>
@@ -430,10 +453,10 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     // store the tilePan and tileZoom. This allows us to get those values
     // from the vtkCamera.
     //
-    double tilePan3[3];
-    tilePan3[0] = tilePan[0];
-    tilePan3[1] = tilePan[1];
-    tilePan3[2] = 0.;
-    vtkcam->SetEyePosition(tilePan3);
-    vtkcam->SetFocalDisk(tileZoom);
+    double eyePosition[3];
+    eyePosition[0] = tilePan[0];
+    eyePosition[1] = tilePan[1];
+    eyePosition[2] = tileZoom[0];
+    vtkcam->SetEyePosition(eyePosition);
+    vtkcam->SetFocalDisk(tileZoom[1]);
 }
