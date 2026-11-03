@@ -22,6 +22,15 @@ python3 /path/to/visit/scripts/docker/create_release.py \
   --platform ubuntu --os-version 24.04
 ```
 
+If source and build scripts are in current directory, you can omit the path for those arguments:
+
+```console
+python3 /path/to/visit/scripts/docker/create_release.py \
+  --source visit3_6_0.src.tar.gz \
+  --build-visit build_visit3_6_0 \
+  --platform ubuntu --os-version 24.04
+```
+
 The Ubuntu Dockerfile supports 22.04 and 24.04 through `UBUNTU_VERSION`. The
 Rocky Dockerfile supports 8.9 and 9.3 through `ROCKY_VERSION`. Debian and
 Fedora accept `DEBIAN_VERSION` and `FEDORA_VERSION`, respectively:
@@ -37,8 +46,9 @@ Use `--engine podman` for Podman. On LC, first enable Podman in the calling
 shell, then preserve the mappings used by the former Ubuntu release script:
 
 ```console
-source /collab/usr/gapps/lcweg/containers/scripts/enable-podman.sh
-python3 create_release.py --source "$src" --build-visit "$bv" \
+/collab/usr/gapps/lcweg/containers/scripts/enable-podman.sh
+python3 /path/to/visit/scripts/docker/create_release.py \
+  --source "$src" --build-visit "$bv" \
   --engine podman --platform ubuntu --os-version 22.04 \
   --userns-uid-map 0:0:1 --userns-uid-map 1:1:1999 \
   --userns-uid-map 65534:2047:1
