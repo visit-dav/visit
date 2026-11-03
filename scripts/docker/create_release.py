@@ -2,6 +2,7 @@
 """Build a VisIt container and copy its release artifacts to the host."""
 
 import argparse
+import json
 import os
 import re
 import shlex
@@ -12,7 +13,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
-from visit_version import validate_inputs
+from visit_version import VisitVersion, validate_inputs, version_from_archive
 
 
 PLATFORMS = {
@@ -46,6 +47,8 @@ BUILD_HELPERS = (
     "visit_version.py",
 )
 
+RECOVERY_LABEL_PREFIX = "org.visit-dav.docker"
+
 
 def run(command):
     print("+ {}".format(" ".join(shlex.quote(part) for part in command)), flush=True)
@@ -61,6 +64,41 @@ def platform_label(platform, os_version):
     if os_version is None:
         return platform
     return "{}{}".format(platform, os_version.split(".")[0])
+
+
+def inspect_image_labels(engine, image):
+    output = subprocess.check_output(
+        [engine, "image", "inspect", image], universal_newlines=True
+    )
+    details = json.loads(output)[0]
+    config = details.get("Config") or {}
+    return config.get("Labels") or details.get("Labels") or {}
+
+
+def recovery_value(labels, name):
+    return labels.get("{}.{}".format(RECOVERY_LABEL_PREFIX, name))
+
+
+def recovery_tag(image):
+    for suffix in ("-core-failed", "-optional-failed", "-visit-failed"):
+        if image.endswith(suffix):
+            return image[: -len(suffix)]
+    return image
+
+
+def version_from_recovery(image, labels):
+    dotted = recovery_value(labels, "version")
+    if dotted is None:
+        match = re.search(r"([0-9]+\.[0-9]+\.[0-9]+)", image)
+        if match is None:
+            raise RuntimeError(
+                "recovery image has no VisIt version metadata or versioned name"
+            )
+        dotted = match.group(1)
+    parts = dotted.split(".")
+    if len(parts) != 3 or not all(part.isdigit() for part in parts):
+        raise RuntimeError("invalid VisIt version in recovery image: {}".format(dotted))
+    return VisitVersion(*parts)
 
 
 def stage_file(source, destination):
@@ -148,15 +186,19 @@ def run_checkpointed_step(
 
 
 def recoverable_build(
-    args, version, label, tag, archive, script_dir, environment_image, os_version
+    args, version, label, tag, archive, script_dir, environment_image
 ):
     steps = ("core", "optional", "visit")
     start_step = args.resume_step or "core"
     start_index = steps.index(start_step)
     current_image = args.resume_from or environment_image
-    toolchain = ""
-    if args.platform == "rocky" and str(os_version).startswith("8."):
-        toolchain = "source /opt/rh/gcc-toolset-10/enable && "
+    toolchain = (
+        "if [[ -f /opt/rh/gcc-toolset-10/enable ]]; then "
+        "source /opt/rh/gcc-toolset-10/enable; fi && "
+    )
+    archive_copy = ()
+    if archive is not None:
+        archive_copy = ((archive, "/home/visit/{}".format(archive.name)),)
 
     definitions = {
         "core": {
@@ -166,7 +208,7 @@ def recoverable_build(
                 "-lc",
                 "{}python3 run_build_visit.py".format(toolchain),
             ),
-            "copies": (),
+            "copies": archive_copy if start_step == "core" else (),
         },
         "optional": {
             "success": "{}-thirdparty".format(tag),
@@ -175,7 +217,7 @@ def recoverable_build(
                 "-lc",
                 "{}python3 run_build_visit.py --optional".format(toolchain),
             ),
-            "copies": (),
+            "copies": archive_copy if start_step == "optional" else (),
         },
         "visit": {
             "success": tag,
@@ -186,8 +228,8 @@ def recoverable_build(
                     toolchain
                 ),
             ),
-            "copies": (
-                (archive, "/home/visit/{}".format(archive.name)),
+            "copies": (archive_copy if start_step == "visit" else ())
+            + (
                 (
                     script_dir / "build_test_visit.py",
                     "/home/visit/build_test_visit.py",
@@ -223,17 +265,15 @@ def recoverable_build(
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--platform", choices=sorted(PLATFORMS), required=True)
+    parser.add_argument("--platform", choices=sorted(PLATFORMS))
     parser.add_argument(
         "--source",
         type=Path,
-        required=True,
         help="path to visitMAJOR_MINOR_PATCH.src.tar.gz",
     )
     parser.add_argument(
         "--build-visit",
         type=Path,
-        required=True,
         help="path to the matching build_visitMAJOR_MINOR_PATCH script",
     )
     parser.add_argument("--os-version", help="base image version for the selected platform")
@@ -273,42 +313,88 @@ def parse_args(argv=None):
     )
     args = parser.parse_args(argv)
 
-    config = PLATFORMS[args.platform]
     if args.userns_uid_map and args.engine != "podman":
         parser.error("--userns-uid-map requires --engine podman")
     if args.resume_from and not args.recoverable:
         parser.error("--resume-from requires --recoverable")
     if bool(args.resume_from) != bool(args.resume_step):
         parser.error("--resume-from and --resume-step must be used together")
+    if not args.resume_from:
+        missing = []
+        if args.platform is None:
+            missing.append("--platform")
+        if args.source is None:
+            missing.append("--source")
+        if args.build_visit is None:
+            missing.append("--build-visit")
+        if missing:
+            parser.error("initial builds require {}".format(", ".join(missing)))
     return args
 
 
 def main(argv=None):
     args = parse_args(argv)
     script_dir = Path(__file__).resolve().parent
-    archive = args.source.resolve()
-    build_script = args.build_visit.resolve()
     output_dir = args.output_dir.resolve()
     temp_dir = None if args.temp_dir is None else args.temp_dir.resolve()
-    config = PLATFORMS[args.platform]
-
-    try:
-        archive, build_script, version = validate_inputs(archive, build_script)
-    except (RuntimeError, ValueError) as error:
-        print("error: {}".format(error), file=sys.stderr)
-        return 2
-
-    dockerfile = script_dir / config["dockerfile"]
-    if not dockerfile.is_file():
-        print("error: Dockerfile not found: {}".format(dockerfile), file=sys.stderr)
-        return 2
     if temp_dir is not None and not temp_dir.is_dir():
         print("error: temporary directory not found: {}".format(temp_dir), file=sys.stderr)
         return 2
 
-    os_version = args.os_version or config["default_version"]
-    label = args.label or platform_label(args.platform, os_version)
-    tag = args.tag or "visitdev:{}-{}".format(version.dotted, label)
+    archive = None
+    build_script = None
+    config = None
+    dockerfile = None
+    os_version = args.os_version
+
+    if args.resume_from:
+        try:
+            labels = inspect_image_labels(args.engine, args.resume_from)
+            version = version_from_recovery(args.resume_from, labels)
+        except (RuntimeError, ValueError, KeyError, json.JSONDecodeError, subprocess.CalledProcessError) as error:
+            print("error: unable to inspect recovery image: {}".format(error), file=sys.stderr)
+            return 2
+
+        tag = args.tag or recovery_value(labels, "release_tag") or recovery_tag(
+            args.resume_from
+        )
+        label = (
+            args.label
+            or recovery_value(labels, "release_label")
+            or tag.rsplit("-", 1)[-1]
+        )
+        if args.source is not None:
+            archive = args.source.resolve()
+            try:
+                archive_version = version_from_archive(archive)
+                if not archive.is_file():
+                    raise RuntimeError("source archive not found: {}".format(archive))
+                if archive_version.parts != version.parts:
+                    raise RuntimeError(
+                        "{} does not match recovery image VisIt {}".format(
+                            archive.name, version.dotted
+                        )
+                    )
+            except (RuntimeError, ValueError) as error:
+                print("error: {}".format(error), file=sys.stderr)
+                return 2
+    else:
+        archive = args.source.resolve()
+        build_script = args.build_visit.resolve()
+        config = PLATFORMS[args.platform]
+        try:
+            archive, build_script, version = validate_inputs(archive, build_script)
+        except (RuntimeError, ValueError) as error:
+            print("error: {}".format(error), file=sys.stderr)
+            return 2
+
+        dockerfile = script_dir / config["dockerfile"]
+        if not dockerfile.is_file():
+            print("error: Dockerfile not found: {}".format(dockerfile), file=sys.stderr)
+            return 2
+        os_version = os_version or config["default_version"]
+        label = args.label or platform_label(args.platform, os_version)
+        tag = args.tag or "visitdev:{}-{}".format(version.dotted, label)
 
     if not args.build_only:
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -333,6 +419,21 @@ def main(argv=None):
             if args.recoverable:
                 build_command.extend(("--target", "visit-build-environment"))
                 build_command.extend(("-t", environment_image))
+                image_labels = {
+                    "version": version.dotted,
+                    "platform": args.platform,
+                    "os_version": os_version,
+                    "release_label": label,
+                    "release_tag": tag,
+                    "source_archive": archive.name,
+                }
+                for name, value in image_labels.items():
+                    build_command.extend(
+                        (
+                            "--label",
+                            "{}.{}={}".format(RECOVERY_LABEL_PREFIX, name, value),
+                        )
+                    )
             else:
                 build_command.extend(("-t", tag))
             if config["build_arg"]:
@@ -351,7 +452,6 @@ def main(argv=None):
             archive,
             script_dir,
             environment_image,
-            os_version,
         )
         if status != 0:
             return status

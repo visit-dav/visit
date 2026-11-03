@@ -87,10 +87,14 @@ archive can be supplied without losing completed work:
 docker cp conduit.tar.gz CONTAINER:/home/visit/
 docker commit CONTAINER RECOVERY_IMAGE
 python3 create_release.py --recoverable \
-  --resume-from RECOVERY_IMAGE --resume-step optional \
-  --source "$src" --build-visit "$bv" \
-  --platform rocky --os-version 8.9
+  --resume-from RECOVERY_IMAGE --resume-step optional
 ```
+
+Recovery checkpoints contain the VisIt source archive, generated `build_visit`
+script, platform metadata, release tag, and version. Consequently, resume does
+not require the original `--platform`, `--os-version`, `--source`, or
+`--build-visit` arguments. Recovery images created by older versions of this
+driver may still require `--source` if the source archive is absent.
 
 The VisIt build records extraction, configuration, packaging, installation,
 and testing milestones in the image. Resuming a failed VisIt step reuses each
