@@ -24,7 +24,6 @@
                        "python",
                        "qt",
                        "qwt",
-                       "boost",
                        "mpich",
                        "blosc2",
                        "advio",

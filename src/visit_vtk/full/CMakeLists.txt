@@ -198,8 +198,3 @@ if(HAVE_OPENEXR)
     target_link_libraries(visit_vtk PRIVATE openexr)
 endif()
 
-
-if(HAVE_BOOST)
-    target_link_libraries(visit_vtk PRIVATE boost)
-endif()
-
