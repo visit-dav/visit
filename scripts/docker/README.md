@@ -6,6 +6,11 @@ installs the package, and runs a smoke test. The version is inferred from a
 `build_visitMAJOR_MINOR_PATCH` script. No script or Dockerfile contains a VisIt
 release number.
 
+The third-party build uses two Docker layers. The first builds the core
+libraries; the second repeats the same `build_visit` command with `--optional`.
+If an optional library fails, Docker can reuse the completed core-library
+layer on the next build.
+
 The recommended interface is `create_release.py`. It accepts the two inputs
 from any location and creates an automatically cleaned temporary Docker build
 context, so nothing needs to be copied into this checkout. For example:
@@ -18,13 +23,14 @@ python3 /path/to/visit/scripts/docker/create_release.py \
 ```
 
 The Ubuntu Dockerfile supports 22.04 and 24.04 through `UBUNTU_VERSION`. The
-Rocky Dockerfile supports 8.9 and 9.3 through `ROCKY_VERSION`:
+Rocky Dockerfile supports 8.9 and 9.3 through `ROCKY_VERSION`. Debian and
+Fedora accept `DEBIAN_VERSION` and `FEDORA_VERSION`, respectively:
 
 ```console
 python3 create_release.py --source "$src" --build-visit "$bv" --platform ubuntu --os-version 22.04
 python3 create_release.py --source "$src" --build-visit "$bv" --platform rocky --os-version 8.9
-python3 create_release.py --source "$src" --build-visit "$bv" --platform debian12
-python3 create_release.py --source "$src" --build-visit "$bv" --platform fedora40
+python3 create_release.py --source "$src" --build-visit "$bv" --platform debian --os-version 12
+python3 create_release.py --source "$src" --build-visit "$bv" --platform fedora --os-version 44
 ```
 
 Use `--engine podman` for Podman. On LC, first enable Podman in the calling
