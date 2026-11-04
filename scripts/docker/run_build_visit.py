@@ -20,6 +20,8 @@ BUILD_OPTIONS = (
     "--mpich",
     "--llvm",
     "--mesagl",
+    "--xcb",
+    "--xkbcommon",
     "--anari",
     "--ospray",
 )
