@@ -1966,6 +1966,9 @@ class DebugMallocDebugger(Debugger):
 #   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
 #   Remove argumnents related to hardware accelerated parallel rendering.
 #
+#   Justin Privitera, Wed Nov  4 15:37:10 PST 2026
+#   Allow launcher-generated arguments to be inserted before "-s script.py".
+#
 ###############################################################################
 
 class GeneralArguments(object):
@@ -3855,6 +3858,10 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Eric Brugger, Wed May 15 11:11:11 PDT 2024
     #   Unset the Python environment variables if using flux to
     #   avoid conflicts between our Python and the system Python.
+    #
+    #   Justin Privitera, Wed Nov  4 15:37:10 PST 2026
+    #   Keep generated VisIt arguments before "-s script.py" so script arguments
+    #   remain script-only.
     #
     ############################################################################
 
