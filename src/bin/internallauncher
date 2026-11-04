@@ -2102,7 +2102,10 @@ class GeneralArguments(object):
             self.osmesa = True
         return n
 
-    def ProduceArguments(self, parallel):
+    def ProduceArguments(self, parallel, pre_script_args = None):
+        if pre_script_args == None:
+            pre_script_args = []
+
         args = []
         if self.dv:
             args = args + ["-dv"]
@@ -2121,6 +2124,7 @@ class GeneralArguments(object):
             nowin_not_added = 0
 
         args = args + self.arguments
+        args = args + pre_script_args
 
         if self.scriptfile != None:
             args = args + ["-s", self.scriptfile]
@@ -2146,6 +2150,12 @@ class GeneralArguments(object):
         args = args + self.scriptarguments
 
         return args
+
+    def AddArgumentsBeforeScript(self, args, extra_args):
+        for i in range(len(args)):
+            if args[i] == "-s":
+                return args[:i] + extra_args + args[i:]
+        return args + extra_args
 
     def GetIPAddress(self, hostname):
         if not self.hosttoip:
@@ -2966,8 +2976,8 @@ class MainLauncher(object):
             else:
                 self.parallelArgs.launch = "mpirun"
 
-        if self.parallelArgs.nn != None and self.parallelArgs.np == None:
-            self.parallelArgs.np = "1"
+        # if self.parallelArgs.nn != None and self.parallelArgs.np == None:
+        #     self.parallelArgs.np = "1"
 
     ############################################################################
     # Method: SourceEnvScript
@@ -3931,10 +3941,10 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                     self.error("Can't launch using %s. %s" % (self.parallelArgs.launch, e.strerror))
         else:
             args = [os.path.join(self.visitbindir, self.generalArgs.exe_name)]
-            args = args + self.generalArgs.ProduceArguments(0)
-            args = args + self.generalArgs.ConnectionArguments(0)
+            pre_script_args = self.generalArgs.ConnectionArguments(0)
             if self.generalArgs.exe_name in self.clientPrograms:
-                args = args + self.parallelArgs.ProduceArguments(1)
+                pre_script_args = pre_script_args + self.parallelArgs.ProduceArguments(1)
+            args = args + self.generalArgs.ProduceArguments(0, pre_script_args)
 
             # Save the first argument.
             arg0 = args[0]
@@ -3948,7 +3958,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 # we rely on OSAScript to run a new console.
                 ret = 0
             elif self.NoRun():
-                args = args + ["-dir", self.visithome]
+                args = self.generalArgs.AddArgumentsBeforeScript(args, ["-dir", self.visithome])
                 self.message("# SET ENVIRONMENT VARIABLES:", file=sys.stdout)
                 self.PrintEnvironmentShell("csh" in GETENV("SHELL"))
                 self.message("\n# RUN USING:\n" + self.QuoteArguments(args) + "\n", file=sys.stdout)
