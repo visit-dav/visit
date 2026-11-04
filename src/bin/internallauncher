@@ -2979,8 +2979,8 @@ class MainLauncher(object):
             else:
                 self.parallelArgs.launch = "mpirun"
 
-        # if self.parallelArgs.nn != None and self.parallelArgs.np == None:
-        #     self.parallelArgs.np = "1"
+        if self.parallelArgs.nn != None and self.parallelArgs.np == None:
+            self.parallelArgs.np = "1"
 
     ############################################################################
     # Method: SourceEnvScript
