@@ -11,6 +11,8 @@ libraries; the second repeats the same `build_visit` command with `--optional`.
 If an optional library fails, Docker can reuse the completed core-library
 layer on the next build. Both invocations use `build_visit --cleanup`, which
 removes successfully built third-party source and build directories.
+The core build supplies XCB and xkbcommon explicitly so Qt cannot silently
+configure without the X11 platform integration required by VisIt.
 
 Downloaded tarballs are removed only after VisIt has been built, installed,
 and smoke-tested successfully. The binary VisIt package is retained for

@@ -199,6 +199,9 @@ def recoverable_build(
     archive_copy = ()
     if archive is not None:
         archive_copy = ((archive, "/home/visit/{}".format(archive.name)),)
+    build_helper_copy = (
+        (script_dir / "run_build_visit.py", "/home/visit/run_build_visit.py"),
+    )
 
     definitions = {
         "core": {
@@ -208,7 +211,8 @@ def recoverable_build(
                 "-lc",
                 "{}python3 run_build_visit.py".format(toolchain),
             ),
-            "copies": archive_copy if start_step == "core" else (),
+            "copies": (archive_copy if start_step == "core" else ())
+            + build_helper_copy,
         },
         "optional": {
             "success": "{}-thirdparty".format(tag),
@@ -217,7 +221,8 @@ def recoverable_build(
                 "-lc",
                 "{}python3 run_build_visit.py --optional".format(toolchain),
             ),
-            "copies": archive_copy if start_step == "optional" else (),
+            "copies": (archive_copy if start_step == "optional" else ())
+            + build_helper_copy,
         },
         "visit": {
             "success": tag,
