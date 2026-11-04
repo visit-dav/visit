@@ -2947,8 +2947,8 @@ class MainLauncher(object):
     #   Cyrus Harrison, Fri Feb  1 17:02:02 PST 2013
     #   Use mpiexe on OSX 10.6 and beyond.
     #
-    #   Justin Privitera, Tue Nov  3 15:37:10 PST 2026
-    #   Add an error for specifying -nn without -np.
+    #   Justin Privitera, Wed Nov  4 15:37:10 PST 2026
+    #   Default -np to 1 when -nn is specified without -np.
     #
     ############################################################################
 
@@ -2967,7 +2967,7 @@ class MainLauncher(object):
                 self.parallelArgs.launch = "mpirun"
 
         if self.parallelArgs.nn != None and self.parallelArgs.np == None:
-            exit("The -nn argument requires the -np argument.", 1)
+            self.parallelArgs.np = "1"
 
     ############################################################################
     # Method: SourceEnvScript
