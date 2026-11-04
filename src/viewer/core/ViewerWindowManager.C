@@ -10207,6 +10207,10 @@ ViewerWindowManager::CheckForOSPRayRendering() const
 //  Programmer: Kathleen Biagas
 //  Creation:   Aug 26, 2025
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Sep 14, 2026
+//    MSAAAvailablity is now tri-state int/enum.
+//
 // ****************************************************************************
 
 void
@@ -10215,7 +10219,8 @@ ViewerWindowManager::QueryMSAAAvailability(int windowIndex)
     int index = (windowIndex == -1) ? activeWindow : windowIndex;
     if(windows[index] != 0)
     {
-        bool msaaAvail = windows[index]->MSAAAvailable();
+        RenderingAttributes::MSAAAvailability msaaAvail =
+            RenderingAttributes::MSAAAvailability(windows[index]->MSAAAvailable());
         if(msaaAvail != GetViewerState()->GetRenderingAttributes()->GetMSAAAvailable())
         {
             GetViewerState()->GetRenderingAttributes()->SetMSAAAvailable(msaaAvail);
