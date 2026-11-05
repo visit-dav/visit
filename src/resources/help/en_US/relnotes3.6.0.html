@@ -40,6 +40,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>When trying to export a built-in color table, a more helpful error message is displayed explaining how to properly export.</li>
   <li>The visit-install scripts now accepts '-f' argument allowing specification of the distribution filename in lieu of using the 'version' and 'platform' positional arguments.</li>
   <li>Added a quick recipe for getting all the available variable names using Python.</li>
+  <li>When launching a Python script with VisIt on the command line, arguments ordered after script `-s scriptname.py` will be recognized only as script arguments, and never as VisIt arguments. Therefore, `visit -nowin -cli -s test.py -nn 1` means that `test.py` will receive the `-nn 1` argument, not `visit`.</li>
+  <li>When launching VisIt from the command line, if `-nn` (number of nodes) is specified without `-np` (number of processes), the number of processes will default to 1.</li>
 </ul>
 
 <a name="Advanced_features"></a>
