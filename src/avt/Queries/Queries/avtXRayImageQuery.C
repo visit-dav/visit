@@ -2307,6 +2307,195 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
     field_vals[0] = 0;
 }
 #endif
+
+// ****************************************************************************
+//  Function: WriteBlueprintViewFrustumMesh
+//
+//  Purpose:
+//    This function writes a mesh representing the view frustum used in the 
+//    query to the blueprint output.
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 04, 2026
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
+                              // lower left corners
+                              const avtVector &llc_near,
+                              const avtVector &llc_image,
+                              const avtVector &llc_far,
+                              // lower right corners
+                              const avtVector &lrc_near,
+                              const avtVector &lrc_image,
+                              const avtVector &lrc_far,
+                              // upper right corners
+                              const avtVector &urc_near,
+                              const avtVector &urc_image,
+                              const avtVector &urc_far,
+                              // upper left corners
+                              const avtVector &ulc_near,
+                              const avtVector &ulc_image,
+                              const avtVector &ulc_far)
+{
+    const int num_points{15};
+    // 4 from view plane
+    // 4 from image plane
+    // 4 from far plane
+    // 1 from view center
+    // 1 from focus
+    // 1 from up point
+
+    const int num_lines{22};
+    // 4 from view plane edges
+    // 4 from image plane edges
+    // 4 from far plane edges
+    // 4 from view to image plane corners
+    // 4 from image to far plane corners
+    // 1 from view center to focus
+    // 1 from view center to up point
+
+    const avtVector view_center = nearPlane * normal + focus;
+    const avtVector up_point = view_center + viewUp;
+
+    // set up ray coords
+    conduit::Node &camera_coords = data_out["coordsets"]["camera_coords"];
+    camera_coords["type"] = "explicit";
+    camera_coords["values/x"].set(conduit::DataType::float64(num_points));
+    camera_coords["values/y"].set(conduit::DataType::float64(num_points));
+    camera_coords["values/z"].set(conduit::DataType::float64(num_points));
+    conduit::float64_array xvals_ray = camera_coords["values/x"].value();
+    conduit::float64_array yvals_ray = camera_coords["values/y"].value();
+    conduit::float64_array zvals_ray = camera_coords["values/z"].value();
+
+    enum Index : conduit::index_t
+    {
+        idx_of_llc_near = 0,
+        idx_of_llc_image,
+        idx_of_llc_far,
+        idx_of_lrc_near,
+        idx_of_lrc_image,
+        idx_of_lrc_far,
+        idx_of_urc_near,
+        idx_of_urc_image,
+        idx_of_urc_far,
+        idx_of_ulc_near,
+        idx_of_ulc_image,
+        idx_of_ulc_far,
+        idx_of_focus,
+        idx_of_view_center,
+        idx_of_up_point,
+    };
+
+    auto set_point = [&](const conduit::index_t idx, const avtVector &vec)
+    {
+        xvals_ray[idx] = vec.x;
+        yvals_ray[idx] = vec.y;
+        zvals_ray[idx] = vec.z;
+    };
+
+    //
+    // save points in the correct places
+    //
+    // view plane (4)
+    set_point(idx_of_llc_near,    llc_near);
+    set_point(idx_of_llc_image,   llc_image);
+    set_point(idx_of_llc_far,     llc_far);
+    set_point(idx_of_lrc_near,    lrc_near);
+    // image plane (4)
+    set_point(idx_of_lrc_image,   lrc_image);
+    set_point(idx_of_lrc_far,     lrc_far);
+    set_point(idx_of_urc_near,    urc_near);
+    set_point(idx_of_urc_image,   urc_image);
+    // far plane (4)
+    set_point(idx_of_urc_far,     urc_far);
+    set_point(idx_of_ulc_near,    ulc_near);
+    set_point(idx_of_ulc_image,   ulc_image);
+    set_point(idx_of_ulc_far,     ulc_far);
+    // bonus points (3)
+    set_point(idx_of_focus,       focus);
+    set_point(idx_of_view_center, view_center);
+    set_point(idx_of_up_point,    up_point);
+
+    // set up view frustum topo
+    conduit::Node &camera_topo = data_out["topologies"]["camera_topo"];
+    camera_topo["type"] = "unstructured";
+    camera_topo["coordset"] = "camera_coords";
+    camera_topo["elements/shape"] = "line";
+    // we need 2 points for every line
+    camera_topo["elements/connectivity"].set(conduit::DataType::int32(num_lines * 2));
+    conduit::int32_array conn_arr = camera_topo["elements/connectivity"].value();
+    conduit::index_t idx = 0;
+
+    auto set_up_plane_lines = [&](conduit::index_t llc,
+                                  conduit::index_t lrc,
+                                  conduit::index_t urc,
+                                  conduit::index_t ulc)
+    {
+        // line from lower-left-corner to lower-right-corner
+        conn_arr[idx++] = llc; conn_arr[idx++] = lrc;
+        // line from lower-right-corner to upper-right-corner
+        conn_arr[idx++] = lrc; conn_arr[idx++] = urc;
+        // line from upper-right-corner to upper-left-corner
+        conn_arr[idx++] = urc; conn_arr[idx++] = ulc;
+        // line from upper-left-corner to lower-left-corner
+        conn_arr[idx++] = ulc; conn_arr[idx++] = llc;
+    };
+
+    auto set_up_lines_between_planes [&](conduit::index_t llc1, conduit::index_t lrc1,
+                                         conduit::index_t urc1, conduit::index_t ulc1,
+                                         conduit::index_t llc2, conduit::index_t lrc2,
+                                         conduit::index_t urc2, conduit::index_t ulc2)
+    {
+        // line between lower-left-corners
+        conn_arr[idx++] = llc1; conn_arr[idx++] = llc2;
+        // line between lower-right-corners
+        conn_arr[idx++] = lrc1; conn_arr[idx++] = lrc2;
+        // line between upper-right-corners
+        conn_arr[idx++] = urc1; conn_arr[idx++] = urc2;
+        // line between upper-left-corners
+        conn_arr[idx++] = ulc1; conn_arr[idx++] = ulc2;
+    };
+
+    // set up view plane lines (4)
+    set_up_plane_lines(idx_of_llc_near, idx_of_lrc_near, idx_of_urc_near, idx_of_ulc_near);
+    // set up image plane lines (4)
+    set_up_plane_lines(idx_of_llc_image, idx_of_lrc_image, idx_of_urc_image, idx_of_ulc_image);
+    // set up far plane lines (4)
+    set_up_plane_lines(idx_of_llc_far, idx_of_lrc_far, idx_of_urc_far, idx_of_ulc_far);
+    // set up view to image plane lines (4)
+    set_up_lines_between_planes(idx_of_llc_near,  idx_of_lrc_near,
+                                idx_of_urc_near,  idx_of_ulc_near,
+                                idx_of_llc_image, idx_of_lrc_image,
+                                idx_of_urc_image, idx_of_ulc_image);
+    // set up image to far plane lines (4)
+    set_up_lines_between_planes(idx_of_llc_image, idx_of_lrc_image,
+                                idx_of_urc_image, idx_of_ulc_image,
+                                idx_of_llc_far,   idx_of_lrc_far,
+                                idx_of_urc_far,   idx_of_ulc_far);
+    // set up view center to focus line (1)
+    conn_arr[idx++] = idx_of_view_center; conn_arr[idx++] = idx_of_focus;
+    // set up view center to up point line (1)
+    conn_arr[idx++] = idx_of_view_center; conn_arr[idx++] = idx_of_up_point;
+
+
+
+    // set up ray trivial field
+    conduit::Node &camera_field = data_out["fields"]["camera_field"];
+    camera_field["topology"] = "camera_topo";
+    camera_field["association"] = "element";
+    camera_field["volume_dependent"] = "false";
+    camera_field["values"].set(conduit::DataType::float64(num_lines));
+    conduit::float64_array field_vals = camera_field["values"].value();
+    for (conduit::index_t i = 0; i < num_lines; i ++) { field_vals[i] = 0; }
+}
+#endif
+
+
+
 // ****************************************************************************
 //  Function: WriteBlueprintRayCornersMesh
 //
@@ -2542,6 +2731,16 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
         detectorWidth, detectorHeight, lrc_near,
         farDetectorWidth, farDetectorHeight, lrc_far,
         left);
+
+    WriteBlueprintViewFrustumMesh(data_out,
+                                  // lower left corners
+                                  llc_near, llc_image, llc_far,
+                                  // lower right corners
+                                  lrc_near, lrc_image, lrc_far,
+                                  // upper right corners
+                                  urc_near, urc_image, urc_far,
+                                  // upper left corners
+                                  ulc_near, ulc_image, ulc_far);
 }
 #endif
 
