@@ -2323,23 +2323,23 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
-                              // lower left corners
-                              const avtVector &llc_near,
-                              const avtVector &llc_image,
-                              const avtVector &llc_far,
-                              // lower right corners
-                              const avtVector &lrc_near,
-                              const avtVector &lrc_image,
-                              const avtVector &lrc_far,
-                              // upper right corners
-                              const avtVector &urc_near,
-                              const avtVector &urc_image,
-                              const avtVector &urc_far,
-                              // upper left corners
-                              const avtVector &ulc_near,
-                              const avtVector &ulc_image,
-                              const avtVector &ulc_far)
+avtXRayImageQuery::WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
+                                                 // lower left corners
+                                                 const avtVector &llc_near,
+                                                 const avtVector &llc_image,
+                                                 const avtVector &llc_far,
+                                                 // lower right corners
+                                                 const avtVector &lrc_near,
+                                                 const avtVector &lrc_image,
+                                                 const avtVector &lrc_far,
+                                                 // upper right corners
+                                                 const avtVector &urc_near,
+                                                 const avtVector &urc_image,
+                                                 const avtVector &urc_far,
+                                                 // upper left corners
+                                                 const avtVector &ulc_near,
+                                                 const avtVector &ulc_image,
+                                                 const avtVector &ulc_far)
 {
     const int num_points{15};
     // 4 from view plane
@@ -2445,10 +2445,10 @@ WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
         conn_arr[idx++] = ulc; conn_arr[idx++] = llc;
     };
 
-    auto set_up_lines_between_planes [&](conduit::index_t llc1, conduit::index_t lrc1,
-                                         conduit::index_t urc1, conduit::index_t ulc1,
-                                         conduit::index_t llc2, conduit::index_t lrc2,
-                                         conduit::index_t urc2, conduit::index_t ulc2)
+    auto set_up_lines_between_planes = [&](conduit::index_t llc1, conduit::index_t lrc1,
+                                           conduit::index_t urc1, conduit::index_t ulc1,
+                                           conduit::index_t llc2, conduit::index_t lrc2,
+                                           conduit::index_t urc2, conduit::index_t ulc2)
     {
         // line between lower-left-corners
         conn_arr[idx++] = llc1; conn_arr[idx++] = llc2;

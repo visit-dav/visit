@@ -310,6 +310,23 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                                      const double farDetectorHeight,
                                                      const avtVector &lrc_far,
                                                      const avtVector &left);
+    void                      WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
+                                                            // lower left corners
+                                                            const avtVector &llc_near,
+                                                            const avtVector &llc_image,
+                                                            const avtVector &llc_far,
+                                                            // lower right corners
+                                                            const avtVector &lrc_near,
+                                                            const avtVector &lrc_image,
+                                                            const avtVector &lrc_far,
+                                                            // upper right corners
+                                                            const avtVector &urc_near,
+                                                            const avtVector &urc_image,
+                                                            const avtVector &urc_far,
+                                                            // upper left corners
+                                                            const avtVector &ulc_near,
+                                                            const avtVector &ulc_image,
+                                                            const avtVector &ulc_far);
 #endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
