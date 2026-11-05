@@ -236,6 +236,9 @@ main(int argc, char *argv[])
     {
         if(s_found)
         {
+            // After "-s script.py", all remaining args belong only to the
+            // script. Keep them out of argv2 because argv2 is forwarded to
+            // VisIt/viewer startup.
             argv_after_s[argc_after_s++] = argv[i];
         }
         else if(strcmp(argv[i], "-debug") == 0)
@@ -436,7 +439,8 @@ main(int argc, char *argv[])
         }
     }
 
-    //for now this does not make sense
+    // Only inspect VisIt-owned arguments here. Raw argv can include script
+    // arguments after "-s script.py", and those must not affect CLI behavior.
     for(int i = 0; i < argc2; ++i)
     {
         std::string tmp = argv2[i];
