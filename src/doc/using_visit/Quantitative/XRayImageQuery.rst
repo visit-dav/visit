@@ -192,15 +192,15 @@ Output Types
 |      | (5 prior to       | of a text header file describing a           |
 |      | VisIt_ 3.4)       | rawfloats file.                              |
 +------+-------------------+----------------------------------------------+
-|      | "blueprint json"  | Conduit JSON output.                         |
+|      | "json"            | Conduit Blueprint JSON output.               |
 |      | or 5 (6 prior to  |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "blueprint hdf5"  | Conduit HDF5 output.                         |
+|      | "hdf5"            | Conduit Blueprint HDF5 output.               |
 |      | or 6 (7 prior to  |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "blueprint yaml"  | Conduit YAML output.                         |
+|      | "yaml"            | Conduit Blueprint YAML output.               |
 |      | or 7 (8 prior to  |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
@@ -320,6 +320,10 @@ The complete version consists of:
 
 *If any of the above properties are specified in the parameters, the query will use the complete version and disregard all arguments pertaining to the simplified version.*
 
+.. figure:: images/TODO_CAMERA_DIAGRAM.png
+
+   TODO caption
+
 When a Conduit Blueprint output type is specified, these parameters will appear in the metadata.
 See :ref:`View_Parameters` for more information.
 
@@ -357,17 +361,16 @@ During execution, the simplified camera specification parameters are converted t
 Calling the Query
 """""""""""""""""
 
-There are a couple ways to call the X Ray Image Query, each with their own nuances.
+There are two ways to call the X Ray Image Query, each with their own nuances.
 
-The first is the standard way of calling the query, by using a dictionary to store the arguments.
-This way is recommended.
+The first uses a Python dictionary to store the arguments.
 Here is an example:
 
 ::
 
    params = dict()
    params["image_size"] = (400, 300)
-   params["output_type"] = "blueprint hdf5"
+   params["output_type"] = "hdf5"
    params["focus"] = (0., 2.5, 10.)
    params["perspective"] = 1
    params["near_plane"] = -25.
@@ -376,36 +379,70 @@ Here is an example:
    params["parallel_scale"] = 10.
    Query("XRay Image", params)
 
-Of course, one could use this to set up the parameters instead:
+Alternatively, one could use this to set up the parameters instead:
 
 ::
 
    params = GetQueryParameters("XRay Image")
 
+This produces a dictionary with the following entries, which can be customized appropriately with desired query parameters.
 The default arguments to the query will be provided here, containing the :ref:`Complete_Camera_Specification` and not the :ref:`Simplified_Camera_Specification` arguments.
 To use the :ref:`Simplified_Camera_Specification` arguments, one must specify them manually and not specify any arguments from the :ref:`Complete_Camera_Specification`.
+
+::
+
+   {
+       'abs_units': 'abs units',
+       'background_intensities': 0.0,
+       'background_intensity': 0.0,
+       'debug_ray': -1,
+       'divide_emis_by_absorb': 0,
+       'emis_units': 'emis units',
+       'energy_group_bounds': (0.0, 1.0),
+       'energy_units': 'energy units',
+       'family_files': 0,
+       'far_plane': 0.5,
+       'filename_scheme': 0,
+       'focus': (0.0, 0.0, 0.0),
+       'image_pan': (0.0, 0.0),
+       'image_size': (200, 200),
+       'image_zoom': 1.0,
+       'intensity_units': 'intensity units',
+       'near_plane': -0.5,
+       'normal': (0.0, 0.0, 1.0),
+       'output_dir': '.',
+       'output_ray_bounds': 0,
+       'output_type': 'png',
+       'parallel_scale': 0.5,
+       'path_length_info': 'path length info',
+       'perspective': 1,
+       'spatial_units': 'spatial units',
+       'vars': ('absorbtivity', 'emissivity'),
+       'view_angle': 30.0,
+       'view_up': (0.0, 1.0, 0.0)
+   }
 
 The second way to call the query is the old style of argument passing:
 
 ::
 
    Query("XRay Image", 
-      output_type, 
-      output_dir, 
-      divide_emis_by_absorb, 
-      origin_x,
-      origin_y,
-      origin_z,
-      theta, 
-      phi, 
-      width, 
-      height, 
-      image_size_x, 
-      image_size_y, 
-      vars)
+         output_type, 
+         output_dir, 
+         divide_emis_by_absorb, 
+         origin_x,
+         origin_y,
+         origin_z,
+         theta, 
+         phi, 
+         width, 
+         height, 
+         image_size_x, 
+         image_size_y, 
+         vars)
 
    # An example
-   Query("XRay Image", "blueprint hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
+   Query("XRay Image", "hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
 
 This way of calling the query exclusively makes use of the :ref:`Simplified_Camera_Specification`.
 
@@ -480,10 +517,9 @@ moves the image down and to the right by 1. ::
 
    The resulting x ray image.
 
-Now we will switch to a 3D example using globe.silo. Globe.silo is an
-unstructured mesh consisting of tetrahedra, pyramids, prisms and hexahedra
-forming a globe. Here is an image of the tetrahedra at the center of
-the globe that form 2 cones.
+Now we will switch to a 3D example using ``globe.silo``.
+``globe.silo`` is an unstructured mesh consisting of tetrahedra, pyramids, prisms and hexahedra forming a globe.
+Here is an image of the tetrahedra at the center of the globe that form 2 cones.
 
 .. figure:: images/xray04.png
 
@@ -567,7 +603,7 @@ We call the query as usual, although there are a few extra arguments we can prov
 
    params = dict()
    params["image_size"] = (400, 300)
-   params["output_type"] = "blueprint hdf5"
+   params["output_type"] = "hdf5"
    params["focus"] = (0., 2.5, 10.)
    params["perspective"] = 1
    params["near_plane"] = -25.
@@ -591,6 +627,9 @@ We call the query as usual, although there are a few extra arguments we can prov
 To look at the raw data from the query, we run this code:
 
 ::
+
+   # IMPORTANT: we need a Python that has access to Conduit in order to run this.
+   # VisIt's Python comes with Conduit.
 
    import conduit
    xrayout = conduit.Node()
@@ -2148,7 +2187,7 @@ The later Python code examples assume that the following has already been run:
    params = dict()
    params["image_size"] = (400, 300)
    # One of the Blueprint output types
-   params["output_type"] = "blueprint hdf5"
+   params["output_type"] = "hdf5"
    params["focus"] = (0., 2.5, 10.)
    params["perspective"] = 1
    params["near_plane"] = -25.

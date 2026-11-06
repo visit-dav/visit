@@ -2553,12 +2553,15 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
     // calculate left vector by crossing normal with up vector
     avtVector left = viewUp.cross(normal);
 
-    auto calculate_corners = [center, left, viewUp](const double planeWidth,
-                                                    const double planeHeight,
-                                                    avtVector &llc,
-                                                    avtVector &lrc,
-                                                    avtVector &ulc,
-                                                    avtVector &urc)
+    auto calculate_corners = [](const double planeWidth,
+                                const double planeHeight,
+                                const avtVector &center,
+                                const avtVector &left,
+                                const avtVector &viewUp,
+                                avtVector &llc,
+                                avtVector &lrc,
+                                avtVector &ulc,
+                                avtVector &urc)
     {
         llc = center + (-1. * planeHeight) * viewUp +     planeWidth     * left;
         lrc = center + (-1. * planeHeight) * viewUp + (-1. * planeWidth) * left;
