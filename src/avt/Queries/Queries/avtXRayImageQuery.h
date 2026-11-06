@@ -243,16 +243,6 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                           conduit::float64 *intensity_vals,
                                           conduit::float64 *depth_vals,
                                           int numBins);
-    void                      WriteBlueprintImagingPlane(conduit::Node &data_out,
-                                                         const std::string plane_name,
-                                                         const double planeWidth,
-                                                         const double planeHeight,
-                                                         const avtVector &center,
-                                                         const avtVector &left,
-                                                         avtVector &llc,
-                                                         avtVector &lrc,
-                                                         avtVector &ulc,
-                                                         avtVector &urc);
     void                      WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
                                                           const int x_coords_dim,
                                                           const int y_coords_dim,
