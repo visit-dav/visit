@@ -22,7 +22,7 @@ import conduit
 import os
 import sys
 
-path_to_data_file = "../testdata/silo_hdf5_test_data/" # CHANGE ME
+path_to_data_file = "./testdata/silo_hdf5_test_data/" # CHANGE ME
 data_file = path_to_data_file + "curv3d.silo"
 
 shouldisave = True
@@ -145,36 +145,39 @@ def change_to_spectral_inverted():
 	PseudocolorAtts.invertColorTable = 1
 	SetPlotOptions(PseudocolorAtts)
 
-def visualize_imaging_planes():
-	AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
-	AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-	AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+def visualize_camera():
+	AddPlot("Mesh", "mesh_camera_topo")
 	DrawPlots()
 
-def color_imaging_planes():
-	# Make the plot of the near plane active
-	SetActivePlots(1)
-	PseudocolorAtts = PseudocolorAttributes()
-	# We invert the color table so that it is a different color from the far plane
-	PseudocolorAtts.invertColorTable = 1
-	SetPlotOptions(PseudocolorAtts)
-
-	# Make the plot of the view plane active
-	SetActivePlots(2)
-	PseudocolorAtts = PseudocolorAttributes()
-	PseudocolorAtts.colorTableName = "Oranges"
-	PseudocolorAtts.invertColorTable = 1
-	PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-	# We lower the opacity so that the view plane does not obstruct our view of anything.
-	PseudocolorAtts.opacity = 0.7
-	SetPlotOptions(PseudocolorAtts)
-
-	# leave the far plane as is
-
-def visualize_ray_field():
+def visualize_ray_field(index_select = False, incr = 1):
 	AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
+	if index_select:
+		AddOperator("IndexSelect", 0)
+		IndexSelectAtts = IndexSelectAttributes()
+		IndexSelectAtts.maxDim = IndexSelectAtts.ThreeD  # OneD, TwoD, ThreeD
+		IndexSelectAtts.dim = IndexSelectAtts.OneD  # OneD, TwoD, ThreeD
+		IndexSelectAtts.xAbsMax = -1
+		IndexSelectAtts.xMin = 0
+		IndexSelectAtts.xMax = -1
+		IndexSelectAtts.xIncr = incr
+		IndexSelectAtts.xWrap = 0
+		IndexSelectAtts.yAbsMax = -1
+		IndexSelectAtts.yMin = 0
+		IndexSelectAtts.yMax = -1
+		IndexSelectAtts.yIncr = 1
+		IndexSelectAtts.yWrap = 0
+		IndexSelectAtts.zAbsMax = -1
+		IndexSelectAtts.zMin = 0
+		IndexSelectAtts.zMax = -1
+		IndexSelectAtts.zIncr = 1
+		IndexSelectAtts.zWrap = 0
+		IndexSelectAtts.useWholeCollection = 1
+		IndexSelectAtts.categoryName = "domains"
+		IndexSelectAtts.subsetName = "domain0"
+		SetOperatorOptions(IndexSelectAtts, 0, 0)
 	DrawPlots()
 	change_to_spectral_inverted()
+
 
 def adjust_opacity_and_keep_spectral_inverted():
 	PseudocolorAtts = PseudocolorAttributes()
@@ -184,51 +187,20 @@ def adjust_opacity_and_keep_spectral_inverted():
 	PseudocolorAtts.opacity = 0.5
 	SetPlotOptions(PseudocolorAtts)
 
-def visualize_ray_corners():
-	AddPlot("Mesh", "mesh_ray_corners_topo")
-	DrawPlots()
-	MeshAtts = MeshAttributes()
-	MeshAtts.lineWidth = 1
-	SetPlotOptions(MeshAtts)
-
-def imaging_planes_and_rays(res, direction):
+def camera_and_rays(res, direction, index_select = False, incr = 1):
 	view = SIM_VIEW
 	if direction == "side":
 		view = ALT_SIM_VIEW
 
-	visualize_imaging_planes()
+	visualize_camera()
 	set_view(view)
-	save_image("imaging_planes_uncolored_" + res + "_" + direction)
+	save_image("camera_" + res + "_" + direction)
 
-	color_imaging_planes()
-	save_image("imaging_planes_" + res + "_" + direction)
+	visualize_ray_field(index_select, incr)
+	save_image("camera_and_rays_" + res + "_" + direction)
 
-	visualize_ray_corners()
-	save_image("imaging_planes_and_ray_corners_" + res + "_" + direction)
-
-	# hide ray corners
-	SetActivePlots(4)
-	HideActivePlots()
-
-	visualize_ray_field()
-	save_image("imaging_planes_and_rays_" + res + "_" + direction)
-
-	# show ray corners
-	SetActivePlots(4)
-	HideActivePlots()
-	save_image("imaging_planes_rays_and_ray_corners" + res + "_" + direction)
-	# hide ray corners
-	SetActivePlots(4)
-	HideActivePlots()
-
-	SetActivePlots(5)
 	adjust_opacity_and_keep_spectral_inverted()
-	save_image("imaging_planes_and_transparent_rays_" + res + "_" + direction)
-
-	# show ray corners
-	SetActivePlots(4)
-	HideActivePlots()
-	save_image("imaging_planes_transparent_rays_and_ray_corners_" + res + "_" + direction)
+	save_image("camera_and_transparent_rays_" + res + "_" + direction)
 
 	DeleteAllPlots()
 
@@ -452,7 +424,7 @@ def conduit_processing():
 
 	# test_reshape()
 
-def run_imaging_planes_and_rays(res, file, direction):
+def run_camera_and_rays(res, file, direction, index_select = False, incr = 1):
 	# Make sure that the input mesh is visible
 	ActivateDatabase(data_file)
 	AddPlot("Pseudocolor", "d")
@@ -460,7 +432,7 @@ def run_imaging_planes_and_rays(res, file, direction):
 	change_to_spectral_inverted()
 	# Then we want to go back to the output file and visualize the imaging planes
 	OpenDatabase(file) # low-res data
-	imaging_planes_and_rays(res, direction)
+	camera_and_rays(res, direction, index_select, incr)
 	CloseDatabase(file)
 
 ##########################
@@ -470,25 +442,13 @@ def main():
 
 	call_query(image_size = (400, 300))
 	out_400x300 = "output.0000.root"
-	
-	# generate low res data so it is easy to visualize rays
-	call_query(image_size = (40, 30))
-	out_40x30 = "output.0001.root"
-	call_query(image_size = (20, 15))
-	out_20x15 = "output.0002.root"
-	call_query(image_size = (8, 6))
-	out_8x6 = "output.0003.root"
-	# we won't need to make multiple resolution datasets anymore once the index select operator works properly
-	# https://github.com/visit-dav/visit/issues/18422
 
 	# generate two side views
 	call_query(image_size = (400, 300), side_view = True)
-	out_side_400x300 = "output.0004.root"
-	call_query(image_size = (40, 30), side_view = True)
-	out_side_40x30 = "output.0005.root"
+	out_side_400x300 = "output.0001.root"
 
 	call_query(image_size = (400, 300), example_query = True)
-	example_result = "output.0006.root"
+	example_result = "output.0002.root"
 
 	DeleteAllPlots()
 
@@ -553,15 +513,32 @@ def main():
 	#
 	# generate imaging planes and rays images for multiple resolutions for FRONT view
 	#
-	run_imaging_planes_and_rays(res = "400x300", file = out_400x300, direction = "front")
-	run_imaging_planes_and_rays(res = "40x30",   file = out_40x30,   direction = "front")
-	run_imaging_planes_and_rays(res = "20x15",   file = out_20x15,   direction = "front")
-	run_imaging_planes_and_rays(res = "8x6",     file = out_8x6,     direction = "front")
+	run_camera_and_rays(res = "400x300",
+						file = out_400x300,
+						direction = "front",
+						index_select = False)
+	run_camera_and_rays(res = "400x300_medium",
+						file = out_400x300,
+						direction = "front",
+						index_select = True,
+						incr = 49)
+	run_camera_and_rays(res = "400x300_low",
+						file = out_400x300,
+						direction = "front",
+						index_select = True,
+						incr = 377)
 
 	#
 	# generate imaging planes and rays images for multiple resolutions for SIDE view
 	#
-	run_imaging_planes_and_rays(res = "400x300", file = out_side_400x300, direction = "side")
-	run_imaging_planes_and_rays(res = "40x30",   file = out_side_40x30,   direction = "side")
+	run_camera_and_rays(res = "400x300",
+						file = out_side_400x300,
+						direction = "side",
+						index_select = False)
+	run_camera_and_rays(res = "400x300_medium",
+						file = out_side_400x300,
+						direction = "side",
+						index_select = True,
+						incr = 49)
 
 main()

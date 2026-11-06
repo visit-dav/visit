@@ -243,16 +243,6 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                           conduit::float64 *intensity_vals,
                                           conduit::float64 *depth_vals,
                                           int numBins);
-    void                      WriteBlueprintImagingPlane(conduit::Node &data_out,
-                                                         const std::string plane_name,
-                                                         const double planeWidth,
-                                                         const double planeHeight,
-                                                         const avtVector &center,
-                                                         const avtVector &left,
-                                                         avtVector &llc,
-                                                         avtVector &lrc,
-                                                         avtVector &ulc,
-                                                         avtVector &urc);
     void                      WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
                                                           const int x_coords_dim,
                                                           const int y_coords_dim,
@@ -310,6 +300,23 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                                      const double farDetectorHeight,
                                                      const avtVector &lrc_far,
                                                      const avtVector &left);
+    void                      WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
+                                                            // lower left corners
+                                                            const avtVector &llc_near,
+                                                            const avtVector &llc_image,
+                                                            const avtVector &llc_far,
+                                                            // lower right corners
+                                                            const avtVector &lrc_near,
+                                                            const avtVector &lrc_image,
+                                                            const avtVector &lrc_far,
+                                                            // upper right corners
+                                                            const avtVector &urc_near,
+                                                            const avtVector &urc_image,
+                                                            const avtVector &urc_far,
+                                                            // upper left corners
+                                                            const avtVector &ulc_near,
+                                                            const avtVector &ulc_image,
+                                                            const avtVector &ulc_far);
 #endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
