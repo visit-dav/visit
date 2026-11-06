@@ -1386,7 +1386,7 @@ To that end, these outputs come packaged with meshes representing the imaging pl
 Additionally, they also include meshes representing the rays that were used in the ray tracing.
 The following subsections discuss both of these in more detail.
 
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
 .. _Imaging_Planes:
 
@@ -1402,7 +1402,7 @@ Users can visualize the near, view, and far planes in physical space alongside t
 
 Including this in the output gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
 
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Camera`.
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
 See the example below, which is taken from the example in :ref:`Overview_of_Output`, but this time with only the imaging plane meshes fully realized: 
 
@@ -1524,7 +1524,7 @@ Next is the ``view_plane_topo``, which tells Conduit to treat the four points in
 Finally, we have the ``view_plane_field``, which has one value, "0.0". 
 This value doesn't mean anything; it is just used to tell Blueprint that the entire quad should be colored the same color.
 
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Camera`.
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
 
 .. _Rays_Meshes:
@@ -1612,7 +1612,7 @@ And here is the same view with 400x300 rays but with the ray opacity lowered.
 Hopefully it is clear at this point that there are multiple ways of looking at the rays that are used in the ray trace.
 
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays_Meshes`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays`.
 Now we will take a look at another example inspired by the example in :ref:`Overview_of_Output`, but this time with only the rays meshes fully realized: 
 
 ::
@@ -1726,7 +1726,7 @@ Of course, rendering the rays as one color is still an option.
 With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed to a Pseudocolor Plot of the ``mesh_ray_topo/ray_field``.
 
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays_Meshes`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays`.
 
 .. _Spatial_Extents_Meshes:
 
@@ -2202,12 +2202,12 @@ To make the output look like an x ray image, it is simple to change the color ta
 
    A visualization of the basic mesh output using the x ray color table.
 
-.. _Visualizing_the_Imaging_Planes:
+.. _Visualizing_the_Camera:
 
-Visualizing the Imaging Planes
-++++++++++++++++++++++++++++++
+Visualizing the Camera
+++++++++++++++++++++++
 
-To simply render the :ref:`Imaging_Planes` on top of your simulation data we will do the following:
+It is possible to render the :ref:`Camera`, or view frustum, on top of your simulation data:
 
 ::
 
@@ -2221,95 +2221,48 @@ To simply render the :ref:`Imaging_Planes` on top of your simulation data we wil
 
    # Then we want to go back to the output file and visualize the imaging planes
    ActivateDatabase("output.root")
-   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
-   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+   AddPlot("Mesh", "mesh_camera_topo")
    DrawPlots()
 
-.. figure:: images/XRay_Query_imaging_planes_uncolored_400x300_front.png
+.. figure:: images/TODO.png
 
-   A visualization of the input mesh along with the imaging planes.
+   A visualization of the input mesh along with the camera setup/view frustum.
 
-This will color the imaging planes all the same color.
-To make them distinct colors like in all the examples throughout this documentation, we can do the following:
+.. _Visualizing_the_Rays:
 
-::
+Visualizing the Rays
+++++++++++++++++++++
 
-   # Make the plot of the near plane active
-   SetActivePlots(1)
-   PseudocolorAtts = PseudocolorAttributes()
-   # We invert the color table so that it is a different color from the far plane
-   PseudocolorAtts.invertColorTable = 1
-   SetPlotOptions(PseudocolorAtts)
-
-   # Make the plot of the view plane active
-   SetActivePlots(2)
-   PseudocolorAtts = PseudocolorAttributes()
-   PseudocolorAtts.colorTableName = "Oranges"
-   PseudocolorAtts.invertColorTable = 1
-   PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-   # We lower the opacity so that the view plane does not obstruct our view of anything.
-   PseudocolorAtts.opacity = 0.7
-   SetPlotOptions(PseudocolorAtts)
-
-   # leave the far plane as is
-
-.. figure:: images/XRay_Query_imaging_planes_400x300_front.png
-
-   A visualization of the input mesh along with the imaging planes, where they have had their colors adjusted.
-
-.. _Visualizing_the_Rays_Meshes:
-
-Visualizing the Rays Meshes
-+++++++++++++++++++++++++++
-
-For the sake of visual clarity, as we visualize the :ref:`Rays_Meshes`, we will build on the imaging planes visualization from above.
-To visualize the ray corners, it is a simple matter of doing the following:
-
-::
-
-   # This plots the ray corners mesh
-   AddPlot("Mesh", "mesh_ray_corners_topo")
-
-   # Alternatively, we could plot the dummy field that is included, but 
-   # plotting just the mesh will make sure the plot is in black, which
-   # looks better with the colors we are using to paint the imaging planes.
-   # AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field")
-
-   DrawPlots()
-
-   # The next few lines of code make the rays appear thicker for visual clarity.
-   MeshAtts = MeshAttributes()
-   MeshAtts.lineWidth = 1
-   SetPlotOptions(MeshAtts)
-
-.. figure:: images/XRay_Query_imaging_planes_and_ray_corners_400x300_front.png
-
-   A visualization of the input mesh, the imaging planes, and the ray corners.
-
-Now we will visualize all of the rays.
+For the sake of visual clarity, as we visualize the :ref:`Rays_Meshes`, we will build on the camera visualization from above.
+To visualize the rays, it is a simple matter of doing the following:
 
 ::
 
    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
    DrawPlots()
 
-.. figure:: images/XRay_Query_imaging_planes_rays_and_ray_corners40x30_front.png
+.. figure:: images/TODO.png
 
-   A visualization of the input mesh, the imaging planes, the ray corners, and the rays.
+   A visualization of the input mesh, the camera/view frustum, and the rays.
 
-As discussed in the :ref:`Rays_Meshes` section, this picture is not very helpful, so we will reduce the opacity for greater visual clarity:
+As discussed in the :ref:`Rays_Meshes` section, this picture is not very helpful, so we will apply the :ref:`Index Select operator` to reduce the number of rays we are visualizing for greater visual clarity:
 
 ::
 
-   PseudocolorAtts = PseudocolorAttributes()
-   PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-   PseudocolorAtts.opacity = 0.5
-   SetPlotOptions(PseudocolorAtts)
+   AddOperator("IndexSelect", 0)
+   IndexSelectAtts = IndexSelectAttributes()
+   IndexSelectAtts.maxDim = IndexSelectAtts.ThreeD
+   IndexSelectAtts.dim = IndexSelectAtts.OneD
+   IndexSelectAtts.xAbsMax = -1
+   IndexSelectAtts.xMin = 0
+   IndexSelectAtts.xMax = -1
+   IndexSelectAtts.xIncr = incr
+   IndexSelectAtts.xWrap = 0
+   SetOperatorOptions(IndexSelectAtts, 0, 0)
 
-.. figure:: images/XRay_Query_imaging_planes_transparent_rays_and_ray_corners_40x30_front.png
+.. figure:: images/TODO.png
 
-   A visualization of the input mesh, the imaging planes, the ray corners, and the rays, with their opacity adjusted.
+   A visualization of the input mesh, the camera/view frustum, and the rays, with the index select operator applied to increase visual clarity.
 
 See the :ref:`Rays_Meshes` section for more tips for making sense of the rays.
 
@@ -2742,7 +2695,7 @@ Why is my image blank?
 Is the camera facing the right way?
 Are the near and far clipping planes in good positions?
 
-This line of questioning can be quickly answered by :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
+This line of questioning can be quickly answered by :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
 ::
 
@@ -2763,7 +2716,7 @@ This line of questioning can be quickly answered by :ref:`Visualizing_the_Imagin
    DrawPlots()
 
 Running this code using VisIt should result in renders like those shown in :ref:`Imaging_Planes_and_Rays_Meshes`.
-To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_the_Imaging_Planes`.
+To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_the_Camera`.
 
 .. figure:: images/xray_troubleshooting_2.png
 
@@ -2771,7 +2724,7 @@ To make the planes different colors, use VisIt's color table controls, or see :r
 
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
 Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
 Where are the rays intersecting my geometry?
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -2800,7 +2753,7 @@ We will want to visualize the :ref:`Rays_Meshes` on top of our input mesh.
 
 Running this code using VisIt should result in renders like those shown in :ref:`Rays_Meshes`.
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
 .. figure:: images/XRay_Query_imaging_planes_transparent_rays_and_ray_corners_40x30_front.png
 

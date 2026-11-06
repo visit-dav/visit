@@ -2553,44 +2553,39 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
     // calculate left vector by crossing normal with up vector
     avtVector left = viewUp.cross(normal);
 
-    auto calculate_corners = [](const double planeWidth,
-                                const double planeHeight,
-                                const avtVector &center,
-                                const avtVector &left,
-                                const avtVector &up,
-                                avtVector &llc,
-                                avtVector &lrc,
-                                avtVector &ulc,
-                                avtVector &urc)
+    auto calculate_corners = [center, left, viewUp](const double planeWidth,
+                                                    const double planeHeight,
+                                                    avtVector &llc,
+                                                    avtVector &lrc,
+                                                    avtVector &ulc,
+                                                    avtVector &urc)
     {
-        llc = center + (-1. * planeHeight) * up +     planeWidth     * left;
-        lrc = center + (-1. * planeHeight) * up + (-1. * planeWidth) * left;
-        ulc = center +     planeHeight     * up +     planeWidth     * left;
-        urc = center +     planeHeight     * up + (-1. * planeWidth) * left;
+        llc = center + (-1. * planeHeight) * viewUp +     planeWidth     * left;
+        lrc = center + (-1. * planeHeight) * viewUp + (-1. * planeWidth) * left;
+        ulc = center +     planeHeight     * viewUp +     planeWidth     * left;
+        urc = center +     planeHeight     * viewUp + (-1. * planeWidth) * left;
     };
 
     // near plane corners
     center = nearPlane * normal + focus;
     calculate_corners(nearWidth, nearHeight, center, left, viewUp,
                       llc_near, lrc_near, ulc_near, urc_near);
-
     // image plane corners
     center = focus;
     calculate_corners(viewWidth, viewHeight, center, left, viewUp,
                       llc_image, lrc_image, ulc_image, urc_image);
-
     // far plane corners
     center = farPlane * normal + focus;
     calculate_corners(farWidth, farHeight, center, left, viewUp,
                       llc_far, lrc_far, ulc_far, urc_far);
 
-    // write the ray meshes
-
+    // write the rays as a mesh
     WriteBlueprintRaysMesh(data_out,
         detectorWidth, detectorHeight, lrc_near,
         farDetectorWidth, farDetectorHeight, lrc_far,
         left);
 
+    // write the camera mesh
     WriteBlueprintViewFrustumMesh(data_out,
                                   // lower left corners
                                   llc_near, llc_image, llc_far,
