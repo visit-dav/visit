@@ -48,6 +48,11 @@ the **Properties** panel. When the **Lighting Window** is in preview
 mode, all lights are shown in the lighting panel and none of them can
 be modified.
 
+In preview mode, you can rotate the test sphere and the lights by
+clicking and dragging with the left mouse button in the lighting panel.
+If the view has been rotated too far, click the middle mouse button in
+the lighting panel to reset it to its original orientation.
+
 Choosing the active light
 """""""""""""""""""""""""
 
