@@ -110,7 +110,7 @@ The standard arguments have to do with the query execution, output, debugging, a
 |                          | Mesh in the Blueprint output.                |
 +--------------------------+----------------------------------------------+
 
-If using the :ref:`Conduit_Output`, many of these arguments will appear in the output in a few different places.
+If using the :ref:`Conduit_Blueprint_Output`, many of these arguments will appear in the output in a few different places.
 The ``vars`` will show up as ``abs_var_name`` and ``emis_var_name`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
 ``divide_emis_by_absorb`` shows up under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
 ``image_size`` shows up as ``num_x_pixels`` and ``num_y_pixels`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
@@ -223,7 +223,7 @@ For example, if the input array variables were composed of 2 scalar variables, t
 * output.03.bof
 * output.03.bov - ``path_length`` from the second variable of the array variable.
 
-The Conduit output types provide a plethora of extra features; to learn more see :ref:`Conduit_Output`.
+The Conduit output types provide a plethora of extra features; to learn more see :ref:`Conduit_Blueprint_Output`.
 
 .. _XRay_Units:
 
@@ -232,7 +232,7 @@ Units
 
 Units of various quantities can be passed through the query.
 None of these values are used in any calculations the query does to arrive at its output; all are optional.
-These units appear in the :ref:`Conduit_Output` in a few different places.
+These units appear in the :ref:`Conduit_Blueprint_Output` in a few different places.
 
 +--------------------------+----------------------------------------------+
 | *spatial_units*          | The units of the simulation in the x and y   |
@@ -583,7 +583,7 @@ was merely copied from the 3D tab on the View window. ::
 
    The resulting x ray image.
 
-The next example illustrates use of one of the :ref:`Conduit_Output` types.
+The next example illustrates use of one of the :ref:`Conduit_Blueprint_Output` types.
 
 ::
 
@@ -639,7 +639,7 @@ To look at the raw data from the query, we run this code:
    print(xrayout["domain_000000"])
 
 This yields the following data overview.
-See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit_Output`.
+See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit_Blueprint_Output`.
 
 ::
 
@@ -670,15 +670,15 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        num_x_pixels: 400
        num_y_pixels: 300
        ... ( skipped 2 children )
-       emis_var_name: "pa"
+       emis_var_name: "p"
        abs_units: "cm^2/g"
        emis_units: "GJ/cm^2/ster/ns/keV"
      xray_data: 
        detector_width: 8.80338743415454
        detector_height: 6.60254037884486
-       intensity_max: 1.96578788757324
+       intensity_max: 0.491446971893311
        intensity_min: 0.0
-       path_length_max: 519.428039550781
+       path_length_max: 129.857009887695
        path_length_min: 0.0
        image_topo_order_of_domain_variables: "xyz"
      domain_id: 0
@@ -688,7 +688,7 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        values: 
          x: [0, 1, 2, ..., 399, 400]
          y: [0, 1, 2, ..., 299, 300]
-         z: [0, 1, 2, 3, 4]
+         z: [0, 1]
        labels: 
          x: "width"
          y: "height"
@@ -700,10 +700,9 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spatial_coords: 
        type: "rectilinear"
        values: 
-         x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
-         y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
-         z: [0.0, 1.0, 2.0, 3.0, 4.0]
-       info: "Energy group bounds size mismatch: provided 7 bounds, but 5 in query results."
+         x: [-4.40169371707727, -4.37968524849188, -4.35767677990649, ..., 4.37968524849188, 4.40169371707727]
+         y: [-3.30127018942243, -3.27926172149295, -3.25725325356347, ..., 3.27926172149295, 3.30127018942243]
+         z: [2.7, 6.2]
        units: 
          x: "cm"
          y: "cm"
@@ -715,8 +714,8 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spatial_energy_reduced_coords: 
        type: "rectilinear"
        values: 
-         x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
-         y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
+         x: [-4.40169371707727, -4.37968524849188, -4.35767677990649, ..., 4.37968524849188, 4.40169371707727]
+         y: [-3.30127018942243, -3.27926172149295, -3.25725325356347, ..., 3.27926172149295, 3.30127018942243]
        units: 
          x: "cm"
          y: "cm"
@@ -726,31 +725,23 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spectra_coords: 
        type: "rectilinear"
        values: 
-         x: [0.0, 1.0, 2.0, 3.0, 4.0]
+         x: [2.7, 6.2]
        units: 
          x: "kev"
        labels: 
          x: "energy_group"
-       info: "Energy group bounds size mismatch: provided 7 bounds, but 5 in query results."
-     ... ( skipped 2 children )
-     far_plane_coords: 
-       type: "explicit"
-       values: 
-         x: [22.264973744318, -22.264973744318, -22.264973744318, 22.264973744318]
-         y: [-14.1987298105776, -14.1987298105776, 19.1987298105776, 19.1987298105776]
-         z: [35.0, 35.0, 35.0, 35.0]
-     ray_corners_coords: 
-       type: "explicit"
-       values: 
-         x: [4.40169371707727, 22.264973744318, -4.40169371707727, ..., 4.40169371707727, 22.264973744318]
-         y: [-0.801270189422432, -14.1987298105776, -0.801270189422432, ..., 5.80127018942243, 19.1987298105776]
-         z: [-15.0, 35.0, -15.0, ..., -15.0, 35.0]
      ray_coords: 
        type: "explicit"
        values: 
          x: [-4.39068948278457, -4.39068948278457, -4.39068948278457, ..., 22.2093113099572, 22.2093113099572]
          y: [-0.790265955457691, -0.768257487528208, -0.746249019598725, ..., 19.0317425124718, 19.1430673778756]
          z: [-15.0, -15.0, -15.0, ..., 35.0, 35.0]
+     camera_coords: 
+       type: "explicit"
+       values: 
+         x: [4.40169371707727, 13.3333337306976, 22.264973744318, ..., 0.0, 0.0]
+         y: [-0.801270189422432, -7.5, -14.1987298105776, ..., 2.5, 27.5]
+         z: [-15.0, 10.0, 35.0, ..., -15.0, -15.0]
    topologies: 
      image_topo: 
        coordset: "image_coords"
@@ -764,25 +755,18 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spectra_topo: 
        coordset: "spectra_coords"
        type: "rectilinear"
-     ... ( skipped 2 children )
-     far_plane_topo: 
-       type: "unstructured"
-       coordset: "far_plane_coords"
-       elements: 
-         shape: "quad"
-         connectivity: [0, 1, 2, 3]
-     ray_corners_topo: 
-       type: "unstructured"
-       coordset: "ray_corners_coords"
-       elements: 
-         shape: "line"
-         connectivity: [0, 1, 2, ..., 6, 7]
      ray_topo: 
        type: "unstructured"
        coordset: "ray_coords"
        elements: 
          shape: "line"
          connectivity: [0, 120000, 1, ..., 119999, 239999]
+     camera_topo: 
+       type: "unstructured"
+       coordset: "camera_coords"
+       elements: 
+         shape: "line"
+         connectivity: [0, 3, 3, ..., 13, 14]
    fields: 
      intensities: 
        topology: "image_topo"
@@ -808,24 +792,23 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        units: "path length metadata"
        values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
        strides: [1, 400, 120000]
-     ... ( skipped 6 children )
-     far_plane_field: 
-       topology: "far_plane_topo"
+     ... ( skipped 3 children )
+     path_length_spectra: 
+       topology: "spectra_topo"
        association: "element"
-       volume_dependent: "false"
-       values: 0.0
-     ray_corners_field: 
-       topology: "ray_corners_topo"
-       association: "element"
-       volume_dependent: "false"
-       values: [0.0, 0.0, 0.0, 0.0]
+       values: 10567747.3171375
      ray_field: 
        topology: "ray_topo"
+       association: "vertex"
+       volume_dependent: "false"
+       values: [0.0, 0.0, 0.0, ..., 1.0, 1.0]
+     camera_field: 
+       topology: "camera_topo"
        association: "element"
        volume_dependent: "false"
-       values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
+       values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
 
-The next thing we may want to do is to visualize an x ray image using VisIt_.
+The next thing we may want to do is visualize our resulting x ray image using VisIt_.
 The :ref:`Visualizing_with_VisIt` section goes into more detail on this subject, so for now we will only visualize the :ref:`Basic_Mesh_Output`.
 
 ::
@@ -851,10 +834,10 @@ Running this code yields the following image:
 
    The resulting x ray image, visualized using VisIt.
 
-.. _Conduit_Output:
+.. _Conduit_Blueprint_Output:
 
-Conduit Output
-~~~~~~~~~~~~~~
+Conduit Blueprint Output
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The `Conduit <https://llnl-conduit.readthedocs.io/en/latest/>`_ output types (see :ref:`Output_Types` for more information) provide advantages over the other output types and include additional metadata and topologies.
 These output types were added in VisIt_ 3.3.0, and many of the features discussed here have been added since then.
@@ -871,11 +854,11 @@ Alternatively, users could choose one of the image file output types to generate
 But, without additional post-processing, it was impossible to have both, unless the query was run twice.
 
 We added Conduit Blueprint output as an option to address these problems.
-Instead of many files coming out of the query, only one comes out.
+Instead of many files being produced by the query, only one is produced.
 This single output file presents the query output in multiple ways using well-described meshes.
-We also provide three supported Conduit output types: HDF5, YAML, and JSON.
+We also provide three supported Conduit Blueprint output types: HDF5, YAML, and JSON.
 The latter two are useful as they are human-readable options.
-Instead of having to choose between getting out raw data or getting out an image, Conduit Blueprint provides the best of both worlds.
+Instead of having to choose between getting out raw data or getting out an image, Conduit Blueprint provides both.
 All of the meshes provided in the output can be easily plotted in VisIt_ (see :ref:`Visualizing_with_VisIt`), and everything in the output (raw intensities and path lengths data, mesh data, metadata, etc.) can be digested in Python using Conduit's Python API (see :ref:`Introspecting_with_Python`).
 
 .. figure:: images/XRay_Query_input_mesh_alt_side.png
@@ -886,11 +869,11 @@ All of the meshes provided in the output can be easily plotted in VisIt_ (see :r
 
    The resulting x ray image from Conduit Blueprint output, visualized by plotting with VisIt.
 
-We have opted to enrich the Blueprint output (see :ref:`Basic_Mesh_Output`) with extensive metadata (see :ref:`XRay_Metadata`) as well as additional meshes (see :ref:`Imaging_Planes_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves`) to provide extra context and information to the user. 
-These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
+We have opted to enrich the Conduit Blueprint output (see :ref:`Basic_Mesh_Output`) with extensive metadata (see :ref:`XRay_Metadata`) as well as additional meshes (see :ref:`Camera_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves`) to provide extra context and information to the user. 
+These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query for use in post-processing/downstream tools.
 Blueprint makes it simple to put all of this information into one file, and just as simple to read that information back out and/or visualize.
 
-One of the main reasons for adding the Conduit output was to make it far easier to troubleshoot strange query results.
+One of the main reasons for adding the Conduit Blueprint output was to make it far easier to troubleshoot strange query results.
 See the :ref:`XRay_Troubleshooting` section to see a few examples of the kinds of questions the Conduit output can be used to answer.
 
 .. _Overview_of_Output:
@@ -898,8 +881,8 @@ See the :ref:`XRay_Troubleshooting` section to see a few examples of the kinds o
 Overview of Output
 """"""""""""""""""
 
-So what is actually in the `Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html>`_ output?
-The Blueprint output provides multiple Blueprint meshes, which are each in turn comprised of a coordinate set, a topology, and fields.
+So what is actually in the Conduit `Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html>`_ output?
+The Conduit Blueprint output provides multiple Blueprint meshes, which are each in turn comprised of a coordinate set, a topology, and fields.
 These all live within a Conduit tree, along with metadata.
 Using Conduit allows us to package everything in one place for ease of use.
 
@@ -927,13 +910,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     spectra_coords: 
       ...
-    near_plane_coords: 
-      ...
-    view_plane_coords: 
-      ...
-    far_plane_coords: 
-      ...
-    ray_corners_coords: 
+    camera_coords: 
       ...
     ray_coords: 
       ...
@@ -946,13 +923,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     spectra_topo: 
       ...
-    near_plane_topo: 
-      ...
-    view_plane_topo: 
-      ...
-    far_plane_topo: 
-      ...
-    ray_corners_topo: 
+    camera_topo: 
       ...
     ray_topo: 
       ...
@@ -973,13 +944,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     path_length_spectra: 
       ...
-    near_plane_field: 
-      ...
-    view_plane_field: 
-      ...
-    far_plane_field: 
-      ...
-    ray_corners_field: 
+    camera_field: 
       ...
     ray_field: 
       ...
@@ -987,7 +952,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
 There are multiple Blueprint meshes stored in this tree, as well as extensive metadata.
 Each piece of the Conduit output will be covered in more detail in ensuing parts of the documentation.
 To learn more about what lives under the ``state`` branch, see the :ref:`XRay_Metadata` section.
-To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Imaging_Planes_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves` sections.
+To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Camera_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves` sections.
 To extract this data with Python, see :ref:`Introspecting_with_Python_Overview`.
 
 .. _Basic_Mesh_Output:
@@ -998,9 +963,9 @@ Basic Mesh Output
 The most important piece of the Blueprint output is the actual ray trace result.
 We have taken the image data that comes out of the query and packaged it into a single Blueprint mesh.
 
-.. figure:: images/XRay_Query_image_intensities_xray_front.png
+.. figure:: images/xray_dimensions.png
 
-   The basic mesh output visualized using VisIt.
+   The basic mesh output visualized using VisIt, with annotations showing the dimensions.
 
 To visualize this mesh with VisIt, see :ref:`Visualizing_the_Basic_Mesh_Output`.
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Basic_Mesh_Output`.
@@ -1039,13 +1004,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       ...
     spectra_coords: 
       ...
-    near_plane_coords: 
-      ...
-    view_plane_coords: 
-      ...
-    far_plane_coords: 
-      ...
-    ray_corners_coords: 
+    camera_coords: 
       ...
     ray_coords: 
       ...
@@ -1059,13 +1018,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       ...
     spectra_topo: 
       ...
-    near_plane_topo: 
-      ...
-    view_plane_topo: 
-      ...
-    far_plane_topo: 
-      ...
-    ray_corners_topo: 
+    camera_topo: 
       ...
     ray_topo: 
       ...
@@ -1094,13 +1047,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       ...
     path_length_spectra: 
       ...
-    near_plane_field: 
-      ...
-    view_plane_field: 
-      ...
-    far_plane_field: 
-      ...
-    ray_corners_field: 
+    camera_field: 
       ...
     ray_field: 
       ...
@@ -1110,10 +1057,15 @@ The 3 constituent parts of the Blueprint mesh output are the coordinate set, ``i
 The ``image_coords`` represent the x and y coordinates of the 2D image, and the z dimension represents the energy group bounds.
 In the case of multiple energy groups, previously, the query would have output multiple images, one for each pair of energy group bounds.
 In the Blueprint output, this is simplified; rather than outputting multiple files, each containing one image, we have opted to "stack" the resulting images on top of one another.
-This is why the Blueprint output is a 3D mesh; this way, it can account for multiple energy groups, and place resulting images one on top of another.
+
+.. figure:: images/xray_layers.png
+
+   A graphic showing how multiple energy group result images are combined into a block.
+
+This is why the Blueprint output is a 3D mesh; this way, it can account for multiple energy groups, and place resulting images on top of one another.
 Also included in the ``image_coords`` are labels and units for disambiguation purposes.
 
-The ``image_topo`` exists to tell Blueprint that the rectilinear coordinate data stored in ``image_coords`` can be interpreted as a rectilinear grid.
+The ``image_topo`` exists to tell Conduit Blueprint that the rectilinear coordinate data stored in ``image_coords`` can be interpreted as a rectilinear grid.
 
 The fields, ``intensities`` and ``path_length``, can be thought of as containers for the actual image data.
 This image data is stored in 1-dimensional arrays; for information on reshaping those into 3-dimensions see the following from the :ref:`XRay_Troubleshooting` section: :ref:`XRay_blueprint_1d_to_3d_reshape`
@@ -1193,7 +1145,7 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
     ...
 
 There are three top-level items: ``time``, ``cycle``, and ``domain_id``.
-The fact that the ``domain_id`` is present is a side effect of Conduit; all of the output data is single domain and this value has nothing to do with the query.
+The fact that the ``domain_id`` is present is a side effect of Conduit Blueprint; all of the output data is single domain and this string value has nothing to do with the query.
 In addition to the top level items, there are three categories of metadata: :ref:`View_Parameters`, :ref:`Query_Parameters`, and :ref:`Other_Metadata`.
 The following subsections discuss each of these categories in more detail.
 
@@ -1411,14 +1363,14 @@ An example: ::
 
 The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`XRay_Troubleshooting` or sanity checks that the output matches expectations. 
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
-In that case, the :ref:`Imaging_Planes_and_Rays_Meshes` section may be of some use.
+In that case, the :ref:`Camera_and_Rays_Meshes` section may be of some use.
 
 To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python_Metadata`.
 
-.. _Imaging_Planes_and_Rays_Meshes:
+.. _Camera_and_Rays_Meshes:
 
-Imaging Planes and Rays Meshes
-++++++++++++++++++++++++++++++
+Camera and Rays Meshes
+++++++++++++++++++++++
 
 One of our goals with the Conduit output types (see :ref:`Output_Types` for more information) is to provide rich, easy to understand information about the query to facilitate usability.
 To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
@@ -2056,7 +2008,7 @@ To visualize this mesh with VisIt, see :ref:`Visualizing_the_1D_Spectra_Curves`.
 Quick Results
 """""""""""""
 
-One of the advantages of using :ref:`Conduit_Output` is the ability to view quick results that give an overview of the output data.
+One of the advantages of using :ref:`Conduit_Blueprint_Output` is the ability to view quick results that give an overview of the output data.
 In this section, we will briefly discuss three of those quick results.
 Each of these have been discussed individually in other sections but not all together.
 
@@ -2169,8 +2121,8 @@ This special case will trigger a warning message if VisIt_ is run with ``-debug 
 Visualizing with VisIt
 """"""""""""""""""""""
 
-One of the advantages of using one of the :ref:`Conduit_Output` types is that it is easy to both look at the raw data and generate x ray images.
-This section will cover generating x ray images using VisIt as well as visualizing the other components of the :ref:`Conduit_Output`.
+One of the advantages of using one of the :ref:`Conduit_Blueprint_Output` types is that it is easy to both look at the raw data and generate x ray images.
+This section will cover generating x ray images using VisIt as well as visualizing the other components of the :ref:`Conduit_Blueprint_Output`.
 
 The later Python code examples assume that the following has already been run:
 
@@ -2407,7 +2359,7 @@ So, instead of adding a Pseudocolor plot, we will add a Curve plot instead.
 Introspecting with Python
 """""""""""""""""""""""""
 
-We have covered visualizing every component of the :ref:`Conduit_Output` in the :ref:`Visualizing_with_VisIt` section; now we will demonstrate how to access the raw data using Python.
+We have covered visualizing every component of the :ref:`Conduit_Blueprint_Output` in the :ref:`Visualizing_with_VisIt` section; now we will demonstrate how to access the raw data using Python.
 
 .. _Introspecting_with_Python_Overview:
 
@@ -2754,7 +2706,7 @@ This line of questioning can be quickly answered by :ref:`Visualizing_the_Camera
 
    DrawPlots()
 
-Running this code using VisIt should result in renders like those shown in :ref:`Imaging_Planes_and_Rays_Meshes`.
+Running this code using VisIt should result in renders like those shown in :ref:`Camera_and_Rays_Meshes`.
 To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_the_Camera`.
 
 .. figure:: images/xray_troubleshooting_2.png
