@@ -1966,6 +1966,9 @@ class DebugMallocDebugger(Debugger):
 #   Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
 #   Remove argumnents related to hardware accelerated parallel rendering.
 #
+#   Justin Privitera, Wed Nov  4 15:37:10 PST 2026
+#   Allow launcher-generated arguments to be inserted before "-s script.py".
+#
 ###############################################################################
 
 class GeneralArguments(object):
@@ -2102,7 +2105,10 @@ class GeneralArguments(object):
             self.osmesa = True
         return n
 
-    def ProduceArguments(self, parallel):
+    def ProduceArguments(self, parallel, pre_script_args = None):
+        if pre_script_args == None:
+            pre_script_args = []
+
         args = []
         if self.dv:
             args = args + ["-dv"]
@@ -2121,6 +2127,7 @@ class GeneralArguments(object):
             nowin_not_added = 0
 
         args = args + self.arguments
+        args = args + pre_script_args
 
         if self.scriptfile != None:
             args = args + ["-s", self.scriptfile]
@@ -2146,6 +2153,12 @@ class GeneralArguments(object):
         args = args + self.scriptarguments
 
         return args
+
+    def AddArgumentsBeforeScript(self, args, extra_args):
+        for i in range(len(args)):
+            if args[i] == "-s":
+                return args[:i] + extra_args + args[i:]
+        return args + extra_args
 
     def GetIPAddress(self, hostname):
         if not self.hosttoip:
@@ -2947,6 +2960,9 @@ class MainLauncher(object):
     #   Cyrus Harrison, Fri Feb  1 17:02:02 PST 2013
     #   Use mpiexe on OSX 10.6 and beyond.
     #
+    #   Justin Privitera, Wed Nov  4 15:37:10 PST 2026
+    #   Default -np to 1 when -nn is specified without -np.
+    #
     ############################################################################
 
     def ConsistencyCheck(self):
@@ -2962,6 +2978,9 @@ class MainLauncher(object):
                 self.parallelArgs.launch = "mpiexec"
             else:
                 self.parallelArgs.launch = "mpirun"
+
+        if self.parallelArgs.nn != None and self.parallelArgs.np == None:
+            self.parallelArgs.np = "1"
 
     ############################################################################
     # Method: SourceEnvScript
@@ -3840,6 +3859,10 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Unset the Python environment variables if using flux to
     #   avoid conflicts between our Python and the system Python.
     #
+    #   Justin Privitera, Wed Nov  4 15:37:10 PST 2026
+    #   Keep generated VisIt arguments before "-s script.py" so script arguments
+    #   remain script-only.
+    #
     ############################################################################
 
     def Launch(self):
@@ -3925,10 +3948,10 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                     self.error("Can't launch using %s. %s" % (self.parallelArgs.launch, e.strerror))
         else:
             args = [os.path.join(self.visitbindir, self.generalArgs.exe_name)]
-            args = args + self.generalArgs.ProduceArguments(0)
-            args = args + self.generalArgs.ConnectionArguments(0)
+            pre_script_args = self.generalArgs.ConnectionArguments(0)
             if self.generalArgs.exe_name in self.clientPrograms:
-                args = args + self.parallelArgs.ProduceArguments(1)
+                pre_script_args = pre_script_args + self.parallelArgs.ProduceArguments(1)
+            args = args + self.generalArgs.ProduceArguments(0, pre_script_args)
 
             # Save the first argument.
             arg0 = args[0]
@@ -3942,7 +3965,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 # we rely on OSAScript to run a new console.
                 ret = 0
             elif self.NoRun():
-                args = args + ["-dir", self.visithome]
+                args = self.generalArgs.AddArgumentsBeforeScript(args, ["-dir", self.visithome])
                 self.message("# SET ENVIRONMENT VARIABLES:", file=sys.stdout)
                 self.PrintEnvironmentShell("csh" in GETENV("SHELL"))
                 self.message("\n# RUN USING:\n" + self.QuoteArguments(args) + "\n", file=sys.stdout)
