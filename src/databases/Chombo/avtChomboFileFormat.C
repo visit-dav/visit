@@ -56,7 +56,6 @@
 // versions of HDF5 before 1.8 and ensures correct compilation with
 // version 1.8 and thereafter. When, and if, the HDF5 code in this file
 // is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
 #include <visit-hdf5.h>
 using     std::string;
@@ -396,6 +395,12 @@ add_var(hid_t loc_id, const char *varname, void *opData)
   return 0;
 }
 
+static herr_t
+add_var_literate(hid_t loc_id, const char *varname, const H5L_info_t *, void *opData)
+{
+    return add_var(loc_id, varname, opData);
+}
+
 //
 // Purpose: Open HDF5 file with close degree semi
 //
@@ -509,10 +514,10 @@ avtChomboFileFormat::InitializeReader(void)
     // Get current automatic stack traversal function to re-enable it later and
     // disable HDF5's automatic error printing
     //
-    H5E_auto_t h5e_autofunc;
+    H5E_auto2_t h5e_autofunc;
     void* h5e_clientdata;
-    H5Eget_auto(&h5e_autofunc, &h5e_clientdata);
-    H5Eset_auto(0, 0);
+    H5Eget_auto2(H5E_DEFAULT, &h5e_autofunc, &h5e_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     //
     // Open file
@@ -529,7 +534,7 @@ avtChomboFileFormat::InitializeReader(void)
     // determine number of dimensions, which we need to know for reading origin
     // and aspect ratio information.
     //
-    hid_t global = H5Gopen(file_handle, "Chombo_global");
+    hid_t global = H5Gopen2(file_handle, "Chombo_global", H5P_DEFAULT);
     if (global < 0)
     {
         H5Fclose(file_handle);
@@ -556,7 +561,7 @@ avtChomboFileFormat::InitializeReader(void)
     //
     // Most of the global info is stored in the "/" group.
     //
-    hid_t slash = H5Gopen(file_handle, "/");
+    hid_t slash = H5Gopen2(file_handle, "/", H5P_DEFAULT);
     if (slash < 0)
     {
         H5Fclose(file_handle);
@@ -846,7 +851,7 @@ avtChomboFileFormat::InitializeReader(void)
     //
     // Look for epxressions
     //
-    hid_t expressionsGroup = H5Gopen(file_handle, "/Expressions");
+    hid_t expressionsGroup = H5Gopen2(file_handle, "/Expressions", H5P_DEFAULT);
     if (expressionsGroup > 0)
     {
         for (int i=0; i<H5Aget_num_attrs(expressionsGroup); ++i)
@@ -927,14 +932,14 @@ avtChomboFileFormat::InitializeReader(void)
     {
         char name[1024];
         snprintf(name, 1024, "level_%d", i);
-        hid_t level = H5Gopen(file_handle, name);
+        hid_t level = H5Gopen2(file_handle, name, H5P_DEFAULT);
         if (level < 0)
         {
             EXCEPTION1(InvalidDBTypeException, "Does not contain all "
                                                "refinement levels.");
         }
 
-        hid_t boxes = H5Dopen(level, "boxes");
+        hid_t boxes = H5Dopen2(level, "boxes", H5P_DEFAULT);
         if (boxes < 0)
         {
             EXCEPTION1(InvalidDBTypeException, "Does not contain \"boxes\".");
@@ -1137,8 +1142,8 @@ avtChomboFileFormat::InitializeReader(void)
         char name[1024];
         snprintf(name, 1024, "level_%d", i);
 
-        hid_t level = H5Gopen(file_handle, name);
-        hid_t boxes = H5Dopen(level, "boxes");
+        hid_t level = H5Gopen2(file_handle, name, H5P_DEFAULT);
+        hid_t boxes = H5Dopen2(level, "boxes", H5P_DEFAULT);
         hid_t boxspace = H5Dget_space(boxes);
         hsize_t dims[1], maxdims[1];
         H5Sget_simple_extent_dims(boxspace, dims, maxdims);
@@ -1251,7 +1256,7 @@ avtChomboFileFormat::InitializeReader(void)
 
         delete [] boxes_buff;
 
-        hid_t data_atts = H5Gopen(level, "data_attributes");
+        hid_t data_atts = H5Gopen2(level, "data_attributes", H5P_DEFAULT);
         if (data_atts >= 0)
         {
             hid_t ghost_id = H5Aopen_name(data_atts, "outputGhost");
@@ -1367,7 +1372,17 @@ avtChomboFileFormat::InitializeReader(void)
     // Look for particles
     //
     std::list<std::string> varList;
-    if (H5Giterate(file_handle, "/particles", 0, add_var, &varList) == 0)
+    herr_t particleIterStatus = -1;
+    hid_t particlesGroup = H5Gopen2(file_handle, "/particles", H5P_DEFAULT);
+    if (particlesGroup >= 0)
+    {
+        hsize_t idx = 0;
+        particleIterStatus = H5Literate(particlesGroup, H5_INDEX_NAME, H5_ITER_INC, &idx,
+            add_var_literate, &varList);
+        H5Gclose(particlesGroup);
+    }
+
+    if (particleIterStatus >= 0)
     {
         bool hasXPos = false;
         bool hasYPos = false;
@@ -1451,7 +1466,7 @@ avtChomboFileFormat::InitializeReader(void)
                 hid_t mapping_file_handle = OpenHDF5File(mappingFilename.c_str());
                 if (mapping_file_handle > 0)
                 {
-                    hid_t slash = H5Gopen(mapping_file_handle, "/");
+                    hid_t slash = H5Gopen2(mapping_file_handle, "/", H5P_DEFAULT);
                     if (slash > 0)
                     {
                         hid_t ncomponents_id = H5Aopen_name(slash, "num_components");
@@ -1506,7 +1521,7 @@ avtChomboFileFormat::InitializeReader(void)
     //
     // Re-enable HDF5's automatic diagnostic output
     //
-    H5Eset_auto(h5e_autofunc, h5e_clientdata);
+    H5Eset_auto2(H5E_DEFAULT, h5e_autofunc, h5e_clientdata);
 }
 
 
@@ -2733,7 +2748,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         double *yPos = 0;
         double *zPos = 0;
 
-        hid_t dataSet = H5Dopen(file_handle, datasetname);
+        hid_t dataSet = H5Dopen2(file_handle, datasetname, H5P_DEFAULT);
         if ( dataSet > 0)
         {
             hid_t dataSpace = H5Dget_space(dataSet);
@@ -2762,7 +2777,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         }
 
         datasetname[strlen(datasetname)-1] = 'y';
-        dataSet = H5Dopen(file_handle, datasetname);
+        dataSet = H5Dopen2(file_handle, datasetname, H5P_DEFAULT);
         if ( dataSet > 0)
         {
             hid_t dataSpace = H5Dget_space(dataSet);
@@ -2811,7 +2826,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         if (dimension > 2)
         {
             datasetname[strlen(datasetname)-1] = 'z';
-            dataSet = H5Dopen(file_handle, datasetname);
+            dataSet = H5Dopen2(file_handle, datasetname, H5P_DEFAULT);
             if ( dataSet > 0)
             {
                 hid_t dataSpace = H5Dget_space(dataSet);
@@ -2872,7 +2887,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                 particleVarnames.begin(), particleVarnames.end(), "polymer_id"
                      ) != particleVarnames.end())
         {
-            dataSet = H5Dopen(file_handle, "/particles/particle_nid");
+            dataSet = H5Dopen2(file_handle, "/particles/particle_nid", H5P_DEFAULT);
 
             if ( dataSet > 0)
             {
@@ -2893,7 +2908,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                 H5Dclose(dataSet);
             }
 
-            dataSet = H5Dopen(file_handle, "/particles/polymer_id");
+            dataSet = H5Dopen2(file_handle, "/particles/polymer_id", H5P_DEFAULT);
             if ( dataSet > 0)
             {
                 hid_t dataSpace = H5Dget_space(dataSet);
@@ -3187,20 +3202,20 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
                         "it is not even an HDF5 file.");
             }
         }
-        hid_t level_id = H5Gopen(file_handle, name);
+        hid_t level_id = H5Gopen2(file_handle, name, H5P_DEFAULT);
         if (level_id < 0)
         {
             EXCEPTION1(InvalidFilesException, "Chombo file does not contain group for requested level.");
         }
 
-        hid_t data = H5Dopen(level_id, "data:datatype=0");
+        hid_t data = H5Dopen2(level_id, "data:datatype=0", H5P_DEFAULT);
         if (data < 0)
         {
             EXCEPTION1(InvalidFilesException, "Level does not contain data.");
         }
 
         hid_t space_id = H5Dget_space(data);
-        hid_t rank     = H5Sget_simple_extent_ndims(space_id);
+        int rank     = H5Sget_simple_extent_ndims(space_id);
         if (rank != 1)
         {
             EXCEPTION1(InvalidFilesException, "Rank of dataspace differs from one.");
@@ -3307,7 +3322,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
             std::strcpy(datasetname, particlesGroupName);
             std::strcat(datasetname, varname);
             hsize_t nParticles = 0;
-            hid_t dataSet = H5Dopen(file_handle, datasetname);
+            hid_t dataSet = H5Dopen2(file_handle, datasetname, H5P_DEFAULT);
             delete[] datasetname;
             if ( dataSet > 0)
             {
@@ -3538,20 +3553,20 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
                             "it is not even an HDF5 file.");
                 }
             }
-            hid_t level_id = H5Gopen(file_handle, name);
+            hid_t level_id = H5Gopen2(file_handle, name, H5P_DEFAULT);
             if (level_id < 0)
             {
                 EXCEPTION1(InvalidFilesException, "Chombo file does not contain group for requested level.");
             }
 
-            hid_t data = H5Dopen(level_id, "data:datatype=0");
+            hid_t data = H5Dopen2(level_id, "data:datatype=0", H5P_DEFAULT);
             if (data < 0)
             {
                 EXCEPTION1(InvalidFilesException, "Level does not contain data.");
             }
 
             hid_t space_id = H5Dget_space(data);
-            hid_t rank     = H5Sget_simple_extent_ndims(space_id);
+            int rank     = H5Sget_simple_extent_ndims(space_id);
             if (rank != 1)
             {
                 EXCEPTION1(InvalidFilesException, "Rank of dataspace differs from one.");

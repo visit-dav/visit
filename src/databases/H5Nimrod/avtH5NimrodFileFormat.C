@@ -104,7 +104,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
 
     // Init HDF5 and turn off error message printing.
     H5open();
-    H5Eset_auto( NULL, NULL );
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 
     // Check for a valid H5NIMROD file
     if( H5Fis_hdf5( filename ) < 0 )
@@ -116,7 +116,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     hsize_t i, npoints;
 
     // Read attributes
-    root_id = H5Gopen (file_id, "/");
+    root_id = H5Gopen2(file_id, "/", H5P_DEFAULT);
 
     if ( root_id < 0 )
     {
@@ -135,7 +135,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     }
 
     debug5 << "time: " << time << std::endl;
-    hid_t grid_id = H5Gopen (file_id, "/GRID");
+    hid_t grid_id = H5Gopen2(file_id, "/GRID", H5P_DEFAULT);
     if (grid_id < 0)
     {
         H5Gclose(root_id);
@@ -223,7 +223,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
 
             nsteps++;
 
-            group_id = H5Gopen (root_id, name1);
+            group_id = H5Gopen2(root_id, name1, H5P_DEFAULT);
 
             memset( stepnumber, 0, MAXLENGTH );
 
@@ -441,7 +441,7 @@ avtH5NimrodFileFormat::GetMesh (int timestate, const char *meshname)
                   "File '" + fname + "' can not be opened" );
     }
 
-    hid_t grid_id = H5Gopen (file, "/GRID");
+    hid_t grid_id = H5Gopen2(file, "/GRID", H5P_DEFAULT);
     vtkpoints->SetNumberOfPoints (npoints);
 
     float *Xcoord;
@@ -512,8 +512,8 @@ avtH5NimrodFileFormat::GetVar (int timestate, const char *varname)
     }
 
     hid_t root_id, group_id;
-    root_id = H5Gopen (file, "/");
-    group_id = H5Gopen (root_id, stepnames[timestate].c_str ());
+    root_id = H5Gopen2(file, "/", H5P_DEFAULT);
+    group_id = H5Gopen2(root_id, stepnames[timestate].c_str (), H5P_DEFAULT);
 
     float *var;
     hsize_t npoints = 1;
@@ -572,8 +572,8 @@ avtH5NimrodFileFormat::GetVectorVar (int timestate, const char *varname)
     }
 
     hid_t root_id, group_id;
-    root_id = H5Gopen (file, "/");
-    group_id = H5Gopen (root_id, stepnames[timestate].c_str ());
+    root_id = H5Gopen2(file, "/", H5P_DEFAULT);
+    group_id = H5Gopen2(root_id, stepnames[timestate].c_str (), H5P_DEFAULT);
     int num_comp = H5NIMROD_get_num_objects_matching_pattern (group_id,
             varname,
             H5G_DATASET,
@@ -590,7 +590,7 @@ avtH5NimrodFileFormat::GetVectorVar (int timestate, const char *varname)
     for (int idx = 0; idx < num_comp; idx++)
         comp[idx] = (float *) malloc (sizeof (float) * npoints);
 
-    hid_t vector_id = H5Gopen (group_id, varname);
+    hid_t vector_id = H5Gopen2(group_id, varname, H5P_DEFAULT);
     char name[MAXLENGTH];
     int len_of_name = MAXLENGTH;
     for (int idx = 0; idx < num_comp; idx++)

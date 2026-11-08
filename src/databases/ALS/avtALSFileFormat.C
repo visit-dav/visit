@@ -30,25 +30,18 @@ using     std::string;
 
 
 /// iterate over groups.
-herr_t group_info(hid_t loc_id, const char *name, void *opdata)
+static herr_t
+group_info(hid_t loc_id, const char *name, const H5L_info_t *, void *opdata)
 {
     avtALSFileFormat* format = (avtALSFileFormat*)opdata;
 
-    H5G_stat_t statbuf;
+    H5O_info_t objInfo;
+    if (H5Oget_info_by_name(loc_id, name, &objInfo, H5P_DEFAULT) < 0)
+        return -1;
 
-    /*
-     * Get type of the object and display its name and type.
-     * The name of the object is passed to this function by
-     * the Library. Some magic :-)
-     */
-    H5Gget_objinfo(loc_id, name, 0, &statbuf);
-    switch (statbuf.type) {
-    case H5G_GROUP:
-         format->SetGroupName(name);
-         break;
-    default:
-         printf(" Unable to identify an object ");
-    }
+    if (objInfo.type == H5O_TYPE_GROUP)
+        format->SetGroupName(name);
+
     return 0;
  }
 
@@ -163,12 +156,12 @@ avtALSFileFormat::InitializeTomoHeader(hid_t file) {
 
     m_groupName = fraction_data ? fraction_data_str : four_d_data_str;
 
-    hid_t dataset_id = H5Dopen(file, m_groupName.c_str(), H5P_DEFAULT);
+    hid_t dataset_id = H5Dopen2(file, m_groupName.c_str(), H5P_DEFAULT);
     
     hsize_t dims[4] = {0,0,0,0};
     hid_t filespace = H5Dget_space(dataset_id);
-    hid_t rank      = H5Sget_simple_extent_ndims(filespace);
-    hid_t status_n  = H5Sget_simple_extent_dims(filespace, dims, NULL);
+    int rank      = H5Sget_simple_extent_ndims(filespace);
+    int status_n  = H5Sget_simple_extent_dims(filespace, dims, NULL);
 
     std::cout << dims[0] << " " << dims[1] << " " << dims[2] << " " << dims[3] << std::endl;
 
@@ -278,8 +271,16 @@ avtALSFileFormat::InitializeHeader() {
     file = H5Fopen (m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
 
     /// main group seems to be based on filename..
+    hid_t rootGroup = H5Gopen2(file, "/", H5P_DEFAULT);
+    if (rootGroup < 0)
+    {
+        status = H5Fclose(file);
+        return false;
+    }
 
-    H5Giterate(file, "/", NULL, group_info, this);
+    hsize_t idx = 0;
+    H5Literate(rootGroup, H5_INDEX_NAME, H5_ITER_INC, &idx, group_info, this);
+    H5Gclose(rootGroup);
 
     /// if group is not set..
     if(m_groupName.length() == 0) {
@@ -307,10 +308,10 @@ avtALSFileFormat::GetTomoDataSet(hid_t file) {
     std::cout << m_groupName << " " << m_width << " " << m_height << " " << m_slices << std::endl;
 
     hsize_t     dims_out[4];           /* dataset dimensions */
-    hid_t dataset_id = H5Dopen(file, m_groupName.c_str(), H5P_DEFAULT);
+    hid_t dataset_id = H5Dopen2(file, m_groupName.c_str(), H5P_DEFAULT);
     hid_t dataspace = H5Dget_space(dataset_id);
-    hid_t rank      = H5Sget_simple_extent_ndims(dataspace);
-    hid_t status_n  = H5Sget_simple_extent_dims(dataspace, dims_out, NULL);
+    int rank      = H5Sget_simple_extent_ndims(dataspace);
+    int status_n  = H5Sget_simple_extent_dims(dataspace, dims_out, NULL);
 
     (void) rank;
     (void) status_n;
@@ -415,14 +416,14 @@ avtALSFileFormat::GetStandardDataSet(hid_t file) {
     vtkFloatArray* array = vtkFloatArray::New();
 
     /// default STANDARD
-    hid_t group_id = H5Gopen(file, m_groupName.c_str(), H5P_DEFAULT);
+    hid_t group_id = H5Gopen2(file, m_groupName.c_str(), H5P_DEFAULT);
 
 
     if(PAR_Size() == 1) {
         array->SetNumberOfTuples(m_width * m_height * m_slices);
         for(size_t i = 0; i < m_datasetNames.size(); ++i)
         {
-            hid_t dataset_id = H5Dopen(group_id, m_datasetNames[i].c_str(), H5P_DEFAULT);
+            hid_t dataset_id = H5Dopen2(group_id, m_datasetNames[i].c_str(), H5P_DEFAULT);
 
             ///dim1 should be 1, dim2 and dim3 is the size of the dataset
             H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT,array->GetVoidPointer(i*m_width*m_height));
@@ -444,7 +445,7 @@ avtALSFileFormat::GetStandardDataSet(hid_t file) {
 
         for(size_t i = m_start, j = 0; i < m_end; ++i, ++j)
         {
-            hid_t dataset_id = H5Dopen(group_id, m_datasetNames[i].c_str(), H5P_DEFAULT);
+            hid_t dataset_id = H5Dopen2(group_id, m_datasetNames[i].c_str(), H5P_DEFAULT);
 
             ///dim1 should be 1, dim2 and dim3 is the size of the dataset
             H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT,array->GetVoidPointer(j*m_width*m_height));

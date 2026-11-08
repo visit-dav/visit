@@ -89,7 +89,7 @@ avtPFLOTRANFileFormat::avtPFLOTRANFileFormat(const char *fname):
     oldFileNeedingCoordFixup = false;
 
     // Turn off HDF5 error messages to the terminal.
-    H5Eset_auto(NULL, NULL);
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 }
 
 // ****************************************************************************
@@ -237,14 +237,14 @@ avtPFLOTRANFileFormat::LoadFile(void)
     }
 
     // Check more mesh structure
-    hid_t coordsGID = H5Gopen(fileID, "Coordinates");
+    hid_t coordsGID = H5Gopen2(fileID, "Coordinates", H5P_DEFAULT);
     if (coordsGID >= 0)
     {
         // We have coordinates; it's structured.
         // Pull out the mesh dimensions while we're at it.
         for (int dim=0;dim<3;dim++)
         {
-            dimID[dim] = H5Dopen(coordsGID, coordNames[dim].c_str());
+            dimID[dim] = H5Dopen2(coordsGID, coordNames[dim].c_str(), H5P_DEFAULT);
             if (dimID[dim] < 0)
             {
                 H5Gclose(coordsGID);
@@ -278,7 +278,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
     else
     {
         // No coordinates.  could it be an unstructured grid?
-        hid_t domainGID = H5Gopen(fileID, "Domain");
+        hid_t domainGID = H5Gopen2(fileID, "Domain", H5P_DEFAULT);
         if (domainGID < 0)
         {
             H5Fclose(fileID);
@@ -286,8 +286,8 @@ avtPFLOTRANFileFormat::LoadFile(void)
             EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have a top-level Coordinates or Domain group.");
         }
 
-        cellsID = H5Dopen(domainGID, "Cells");
-        vertsID = H5Dopen(domainGID, "Vertices");
+        cellsID = H5Dopen2(domainGID, "Cells", H5P_DEFAULT);
+        vertsID = H5Dopen2(domainGID, "Vertices", H5P_DEFAULT);
         if (cellsID < 0 || vertsID < 0)
         {
             if (cellsID >= 0)
@@ -655,7 +655,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
     md->Add(mesh);
 
     // Look in the timestep for the list of variables.
-    hid_t timeGID = H5Gopen(fileID, times[timeState].second.c_str());
+    hid_t timeGID = H5Gopen2(fileID, times[timeState].second.c_str(), H5P_DEFAULT);
     hsize_t nObjs;
     H5Gget_num_objs(timeGID, &nObjs);
     for(size_t i=0;i<nObjs;i++)
@@ -682,7 +682,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
             continue; // Don't add vectors components as scalars.
         }
 
-        hid_t ds = H5Dopen(timeGID, name);
+        hid_t ds = H5Dopen2(timeGID, name, H5P_DEFAULT);
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
         if ((unstructured && ndims != 1) ||
@@ -1063,8 +1063,8 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
     {
         // it's much simpler; we have no decomposition to worry about
 
-        hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
-        hid_t ds = H5Dopen(ts, varname);
+        hid_t ts = H5Gopen2(fileID, times[timestate].second.c_str(), H5P_DEFAULT);
+        hid_t ds = H5Dopen2(ts, varname, H5P_DEFAULT);
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
         if (ndims != 1)
@@ -1116,8 +1116,8 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
     else
     {
         // Read the dataset from the file.
-        hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
-        hid_t ds = H5Dopen(ts, varname);
+        hid_t ts = H5Gopen2(fileID, times[timestate].second.c_str(), H5P_DEFAULT);
+        hid_t ds = H5Dopen2(ts, varname, H5P_DEFAULT);
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
         if (ndims != 3)
@@ -1254,12 +1254,12 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
 
     if (unstructured)
     {
-        hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
+        hid_t ts = H5Gopen2(fileID, times[timestate].second.c_str(), H5P_DEFAULT);
         vtkDoubleArray *array = NULL;
         double *out = NULL;
         for(int comp=0; comp<3; comp++)
         {
-            hid_t ds = H5Dopen(ts, varnames[comp].c_str());
+            hid_t ds = H5Dopen2(ts, varnames[comp].c_str(), H5P_DEFAULT);
             hid_t dsSpace = H5Dget_space(ds);
             int ndims = H5Sget_simple_extent_ndims(dsSpace);
             if (ndims != 1)
@@ -1321,12 +1321,12 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
     }
     else
     {
-        hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
+        hid_t ts = H5Gopen2(fileID, times[timestate].second.c_str(), H5P_DEFAULT);
         vtkDoubleArray *array = NULL;
         double *out = NULL;
         for(int comp=0; comp<3; comp++)
         {
-            hid_t ds = H5Dopen(ts, varnames[comp].c_str());
+            hid_t ds = H5Dopen2(ts, varnames[comp].c_str(), H5P_DEFAULT);
             hid_t dsSpace = H5Dget_space(ds);
             int ndims = H5Sget_simple_extent_ndims(dsSpace);
             if (ndims != 3)
@@ -1464,8 +1464,8 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
         LoadFile();
 
         // Read the dataset from the file.
-        hid_t ts = H5Gopen(fileID, times[timestep].second.c_str());
-        hid_t ds = H5Dopen(ts, var);
+        hid_t ts = H5Gopen2(fileID, times[timestep].second.c_str(), H5P_DEFAULT);
+        hid_t ds = H5Dopen2(ts, var, H5P_DEFAULT);
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
         int dims[3];
