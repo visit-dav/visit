@@ -2287,6 +2287,11 @@ function apply_vtk_patch
            return 1
         fi
 
+        apply_vtk95_vtkopenfoamreader_patch
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
+
         # should submit a ticket to kitware
         apply_vtk95_vtkRectilinearGridReader_patch
         if [[ $? != 0 ]] ; then
