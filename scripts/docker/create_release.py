@@ -157,6 +157,31 @@ def recovery_instructions(engine, name, image, step):
     )
 
 
+def copy_failed_build_log(engine, name, version, label, output_dir):
+    source_name = "{}_log".format(version.build_script_name)
+    destination = output_dir / "{}_{}".format(source_name, label)
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        run(
+            [
+                engine,
+                "cp",
+                "{}:/home/visit/{}".format(name, source_name),
+                str(destination),
+            ]
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        print(
+            "warning: unable to copy failed build log to {}: {}".format(
+                destination, error
+            ),
+            file=sys.stderr,
+        )
+        return None
+    print("Copied failed build log to {}".format(destination), file=sys.stderr)
+    return destination
+
+
 def run_checkpointed_step(
     engine,
     version,
@@ -167,6 +192,7 @@ def run_checkpointed_step(
     failure_image,
     command,
     copies=(),
+    failure_log_dir=None,
 ):
     name = container_name(version, label, step)
     run([engine, "create", "--name", name, input_image] + list(command))
@@ -175,6 +201,10 @@ def run_checkpointed_step(
 
     status = run_status([engine, "start", "-a", name])
     if status != 0:
+        if failure_log_dir is not None:
+            copy_failed_build_log(
+                engine, name, version, label, failure_log_dir
+            )
         run([engine, "commit", name, failure_image])
         recovery_instructions(engine, name, failure_image, step)
         return status, failure_image
@@ -261,6 +291,7 @@ def recoverable_build(
             failure_image,
             definition["command"],
             definition["copies"],
+            args.output_dir.resolve(),
         )
         if status != 0:
             return status
