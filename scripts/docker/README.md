@@ -72,7 +72,9 @@ Add `--recoverable` to run the core third-party, optional third-party, and VisIt
 build/test steps in named containers. Each successful step creates a visible
 checkpoint image. If a step fails, the driver commits its partial filesystem to
 an image ending in `-core-failed`, `-optional-failed`, or `-visit-failed` and
-retains the stopped container.
+retains the stopped container. It also copies the `build_visit` log into
+`--output-dir` and appends the platform label to its name, for example
+`build_visit3_6_0_log_rocky8`.
 
 For example:
 
