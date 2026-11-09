@@ -206,6 +206,10 @@ static void DetectTyphonIO(int fileId)
 //   Jean Favre, Thu Jun 21 16:28:40 PDT 2012
 //   Add read options.
 //
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes or node and cell centered variables. Fix
+//   bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 avtPixieFileFormat::avtPixieFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
@@ -452,6 +456,10 @@ avtPixieFileFormat::FreeUpResources(void)
 //   isCoord to TraversalInfo and VarInfo to track if a variable is a
 //   coordinate array so that the decomposition can be done correctly.
 //
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes or node and cell centered variables. Fix
+//   bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 void
@@ -611,6 +619,19 @@ CheckHeap("end expressions begin timestep stuff");
     }
 }
 
+// ****************************************************************************
+// Method: avtPixieFileFormat::GetVariablesForTimestep
+//
+// Purpose:
+//   Return a list of variables for the specified timestep.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
 avtPixieFileFormat::VarInfoMap
 avtPixieFileFormat::GetVariablesForTimestep(int timestate) const
 {
@@ -639,6 +660,19 @@ avtPixieFileFormat::GetVariablesForTimestep(int timestate) const
 
     return retval;
 }
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::IsNodal
+//
+// Purpose:
+//   Return a boolean indicating if the variable is a nodal variable.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
 
 bool
 avtPixieFileFormat::IsNodal(const VarInfo &info, const VarInfoMap &vars) const
@@ -684,6 +718,20 @@ avtPixieFileFormat::IsNodal(const VarInfo &info, const VarInfoMap &vars) const
     return false;
 }
 
+// ****************************************************************************
+// Method: avtPixieFileFormat::GetMeshKey
+//
+// Purpose:
+//   Create a key that uniquely identifies a mesh. It is used internally
+//   by BuildMeshesForTimestep.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
 avtPixieFileFormat::MeshKey
 avtPixieFileFormat::GetMeshKey(const VarInfo &info, const VarInfoMap &vars) const
 {
@@ -703,6 +751,20 @@ avtPixieFileFormat::GetMeshKey(const VarInfo &info, const VarInfoMap &vars) cons
     }
     return key;
 }
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::BuildMeshesForTimestep
+//
+// Purpose:
+//   Identify the meshes and assign a mesh to all the variables. It
+//   creates meshes of the form "curvmesh_%dx%dx%d" and "mesh_%dx%dx%d".
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void
 avtPixieFileFormat::BuildMeshesForTimestep(VarInfoMap &vars,
@@ -817,6 +879,20 @@ avtPixieFileFormat::BuildMeshesForTimestep(VarInfoMap &vars,
     }
 }
 
+// ****************************************************************************
+// Method: avtPixieFileFormat::SameSchema
+//
+// Purpose:
+//   Return a boolean indicating if the two variables are defined on the
+//   same mesh.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
 bool
 avtPixieFileFormat::SameSchema(const VarInfoMap &a, const VarInfoMap &b) const
 {
@@ -842,6 +918,20 @@ avtPixieFileFormat::SameSchema(const VarInfoMap &a, const VarInfoMap &b) const
     return true;
 }
 
+// ****************************************************************************
+// Method: avtPixieFileFormat::PrepareTimestep
+//
+// Purpose:
+//   Prepare a new timestep. This includes getting the list of variables and
+//   meshes and calculating the parallel partitioning information.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void
 avtPixieFileFormat::PrepareTimestepInfo(int timestate)
 {
@@ -849,6 +939,19 @@ avtPixieFileFormat::PrepareTimestepInfo(int timestate)
     BuildMeshesForTimestep(variables, meshes);
     PartitionDims();
 }
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::SetFullExtents
+//
+// Purpose:
+//   Set the mesh information to use the entire mesh.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void
 avtPixieFileFormat::SetFullExtents(VarInfo &info) const
@@ -862,11 +965,38 @@ avtPixieFileFormat::SetFullExtents(VarInfo &info) const
     }
 }
 
+// ****************************************************************************
+// Method: avtPixieFileFormat::IsNodal
+//
+// Purpose:
+//   Return a boolean indicating if the variable is a nodal variable.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
 bool
 avtPixieFileFormat::IsNodal(const VarInfo &info) const
 {
     return IsNodal(info, variables);
 }
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::PartitionVarInfo
+//
+// Purpose:
+//   Determine the parallel partitioning information for the variable based
+//   on the user specified partitioning method.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void
 avtPixieFileFormat::PartitionVarInfo(VarInfo &info) const
@@ -1081,6 +1211,9 @@ avtPixieFileFormat::PartitionDims()
 // Creation:   Tue Sep 14 12:53:08 PDT 2004
 //
 // Modifications:
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes or node and cell centered variables. Fix
+//   bugs with mesh partitioning.
 //
 // ****************************************************************************
 
@@ -1118,6 +1251,11 @@ avtPixieFileFormat::ActivateTimestep(int ts)
 //
 //   Jean Favre, Fri Dec 23 16:17:18 CET 2011
 //   returned the new count for hyperslabDims
+//
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes or node and cell centered variables. Fix
+//   bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 void
@@ -1196,6 +1334,10 @@ avtPixieFileFormat::DetermineVarDimensions(const VarInfo &info,
 //   curvilinear mesh are now nodal.  I also simplified the logic to compare
 //   the raw array sizes instead of the reduced sizes since those should
 //   also match.
+//
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes or node and cell centered variables. Fix
+//   bugs with mesh partitioning.
 //
 // ****************************************************************************
 
@@ -1433,6 +1575,14 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //
 //    Jean Favre, Fri Dec 23 16:17:18 CET 2011
 //    Added stuff to read in parallel
+//
+//    Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//    Fix bugs defining the sizes or node and cell centered variables. Fix
+//    bugs with mesh partitioning.
+//
+//    Eric Brugger, Mon Nov  9 11:37:57 PST 2026
+//    Always treat the hyperslab as 3D when defining a rectilinear mesh.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1503,6 +1653,7 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
     // rectilinear mesh.
     // here below, used hyperslabDims instead of the original (serial) varDims, JF
     // and used offset of coordinate's value due to hyperslab's new position
+    // hyperslab should always be treated as 3D regardless of nVarDims.
     if(retval == 0)
     {
         //
@@ -1514,23 +1665,13 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
         {
             ++hyperslabDims[0];
             ++hyperslabDims[1];
-            if(nVarDims == 3)
-                ++hyperslabDims[2];
+            ++hyperslabDims[2];
         }
 
         // Reverse X,Z dimensions so the mesh is drawn properly.
-        if(nVarDims == 3)
-        {
-            int tmp = hyperslabDims[0];
-            hyperslabDims[0] = hyperslabDims[2];
-            hyperslabDims[2] = tmp;
-        }
-        else if (nVarDims == 2)
-        {
-            int tmp = hyperslabDims[0];
-            hyperslabDims[0] = hyperslabDims[1];
-            hyperslabDims[1] = tmp;
-        }
+        int tmp = hyperslabDims[0];
+        hyperslabDims[0] = hyperslabDims[2];
+        hyperslabDims[2] = tmp;
 
         vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
         vtkFloatArray *coords[3];
@@ -1814,6 +1955,10 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
 //    Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
 //    I modified the routine to handle the fact that variables defined on a
 //    curvilinear mesh are now nodal.
+//
+//    Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//    Fix bugs defining the sizes or node and cell centered variables. Fix
+//    bugs with mesh partitioning.
 //
 // ****************************************************************************
 
@@ -2385,6 +2530,10 @@ avtPixieFileFormat::VisitLinks(hid_t locId, const char* name,
 //   isCoord to TraversalInfo and VarInfo to track if a variable is a
 //   coordinate array so that the decomposition can be done correctly.
 //
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes or node and cell centered variables. Fix
+//   bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 herr_t
@@ -2771,6 +2920,9 @@ CheckHeap("handling type");
 // Creation:   Thu Jun 21 14:53:29 PDT 2012
 //
 // Modifications:
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes or node and cell centered variables. Fix
+//   bugs with mesh partitioning.
 //   
 // ****************************************************************************
 
