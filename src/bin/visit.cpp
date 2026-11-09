@@ -355,6 +355,9 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Kathleen Biagas, Tue Nov 11, 2025
  *   Revamp error messages for attempts to find and set VISITUSERHOME folder.
  *
+ *   Kathleen Biagas, Mon Nov 9, 2026
+ *   Ensure '-s' 'script.py' are the last arguments on the command line.
+ *
  *****************************************************************************/
 
 int
@@ -376,6 +379,7 @@ VisItLauncherMain(int argc, char *argv[])
     string nps("2");
     stringVector componentArgs;
     stringVector engineArgs;
+    stringVector scriptArgs;
     string component("gui");
     string tmpArg;
     string apitrace_component("");
@@ -504,6 +508,12 @@ VisItLauncherMain(int argc, char *argv[])
         {
             component = "visit_composite";
             addVISITARGS = true;
+        }
+        else if (ARG("-s"))
+        {
+            scriptArgs.push_back("-s");
+            scriptArgs.push_back(string(argv[i+1]));
+            ++i;
         }
         else if(ARG("-mpeg_encode"))
         {
@@ -844,14 +854,14 @@ VisItLauncherMain(int argc, char *argv[])
 
     if(addMovieArguments)
     {
-        command.push_back("-s");
-        command.push_back(quote + visitpath + string("\\makemoviemain.py") + quote);
+        scriptArgs.push_back("-s");
+        scriptArgs.push_back(quote + visitpath + string("\\makemoviemain.py") + quote);
         command.push_back("-nowin");
     }
     else if(addCinemaArguments)
     {
-        command.push_back("-s");
-        command.push_back(quote + visitpath + string("\\visitcinemamain.py") + quote);
+        scriptArgs.push_back("-s");
+        scriptArgs.push_back(quote + visitpath + string("\\visitcinemamain.py") + quote);
         command.push_back("-nowin");
     }
 
@@ -902,6 +912,12 @@ VisItLauncherMain(int argc, char *argv[])
         free(visitargs);
         visitargs = 0;
     }
+
+    for(size_t i = 0; i < scriptArgs.size(); ++i)
+    {
+        command.push_back(scriptArgs[i]);
+    }
+
 
     //
     // Print the run information.
