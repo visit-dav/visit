@@ -184,7 +184,7 @@ def adjust_opacity_and_keep_spectral_inverted():
 	PseudocolorAtts.colorTableName = "Spectral"
 	PseudocolorAtts.invertColorTable = 1
 	PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-	PseudocolorAtts.opacity = 0.5
+	PseudocolorAtts.opacity = 0.25
 	SetPlotOptions(PseudocolorAtts)
 
 def camera_and_rays(res, direction, index_select = False, incr = 1):

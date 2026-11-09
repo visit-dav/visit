@@ -2401,9 +2401,7 @@ avtXRayImageQuery::WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
     // set up view center to up point line (1)
     conn_arr[idx++] = idx_of_view_center; conn_arr[idx++] = idx_of_up_point;
 
-
-
-    // set up ray trivial field
+    // set up camera trivial field
     conduit::Node &camera_field = data_out["fields"]["camera_field"];
     camera_field["topology"] = "camera_topo";
     camera_field["association"] = "element";
