@@ -373,6 +373,9 @@ def copy_results(cur_dir):
 #   Kathleen Biagas, Tue Jan 27, 2026
 #   Get testHost from args, fill in mode_dirs appropriately.
 #
+#   Eric Brugger, Mon Nov  9, 2026
+#   Replace mode scalable_parallel_icet with scalable_tiled.
+#
 ##############################################################################
 def main():
 
@@ -386,7 +389,7 @@ def main():
 
     mode_dirs.append(testHost+"_trunk_serial")
     mode_dirs.append(testHost+"_trunk_parallel")
-    mode_dirs.append(testHost+"_trunk_scalable_parallel_icet")
+    mode_dirs.append(testHost+"_trunk_scalable_tiled")
 
     dirs = []
     for dir in os.listdir("."):
