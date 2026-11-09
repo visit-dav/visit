@@ -50,6 +50,7 @@ RUN dnf -y upgrade && dnf -y install \
     cpio \
     openssl-devel \
     expat \
+    bison \
     expat-devel \
     perl \
  && rm -rf /var/lib/apt/lists/*

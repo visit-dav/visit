@@ -20,6 +20,7 @@ BUILD_OPTIONS = (
     "--mpich",
     "--llvm",
     "--mesagl",
+    "--meson",
     "--xcb",
     "--xkbcommon",
     "--anari",
