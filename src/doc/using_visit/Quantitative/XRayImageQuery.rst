@@ -2046,7 +2046,7 @@ To make the output look like an x ray image, it is simple to change the color ta
 Visualizing the Camera
 ++++++++++++++++++++++
 
-It is possible to render the :ref:`Camera`, or view frustum, on top of your simulation data:
+It is possible to render the :ref:`Camera_Mesh`, or view frustum, on top of your simulation data:
 
 ::
 
