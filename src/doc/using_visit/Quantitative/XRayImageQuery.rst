@@ -1924,19 +1924,13 @@ Consider the following:
 
    An input mesh, imaging planes, and ray corners, viewed from the side.
 
-If we adjust the query so that the near plane is further away (say maybe from -15 to -35), we will see this:
+If we adjust the query so that the near plane is further away (say maybe from -20 to -40), we will see this:
 
 .. figure:: images/xray_pitfall_sideview2.png
 
    The same set of plots as before, except this time the near plane has been moved back.
 
-.. figure:: images/xray_pitfall_sideview3.png
-
-   Another view of this situation.
-
-The near plane has passed out of the view frustum. 
-This is because the view frustum is determined by the ``view_angle`` argument (see :ref:`Complete_Camera_Specification`).
-In this case, the query is using the default value of 30 degrees, and because the near plane is far enough back, it is outside the frustum.
+Because of the ``view_angle`` (see :ref:`Complete_Camera_Specification`) and placement of the imaging planes, the view frustum has been improperly specified.
 
 So what does this mean for the other query results?
 It means that while we'd expect our Spatial Extents Mesh (:ref:`Spatial_Extents_Meshes`) to look like this:
@@ -1961,24 +1955,19 @@ Here are the same images as above, but this time, in each one, the upper right c
 
 .. figure:: images/xray_pitfall_sideview1_urc.png
 
-   An input mesh, imaging planes, and ray corners, viewed from the side.
+   An input mesh and camera mesh, viewed from the side.
    Note the upper right corner of each imaging plane is marked in green.
 
-If we adjust the query so that the near plane is further away (say maybe from -15 to -35), we will see this:
+If we adjust the query so that the near plane is further away (say maybe from -20 to -40), we will see this:
 
 .. figure:: images/xray_pitfall_sideview2_urc.png
 
    The same set of plots as before, except this time the near plane has been moved back.
    Note the upper right corner of each imaging plane is marked in green.
-   For the near plane (red), the upper right corner is not where we would expect.
+   For the near plane (left), the upper right corner is not where we would expect.
+   The upper right corner for the near plane is on the bottom left because the near plane is reflected across the x and y axes.
 
-.. figure:: images/xray_pitfall_sideview3_urc.png
-
-   Another view of this situation.
-   Note the upper right corner of each imaging plane is marked in green.
-   The upper right corner for the near plane (red) is on the bottom left because the near plane is reflected across the x and y axes.
-
-Following the ray corners, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accommodate the fact that it is behind the frustum.
+Following the corners of the view frustum, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accommodate the fact that it has been pulled back so far.
 This explains why the spatial extents mesh appears upside down; it is actually reflected across the x and y axes.
 
 This special case will trigger a warning message if VisIt_ is run with ``-debug 1``.
