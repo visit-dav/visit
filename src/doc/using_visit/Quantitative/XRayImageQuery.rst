@@ -320,14 +320,6 @@ The complete version consists of:
 
 *If any of the above properties are specified in the parameters, the query will use the complete version and disregard all arguments pertaining to the simplified version.*
 
-.. figure:: images/TODO_PERSPECTIVE_CAMERA_DIAGRAM.png
-
-   TODO caption
-
-.. figure:: images/TODO_PARALLEL_CAMERA_DIAGRAM.png
-
-   TODO caption
-
 When a Conduit Blueprint output type is specified, these parameters will appear in the metadata.
 See :ref:`View_Parameters` for more information.
 
