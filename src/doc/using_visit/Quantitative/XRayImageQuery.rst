@@ -1922,7 +1922,7 @@ Consider the following:
 
 .. figure:: images/xray_pitfall_sideview1.png
 
-   An input mesh, imaging planes, and ray corners, viewed from the side.
+   An input mesh and camera mesh, viewed from the side.
 
 If we adjust the query so that the near plane is further away (say maybe from -20 to -40), we will see this:
 
@@ -2066,12 +2066,12 @@ It is possible to render the :ref:`Camera`, or view frustum, on top of your simu
    AddPlot("Pseudocolor", "d")
    DrawPlots()
 
-   # Then we want to go back to the output file and visualize the imaging planes
+   # Then we want to go back to the output file and visualize the camera mesh
    ActivateDatabase("output.root")
    AddPlot("Mesh", "mesh_camera_topo")
    DrawPlots()
 
-.. figure:: images/TODO.png
+.. figure:: images/XRay_Query_camera_400x300_front.png
 
    A visualization of the input mesh along with the camera setup/view frustum.
 
@@ -2088,7 +2088,7 @@ To visualize the rays, it is a simple matter of doing the following:
    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
    DrawPlots()
 
-.. figure:: images/TODO.png
+.. figure:: images/XRay_Query_camera_and_rays_400x300_front.png
 
    A visualization of the input mesh, the camera/view frustum, and the rays.
 
@@ -2107,7 +2107,7 @@ As discussed in the :ref:`Ray_Mesh` section, this picture is not very helpful, s
    IndexSelectAtts.xWrap = 0
    SetOperatorOptions(IndexSelectAtts, 0, 0)
 
-.. figure:: images/TODO.png
+.. figure:: images/XRay_Query_camera_and_rays_400x300_low_front.png
 
    A visualization of the input mesh, the camera/view frustum, and the rays, with the index select operator applied to increase visual clarity.
 
@@ -2342,13 +2342,13 @@ To actually extract the :ref:`Basic_Mesh_Output` data and not just see it, we ca
 
 ::
 
-   # Extract the actual x values, label, and units
+   # Extract the actual x values (as a numpy array), label, and units
    xvals = xrayout["domain_000000/coordsets/image_coords/values/x"]
    xlabel = xrayout["domain_000000/coordsets/image_coords/labels/x"]
    xunits = xrayout["domain_000000/coordsets/image_coords/units/x"]
    # Extracting the same for y and z is similar
 
-   # Extract units and values for the intensity output
+   # Extract units and values (as a numpy array) for the intensity output
    intensity_units = xrayout["domain_000000/fields/intensities/units"]
    intensity_values = xrayout["domain_000000/fields/intensities/values"]
    # Extracting the same for path_length is similar
@@ -2552,26 +2552,20 @@ This line of questioning can be quickly answered by :ref:`Visualizing_the_Camera
    # that was output from the query.
    OpenDatabase("output.root")
 
-   # Add pseudocolor plots of each of the imaging planes.
-   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
-   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
-
-   # Add a mesh plot of the ray corners.
-   AddPlot("Mesh", "mesh_ray_corners_topo")
+   # Add a mesh plot of the camera mesh.
+   AddPlot("Mesh", "mesh_camera_topo")
 
    DrawPlots()
 
 Running this code using VisIt should result in renders like those shown in :ref:`Camera_and_Rays_Meshes`.
-To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_the_Camera`.
 
 .. figure:: images/xray_troubleshooting_2.png
 
    An example of what could be going wrong. The simulated detector is not positioned correctly.
 
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
-Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
+Once the camera has been visualized, it is clear to see where it is looking, and if the near and far clipping planes are appropriately placed.
+Information on visualizing the rays and camera can be found in :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
 Where are the rays intersecting my geometry?
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -2587,22 +2581,19 @@ We will want to visualize the :ref:`Ray_Mesh` on top of our input mesh.
    # that was output from the query.
    OpenDatabase("output.root")
 
-   # Add pseudocolor plots of each of the imaging planes.
-   # These help to add clarity to our final render.
-   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
-   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
+   # Add a mesh plot of the camera mesh.
+   AddPlot("Mesh", "mesh_camera_topo")
 
-   # Add a mesh plot of the rays.
+   # Add a pseudocolor plot of the rays.
    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
 
    DrawPlots()
 
 Running this code using VisIt should result in renders like those shown in :ref:`Ray_Mesh`.
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
+See the text on visualizing the rays and camera in :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
-.. figure:: images/XRay_Query_imaging_planes_transparent_rays_and_ray_corners_40x30_front.png
+.. figure:: images/XRay_Query_camera_and_transparent_rays_400x300_medium_front.png
 
    An example render made using the above code.
 
