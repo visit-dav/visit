@@ -1,4 +1,4 @@
-ARG FEDORA_VERSION=40
+ARG FEDORA_VERSION=44
 FROM fedora:${FEDORA_VERSION} AS visit-build-environment
 
 # fetch build env

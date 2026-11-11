@@ -35,7 +35,7 @@ PLATFORMS = {
     "fedora": {
         "dockerfile": "Dockerfile-fedora",
         "build_arg": "FEDORA_VERSION",
-        "default_version": "40",
+        "default_version": "44",
     },
 }
 
@@ -437,7 +437,7 @@ def main(argv=None):
         output_package = output_dir / "visit{}.linux-x86_64-{}.tar.gz".format(
             version.underscored, label
         )
-        output_image = output_dir / "visit0000.png"
+        output_image = output_dir / "visit0000-{}.png".format(label)
         for output in (output_package, output_image):
             if output.exists():
                 print("error: refusing to overwrite {}".format(output), file=sys.stderr)
