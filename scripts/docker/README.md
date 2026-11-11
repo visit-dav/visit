@@ -40,7 +40,8 @@ python3 /path/to/visit/scripts/docker/create_release.py \
 
 The Ubuntu Dockerfile supports 22.04 and 24.04 through `UBUNTU_VERSION`. The
 Rocky Dockerfile supports 8.9 and 9.3 through `ROCKY_VERSION`. Debian and
-Fedora accept `DEBIAN_VERSION` and `FEDORA_VERSION`, respectively:
+Fedora accept `DEBIAN_VERSION` and `FEDORA_VERSION`, respectively. Fedora 44
+is the default Fedora release:
 
 ```console
 python3 create_release.py --source "$src" --build-visit "$bv" --platform ubuntu --os-version 22.04
@@ -63,8 +64,10 @@ python3 /path/to/visit/scripts/docker/create_release.py \
 
 To build an image without extracting its package and smoke-test image, add
 `--build-only`. Use `--temp-dir` to choose where the temporary build context is
-created. Run `python3 create_release.py --help` for output directory, image tag,
-and artifact label options.
+created. The extracted smoke-test image includes the platform label in its
+name, for example `visit0000-fedora44.png`. Run
+`python3 create_release.py --help` for output directory, image tag, and artifact
+label options.
 
 ## Recovering failed builds
 
