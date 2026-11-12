@@ -800,7 +800,7 @@ VisItLauncherMain(int argc, char *argv[])
         }
         else
         {
-            MessageBox(NULL, msgStr.c_str(), component.c_str(), MB_OK);
+            MessageBox(NULL, msgStr.c_str(), options.component.c_str(), MB_OK);
         }
 
         if(options.envOnly)
@@ -967,7 +967,7 @@ VisItLauncherMain(int argc, char *argv[])
                 snprintf(errmsg, 30, "_spawn error: %d: UNKNOWN\n", err);
                 break;
         }
-        MessageBox(NULL, errmsg, component.c_str(), MB_ICONEXCLAMATION | MB_OK);
+        MessageBox(NULL, errmsg, options.component.c_str(), MB_ICONEXCLAMATION | MB_OK);
     }
     delete [] exeArgs;
 #else

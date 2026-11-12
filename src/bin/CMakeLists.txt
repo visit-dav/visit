@@ -185,6 +185,9 @@ else()
         FEATURES    cxx_std_17
         OUTPUT_NAME visit)
 
+    set_target_properties(visit_exe PROPERTIES
+        WIN32_EXECUTABLE ${VISIT_WINDOWS_APPLICATION})
+
     #--------------------------------------------------------------------------
     # Install and copy to build the movie helper scripts
     #--------------------------------------------------------------------------
