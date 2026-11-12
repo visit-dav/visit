@@ -1253,7 +1253,7 @@ avtPixieFileFormat::ActivateTimestep(int ts)
 //   returned the new count for hyperslabDims
 //
 //   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
-//   Fix bugs defining the sizes or node and cell centered variables. Fix
+//   Fix bugs defining the sizes for node and cell centered variables. Fix
 //   bugs with mesh partitioning.
 //
 // ****************************************************************************
