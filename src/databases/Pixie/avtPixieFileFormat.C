@@ -11,27 +11,6 @@
 // capability
 //#define FORCE_FLOATS
 
-
-#ifdef __APPLE__
-#include <malloc/malloc.h>
-#include <cstdlib>
-#include <cstdio>
-#endif
-
-static void
-CheckHeap(const char *where)
-{
-return;
-#ifdef __APPLE__
-    if (!malloc_zone_check(NULL))
-    {
-        fprintf(stderr, "PIXIE HEAP CORRUPTION DETECTED: %s\n", where);
-        fflush(stderr);
-        abort();
-    }
-#endif
-}
-
 #include <avtPixieFileFormat.h>
 
 #include <vtkCellData.h>
@@ -216,7 +195,6 @@ avtPixieFileFormat::avtPixieFileFormat(const char *filename, const DBOptionsAttr
     : avtMTSDFileFormat(&filename, 1), variables(), meshes(),
       timeStatePrefix("/Timestep ")
 {
-CheckHeap("Constructor");
     fileId = -1;
     nTimeStates = 0;
     metadataIsTimeInvariant = true;
@@ -238,7 +216,6 @@ CheckHeap("Constructor");
 
     // Turn off error message printing.
     H5Eset_auto(NULL,NULL);
-CheckHeap("End Constructor");
 }
 
 // ****************************************************************************
@@ -465,7 +442,6 @@ avtPixieFileFormat::FreeUpResources(void)
 void
 avtPixieFileFormat::Initialize()
 {
-CheckHeap("entry Initialize");
     if(fileId == -1)
     {
         // Initialize some variables.
@@ -495,7 +471,6 @@ CheckHeap("entry Initialize");
             EXCEPTION1(InvalidDBTypeException, error);
         }
         H5Pclose(fileAccessPropListID);
-CheckHeap("entry strict mode");
         if (GetStrictMode())
         {
             //
@@ -513,7 +488,6 @@ CheckHeap("entry strict mode");
             DetectTyphonIO(fileId);
         }
 
-CheckHeap("entry populate scalar var list");
         // Populate the scalar variable list
         hid_t gid;
         if ((gid = H5Gopen(fileId, "/")) < 0)
@@ -538,11 +512,9 @@ CheckHeap("entry populate scalar var list");
         // links. As such, code is in place to do this.
 
         // Iterate over the items in this group.
-CheckHeap("entry H5Giterate");
         H5Giterate(fileId, "/", NULL, GetVariableList, (void*)&info);
 //      H5Literate(fileId, H5_INDEX_NAME, H5_ITER_INC, 0, VisitLinks, (void*)&info);
         H5Gclose(gid);
-CheckHeap("end H5Giterate begin expressions");
 
         // Per-timestep coordinate tagging and mesh construction are done
         // after traversal, once all variable shapes are known.
@@ -581,7 +553,6 @@ CheckHeap("end H5Giterate begin expressions");
             H5Sclose(spid);
             H5Dclose(expid);
         }
-CheckHeap("end expressions begin timestep stuff");
 
         // Sort the cycles and the times.
         std::sort(cycles.begin(), cycles.end());
@@ -2540,11 +2511,6 @@ herr_t
 avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
     void *op_data)
 {
-
-
-CheckHeap("entry GetVariableList");
-
-
     // Silo files have a ".." group.  Don't process that....  Ideally we
     // might detect and skip hard links, but this doesn't come up often.
     if (std::string(name)=="..")
@@ -2575,7 +2541,6 @@ CheckHeap("entry GetVariableList");
     switch (statbuf.type)
     {
     case H5G_DATASET:
-CheckHeap("handling dataset");
         if ((obj = H5Dopen(group, name)) >= 0)
         {
             VarInfo varInfo;
@@ -2748,7 +2713,6 @@ CheckHeap("handling dataset");
         }
         break;
     case H5G_GROUP:
-CheckHeap("handling group");
         // We found a time state, increment the number of time states.
         if(info->level == 0 && varName.find("Timestep") != std::string::npos)
         {
@@ -2885,7 +2849,6 @@ CheckHeap("handling group");
         break;
 #if 0
     case H5G_TYPE:
-CheckHeap("handling type");
         if ((obj = H5Topen(group, name)) >= 0)
         {
             debug4 << "TYPE: " << varName.c_str() << endl;
