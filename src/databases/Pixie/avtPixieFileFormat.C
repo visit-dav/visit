@@ -457,7 +457,7 @@ avtPixieFileFormat::FreeUpResources(void)
 //   coordinate array so that the decomposition can be done correctly.
 //
 //   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
-//   Fix bugs defining the sizes or node and cell centered variables. Fix
+//   Fix bugs defining the sizes for node and cell centered variables. Fix
 //   bugs with mesh partitioning.
 //
 // ****************************************************************************
