@@ -739,6 +739,10 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
 //    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Biagas, Wed Sep 2, 2026
+//    Replace 'cell->EvaluatePosition' with vtkVisItUtility::EvaluatePosition.
+//    The new function has a fallback to handle degenerate cells.
+//
 // ****************************************************************************
 
 // Return closest point (if any) AND the cell on which this closest point lies
@@ -867,8 +871,8 @@ void vtkVisItCellLocator::FindClosestPoint(double x[3], double closestPoint[3],
                     }
 
                   // evaluate the position to find the closest point
-                  int stat=cell->EvaluatePosition(x, point, subId, pcoords,
-                    dist2, weights);
+                  int stat = vtkVisItUtility::EvaluatePosition(cell, x, point,
+                    subId, pcoords, dist2, weights);
 
                   if ( stat != -1 && dist2 < minDist2 )
                     {
@@ -970,10 +974,10 @@ void vtkVisItCellLocator::FindClosestPoint(double x[3], double closestPoint[3],
                   }
 
                 // evaluate the position to find the closest point
-                cell->EvaluatePosition(x, point, subId, pcoords,
-                  dist2, weights);
+                int stat = vtkVisItUtility::EvaluatePosition(cell, x, point,
+                  subId, pcoords, dist2, weights);
 
-                if ( dist2 < minDist2 )
+                if ( stat != -1 && dist2 < minDist2 )
                   {
                   closestCell = cellId;
                   closestSubCell = subId;
@@ -1027,7 +1031,12 @@ void vtkVisItCellLocator::FindClosestPoint(double x[3], double closestPoint[3],
 //    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Biagas, Wed Sep 2, 2026
+//    Replace 'cell->EvaluatePosition' with vtkVisItUtility::EvaluatePosition.
+//    The new function has a fallback to handle degenerate cells.
+//
 // ****************************************************************************
+
 int
 vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius,
                                                  double closestPoint[3],
@@ -1147,9 +1156,9 @@ vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius,
               }
 
             // evaluate the position to find the closest point
-            tmpInside = cell->EvaluatePosition(x, point, subId, pcoords,
-              dist2, weights);
-            if ( dist2 < minDist2 )
+            tmpInside = vtkVisItUtility::EvaluatePosition(cell, x, point,
+              subId, pcoords, dist2, weights);
+            if ( tmpInside != -1 && dist2 < minDist2 )
               {
               inside = tmpInside;
               closestCell = cellId;
@@ -1287,10 +1296,10 @@ vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius,
                     }
 
                   // evaluate the position to find the closest point
-                  tmpInside = cell->EvaluatePosition(x, point, subId, pcoords,
-                    dist2, weights);
+                  tmpInside = vtkVisItUtility::EvaluatePosition(cell, x, point,
+                    subId, pcoords, dist2, weights);
 
-                  if ( dist2 < minDist2 )
+                  if ( tmpInside != -1 && dist2 < minDist2 )
                     {
                     inside = tmpInside;
                     closestCell = cellId;
@@ -1582,6 +1591,11 @@ vtkIdList* vtkVisItCellLocator::GetCells(int octantId)
 //    Added code to set any references in Tree that matches parentOctant
 //    to NULL so that it won't be deleted multiple times in the destructor.
 //
+//    Kathleen Biagas, Wed Sep 2, 2026
+//    Change calculation of 'Level' (was using integer division) which
+//    caused problems when the dataset contained degenerate cells.
+//
+
 void vtkVisItCellLocator::BuildLocator()
   {
   double *bounds, length, cellBounds[6], *boundsPtr;
@@ -1676,7 +1690,12 @@ void vtkVisItCellLocator::BuildLocator()
 
   if ( this->Automatic )
     {
-    this->Level = static_cast<int>(ceil(log(static_cast<double>(numCells/numCellsPerBucket)) / (log(8.0))));
+    this->Level = static_cast<int>(
+      ceil(log(static_cast<double>(numCells) / static_cast<double>(numCellsPerBucket)) / log(8.0)));
+    }
+  if (this->Level < 0)
+    {
+    this->Level = 0;
     }
   this->Level =(this->Level > this->MaxLevel ? this->MaxLevel : this->Level);
 

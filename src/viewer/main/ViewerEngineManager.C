@@ -277,6 +277,17 @@ ViewerEngineManager::GetQueryParameters(const EngineKey &ek,
 }
 
 bool
+ViewerEngineManager::GetAnariDeviceInfo(const EngineKey &ek,
+                                        const std::string &libraryName,
+                                        const std::string &librarySubtype,
+                                        const std::string &rendererSubtype,
+                                        std::string *result)
+{
+    return IMPL()->GetAnariDeviceInfo(ek, libraryName, librarySubtype,
+                                       rendererSubtype, result);
+}
+
+bool
 ViewerEngineManager::ClearCache(const EngineKey &ek, const std::string &dbName)
 {
     return IMPL()->ClearCache(ek, dbName);

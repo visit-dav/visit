@@ -666,7 +666,11 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             }
         }
 
-        if(anariAttributes.GetAnariRendering())
+        // Only the engine (see NetworkManager_CreateVisWindow) enables real
+        // ANARI device creation; on the viewer/GUI, fall through to the
+        // generic GPU mapper fallback below instead of creating a device
+        // that may not have any backend libraries available locally.
+        if(anariAttributes.GetAnariRendering() && avtCallback::GetAnariDeviceCreationEnabled())
         {
             LOCAL_DEBUG << "ANARI Volume Mapper " << std::endl;
             vtkAnariVolumeMapper *anariVolumeMapper = nullptr;

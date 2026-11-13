@@ -22,7 +22,7 @@ package llnl.visit;
 
 public class View2DAttributes extends AttributeSubject
 {
-    private static int View2DAttributes_numAdditionalAtts = 7;
+    private static int View2DAttributes_numAdditionalAtts = 9;
 
     // Enum values
     public final static int TRISTATEMODE_ON = 0;
@@ -51,6 +51,12 @@ public class View2DAttributes extends AttributeSubject
         fullFrameAutoThreshold = 100;
         xScale = 0;
         yScale = 0;
+        tilePan = new double[2];
+        tilePan[0] = 0;
+        tilePan[1] = 0;
+        tileZoom = new double[2];
+        tileZoom[0] = 1;
+        tileZoom[1] = 1;
         windowValid = false;
     }
 
@@ -72,6 +78,12 @@ public class View2DAttributes extends AttributeSubject
         fullFrameAutoThreshold = 100;
         xScale = 0;
         yScale = 0;
+        tilePan = new double[2];
+        tilePan[0] = 0;
+        tilePan[1] = 0;
+        tileZoom = new double[2];
+        tileZoom[0] = 1;
+        tileZoom[1] = 1;
         windowValid = false;
     }
 
@@ -93,6 +105,14 @@ public class View2DAttributes extends AttributeSubject
         fullFrameAutoThreshold = obj.fullFrameAutoThreshold;
         xScale = obj.xScale;
         yScale = obj.yScale;
+        tilePan = new double[2];
+        tilePan[0] = obj.tilePan[0];
+        tilePan[1] = obj.tilePan[1];
+
+        tileZoom = new double[2];
+        tileZoom[0] = obj.tileZoom[0];
+        tileZoom[1] = obj.tileZoom[1];
+
         windowValid = obj.windowValid;
 
         SelectAll();
@@ -122,6 +142,16 @@ public class View2DAttributes extends AttributeSubject
         for(i = 0; i < 4 && viewportCoords_equal; ++i)
             viewportCoords_equal = (viewportCoords[i] == obj.viewportCoords[i]);
 
+        // Compare the tilePan arrays.
+        boolean tilePan_equal = true;
+        for(i = 0; i < 2 && tilePan_equal; ++i)
+            tilePan_equal = (tilePan[i] == obj.tilePan[i]);
+
+        // Compare the tileZoom arrays.
+        boolean tileZoom_equal = true;
+        for(i = 0; i < 2 && tileZoom_equal; ++i)
+            tileZoom_equal = (tileZoom[i] == obj.tileZoom[i]);
+
         // Create the return value
         return (windowCoords_equal &&
                 viewportCoords_equal &&
@@ -129,6 +159,8 @@ public class View2DAttributes extends AttributeSubject
                 (fullFrameAutoThreshold == obj.fullFrameAutoThreshold) &&
                 (xScale == obj.xScale) &&
                 (yScale == obj.yScale) &&
+                tilePan_equal &&
+                tileZoom_equal &&
                 (windowValid == obj.windowValid));
     }
 
@@ -193,10 +225,38 @@ public class View2DAttributes extends AttributeSubject
         Select(5);
     }
 
+    public void SetTilePan(double[] tilePan_)
+    {
+        tilePan[0] = tilePan_[0];
+        tilePan[1] = tilePan_[1];
+        Select(6);
+    }
+
+    public void SetTilePan(double e0, double e1)
+    {
+        tilePan[0] = e0;
+        tilePan[1] = e1;
+        Select(6);
+    }
+
+    public void SetTileZoom(double[] tileZoom_)
+    {
+        tileZoom[0] = tileZoom_[0];
+        tileZoom[1] = tileZoom_[1];
+        Select(7);
+    }
+
+    public void SetTileZoom(double e0, double e1)
+    {
+        tileZoom[0] = e0;
+        tileZoom[1] = e1;
+        Select(7);
+    }
+
     public void SetWindowValid(boolean windowValid_)
     {
         windowValid = windowValid_;
-        Select(6);
+        Select(8);
     }
 
     // Property getting methods
@@ -206,6 +266,8 @@ public class View2DAttributes extends AttributeSubject
     public double   GetFullFrameAutoThreshold() { return fullFrameAutoThreshold; }
     public int      GetXScale() { return xScale; }
     public int      GetYScale() { return yScale; }
+    public double[] GetTilePan() { return tilePan; }
+    public double[] GetTileZoom() { return tileZoom; }
     public boolean  GetWindowValid() { return windowValid; }
 
     // Write and read methods.
@@ -224,6 +286,10 @@ public class View2DAttributes extends AttributeSubject
         if(WriteSelect(5, buf))
             buf.WriteInt(yScale);
         if(WriteSelect(6, buf))
+            buf.WriteDoubleArray(tilePan);
+        if(WriteSelect(7, buf))
+            buf.WriteDoubleArray(tileZoom);
+        if(WriteSelect(8, buf))
             buf.WriteBool(windowValid);
     }
 
@@ -250,6 +316,12 @@ public class View2DAttributes extends AttributeSubject
             SetYScale(buf.ReadInt());
             break;
         case 6:
+            SetTilePan(buf.ReadDoubleArray());
+            break;
+        case 7:
+            SetTileZoom(buf.ReadDoubleArray());
+            break;
+        case 8:
             SetWindowValid(buf.ReadBool());
             break;
         }
@@ -271,6 +343,8 @@ public class View2DAttributes extends AttributeSubject
         str = str + doubleToString("fullFrameAutoThreshold", fullFrameAutoThreshold, indent) + "\n";
         str = str + intToString("xScale", xScale, indent);
         str = str + intToString("yScale", yScale, indent);
+        str = str + doubleArrayToString("tilePan", tilePan, indent) + "\n";
+        str = str + doubleArrayToString("tileZoom", tileZoom, indent) + "\n";
         str = str + boolToString("windowValid", windowValid, indent) + "\n";
         return str;
     }
@@ -283,6 +357,8 @@ public class View2DAttributes extends AttributeSubject
     private double   fullFrameAutoThreshold;
     private int      xScale;
     private int      yScale;
+    private double[] tilePan;
+    private double[] tileZoom;
     private boolean  windowValid;
 }
 

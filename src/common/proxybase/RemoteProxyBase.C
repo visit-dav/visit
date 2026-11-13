@@ -358,6 +358,9 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    David Camp, Mon Aug  4 10:46:09 PDT 2014
 //    Added the thread option to the command line, if not 0.
 //
+//    Eric Brugger, Fri Oct 16 14:10:59 PDT 2026
+//    Remove code related to hardware accelerated parallel rendering.
+//
 // ****************************************************************************
 
 void
@@ -524,31 +527,6 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
         }
         SetLoadBalancing(0);
 #endif
-    }
-
-    if (launch->GetCanDoHWAccel())
-    {
-        AddArgument("-hw-accel");
-        if(launch->GetLaunchXServers())
-        {
-            AddArgument("-launch-x");
-            if(!launch->GetXArguments().empty())
-            {
-                AddArgument("-x-args");
-                AddArgument(launch->GetXArguments());
-            }
-        }
-        if(!launch->GetXDisplay().empty())
-        {
-            AddArgument("-display");
-            AddArgument(launch->GetXDisplay());
-        }
-        AddArgument("-n-gpus-per-node");
-        {
-            std::ostringstream gn;
-            gn << launch->GetGPUsPerNode();
-            AddArgument(gn.str());
-        }
     }
 
     // Add the timeout argument

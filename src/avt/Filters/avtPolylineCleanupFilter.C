@@ -10,6 +10,7 @@
 
 #include <vtkCleanPolyData.h>
 #include <vtkGeometryFilter.h>
+#include <vtkMergeConsecutivePolyDataPoints.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -72,6 +73,12 @@ avtPolylineCleanupFilter::~avtPolylineCleanupFilter()
 //    Support unstructured grids, use vtkGometryFIlter to convert them to
 //    polydata.
 //
+//    Eric Brugger, Thu Oct 15 15:23:20 PDT 2026
+//    Turn off point merging in the vtkCleanPolyData filter to eliminate
+//    a serious performance issue with some data sets. Added a new filter
+//    before the use of vtkCleanPolyData to eliminate consecutive duplicate
+//    points in the PolyData primitives that the point merging performed.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -97,16 +104,20 @@ avtPolylineCleanupFilter::ExecuteData(avtDataRepresentation *inDR)
     }
 
     // Clean duplicate points from the polydata.
+    vtkNew<vtkMergeConsecutivePolyDataPoints> mergeFilter;
     vtkNew<vtkCleanPolyData> cleanFilter;
     vtkNew<vtkGeometryFilter> geoFilter;
+    cleanFilter->PointMergingOff();
     if (inDS->GetDataObjectType() == VTK_POLY_DATA)
     {
-        cleanFilter->SetInputData(vtkPolyData::SafeDownCast(inDS));
+        mergeFilter->SetInputData(vtkPolyData::SafeDownCast(inDS));
+        cleanFilter->SetInputConnection(mergeFilter->GetOutputPort());
     }
     else
     {
         geoFilter->SetInputData(inDS);
-        cleanFilter->SetInputConnection(geoFilter->GetOutputPort());
+        mergeFilter->SetInputConnection(geoFilter->GetOutputPort());
+        cleanFilter->SetInputConnection(mergeFilter->GetOutputPort());
     }
     cleanFilter->Update();
 

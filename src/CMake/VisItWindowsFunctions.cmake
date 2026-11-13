@@ -26,7 +26,8 @@ function(visit_create_windows_installer)
             if(CODESIGN_HASH)
                set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
             endif()
-            add_custom_command(OUTPUT visit${VISIT_VERSION}.exe
+            set(win_inst_name visit${UL_VERSION}.win11.exe)
+            add_custom_command(OUTPUT ${win_inst_name}
                 COMMAND "${VISIT_WINDOWS_DIR}/MSVC2022/p7zip/18.05/7z.exe" a -t7z -m0=lzma2 -mx9  visit${VISIT_VERSION}.7z VisIt${VISIT_VERSION}
                 COMMAND ${MAKENSIS}
                         /DVISIT_SOURCE_DIR=${VSD_NATIVE}
@@ -37,6 +38,7 @@ function(visit_create_windows_installer)
                 COMMAND ${MAKENSIS}
                         ${codesign}
                         /DVisItVersion=${VISIT_VERSION}
+                        /DInstallerName=${win_inst_name}
                         /DCOMPILER=${VISIT_MSVC_VERSION}
                         /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                         /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
@@ -47,7 +49,7 @@ function(visit_create_windows_installer)
                 DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
                         ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
             )
-            add_custom_target(_PACKAGE ALL DEPENDS visit${VISIT_VERSION}.exe)
+            add_custom_target(_PACKAGE ALL DEPENDS ${win_inst_name})
             if(NOT CODESIGN_HASH)
                 # not building a signed release
                 # make INSTALL be a prereq for _PACKAGE.
@@ -61,7 +63,7 @@ function(visit_create_windows_installer)
             if(DEFINED ARCHIVER_EXE)
                 get_filename_component(VDEP ${VWD_NATIVE} PATH)
                 file(TO_NATIVE_PATH ${VDEP} VDEP_NATIVE)
-                set(zipname visit_windowsdev_${VISIT_VERSION}.zip)
+                set(zipname visit${UL_VERSION}_windowsdev.zip)
 
                 file(TO_NATIVE_PATH ${ARCHIVER_EXE} ARCHIVER_NATIVE)
                 add_custom_command(OUTPUT ${CBD_NATIVE}/${zipname}

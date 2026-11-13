@@ -2884,6 +2884,13 @@ const char *visit_ExportDatabase_doc =
 "# Set the export directory\n"
 "e.dirname = \".\"\n"
 "ExportDatabase(e)\n"
+"# Export with Database specific options\n"
+"e.db_type = \"Xmdv\"\n"
+"e.filename = \"test_ex_db_2\"\n"
+"xmdvOpts = GetExportOptions(\"Xmdv\")\n"
+"xmdvOpts['Export coordinates?'] = 1\n"
+"xmdvOpts['Output precision'] = 32\n"
+"ExportDatabase(e, xmdvOpts)\n"
 ;
 const char *visit_Expressions_doc = 
 "Expressions\n"

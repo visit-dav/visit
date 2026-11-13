@@ -26,9 +26,13 @@
 #   Kathleen Biagas, Thu Oct 3, 2024
 #   Utilize visit_add_library.
 #
+#   Kevin Griffin, Thu Aug 27 2026
+#   Added AnariDeviceInfoRPC.
+#
 #****************************************************************************
 
 set(ENGINERPC_SOURCES
+    AnariDeviceInfoRPC.C
     ApplyOperatorRPC.C
     ClearCacheRPC.C
     CloneNetworkRPC.C
@@ -60,6 +64,7 @@ set(ENGINERPC_SOURCES
     UseNetworkRPC.C)
 
 set(ENGINERPC_HEADERS
+    AnariDeviceInfoRPC.h
     ApplyOperatorRPC.h
     ClearCacheRPC.h
     CloneNetworkRPC.h

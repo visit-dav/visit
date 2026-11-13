@@ -8,6 +8,9 @@
 #    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 #    Added visit_vtk to include dirs and target link libs.
 #
+#    Kathleen Biagas, Wed Sep 2, 2026
+#    avtmfem and mfem are unconditional dependencies.
+#
 #****************************************************************************
 
 visit_add_library(
@@ -22,12 +25,9 @@ visit_add_library(
                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Blueprint>
     DEPENDS_ON visitcommon
                lightweight_visit_vtk
+               avtmfem
                VTK::CommonCore
                VTK::FiltersCore
-               conduit)
+               conduit
+               mfem)
 
-if(HAVE_MFEM)
-    visit_patch_target(
-        NAME        avtblueprint
-        DEPENDS_ON  avtmfem)
-endif()

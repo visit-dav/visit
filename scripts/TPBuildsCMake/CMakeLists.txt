@@ -33,10 +33,21 @@ endif()
 
 set(CMAKE_INSTALL_PREFIX ${visit_install_root})
 
+
+
 include(CMakeDependentOption)
 
 # Library options
 option(BUILD_ALL "Build all supported Third Party libs. If off, individual libraries can be built via ENABLE_XXX where XXX is the capitalized name of the library" ON )
+option(BUILD_PARALLEL "Enable/Disable parallel options in libraries that support them." ON )
+
+if(BUILD_PARALLEL)
+    find_package(MPI)
+    if(NOT MPI_FOUND)
+        message(STATUS "MPI not found, disabling parallel")
+        set(BUILD_PARALLEL OFF)
+    endif()
+endif()
 
 cmake_dependent_option(ENABLE_ADIOS2 "Enable building adios2" OFF "NOT BUILD_ALL" ON)
 cmake_dependent_option(ENABLE_ANARI "Enable building anari" OFF "NOT BUILD_ALL" ON)
