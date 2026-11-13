@@ -2269,6 +2269,69 @@ EOF
     return 0;
 }
 
+function apply_vtk95_vtk_macos_opengl_init_fix
+{
+    # https://gitlab.kitware.com/vtk/vtk/-/commit/c0e0f793e6adf740f5b1c91ac330afdbc2a03b72
+    # fix issue with opengl race condition
+    # From c0e0f793e6adf740f5b1c91ac330afdbc2a03b72 Mon Sep 17 00:00:00 2001
+    # From: qbisi <qbisicwate@gmail.com>
+    # Date: Wed, 2 Jul 2025 23:56:49 +0800
+    # Subject: [PATCH] Skip setting the opengl symbol loader for macOS
+    #
+    # We prefer to use the OpenGL functions provided by Qt.
+    # However, on macOS this approach can be problematic
+    # and may lead to race conditions.
+    # Therefore, it is reasonable to conditionally skip setting
+    # the OpenGL symbol loader on macOS and instead rely
+    # on vtkglad to locate the appropriate OpenGL implementation.
+
+    patch -p0 << \EOF
+    --- GUISupport/Qt/QVTKOpenGLNativeWidget.cxx
+    +++ GUISupport/Qt/QVTKOpenGLNativeWidget.cxx
+    @@ -218,6 +218,7 @@ void QVTKOpenGLNativeWidget::initializeGL()
+ 
+         if (!this->RenderWindow->GetInitialized())
+         {
+    +#if !defined(__APPLE__)
+           auto loadFunc = [](
+                             void* userData, const char* name) -> vtkOpenGLRenderWindow::VTKOpenGLAPIProc
+           {
+    @@ -231,6 +232,7 @@ void QVTKOpenGLNativeWidget::initializeGL()
+             return nullptr;
+           };
+           this->RenderWindow->SetOpenGLSymbolLoader(loadFunc, this->context());
+    +#endif
+           this->RenderWindow->vtkOpenGLRenderWindow::OpenGLInit();
+         }
+         auto ostate = this->RenderWindow->GetState();
+    --- GUISupport/Qt/QVTKOpenGLWindow.cxx
+    +++ GUISupport/Qt/QVTKOpenGLWindow.cxx
+    @@ -204,6 +204,7 @@ void QVTKOpenGLWindow::initializeGL()
+ 
+         if (!this->RenderWindow->GetInitialized())
+         {
+    +#if !defined(__APPLE__)
+           auto loadFunc = [](
+                             void* userData, const char* name) -> vtkOpenGLRenderWindow::VTKOpenGLAPIProc
+           {
+    @@ -217,6 +218,7 @@ void QVTKOpenGLWindow::initializeGL()
+             return nullptr;
+           };
+           this->RenderWindow->SetOpenGLSymbolLoader(loadFunc, this->context());
+    +#endif
+           this->RenderWindow->vtkOpenGLRenderWindow::OpenGLInit();
+         }
+         auto ostate = this->RenderWindow->GetState();
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for macos opengl init bug."
+      return 1
+    fi
+    return 0;
+}
+
+
 function apply_vtk_patch
 {
     if [[ ${VTK_VERSION} == 9.5.0 ]] ; then
@@ -2319,6 +2382,13 @@ function apply_vtk_patch
         if [[ $? != 0 ]] ; then
            return 1
         fi
+
+        # fix for macos init crash encountered on macos 27
+        apply_vtk95_vtk_macos_opengl_init_fix
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
+
     fi
 
     return 0
