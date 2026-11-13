@@ -2,7 +2,7 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-project(CONDUIT VERSION 0.9.4)
+project(CONDUIT VERSION 0.9.10)
 
 set(visit_conduit_root ${visit_install_root}/conduit/${CONDUIT_VERSION})
 set(visit_conduit_include_dir ${visit_conduit_root}/include/conduit)
