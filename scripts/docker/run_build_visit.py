@@ -2,6 +2,7 @@
 """Build VisIt's third-party dependencies inside a container."""
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -33,6 +34,15 @@ def build_options(include_optional=False):
     if include_optional:
         options.append("--optional")
     return options
+
+
+def build_environment():
+    environment = os.environ.copy()
+    tar_options = environment.get("TAR_OPTIONS", "").split()
+    if "--no-same-owner" not in tar_options:
+        tar_options.append("--no-same-owner")
+    environment["TAR_OPTIONS"] = " ".join(tar_options)
+    return environment
 
 
 def config_site_snapshot(home):
@@ -90,6 +100,7 @@ def main(argv=None):
     process = subprocess.Popen(
         [str(build_script)] + build_options(args.optional),
         cwd=str(home),
+        env=build_environment(),
         stdin=subprocess.PIPE,
     )
     process.communicate(b"yes\n")

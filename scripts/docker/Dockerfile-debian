@@ -85,12 +85,14 @@ ENV LANG=en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
+RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
+USER visit
 WORKDIR /home/visit
 
 # Build the third-party libraries before copying the source archive so that a
 # new source archive does not invalidate this expensive Docker cache layer.
-COPY build_visit[0-9]* /home/visit/
-COPY visit_version.py run_build_visit.py /home/visit/
+COPY --chown=visit:visit build_visit[0-9]* /home/visit/
+COPY --chown=visit:visit visit_version.py run_build_visit.py /home/visit/
 RUN chmod +x build_visit[0-9]*
 
 FROM visit-build-environment AS visit-release
@@ -99,7 +101,8 @@ RUN python3 run_build_visit.py
 RUN python3 run_build_visit.py --optional
 
 # Build, package, install, and test VisIt.
-COPY visit*.src.tar.gz /home/visit/
-COPY build_test_visit.py build_visit_docker_cleanup.py test_visit.py /home/visit/
+COPY --chown=visit:visit visit*.src.tar.gz /home/visit/
+COPY --chown=visit:visit build_test_visit.py build_visit_docker_cleanup.py \
+    test_visit.py /home/visit/
 RUN python3 build_test_visit.py
 RUN python3 build_visit_docker_cleanup.py

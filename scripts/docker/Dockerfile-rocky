@@ -63,10 +63,12 @@ RUN if [[ "${ROCKY_VERSION}" == 8.* ]]; then \
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
+RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
+USER visit
 WORKDIR /home/visit
 
-COPY build_visit[0-9]* /home/visit/
-COPY visit_version.py run_build_visit.py /home/visit/
+COPY --chown=visit:visit build_visit[0-9]* /home/visit/
+COPY --chown=visit:visit visit_version.py run_build_visit.py /home/visit/
 
 RUN chmod +x build_visit[0-9]*
 
@@ -80,8 +82,9 @@ RUN if [[ "${ROCKY_VERSION}" == 8.* ]]; then \
         source /opt/rh/gcc-toolset-10/enable; \
     fi && python3 run_build_visit.py --optional
 
-COPY visit*.src.tar.gz /home/visit/
-COPY build_test_visit.py build_visit_docker_cleanup.py test_visit.py /home/visit/
+COPY --chown=visit:visit visit*.src.tar.gz /home/visit/
+COPY --chown=visit:visit build_test_visit.py build_visit_docker_cleanup.py \
+    test_visit.py /home/visit/
 RUN if [[ "${ROCKY_VERSION}" == 8.* ]]; then \
         source /opt/rh/gcc-toolset-10/enable; \
     fi && python3 build_test_visit.py
