@@ -110,7 +110,7 @@ The standard arguments have to do with the query execution, output, debugging, a
 |                          | Mesh in the Blueprint output.                |
 +--------------------------+----------------------------------------------+
 
-If using the :ref:`Conduit_Output`, many of these arguments will appear in the output in a few different places.
+If using the :ref:`Conduit_Blueprint_Output`, many of these arguments will appear in the output in a few different places.
 The ``vars`` will show up as ``abs_var_name`` and ``emis_var_name`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
 ``divide_emis_by_absorb`` shows up under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
 ``image_size`` shows up as ``num_x_pixels`` and ``num_y_pixels`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
@@ -192,15 +192,15 @@ Output Types
 |      | (5 prior to       | of a text header file describing a           |
 |      | VisIt_ 3.4)       | rawfloats file.                              |
 +------+-------------------+----------------------------------------------+
-|      | "blueprint json"  | Conduit JSON output.                         |
+|      | "json"            | Conduit Blueprint JSON output.               |
 |      | or 5 (6 prior to  |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "blueprint hdf5"  | Conduit HDF5 output.                         |
+|      | "hdf5"            | Conduit Blueprint HDF5 output.               |
 |      | or 6 (7 prior to  |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "blueprint yaml"  | Conduit YAML output.                         |
+|      | "yaml"            | Conduit Blueprint YAML output.               |
 |      | or 7 (8 prior to  |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
@@ -223,7 +223,7 @@ For example, if the input array variables were composed of 2 scalar variables, t
 * output.03.bof
 * output.03.bov - ``path_length`` from the second variable of the array variable.
 
-The Conduit output types provide a plethora of extra features; to learn more see :ref:`Conduit_Output`.
+The Conduit output types provide a plethora of extra features; to learn more see :ref:`Conduit_Blueprint_Output`.
 
 .. _XRay_Units:
 
@@ -232,7 +232,7 @@ Units
 
 Units of various quantities can be passed through the query.
 None of these values are used in any calculations the query does to arrive at its output; all are optional.
-These units appear in the :ref:`Conduit_Output` in a few different places.
+These units appear in the :ref:`Conduit_Blueprint_Output` in a few different places.
 
 +--------------------------+----------------------------------------------+
 | *spatial_units*          | The units of the simulation in the x and y   |
@@ -357,17 +357,16 @@ During execution, the simplified camera specification parameters are converted t
 Calling the Query
 """""""""""""""""
 
-There are a couple ways to call the X Ray Image Query, each with their own nuances.
+There are two ways to call the X Ray Image Query, each with their own nuances.
 
-The first is the standard way of calling the query, by using a dictionary to store the arguments.
-This way is recommended.
+The first uses a Python dictionary to store the arguments.
 Here is an example:
 
 ::
 
    params = dict()
    params["image_size"] = (400, 300)
-   params["output_type"] = "blueprint hdf5"
+   params["output_type"] = "hdf5"
    params["focus"] = (0., 2.5, 10.)
    params["perspective"] = 1
    params["near_plane"] = -25.
@@ -376,36 +375,70 @@ Here is an example:
    params["parallel_scale"] = 10.
    Query("XRay Image", params)
 
-Of course, one could use this to set up the parameters instead:
+Alternatively, one could use this to set up the parameters instead:
 
 ::
 
    params = GetQueryParameters("XRay Image")
 
+This produces a dictionary with the following entries, which can be customized appropriately with desired query parameters.
 The default arguments to the query will be provided here, containing the :ref:`Complete_Camera_Specification` and not the :ref:`Simplified_Camera_Specification` arguments.
 To use the :ref:`Simplified_Camera_Specification` arguments, one must specify them manually and not specify any arguments from the :ref:`Complete_Camera_Specification`.
+
+::
+
+   {
+       'abs_units': 'abs units',
+       'background_intensities': 0.0,
+       'background_intensity': 0.0,
+       'debug_ray': -1,
+       'divide_emis_by_absorb': 0,
+       'emis_units': 'emis units',
+       'energy_group_bounds': (0.0, 1.0),
+       'energy_units': 'energy units',
+       'family_files': 0,
+       'far_plane': 0.5,
+       'filename_scheme': 0,
+       'focus': (0.0, 0.0, 0.0),
+       'image_pan': (0.0, 0.0),
+       'image_size': (200, 200),
+       'image_zoom': 1.0,
+       'intensity_units': 'intensity units',
+       'near_plane': -0.5,
+       'normal': (0.0, 0.0, 1.0),
+       'output_dir': '.',
+       'output_ray_bounds': 0,
+       'output_type': 'png',
+       'parallel_scale': 0.5,
+       'path_length_info': 'path length info',
+       'perspective': 1,
+       'spatial_units': 'spatial units',
+       'vars': ('absorbtivity', 'emissivity'),
+       'view_angle': 30.0,
+       'view_up': (0.0, 1.0, 0.0)
+   }
 
 The second way to call the query is the old style of argument passing:
 
 ::
 
    Query("XRay Image", 
-      output_type, 
-      output_dir, 
-      divide_emis_by_absorb, 
-      origin_x,
-      origin_y,
-      origin_z,
-      theta, 
-      phi, 
-      width, 
-      height, 
-      image_size_x, 
-      image_size_y, 
-      vars)
+         output_type, 
+         output_dir, 
+         divide_emis_by_absorb, 
+         origin_x,
+         origin_y,
+         origin_z,
+         theta, 
+         phi, 
+         width, 
+         height, 
+         image_size_x, 
+         image_size_y, 
+         vars)
 
    # An example
-   Query("XRay Image", "blueprint hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
+   Query("XRay Image", "hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
 
 This way of calling the query exclusively makes use of the :ref:`Simplified_Camera_Specification`.
 
@@ -480,10 +513,9 @@ moves the image down and to the right by 1. ::
 
    The resulting x ray image.
 
-Now we will switch to a 3D example using globe.silo. Globe.silo is an
-unstructured mesh consisting of tetrahedra, pyramids, prisms and hexahedra
-forming a globe. Here is an image of the tetrahedra at the center of
-the globe that form 2 cones.
+Now we will switch to a 3D example using ``globe.silo``.
+``globe.silo`` is an unstructured mesh consisting of tetrahedra, pyramids, prisms and hexahedra forming a globe.
+Here is an image of the tetrahedra at the center of the globe that form 2 cones.
 
 .. figure:: images/xray04.png
 
@@ -547,7 +579,7 @@ was merely copied from the 3D tab on the View window. ::
 
    The resulting x ray image.
 
-The next example illustrates use of one of the :ref:`Conduit_Output` types.
+The next example illustrates use of one of the :ref:`Conduit_Blueprint_Output` types.
 
 ::
 
@@ -567,7 +599,7 @@ We call the query as usual, although there are a few extra arguments we can prov
 
    params = dict()
    params["image_size"] = (400, 300)
-   params["output_type"] = "blueprint hdf5"
+   params["output_type"] = "hdf5"
    params["focus"] = (0., 2.5, 10.)
    params["perspective"] = 1
    params["near_plane"] = -25.
@@ -592,6 +624,9 @@ To look at the raw data from the query, we run this code:
 
 ::
 
+   # IMPORTANT: we need a Python that has access to Conduit in order to run this.
+   # VisIt's Python comes with Conduit.
+
    import conduit
    xrayout = conduit.Node()
 
@@ -600,7 +635,7 @@ To look at the raw data from the query, we run this code:
    print(xrayout["domain_000000"])
 
 This yields the following data overview.
-See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit_Output`.
+See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit_Blueprint_Output`.
 
 ::
 
@@ -631,15 +666,15 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        num_x_pixels: 400
        num_y_pixels: 300
        ... ( skipped 2 children )
-       emis_var_name: "pa"
+       emis_var_name: "p"
        abs_units: "cm^2/g"
        emis_units: "GJ/cm^2/ster/ns/keV"
      xray_data: 
        detector_width: 8.80338743415454
        detector_height: 6.60254037884486
-       intensity_max: 1.96578788757324
+       intensity_max: 0.491446971893311
        intensity_min: 0.0
-       path_length_max: 519.428039550781
+       path_length_max: 129.857009887695
        path_length_min: 0.0
        image_topo_order_of_domain_variables: "xyz"
      domain_id: 0
@@ -649,7 +684,7 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        values: 
          x: [0, 1, 2, ..., 399, 400]
          y: [0, 1, 2, ..., 299, 300]
-         z: [0, 1, 2, 3, 4]
+         z: [0, 1]
        labels: 
          x: "width"
          y: "height"
@@ -661,10 +696,9 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spatial_coords: 
        type: "rectilinear"
        values: 
-         x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
-         y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
-         z: [0.0, 1.0, 2.0, 3.0, 4.0]
-       info: "Energy group bounds size mismatch: provided 7 bounds, but 5 in query results."
+         x: [-4.40169371707727, -4.37968524849188, -4.35767677990649, ..., 4.37968524849188, 4.40169371707727]
+         y: [-3.30127018942243, -3.27926172149295, -3.25725325356347, ..., 3.27926172149295, 3.30127018942243]
+         z: [2.7, 6.2]
        units: 
          x: "cm"
          y: "cm"
@@ -676,8 +710,8 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spatial_energy_reduced_coords: 
        type: "rectilinear"
        values: 
-         x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
-         y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
+         x: [-4.40169371707727, -4.37968524849188, -4.35767677990649, ..., 4.37968524849188, 4.40169371707727]
+         y: [-3.30127018942243, -3.27926172149295, -3.25725325356347, ..., 3.27926172149295, 3.30127018942243]
        units: 
          x: "cm"
          y: "cm"
@@ -687,31 +721,23 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spectra_coords: 
        type: "rectilinear"
        values: 
-         x: [0.0, 1.0, 2.0, 3.0, 4.0]
+         x: [2.7, 6.2]
        units: 
          x: "kev"
        labels: 
          x: "energy_group"
-       info: "Energy group bounds size mismatch: provided 7 bounds, but 5 in query results."
-     ... ( skipped 2 children )
-     far_plane_coords: 
-       type: "explicit"
-       values: 
-         x: [22.264973744318, -22.264973744318, -22.264973744318, 22.264973744318]
-         y: [-14.1987298105776, -14.1987298105776, 19.1987298105776, 19.1987298105776]
-         z: [35.0, 35.0, 35.0, 35.0]
-     ray_corners_coords: 
-       type: "explicit"
-       values: 
-         x: [4.40169371707727, 22.264973744318, -4.40169371707727, ..., 4.40169371707727, 22.264973744318]
-         y: [-0.801270189422432, -14.1987298105776, -0.801270189422432, ..., 5.80127018942243, 19.1987298105776]
-         z: [-15.0, 35.0, -15.0, ..., -15.0, 35.0]
      ray_coords: 
        type: "explicit"
        values: 
          x: [-4.39068948278457, -4.39068948278457, -4.39068948278457, ..., 22.2093113099572, 22.2093113099572]
          y: [-0.790265955457691, -0.768257487528208, -0.746249019598725, ..., 19.0317425124718, 19.1430673778756]
          z: [-15.0, -15.0, -15.0, ..., 35.0, 35.0]
+     camera_coords: 
+       type: "explicit"
+       values: 
+         x: [4.40169371707727, 13.3333337306976, 22.264973744318, ..., 0.0, 0.0]
+         y: [-0.801270189422432, -7.5, -14.1987298105776, ..., 2.5, 27.5]
+         z: [-15.0, 10.0, 35.0, ..., -15.0, -15.0]
    topologies: 
      image_topo: 
        coordset: "image_coords"
@@ -725,25 +751,18 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spectra_topo: 
        coordset: "spectra_coords"
        type: "rectilinear"
-     ... ( skipped 2 children )
-     far_plane_topo: 
-       type: "unstructured"
-       coordset: "far_plane_coords"
-       elements: 
-         shape: "quad"
-         connectivity: [0, 1, 2, 3]
-     ray_corners_topo: 
-       type: "unstructured"
-       coordset: "ray_corners_coords"
-       elements: 
-         shape: "line"
-         connectivity: [0, 1, 2, ..., 6, 7]
      ray_topo: 
        type: "unstructured"
        coordset: "ray_coords"
        elements: 
          shape: "line"
          connectivity: [0, 120000, 1, ..., 119999, 239999]
+     camera_topo: 
+       type: "unstructured"
+       coordset: "camera_coords"
+       elements: 
+         shape: "line"
+         connectivity: [0, 3, 3, ..., 13, 14]
    fields: 
      intensities: 
        topology: "image_topo"
@@ -769,24 +788,23 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        units: "path length metadata"
        values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
        strides: [1, 400, 120000]
-     ... ( skipped 6 children )
-     far_plane_field: 
-       topology: "far_plane_topo"
+     ... ( skipped 3 children )
+     path_length_spectra: 
+       topology: "spectra_topo"
        association: "element"
-       volume_dependent: "false"
-       values: 0.0
-     ray_corners_field: 
-       topology: "ray_corners_topo"
-       association: "element"
-       volume_dependent: "false"
-       values: [0.0, 0.0, 0.0, 0.0]
+       values: 10567747.3171375
      ray_field: 
        topology: "ray_topo"
+       association: "vertex"
+       volume_dependent: "false"
+       values: [0.0, 0.0, 0.0, ..., 1.0, 1.0]
+     camera_field: 
+       topology: "camera_topo"
        association: "element"
        volume_dependent: "false"
-       values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
+       values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
 
-The next thing we may want to do is to visualize an x ray image using VisIt_.
+The next thing we may want to do is visualize our resulting x ray image using VisIt_.
 The :ref:`Visualizing_with_VisIt` section goes into more detail on this subject, so for now we will only visualize the :ref:`Basic_Mesh_Output`.
 
 ::
@@ -812,10 +830,10 @@ Running this code yields the following image:
 
    The resulting x ray image, visualized using VisIt.
 
-.. _Conduit_Output:
+.. _Conduit_Blueprint_Output:
 
-Conduit Output
-~~~~~~~~~~~~~~
+Conduit Blueprint Output
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The `Conduit <https://llnl-conduit.readthedocs.io/en/latest/>`_ output types (see :ref:`Output_Types` for more information) provide advantages over the other output types and include additional metadata and topologies.
 These output types were added in VisIt_ 3.3.0, and many of the features discussed here have been added since then.
@@ -832,11 +850,11 @@ Alternatively, users could choose one of the image file output types to generate
 But, without additional post-processing, it was impossible to have both, unless the query was run twice.
 
 We added Conduit Blueprint output as an option to address these problems.
-Instead of many files coming out of the query, only one comes out.
+Instead of many files being produced by the query, only one is produced.
 This single output file presents the query output in multiple ways using well-described meshes.
-We also provide three supported Conduit output types: HDF5, YAML, and JSON.
+We also provide three supported Conduit Blueprint output types: HDF5, YAML, and JSON.
 The latter two are useful as they are human-readable options.
-Instead of having to choose between getting out raw data or getting out an image, Conduit Blueprint provides the best of both worlds.
+Instead of having to choose between getting out raw data or getting out an image, Conduit Blueprint provides both.
 All of the meshes provided in the output can be easily plotted in VisIt_ (see :ref:`Visualizing_with_VisIt`), and everything in the output (raw intensities and path lengths data, mesh data, metadata, etc.) can be digested in Python using Conduit's Python API (see :ref:`Introspecting_with_Python`).
 
 .. figure:: images/XRay_Query_input_mesh_alt_side.png
@@ -847,11 +865,11 @@ All of the meshes provided in the output can be easily plotted in VisIt_ (see :r
 
    The resulting x ray image from Conduit Blueprint output, visualized by plotting with VisIt.
 
-We have opted to enrich the Blueprint output (see :ref:`Basic_Mesh_Output`) with extensive metadata (see :ref:`XRay_Metadata`) as well as additional meshes (see :ref:`Imaging_Planes_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves`) to provide extra context and information to the user. 
-These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
+We have opted to enrich the Conduit Blueprint output (see :ref:`Basic_Mesh_Output`) with extensive metadata (see :ref:`XRay_Metadata`) as well as additional meshes (see :ref:`Camera_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves`) to provide extra context and information to the user. 
+These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query for use in post-processing/downstream tools.
 Blueprint makes it simple to put all of this information into one file, and just as simple to read that information back out and/or visualize.
 
-One of the main reasons for adding the Conduit output was to make it far easier to troubleshoot strange query results.
+One of the main reasons for adding the Conduit Blueprint output was to make it far easier to troubleshoot strange query results.
 See the :ref:`XRay_Troubleshooting` section to see a few examples of the kinds of questions the Conduit output can be used to answer.
 
 .. _Overview_of_Output:
@@ -859,8 +877,8 @@ See the :ref:`XRay_Troubleshooting` section to see a few examples of the kinds o
 Overview of Output
 """"""""""""""""""
 
-So what is actually in the `Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html>`_ output?
-The Blueprint output provides multiple Blueprint meshes, which are each in turn comprised of a coordinate set, a topology, and fields.
+So what is actually in the Conduit `Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html>`_ output?
+The Conduit Blueprint output provides multiple Blueprint meshes, which are each in turn comprised of a coordinate set, a topology, and fields.
 These all live within a Conduit tree, along with metadata.
 Using Conduit allows us to package everything in one place for ease of use.
 
@@ -888,13 +906,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     spectra_coords: 
       ...
-    near_plane_coords: 
-      ...
-    view_plane_coords: 
-      ...
-    far_plane_coords: 
-      ...
-    ray_corners_coords: 
+    camera_coords: 
       ...
     ray_coords: 
       ...
@@ -907,13 +919,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     spectra_topo: 
       ...
-    near_plane_topo: 
-      ...
-    view_plane_topo: 
-      ...
-    far_plane_topo: 
-      ...
-    ray_corners_topo: 
+    camera_topo: 
       ...
     ray_topo: 
       ...
@@ -934,13 +940,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     path_length_spectra: 
       ...
-    near_plane_field: 
-      ...
-    view_plane_field: 
-      ...
-    far_plane_field: 
-      ...
-    ray_corners_field: 
+    camera_field: 
       ...
     ray_field: 
       ...
@@ -948,7 +948,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
 There are multiple Blueprint meshes stored in this tree, as well as extensive metadata.
 Each piece of the Conduit output will be covered in more detail in ensuing parts of the documentation.
 To learn more about what lives under the ``state`` branch, see the :ref:`XRay_Metadata` section.
-To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Imaging_Planes_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves` sections.
+To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Camera_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves` sections.
 To extract this data with Python, see :ref:`Introspecting_with_Python_Overview`.
 
 .. _Basic_Mesh_Output:
@@ -959,9 +959,9 @@ Basic Mesh Output
 The most important piece of the Blueprint output is the actual ray trace result.
 We have taken the image data that comes out of the query and packaged it into a single Blueprint mesh.
 
-.. figure:: images/XRay_Query_image_intensities_xray_front.png
+.. figure:: images/xray_dimensions.png
 
-   The basic mesh output visualized using VisIt.
+   The basic mesh output visualized using VisIt, with annotations showing the dimensions.
 
 To visualize this mesh with VisIt, see :ref:`Visualizing_the_Basic_Mesh_Output`.
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Basic_Mesh_Output`.
@@ -1000,13 +1000,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       ...
     spectra_coords: 
       ...
-    near_plane_coords: 
-      ...
-    view_plane_coords: 
-      ...
-    far_plane_coords: 
-      ...
-    ray_corners_coords: 
+    camera_coords: 
       ...
     ray_coords: 
       ...
@@ -1020,13 +1014,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       ...
     spectra_topo: 
       ...
-    near_plane_topo: 
-      ...
-    view_plane_topo: 
-      ...
-    far_plane_topo: 
-      ...
-    ray_corners_topo: 
+    camera_topo: 
       ...
     ray_topo: 
       ...
@@ -1055,13 +1043,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       ...
     path_length_spectra: 
       ...
-    near_plane_field: 
-      ...
-    view_plane_field: 
-      ...
-    far_plane_field: 
-      ...
-    ray_corners_field: 
+    camera_field: 
       ...
     ray_field: 
       ...
@@ -1071,10 +1053,15 @@ The 3 constituent parts of the Blueprint mesh output are the coordinate set, ``i
 The ``image_coords`` represent the x and y coordinates of the 2D image, and the z dimension represents the energy group bounds.
 In the case of multiple energy groups, previously, the query would have output multiple images, one for each pair of energy group bounds.
 In the Blueprint output, this is simplified; rather than outputting multiple files, each containing one image, we have opted to "stack" the resulting images on top of one another.
-This is why the Blueprint output is a 3D mesh; this way, it can account for multiple energy groups, and place resulting images one on top of another.
+
+.. figure:: images/xray_layers.png
+
+   A graphic showing how multiple energy group result images are combined into a block.
+
+This is why the Blueprint output is a 3D mesh; this way, it can account for multiple energy groups, and place resulting images on top of one another.
 Also included in the ``image_coords`` are labels and units for disambiguation purposes.
 
-The ``image_topo`` exists to tell Blueprint that the rectilinear coordinate data stored in ``image_coords`` can be interpreted as a rectilinear grid.
+The ``image_topo`` exists to tell Conduit Blueprint that the rectilinear coordinate data stored in ``image_coords`` can be interpreted as a rectilinear grid.
 
 The fields, ``intensities`` and ``path_length``, can be thought of as containers for the actual image data.
 This image data is stored in 1-dimensional arrays; for information on reshaping those into 3-dimensions see the following from the :ref:`XRay_Troubleshooting` section: :ref:`XRay_blueprint_1d_to_3d_reshape`
@@ -1154,7 +1141,7 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
     ...
 
 There are three top-level items: ``time``, ``cycle``, and ``domain_id``.
-The fact that the ``domain_id`` is present is a side effect of Conduit; all of the output data is single domain and this value has nothing to do with the query.
+The fact that the ``domain_id`` is present is a side effect of Conduit Blueprint; all of the output data is single domain and this string value has nothing to do with the query.
 In addition to the top level items, there are three categories of metadata: :ref:`View_Parameters`, :ref:`Query_Parameters`, and :ref:`Other_Metadata`.
 The following subsections discuss each of these categories in more detail.
 
@@ -1372,39 +1359,38 @@ An example: ::
 
 The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`XRay_Troubleshooting` or sanity checks that the output matches expectations. 
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
-In that case, the :ref:`Imaging_Planes_and_Rays_Meshes` section may be of some use.
+In that case, the :ref:`Camera_and_Rays_Meshes` section may be of some use.
 
 To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python_Metadata`.
 
-.. _Imaging_Planes_and_Rays_Meshes:
+.. _Camera_and_Rays_Meshes:
 
-Imaging Planes and Rays Meshes
-++++++++++++++++++++++++++++++
+Camera and Rays Meshes
+++++++++++++++++++++++
 
 One of our goals with the Conduit output types (see :ref:`Output_Types` for more information) is to provide rich, easy to understand information about the query to facilitate usability.
-To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
-Additionally, they also include meshes representing the rays that were used in the ray tracing.
+To that end, these outputs come packaged with a mesh representing the camera setup specified by the user when calling the query.
+Additionally, they also include a mesh representing the rays that were used in the ray tracing.
 The following subsections discuss both of these in more detail.
 
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
-.. _Imaging_Planes:
+.. _Camera_Mesh:
 
-Imaging Planes
-**************
+Camera Mesh
+***********
 
-Users can visualize the near, view, and far planes in physical space alongside the meshes used in the ray trace:
+Users can visualize the view frustum/camera setup in physical space alongside the mesh used in the ray trace:
 
-.. figure:: images/XRay_Query_imaging_planes_400x300_front.png
+.. figure:: images/XRay_Query_camera_400x300_front.png
 
-   The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
-   The near plane is in red, the view plane in transparent orange, and the far plane in blue.
+   The view frustum/camera setup used by the X Ray Image Query visualized on top of the simulation data.
 
 Including this in the output gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
 
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_Camera`.
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
-See the example below, which is taken from the example in :ref:`Overview_of_Output`, but this time with only the imaging plane meshes fully realized: 
+See the example below, which is taken from the example in :ref:`Overview_of_Output`, but this time with only the camera mesh fully realized: 
 
 ::
 
@@ -1427,26 +1413,12 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       ...
     spectra_coords: 
       ...
-    near_plane_coords: 
+    camera_coords: 
       type: "explicit"
       values: 
-        x: [-11.1966131618919, 11.1966131618919, 11.1966131618919, -11.1966131618919]
-        y: [10.8974596211551, 10.8974596211551, -5.89745962115514, -5.89745962115514]
-        z: [-40.0, -40.0, -40.0, -40.0]
-    view_plane_coords: 
-      type: "explicit"
-      values: 
-        x: [6.66666686534882, -6.66666686534882, -6.66666686534882, 6.66666686534882]
-        y: [-2.5, -2.5, 7.5, 7.5]
-        z: [10.0, 10.0, 10.0, 10.0]
-    far_plane_coords: 
-      type: "explicit"
-      values: 
-        x: [24.5299468925895, -24.5299468925895, -24.5299468925895, 24.5299468925895]
-        y: [-15.8974596211551, -15.8974596211551, 20.8974596211551, 20.8974596211551]
-        z: [60.0, 60.0, 60.0, 60.0]
-    ray_corners_coords: 
-      ...
+        x: [4.40169371707727, 13.3333337306976, 22.264973744318, ..., 0.0, 0.0]
+        y: [-0.801270189422432, -7.5, -14.1987298105776, ..., 2.5, 27.5]
+        z: [-15.0, 10.0, 35.0, ..., -15.0, -15.0]
     ray_coords: 
       ...
   topologies: 
@@ -1458,26 +1430,12 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       ...
     spectra_topo: 
       ...
-    near_plane_topo: 
+    camera_topo: 
       type: "unstructured"
-      coordset: "near_plane_coords"
+      coordset: "camera_coords"
       elements: 
-        shape: "quad"
-        connectivity: [0, 1, 2, 3]
-    view_plane_topo: 
-      type: "unstructured"
-      coordset: "view_plane_coords"
-      elements: 
-        shape: "quad"
-        connectivity: [0, 1, 2, 3]
-    far_plane_topo: 
-      type: "unstructured"
-      coordset: "far_plane_coords"
-      elements: 
-        shape: "quad"
-        connectivity: [0, 1, 2, 3]
-    ray_corners_topo: 
-      ...
+        shape: "line"
+        connectivity: [0, 3, 3, ..., 13, 14]
     ray_topo: 
       ...
   fields: 
@@ -1497,123 +1455,82 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       ...
     path_length_spectra: 
       ...
-    near_plane_field: 
-      topology: "near_plane_topo"
+    camera_field: 
+      topology: "camera_topo"
       association: "element"
       volume_dependent: "false"
-      values: 0.0
-    view_plane_field: 
-      topology: "view_plane_topo"
-      association: "element"
-      volume_dependent: "false"
-      values: 0.0
-    far_plane_field: 
-      topology: "far_plane_topo"
-      association: "element"
-      volume_dependent: "false"
-      values: 0.0
-    ray_corners_field: 
-      ...
+      values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
     ray_field: 
       ...
 
-Just like the :ref:`Basic_Mesh_Output`, each of the three meshes has three constituent pieces.
-For the sake of brevity, we will only discuss the view plane, but the following information also holds true for the near and far planes.
-First off is the ``view_plane_coords`` coordinate set, which, as may be expected, contains only four points, representing the four corners of the rectangle.
-Next is the ``view_plane_topo``, which tells Conduit to treat the four points in the ``view_plane_coords`` as a quad.
-Finally, we have the ``view_plane_field``, which has one value, "0.0". 
-This value doesn't mean anything; it is just used to tell Blueprint that the entire quad should be colored the same color.
+Just like the :ref:`Basic_Mesh_Output`, the mesh has three constituent pieces.
+First off is the ``camera_coords`` coordinate set, which contains points for the corners of each imaging plane, a point for camera center, the focus, and a point along the up vector.
+Next is the ``camera_topo``, which tells Conduit how to attach the ``camera_coords`` points to each other with lines.
+Finally, we have the ``camera_field``, which trivially has the value of "0.0" for all lines. 
+This value doesn't mean anything; it is just used to tell Blueprint that all of the lines should be colored the same color.
 
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes`.
-To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_Camera`.
+To extract this data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
 
-.. _Rays_Meshes:
+.. _Ray_Mesh:
 
-Rays Meshes
-***********
+Ray Mesh
+********
 
-Having the imaging planes is helpful, but sometimes it can be more useful to have a sense of the view frustum itself.
-Users may desire a clearer picture of the simulated x ray detector: where is it in space, exactly what is it looking at, and what is it not seeing?
-Enter the rays meshes, or the meshes that contain the rays used to generate the output images/data.
-
-Why are there two?
-The first is the ray corners mesh.
-This is a Blueprint mesh containing four lines that pass through the corners of the :ref:`Imaging_Planes`.
-Now the viewing frustum is visible:
-
-.. figure:: images/XRay_Query_imaging_planes_and_ray_corners_400x300_front.png
-
-   A plot of 5 meshes: the actual mesh that the query used to generate results, the 3 imaging planes, and the ray corners mesh.
-
-The ray corners mesh is useful because no matter the chosen dimensions of the output image, the ray corners mesh always will only contain 4 lines.
-Therefore it is cheap to render in a tool like VisIt, and it gives a general sense of what is going on.
-But for those who wish to see all of the rays used in the ray trace, the following will be useful.
-
-The second rays mesh provided is the ray mesh, which provides all the rays used in the ray trace, represented as lines in Blueprint.
+In addition to a mesh representing the camera setup used in the ray trace, we also provide a mesh representing all of the rays used in the ray trace, represented as Conduit Blueprint line elements.
 A note of caution: depending on how many rays are used in the ray trace, this mesh could be expensive to render, hence the inclusion of the ray corners mesh.
 
-.. figure:: images/XRay_Query_imaging_planes_and_rays_40x30_front.png
+.. figure:: images/XRay_Query_camera_and_rays_400x300_low_front.png
 
-   There are 40x30 rays in this image, corresponding to an x ray image output of 40x30 pixels.
+   A plot of 3 meshes: the actual mesh that the query used to generate results, the camera mesh, and the ray mesh.
 
 Depending on the chosen dimensions of the output image, this mesh can contain thousands of lines.
-See the following image, which is the same query as the previous image, but this time with 400x300 pixels.
+See the following image, which is the same query as the previous image, but this time displaying  400x300 pixels.
 
-.. figure:: images/XRay_Query_imaging_planes_and_rays_400x300_front.png
+.. figure:: images/XRay_Query_camera_and_rays_400x300_front.png
 
    There are 400x300 rays in this image, corresponding to an x ray image output of 400x300 pixels.
 
-This render is far less useful. Even the imaging planes have been swallowed up, and the input mesh is completely hidden.
+This render is far less useful.
+The input mesh is completely hidden.
 There are a couple quick solutions to this problem.
-**The first solution** is to temporarily run the query with less rays (i.e. lower the image dimensions) until the desired understanding of what the simulated x ray detector is looking at has been achieved, then switch back to the large number of pixels/rays.
-This can be done quickly, as the ray trace is the performance bottleneck for the x ray image query.
-Here are examples:
+**The first solution** is to use the :ref:`Index Select operator` to reduce the number of rendered rays.
+The ray mesh is an unstructured mesh, so the Index Selecet Operator can only be applied in one dimension.
 
-.. figure:: images/XRay_Query_imaging_planes_and_rays_20x15_front.png
+.. figure:: images/XRay_Query_camera_and_rays_400x300_low_front.png
 
-   There are 20x15 rays in this image, corresponding to an x ray image output of 20x15 pixels.
-
-.. figure:: images/XRay_Query_imaging_planes_and_rays_8x6_front.png
-
-   There are 8x6 rays in this image, corresponding to an x ray image output of 8x6 pixels.
-
-These renders are less overwhelming, they can be generated quickly, and they get across a good amount of information.
-But there is another option that does not require losing information.
+   A high increment value has been chosen for the Index Selection, yielding a lowered number of rays.
 
 **The second solution** is adjusting the opacity of the rays using VisIt.
-Here is a view of a different run of the query, this time with the simulated x ray detector to the side of the input mesh.
+Here is a view of a different run of the query, this time with the simulated x ray detector to the side of the input mesh:
 
-.. figure:: images/XRay_Query_imaging_planes_and_rays_40x30_side.png
+.. figure:: images/XRay_Query_camera_and_rays_400x300_medium_side.png
 
-   There are 40x30 rays in this image, corresponding to an x ray image output of 40x30 pixels. 
    This is a view of a different run of the query from the images shown thus far.
 
-Even with only 40x30 rays, it is already hard to see the input mesh underneath the rays.
-With VisIt, it is very easy to adjust the opacity of the rays and make them semitransparent.
+Even with this many rays, it is hard to see the input mesh underneath the rays.
+With VisIt, it is very easy to adjust the opacity of the rays and make them semitransparent, using the Pseudocolor/Mesh plot opacity setting.
 Here is the same view but with the opacity adjusted for greater visibility.
 
-.. figure:: images/XRay_Query_imaging_planes_and_transparent_rays_40x30_side.png
+.. figure:: images/XRay_Query_camera_and_transparent_rays_400x300_medium_side.png
 
-   The 40x30 rays have had their opacity lowered for greater visibility.
+   The rays have had their opacity lowered for greater visibility.
 
 Here is the same view but with 400x300 rays.
 
-.. figure:: images/XRay_Query_imaging_planes_and_rays_400x300_side.png
+.. figure:: images/XRay_Query_camera_and_rays_400x300_side.png
 
-   There are 400x300 rays in this image, corresponding to an x ray image output of 40x30 pixels.
    The rays totally obscure the geometry.
 
 And here is the same view with 400x300 rays but with the ray opacity lowered.
 
-.. figure:: images/XRay_Query_imaging_planes_and_transparent_rays_400x300_side.png
+.. figure:: images/XRay_Query_camera_and_transparent_rays_400x300_side.png
 
-   The 400x300 rays have had their opacity lowered for greater visibility.
-
-Hopefully it is clear at this point that there are multiple ways of looking at the rays that are used in the ray trace.
+   The rays have had their opacity lowered for greater visibility.
 
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays_Meshes`.
-Now we will take a look at another example inspired by the example in :ref:`Overview_of_Output`, but this time with only the rays meshes fully realized: 
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_Rays`.
+Now we will take a look at another example inspired by the example in :ref:`Overview_of_Output`, but this time with only the ray mesh fully realized: 
 
 ::
 
@@ -1636,24 +1553,14 @@ Now we will take a look at another example inspired by the example in :ref:`Over
       ...
     spectra_coords: 
       ...
-    near_plane_coords: 
+    camera_coords: 
       ...
-    view_plane_coords: 
-      ...
-    far_plane_coords: 
-      ...
-    ray_corners_coords: 
-      type: "explicit"
-      values: 
-        x: [-11.1966131618919, 24.5299468925895, 11.1966131618919, ..., -11.1966131618919, 24.5299468925895]
-        y: [10.8974596211551, -15.8974596211551, 10.8974596211551, ..., -5.89745962115514, 20.8974596211551]
-        z: [-40.0, 60.0, -40.0, ..., -40.0, 60.0]
     ray_coords: 
       type: "explicit"
       values: 
-        x: [11.1686216289872, 11.1686216289872, 11.1686216289872, ..., 24.4686220253581, 24.4686220253581]
-        y: [10.8694680890846, 10.8134850249436, 10.7575019608025, ..., 20.7134850249436, 20.8361347557513]
-        z: [-40.0, -40.0, -40.0, ..., 60.0, 60.0]
+        x: [-4.39068948278457, -4.39068948278457, -4.39068948278457, ..., 22.2093113099572, 22.2093113099572]
+        y: [-0.790265955457691, -0.768257487528208, -0.746249019598725, ..., 19.0317425124718, 19.1430673778756]
+        z: [-15.0, -15.0, -15.0, ..., 35.0, 35.0]
   topologies: 
     image_topo: 
       ...
@@ -1663,18 +1570,8 @@ Now we will take a look at another example inspired by the example in :ref:`Over
       ...
     spectra_topo: 
       ...
-    near_plane_topo: 
+    camera_topo: 
       ...
-    view_plane_topo: 
-      ...
-    far_plane_topo: 
-      ...
-    ray_corners_topo: 
-      type: "unstructured"
-      coordset: "ray_corners_coords"
-      elements: 
-        shape: "line"
-        connectivity: [0, 1, 2, ..., 6, 7]
     ray_topo: 
       type: "unstructured"
       coordset: "ray_coords"
@@ -1698,35 +1595,24 @@ Now we will take a look at another example inspired by the example in :ref:`Over
       ...
     path_length_spectra: 
       ...
-    near_plane_field: 
+    camera_field: 
       ...
-    view_plane_field: 
-      ...
-    far_plane_field: 
-      ...
-    ray_corners_field: 
-      topology: "ray_corners_topo"
-      association: "element"
-      volume_dependent: "false"
-      values: [0.0, 0.0, 0.0, 0.0]
     ray_field: 
       topology: "ray_topo"
-      association: "element"
+      association: "vertex"
       volume_dependent: "false"
-      values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
+      values: [0.0, 0.0, 0.0, ..., 1.0, 1.0]
 
-The Blueprint mesh setup may be familiar by now after reading the other sections, particularly the :ref:`Basic_Mesh_Output` section, so we will only mention here that for each ray mesh, there are the usual three components, a coordinate set, a topology, and a field.
+The Blueprint mesh setup may be familiar by now after reading the other sections, particularly the :ref:`Basic_Mesh_Output` section, so we will only mention here that for the ray mesh, there are the usual three components, a coordinate set, a topology, and a field.
 The topology tells Blueprint that the shapes in question are lines, which is how we represent the rays.
+The field is vertex-associated, meaning that each vertex of each line gets a value, and the value along each line will be linearly interpolated between the values of the line's vertices.
+This makes it easy to see the direction the rays are traveling in, as one end of all lines will be one color and the other end will be another color.
 
-The final topic of note in this section ties in to the following questions: Why are the rays all different colors? What do the colors mean?
-The answer is that the colors mean nothing, and the color choices are entirely arbitrary.
-These colors come from the field values under ``fields/ray_field``, which run from 0 to *n*, where *n* is the number of rays.
-We found that if all the rays were the same color, the resulting render was much harder to visually parse.
-Of course, rendering the rays as one color is still an option.
+Rendering the rays as one solid color is also an option.
 With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed to a Pseudocolor Plot of the ``mesh_ray_topo/ray_field``.
 
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
-To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays_Meshes`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays`.
 
 .. _Spatial_Extents_Meshes:
 
@@ -1755,7 +1641,7 @@ These width and hieght values appear in the :ref:`Other_Metadata` section of the
 The z dimension represents actual energy group bins, which are values that are passed to the query via the query arguments (see :ref:`Standard_Arguments` for more information).
 In the Blueprint example below, the z dimension represents Kiloelectron Volts.
 
-Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging_Planes`) (and translated to the origin), you would get the spatial extents mesh (ignoring the z dimension).
+Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane (:ref:`Camera_Mesh`) (and translated to the origin), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
 
 1. It provides yet another view of the data. Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates. If parallel projection is used (:ref:`Complete_Camera_Specification`), the spatial view of the output is far more useful.
@@ -1812,13 +1698,7 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
         y: "height"
     spectra_coords: 
       ...
-    near_plane_coords: 
-      ...
-    view_plane_coords: 
-      ...
-    far_plane_coords: 
-      ...
-    ray_corners_coords: 
+    camera_coords: 
       ...
     ray_coords: 
       ...
@@ -1833,13 +1713,7 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
       type: "rectilinear"
     spectra_topo: 
       ...
-    near_plane_topo: 
-      ...
-    view_plane_topo: 
-      ...
-    far_plane_topo: 
-      ...
-    ray_corners_topo: 
+    camera_topo: 
       ...
     ray_topo: 
       ...
@@ -1872,13 +1746,7 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
       ...
     path_length_spectra: 
       ...
-    near_plane_field: 
-      ...
-    view_plane_field: 
-      ...
-    far_plane_field: 
-      ...
-    ray_corners_field: 
+    camera_field: 
       ...
     ray_field: 
       ...
@@ -1904,7 +1772,7 @@ To visualize these meshes with VisIt, see :ref:`Visualizing_the_Spatial_Extents_
 1D Spectra Curves
 +++++++++++++++++
 
-To provide yet another view of the intensities and path lengths data, we include two curves, represented as blueprint meshes.
+To provide yet another view of the intensities and path lengths data, we include two curves, represented as Blueprint meshes.
 
 .. figure:: images/XRay_Query_spectra_intensities_front.png
 
@@ -1946,13 +1814,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
         x: "kev"
       labels: 
         x: "energy_group"
-    near_plane_coords: 
-      ...
-    view_plane_coords: 
-      ...
-    far_plane_coords: 
-      ...
-    ray_corners_coords: 
+    camera_coords: 
       ...
     ray_coords: 
       ...
@@ -1966,13 +1828,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
     spectra_topo: 
       coordset: "spectra_coords"
       type: "rectilinear"
-    near_plane_topo: 
-      ...
-    view_plane_topo: 
-      ...
-    far_plane_topo: 
-      ...
-    ray_corners_topo: 
+    camera_topo: 
       ...
     ray_topo: 
       ...
@@ -1997,13 +1853,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       topology: "spectra_topo"
       association: "element"
       values: [356.40441526888, 712.808830537761, 1425.61766107552, 1069.21324547146]
-    near_plane_field: 
-      ...
-    view_plane_field: 
-      ...
-    far_plane_field: 
-      ...
-    ray_corners_field: 
+    camera_field: 
       ...
     ray_field: 
       ...
@@ -2017,7 +1867,7 @@ To visualize this mesh with VisIt, see :ref:`Visualizing_the_1D_Spectra_Curves`.
 Quick Results
 """""""""""""
 
-One of the advantages of using :ref:`Conduit_Output` is the ability to view quick results that give an overview of the output data.
+One of the advantages of using the :ref:`Conduit_Blueprint_Output` options is the ability to view quick results that give an overview of the output data.
 In this section, we will briefly discuss three of those quick results.
 Each of these have been discussed individually in other sections but not all together.
 
@@ -2026,7 +1876,7 @@ This mesh is a 2-dimensional representation of the intensities and path lengths.
 We have collapsed the energy group bins to arrive at this result.
 The point of including this is to give a broad, at-a-glance view of the data.
 If, for example, many energy group bins contain uninteresting data, but a few have important structure, it can be difficult to get at that information using the :ref:`Basic_Mesh_Output` or the 3-dimensional Spatial Extents Mesh.
-Because the Spatial Energy Reduced Mesh fields are the result of taking the sum of the intensities and path lengths fields across all the energy group bins, that structure will be visible at a glance in a render of this mesh, as opposed to needing to be hunted for using VisIt's slicing and threshold tools, for example.
+Because the Spatial Energy Reduced Mesh fields result from taking the sum of the ``intensities`` and ``path_length`` fields across all the energy group bins, that structure will be visible at a glance in a render of this mesh, as opposed to needing to be hunted for using VisIt's slicing and threshold tools, for example.
 
 .. figure:: images/XRay_Query_spatial_energy_reduced_intensities_xray_side.png
 
@@ -2064,21 +1914,15 @@ Consider the following:
 
 .. figure:: images/xray_pitfall_sideview1.png
 
-   An input mesh, imaging planes, and ray corners, viewed from the side.
+   An input mesh and camera mesh, viewed from the side.
 
-If we adjust the query so that the near plane is further away (say maybe from -15 to -35), we will see this:
+If we adjust the query so that the near plane is further away (say maybe from -20 to -40), we will see this:
 
 .. figure:: images/xray_pitfall_sideview2.png
 
    The same set of plots as before, except this time the near plane has been moved back.
 
-.. figure:: images/xray_pitfall_sideview3.png
-
-   Another view of this situation.
-
-The near plane has passed out of the view frustum. 
-This is because the view frustum is determined by the ``view_angle`` argument (see :ref:`Complete_Camera_Specification`).
-In this case, the query is using the default value of 30 degrees, and because the near plane is far enough back, it is outside the frustum.
+Because of the ``view_angle`` (see :ref:`Complete_Camera_Specification`) and placement of the imaging planes, the view frustum has been improperly specified.
 
 So what does this mean for the other query results?
 It means that while we'd expect our Spatial Extents Mesh (:ref:`Spatial_Extents_Meshes`) to look like this:
@@ -2103,24 +1947,19 @@ Here are the same images as above, but this time, in each one, the upper right c
 
 .. figure:: images/xray_pitfall_sideview1_urc.png
 
-   An input mesh, imaging planes, and ray corners, viewed from the side.
+   An input mesh and camera mesh, viewed from the side.
    Note the upper right corner of each imaging plane is marked in green.
 
-If we adjust the query so that the near plane is further away (say maybe from -15 to -35), we will see this:
+If we adjust the query so that the near plane is further away (say maybe from -20 to -40), we will see this:
 
 .. figure:: images/xray_pitfall_sideview2_urc.png
 
    The same set of plots as before, except this time the near plane has been moved back.
    Note the upper right corner of each imaging plane is marked in green.
-   For the near plane (red), the upper right corner is not where we would expect.
+   For the near plane (left), the upper right corner is not where we would expect.
+   The upper right corner for the near plane is on the bottom left because the near plane is reflected across the x and y axes.
 
-.. figure:: images/xray_pitfall_sideview3_urc.png
-
-   Another view of this situation.
-   Note the upper right corner of each imaging plane is marked in green.
-   The upper right corner for the near plane (red) is on the bottom left because the near plane is reflected across the x and y axes.
-
-Following the ray corners, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accommodate the fact that it is behind the frustum.
+Following the corners of the view frustum, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accommodate the fact that it has been pulled back so far.
 This explains why the spatial extents mesh appears upside down; it is actually reflected across the x and y axes.
 
 This special case will trigger a warning message if VisIt_ is run with ``-debug 1``.
@@ -2130,8 +1969,8 @@ This special case will trigger a warning message if VisIt_ is run with ``-debug 
 Visualizing with VisIt
 """"""""""""""""""""""
 
-One of the advantages of using one of the :ref:`Conduit_Output` types is that it is easy to both look at the raw data and generate x ray images.
-This section will cover generating x ray images using VisIt as well as visualizing the other components of the :ref:`Conduit_Output`.
+One of the advantages of using one of the :ref:`Conduit_Blueprint_Output` types is that it is easy to both look at the raw data and generate x ray images.
+This section will cover generating x ray images using VisIt as well as visualizing the other components of the :ref:`Conduit_Blueprint_Output`.
 
 The later Python code examples assume that the following has already been run:
 
@@ -2148,7 +1987,7 @@ The later Python code examples assume that the following has already been run:
    params = dict()
    params["image_size"] = (400, 300)
    # One of the Blueprint output types
-   params["output_type"] = "blueprint hdf5"
+   params["output_type"] = "hdf5"
    params["focus"] = (0., 2.5, 10.)
    params["perspective"] = 1
    params["near_plane"] = -25.
@@ -2202,12 +2041,12 @@ To make the output look like an x ray image, it is simple to change the color ta
 
    A visualization of the basic mesh output using the x ray color table.
 
-.. _Visualizing_the_Imaging_Planes:
+.. _Visualizing_the_Camera:
 
-Visualizing the Imaging Planes
-++++++++++++++++++++++++++++++
+Visualizing the Camera
+++++++++++++++++++++++
 
-To simply render the :ref:`Imaging_Planes` on top of your simulation data we will do the following:
+It is possible to render the :ref:`Camera_Mesh`, or view frustum, on top of your simulation data:
 
 ::
 
@@ -2219,99 +2058,52 @@ To simply render the :ref:`Imaging_Planes` on top of your simulation data we wil
    AddPlot("Pseudocolor", "d")
    DrawPlots()
 
-   # Then we want to go back to the output file and visualize the imaging planes
+   # Then we want to go back to the output file and visualize the camera mesh
    ActivateDatabase("output.root")
-   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
-   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+   AddPlot("Mesh", "mesh_camera_topo")
    DrawPlots()
 
-.. figure:: images/XRay_Query_imaging_planes_uncolored_400x300_front.png
+.. figure:: images/XRay_Query_camera_400x300_front.png
 
-   A visualization of the input mesh along with the imaging planes.
+   A visualization of the input mesh along with the camera setup/view frustum.
 
-This will color the imaging planes all the same color.
-To make them distinct colors like in all the examples throughout this documentation, we can do the following:
+.. _Visualizing_the_Rays:
 
-::
+Visualizing the Rays
+++++++++++++++++++++
 
-   # Make the plot of the near plane active
-   SetActivePlots(1)
-   PseudocolorAtts = PseudocolorAttributes()
-   # We invert the color table so that it is a different color from the far plane
-   PseudocolorAtts.invertColorTable = 1
-   SetPlotOptions(PseudocolorAtts)
-
-   # Make the plot of the view plane active
-   SetActivePlots(2)
-   PseudocolorAtts = PseudocolorAttributes()
-   PseudocolorAtts.colorTableName = "Oranges"
-   PseudocolorAtts.invertColorTable = 1
-   PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-   # We lower the opacity so that the view plane does not obstruct our view of anything.
-   PseudocolorAtts.opacity = 0.7
-   SetPlotOptions(PseudocolorAtts)
-
-   # leave the far plane as is
-
-.. figure:: images/XRay_Query_imaging_planes_400x300_front.png
-
-   A visualization of the input mesh along with the imaging planes, where they have had their colors adjusted.
-
-.. _Visualizing_the_Rays_Meshes:
-
-Visualizing the Rays Meshes
-+++++++++++++++++++++++++++
-
-For the sake of visual clarity, as we visualize the :ref:`Rays_Meshes`, we will build on the imaging planes visualization from above.
-To visualize the ray corners, it is a simple matter of doing the following:
-
-::
-
-   # This plots the ray corners mesh
-   AddPlot("Mesh", "mesh_ray_corners_topo")
-
-   # Alternatively, we could plot the dummy field that is included, but 
-   # plotting just the mesh will make sure the plot is in black, which
-   # looks better with the colors we are using to paint the imaging planes.
-   # AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field")
-
-   DrawPlots()
-
-   # The next few lines of code make the rays appear thicker for visual clarity.
-   MeshAtts = MeshAttributes()
-   MeshAtts.lineWidth = 1
-   SetPlotOptions(MeshAtts)
-
-.. figure:: images/XRay_Query_imaging_planes_and_ray_corners_400x300_front.png
-
-   A visualization of the input mesh, the imaging planes, and the ray corners.
-
-Now we will visualize all of the rays.
+For the sake of visual clarity, as we visualize the :ref:`Ray_Mesh`, we will build on the camera visualization from above.
+To visualize the rays, it is a simple matter of doing the following:
 
 ::
 
    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
    DrawPlots()
 
-.. figure:: images/XRay_Query_imaging_planes_rays_and_ray_corners40x30_front.png
+.. figure:: images/XRay_Query_camera_and_rays_400x300_front.png
 
-   A visualization of the input mesh, the imaging planes, the ray corners, and the rays.
+   A visualization of the input mesh, the camera/view frustum, and the rays.
 
-As discussed in the :ref:`Rays_Meshes` section, this picture is not very helpful, so we will reduce the opacity for greater visual clarity:
+As discussed in the :ref:`Ray_Mesh` section, this picture is not very helpful, so we will apply the :ref:`Index Select operator` to reduce the number of rays we are visualizing for greater visual clarity:
 
 ::
 
-   PseudocolorAtts = PseudocolorAttributes()
-   PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-   PseudocolorAtts.opacity = 0.5
-   SetPlotOptions(PseudocolorAtts)
+   AddOperator("IndexSelect", 0)
+   IndexSelectAtts = IndexSelectAttributes()
+   IndexSelectAtts.maxDim = IndexSelectAtts.ThreeD
+   IndexSelectAtts.dim = IndexSelectAtts.OneD
+   IndexSelectAtts.xAbsMax = -1
+   IndexSelectAtts.xMin = 0
+   IndexSelectAtts.xMax = -1
+   IndexSelectAtts.xIncr = incr
+   IndexSelectAtts.xWrap = 0
+   SetOperatorOptions(IndexSelectAtts, 0, 0)
 
-.. figure:: images/XRay_Query_imaging_planes_transparent_rays_and_ray_corners_40x30_front.png
+.. figure:: images/XRay_Query_camera_and_rays_400x300_low_front.png
 
-   A visualization of the input mesh, the imaging planes, the ray corners, and the rays, with their opacity adjusted.
+   A visualization of the input mesh, the camera/view frustum, and the rays, with the index select operator applied to increase visual clarity.
 
-See the :ref:`Rays_Meshes` section for more tips for making sense of the rays.
+See the :ref:`Ray_Mesh` section for more tips for making sense of the rays.
 
 .. _Visualizing_the_Spatial_Extents_Meshes:
 
@@ -2415,7 +2207,7 @@ So, instead of adding a Pseudocolor plot, we will add a Curve plot instead.
 Introspecting with Python
 """""""""""""""""""""""""
 
-We have covered visualizing every component of the :ref:`Conduit_Output` in the :ref:`Visualizing_with_VisIt` section; now we will demonstrate how to access the raw data using Python.
+We have covered visualizing every component of the :ref:`Conduit_Blueprint_Output` in the :ref:`Visualizing_with_VisIt` section; now we will demonstrate how to access the raw data using Python.
 
 .. _Introspecting_with_Python_Overview:
 
@@ -2542,13 +2334,13 @@ To actually extract the :ref:`Basic_Mesh_Output` data and not just see it, we ca
 
 ::
 
-   # Extract the actual x values, label, and units
+   # Extract the actual x values (as a numpy array), label, and units
    xvals = xrayout["domain_000000/coordsets/image_coords/values/x"]
    xlabel = xrayout["domain_000000/coordsets/image_coords/labels/x"]
    xunits = xrayout["domain_000000/coordsets/image_coords/units/x"]
    # Extracting the same for y and z is similar
 
-   # Extract units and values for the intensity output
+   # Extract units and values (as a numpy array) for the intensity output
    intensity_units = xrayout["domain_000000/fields/intensities/units"]
    intensity_values = xrayout["domain_000000/fields/intensities/values"]
    # Extracting the same for path_length is similar
@@ -2742,7 +2534,7 @@ Why is my image blank?
 Is the camera facing the right way?
 Are the near and far clipping planes in good positions?
 
-This line of questioning can be quickly answered by :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
+This line of questioning can be quickly answered by :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
 ::
 
@@ -2752,32 +2544,26 @@ This line of questioning can be quickly answered by :ref:`Visualizing_the_Imagin
    # that was output from the query.
    OpenDatabase("output.root")
 
-   # Add pseudocolor plots of each of the imaging planes.
-   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
-   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
-
-   # Add a mesh plot of the ray corners.
-   AddPlot("Mesh", "mesh_ray_corners_topo")
+   # Add a mesh plot of the camera mesh.
+   AddPlot("Mesh", "mesh_camera_topo")
 
    DrawPlots()
 
-Running this code using VisIt should result in renders like those shown in :ref:`Imaging_Planes_and_Rays_Meshes`.
-To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_the_Imaging_Planes`.
+Running this code using VisIt should result in renders like those shown in :ref:`Camera_and_Rays_Meshes`.
 
 .. figure:: images/xray_troubleshooting_2.png
 
    An example of what could be going wrong. The simulated detector is not positioned correctly.
 
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
-Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
+Once the camera has been visualized, it is clear to see where it is looking, and if the near and far clipping planes are appropriately placed.
+Information on visualizing the rays and camera can be found in :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
 Where are the rays intersecting my geometry?
 ++++++++++++++++++++++++++++++++++++++++++++
 
 Answering this question is similarly simple.
-We will want to visualize the :ref:`Rays_Meshes` on top of our input mesh.
+We will want to visualize the :ref:`Ray_Mesh` on top of our input mesh.
 
 ::
 
@@ -2787,22 +2573,19 @@ We will want to visualize the :ref:`Rays_Meshes` on top of our input mesh.
    # that was output from the query.
    OpenDatabase("output.root")
 
-   # Add pseudocolor plots of each of the imaging planes.
-   # These help to add clarity to our final render.
-   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
-   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
+   # Add a mesh plot of the camera mesh.
+   AddPlot("Mesh", "mesh_camera_topo")
 
-   # Add a mesh plot of the rays.
+   # Add a pseudocolor plot of the rays.
    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
 
    DrawPlots()
 
-Running this code using VisIt should result in renders like those shown in :ref:`Rays_Meshes`.
+Running this code using VisIt should result in renders like those shown in :ref:`Ray_Mesh`.
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
+See the text on visualizing the rays and camera in :ref:`Visualizing_the_Camera` and :ref:`Visualizing_the_Rays`.
 
-.. figure:: images/XRay_Query_imaging_planes_transparent_rays_and_ray_corners_40x30_front.png
+.. figure:: images/XRay_Query_camera_and_transparent_rays_400x300_medium_front.png
 
    An example render made using the above code.
 
