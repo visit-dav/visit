@@ -12,7 +12,7 @@ set(visit_blosc2_library  ${visit_blosc2_root}/lib/libblosc2.lib)
 # has this already been built
 if(EXISTS ${visit_blosc2_include}/blosc2.h AND
    EXISTS ${visit_blosc2_library})
-    if(BUILD_ALL OR ENABLE_BLOSC2)
+    if(ENABLE_BLOSC2)
         message(STATUS "BLOSC2 already installed")
     endif()
     set(BLOSC2_PREBUILT TRUE)
@@ -20,7 +20,7 @@ if(EXISTS ${visit_blosc2_include}/blosc2.h AND
 endif()
 
 # if not requested,return
-if(NOT (BUILD_ALL OR ENABLE_BLOSC2))
+if(NOT ENABLE_BLOSC2)
     return()
 endif()
 
@@ -51,5 +51,4 @@ ExternalProject_Add(BLOSC2
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/blosc2-patch.cmake)
-
 

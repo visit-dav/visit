@@ -12,7 +12,7 @@ set(visit_cfitsio_library  ${visit_cfitsio_root}/lib/cfitsio.lib)
 # has this already been built
 if(EXISTS ${visit_cfitsio_include}/fitsio.h AND
    EXISTS ${visit_cfitsio_library})
-    if(BUILD_ALL OR ENABLE_CFITSIO)
+    if(ENABLE_CFITSIO)
         message(STATUS "CFITSIO already installed")
     endif()
     set(CFITSIO_PREBUILT TRUE)
@@ -20,7 +20,7 @@ if(EXISTS ${visit_cfitsio_include}/fitsio.h AND
 endif()
 
 # if not requested return
-if(NOT (BUILD_ALL OR ENABLE_CFITSIO))
+if(NOT ENABLE_CFITSIO)
     return()
 endif()
 
@@ -55,5 +55,4 @@ ExternalProject_Add( CFITSIO
     CMAKE_CACHE_ARGS ${CFITSIO_CMAKE_OPTIONS}
     DEPENDS          ${CFITSIO_DEPENDS}
     ${LOGGING_OPTIONS})
-
 

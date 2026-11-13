@@ -15,7 +15,7 @@ set(visit_qt_config_dir ${visit_qt_root}/lib/cmake/Qt${QT_VERSION_MAJOR})
 # has this already been built
 if(EXISTS ${visit_qt_root}/include/QtWidgets/qapplication.h AND
    EXISTS ${visit_qt_root}/lib/Qt6Widgets.lib)
-    if(BUILD_ALL OR ENABLE_QT)
+    if(ENABLE_QT)
         message(STATUS "QT already installed.")
     endif()
     set(QT_PREBUILT TRUE)
@@ -23,7 +23,7 @@ if(EXISTS ${visit_qt_root}/include/QtWidgets/qapplication.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_QT))
+if(NOT ENABLE_QT)
     return()
 endif()
 
@@ -99,4 +99,3 @@ ExternalProject_Add(QTSVG
     INSTALL_COMMAND   ${CMAKE_COMMAND} --install .
     DEPENDS           QT
     ${LOGGING_OPTIONS})
-

@@ -9,7 +9,7 @@ set(visit_openexr_dir      ${visit_install_root}/openexr/${OPENEXR_VERSION})
 # has this already been built
 if(EXISTS ${visit_openexr_dir}/include/openexr.h AND
    EXISTS ${visit_openexr_dir}/lib/OpenEXR-3_3.lib)
-    if(BUILD_ALL OR ENABLE_OPENEXR)
+    if(ENABLE_OPENEXR)
        message(STATUS "OpenEXR already installed.")
     endif()
     set(OPENEXR_PREBUILT TRUE)
@@ -17,7 +17,7 @@ if(EXISTS ${visit_openexr_dir}/include/openexr.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_OPENEXR))
+if(NOT ENABLE_OPENEXR)
     return()
 endif()
 
@@ -55,4 +55,3 @@ ExternalProject_Add(OPENEXR
     INSTALL_DIR ${visit_install_root}/openexr/${OPENEXR_VERSION}
     CMAKE_CACHE_ARGS ${OPENEXR_CMAKE_OPTIONS}
     ${LOGGING_OPTIONS})
-

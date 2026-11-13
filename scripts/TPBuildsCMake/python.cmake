@@ -13,7 +13,7 @@ set(visit_python_library    ${visit_python_dir}/libs/python${PYTHON_VERSION_MAJO
 # has this already been built
 if(EXISTS ${visit_python_include}/python.h AND
    EXISTS ${visit_python_library})
-    if(BUILD_ALL OR ENABLE_PYTHON)
+    if(ENABLE_PYTHON)
         message(STATUS "PYTHON already installed.")
     endif()
     set(PYTHON_PREBUILT TRUE )
@@ -21,7 +21,7 @@ if(EXISTS ${visit_python_include}/python.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_PYTHON))
+if(NOT ENABLE_PYTHON)
     return()
 endif()
 
@@ -65,4 +65,3 @@ ExternalProject_Add(PYTHON
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/python-patch.cmake)
-

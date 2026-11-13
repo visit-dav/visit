@@ -11,7 +11,7 @@ set(visit_h5part_library ${visit_h5part_root}/lib/h5part.lib)
 # has this already been built
 if(EXISTS ${visit_h5part_include}/h5part.h AND
    EXISTS ${visit_h5part_library})
-    if(BUILD_ALL OR ENABLE_H5PART)
+    if(ENABLE_H5PART)
         message(STATUS "H5PART already installed.")
     endif()
     set(H5PART_PREBUILT TRUE)
@@ -19,7 +19,7 @@ if(EXISTS ${visit_h5part_include}/h5part.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_H5PART))
+if(NOT ENABLE_H5PART)
     return()
 endif()
 
@@ -55,4 +55,3 @@ ExternalProject_Add(H5PART
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/h5part-patch.cmake)
-
