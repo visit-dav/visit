@@ -37,6 +37,11 @@ PLATFORMS = {
         "build_arg": "FEDORA_VERSION",
         "default_version": "44",
     },
+    "manylinux": {
+        "dockerfile": "Dockerfile-manylinux",
+        "build_arg": "MANYLINUX_VERSION",
+        "default_version": "2_28",
+    },
 }
 
 BUILD_HELPERS = (

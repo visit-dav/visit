@@ -41,13 +41,16 @@ python3 /path/to/visit/scripts/docker/create_release.py \
 The Ubuntu Dockerfile supports 22.04, 24.04, and 26.04 through
 `UBUNTU_VERSION`. The Rocky Dockerfile supports 8.9 and 9.3 through
 `ROCKY_VERSION`. Debian and Fedora accept `DEBIAN_VERSION` and
-`FEDORA_VERSION`, respectively. Fedora 44 is the default Fedora release:
+`FEDORA_VERSION`, respectively. The manylinux Dockerfile defaults to the
+`manylinux_2_28_x86_64` image and accepts `MANYLINUX_VERSION`. Fedora 44 is the
+default Fedora release:
 
 ```console
 python3 create_release.py --source "$src" --build-visit "$bv" --platform ubuntu --os-version 22.04
 python3 create_release.py --source "$src" --build-visit "$bv" --platform rocky --os-version 8.9
 python3 create_release.py --source "$src" --build-visit "$bv" --platform debian --os-version 12
 python3 create_release.py --source "$src" --build-visit "$bv" --platform fedora --os-version 44
+python3 create_release.py --source "$src" --build-visit "$bv" --platform manylinux --os-version 2_28
 ```
 
 Use `--engine podman` for Podman. On LC, first enable Podman in the calling
