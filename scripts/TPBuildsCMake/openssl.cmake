@@ -19,7 +19,7 @@ set(visit_openssl_library    ${visit_openssl_root}/lib/libssl.lib)
 # has this already been built
 if(EXISTS ${visit_openssl_include}/ssl.h AND
    EXISTS ${visit_openssl_library})
-    if(BUILD_ALL OR ENABLE_OPENSSL)
+    if(ENABLE_OPENSSL)
        message(STATUS "OPENSSL already installed.")
     endif()
     set(OPENSSL_PREBUILT TRUE )
@@ -27,7 +27,7 @@ if(EXISTS ${visit_openssl_include}/ssl.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_OPENSSL))
+if(NOT ENABLE_OPENSSL)
     return()
 endif()
 
@@ -47,4 +47,3 @@ ExternalProject_Add(OPENSSL
     BUILD_COMMAND      nmake
     INSTALL_COMMAND    nmake install
     ${LOGGING_OPTIONS})
-

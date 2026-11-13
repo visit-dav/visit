@@ -11,7 +11,7 @@ set(visit_mfem_library ${visit_mfem_root}/lib/mfem.lib)
 # has this already been built
 if(EXISTS ${visit_mfem_include}/mfem.hpp AND
    EXISTS ${visit_mfem_library})
-    if(BUILD_ALL OR ENABLE_MFEM)
+    if(ENABLE_MFEM)
         message(STATUS "MFEM already installed.")
     endif()
     set(MFEM_PREBUILT TRUE)
@@ -19,7 +19,7 @@ if(EXISTS ${visit_mfem_include}/mfem.hpp AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_MFEM))
+if(NOT ENABLE_MFEM)
     return()
 endif()
 
@@ -62,4 +62,3 @@ ExternalProject_Add(MFEM
     CMAKE_CACHE_ARGS ${MFEM_CMAKE_OPTIONS}
     DEPENDS          ${MFEM_DEPENDS}
     ${LOGGING_OPTIONS})
-

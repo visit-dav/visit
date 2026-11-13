@@ -11,7 +11,7 @@ set(visit_xdmf_library_dir ${visit_xdmf_root}/lib)
 # has this already been built
 if(EXISTS ${visit_xdmf_include_dir}/Xdmf.h AND
    EXISTS ${visit_xdmf_library_dir}/Xdmf.lib)
-    if(BUILD_ALL OR ENABLE_XDMF)
+    if(ENABLE_XDMF)
         message(STATUS "XDMF already installed.")
     endif()
     set(XDMF_PREBUILT TRUE)
@@ -19,7 +19,7 @@ if(EXISTS ${visit_xdmf_include_dir}/Xdmf.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_XDMF))
+if(NOT ENABLE_XDMF)
     return()
 endif()
 
@@ -76,4 +76,3 @@ ExternalProject_Add(XDMF
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/xdmf-patch.cmake)
-

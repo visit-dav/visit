@@ -35,11 +35,54 @@ set(CMAKE_INSTALL_PREFIX ${visit_install_root})
 
 
 
-include(CMakeDependentOption)
-
 # Library options
-option(BUILD_ALL "Build all supported Third Party libs. If off, individual libraries can be built via ENABLE_XXX where XXX is the capitalized name of the library" ON )
+set(VISIT_REQUIRED_LIBRARIES
+    JPEG
+    OPENSSL
+    PNG
+    PYTHON
+    QT
+    TIFF
+    VTK
+    ZLIB)
+
+set(VISIT_OPTIONAL_LIBRARIES
+    ADIOS2
+    ANARI
+    BLOSC2
+    CFITSIO
+    CGNS
+    CONDUIT
+    GDAL
+    H5PART
+    HDF5
+    ICET
+    MFEM
+    MILI
+    NETCDF
+    OPENEXR
+    OSPRAY
+    QWT
+    SILO
+    VTKM
+    XDMF)
+
+option(BUILD_OPTIONAL
+       "Build all optional third-party libraries by default"
+       OFF)
 option(BUILD_PARALLEL "Enable/Disable parallel options in libraries that support them." ON )
+
+foreach(library IN LISTS VISIT_REQUIRED_LIBRARIES)
+    option(ENABLE_${library} "Enable building required library ${library}" ON)
+endforeach()
+
+# BUILD_OPTIONAL supplies the initial value only. An explicit
+# -DENABLE_<LIBRARY>=ON/OFF always takes precedence, including when
+# BUILD_OPTIONAL is enabled.
+foreach(library IN LISTS VISIT_OPTIONAL_LIBRARIES)
+    option(ENABLE_${library} "Enable building optional library ${library}"
+           ${BUILD_OPTIONAL})
+endforeach()
 
 if(BUILD_PARALLEL)
     find_package(MPI)
@@ -48,33 +91,6 @@ if(BUILD_PARALLEL)
         set(BUILD_PARALLEL OFF)
     endif()
 endif()
-
-cmake_dependent_option(ENABLE_ADIOS2 "Enable building adios2" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_ANARI "Enable building anari" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_CFITSIO "Enable building cfitsio" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_CGNS "Enable building cgns" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_CONDUIT "Enable building conduit" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_HDF5 "Enable building hdf5" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_H5PART "Enable building H5PART" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_ICET "Enable building ICET" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_JPEG "Enable building jpeg" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_MFEM "Enable building mfem" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_MILI "Enable building mili" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_NETCDF "Enable building NETCDF" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_OPENEXR "Enable building OpenEXR" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_OSPRAY "Enable building ospray" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_PYTHON "Enable building python" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_OPENSSL "Enable building openssl" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_QT "Enable building qt" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_TIFF "Enable building tiff" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_PNG "Enable building png" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_VTK "Enable building vtk" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_VTKM "Enable building vtk-m" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_ZLIB "Enable building zlib" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_XDMF "Enable building Xdmf" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_GDAL "Enable building GDAL" OFF "NOT BUILD_ALL" ON)
-cmake_dependent_option(ENABLE_QWT "Enable building QWT" OFF "NOT BUILD_ALL" ON)
-
 
 # set up some necessary  variables, and include the .cmake file for each library.
 include(ExternalProject)
@@ -122,4 +138,3 @@ include(openexr.cmake)
 include(qwt.cmake)
 include(vtkm.cmake)
 include(xdmf.cmake)
-

@@ -11,7 +11,7 @@ set(visit_netcdf_library ${visit_netcdf_root}/lib/netcdf.lib)
 # has this already been built
 if(EXISTS ${visit_netcdf_include}/netcdf.h AND
    EXISTS ${visit_netcdf_library})
-    if(BUILD_ALL OR ENABLE_NETCDF)
+    if(ENABLE_NETCDF)
         message(STATUS "NETCDF already installed.")
     endif()
     set(NETCDF_PREBUILT TRUE)
@@ -19,7 +19,7 @@ if(EXISTS ${visit_netcdf_include}/netcdf.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_NETCDF))
+if(NOT ENABLE_NETCDF)
     return() 
 endif()
 
@@ -83,4 +83,3 @@ ExternalProject_Add(NETCDF
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/netcdf-patch.cmake)
-

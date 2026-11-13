@@ -13,7 +13,7 @@ set(visit_anari_include_dir ${visit_anari_root}/include/anari)
 # has this already been built
 if(EXISTS ${visit_anari_include_dir}/anari.h AND
    EXISTS ${visit_anari_library_dir}/anari.lib)
-    if(BUILD_ALL OR ENABLE_ANARI)
+    if(ENABLE_ANARI)
         message(STATUS "ANARI already installed.")
     endif()
     set(ANARI_PREBUILT TRUE)
@@ -21,7 +21,7 @@ if(EXISTS ${visit_anari_include_dir}/anari.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_ANARI))
+if(NOT ENABLE_ANARI)
   return()
 endif()
 
@@ -58,4 +58,3 @@ ExternalProject_Add(ANARI
     CMAKE_CACHE_ARGS ${ANARI_CMAKE_OPTIONS}
     DEPENDS          ${ANARI_DEPENDS}
     ${LOGGING_OPTIONS})
-

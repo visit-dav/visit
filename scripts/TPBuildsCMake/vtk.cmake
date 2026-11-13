@@ -11,7 +11,7 @@ set(visit_vtk_library_dir ${visit_vtk_root}/lib)
 # has this already been built
 if(EXISTS ${visit_vtk_include_dir}/vtkActor.h AND
    EXISTS ${visit_vtk_library_dir}/vtkCommonCore-${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR}.lib)
-    if(BUILD_ALL OR ENABLE_VTK)
+    if(ENABLE_VTK)
         message(STATUS "VTK already installed.")
     endif()
     set(VTK_PREBUILT TRUE)
@@ -19,7 +19,7 @@ if(EXISTS ${visit_vtk_include_dir}/vtkActor.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_VTK))
+if(NOT ENABLE_VTK)
     return()
 endif()
 
@@ -65,11 +65,6 @@ set(VTK_CMAKE_OPTIONS
     -DPython3_EXECUTABLE:FILEPATH=${visit_python_executable}
     -DPython3_INCLUDE_DIR:PATH=${visit_python_include}
     -DPython3_LIBRARY:FILEPATH=${visit_python_library}
-    -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=YES
-    -Dospray_DIR:PATH=${visit_ospray_config_dir}
-    -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=YES
-    -DVTK_MODULE_ENABLE_VTK_FiltersTexture:STRING=YES
-    -Danari_DIR:PATH=${visit_anari_config_dir}
     -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:STRING=YES
     -DZLIB_BUILD_EXAMPLES:BOOL=OFF
     -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
@@ -86,16 +81,33 @@ set(VTK_CMAKE_OPTIONS
 
 set(VTK_DEPENDS)
 
+if(ENABLE_OSPRAY)
+    list(APPEND VTK_CMAKE_OPTIONS
+         -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=YES
+         -Dospray_DIR:PATH=${visit_ospray_config_dir})
+    if(NOT OSPRAY_PREBUILT)
+        list(APPEND VTK_DEPENDS OSPRAY)
+    endif()
+else()
+    list(APPEND VTK_CMAKE_OPTIONS
+         -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=NO)
+endif()
+
+if(ENABLE_ANARI)
+    list(APPEND VTK_CMAKE_OPTIONS
+         -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=YES
+         -DVTK_MODULE_ENABLE_VTK_FiltersTexture:STRING=YES
+         -Danari_DIR:PATH=${visit_anari_config_dir})
+    if(NOT ANARI_PREBUILT)
+        list(APPEND VTK_DEPENDS ANARI)
+    endif()
+else()
+    list(APPEND VTK_CMAKE_OPTIONS
+         -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=NO)
+endif()
+
 if(NOT PYTHON_PREBUILT)
     list(APPEND VTK_DEPENDS PYTHON)
-endif()
-
-if(NOT OSPRAY_PREBUILT)
-    list(APPEND VTK_DEPENDS OSPRAY)
-endif()
-
-if(NOT ANARI_PREBUILT)
-    list(APPEND VTK_DEPENDS ANARI)
 endif()
 
 if(NOT ZLIB_PREBUILT)
@@ -128,4 +140,3 @@ ExternalProject_Add(VTK
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/vtk-patch.cmake)
-

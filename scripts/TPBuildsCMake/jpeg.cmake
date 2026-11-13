@@ -17,7 +17,7 @@ set(visit_jpeg_library     ${visit_jpeg_library_dir}/jpeg.lib)
 # has this already been built
 if(EXISTS ${visit_jpeg_include}/jpeglib.h AND
    EXISTS ${visit_jpeg_library})
-    if(BUILD_ALL OR ENABLE_JPEG)
+    if(ENABLE_JPEG)
         message(STATUS "JPEG already installed.")
     endif()
     set(JPEG_PREBUILT TRUE)
@@ -25,7 +25,7 @@ if(EXISTS ${visit_jpeg_include}/jpeglib.h AND
 endif()
 
 # if not requsted, return
-if(NOT (BUILD_ALL OR ENABLE_JPEG))
+if(NOT ENABLE_JPEG)
     return()
 endif()
 
@@ -49,4 +49,3 @@ ExternalProject_Add(JPEG
     COMMAND           ${CMAKE_COMMAND} -E copy jconfig.h jerror.h jmorecfg.h jpeglib.h  ${visit_jpeg_include}
     COMMAND           ${CMAKE_COMMAND} -E copy Release/x64/jpeg.lib ${visit_jpeg_library_dir}
     ${LOGGING_OPTIONS})
-

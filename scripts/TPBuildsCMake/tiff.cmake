@@ -12,7 +12,7 @@ set(visit_tiff_library ${visit_tiff_root}/lib/tiff.lib)
 # has this already been built
 if(EXISTS ${visit_tiff_include}/tiff.h AND
    EXISTS ${visit_tiff_library})
-    if(BUILD_ALL OR ENABLE_TIFF)
+    if(ENABLE_TIFF)
         message(STATUS "TIFF already installed.")
     endif()
     set(TIFF_PREBUILT TRUE)
@@ -20,7 +20,7 @@ if(EXISTS ${visit_tiff_include}/tiff.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_TIFF))
+if(NOT ENABLE_TIFF)
     return()
 endif()
 
@@ -57,4 +57,3 @@ ExternalProject_Add(TIFF
     CMAKE_CACHE_ARGS ${TIFF_CMAKE_OPTIONS}
     DEPENDS          ${TIFF_DEPENDS}
     ${LOGGING_OPTIONS})
-

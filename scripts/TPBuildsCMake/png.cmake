@@ -13,7 +13,7 @@ set(visit_png_library     ${visit_png_library_dir}/libpng16.lib)
 # has this already been built
 if(EXISTS ${visit_png_include}/png.h AND
    EXISTS ${visit_png_library})
-    if(BUILD_ALL OR ENABLE_PNG)
+    if(ENABLE_PNG)
         message(STATUS "PNG already installed.")
     endif()
     set(PNG_PREBUILT TRUE)
@@ -21,7 +21,7 @@ if(EXISTS ${visit_png_include}/png.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_PNG))
+if(NOT ENABLE_PNG)
     return()
 endif()
 
@@ -51,4 +51,3 @@ ExternalProject_Add(PNG
     CMAKE_CACHE_ARGS  ${PNG_CMAKE_OPTIONS}
     DEPENDS           ${PNG_DEPENDS} 
     ${LOGGING_OPTIONS})
-

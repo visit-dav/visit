@@ -12,7 +12,7 @@ set(visit_cgns_library  ${visit_cgns_root}/lib/cgnsdll.lib)
 # has this already been built
 if(EXISTS ${visit_cgns_include}/cgnslib.h AND
    EXISTS ${visit_cgns_library})
-    if(BUILD_ALL OR  ENABLE_CGNS)
+    if(ENABLE_CGNS)
         message(STATUS "CGNS already installed")
     endif()
     set(CGNS_PREBUILT TRUE)
@@ -20,7 +20,7 @@ if(EXISTS ${visit_cgns_include}/cgnslib.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR  ENABLE_CGNS))
+if(NOT ENABLE_CGNS)
     return() 
 endif()
 
@@ -67,5 +67,4 @@ ExternalProject_Add( CGNS
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/cgns-patch.cmake)
-
 

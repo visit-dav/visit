@@ -11,7 +11,7 @@ set(visit_conduit_library_dir ${visit_conduit_root}/lib)
 # has this already been built
 if(EXISTS ${visit_conduit_include_dir}/conduit.h AND
    EXISTS ${visit_conduit_library_dir}/conduit.lib)
-    if(BUILD_ALL OR ENABLE_CONDUIT)
+    if(ENABLE_CONDUIT)
         message(STATUS "CONDUIT already installed.")
     endif()
     set(CONDUIT_PREBUILT TRUE)
@@ -19,7 +19,7 @@ if(EXISTS ${visit_conduit_include_dir}/conduit.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_CONDUIT))
+if(NOT ENABLE_CONDUIT)
     return()
 endif()
 
@@ -75,7 +75,7 @@ if(NOT SILO_PREBUILT)
     list(APPEND CONDUIT_DEPENDS SILO)
 endif()
 
-if(BUILD_ALL OR ENABLE_PYTHON)
+if(ENABLE_PYTHON)
     list(APPEND CONDUIT_CMAKE_OPTIONS
          -DENABLE_PYTHON:BOOL=ON
          -DPYTHON_EXECUTABLE:FILEPATH=${visit_python_executable})
@@ -93,4 +93,3 @@ ExternalProject_Add(CONDUIT
     SOURCE_SUBDIR    src
     DEPENDS          ${CONDUIT_DEPENDS}
     ${LOGGING_OPTIONS})
-
