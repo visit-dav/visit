@@ -45,12 +45,16 @@ The following options can be passed on the command line:
                         Default: C:/Program Files/Git/user/bin/patch.exe
                         -Dvisit_patch_command:FILEPATH=/path/to/patch.exe
 
-    BUILD_ALL           Build all supported libraries.
-                        Default: ON
-                        -DBUILD_ALL:BOOL=OFF
+    BUILD_OPTIONAL      Build all optional libraries. Required libraries are
+                        built by default regardless of this setting.
+                        Default: OFF
+                        -DBUILD_OPTIONAL:BOOL=ON
 
-    ENABLE_XXX          Enable a specific library when BUILD_ALL is OFF where XXX is the capitalized name of the library.
-                        See list of libraries below for all available options.
+    ENABLE_XXX          Enable or disable a specific library, where XXX is the
+                        capitalized name of the library. An explicit setting
+                        overrides the default supplied by its group.
+                        -DENABLE_VTK:BOOL=OFF
+                        -DENABLE_CONDUIT:BOOL=ON
 
      VISIT_LOGGING      If ON, enable logging of all steps (download, verify, patch, configure build, install) for each library being built.
                         The logs are library-specific and are written to that library's subdirectory in the build.
@@ -67,10 +71,30 @@ Paths to the following executables must be part of your PATH environment varaiab
 * nasm  (for openssl (needed by qt))
 * perl  (for openssl (needed by qt))
 
-### Supported Libraries
+### Required Libraries
+
+Required libraries are enabled by default. Each can be disabled with its
+individual `ENABLE_XXX` option.
+
+* JPEG
+* OPENSSL
+* PNG
+* PYTHON
+* QT
+* TIFF
+* VTK
+* ZLIB
+
+### Optional Libraries
+
+Optional libraries are disabled by default. Enable all of them when creating a
+build directory with `-DBUILD_OPTIONAL:BOOL=ON`, or enable selected libraries
+with their individual `ENABLE_XXX` options. Individual settings can also be
+used to exclude libraries when `BUILD_OPTIONAL` is on.
 
 * ADIOS2
 * ANARI
+* BLOSC2
 * CFITSIO
 * CGNS
 * CONDUIT
@@ -78,22 +102,15 @@ Paths to the following executables must be part of your PATH environment varaiab
 * HDF5
 * H5PART
 * ICET
-* JPEG
 * MFEM
 * MILI
 * NETCDF
-* OPENSSL
-* OPENXR
+* OPENEXR
 * OSPRAY
-* PNG
-* PYTHON
-* QT
 * QWT
-* TIFF
-* VTK
+* SILO
 * VTKM
 * XDMF
-* ZLIB
 
 ### To use the generated libraries when building VisIt.
 
@@ -115,4 +132,3 @@ These modules should be updated whenever build_visit modules are updated.
 The same version of libraries should be used whenever possible.
 Only generic patches are needed, not patches specific to Linux or Macos.
 When updating any library that has other libraries depend on (like hdf5-> silo), the other libraries' build should be tested along with the library being updated.
-

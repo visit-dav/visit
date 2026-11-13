@@ -12,7 +12,7 @@ set(visit_silo_library    ${visit_silo_root}/lib/siloh5.lib)
 # has this already been built
 if(EXISTS ${visit_silo_include}/silo.h AND
    EXISTS ${visit_silo_library})
-    if(BUILD_ALL OR ENABLE_SILO)
+    if(ENABLE_SILO)
         message(STATUS "SILO already installed.")
     endif()
     set(SILO_PREBUILT TRUE )
@@ -20,7 +20,7 @@ if(EXISTS ${visit_silo_include}/silo.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_SILO))
+if(NOT ENABLE_SILO)
     return()
 endif()
 
@@ -47,7 +47,7 @@ if(NOT HDF5_PREBUILT)
     list(APPEND SILO_DEPENDS HDF5)
 endif()
 
-if(BUILD_ALL OR ENABLE_QT)
+if(ENABLE_QT)
     list(APPEND SILO_CMAKE_OPTIONS
          -DSILO_ENABLE_SILEX:BOOL=ON
          -DSILO_QT6_DIR:FILEPATH=${visit_qt_root})
@@ -68,4 +68,3 @@ ExternalProject_Add(SILO
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/silo-patch.cmake)
-

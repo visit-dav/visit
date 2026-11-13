@@ -12,7 +12,7 @@ set(visit_zlib_library ${visit_zlib_root}/lib/zlib.lib)
 # has this already been built
 if(EXISTS ${visit_zlib_include}/zlib.h AND
    EXISTS ${visit_zlib_library})
-    if(BUILD_ALL OR ENABLE_ZLIB)
+    if(ENABLE_ZLIB)
         message(STATUS "ZLIB already installed.")
     endif()
     set(ZLIB_PREBUILT TRUE)
@@ -20,7 +20,7 @@ if(EXISTS ${visit_zlib_include}/zlib.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_ZLIB))
+if(NOT ENABLE_ZLIB)
    return()
 endif()
 
@@ -44,4 +44,3 @@ ExternalProject_Add(ZLIB
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/zlib-patch.cmake )
-
