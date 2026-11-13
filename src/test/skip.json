@@ -120,7 +120,6 @@
                     {"category":"queries","file":"avg_value.py","cases":["avg_value_02"]},
                     {"category":"queries","file":"pick.py","cases":["Pick3DTo2D"]},
                     {"category":"rendering","file":"volume_rect_multiDomain.py","cases":["volume_20"]},
-                    {"category":"databases","file":"pixie.py","cases":["pixie_06"]},
                     {"category":"databases","file":"boxlib.py","cases":["boxlib_01","boxlib_03"]},
                     {"category":"operators","file":"lcs_ic_2.py"},
                     {"category":"operators","file":"lcs_lc_2.py"},
