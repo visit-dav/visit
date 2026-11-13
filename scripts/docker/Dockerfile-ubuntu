@@ -61,14 +61,13 @@ RUN apt-get update && apt-get install -y \
     libxext-dev \
     libsm6 \
     libice6 \
-    libglib2.0-0 \
+    libglib2.0-dev \
     libxi-dev \
     xorg-dev \
     autoconf \
     libtool \
     m4 \
     automake \
-    libxml2 \
     libxml2-dev \
     vim \
     cpio \
@@ -76,7 +75,7 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     locales \
  && rm -rf /var/lib/apt/lists/* \
- && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ && localedef -i en_US -c -f UTF-8 en_US.UTF-8
 ENV LANG=en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
