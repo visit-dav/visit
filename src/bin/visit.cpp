@@ -44,23 +44,6 @@ typedef vector<string> stringVector;
 
 
 /*
- * Macros
- */
-#define ARG(A) (strcmp((A), argv[i]) == 0)
-
-#define ENDSWITH(A) EndsWith(argv[i], A)
-
-#define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
-
-#define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
-
-#define HASSPACE(A) (strstr(A, " ") != NULL)
-#define HASANGLEBRACKET(A) (strstr(A, "<") != NULL || strstr(A, ">") != NULL)
-#define HASSPECIAL(A) (HASSPACE(A) || HASANGLEBRACKET(A))
-#define DQUOTEARG(A) (tmpArg = string("\"") + string(A) + string("\""))
-
-
-/*
  * Constants
  */
 
@@ -172,6 +155,265 @@ static bool EndsWith(const char *s, const char *suffix)
         retval = strcmp(start, suffix) == 0;
     }
     return retval;
+}
+
+struct LaunchOptions
+{
+    bool addMovieArguments = false;
+    bool addCinemaArguments = false;
+    bool addVISITARGS = true;
+    bool addPluginVars = false;
+    bool newConsole = false;
+    bool noloopback = false;
+    bool parallel = false;
+    bool envOnly = false;
+    bool noDialog = false;
+    bool debugLaunch = false;
+    bool apitrace = false;
+    bool addScriptArguments = false;
+    bool showHelp = false;
+    bool showVersion = false;
+
+    string nps = "2";
+    string component = "gui";
+    string scriptFile;
+    string error;
+    stringVector componentArgs;
+    stringVector engineArgs;
+    stringVector scriptArgs;
+};
+
+static bool
+TakeOptionValue(const stringVector &args, size_t &i, string &value,
+    string &error)
+{
+    if (i+1 >= args.size())
+    {
+        error = "Option " + args[i] + " requires an argument.";
+        return false;
+    }
+
+    value = args[++i];
+    return true;
+}
+
+static LaunchOptions
+ParseArguments(int argc, char *argv[])
+{
+    LaunchOptions options;
+    stringVector args;
+    args.reserve(argc > 1 ? argc-1 : 0);
+    for (int i = 1; i < argc; ++i)
+        args.push_back(argv[i]);
+
+    for (size_t i = 0; i < args.size(); ++i)
+    {
+        const string &arg = args[i];
+
+        if (arg == "-s")
+        {
+            options.addScriptArguments = true;
+            if (!TakeOptionValue(args, i, options.scriptFile, options.error))
+                return options;
+            options.scriptArgs.assign(args.begin()+i+1, args.end());
+            return options;
+        }
+        if (arg == "-movie" || arg == "-cinema")
+        {
+            options.component = "cli";
+            options.addMovieArguments = arg == "-movie";
+            options.addCinemaArguments = arg == "-cinema";
+            options.scriptArgs.assign(args.begin()+i+1, args.end());
+            return options;
+        }
+        if (arg == "-visit" ||
+            (!EndsWith(arg.c_str(), ".visit") &&
+             !EndsWith(arg.c_str(), ".visit\"") &&
+             (EndsWith(arg.c_str(), "visit") ||
+              EndsWith(arg.c_str(), "visit.exe") ||
+              EndsWith(arg.c_str(), "visit\"") ||
+              EndsWith(arg.c_str(), "visit.exe\""))))
+        {
+            continue;
+        }
+        if (arg == "-help")
+        {
+            options.showHelp = true;
+            return options;
+        }
+        if (arg == "-version")
+        {
+            options.showVersion = true;
+            return options;
+        }
+        if (arg == "-gui" || arg == "-cli")
+        {
+            options.component = arg.substr(1);
+            options.addVISITARGS = true;
+        }
+        else if (arg == "-viewer" || arg == "-mdserver" ||
+                 arg == "-engine" || arg == "-vcl")
+        {
+            options.component = arg.substr(1);
+            options.addVISITARGS = false;
+        }
+        else if (arg == "-mpeg2encode")
+        {
+            options.component = "mpeg2encode";
+            options.addVISITARGS = true;
+        }
+        else if (arg == "-transition")
+        {
+            options.component = "visit_transition";
+            options.addVISITARGS = true;
+        }
+        else if (arg == "-composite")
+        {
+            options.component = "visit_composite";
+            options.addVISITARGS = true;
+        }
+        else if (arg == "-mpeg_encode")
+        {
+            options.error = "The mpeg_encode component is not supported "
+                            "on Windows! Try -mpeg2encode.";
+            return options;
+        }
+        else if (arg == "-xmledit" || arg == "-silex")
+        {
+            options.component = arg.substr(1);
+            options.addVISITARGS = false;
+        }
+        else if (arg == "-v")
+        {
+            string ignored;
+            if (!TakeOptionValue(args, i, ignored, options.error))
+                return options;
+        }
+        else if (arg == "-newconsole")
+        {
+            options.newConsole = true;
+        }
+        else if (arg == "-noloopback")
+        {
+            options.noloopback = true;
+            options.componentArgs.push_back(arg);
+        }
+        else if (arg == "-par")
+        {
+            if (options.component == "engine")
+                options.parallel = true;
+            else if (options.component != "mdserver")
+                options.engineArgs.push_back(arg);
+        }
+        else if (arg == "-np")
+        {
+            string np;
+            if (!TakeOptionValue(args, i, np, options.error))
+                return options;
+            if (options.component == "engine")
+            {
+                options.parallel = true;
+                options.nps = np;
+            }
+            else if (options.component != "mdserver")
+            {
+                options.engineArgs.push_back(arg);
+                options.engineArgs.push_back(np);
+            }
+        }
+        else if (arg == "-host")
+        {
+            string host;
+            if (!TakeOptionValue(args, i, host, options.error))
+                return options;
+            options.componentArgs.push_back(arg);
+            options.componentArgs.push_back(host);
+        }
+        else if (arg == "-xml2cmake" || arg == "-xml2atts" ||
+                 arg == "-xml2java" || arg == "-xml2python" ||
+                 arg == "-xml2info" || arg == "-xml2plugin")
+        {
+            options.component = arg.substr(1);
+            options.addVISITARGS = false;
+            options.addPluginVars = true;
+        }
+        else if (arg == "-env")
+        {
+            options.envOnly = true;
+        }
+        else if (arg == "-nodialog")
+        {
+            options.noDialog = true;
+        }
+        else if (arg == "-debuglaunch")
+        {
+            options.debugLaunch = true;
+            options.componentArgs.push_back(arg);
+        }
+        else if (arg == "-dv")
+        {
+            continue;
+        }
+        else if (arg == "-apitrace")
+        {
+            string apitraceComponent;
+            if (!TakeOptionValue(args, i, apitraceComponent, options.error))
+                return options;
+            if (options.component == apitraceComponent)
+            {
+                options.apitrace = true;
+            }
+            else
+            {
+                options.componentArgs.push_back(arg);
+                options.componentArgs.push_back(apitraceComponent);
+            }
+        }
+        else
+        {
+            options.componentArgs.push_back(arg);
+        }
+    }
+
+    return options;
+}
+
+static void
+AppendCommandArgument(stringVector &command, const string &arg)
+{
+    if (!arg.empty() && arg.find_first_of(" \t\n\v\f\r<>\"") == string::npos)
+    {
+        command.push_back(arg);
+        return;
+    }
+
+    // Encode one logical argv value using the quoting rules understood by
+    // the Microsoft C runtime. Backslashes only need special handling when
+    // they precede a quote or the closing quote.
+    string quoted("\"");
+    size_t backslashes = 0;
+    for (size_t i = 0; i < arg.size(); ++i)
+    {
+        if (arg[i] == '\\')
+        {
+            ++backslashes;
+        }
+        else if (arg[i] == '\"')
+        {
+            quoted.append(backslashes * 2 + 1, '\\');
+            quoted.push_back('\"');
+            backslashes = 0;
+        }
+        else
+        {
+            quoted.append(backslashes, '\\');
+            backslashes = 0;
+            quoted.push_back(arg[i]);
+        }
+    }
+    quoted.append(backslashes * 2, '\\');
+    quoted.push_back('\"');
+    command.push_back(quoted);
 }
 
 /******************************************************************************
@@ -355,326 +597,92 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Kathleen Biagas, Tue Nov 11, 2025
  *   Revamp error messages for attempts to find and set VISITUSERHOME folder.
  *
+ *   Kathleen Biagas, Mon Nov 9, 2026
+ *   Stop parsing VisIt arguments at -s, -movie, or -cinema, and pass all
+ *   subsequent arguments to the script. Refactor parsing into LaunchOptions,
+ *   consume option values safely, and defer quoting until command assembly.
+ *
  *****************************************************************************/
 
 int
 VisItLauncherMain(int argc, char *argv[])
 {
-    bool addMovieArguments = false;
-    bool addCinemaArguments = false;
-    bool addVISITARGS = true;
-    bool addPluginVars = false;
-    bool newConsole = false;
-    bool noloopback = false;
-    bool parallel = false;
-    bool hostset = 0;
-    bool envOnly = false;
-    bool noDialog = false;
-    bool debugLaunch = false;
-    bool apitrace = false;
+    LaunchOptions options = ParseArguments(argc, argv);
 
-    string nps("2");
-    stringVector componentArgs;
-    stringVector engineArgs;
-    string component("gui");
-    string tmpArg;
-    string apitrace_component("");
-
-
-    //
-    // Parse the command line arguments.
-    //
-    for(int i = 0; i < argc; ++i)
+    if(options.showHelp)
     {
-        if(ARG("-visit"))
-        {
-           continue;
-        }
-        else if (!ENDSWITH(".visit") && !ENDSWITH(".visit\"") &&
-                (ENDSWITH("visit")   || ENDSWITH("visit.exe") ||
-                ENDSWITH("visit\"") || ENDSWITH("visit.exe\"")))
-        {
-            continue;
-        }
-        else if(ARG("-help"))
-        {
-            string usageFile(GetUsageTextDir());
-            usageFile.append("visitusage.txt");
-            std::ifstream inFile;
-            inFile.open(usageFile);
-            std::stringstream strStream;
-            strStream << inFile.rdbuf();
-            string usageText = strStream.str();
-            inFile.close();
-            // add the windows-specific text
-            usageText.append(windows_usage);
+        string usageFile(GetUsageTextDir());
+        usageFile.append("visitusage.txt");
+        std::ifstream inFile;
+        inFile.open(usageFile);
+        std::stringstream strStream;
+        strStream << inFile.rdbuf();
+        string usageText = strStream.str();
+        inFile.close();
+        // add the windows-specific text
+        usageText.append(windows_usage);
 
 #ifdef VISIT_WINDOWS_APPLICATION
-            // Create a console and redirect i/o to it.
-            // A MessageBox is good only for small amounts of text.
-            if (CreateNewConsole(1024))
-            {
-                cerr << usageText.c_str() << endl;
-                //cerr << "NOTE: For a more complete list of options, use '-fullhelp'." << endl;
-                cerr << "Press any key to continue ... " << endl;
-                _getch();
-                ReleaseConsole();
-            }
-            else
-            {
-                // Use the truncated help text here with a pointer to the
-                // user doc's for more information:
-                string msg(usage);
-                msg.append("Please see the user manual for a more complete list.\n");
-                msg.append("https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/gui_manual/StartupOptions/index.html");
-                MessageBox(NULL,
-                           (LPCSTR)msg.c_str(),
-                           (LPCSTR)"Usage",
-                           MB_ICONINFORMATION | MB_OK);
-            }
-#else
+        // Create a console and redirect i/o to it.
+        // A MessageBox is good only for small amounts of text.
+        if (CreateNewConsole(1024))
+        {
             cerr << usageText.c_str() << endl;
-            //    cerr << "NOTE: For a more complete list of options, use '-fullhelp'." << endl;
-#endif
-            return 0;
-        }
-        else if(ARG("-version"))
-        {
-#ifdef VISIT_WINDOWS_APPLICATION
-            MessageBox(NULL,
-                       (LPCSTR)VISIT_VERSION,
-                       (LPCSTR)"VisIt Version",
-                       MB_ICONINFORMATION | MB_OK);
-#else
-            cerr << VISIT_VERSION << endl;
-#endif
-            return 0;
-        }
-        else if(ARG("-gui"))
-        {
-            component = "gui";
-            addVISITARGS = true;
-        }
-        else if(ARG("-cli"))
-        {
-            component = "cli";
-            addVISITARGS = true;
-        }
-        else if(ARG("-viewer"))
-        {
-            component = "viewer";
-            addVISITARGS = false;
-        }
-        else if(ARG("-mdserver"))
-        {
-            component = "mdserver";
-            addVISITARGS = false;
-        }
-        else if(ARG("-engine"))
-        {
-            component = "engine";
-            addVISITARGS = false;
-        }
-        else if(ARG("-vcl"))
-        {
-            component = "vcl";
-            addVISITARGS = false;
-        }
-        else if(ARG("-movie"))
-        {
-            component = "cli";
-            addMovieArguments = true;
-        }
-        else if(ARG("-cinema"))
-        {
-            component = "cli";
-            addCinemaArguments = true;
-        }
-        else if(ARG("-mpeg2encode"))
-        {
-            component = "mpeg2encode";
-            addVISITARGS = true;
-        }
-        else if(ARG("-transition"))
-        {
-            component = "visit_transition";
-            addVISITARGS = true;
-        }
-        else if(ARG("-composite"))
-        {
-            component = "visit_composite";
-            addVISITARGS = true;
-        }
-        else if(ARG("-mpeg_encode"))
-        {
-            string msg("The mpeg_encode component is not supported "
-                            "on Windows! Try -mpeg2encode.\n");
-#ifdef VISIT_WINDOWS_APPLICATION
-            MessageBox(NULL,
-                       (LPCSTR)msg.c_str(),
-                       (LPCSTR)"",
-                       MB_ICONEXCLAMATION | MB_OK);
-#else
-            cerr << msg << endl;
-#endif
-            return -1;
-        }
-        else if(ARG("-xmledit"))
-        {
-            component = "xmledit";
-            addVISITARGS = false;
-        }
-        else if(ARG("-silex"))
-        {
-            component = "silex";
-            addVISITARGS = false;
-        }
-        else if(ARG("-v"))
-        {
-            /* Skip the next argument too. */
-            ++i;
-        }
-        else if(ARG("-newconsole"))
-        {
-            newConsole = true;
-        }
-        else if(ARG("-noloopback"))
-        {
-            noloopback = true;
-            componentArgs.push_back("-noloopback");
-        }
-        else if(ARG("-par"))
-        {
-            if(component == "engine")
-            {
-                parallel = true;
-            }
-            else if(component != "mdserver")
-            {
-                engineArgs.push_back("-par");
-            }
-        }
-        else if(ARG("-np"))
-        {
-            if (component == "engine")
-            {
-                parallel = true;
-                nps = string(argv[i+1]);
-            }
-            else if(component != "mdserver")
-            {
-                engineArgs.push_back("-np");
-                engineArgs.push_back(argv[i+1]);
-            }
-            // skip next argument.
-            ++i;
-        }
-        else if(ARG("-host"))
-        {
-            hostset = true;
-            componentArgs.push_back("-host");
-        }
-        else if(ARG("-xml2cmake"))
-        {
-            component = "xml2cmake";
-            addVISITARGS = false;
-            addPluginVars = true;
-        }
-        else if(ARG("-xml2atts"))
-        {
-            component = "xml2atts";
-            addVISITARGS = false;
-            addPluginVars = true;
-        }
-        else if(ARG("-xml2java"))
-        {
-            component = "xml2java";
-            addVISITARGS = false;
-            addPluginVars = true;
-        }
-        else if(ARG("-xml2python"))
-        {
-            component = "xml2python";
-            addVISITARGS = false;
-            addPluginVars = true;
-        }
-        else if(ARG("-xml2info"))
-        {
-            component = "xml2info";
-            addVISITARGS = false;
-            addPluginVars = true;
-        }
-        else if(ARG("-xml2plugin"))
-        {
-            component = "xml2plugin";
-            addVISITARGS = false;
-            addPluginVars = true;
-        }
-        else if(ARG("-env"))
-        {
-            envOnly = true;
-        }
-        else if(ARG("-nodialog"))
-        {
-            noDialog = true;
-        }
-        else if(ARG("-debuglaunch"))
-        {
-            debugLaunch = true;
-            componentArgs.push_back("-debuglaunch");
-        }
-        else if(ARG("-dv"))
-        {
-            continue;
-        }
-        else if(ARG("-apitrace"))
-        {
-            apitrace_component = string(argv[i+1]);
-            if (component == apitrace_component)
-            {
-                apitrace = true;
-            }
-            else
-            {
-                componentArgs.push_back("-apitrace");
-                componentArgs.push_back(apitrace_component);
-            }
-            ++i;
+            //cerr << "NOTE: For a more complete list of options, use '-fullhelp'." << endl;
+            cerr << "Press any key to continue ... " << endl;
+            _getch();
+            ReleaseConsole();
         }
         else
         {
-            if (!BEGINSWITHQUOTE(argv[i]) && HASSPECIAL(argv[i]))
-            {
-                DQUOTEARG(argv[i]);
-                componentArgs.push_back(tmpArg);
-            }
-            else if (BEGINSWITHQUOTE(argv[i]) && !ENDSWITHQUOTE(argv[i]))
-            {
-                tmpArg = argv[i];
-                int nArgsSkip = 1;
-                for (int j = i+1; j < argc; j++)
-                {
-                    nArgsSkip++;
-                    tmpArg.append(" ");
-                    tmpArg.append(argv[j]);
-                    if (ENDSWITHQUOTE(argv[j]))
-                        break;
-                }
-                componentArgs.push_back(tmpArg);
-                i += (nArgsSkip -1);
-            }
-            else
-            {
-                componentArgs.push_back(argv[i]);
-            }
+            // Use the truncated help text here with a pointer to the
+            // user doc's for more information:
+            string msg(usage);
+            msg.append("Please see the user manual for a more complete list.\n");
+            msg.append("https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/gui_manual/StartupOptions/index.html");
+            MessageBox(NULL,
+                       (LPCSTR)msg.c_str(),
+                       (LPCSTR)"Usage",
+                       MB_ICONINFORMATION | MB_OK);
         }
+#else
+        cerr << usageText.c_str() << endl;
+        //    cerr << "NOTE: For a more complete list of options, use '-fullhelp'." << endl;
+#endif
+        return 0;
     }
 
-    if(component == "engine")
-        component = parallel ? "engine_par" : "engine_ser";
+    if(options.showVersion)
+    {
+#ifdef VISIT_WINDOWS_APPLICATION
+        MessageBox(NULL,
+                   (LPCSTR)VISIT_VERSION,
+                   (LPCSTR)"VisIt Version",
+                   MB_ICONINFORMATION | MB_OK);
+#else
+        cerr << VISIT_VERSION << endl;
+#endif
+        return 0;
+    }
+
+    if(!options.error.empty())
+    {
+#ifdef VISIT_WINDOWS_APPLICATION
+        MessageBox(NULL,
+                   (LPCSTR)options.error.c_str(),
+                   (LPCSTR)"",
+                   MB_ICONEXCLAMATION | MB_OK);
+#else
+        cerr << options.error << endl;
+#endif
+        return -1;
+    }
+
+    if(options.component == "engine")
+        options.component = options.parallel ? "engine_par" : "engine_ser";
 
     string mpipath;
-    if (component == "engine_par")
+    if (options.component == "engine_par")
     {
         mpipath = WinGetEnv("VISIT_MPIEXEC");
         // first look for an EnvVar set by the installer
@@ -730,25 +738,25 @@ VisItLauncherMain(int argc, char *argv[])
 #else
             cerr << msg << endl;
 #endif
-            parallel = false;
-            component = "engine_ser";
+            options.parallel = false;
+            options.component = "engine_ser";
         }
     }
 
-    if (parallel && !noloopback)
+    if (options.parallel && !options.noloopback)
     {
-        noloopback = true;
-        componentArgs.push_back("-noloopback");
+        options.noloopback = true;
+        options.componentArgs.push_back("-noloopback");
     }
 
     //
     // If we want a new console, allocate it now.
     //
-    if(newConsole || component == "engine_par")
+    if(options.newConsole || options.component == "engine_par")
     {
         FreeConsole();
         AllocConsole();
-        if(component == "engine_par")
+        if(options.component == "engine_par")
 #ifdef VISIT_WINDOWS_APPLICATION
             // Hide the parallel engine console window.
             ShowWindow(GetConsoleWindow(), SW_HIDE);
@@ -764,19 +772,19 @@ VisItLauncherMain(int argc, char *argv[])
     stringVector visitEnv;
     bool usingDev = false;
     bool needsMesaOverride = false;
-    string visitpath = GetVisItEnvironment(visitEnv, addPluginVars,
+    string visitpath = GetVisItEnvironment(visitEnv, options.addPluginVars,
                                            usingDev, needsMesaOverride);
     if (usingDev)
-        componentArgs.push_back("-dv");
+        options.componentArgs.push_back("-dv");
     if(!usingDev && needsMesaOverride &&  (
-        component == "engine_par" ||
-        component == "engine_ser" ||
-        component == "viewer"))
+        options.component == "engine_par" ||
+        options.component == "engine_ser" ||
+        options.component == "viewer"))
     {
         visitEnv.push_back("MESA_GL_VERSION_OVERRIDE=3.3");
     }
     SetVisItEnvironment(visitEnv);
-    if(debugLaunch || envOnly)
+    if(options.debugLaunch || options.envOnly)
     {
         // Show the path and the environment we've created.
         string envStr;
@@ -784,7 +792,7 @@ VisItLauncherMain(int argc, char *argv[])
             envStr = envStr + visitEnv[i] + "\n";
         string msgStr((visitpath + "\n\n") + envStr);
 #ifdef VISIT_WINDOWS_APPLICATION
-        if(envOnly && noDialog)
+        if(options.envOnly && options.noDialog)
         {
             // We want the environment string to be readable when
             // importing VisIt into python, so don't use the dialog
@@ -792,19 +800,19 @@ VisItLauncherMain(int argc, char *argv[])
         }
         else
         {
-            MessageBox(NULL, msgStr.c_str(), component.c_str(), MB_OK);
+            MessageBox(NULL, msgStr.c_str(), options.component.c_str(), MB_OK);
         }
 
-        if(envOnly)
+        if(options.envOnly)
         {
-            componentArgs.clear();
+            options.componentArgs.clear();
             return 0;
         }
 #else
         cerr << msgStr << endl;
-        if (envOnly)
+        if (options.envOnly)
         {
-            componentArgs.clear();
+            options.componentArgs.clear();
             return 0;
         }
 #endif
@@ -814,7 +822,7 @@ VisItLauncherMain(int argc, char *argv[])
     command.reserve(20);
     string quote("\"");
 
-    if (apitrace)
+    if (options.apitrace)
     {
         string apitrace_path = WinGetEnv("APITRACE_EXE");
         command.push_back(apitrace_path);
@@ -823,7 +831,7 @@ VisItLauncherMain(int argc, char *argv[])
         command.push_back("gl");
     }
 
-    if (component == "engine_par")
+    if (options.component == "engine_par")
     {
         // we've already determined the path to mpiexec, if it wasn't
         // found, we've switched to a serial engine.
@@ -831,59 +839,39 @@ VisItLauncherMain(int argc, char *argv[])
         command.push_back(mpipath);
         // mpi exec args,
         command.push_back("-n");
-        command.push_back(nps);
+        command.push_back(options.nps);
         // engine_par, Surrounded by quotes
         command.push_back(quote + string(visitpath) + string("\\") +
-                          string(component) + string(".exe") + quote);
+                          string(options.component) + string(".exe") + quote);
     }
     else
     {
-        string program(visitpath + string("\\") + component + string(".exe"));
+        string program(visitpath + string("\\") + options.component +
+                       string(".exe"));
         command.push_back(program);
     }
 
-    if(addMovieArguments)
+    for(size_t i = 0; i < options.componentArgs.size(); ++i)
     {
-        command.push_back("-s");
-        command.push_back(quote + visitpath + string("\\makemoviemain.py") + quote);
-        command.push_back("-nowin");
-    }
-    else if(addCinemaArguments)
-    {
-        command.push_back("-s");
-        command.push_back(quote + visitpath + string("\\visitcinemamain.py") + quote);
-        command.push_back("-nowin");
-    }
-
-    for(size_t i = 0; i < componentArgs.size(); ++i)
-    {
-        if((componentArgs[i] == "-host") && !noloopback)
+        if((options.componentArgs[i] == "-host") && !options.noloopback)
         {
             // Replace the host arg with the loopback
-            componentArgs[i+1] = "127.0.0.1";
+            options.componentArgs[i+1] = "127.0.0.1";
         }
 
-        if (!BEGINSWITHQUOTE(componentArgs[i].c_str()) &&
-            HASSPECIAL(componentArgs[i].c_str()))
-        {
-            DQUOTEARG(componentArgs[i].c_str());
-            command.push_back(tmpArg);
-        }
-        else
-            command.push_back(componentArgs[i]);
-
+        AppendCommandArgument(command, options.componentArgs[i]);
     }
 
-    if (!engineArgs.empty())
+    if (!options.engineArgs.empty())
     {
         command.push_back("-launchengine");
         command.push_back("localhost");
         command.push_back("-engineargs");
         string eArgs;
-        for (size_t i = 0; i < engineArgs.size(); ++i)
+        for (size_t i = 0; i < options.engineArgs.size(); ++i)
         {
-            eArgs.append(engineArgs[i]);
-            if (i < engineArgs.size()-1)
+            eArgs.append(options.engineArgs[i]);
+            if (i < options.engineArgs.size()-1)
                 eArgs.append(";");
         }
         command.push_back(eArgs);
@@ -892,7 +880,7 @@ VisItLauncherMain(int argc, char *argv[])
     //
     // Create the command to execute and the string that we print.
     //
-    if(addVISITARGS)
+    if(options.addVISITARGS)
     {
         char *visitargs = 0;
         if(ReadKey("VISITARGS", &visitargs))
@@ -902,6 +890,30 @@ VisItLauncherMain(int argc, char *argv[])
         free(visitargs);
         visitargs = 0;
     }
+
+    if(options.addMovieArguments)
+    {
+        command.push_back("-nowin");
+        command.push_back("-s");
+        AppendCommandArgument(command,
+            visitpath + string("\\makemoviemain.py"));
+    }
+    else if(options.addCinemaArguments)
+    {
+        command.push_back("-nowin");
+        command.push_back("-s");
+        AppendCommandArgument(command,
+            visitpath + string("\\visitcinemamain.py"));
+    }
+    else if(options.addScriptArguments)
+    {
+        command.push_back("-s");
+        if(!options.scriptFile.empty())
+            AppendCommandArgument(command, options.scriptFile);
+    }
+
+    for(size_t i = 0; i < options.scriptArgs.size(); ++i)
+        AppendCommandArgument(command, options.scriptArgs[i]);
 
     //
     // Print the run information.
@@ -915,8 +927,8 @@ VisItLauncherMain(int argc, char *argv[])
 
     int retVal = 0;
 #ifdef VISIT_WINDOWS_APPLICATION
-    if(debugLaunch)
-        MessageBox(NULL, cmdLine.c_str(), component.c_str(), MB_OK);
+    if(options.debugLaunch)
+        MessageBox(NULL, cmdLine.c_str(), options.component.c_str(), MB_OK);
 
     // We can't use system() since that opens a cmd shell.
     // the exeName is the second arg to _spawnv, and doesn't need quotes,
@@ -929,7 +941,7 @@ VisItLauncherMain(int argc, char *argv[])
         exeArgs[i] = command[i].c_str();
     exeArgs[command.size()] = NULL;
     retVal =_spawnv( _P_WAIT, exeName, exeArgs);
-    if (debugLaunch && retVal == -1)
+    if (options.debugLaunch && retVal == -1)
     {
         errno_t err;
         _get_errno(&err);
@@ -955,7 +967,7 @@ VisItLauncherMain(int argc, char *argv[])
                 snprintf(errmsg, 30, "_spawn error: %d: UNKNOWN\n", err);
                 break;
         }
-        MessageBox(NULL, errmsg, component.c_str(), MB_ICONEXCLAMATION | MB_OK);
+        MessageBox(NULL, errmsg, options.component.c_str(), MB_ICONEXCLAMATION | MB_OK);
     }
     delete [] exeArgs;
 #else
@@ -965,7 +977,7 @@ VisItLauncherMain(int argc, char *argv[])
     retVal = system(const_cast<char*>(cmdLine.c_str()));
 #endif
 
-    componentArgs.clear();
+    options.componentArgs.clear();
     return retVal;
 }
 

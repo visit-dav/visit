@@ -97,6 +97,11 @@ set_target_properties(mcurvit PROPERTIES AUTOMOC ON)
 
 qt6_disable_unicode_defines(mcurvit)
 
+if(WIN32)
+    set_target_properties(mcurvit PROPERTIES
+        WIN32_EXECUTABLE ${VISIT_WINDOWS_APPLICATION})
+endif()
+
 if(APPLE)
     set_target_properties(mcurvit PROPERTIES MACOSX_BUNDLE TRUE)
 
