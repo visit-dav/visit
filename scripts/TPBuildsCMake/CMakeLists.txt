@@ -33,6 +33,13 @@ endif()
 
 set(CMAKE_INSTALL_PREFIX ${visit_install_root})
 
+set(VISIT_VERSION "3.6.0" CACHE STRING
+    "VisIt version whose third-party release provides the tarballs")
+string(REGEX REPLACE "^v" "" visit_version "${VISIT_VERSION}")
+if(visit_version STREQUAL "")
+    message(FATAL_ERROR "VISIT_VERSION must specify a VisIt release version")
+endif()
+
 
 
 # Library options
@@ -76,13 +83,27 @@ foreach(library IN LISTS VISIT_REQUIRED_LIBRARIES)
     option(ENABLE_${library} "Enable building required library ${library}" ON)
 endforeach()
 
-# BUILD_OPTIONAL supplies the initial value only. An explicit
-# -DENABLE_<LIBRARY>=ON/OFF always takes precedence, including when
-# BUILD_OPTIONAL is enabled.
+# Optional library selections are tri-state. AUTO follows BUILD_OPTIONAL on
+# every configure; ON and OFF are explicit per-library overrides.
 foreach(library IN LISTS VISIT_OPTIONAL_LIBRARIES)
-    option(ENABLE_${library} "Enable building optional library ${library}"
-           ${BUILD_OPTIONAL})
+    set(option_name ENABLE_${library})
+    set(${option_name} AUTO CACHE STRING
+        "Build optional library ${library}: AUTO, ON, or OFF")
+    set_property(CACHE ${option_name} PROPERTY TYPE STRING)
+    set_property(CACHE ${option_name} PROPERTY STRINGS AUTO ON OFF)
+
+    string(TOUPPER "${${option_name}}" option_value)
+    if(option_value STREQUAL "AUTO")
+        set(${option_name} ${BUILD_OPTIONAL})
+    elseif(option_value STREQUAL "ON" OR option_value STREQUAL "OFF")
+        set(${option_name} ${option_value})
+    else()
+        message(FATAL_ERROR
+                "${option_name} must be AUTO, ON, or OFF; got '${${option_name}}'")
+    endif()
 endforeach()
+unset(option_name)
+unset(option_value)
 
 if(BUILD_PARALLEL)
     find_package(MPI)
@@ -95,7 +116,8 @@ endif()
 # set up some necessary  variables, and include the .cmake file for each library.
 include(ExternalProject)
 
-set(visit_tp_url "https://github.com/visit-dav/third-party/releases/download/v3.5.0")
+set(visit_tp_url
+    "https://github.com/visit-dav/third-party/releases/download/v${visit_version}")
 set(visit_tp_patches ${VISIT_BUILD_THIRDPARTY_SOURCE_DIR}/patches)
 
 set(visit_build_shared ON)
