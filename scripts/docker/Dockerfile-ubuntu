@@ -1,11 +1,12 @@
-FROM ubuntu:24.04
+ARG UBUNTU_VERSION=24.04
+FROM ubuntu:${UBUNTU_VERSION} AS visit-build-environment
 
-# fetch build env
 ENV TZ=America/Los_Angeles
 RUN apt-get update && apt-get install -y \
     git \
     wget \
     curl \
+    bison \
     unzip \
     build-essential \
     gcc \
@@ -60,24 +61,21 @@ RUN apt-get update && apt-get install -y \
     libxext-dev \
     libsm6 \
     libice6 \
-    libglib2.0-0 \
+    libglib2.0-dev \
     libxi-dev \
     xorg-dev \
     autoconf \
     libtool \
     m4 \
     automake \
-    libxml2 \
     libxml2-dev \
     vim \
     cpio \
     liblapack-dev \
- && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y libffi-dev && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
-    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+    libffi-dev \
+    locales \
+ && rm -rf /var/lib/apt/lists/* \
+ && localedef -i en_US -c -f UTF-8 en_US.UTF-8
 ENV LANG=en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
@@ -86,18 +84,18 @@ RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
 USER visit
 WORKDIR /home/visit
 
-# Copy build_visit and the script to run it
-COPY --chown=visit:visit build_visit3_5_0 /home/visit
-COPY --chown=visit:visit run_build_visit.sh /home/visit
-COPY --chown=visit:visit build_visit_docker_cleanup.py /home/visit
-# build thirdparty libraries
-RUN /bin/bash run_build_visit.sh
+COPY --chown=visit:visit build_visit[0-9]* /home/visit/
+COPY --chown=visit:visit visit_version.py run_build_visit.py /home/visit/
+
+RUN chmod +x build_visit[0-9]*
+
+FROM visit-build-environment AS visit-release
+
+RUN python3 run_build_visit.py
+RUN python3 run_build_visit.py --optional
+
+COPY --chown=visit:visit visit*.src.tar.gz /home/visit/
+COPY --chown=visit:visit build_test_visit.py build_visit_docker_cleanup.py \
+    test_visit.py /home/visit/
+RUN python3 build_test_visit.py
 RUN python3 build_visit_docker_cleanup.py
-
-# build and test visit
-COPY --chown=visit:visit build_test_visit.sh /home/visit
-COPY --chown=visit:visit test_visit.py /home/visit
-COPY --chown=visit:visit visit3.5.0.tar.gz /home/visit
-# Build visit, package, install and test.
-RUN /bin/bash build_test_visit.sh -v 3.5.0
-
