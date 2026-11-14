@@ -4,190 +4,277 @@ Using Docker
 Overview
 --------
 
-Docker is a platform for building containers. Containers can run either
-Windows or Linux operating systems. Docker is available on the Mac, Windows
-and Linux. The rest of this tutorial will primarily be focused on running
-Docker on Windows. The content on installing and setting up Docker is Windows
-specific but the remainder of the content on creating and using containers
-is operating system independent.
+The release container scripts build VisIt's third-party libraries, build and
+package VisIt, install the package, and run a smoke test. They can use Docker
+or Podman on Linux, macOS, and Windows hosts.
 
-Installing Docker on Windows
-----------------------------
+The recommended interface is ``scripts/docker/create_release.py``. The driver
+uses the Dockerfiles and helper scripts directly from the VisIt checkout and
+creates a temporary build context. Do not copy the Docker scripts into a
+directory containing the release inputs.
 
-Install Docker on your system. It is free to download and install. You will
-need to be running Windows Professional and you will need administrator
-priviledges. The following link will get you started.
+The driver requires two release inputs:
 
-https://docs.docker.com/docker-for-windows/
+* A source archive named ``visitMAJOR_MINOR_PATCH.src.tar.gz``.
+* The matching ``build_visitMAJOR_MINOR_PATCH`` script.
 
-You will need to enable experimental features to be able to use the
-``--squash`` option when building your container. You can enable experimental
-features with the Settings window. Go to the *Daemon* tab and check the
-*Experimental features* checkbox and press *Apply*. Note that this will
-restart the Docker daemon, which will kill container builds or running
-containers.
+The VisIt version is inferred from those filenames, and the driver verifies
+that they agree. No release version is embedded in a Dockerfile or helper
+script.
 
-.. figure:: images/Docker-Settings1.png
+Install Docker using the instructions at
+https://docs.docker.com/get-docker/. Podman may be used by passing
+``--engine podman``.
 
-   Enabling experimental features.
+Supported Platforms
+-------------------
 
-If you run into problems running out of disk space, you can increase the
-amount of disk space allocated to Docker with the Settings window. Go to
-the *Advanced* tab and move the *Disk image max size* to the right to increase
-the amount of disk space and press *Apply*. Note that this will restart the
-Docker daemon, which will kill container builds or running containers.
+``create_release.py`` supports the following platform names and version
+arguments.
 
-.. figure:: images/Docker-Settings2.png
+.. list-table::
+   :header-rows: 1
 
-   Increasing the disk space allocated to Docker.
+   * - Platform
+     - Dockerfile
+     - Default version
+     - Other supported versions
+   * - ``ubuntu``
+     - ``Dockerfile-ubuntu``
+     - ``24.04``
+     - ``22.04``, ``26.04``
+   * - ``rocky``
+     - ``Dockerfile-rocky``
+     - ``9.3``
+     - ``8.9``
+   * - ``debian``
+     - ``Dockerfile-debian``
+     - ``12``
+     - Set with ``--os-version``
+   * - ``fedora``
+     - ``Dockerfile-fedora``
+     - ``44``
+     - Set with ``--os-version``
+   * - ``manylinux``
+     - ``Dockerfile-manylinux``
+     - ``2_28``
+     - Set with ``--os-version``
 
-Creating a Docker Container
----------------------------
+The manylinux default selects
+``quay.io/pypa/manylinux_2_28_x86_64``. Manylinux versions use an underscore,
+as in ``2_28``.
 
-First you will want to bring up a Command window and use that to run Docker
-commands. Next we'll create a folder to hold all our Docker files. We are
-assuming that you are at the root of the C: drive. ::
+Creating a Release
+------------------
 
-    C:\>cd \Users\brugger1
-    C:\Users\brugger1>mkdir docker
-    C:cd docker
+The source archive and ``build_visit`` script may be anywhere on the host.
+For example:
 
-Now you need to copy all the relevant files to your docker folder. You
-must have the following files in your folder. ::
+.. code-block:: console
 
-    C:\Users\brugger1\docker>dir
-     Volume in drive C is Windows
-     Volume Serial Number is A8F6-9F9C
+   $ python3 /path/to/visit/scripts/docker/create_release.py \
+       --source /releases/visit3_6_0.src.tar.gz \
+       --build-visit /releases/build_visit3_6_0 \
+       --platform ubuntu --os-version 24.04
 
-     Directory of C:\Users\brugger1\docker
+If the inputs are in the current directory, relative paths may be used:
 
-    09/13/2019  02:46 PM    <DIR>          .
-    09/13/2019  02:46 PM    <DIR>          ..
-    09/13/2019  02:39 PM           737,636 build_visit3_0_2
-    08/28/2019  01:45 PM             1,173 build_visit_docker_cleanup.py
-    09/12/2019  12:24 PM             1,322 Dockerfile-debian9
-    09/13/2019  07:27 AM             1,176 Dockerfile-fedora27
-    09/12/2019  03:49 PM             1,337 Dockerfile-ubuntu16
-    09/12/2019  12:36 PM             1,321 Dockerfile-ubuntu18
-    09/12/2019  12:23 PM               216 run_build_visit.sh
-    09/13/2019  02:39 PM       121,776,180 visit3.0.2.tar.gz
-                   8 File(s)    122,520,361 bytes
-                   2 Dir(s)  814,047,002,624 bytes free
+.. code-block:: console
 
-These files can be found in the VisIt_ repository at GitHub in the following
-location.
+   $ python3 /path/to/visit/scripts/docker/create_release.py \
+       --source visit3_6_0.src.tar.gz \
+       --build-visit build_visit3_6_0 \
+       --platform fedora --os-version 44
 
-https://github.com/visit-dav/visit/tree/develop/scripts/docker
+Examples for the other platforms include:
 
-The Dockerfile determines the type of operating system you will build your
-container with. The first line in the Dockerfile contains information about
-the operating system. Here is a link to a reference on Dockerfile.
+.. code-block:: console
 
-https://docs.docker.com/engine/reference/builder/
+   $ python3 create_release.py --source "$src" --build-visit "$bv" \
+       --platform rocky --os-version 8.9
+   $ python3 create_release.py --source "$src" --build-visit "$bv" \
+       --platform debian --os-version 12
+   $ python3 create_release.py --source "$src" --build-visit "$bv" \
+       --platform manylinux --os-version 2_28
 
-The Dockerfile will need to be specific to the operating system since the
-way you install packages and do other administrative tasks will vary among
-different Linux operating systems, although there are only a few unique
-varients that the rest are built on. You can go to the Docker Hub to find
-Linux distributions to start with.
+The temporary context is removed automatically, leaving the checkout and
+input directory unchanged. Use ``--temp-dir`` to select the parent directory
+for that context.
 
-https://hub.docker.com/_/centos
+By default, a successful VisIt 3.6.0 Ubuntu 24.04 build creates these host
+artifacts in the current directory:
 
-https://hub.docker.com/_/debian
+* ``visit3_6_0.linux-x86_64-ubuntu24.tar.gz``
+* ``visit0000-ubuntu24.png``
 
-https://hub.docker.com/_/fedora
+The platform suffix prevents builds for different operating systems from
+overwriting one another. Use ``--output-dir`` to select another artifact
+directory or ``--label`` to override the suffix. Existing artifacts are not
+overwritten. Use ``--build-only`` to create the container image without
+extracting host artifacts.
 
-https://hub.docker.com/_/ubuntu
+The default image tag is derived from the version and platform, for example
+``visitdev:3.6.0-ubuntu24``. It may be overridden with ``--tag``.
 
-In this example the Dockerfile is set up to use Ubuntu 16. The Dockerfile
-installs all the packages needed to build VisIt_ and then uses build_visit
-to create all the third party libraries as well as the config site file.
-The build will take several hours. Sometimes I have had it stop sending
-text to the Command window, so if it looks like it is hung, it may
-actually be happily progressing along. ::
+Podman on LC
+------------
 
-    C:\Users\brugger1\docker>docker build -f Dockerfile-ubuntu16 -t visitdev:3.0.2-ubuntu16 . --squash
+Enable Podman in the calling shell before running the driver on LC. Preserve
+the user namespace mappings used by the release environment:
 
-Start up the container and run it interactively. ::
+.. code-block:: console
 
-    C:\Users\brugger\docker>docker run -t -i visitdev:3.0.2-ubuntu16 /bin/bash
-    visit@bea87fee3276:~$
+   $ /collab/usr/gapps/lcweg/containers/scripts/enable-podman.sh
+   $ python3 /path/to/visit/scripts/docker/create_release.py \
+       --source "$src" --build-visit "$bv" \
+       --engine podman --platform ubuntu --os-version 24.04 \
+       --userns-uid-map 0:0:1 \
+       --userns-uid-map 1:1:1999 \
+       --userns-uid-map 65534:2047:1
 
-Now the container is ready for you to build VisIt_. First, you need to copy
-the tar file with the source code. To do this, you will need to go to another
-Command window and use the container id shown in the prompt. ::
+How the Build Is Layered
+------------------------
 
-    C:\Users\brugger\docker>docker cp visit3.0.2.tar.gz bea87fee3276:/home/visit
+Each Dockerfile defines a ``visit-build-environment`` stage that installs the
+operating-system packages and copies the version-independent build helpers.
+The normal ``visit-release`` stage then performs these operations:
 
-Now go back to the first Command window and create your distribution. ::
+#. Run ``build_visit`` with the core build options.
+#. Run the same command again with ``--optional`` added.
+#. Build and package VisIt, install the package, and run a smoke test.
+#. Remove downloaded third-party tarballs after all VisIt steps succeed.
 
-    visit@bea87fee3276:~$ tar zxf visit3.0.2.tar.gz
-    visit@bea87fee3276:~$ cd visit3.0.2
-    visit@bea87fee3276:~/visit3.0.2$ mkdir build
-    visit@bea87fee3276:~/visit3.0.2$ cd build
-    visit@bea87fee3276:~/visit3.0.2/build$ /home/visit/third-party/cmake/3.9.3/linux-x86_64_gcc-5.4/bin/cmake \
-       -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON \
-       -DVISIT_PARADIS:BOOL=ON -DVISIT_CONFIG_SITE="/home/visit/visit-config.cmake" ../src
-    visit@bea87fee3276:~/visit3.0.2/build$ make -j 4 package
-    visit@bea87fee3276:~/visit3.0.2/build$ mv visit3_0_2.linux-x86_64.tar.gz ../..
+The separate core and optional invocations create useful Docker cache layers.
+Both use ``build_visit --cleanup``, which removes a third-party library's
+source and build directories only after that library builds and installs
+successfully. Downloaded tarballs remain available until VisIt itself has
+been built, installed, and tested successfully.
 
-Now let's test it to make sure we can create an image. ::
+XCB and xkbcommon are included in the core options so Qt cannot silently
+configure without the X11 platform support required by VisIt.
 
-    visit@bea87fee3276:~/visit3.0.2/build$ cd ../..
-    visit@bea87fee3276:~$ cp visit3.0.2/scripts/visit-install .
-    visit@bea87fee3276:~$ ./visit-install 3.0.2 linux-x86_64 visit
-    visit@bea87fee3276:~$ visit/bin/visit -cli -nowin
-    >>> OpenDatabase("visit/data/curv2d.silo")
-    >>> AddPlot("Pseudocolor", "d")
-    >>> DrawPlots()
-    >>> SaveWindow()
-    >>> quit()
-    visit@:~$
+Recovering a Failed Build
+-------------------------
 
-Now let's go back to the second Command window and copy the binary
-distribution back out of the container and the image we created. ::
+Docker build layers are not sufficient when a long-running command fails:
+the failed command does not create a reusable image. Add ``--recoverable`` to
+run the core, optional, and VisIt operations in named containers instead:
 
-    C:\Users\brugger\docker>docker cp bea87fee3276:/home/visit/visit3_0_2.linux-x86_64.tar.gz .
-    C:\Users\brugger\docker>docker cp bea87fee3276:/home/visit/visit0000.png .
+.. code-block:: console
 
-At this point you can exit your container. ::
+   $ python3 create_release.py --recoverable \
+       --source "$src" --build-visit "$bv" \
+       --platform rocky --os-version 8.9
 
-    visit@bea87fee3276:~$ exit
-    C:\Users\brugger\docker>
+Each successful operation creates a checkpoint image. If an operation fails,
+the driver:
 
-You should view the image to verify that it was produced correctly. You
-now have the binary distribution for VisIt_ 3.0.2 for Ubuntu 16.
+* Commits the partial filesystem to an image ending in ``-core-failed``,
+  ``-optional-failed``, or ``-visit-failed``.
+* Retains the stopped container.
+* Copies ``build_visitMAJOR_MINOR_PATCH_log`` into ``--output-dir`` with the
+  platform label appended, for example
+  ``build_visit3_6_0_log_rocky8``.
+* Prints the exact image, container, and resume command.
 
-Creating a Dockerfile From Scratch
-----------------------------------
+Recovery images contain the source archive, ``build_visit`` script, platform
+metadata, release tag, and version. Resume a failed operation without
+repeating the original platform and input arguments:
 
-To create a Dockerfile from scratch it is best to do so running interactively
-as root with the base operating system image. You can start by installing
-packages that your are certain you will need. At that point you can run
-build_visit until it fails, determining what missing package caused the
-failure, installing the missing package and repeating until you have gotten
-build_visit to complete with the third party libraries you want to build.
-From that experience you can create your Dockerfile.
+.. code-block:: console
 
-Useful Docker Commands
-----------------------
+   $ python3 create_release.py --recoverable \
+       --resume-from RECOVERY_IMAGE --resume-step optional
 
-Here are some useful Docker commands to manage images and containers. ::
+The valid resume steps are ``core``, ``optional``, and ``visit``. The VisIt
+build also records extraction, configuration, packaging, installation, and
+testing milestones. A resumed VisIt compilation is incremental and reuses
+completed milestones.
 
-    docker image ls
-    docker container ls --all
-    docker image rm <image id>
-    docker container rm <container id>
+Recovery images made by older versions of the driver may not contain the
+source archive. Supply it when resuming such an image:
 
-Docker will create a "checkpoint" after each command it executes. Everytime
-you partially create an image or execute a container it is saving those
-checkpoints. This can quickly start to consume a lot of disk space, so you
-should frequently list your images and containers and remove those that you
-no longer need.
+.. code-block:: console
 
-If building an image fails and you want to take a look at what happened, you
-can convert the container into an image and then launch a bash shell in the
-image. ::
+   $ python3 create_release.py --recoverable \
+       --resume-from OLD_RECOVERY_IMAGE --resume-step visit \
+       --source /releases/visit3_6_0.src.tar.gz
 
-    docker commit <container id> <image name>
-    docker run  -t -i <image name> /bin/bash
+If a third-party source archive was missing, copy it into the retained
+container, update the recovery image, and resume:
+
+.. code-block:: console
+
+   $ docker cp conduit.tar.gz STOPPED_CONTAINER:/home/visit/
+   $ docker commit STOPPED_CONTAINER RECOVERY_IMAGE
+   $ python3 create_release.py --recoverable \
+       --resume-from RECOVERY_IMAGE --resume-step optional
+
+Interactive Debugging
+---------------------
+
+Start a shell from a failed recovery image without ``--rm`` so that debugging
+changes are retained:
+
+.. code-block:: console
+
+   $ docker run -it --name visit-debug \
+       --entrypoint /bin/bash RECOVERY_IMAGE -l
+
+The partial build is in ``/home/visit``. Reproduce an operation with one of
+the following commands:
+
+.. code-block:: console
+
+   $ python3 run_build_visit.py
+   $ python3 run_build_visit.py --optional
+   $ python3 build_test_visit.py
+
+After exiting, reopen the same container with
+``docker start -ai visit-debug``. Commit useful fixes or added files and resume
+through the driver:
+
+.. code-block:: console
+
+   $ docker commit visit-debug visitdev:3.6.0-debug
+   $ python3 create_release.py --recoverable \
+       --resume-from visitdev:3.6.0-debug --resume-step optional
+
+Replace ``docker`` with ``podman`` in these examples when using Podman.
+
+Adding a Platform
+-----------------
+
+A platform Dockerfile belongs in ``scripts/docker`` and should follow the
+same two-stage interface as the existing files:
+
+* Name the dependency stage ``visit-build-environment``.
+* Name the completed stage ``visit-release``.
+* Use a build argument for the base operating-system version.
+* Copy ``build_visit[0-9]*``, ``visit_version.py``, and
+  ``run_build_visit.py`` into the environment stage.
+* Run ``run_build_visit.py`` once for core libraries and once with
+  ``--optional`` in the release stage.
+* Copy ``visit*.src.tar.gz`` and the shared Python build/test helpers without
+  embedding a VisIt release number.
+* Run ``build_visit_docker_cleanup.py`` only after
+  ``build_test_visit.py`` succeeds.
+
+Register the platform's Dockerfile, build argument, and default operating
+system version in ``PLATFORMS`` in ``create_release.py``. This registration
+also adds the platform to the command-line choices and to recoverable builds.
+
+Useful Container Commands
+-------------------------
+
+The following commands list and remove local images and containers:
+
+.. code-block:: console
+
+   $ docker image ls
+   $ docker container ls --all
+   $ docker image rm IMAGE
+   $ docker container rm CONTAINER
+
+Recovery mode deliberately retains failed containers and images. Remove them
+after the release succeeds and they are no longer needed.
