@@ -323,6 +323,18 @@ The complete version consists of:
 When a Conduit Blueprint output type is specified, these parameters will appear in the metadata.
 See :ref:`View_Parameters` for more information.
 
+Here is a diagram demonstrating what the various camera parameters control for perspective projection (rays collapse to a point):
+
+.. figure:: images/XRay_Query_camera_diagram_perspective.png
+
+   A diagram showing how the *normal*, *focus*, *view_up*, *view_angle*, *parallel_scale*, *near_plane*, and *far_plane* construct the view frustum when *perspective* projection is enabled.
+
+Here is a diagram demonstrating what the various camera parameters control for parallel projection (rays are parallel):
+
+.. figure:: images/XRay_Query_camera_diagram_parallel.png
+
+   A diagram showing how the *normal*, *focus*, *view_up*, *parallel_scale*, *near_plane*, and *far_plane* construct the view frustum when *perspective* projection is disabled.
+
 .. _Simplified_Camera_Specification:
 
 Simplified Camera Specification
