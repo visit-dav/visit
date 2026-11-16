@@ -212,7 +212,9 @@ visit_add_executable(
     OUTPUT_NAME engine_ser)
 
 if(WIN32 AND MSVC)
-    set_target_properties(engine_ser_exe PROPERTIES LINK_FLAGS "/STACK:4000000")
+    set_target_properties(engine_ser_exe PROPERTIES
+        LINK_FLAGS "/STACK:4000000"
+        WIN32_EXECUTABLE ${VISIT_WINDOWS_APPLICATION})
 endif()
 
 
@@ -263,7 +265,8 @@ if(VISIT_PARALLEL)
 
     if(WIN32 AND MSVC)
         set_target_properties(engine_par_exe PROPERTIES
-            LINK_FLAGS "/STACK:4000000")
+            LINK_FLAGS "/STACK:4000000"
+            WIN32_EXECUTABLE ${VISIT_WINDOWS_APPLICATION})
     endif()
 
     if(HAVE_ICET)

@@ -249,6 +249,10 @@ class VisWindowColleagueProxy;
 //    Kevin Griffin, Fri Jul 24 11:46:21 AM CDT 2026
 //    Added ResetAnariScene
 //
+//    Kathleen Biagas, Mon Sep 14, 2026 
+//    Change return type of MSAAAvailable from bool to int : `unknown`,
+//    `available`, not `available`.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -351,7 +355,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     void                     SetMSAASamples(int);
     int                      GetMSAASamples() const
                                  { return msaaSamples; }
-    bool                     MSAAAvailable();
+    int                      MSAAAvailable();
 
     void                     SetFXAAOptions(const FXAAOptions *);
     const FXAAOptions       *GetFXAAOptions() const;

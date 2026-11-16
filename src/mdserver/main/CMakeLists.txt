@@ -148,6 +148,8 @@ if(VISIT_STATIC)
 endif()
 
 if(WIN32 AND MSVC)
-    set_target_properties(mdserver PROPERTIES LINK_FLAGS "/STACK:4000000")
+    set_target_properties(mdserver PROPERTIES
+        LINK_FLAGS "/STACK:4000000"
+        WIN32_EXECUTABLE ${VISIT_WINDOWS_APPLICATION})
 endif()
 

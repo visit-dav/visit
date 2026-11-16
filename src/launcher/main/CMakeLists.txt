@@ -36,7 +36,11 @@ visit_add_executable(
                Threads::Threads
                ${DL_LIB})
 
-if(NOT WIN32)
+if(WIN32)
+    set_target_properties(vcl PROPERTIES
+        WIN32_EXECUTABLE ${VISIT_WINDOWS_APPLICATION})
+
+else()
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     target_compile_definitions(vcl PRIVATE COMM_EXPORTS)
 

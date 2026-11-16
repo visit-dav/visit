@@ -185,6 +185,11 @@ visit_add_executable(
                 ${vtkjpeg_LIBRARIES}
     OUTPUT_NAME viewer)
 
+if(WIN32)
+    set_target_properties(viewer_exe PROPERTIES
+        WIN32_EXECUTABLE ${VISIT_WINDOWS_APPLICATION})
+endif()
+
 if(APPLE)
     set(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt Viewer ${VISIT_VERSION}")
     set(MACOSX_BUNDLE_INFO_STRING          "Graphical viewer for VisIt")

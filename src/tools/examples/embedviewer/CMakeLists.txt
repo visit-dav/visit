@@ -131,6 +131,11 @@ set_target_properties(embedded multiwindow PROPERTIES AUTOMOC ON)
 qt6_disable_unicode_defines(embedded)
 qt6_disable_unicode_defines(multiwindow)
 
+if(WIN32)
+    set_target_properties(embedded multiwindow PROPERTIES
+        WIN32_EXECUTABLE ${VISIT_WINDOWS_APPLICATION})
+endif()
+
 if(APPLE)
     if(VISIT_STATIC)
         MAC_NIB_INSTALL(embedded)

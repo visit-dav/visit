@@ -47,6 +47,11 @@ visit_add_executable(
                 ${gui_exe_GPlot}
     OUTPUT_NAME gui)
 
+if(WIN32)
+    set_target_properties(gui_exe PROPERTIES
+        WIN32_EXECUTABLE ${VISIT_WINDOWS_APPLICATION})
+endif()
+
 if(APPLE)
     if(VISIT_STATIC)
         # Satisfy references in libQtNetwork.

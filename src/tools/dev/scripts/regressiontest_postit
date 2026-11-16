@@ -58,7 +58,7 @@ fi
 if test "$serial" = "true" ; then
     modes="$testHost,trunk,serial"
 else
-    modes="$testHost,trunk,serial $testHost,trunk,parallel $testHost,trunk,scalable,parallel,icet"
+    modes="$testHost,trunk,serial $testHost,trunk,parallel $testHost,trunk,scalable,tiled"
 fi
 
 hasFailed=""
