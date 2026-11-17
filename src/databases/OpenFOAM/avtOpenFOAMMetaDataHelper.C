@@ -1386,6 +1386,11 @@ avtOpenFOAMMetaDataHelper::GatherFieldMetaData(int timeState,
                                                              metaData);
     }
 
+    // The plugin advertises invariant metadata, so metadata first built for
+    // state 0 is reused at later states.  Some fields, especially lagrangian
+    // clouds, may first appear at state 1; include them in the initial field
+    // inventory so they remain available.  This does not duplicate the scans
+    // above: those inspect times[timeState], while this block inspects times[1].
     if (timeState == 0 && times.size() > 1)
     {
         GatherFieldMetaDataForTime(times[1].name, metaData);

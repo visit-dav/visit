@@ -40,11 +40,11 @@ using     std::map;
 static bool
 OpenFOAMVariableInMetaData(const avtDatabaseMetaData *md, const std::string &name)
 {
-    return md == NULL ||
-           md->GetScalar(name) != NULL ||
+    return md != NULL &&
+          (md->GetScalar(name) != NULL ||
            md->GetVector(name) != NULL ||
            md->GetTensor(name) != NULL ||
-           md->GetSymmTensor(name) != NULL;
+           md->GetSymmTensor(name) != NULL);
 }
 
 
