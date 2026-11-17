@@ -156,6 +156,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>As a precaution against default HDF5 file locking behavior (<code>ON/TRUE</code>), if it is not already set in the environment when VisIt is launched, the <code>HDF5_USE_FILE_LOCKING</code> environment variable is set to <code>FALSE</code> in <code>internallauncher</code>.</li>
   <li>Fixed avtBlueprint dependence on MFEM to be unconditional.</li>
   <li>visit-dist has been converted to a bash script. The single argument is a version number. It no longer accepts a package name, -dbioonly or -withtest. The resultant tarball will be named visitX_Y_Z.src.tar.gz where X,Y, and Z represent the passed version number.</li>
+  <li>The Docker release-building scripts were modernized. The new <code>create_release.py</code> driver infers the VisIt version from the source archive, uses temporary build contexts, and supports Docker or Podman builds for Ubuntu, Rocky Linux, Debian, Fedora, and manylinux. It creates platform-specific artifact names, separates core and optional third-party builds, and provides recoverable checkpoints, failure logs, and resumable VisIt builds.</li>
 </ul>
 
 <a name="TPL"></a>
