@@ -1581,8 +1581,8 @@ def test_outputs():
 #####################################################################
 
 standard_tests()
-# blueprint_tests()
-# error_tests()
-# test_outputs()
+blueprint_tests()
+error_tests()
+test_outputs()
 
 Exit()
