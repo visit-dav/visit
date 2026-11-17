@@ -2,7 +2,7 @@
 #  CLASSES: nightly
 #
 #  Test Case:  xrayimage.py
-#  Tests:      queries     - xray imagel
+#  Tests:      queries     - xray image
 #
 #  Programmer: Eric Brugger
 #  Date:       July 13, 2010
@@ -731,17 +731,6 @@ z: {"kev" if qro.units == UNITS_ON else "no units provided"}"""
     xlabel = xray_coordsets["spectra_coords/labels/x"];
     TestValueEQ(testname + "_data_spectra_XLabels", xlabel, "energy_group")
 
-def test_bp_normalized_view_vectors(testname, conduit_db):
-    xrayout = conduit.Node()
-    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
-
-    xray_view = xrayout["domain_000000/state/xray_view"]
-    normal = [xray_view["normal/x"], xray_view["normal/y"], xray_view["normal/z"]]
-    view_up = [xray_view["view_up/x"], xray_view["view_up/y"], xray_view["view_up/z"]]
-
-    TestValueEQ(testname + "_normal", normal, [0.0, 0.0, 1.0])
-    TestValueEQ(testname + "_view_up", view_up, [0.0, 1.0, 0.0])
-
 def calc_midpoints(arr):
     midpts = []
     for i in range(0, len(arr) - 1):
@@ -804,7 +793,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
         calltype = "legacy" if i == 0 else "modern"
 
         # run query
-        if (i == 0):
+        if (calltype == "legacy"):
             # test legacy call
             Query("XRay Image",
                   output_type,
@@ -821,7 +810,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
                   image_size[1],
                   ("darr", "parr"),
                   energy_group_bounds)
-        elif (i == 1):
+        elif (calltype == "modern"):
             # test modern call
             params = dict()
             params["output_type"] = output_type
@@ -973,71 +962,91 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     
     teardown_bp_test()
 
-blueprint_test("blueprint hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
-blueprint_test("blueprint json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
-blueprint_test("blueprint yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
+blueprint_test(output_type="blueprint hdf5",
+               outdir=conduit_dir_hdf5,
+               testtextnumber=32,
+               testname="Blueprint_HDF5_X_Ray_Output")
+blueprint_test(output_type="blueprint json",
+               outdir=conduit_dir_json,
+               testtextnumber=34,
+               testname="Blueprint_JSON_X_Ray_Output")
+blueprint_test(output_type="blueprint yaml",
+               outdir=conduit_dir_yaml,
+               testtextnumber=36,
+               testname="Blueprint_YAML_X_Ray_Output")
 
 #
 # test normal and up vectors are normalized in blueprint metadata
 #
+def test_bp_normalized_view_vectors():
+    setup_bp_test()
 
-setup_bp_test()
+    params = GetQueryParameters("XRay Image")
+    params["image_size"] = (4, 3)
+    params["output_type"] = "blueprint hdf5"
+    params["output_dir"] = conduit_dir_normalized_vectors
+    params["filename_scheme"] = "none"
+    params["focus"] = (0., 2.5, 10.)
+    params["normal"] = (0., 0., 2.)
+    params["view_up"] = (0., 3., 0.)
+    params["parallel_scale"] = 5.
+    params["near_plane"] = -50.
+    params["far_plane"] = 50.
+    params["vars"] = ("d", "p")
+    Query("XRay Image", params)
 
-params = GetQueryParameters("XRay Image")
-params["image_size"] = (4, 3)
-params["output_type"] = "blueprint hdf5"
-params["output_dir"] = conduit_dir_normalized_vectors
-params["filename_scheme"] = "none"
-params["focus"] = (0., 2.5, 10.)
-params["normal"] = (0., 0., 2.)
-params["view_up"] = (0., 3., 0.)
-params["parallel_scale"] = 5.
-params["near_plane"] = -50.
-params["far_plane"] = 50.
-params["vars"] = ("d", "p")
-Query("XRay Image", params)
+    teardown_bp_test()
 
-teardown_bp_test()
+    conduit_db = pjoin(conduit_dir_normalized_vectors, "output.root")
+    xrayout = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
-conduit_db = pjoin(conduit_dir_normalized_vectors, "output.root")
-test_bp_normalized_view_vectors("Blueprint_Normalized_View_Vectors", conduit_db)
+    xray_view = xrayout["domain_000000/state/xray_view"]
+    normal = [xray_view["normal/x"], xray_view["normal/y"], xray_view["normal/z"]]
+    view_up = [xray_view["view_up/x"], xray_view["view_up/y"], xray_view["view_up/z"]]
+
+    TestValueEQ("Blueprint_Normalized_View_Vectors" + "_normal", normal, [0.0, 0.0, 1.0])
+    TestValueEQ("Blueprint_Normalized_View_Vectors" + "_view_up", view_up, [0.0, 1.0, 0.0])
+
+test_bp_normalized_view_vectors()
 
 #
 # test detector height and width are always positive in blueprint output
 #
+def test_positive_detector_height_and_width():
+    setup_bp_test()
 
-setup_bp_test()
+    params = GetQueryParameters("XRay Image")
+    params["image_size"] = (4, 3)
+    params["output_type"] = "hdf5"
+    params["output_dir"] = conduit_dir_detector_dims
+    params["focus"] = (0., 2.5, 10.)
+    params["perspective"] = 1 # 0 parallel, 1 perspective
+    params["near_plane"] = -50.
+    params["far_plane"] = 50.
+    params["vars"] = ("d", "p")
+    params["energy_group_bounds"] = [3.7, 4.2];
+    params["parallel_scale"] = 5.
+    Query("XRay Image", params)
 
-params = GetQueryParameters("XRay Image")
-params["image_size"] = (4, 3)
-params["output_type"] = "hdf5"
-params["output_dir"] = conduit_dir_detector_dims
-params["focus"] = (0., 2.5, 10.)
-params["perspective"] = 1
-params["near_plane"] = -50.
-params["far_plane"] = 50.
-params["vars"] = ("d", "p")
-params["energy_group_bounds"] = [3.7, 4.2];
-params["parallel_scale"] = 5.
-Query("XRay Image", params)
+    teardown_bp_test()
 
-teardown_bp_test()
+    conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
+    xrayout = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
-conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
-xrayout = conduit.Node()
-conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+    detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
+    TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
 
-detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
-TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
+    detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
+    TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
 
-detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
-TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
+test_positive_detector_height_and_width()
 
 #
 # test imaging plane topos and ray output
 #
-
-def test_imaging_planes_and_rays():
+def test_camera_and_rays():
     for i in range(0, 2):
         setup_bp_test()
 
@@ -1046,7 +1055,7 @@ def test_imaging_planes_and_rays():
         params["output_dir"] = conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1
         params["output_type"] = "hdf5"
         params["focus"] = (0., 2.5, 10.)
-        params["perspective"] = 1
+        params["perspective"] = 1 # 0 parallel, 1 perspective
         params["near_plane"] = -50.
         params["far_plane"] = 50.
         params["vars"] = ("d", "p")
@@ -1057,19 +1066,10 @@ def test_imaging_planes_and_rays():
 
         OpenDatabase(conduit_db)
 
-        AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
-        AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
-        AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
-        if i == 0:
-            AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field", 1, 1)
-        else:
-            AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
+        AddPlot("Mesh", "mesh_camera_topo")
+        if i == 1:
+            AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
         DrawPlots()
-
-        SetActivePlots(4)
-        PseudocolorAtts = PseudocolorAttributes()
-        PseudocolorAtts.invertColorTable = 1
-        SetPlotOptions(PseudocolorAtts)
 
         View3DAtts = View3DAttributes()
         View3DAtts.viewNormal = (-0.519145, 0.199692, -0.831031)
@@ -1081,12 +1081,12 @@ def test_imaging_planes_and_rays():
         View3DAtts.farPlane = 117.306
         SetView3D(View3DAtts)
 
-        Test("Blueprint_HDF5_Imaging_Planes" + str(i))
+        Test("Blueprint_HDF5_Camera_and_Rays" + str(i))
 
         teardown_bp_test()
         CloseDatabase(conduit_db)
 
-test_imaging_planes_and_rays()
+test_camera_and_rays()
 
 def test_non_square_pixels():
     DeleteAllPlots()
@@ -1140,36 +1140,8 @@ def test_non_square_pixels():
     OpenDatabase(conduit_db)
     
     # first we test the imaging planes and rays look as we expect
-    AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
-    AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-    AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+    AddPlot("Mesh", "mesh_camera_topo")
     DrawPlots()
-
-    # Make the plot of the near plane active
-    SetActivePlots(1)
-    PseudocolorAtts = PseudocolorAttributes()
-    # We invert the color table so that it is a different color from the far plane
-    PseudocolorAtts.invertColorTable = 1
-    SetPlotOptions(PseudocolorAtts)
-
-    # Make the plot of the view plane active
-    SetActivePlots(2)
-    PseudocolorAtts = PseudocolorAttributes()
-    PseudocolorAtts.colorTableName = "hot_and_cold"
-    PseudocolorAtts.invertColorTable = 1
-    PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-    # We lower the opacity so that the view plane does not obstruct our view of anything.
-    PseudocolorAtts.opacity = 0.7
-    SetPlotOptions(PseudocolorAtts)
-
-    # leave the far plane as is
-
-    # add ray corners topo
-    AddPlot("Mesh", "mesh_ray_corners_topo")
-    DrawPlots()
-    MeshAtts = MeshAttributes()
-    MeshAtts.lineWidth = 1
-    SetPlotOptions(MeshAtts)
 
     # set view
     View3DAtts = View3DAttributes()
@@ -1382,87 +1354,89 @@ test_xray_view_vector_error(
 # 
 # Test filenames and output types
 # 
-
-setup_bp_test()
-
-DefineArrayExpression("da", "array_compose(d,d)")
-DefineArrayExpression("pa", "array_compose(p,p)")
-
 def query_variety(otype, scheme, thevars, outdir):
     SetQueryFloatFormat("%g")
     Query("XRay Image", 
-        background_intensity=0, 
-        divide_emis_by_absorb=0, 
-        far_plane=20, 
-        filename_scheme=scheme, 
-        family_files=0, # this is to test that family_files is ignored when filename_scheme is set
-        focus=(0, 0, 0), 
-        image_pan=(0, 0), 
-        image_size=(3, 3), 
-        image_zoom=1, 
-        near_plane=-20, 
-        normal=(0, 0, 1), 
-        output_dir=outdir, 
-        output_ray_bounds=0, 
-        output_type=otype, 
-        parallel_scale=10, 
-        perspective=0, 
-        view_angle=30, 
-        view_up=(0, 1, 0), 
-        vars=thevars)
+          background_intensity=0, 
+          divide_emis_by_absorb=0, 
+          far_plane=20, 
+          filename_scheme=scheme, 
+          family_files=0, # this is to test that family_files is ignored when filename_scheme is set
+          focus=(0, 0, 0), 
+          image_pan=(0, 0), 
+          image_size=(3, 3), 
+          image_zoom=1, 
+          near_plane=-20, 
+          normal=(0, 0, 1), 
+          output_dir=outdir, 
+          output_ray_bounds=0, 
+          output_type=otype, 
+          parallel_scale=10, 
+          perspective=0, 
+          view_angle=30, 
+          view_up=(0, 1, 0), 
+          vars=thevars)
     return GetQueryOutputObject()
 
 def query_family_backwards_compat(family, thevars, outdir):
     SetQueryFloatFormat("%g")
     Query("XRay Image", 
-        background_intensity=0, 
-        divide_emis_by_absorb=0, 
-        far_plane=20, 
-        family_files=family,
-        focus=(0, 0, 0), 
-        image_pan=(0, 0), 
-        image_size=(3, 3), 
-        image_zoom=1, 
-        near_plane=-20, 
-        normal=(0, 0, 1), 
-        output_dir=outdir, 
-        output_ray_bounds=0, 
-        output_type="png", 
-        parallel_scale=10, 
-        perspective=0, 
-        view_angle=30, 
-        view_up=(0, 1, 0), 
-        vars=thevars)
+          background_intensity=0, 
+          divide_emis_by_absorb=0, 
+          far_plane=20, 
+          family_files=family,
+          focus=(0, 0, 0), 
+          image_pan=(0, 0), 
+          image_size=(3, 3), 
+          image_zoom=1, 
+          near_plane=-20, 
+          normal=(0, 0, 1), 
+          output_dir=outdir, 
+          output_ray_bounds=0, 
+          output_type="png", 
+          parallel_scale=10, 
+          perspective=0, 
+          view_angle=30, 
+          view_up=(0, 1, 0), 
+          vars=thevars)
     return GetQueryOutputObject()
 
-filename_schemes = ["family", "family", "cycle", "none"]
-vars_options = [("d", "p"), ("da", "pa")]
+def test_filenames_and_output_types():
+    setup_bp_test()
 
-for i in range(0, len(output_types)):
-    outdir_set_otype = outdir_set + "_" + output_types[i]
-    if output_types[i] == "jpeg":
-        # create a dummy file to test the file familying
-        open(outdir_set_otype + "/output.0000.jpg", 'w').close()
-    info = ""
-    for j in range(0, len(filename_schemes)):
-        for k in range(0, len(vars_options)):
-            info += str(query_variety(output_types[i], 
-                                      filename_schemes[j], 
-                                      vars_options[k], 
-                                      outdir_set_otype)) + "\n"
-    info += str(sorted(os.listdir(outdir_set_otype))) + "\n"
-    TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
+    DefineArrayExpression("da", "array_compose(d,d)")
+    DefineArrayExpression("pa", "array_compose(p,p)")
 
-# test backwards compatibility with family_files option
-for i in range(0, len(family_options)):
-    outdir_set_family = outdir_set + "_family_" + str(family_options[i])
-    info = ""
-    for j in range(0, len(vars_options)):
-        info += str(query_family_backwards_compat(family_options[i], 
-                                                  vars_options[j], 
-                                                  outdir_set_family)) + "\n"
-    info += str(sorted(os.listdir(outdir_set_family))) + "\n"
-    TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
+    filename_schemes = ["family", "family", "cycle", "none"]
+    vars_options = [("d", "p"), ("da", "pa")]
+
+    for i in range(0, len(output_types)):
+        outdir_set_otype = outdir_set + "_" + output_types[i]
+        if output_types[i] == "jpeg":
+            # create a dummy file to test the file familying
+            open(outdir_set_otype + "/output.0000.jpg", 'w').close()
+        info = ""
+        for j in range(0, len(filename_schemes)):
+            for k in range(0, len(vars_options)):
+                info += str(query_variety(output_types[i], 
+                                          filename_schemes[j], 
+                                          vars_options[k], 
+                                          outdir_set_otype)) + "\n"
+        info += str(sorted(os.listdir(outdir_set_otype))) + "\n"
+        TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
+
+    # test backwards compatibility with family_files option
+    for i in range(0, len(family_options)):
+        outdir_set_family = outdir_set + "_family_" + str(family_options[i])
+        info = ""
+        for j in range(0, len(vars_options)):
+            info += str(query_family_backwards_compat(family_options[i], 
+                                                      vars_options[j], 
+                                                      outdir_set_family)) + "\n"
+        info += str(sorted(os.listdir(outdir_set_family))) + "\n"
+        TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
+
+test_filenames_and_output_types()
 
 #
 # Test that the far plane actually clips the result
@@ -1543,31 +1517,34 @@ test_far_plane_clipping()
 #
 import numpy
 
-nporig = numpy.array([0.0, 2.5, 10.0])
+def test_error_messages():
+    nporig = numpy.array([0.0, 2.5, 10.0])
 
-params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
-    origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
-    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
-try:
-    Query("XRay Image", params)
-except (visit.VisItException, VisItException) as e:
-    if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
-        TestPOA('detect and warn numpy array as query param')
-    else:
+    params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
+        origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
+        width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+    try:
+        Query("XRay Image", params)
+    except (visit.VisItException, VisItException) as e:
+        if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
+            TestPOA('detect and warn numpy array as query param')
+        else:
+            TestFOA('detect and warn numpy array as query param', LINE())
+        pass
+    except:
         TestFOA('detect and warn numpy array as query param', LINE())
-    pass
-except:
-    TestFOA('detect and warn numpy array as query param', LINE())
-    pass
+        pass
 
-params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
-    origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
-    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
-try:
-    Query("XRay Image", params)
-    TestPOA('numpy array converted to list works as query param')
-except:
-    TestFOA('numpy array converted to list works as query param', LINE())
-    pass
+    params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
+        origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
+        width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+    try:
+        Query("XRay Image", params)
+        TestPOA('numpy array converted to list works as query param')
+    except:
+        TestFOA('numpy array converted to list works as query param', LINE())
+        pass
+
+test_error_messages()
 
 Exit()
