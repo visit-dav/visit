@@ -116,6 +116,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 3.6</font></b></p>
 <ul>
   <li>The X Ray Image Query now normalizes input normal and view up vectors, as well as checking to ensure they are orthogonal, non parallel, and non-zero length.</li>
+  <li>The X Ray Image Query Blueprint output types now produce a single camera mesh and a single rays mesh, as opposed to before where each imaging plane was output individually, and rays were handled as view frustum corners and actual rays. A pseudocolor plot of the ray mesh will now show ray direction. The new single camera mesh is comprised of lines that represent the imaging planes, normal, foccus, and up vector. Please see the documentation for examples.</li>
   <li>Query Change 2</li>
 </ul>
 

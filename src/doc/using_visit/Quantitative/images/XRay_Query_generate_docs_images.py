@@ -16,6 +16,11 @@
 #    Justin Privitera, Tue May  2 14:48:47 PDT 2023
 #    Spectra curves pictures are improved and this also makes the pictures for
 #    the blueprint example in the examples section.
+# 
+#    Justin Privitera, Tue Nov 17 14:06:46 PST 2026
+#    New logic for making pictures since the imaging planes are gone, replaced
+#    by the camera. Now we can use index select to get less rays instead of
+#    needing to run debugging queries at low resolution.
 # -----------------------------------------------------------------------------
 
 import conduit

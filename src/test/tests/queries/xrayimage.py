@@ -154,6 +154,12 @@
 #    Justin Privitera, Mon Oct  5 14:06:38 PDT 2026
 #    Added tests for demonstrating normalization of input vectors and catching
 #    non-orthogonal/parallel/zero-length input vectors.
+# 
+#    Justin Privitera, Tue Nov 17 14:06:46 PST 2026
+#    Refactored all tests into functions to make it easy to turn off specific
+#    tests or sets of tests.
+#    Updated tests to reflect that imaging planes were removed and the camera
+#    mesh output was added.
 # ----------------------------------------------------------------------------
 
 import os

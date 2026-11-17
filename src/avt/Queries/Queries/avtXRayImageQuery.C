@@ -2425,6 +2425,9 @@ avtXRayImageQuery::WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
 //  Modifications:
 //    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
 //    Leverage conduit's features to make the code more legible.
+// 
+//    Justin Privitera, Tue Nov 17 14:06:46 PST 2026
+//    The ray field is now directional.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2516,7 +2519,7 @@ avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
 //  Method: avtXRayImageQuery::WriteBlueprintImagingMeshes
 //
 //  Purpose:
-//    This function writes the various imaging meshes to the blueprint output.
+//    This function writes camera and rays meshes to the blueprint output.
 //    These meshes are specifically useful for visualizing where the x ray
 //    detector is looking and what it is looking at.
 //
@@ -2524,6 +2527,9 @@ avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//     Justin Privitera, Tue Nov 17 14:06:46 PST 2026
+//     This function now calculates corners and sends that information to
+//     functions that write rays and the view frustum camera mesh.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT

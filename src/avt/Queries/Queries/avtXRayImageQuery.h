@@ -129,6 +129,10 @@
 //
 //    Justin Privitera, Mon Oct  5 14:06:38 PDT 2026
 //    Added ValidateAndNormalizeViewVectors().
+// 
+//    Justin Privitera, Tue Nov 17 14:06:46 PST 2026
+//    Removed WriteBlueprintImagingPlane() and added
+//    WriteBlueprintViewFrustumMesh().
 //
 // ****************************************************************************
 
