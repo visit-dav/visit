@@ -323,6 +323,10 @@ def test_unstructured_grid_with_scalars():
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
+    params = dict()
+    params['image_size'] = (300, 300)
+    params['divide_emis_by_absorb'] = 1
+
     # Do tets.
     params['theta'] = 0
     params['phi'] = 0
@@ -463,6 +467,13 @@ def test_with_perspective():
 # Test with background intensities.
 #
 def test_with_background_intensities():
+    DefineScalarExpression("u1", 'recenter(((u+10.)*0.01), "zonal")')
+    DefineScalarExpression("v1", 'recenter(((v+10.)*0.01*matvf(mat1,1)), "zonal")')
+    DefineScalarExpression("v2", 'recenter(((v+10.)*0.01*matvf(mat1,2)), "zonal")')
+    DefineScalarExpression("v3", 'recenter(((v+10.)*0.01*matvf(mat1,3)), "zonal")')
+    DefineScalarExpression("v4", 'recenter(((v+10.)*0.01*matvf(mat1,4)), "zonal")')
+    DefineScalarExpression("w1", 'recenter(((w+10.)*0.01), "zonal")')
+
     DefineArrayExpression("wa", "array_compose(w1,w1)")
     DefineArrayExpression("va", "array_compose(v4,v4)")
 
@@ -495,6 +506,15 @@ def test_with_background_intensities():
     TestText("xrayimage29", s)
 
     DeleteAllPlots()
+    DeleteExpression("wa")
+    DeleteExpression("va")
+    DeleteExpression("u1")
+    DeleteExpression("v1")
+    DeleteExpression("v2")
+    DeleteExpression("v3")
+    DeleteExpression("v4")
+    DeleteExpression("w1")
+    CloseDatabase(silo_data_path("globe.silo"))
 
 # 
 # test setting output directory
