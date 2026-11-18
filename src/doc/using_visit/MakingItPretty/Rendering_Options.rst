@@ -84,6 +84,7 @@ The controls to turn on shadows can be found about halfway from the top of the *
 .. figure:: images/MakingItPretty-Rendering_advanced.png
 
    The advanced rendering options
+
 To turn on shadows, you must turn on scalable rendering by clicking on the **Always** radio button under the **Use scalable rendering** label.
 Once scalable rendering has been turned on, the shadows controls become enabled.
 The default shadow strength is 50%.
@@ -117,5 +118,4 @@ The same plot is shown with and without depth cueing in :numref:`Figure %s <fig-
 .. figure:: images/MakingItPretty-DepthCueingExample.png
 
    The effects of depth cueing on plots
-
 
