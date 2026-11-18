@@ -130,6 +130,9 @@ class AnariRenderingWidget;
 //   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
 //   Added ability to toggle tiled rendering on and off.
 //
+//   Kathleen Biagas, Tue Nov 17, 2026
+//   Moved antialiasing, OSPRay, and ANARI options to separate tabs.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -227,7 +230,14 @@ private:
 #endif
 
     QWidget *CreateBasicPage();
+    QWidget *CreateAntialiasingPage();
     QWidget *CreateAdvancedPage();
+#if defined(HAVE_OSPRAY)
+    QWidget *CreateOSPRayPage();
+#endif
+#ifdef HAVE_ANARI
+    QWidget *CreateAnariPage();
+#endif
     QWidget *CreateInformationPage();
 
     RenderingAttributes *renderAtts;
