@@ -43,6 +43,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>When launching a Python script with VisIt on the command line, arguments ordered after script `-s scriptname.py` will be recognized only as script arguments, and never as VisIt arguments. Therefore, `visit -nowin -cli -s test.py -nn 1` means that `test.py` will receive the `-nn 1` argument, not `visit`.</li>
   <li>When launching VisIt from the command line, if `-nn` (number of nodes) is specified without `-np` (number of processes), the number of processes will default to 1.</li>
   <li>Antialiasing MSAA option is now enabled when available.</li>
+  <li>Default banks were removed from host profiles, so, when launching, users should get a system default bank specific to them instead of relying on VisIt's default, which they may or may not have.</li>
 </ul>
 
 <a name="Advanced_features"></a>
