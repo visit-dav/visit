@@ -62,10 +62,6 @@ set(VTK_CMAKE_OPTIONS
     -DVTK_MODULE_ENABLE_VTK_RenderingVolumeOpenGL2:STRING=YES
     -DVTK_MODULE_ENABLE_VTK_libxml2:STRING=YES
     -DCMAKE_INSTALL_PREFIX:PATH=${visit_vtk_root}
-    -DVTK_WRAP_PYTHON:BOOL=true
-    -DPython3_EXECUTABLE:FILEPATH=${visit_python_executable}
-    -DPython3_INCLUDE_DIR:PATH=${visit_python_include}
-    -DPython3_LIBRARY:FILEPATH=${visit_python_library}
     -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:STRING=YES
     -DZLIB_BUILD_EXAMPLES:BOOL=OFF
     -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
@@ -75,12 +71,32 @@ set(VTK_CMAKE_OPTIONS
     -DTIFF_LIBRARY:PATH=${visit_tiff_library}
     -DVTK_MODULE_USE_EXTERNAL_VTK_jpeg:STRING=YES
     -DJPEG_INCLUDE_DIR:PATH=${visit_jpeg_include}
-    -DJPEG_LIBRARY:PATH=${visit_jpeg_library}
-    -DVTK_MODULE_ENABLE_VTK_GUISupportQt:STRING=YES
-    -DVTK_QT_VERSION:STRING=6
-    -DQt6_DIR:PATH=${visit_qt_config_dir})
+    -DJPEG_LIBRARY:PATH=${visit_jpeg_library})
 
-set(VTK_REQUIRED_DEPENDENCIES)
+set(VTK_REQUIRED_DEPENDENCIES ZLIB TIFF JPEG)
+
+if(ENABLE_PYTHON)
+    list(APPEND VTK_CMAKE_OPTIONS
+         -DVTK_WRAP_PYTHON:BOOL=true
+         -DPython3_EXECUTABLE:FILEPATH=${visit_python_executable}
+         -DPython3_INCLUDE_DIR:PATH=${visit_python_include}
+         -DPython3_LIBRARY:FILEPATH=${visit_python_library})
+    list(APPEND VTK_REQUIRED_DEPENDENCIES PYTHON)
+else()
+    list(APPEND VTK_CMAKE_OPTIONS
+         -DVTK_WRAP_PYTHON:BOOL=false)
+endif()
+
+if(ENABLE_QT)
+    list(APPEND VTK_CMAKE_OPTIONS
+         -DVTK_MODULE_ENABLE_VTK_GUISupportQt:STRING=YES
+         -DVTK_QT_VERSION:STRING=6
+         -DQt6_DIR:PATH=${visit_qt_config_dir})
+    list(APPEND VTK_REQUIRED_DEPENDENCIES QT)
+else()
+    list(APPEND VTK_CMAKE_OPTIONS
+         -DVTK_MODULE_ENABLE_VTK_GUISupportQt:STRING=NO)
+endif()
 
 if(ENABLE_OSPRAY)
     list(APPEND VTK_CMAKE_OPTIONS
@@ -102,8 +118,6 @@ else()
     list(APPEND VTK_CMAKE_OPTIONS
          -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=NO)
 endif()
-
-list(APPEND VTK_REQUIRED_DEPENDENCIES PYTHON ZLIB TIFF JPEG QT)
 
 visit_resolve_dependencies(
     PACKAGE VTK

@@ -145,6 +145,12 @@ is accepted only when its package-specific header and library checks find an
 installation below `visit_install_root`, or when its `ExternalProject` target was
 created earlier in the current build. System-installed libraries are not accepted.
 
+Dependency and feature conditions follow the corresponding `build_visit`
+modules. The Windows build adds explicit dependencies for libraries that
+`build_visit` can obtain from the Linux or macOS system, including JPEG, PNG,
+TIFF, ZLIB, and OpenSSL. It also requires the managed Python installation for
+ANARI instead of relying on a system Python.
+
 If an enabled package has an unavailable dependency, configuration stops with a
 message that distinguishes a disabled or missing dependency from an incorrect
 package include order. For example, Python requires JPEG, ZLIB, and TIFF for
