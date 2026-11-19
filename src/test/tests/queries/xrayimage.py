@@ -2,7 +2,7 @@
 #  CLASSES: nightly
 #
 #  Test Case:  xrayimage.py
-#  Tests:      queries     - xray imagel
+#  Tests:      queries     - xray image
 #
 #  Programmer: Eric Brugger
 #  Date:       July 13, 2010
@@ -154,11 +154,23 @@
 #    Justin Privitera, Mon Oct  5 14:06:38 PDT 2026
 #    Added tests for demonstrating normalization of input vectors and catching
 #    non-orthogonal/parallel/zero-length input vectors.
+# 
+#    Justin Privitera, Tue Nov 17 14:06:46 PST 2026
+#    Refactored all tests into functions to make it easy to turn off specific
+#    tests or sets of tests.
+#    Updated tests to reflect that imaging planes were removed and the camera
+#    mesh output was added.
 # ----------------------------------------------------------------------------
 
 import os
 import conduit
 import numpy
+
+def make_test_dir(basedir, subdir):
+    dirname = pjoin(basedir, subdir)
+    if not os.path.isdir(dirname):
+        os.mkdir(dirname)
+    return dirname
 
 if not os.path.isdir(out_path("current","queries")):
     os.mkdir(out_path("current","queries"))
@@ -166,53 +178,28 @@ out_base = out_path("current","queries","xrayimage")
 if not os.path.isdir(out_base):
     os.mkdir(out_base)
 
-outdir_set = pjoin(TestEnv.params["run_dir"], "testdir")
-if not os.path.isdir(outdir_set):
-    os.mkdir(outdir_set)
+outdir_set = make_test_dir(TestEnv.params["run_dir"], "testdir")
 
-conduit_dir_hdf5 = pjoin(outdir_set, "hdf5")
-if not os.path.isdir(conduit_dir_hdf5):
-    os.mkdir(conduit_dir_hdf5)
-conduit_dir_json = pjoin(outdir_set, "json")
-if not os.path.isdir(conduit_dir_json):
-    os.mkdir(conduit_dir_json)
-conduit_dir_yaml = pjoin(outdir_set, "yaml")
-if not os.path.isdir(conduit_dir_yaml):
-    os.mkdir(conduit_dir_yaml)
-conduit_dir_imaging_planes0 = pjoin(outdir_set, "imaging_planes0")
-if not os.path.isdir(conduit_dir_imaging_planes0):
-    os.mkdir(conduit_dir_imaging_planes0)
-conduit_dir_imaging_planes1 = pjoin(outdir_set, "imaging_planes1")
-if not os.path.isdir(conduit_dir_imaging_planes1):
-    os.mkdir(conduit_dir_imaging_planes1)
-conduit_dir_detector_dims = pjoin(outdir_set, "detector_dims")
-if not os.path.isdir(conduit_dir_detector_dims):
-    os.mkdir(conduit_dir_detector_dims)
-conduit_dir_nonsquare_pixels = pjoin(outdir_set, "nonsquare_pix")
-if not os.path.isdir(conduit_dir_nonsquare_pixels):
-    os.mkdir(conduit_dir_nonsquare_pixels)
-conduit_dir_far_plane_empty = pjoin(outdir_set, "far_plane_empty")
-if not os.path.isdir(conduit_dir_far_plane_empty):
-    os.mkdir(conduit_dir_far_plane_empty)
-conduit_dir_far_plane_non_empty = pjoin(outdir_set, "far_plane_non_empty")
-if not os.path.isdir(conduit_dir_far_plane_non_empty):
-    os.mkdir(conduit_dir_far_plane_non_empty)
-conduit_dir_normalized_vectors = pjoin(outdir_set, "normalized_vectors")
-if not os.path.isdir(conduit_dir_normalized_vectors):
-    os.mkdir(conduit_dir_normalized_vectors)
-conduit_dir_invalid_vectors = pjoin(outdir_set, "invalid_vectors")
-if not os.path.isdir(conduit_dir_invalid_vectors):
-    os.mkdir(conduit_dir_invalid_vectors)
+conduit_dir_hdf5 = make_test_dir(outdir_set, "hdf5")
+conduit_dir_json = make_test_dir(outdir_set, "json")
+conduit_dir_yaml = make_test_dir(outdir_set, "yaml")
+conduit_dir_imaging_planes0 = make_test_dir(outdir_set, "imaging_planes0")
+conduit_dir_imaging_planes1 = make_test_dir(outdir_set, "imaging_planes1")
+conduit_dir_detector_dims = make_test_dir(outdir_set, "detector_dims")
+conduit_dir_nonsquare_pixels = make_test_dir(outdir_set, "nonsquare_pix")
+conduit_dir_far_plane_empty = make_test_dir(outdir_set, "far_plane_empty")
+conduit_dir_far_plane_non_empty = make_test_dir(outdir_set, "far_plane_non_empty")
+conduit_dir_normalized_vectors = make_test_dir(outdir_set, "normalized_vectors")
+conduit_dir_invalid_vectors = make_test_dir(outdir_set, "invalid_vectors")
 
 dir_dne = pjoin(outdir_set, "doesnotexist")
 if os.path.isdir(dir_dne):
     os.rmdir(dir_dne)
 
 # os.chmod does not work on windows
+outdir_bad = ""
 if not platform.system() == "Windows":
-    outdir_bad = pjoin(outdir_set, "baddir")
-    if not os.path.isdir(outdir_bad):
-        os.mkdir(outdir_bad)
+    outdir_bad = make_test_dir(outdir_set, "baddir")
     os.chmod(outdir_bad, 0o444)
 
 output_types = ["jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
@@ -227,289 +214,332 @@ for i in range(0, len(family_options)):
     if not os.path.isdir(outdir_set_family):
         os.mkdir(outdir_set_family)
 
+# constants needed for blueprint tests
+UNITS_OFF = 0
+UNITS_ON = 1
+NO_ENERGY_GROUP_BOUNDS = 0
+ENERGY_GROUP_BOUNDS_MISMATCH = 1
+ENERGY_GROUP_BOUNDS = 2
+
 #
 # Test a single block structured grid with scalars.
 #
-OpenDatabase(silo_data_path("curv3d.silo"))
+def test_single_block_structured_grid_with_scalars():
+    OpenDatabase(silo_data_path("curv3d.silo"))
 
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
 
-# old style argument passing
-Query("XRay Image", 1, ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+    # old style argument passing
+    Query("XRay Image", 1, ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 
-os.rename("output.png", out_path(out_base,"xrayimage00.png"))
-Test("xrayimage00", 0, 1)
+    os.rename("output.png", out_path(out_base,"xrayimage00.png"))
+    Test("xrayimage00", 0, 1)
 
-s = GetQueryOutputString()
-TestText("xrayimage01", s)
+    s = GetQueryOutputString()
+    TestText("xrayimage01", s)
 
 #
 # Test a multi block structured grid with an array variable.
 #
-DefineArrayExpression("da", "array_compose(d,d)")
-DefineArrayExpression("pa", "array_compose(p,p)")
+def test_multi_block_structured_grid_with_array():
+    DefineArrayExpression("da", "array_compose(d,d)")
+    DefineArrayExpression("pa", "array_compose(p,p)")
 
-DeleteAllPlots()
+    DeleteAllPlots()
 
-OpenDatabase(silo_data_path("multi_curv3d.silo"))
+    OpenDatabase(silo_data_path("multi_curv3d.silo"))
 
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
 
-# create our own dictionary
-params = dict(output_type=1, 
-              output_dir=".", 
-              divide_emis_by_absorb=1, 
-              origin=(0.0, 2.5, 10.0), 
-              up_vector=(0, 1, 0), 
-              theta=0, 
-              phi=0, 
-              width = 10., 
-              height=10., 
-              image_size=(300, 300), 
-              vars=("da", "pa"))
-Query("XRay Image", params)
+    # create our own dictionary
+    params = dict(output_type=1, 
+                  output_dir=".", 
+                  divide_emis_by_absorb=1, 
+                  origin=(0.0, 2.5, 10.0), 
+                  up_vector=(0, 1, 0), 
+                  theta=0, 
+                  phi=0, 
+                  width = 10., 
+                  height=10., 
+                  image_size=(300, 300), 
+                  vars=("da", "pa"))
+    Query("XRay Image", params)
 
-os.rename("output.00.png", out_path(out_base,"xrayimage02.png"))
-os.rename("output.01.png", out_path(out_base,"xrayimage03.png"))
+    os.rename("output.00.png", out_path(out_base,"xrayimage02.png"))
+    os.rename("output.01.png", out_path(out_base,"xrayimage03.png"))
 
-Test("xrayimage02", 0, 1)
-Test("xrayimage03", 0, 1)
+    Test("xrayimage02", 0, 1)
+    Test("xrayimage03", 0, 1)
 
-s = GetQueryOutputString()
-TestText("xrayimage04", s)
+    s = GetQueryOutputString()
+    TestText("xrayimage04", s)
 
 #
 # Test a 2d structured grid with scalars.
 #
-DeleteAllPlots()
+def test_2d_structured_grid_with_scalars():
+    DeleteAllPlots()
 
-OpenDatabase(silo_data_path("curv2d.silo"))
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
 
-params = dict()
-params['image_size'] = (300, 300)
-params['divide_emis_by_absorb'] = 1
-params['width'] = 10.
-params['height'] = 10.
-params['vars'] = ("d", "p")
-Query("XRay Image", params)
+    params = dict()
+    params['image_size'] = (300, 300)
+    params['divide_emis_by_absorb'] = 1
+    params['width'] = 10.
+    params['height'] = 10.
+    params['vars'] = ("d", "p")
+    Query("XRay Image", params)
 
-os.rename("output.png", out_path(out_base,"xrayimage05.png"))
-Test("xrayimage05", 0, 1)
+    os.rename("output.png", out_path(out_base,"xrayimage05.png"))
+    Test("xrayimage05", 0, 1)
 
-s = GetQueryOutputString()
-TestText("xrayimage06", s)
+    s = GetQueryOutputString()
+    TestText("xrayimage06", s)
 
-params['theta'] = 90
-params['phi'] =  0
-Query("XRay Image", params)
+    params['theta'] = 90
+    params['phi'] =  0
+    Query("XRay Image", params)
 
-os.rename("output.png", out_path(out_base,"xrayimage07.png"))
-Test("xrayimage07", 0, 1)
+    os.rename("output.png", out_path(out_base,"xrayimage07.png"))
+    Test("xrayimage07", 0, 1)
 
-s = GetQueryOutputString()
-TestText("xrayimage08", s)
+    s = GetQueryOutputString()
+    TestText("xrayimage08", s)
 
 #
 # Test an unstructured grid with scalars.
 #
-DefineScalarExpression("u1", 'recenter(((u+10.)*0.01), "zonal")')
-DefineScalarExpression("v1", 'recenter(((v+10.)*0.01*matvf(mat1,1)), "zonal")')
-DefineScalarExpression("v2", 'recenter(((v+10.)*0.01*matvf(mat1,2)), "zonal")')
-DefineScalarExpression("v3", 'recenter(((v+10.)*0.01*matvf(mat1,3)), "zonal")')
-DefineScalarExpression("v4", 'recenter(((v+10.)*0.01*matvf(mat1,4)), "zonal")')
-DefineScalarExpression("w1", 'recenter(((w+10.)*0.01), "zonal")')
+def test_unstructured_grid_with_scalars():
+    DefineScalarExpression("u1", 'recenter(((u+10.)*0.01), "zonal")')
+    DefineScalarExpression("v1", 'recenter(((v+10.)*0.01*matvf(mat1,1)), "zonal")')
+    DefineScalarExpression("v2", 'recenter(((v+10.)*0.01*matvf(mat1,2)), "zonal")')
+    DefineScalarExpression("v3", 'recenter(((v+10.)*0.01*matvf(mat1,3)), "zonal")')
+    DefineScalarExpression("v4", 'recenter(((v+10.)*0.01*matvf(mat1,4)), "zonal")')
+    DefineScalarExpression("w1", 'recenter(((w+10.)*0.01), "zonal")')
 
-DeleteAllPlots()
+    DeleteAllPlots()
 
-OpenDatabase(silo_data_path("globe.silo"))
+    OpenDatabase(silo_data_path("globe.silo"))
 
-AddPlot("Pseudocolor", "u")
-DrawPlots()
+    AddPlot("Pseudocolor", "u")
+    DrawPlots()
 
-# Do tets.
-params['theta'] = 0
-params['phi'] = 0
-params['width'] = 1.
-params['height'] = 1.
-params['vars'] = ("w1", "v1")
-Query("XRay Image", params)
+    params = dict()
+    params['image_size'] = (300, 300)
+    params['divide_emis_by_absorb'] = 1
 
-os.rename("output.png", out_path(out_base,"xrayimage09.png"))
-Test("xrayimage09", 0, 1)
+    # Do tets.
+    params['theta'] = 0
+    params['phi'] = 0
+    params['width'] = 1.
+    params['height'] = 1.
+    params['vars'] = ("w1", "v1")
+    Query("XRay Image", params)
 
-s = GetQueryOutputString()
-TestText("xrayimage10", s)
+    os.rename("output.png", out_path(out_base,"xrayimage09.png"))
+    Test("xrayimage09", 0, 1)
 
-params['theta'] = 90
-params['width'] = 4.
-params['height'] = 4.
+    s = GetQueryOutputString()
+    TestText("xrayimage10", s)
 
-Query("XRay Image", params)
+    params['theta'] = 90
+    params['width'] = 4.
+    params['height'] = 4.
 
-os.rename("output.png", out_path(out_base,"xrayimage11.png"))
-Test("xrayimage11", 0, 1)
+    Query("XRay Image", params)
 
-s = GetQueryOutputString()
-TestText("xrayimage12", s)
+    os.rename("output.png", out_path(out_base,"xrayimage11.png"))
+    Test("xrayimage11", 0, 1)
 
-# Do pyramids.
-params['theta'] = 0
-params['vars'] = ("w1", "v2")
-Query("XRay Image", params) 
+    s = GetQueryOutputString()
+    TestText("xrayimage12", s)
 
-os.rename("output.png", out_path(out_base,"xrayimage13.png"))
-Test("xrayimage13", 0, 1)
+    # Do pyramids.
+    params['theta'] = 0
+    params['vars'] = ("w1", "v2")
+    Query("XRay Image", params) 
 
-s = GetQueryOutputString()
-TestText("xrayimage14", s)
+    os.rename("output.png", out_path(out_base,"xrayimage13.png"))
+    Test("xrayimage13", 0, 1)
 
-params['theta'] = 90
-Query("XRay Image", params)
+    s = GetQueryOutputString()
+    TestText("xrayimage14", s)
 
-os.rename("output.png", out_path(out_base,"xrayimage15.png"))
-Test("xrayimage15", 0, 1)
+    params['theta'] = 90
+    Query("XRay Image", params)
 
-s = GetQueryOutputString()
-TestText("xrayimage16", s)
+    os.rename("output.png", out_path(out_base,"xrayimage15.png"))
+    Test("xrayimage15", 0, 1)
 
-# Do wedges.
-params['theta'] = 0
-params['width'] = 8.
-params['height'] = 8.
-params['vars'] = ("w1", "v3")
-Query("XRay Image", params)
+    s = GetQueryOutputString()
+    TestText("xrayimage16", s)
 
-os.rename("output.png", out_path(out_base,"xrayimage17.png"))
-Test("xrayimage17", 0, 1)
+    # Do wedges.
+    params['theta'] = 0
+    params['width'] = 8.
+    params['height'] = 8.
+    params['vars'] = ("w1", "v3")
+    Query("XRay Image", params)
+
+    os.rename("output.png", out_path(out_base,"xrayimage17.png"))
+    Test("xrayimage17", 0, 1)
 
 
-s = GetQueryOutputString()
-TestText("xrayimage18", s)
+    s = GetQueryOutputString()
+    TestText("xrayimage18", s)
 
-params['theta'] = 90
-params['width'] = 20.
-params['height'] = 20.
-Query("XRay Image", params)
+    params['theta'] = 90
+    params['width'] = 20.
+    params['height'] = 20.
+    Query("XRay Image", params)
 
-os.rename("output.png", out_path(out_base,"xrayimage19.png"))
-Test("xrayimage19", 0, 1)
+    os.rename("output.png", out_path(out_base,"xrayimage19.png"))
+    Test("xrayimage19", 0, 1)
 
-s = GetQueryOutputString()
-TestText("xrayimage20", s)
+    s = GetQueryOutputString()
+    TestText("xrayimage20", s)
 
-# Do hexes.
-params['theta'] = 0
-params['vars'] = ("w1", "v4")
-Query("XRay Image", params)
+    # Do hexes.
+    params['theta'] = 0
+    params['vars'] = ("w1", "v4")
+    Query("XRay Image", params)
 
-os.rename("output.png", out_path(out_base,"xrayimage21.png"))
-Test("xrayimage21", 0, 1)
+    os.rename("output.png", out_path(out_base,"xrayimage21.png"))
+    Test("xrayimage21", 0, 1)
 
-s = GetQueryOutputString()
-TestText("xrayimage22", s)
+    s = GetQueryOutputString()
+    TestText("xrayimage22", s)
 
-params['theta'] = 90
-Query("XRay Image", params)
+    params['theta'] = 90
+    Query("XRay Image", params)
 
-os.rename("output.png", out_path(out_base,"xrayimage23.png"))
-Test("xrayimage23", 0, 1)
+    os.rename("output.png", out_path(out_base,"xrayimage23.png"))
+    Test("xrayimage23", 0, 1)
 
-s = GetQueryOutputString()
-TestText("xrayimage24", s)
+    s = GetQueryOutputString()
+    TestText("xrayimage24", s)
+
+    # cleanup
+    DeleteAllPlots()
+    DeleteExpression("u1")
+    DeleteExpression("v1")
+    DeleteExpression("v2")
+    DeleteExpression("v3")
+    DeleteExpression("v4")
+    DeleteExpression("w1")
+    CloseDatabase(silo_data_path("globe.silo"))
 
 #
 # Test with perspective.
 #
-DeleteAllPlots()
+def test_with_perspective():
+    DeleteAllPlots()
 
-OpenDatabase(silo_data_path("multi_curv3d.silo"))
+    OpenDatabase(silo_data_path("multi_curv3d.silo"))
 
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
 
-params = dict(output_type="png", 
-              output_dir=".", 
-              divide_emis_by_absorb=1, 
-              focus=(0.0, 2.5, 15.0), 
-              view_up=(0., 1., 0.), 
-              normal=(0., 0., 1.), 
-              view_angle=30., 
-              parallel_scale = 16.0078, 
-              near_plane = -32.0156, 
-              far_plane = 32.0156, 
-              image_pan=(0., 0.), 
-              image_zoom = 2.4, 
-              perspective = 1, 
-              image_size=(300, 300), 
-              vars=("d", "p"))
-Query("XRay Image", params)
+    params = dict(output_type="png", 
+                  output_dir=".", 
+                  divide_emis_by_absorb=1, 
+                  focus=(0.0, 2.5, 15.0), 
+                  view_up=(0., 1., 0.), 
+                  normal=(0., 0., 1.), 
+                  view_angle=30., 
+                  parallel_scale = 16.0078, 
+                  near_plane = -32.0156, 
+                  far_plane = 32.0156, 
+                  image_pan=(0., 0.), 
+                  image_zoom = 2.4, 
+                  perspective = 1, 
+                  image_size=(300, 300), 
+                  vars=("d", "p"))
+    Query("XRay Image", params)
 
-os.rename("output.png", out_path(out_base,"xrayimage25.png"))
+    os.rename("output.png", out_path(out_base,"xrayimage25.png"))
 
-Test("xrayimage25", 0, 1)
+    Test("xrayimage25", 0, 1)
 
-s = GetQueryOutputString()
-TestText("xrayimage26", s)
+    s = GetQueryOutputString()
+    TestText("xrayimage26", s)
 
 #
 # Test with background intensities.
 #
-DefineArrayExpression("wa", "array_compose(w1,w1)")
-DefineArrayExpression("va", "array_compose(v4,v4)")
+def test_with_background_intensities():
+    DefineScalarExpression("u1", 'recenter(((u+10.)*0.01), "zonal")')
+    DefineScalarExpression("v1", 'recenter(((v+10.)*0.01*matvf(mat1,1)), "zonal")')
+    DefineScalarExpression("v2", 'recenter(((v+10.)*0.01*matvf(mat1,2)), "zonal")')
+    DefineScalarExpression("v3", 'recenter(((v+10.)*0.01*matvf(mat1,3)), "zonal")')
+    DefineScalarExpression("v4", 'recenter(((v+10.)*0.01*matvf(mat1,4)), "zonal")')
+    DefineScalarExpression("w1", 'recenter(((w+10.)*0.01), "zonal")')
 
-DeleteAllPlots()
+    DefineArrayExpression("wa", "array_compose(w1,w1)")
+    DefineArrayExpression("va", "array_compose(v4,v4)")
 
-OpenDatabase(silo_data_path("globe.silo"))
+    DeleteAllPlots()
 
-AddPlot("Pseudocolor", "u")
-DrawPlots()
+    OpenDatabase(silo_data_path("globe.silo"))
 
-params = dict(output_type="png", 
-              output_dir=".", 
-              divide_emis_by_absorb=1, 
-              theta=90., 
-              phi=0., 
-              width=20., 
-              height=20., 
-              image_size=(300, 300), 
-              vars=("wa", "va"), 
-              background_intensities=(0.05, 0.1))
-Query("XRay Image", params)
+    AddPlot("Pseudocolor", "u")
+    DrawPlots()
 
-os.rename("output.00.png", out_path(out_base,"xrayimage27.png"))
-os.rename("output.01.png", out_path(out_base,"xrayimage28.png"))
+    params = dict(output_type="png", 
+                  output_dir=".", 
+                  divide_emis_by_absorb=1, 
+                  theta=90., 
+                  phi=0., 
+                  width=20., 
+                  height=20., 
+                  image_size=(300, 300), 
+                  vars=("wa", "va"), 
+                  background_intensities=(0.05, 0.1))
+    Query("XRay Image", params)
 
-Test("xrayimage27", 0, 1)
-Test("xrayimage28", 0, 1)
+    os.rename("output.00.png", out_path(out_base,"xrayimage27.png"))
+    os.rename("output.01.png", out_path(out_base,"xrayimage28.png"))
 
-s = GetQueryOutputString()
-TestText("xrayimage29", s)
+    Test("xrayimage27", 0, 1)
+    Test("xrayimage28", 0, 1)
 
-DeleteAllPlots()
+    s = GetQueryOutputString()
+    TestText("xrayimage29", s)
+
+    DeleteAllPlots()
+    DeleteExpression("wa")
+    DeleteExpression("va")
+    DeleteExpression("u1")
+    DeleteExpression("v1")
+    DeleteExpression("v2")
+    DeleteExpression("v3")
+    DeleteExpression("v4")
+    DeleteExpression("w1")
+    CloseDatabase(silo_data_path("globe.silo"))
 
 # 
 # test setting output directory
 # 
+def test_setting_output_dir():
+    OpenDatabase(silo_data_path("curv3d.silo"))
 
-OpenDatabase(silo_data_path("curv3d.silo"))
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
 
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+    # old style argument passing
+    Query("XRay Image", "png", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+    os.rename(outdir_set + "/output.png", out_path(out_base, "xrayimage30.png"))
+    Test("xrayimage30", 0, 1)
 
-# old style argument passing
-Query("XRay Image", "png", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-os.rename(outdir_set + "/output.png", out_path(out_base, "xrayimage30.png"))
-Test("xrayimage30", 0, 1)
-
-s = GetQueryOutputString()
-TestText("xrayimage31", s)
-DeleteAllPlots()
-CloseDatabase(silo_data_path("curv3d.silo"))
+    s = GetQueryOutputString()
+    TestText("xrayimage31", s)
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("curv3d.silo"))
 
 #
 # test blueprint output
@@ -587,9 +617,6 @@ perspective_str: \"parallel\""""
     diff_str = info.to_yaml() if diffval else ""
     TestValueEQ(testname + "_xray_view", diff_str, "")
 
-UNITS_OFF = 0
-UNITS_ON = 1
-
 def test_bp_state_xray_query(testname, xray_query, num_bins, abs_name, emis_name, units, divide_emis_by_absorb):
     yaml_text = f"""divide_emis_by_absorb: {"1" if divide_emis_by_absorb else "0"}
 divide_emis_by_absorb_str: {"yes" if divide_emis_by_absorb else "no"}
@@ -631,10 +658,6 @@ image_topo_order_of_domain_variables: \"xyz\""""
     diffval = xray_data.diff(xray_data_base, info)
     diff_str = info.to_yaml() if diffval else ""
     TestValueEQ(testname + "_xray_data", diff_str, "");
-
-NO_ENERGY_GROUP_BOUNDS = 0
-ENERGY_GROUP_BOUNDS_MISMATCH = 1
-ENERGY_GROUP_BOUNDS = 2
 
 class query_result_options:
     def __init__(self, num_bins, abs_name, emis_name, bin_state, units, int_max, pl_max, divide_emis_by_absorb):
@@ -731,17 +754,6 @@ z: {"kev" if qro.units == UNITS_ON else "no units provided"}"""
     xlabel = xray_coordsets["spectra_coords/labels/x"];
     TestValueEQ(testname + "_data_spectra_XLabels", xlabel, "energy_group")
 
-def test_bp_normalized_view_vectors(testname, conduit_db):
-    xrayout = conduit.Node()
-    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
-
-    xray_view = xrayout["domain_000000/state/xray_view"]
-    normal = [xray_view["normal/x"], xray_view["normal/y"], xray_view["normal/z"]]
-    view_up = [xray_view["view_up/x"], xray_view["view_up/y"], xray_view["view_up/z"]]
-
-    TestValueEQ(testname + "_normal", normal, [0.0, 0.0, 1.0])
-    TestValueEQ(testname + "_view_up", view_up, [0.0, 1.0, 0.0])
-
 def calc_midpoints(arr):
     midpts = []
     for i in range(0, len(arr) - 1):
@@ -804,7 +816,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
         calltype = "legacy" if i == 0 else "modern"
 
         # run query
-        if (i == 0):
+        if (calltype == "legacy"):
             # test legacy call
             Query("XRay Image",
                   output_type,
@@ -821,7 +833,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
                   image_size[1],
                   ("darr", "parr"),
                   energy_group_bounds)
-        elif (i == 1):
+        elif (calltype == "modern"):
             # test modern call
             params = dict()
             params["output_type"] = output_type
@@ -973,71 +985,88 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     
     teardown_bp_test()
 
-blueprint_test("blueprint hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
-blueprint_test("blueprint json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
-blueprint_test("blueprint yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
+def test_blueprint_outputs():
+    blueprint_test(output_type="blueprint hdf5",
+                   outdir=conduit_dir_hdf5,
+                   testtextnumber=32,
+                   testname="Blueprint_HDF5_X_Ray_Output")
+    blueprint_test(output_type="blueprint json",
+                   outdir=conduit_dir_json,
+                   testtextnumber=34,
+                   testname="Blueprint_JSON_X_Ray_Output")
+    blueprint_test(output_type="blueprint yaml",
+                   outdir=conduit_dir_yaml,
+                   testtextnumber=36,
+                   testname="Blueprint_YAML_X_Ray_Output")
 
 #
 # test normal and up vectors are normalized in blueprint metadata
 #
+def test_bp_normalized_view_vectors():
+    setup_bp_test()
 
-setup_bp_test()
+    params = GetQueryParameters("XRay Image")
+    params["image_size"] = (4, 3)
+    params["output_type"] = "blueprint hdf5"
+    params["output_dir"] = conduit_dir_normalized_vectors
+    params["filename_scheme"] = "none"
+    params["focus"] = (0., 2.5, 10.)
+    params["normal"] = (0., 0., 2.)
+    params["view_up"] = (0., 3., 0.)
+    params["parallel_scale"] = 5.
+    params["near_plane"] = -50.
+    params["far_plane"] = 50.
+    params["vars"] = ("d", "p")
+    Query("XRay Image", params)
 
-params = GetQueryParameters("XRay Image")
-params["image_size"] = (4, 3)
-params["output_type"] = "blueprint hdf5"
-params["output_dir"] = conduit_dir_normalized_vectors
-params["filename_scheme"] = "none"
-params["focus"] = (0., 2.5, 10.)
-params["normal"] = (0., 0., 2.)
-params["view_up"] = (0., 3., 0.)
-params["parallel_scale"] = 5.
-params["near_plane"] = -50.
-params["far_plane"] = 50.
-params["vars"] = ("d", "p")
-Query("XRay Image", params)
+    teardown_bp_test()
 
-teardown_bp_test()
+    conduit_db = pjoin(conduit_dir_normalized_vectors, "output.root")
+    xrayout = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
-conduit_db = pjoin(conduit_dir_normalized_vectors, "output.root")
-test_bp_normalized_view_vectors("Blueprint_Normalized_View_Vectors", conduit_db)
+    xray_view = xrayout["domain_000000/state/xray_view"]
+    normal = [xray_view["normal/x"], xray_view["normal/y"], xray_view["normal/z"]]
+    view_up = [xray_view["view_up/x"], xray_view["view_up/y"], xray_view["view_up/z"]]
+
+    TestValueEQ("Blueprint_Normalized_View_Vectors" + "_normal", normal, [0.0, 0.0, 1.0])
+    TestValueEQ("Blueprint_Normalized_View_Vectors" + "_view_up", view_up, [0.0, 1.0, 0.0])
 
 #
 # test detector height and width are always positive in blueprint output
 #
+def test_positive_detector_height_and_width():
+    setup_bp_test()
 
-setup_bp_test()
+    params = GetQueryParameters("XRay Image")
+    params["image_size"] = (4, 3)
+    params["output_type"] = "hdf5"
+    params["output_dir"] = conduit_dir_detector_dims
+    params["focus"] = (0., 2.5, 10.)
+    params["perspective"] = 1 # 0 parallel, 1 perspective
+    params["near_plane"] = -50.
+    params["far_plane"] = 50.
+    params["vars"] = ("d", "p")
+    params["energy_group_bounds"] = [3.7, 4.2];
+    params["parallel_scale"] = 5.
+    Query("XRay Image", params)
 
-params = GetQueryParameters("XRay Image")
-params["image_size"] = (4, 3)
-params["output_type"] = "hdf5"
-params["output_dir"] = conduit_dir_detector_dims
-params["focus"] = (0., 2.5, 10.)
-params["perspective"] = 1
-params["near_plane"] = -50.
-params["far_plane"] = 50.
-params["vars"] = ("d", "p")
-params["energy_group_bounds"] = [3.7, 4.2];
-params["parallel_scale"] = 5.
-Query("XRay Image", params)
+    teardown_bp_test()
 
-teardown_bp_test()
+    conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
+    xrayout = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
-conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
-xrayout = conduit.Node()
-conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+    detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
+    TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
 
-detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
-TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
-
-detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
-TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
+    detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
+    TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
 
 #
 # test imaging plane topos and ray output
 #
-
-def test_imaging_planes_and_rays():
+def test_camera_and_rays():
     for i in range(0, 2):
         setup_bp_test()
 
@@ -1046,7 +1075,7 @@ def test_imaging_planes_and_rays():
         params["output_dir"] = conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1
         params["output_type"] = "hdf5"
         params["focus"] = (0., 2.5, 10.)
-        params["perspective"] = 1
+        params["perspective"] = 1 # 0 parallel, 1 perspective
         params["near_plane"] = -50.
         params["far_plane"] = 50.
         params["vars"] = ("d", "p")
@@ -1057,19 +1086,10 @@ def test_imaging_planes_and_rays():
 
         OpenDatabase(conduit_db)
 
-        AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
-        AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
-        AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
-        if i == 0:
-            AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field", 1, 1)
-        else:
-            AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
+        AddPlot("Mesh", "mesh_camera_topo")
+        if i == 1:
+            AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
         DrawPlots()
-
-        SetActivePlots(4)
-        PseudocolorAtts = PseudocolorAttributes()
-        PseudocolorAtts.invertColorTable = 1
-        SetPlotOptions(PseudocolorAtts)
 
         View3DAtts = View3DAttributes()
         View3DAtts.viewNormal = (-0.519145, 0.199692, -0.831031)
@@ -1081,12 +1101,10 @@ def test_imaging_planes_and_rays():
         View3DAtts.farPlane = 117.306
         SetView3D(View3DAtts)
 
-        Test("Blueprint_HDF5_Imaging_Planes" + str(i))
+        Test("Blueprint_HDF5_Camera_and_Rays" + str(i))
 
         teardown_bp_test()
         CloseDatabase(conduit_db)
-
-test_imaging_planes_and_rays()
 
 def test_non_square_pixels():
     DeleteAllPlots()
@@ -1140,36 +1158,8 @@ def test_non_square_pixels():
     OpenDatabase(conduit_db)
     
     # first we test the imaging planes and rays look as we expect
-    AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
-    AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-    AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+    AddPlot("Mesh", "mesh_camera_topo")
     DrawPlots()
-
-    # Make the plot of the near plane active
-    SetActivePlots(1)
-    PseudocolorAtts = PseudocolorAttributes()
-    # We invert the color table so that it is a different color from the far plane
-    PseudocolorAtts.invertColorTable = 1
-    SetPlotOptions(PseudocolorAtts)
-
-    # Make the plot of the view plane active
-    SetActivePlots(2)
-    PseudocolorAtts = PseudocolorAttributes()
-    PseudocolorAtts.colorTableName = "hot_and_cold"
-    PseudocolorAtts.invertColorTable = 1
-    PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-    # We lower the opacity so that the view plane does not obstruct our view of anything.
-    PseudocolorAtts.opacity = 0.7
-    SetPlotOptions(PseudocolorAtts)
-
-    # leave the far plane as is
-
-    # add ray corners topo
-    AddPlot("Mesh", "mesh_ray_corners_topo")
-    DrawPlots()
-    MeshAtts = MeshAttributes()
-    MeshAtts.lineWidth = 1
-    SetPlotOptions(MeshAtts)
 
     # set view
     View3DAtts = View3DAttributes()
@@ -1302,28 +1292,26 @@ def test_non_square_pixels():
     teardown_bp_test()
     CloseDatabase(conduit_db)
 
-test_non_square_pixels()
-
 # 
 # test catching failures
 # 
 
 # write to dir that does not exist
-
-setup_bp_test()
-Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-output_obj = GetQueryOutputObject()
-TestValueEQ("xrayimage38", output_obj, None)
-teardown_bp_test(True)
-
-# os.chmod does not work on windows
-if not platform.system() == "Windows":
-    # write to dir w/ read only permissions
+def test_dir_dne():
     setup_bp_test()
-    Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+    Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
     output_obj = GetQueryOutputObject()
-    TestValueEQ("xrayimage39", output_obj, None)
-    teardown_bp_test()
+    TestValueEQ("xrayimage38", output_obj, None)
+    teardown_bp_test(True)
+
+    # os.chmod does not work on windows
+    if not platform.system() == "Windows":
+        # write to dir w/ read only permissions
+        setup_bp_test()
+        Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+        output_obj = GetQueryOutputObject()
+        TestValueEQ("xrayimage39", output_obj, None)
+        teardown_bp_test()
 
 def test_xray_view_vector_error(testname, view_params, expected_msg):
     setup_bp_test()
@@ -1353,116 +1341,117 @@ def test_xray_view_vector_error(testname, view_params, expected_msg):
     finally:
         teardown_bp_test()
 
-test_xray_view_vector_error(
-    "XRay_View_Vector_Zero_Normal",
-    {"normal" : (0., 0., 0.)},
-    "ERROR: VisIt is unable to execute this query because "
-    "the X Ray Image view normal vector has zero length.")
+def test_xray_view_vector_errors():
+    test_xray_view_vector_error(
+        "XRay_View_Vector_Zero_Normal",
+        {"normal" : (0., 0., 0.)},
+        "ERROR: VisIt is unable to execute this query because "
+        "the X Ray Image view normal vector has zero length.")
 
-test_xray_view_vector_error(
-    "XRay_View_Vector_Zero_Up",
-    {"view_up" : (0., 0., 0.)},
-    "ERROR: VisIt is unable to execute this query because "
-    "the X Ray Image up vector (view_up or up_vector) has zero length.")
+    test_xray_view_vector_error(
+        "XRay_View_Vector_Zero_Up",
+        {"view_up" : (0., 0., 0.)},
+        "ERROR: VisIt is unable to execute this query because "
+        "the X Ray Image up vector (view_up or up_vector) has zero length.")
 
-test_xray_view_vector_error(
-    "XRay_View_Vector_Parallel",
-    {"normal" : (0., 0., 2.), "view_up" : (0., 0., 3.)},
-    "ERROR: VisIt is unable to execute this query because "
-    "the X Ray Image view normal and up vectors are not orthogonal. "
-    "They must be orthogonal.")
+    test_xray_view_vector_error(
+        "XRay_View_Vector_Parallel",
+        {"normal" : (0., 0., 2.), "view_up" : (0., 0., 3.)},
+        "ERROR: VisIt is unable to execute this query because "
+        "the X Ray Image view normal and up vectors are not orthogonal. "
+        "They must be orthogonal.")
 
-test_xray_view_vector_error(
-    "XRay_View_Vector_NonOrthogonal",
-    {"normal" : (0., 0., 2.), "view_up" : (0., 3., 1.)},
-    "ERROR: VisIt is unable to execute this query because "
-    "the X Ray Image view normal and up vectors are not orthogonal. "
-    "They must be orthogonal.")
+    test_xray_view_vector_error(
+        "XRay_View_Vector_NonOrthogonal",
+        {"normal" : (0., 0., 2.), "view_up" : (0., 3., 1.)},
+        "ERROR: VisIt is unable to execute this query because "
+        "the X Ray Image view normal and up vectors are not orthogonal. "
+        "They must be orthogonal.")
 
 # 
 # Test filenames and output types
 # 
-
-setup_bp_test()
-
-DefineArrayExpression("da", "array_compose(d,d)")
-DefineArrayExpression("pa", "array_compose(p,p)")
-
 def query_variety(otype, scheme, thevars, outdir):
     SetQueryFloatFormat("%g")
     Query("XRay Image", 
-        background_intensity=0, 
-        divide_emis_by_absorb=0, 
-        far_plane=20, 
-        filename_scheme=scheme, 
-        family_files=0, # this is to test that family_files is ignored when filename_scheme is set
-        focus=(0, 0, 0), 
-        image_pan=(0, 0), 
-        image_size=(3, 3), 
-        image_zoom=1, 
-        near_plane=-20, 
-        normal=(0, 0, 1), 
-        output_dir=outdir, 
-        output_ray_bounds=0, 
-        output_type=otype, 
-        parallel_scale=10, 
-        perspective=0, 
-        view_angle=30, 
-        view_up=(0, 1, 0), 
-        vars=thevars)
+          background_intensity=0, 
+          divide_emis_by_absorb=0, 
+          far_plane=20, 
+          filename_scheme=scheme, 
+          family_files=0, # this is to test that family_files is ignored when filename_scheme is set
+          focus=(0, 0, 0), 
+          image_pan=(0, 0), 
+          image_size=(3, 3), 
+          image_zoom=1, 
+          near_plane=-20, 
+          normal=(0, 0, 1), 
+          output_dir=outdir, 
+          output_ray_bounds=0, 
+          output_type=otype, 
+          parallel_scale=10, 
+          perspective=0, 
+          view_angle=30, 
+          view_up=(0, 1, 0), 
+          vars=thevars)
     return GetQueryOutputObject()
 
 def query_family_backwards_compat(family, thevars, outdir):
     SetQueryFloatFormat("%g")
     Query("XRay Image", 
-        background_intensity=0, 
-        divide_emis_by_absorb=0, 
-        far_plane=20, 
-        family_files=family,
-        focus=(0, 0, 0), 
-        image_pan=(0, 0), 
-        image_size=(3, 3), 
-        image_zoom=1, 
-        near_plane=-20, 
-        normal=(0, 0, 1), 
-        output_dir=outdir, 
-        output_ray_bounds=0, 
-        output_type="png", 
-        parallel_scale=10, 
-        perspective=0, 
-        view_angle=30, 
-        view_up=(0, 1, 0), 
-        vars=thevars)
+          background_intensity=0, 
+          divide_emis_by_absorb=0, 
+          far_plane=20, 
+          family_files=family,
+          focus=(0, 0, 0), 
+          image_pan=(0, 0), 
+          image_size=(3, 3), 
+          image_zoom=1, 
+          near_plane=-20, 
+          normal=(0, 0, 1), 
+          output_dir=outdir, 
+          output_ray_bounds=0, 
+          output_type="png", 
+          parallel_scale=10, 
+          perspective=0, 
+          view_angle=30, 
+          view_up=(0, 1, 0), 
+          vars=thevars)
     return GetQueryOutputObject()
 
-filename_schemes = ["family", "family", "cycle", "none"]
-vars_options = [("d", "p"), ("da", "pa")]
+def test_filenames_and_output_types():
+    setup_bp_test()
 
-for i in range(0, len(output_types)):
-    outdir_set_otype = outdir_set + "_" + output_types[i]
-    if output_types[i] == "jpeg":
-        # create a dummy file to test the file familying
-        open(outdir_set_otype + "/output.0000.jpg", 'w').close()
-    info = ""
-    for j in range(0, len(filename_schemes)):
-        for k in range(0, len(vars_options)):
-            info += str(query_variety(output_types[i], 
-                                      filename_schemes[j], 
-                                      vars_options[k], 
-                                      outdir_set_otype)) + "\n"
-    info += str(sorted(os.listdir(outdir_set_otype))) + "\n"
-    TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
+    DefineArrayExpression("da", "array_compose(d,d)")
+    DefineArrayExpression("pa", "array_compose(p,p)")
 
-# test backwards compatibility with family_files option
-for i in range(0, len(family_options)):
-    outdir_set_family = outdir_set + "_family_" + str(family_options[i])
-    info = ""
-    for j in range(0, len(vars_options)):
-        info += str(query_family_backwards_compat(family_options[i], 
-                                                  vars_options[j], 
-                                                  outdir_set_family)) + "\n"
-    info += str(sorted(os.listdir(outdir_set_family))) + "\n"
-    TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
+    filename_schemes = ["family", "family", "cycle", "none"]
+    vars_options = [("d", "p"), ("da", "pa")]
+
+    for i in range(0, len(output_types)):
+        outdir_set_otype = outdir_set + "_" + output_types[i]
+        if output_types[i] == "jpeg":
+            # create a dummy file to test the file familying
+            open(outdir_set_otype + "/output.0000.jpg", 'w').close()
+        info = ""
+        for j in range(0, len(filename_schemes)):
+            for k in range(0, len(vars_options)):
+                info += str(query_variety(output_types[i], 
+                                          filename_schemes[j], 
+                                          vars_options[k], 
+                                          outdir_set_otype)) + "\n"
+        info += str(sorted(os.listdir(outdir_set_otype))) + "\n"
+        TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
+
+    # test backwards compatibility with family_files option
+    for i in range(0, len(family_options)):
+        outdir_set_family = outdir_set + "_family_" + str(family_options[i])
+        info = ""
+        for j in range(0, len(vars_options)):
+            info += str(query_family_backwards_compat(family_options[i], 
+                                                      vars_options[j], 
+                                                      outdir_set_family)) + "\n"
+        info += str(sorted(os.listdir(outdir_set_family))) + "\n"
+        TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
 
 #
 # Test that the far plane actually clips the result
@@ -1536,38 +1525,70 @@ def test_far_plane_clipping():
     Test("far_plane_clipping_image_topo_path_length2")
     CloseDatabase(conduit_db_nonempty)
 
-test_far_plane_clipping()
-
 #
 # Test that we get decent error messages for common cases
 #
-import numpy
 
-nporig = numpy.array([0.0, 2.5, 10.0])
+def test_error_messages():
+    nporig = numpy.array([0.0, 2.5, 10.0])
 
-params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
-    origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
-    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
-try:
-    Query("XRay Image", params)
-except (visit.VisItException, VisItException) as e:
-    if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
-        TestPOA('detect and warn numpy array as query param')
-    else:
+    params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
+        origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
+        width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+    try:
+        Query("XRay Image", params)
+    except (visit.VisItException, VisItException) as e:
+        if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
+            TestPOA('detect and warn numpy array as query param')
+        else:
+            TestFOA('detect and warn numpy array as query param', LINE())
+        pass
+    except:
         TestFOA('detect and warn numpy array as query param', LINE())
-    pass
-except:
-    TestFOA('detect and warn numpy array as query param', LINE())
-    pass
+        pass
 
-params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
-    origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
-    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
-try:
-    Query("XRay Image", params)
-    TestPOA('numpy array converted to list works as query param')
-except:
-    TestFOA('numpy array converted to list works as query param', LINE())
-    pass
+    params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
+        origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
+        width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+    try:
+        Query("XRay Image", params)
+        TestPOA('numpy array converted to list works as query param')
+    except:
+        TestFOA('numpy array converted to list works as query param', LINE())
+        pass
+
+#####################################################################
+
+def standard_tests():
+    test_single_block_structured_grid_with_scalars()
+    test_multi_block_structured_grid_with_array()
+    test_2d_structured_grid_with_scalars()
+    test_unstructured_grid_with_scalars()
+    test_with_perspective()
+    test_with_background_intensities()
+    test_setting_output_dir()
+
+def blueprint_tests():
+    test_blueprint_outputs()
+    test_bp_normalized_view_vectors()
+    test_positive_detector_height_and_width()
+    test_camera_and_rays()
+    test_non_square_pixels()
+
+def error_tests():
+    test_dir_dne()
+    test_xray_view_vector_errors()
+    test_error_messages()
+
+def test_outputs():
+    test_filenames_and_output_types()
+    test_far_plane_clipping()
+
+#####################################################################
+
+standard_tests()
+blueprint_tests()
+error_tests()
+test_outputs()
 
 Exit()
