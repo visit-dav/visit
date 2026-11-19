@@ -23,6 +23,7 @@ if(EXISTS ${visit_adios2_include}/adios2.h AND
         message(STATUS "ADIOS2 already installed")
     endif()
     set(ADIOS2_PREBUILT TRUE)
+    write_config_site(ADIOS2)
     return()
 endif()
 
@@ -97,4 +98,6 @@ ExternalProject_Add(ADIOS2
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/adios2-patch.cmake)
+
+write_config_site(ADIOS2)
 

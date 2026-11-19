@@ -17,6 +17,7 @@ if(EXISTS ${visit_cfitsio_include}/fitsio.h AND
         message(STATUS "CFITSIO already installed")
     endif()
     set(CFITSIO_PREBUILT TRUE)
+    write_config_site(CFITSIO)
     return()
 endif()
 
@@ -55,4 +56,6 @@ ExternalProject_Add( CFITSIO
     CMAKE_CACHE_ARGS ${CFITSIO_CMAKE_OPTIONS}
     DEPENDS          ${CFITSIO_DEPENDS}
     ${LOGGING_OPTIONS})
+
+write_config_site(CFITSIO)
 

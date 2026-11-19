@@ -17,6 +17,7 @@ if(EXISTS ${visit_silo_include}/silo.h AND
         message(STATUS "SILO already installed.")
     endif()
     set(SILO_PREBUILT TRUE )
+    write_config_site(SILO)
     return()
 endif()
 
@@ -77,3 +78,5 @@ ExternalProject_Add(SILO
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/silo-patch.cmake)
+
+write_config_site(SILO)

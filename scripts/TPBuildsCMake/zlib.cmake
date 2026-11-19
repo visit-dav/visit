@@ -17,6 +17,7 @@ if(EXISTS ${visit_zlib_include}/zlib.h AND
         message(STATUS "ZLIB already installed.")
     endif()
     set(ZLIB_PREBUILT TRUE)
+    write_config_site(ZLIB)
     return()
 endif()
 
@@ -45,3 +46,5 @@ ExternalProject_Add(ZLIB
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/zlib-patch.cmake )
+
+write_config_site(ZLIB)

@@ -17,6 +17,7 @@ if(EXISTS ${visit_tiff_include}/tiff.h AND
         message(STATUS "TIFF already installed.")
     endif()
     set(TIFF_PREBUILT TRUE)
+    write_config_site(TIFF)
     return()
 endif()
 
@@ -53,3 +54,5 @@ ExternalProject_Add(TIFF
     CMAKE_CACHE_ARGS ${TIFF_CMAKE_OPTIONS}
     DEPENDS          ${TIFF_DEPENDS}
     ${LOGGING_OPTIONS})
+
+write_config_site(TIFF)

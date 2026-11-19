@@ -17,6 +17,7 @@ if(EXISTS ${visit_hdf5_include}/hdf5.h AND
         message(STATUS "HDF5 already installed.")
     endif()
     set(HDF5_PREBUILT TRUE)
+    write_config_site(HDF5)
     return()
 endif()
 
@@ -82,3 +83,5 @@ ExternalProject_Add(HDF5
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/hdf5-patch.cmake)
+
+write_config_site(HDF5)

@@ -20,6 +20,7 @@ if(EXISTS ${visit_icet_include}/IceT.h AND
         message(STATUS "ICET already installed")
     endif()
     set(ICET_PREBUILT TRUE)
+    write_config_site(ICET)
     return()
 endif()
 
@@ -45,3 +46,5 @@ ExternalProject_Add( ICET
     INSTALL_DIR      ${visit_install_root}/icet/${ICET_VERSION}
     CMAKE_CACHE_ARGS ${ICET_CMAKE_OPTIONS}
     ${LOGGING_OPTIONS})
+
+write_config_site(ICET)

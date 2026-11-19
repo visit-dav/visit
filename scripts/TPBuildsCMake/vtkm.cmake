@@ -14,6 +14,7 @@ if(EXISTS ${visit_vtkm_dir}/include/vtkm-${VTKM_VERSION_MAJOR}.${VTKM_VERSION_MI
         message(STATUS "VTKM already installed.")
     endif()
     set(VTKM_PREBUILT TRUE)
+    write_config_site(VTKM)
     return()
 endif()
 
@@ -48,3 +49,5 @@ ExternalProject_Add(
         -DPATCH_DIR:PATH=${visit_tp_patches}
         -DPATCH_CMD:FILEPATH=${visit_patch_command}
         -P ${visit_tp_patches}/vtkm-patch.cmake)
+
+write_config_site(VTKM)

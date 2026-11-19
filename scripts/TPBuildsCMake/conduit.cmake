@@ -16,6 +16,7 @@ if(EXISTS ${visit_conduit_include_dir}/conduit.h AND
         message(STATUS "CONDUIT already installed.")
     endif()
     set(CONDUIT_PREBUILT TRUE)
+    write_config_site(CONDUIT LIBDEP HDF5_LIB)
     return()
 endif()
 
@@ -100,3 +101,5 @@ ExternalProject_Add(CONDUIT
     SOURCE_SUBDIR    src
     DEPENDS          ${CONDUIT_DEPENDS}
     ${LOGGING_OPTIONS})
+
+write_config_site(CONDUIT LIBDEP HDF5_LIB)

@@ -17,6 +17,7 @@ if(EXISTS ${visit_cgns_include}/cgnslib.h AND
         message(STATUS "CGNS already installed")
     endif()
     set(CGNS_PREBUILT TRUE)
+    write_config_site(CGNS LIBDEP HDF5_LIB)
     return()
 endif()
 
@@ -76,4 +77,6 @@ ExternalProject_Add( CGNS
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/cgns-patch.cmake)
+
+write_config_site(CGNS LIBDEP HDF5_LIB)
 

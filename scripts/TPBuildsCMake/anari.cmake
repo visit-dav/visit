@@ -18,6 +18,7 @@ if(EXISTS ${visit_anari_include_dir}/anari.h AND
         message(STATUS "ANARI already installed.")
     endif()
     set(ANARI_PREBUILT TRUE)
+    write_config_site(ANARI SETUPAPP)
     return()
 endif()
 
@@ -57,3 +58,5 @@ ExternalProject_Add(ANARI
     CMAKE_CACHE_ARGS ${ANARI_CMAKE_OPTIONS}
     DEPENDS          ${ANARI_DEPENDS}
     ${LOGGING_OPTIONS})
+
+write_config_site(ANARI SETUPAPP)

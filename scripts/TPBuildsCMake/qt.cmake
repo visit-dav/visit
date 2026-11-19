@@ -20,6 +20,7 @@ if(EXISTS ${visit_qt_root}/include/QtWidgets/qapplication.h AND
         message(STATUS "QT already installed.")
     endif()
     set(QT_PREBUILT TRUE)
+    write_config_site(QT)
     return()
 endif()
 
@@ -91,6 +92,8 @@ ExternalProject_Add(QTTOOLS
     INSTALL_COMMAND   ${CMAKE_COMMAND} --install .
     DEPENDS           QT
     ${LOGGING_OPTIONS})
+
+write_config_site(QT)
 
 # build qtsvg
 ExternalProject_Add(QTSVG
