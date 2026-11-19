@@ -134,6 +134,30 @@ if(VISIT_LOGGING)
             LOG_MERGED_STDOUTERR ON)
 endif()
 
+# host config-site file creation
+site_name(HOST)
+configure_file(configsite.cmake.in ${HOST}.cmake @ONLY)
+
+macro(write_config_site PKG)
+    cmake_parse_arguments(arg "SETUPAPP" "" LIBDEP ${ARGN})
+
+    if(BUILD_ALL OR ENABLE_${PKG})
+        string(TOLOWER ${PKG} lpkg)
+        if(arg_SETUPAPP)
+            file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${HOST}.cmake
+                 "SETUP_APP_VERSION(${PKG} ${${PKG}_VERSION})\n")
+        endif()
+        file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${HOST}.cmake
+             "VISIT_OPTION_DEFAULT(VISIT_${PKG}_DIR \${VISIT_TPL_HOME}/${lpkg}/${${PKG}_VERSION})\n")
+        if(arg_LIBDEP)
+            string(REPLACE ";" " " libdep "${arg_LIBDEP}")
+            file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${HOST}.cmake
+                "VISIT_OPTION_DEFAULT(VISIT_${PKG}_LIBDEP ${libdep} TYPE STRING)\n")
+        endif()
+        file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${HOST}.cmake "\n")
+    endif()
+endmacro()
+
 include(zlib.cmake)
 include(jpeg.cmake)
 include(png.cmake)
