@@ -7,6 +7,7 @@ project(GDAL VERSION 2.2.4)
 set(visit_gdal_root    ${visit_install_root}/gdal/${GDAL_VERSION})
 set(visit_gdal_include ${visit_gdal_root}/include)
 set(visit_gdal_library ${visit_gdal_root}/lib/gdal_i.lib)
+set(GDAL_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_gdal_include}/gdal.h AND

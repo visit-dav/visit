@@ -15,6 +15,7 @@ project(OPENSSL VERSION 3.5.5)
 set(visit_openssl_root       ${visit_install_root}/openssl/${OPENSSL_VERSION})
 set(visit_openssl_include    ${visit_openssl_root}/include/openssl)
 set(visit_openssl_library    ${visit_openssl_root}/lib/libssl.lib)
+set(OPENSSL_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_openssl_include}/ssl.h AND

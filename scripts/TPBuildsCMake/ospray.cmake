@@ -9,6 +9,7 @@ set(visit_ospray_root     ${visit_install_root}/ospray/${OSPRAY_VERSION})
 set(visit_ospray_config_dir ${visit_ospray_root}/lib/cmake/ospray-${OSPRAY_VERSION})
 set(visit_ospray_include ${visit_ospray_root}/include/ospray)
 set(visit_ospray_library ${visit_ospray_root}/lib/ospray.lib)
+set(OSPRAY_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_ospray_include}/ospray.h AND

@@ -8,6 +8,7 @@ project(ZLIB VERSION 1.3.1)
 set(visit_zlib_root    ${visit_install_root}/zlib/${ZLIB_VERSION})
 set(visit_zlib_include ${visit_zlib_root}/include)
 set(visit_zlib_library ${visit_zlib_root}/lib/zlib.lib)
+set(ZLIB_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_zlib_include}/zlib.h AND

@@ -11,6 +11,7 @@ project(QT VERSION 6.4.2)
 set(visit_qt_root       ${visit_install_root}/qt/${QT_VERSION})
 set(visit_qt_qmake      ${visit_install_root}/qt/${QT_VERSION}/bin/qmake.exe)
 set(visit_qt_config_dir ${visit_qt_root}/lib/cmake/Qt${QT_VERSION_MAJOR})
+set(QT_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_qt_root}/include/QtWidgets/qapplication.h AND
@@ -61,10 +62,10 @@ set(QTBASE_CMAKE_OPTIONS
     -DQT_BUILD_EXAMPLES_BY_DEFAULT:BOOL=OFF
     -DQT_BUILD_TESTS_BY_DEFAULT:BOOL=OFF)
 
-set(QT_DEPENDS)
-if(NOT OPENSSL_PREBUILT)
-    list(APPEND QT_DEPENDS OPENSSL)
-endif()
+visit_resolve_dependencies(
+    PACKAGE QT
+    DEPENDENCIES OPENSSL
+    OUT_VAR QT_DEPENDS)
 
 # Command to build qtbase
 ExternalProject_Add(QT

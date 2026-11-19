@@ -115,6 +115,7 @@ endif()
 
 # set up some necessary  variables, and include the .cmake file for each library.
 include(ExternalProject)
+include(${CMAKE_CURRENT_LIST_DIR}/VisitDependency.cmake)
 
 set(visit_tp_url
     "https://github.com/visit-dav/third-party/releases/download/v${visit_version}")

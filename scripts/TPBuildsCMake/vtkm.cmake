@@ -5,6 +5,7 @@
 project(VTKM VERSION 2.3.0)
 
 set(visit_vtkm_dir ${visit_install_root}/vtkm/${VTKM_VERSION})
+set(VTKM_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_vtkm_dir}/include/vtkm-${VTKM_VERSION_MAJOR}.${VTKM_VERSION_MINOR}/vtkm/Version.h AND
@@ -12,7 +13,7 @@ if(EXISTS ${visit_vtkm_dir}/include/vtkm-${VTKM_VERSION_MAJOR}.${VTKM_VERSION_MI
     if(ENABLE_VTKM)
         message(STATUS "VTKM already installed.")
     endif()
-    set(PREBUILT_VTKM TRUE)
+    set(VTKM_PREBUILT TRUE)
     return()
 endif()
 

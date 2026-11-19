@@ -8,6 +8,7 @@ project(TIFF VERSION 4.5.0)
 set(visit_tiff_root    ${visit_install_root}/tiff/${TIFF_VERSION})
 set(visit_tiff_include ${visit_tiff_root}/include)
 set(visit_tiff_library ${visit_tiff_root}/lib/tiff.lib)
+set(TIFF_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_tiff_include}/tiff.h AND
@@ -39,15 +40,10 @@ set(TIFF_CMAKE_OPTIONS
     -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
     -DZLIB_LIBRARY_RELEASE:PATH=${visit_zlib_library})
 
-set(TIFF_DEPENDS)
-
-if(NOT JPEG_PREBUILT)
-    list(APPEND TIFF_DEPENDS JPEG)
-endif()
-
-if(NOT ZLIB_PREBUILT)
-    list(APPEND TIFF_DEPENDS ZLIB)
-endif()
+visit_resolve_dependencies(
+    PACKAGE TIFF
+    DEPENDENCIES JPEG ZLIB
+    OUT_VAR TIFF_DEPENDS)
 
 ExternalProject_Add(TIFF
     PREFIX           TIFF

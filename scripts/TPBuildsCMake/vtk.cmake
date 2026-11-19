@@ -7,6 +7,7 @@ project(VTK VERSION 9.5.0)
 set(visit_vtk_root ${visit_install_root}/vtk/${VTK_VERSION})
 set(visit_vtk_include_dir ${visit_vtk_root}/include/vtk-${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR})
 set(visit_vtk_library_dir ${visit_vtk_root}/lib)
+set(VTK_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_vtk_include_dir}/vtkActor.h AND
@@ -79,15 +80,13 @@ set(VTK_CMAKE_OPTIONS
     -DVTK_QT_VERSION:STRING=6
     -DQt6_DIR:PATH=${visit_qt_config_dir})
 
-set(VTK_DEPENDS)
+set(VTK_REQUIRED_DEPENDENCIES)
 
 if(ENABLE_OSPRAY)
     list(APPEND VTK_CMAKE_OPTIONS
          -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=YES
          -Dospray_DIR:PATH=${visit_ospray_config_dir})
-    if(NOT OSPRAY_PREBUILT)
-        list(APPEND VTK_DEPENDS OSPRAY)
-    endif()
+    list(APPEND VTK_REQUIRED_DEPENDENCIES OSPRAY)
 else()
     list(APPEND VTK_CMAKE_OPTIONS
          -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=NO)
@@ -98,33 +97,18 @@ if(ENABLE_ANARI)
          -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=YES
          -DVTK_MODULE_ENABLE_VTK_FiltersTexture:STRING=YES
          -Danari_DIR:PATH=${visit_anari_config_dir})
-    if(NOT ANARI_PREBUILT)
-        list(APPEND VTK_DEPENDS ANARI)
-    endif()
+    list(APPEND VTK_REQUIRED_DEPENDENCIES ANARI)
 else()
     list(APPEND VTK_CMAKE_OPTIONS
          -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=NO)
 endif()
 
-if(NOT PYTHON_PREBUILT)
-    list(APPEND VTK_DEPENDS PYTHON)
-endif()
+list(APPEND VTK_REQUIRED_DEPENDENCIES PYTHON ZLIB TIFF JPEG QT)
 
-if(NOT ZLIB_PREBUILT)
-    list(APPEND VTK_DEPENDS ZLIB)
-endif()
-
-if(NOT TIFF_PREBUILT)
-    list(APPEND VTK_DEPENDS TIFF)
-endif()
-
-if(NOT JPEG_PREBUILT)
-    list(APPEND VTK_DEPENDS JPEG)
-endif()
-
-if(NOT QT_PREBUILT)
-    list(APPEND VTK_DEPENDS QT)
-endif()
+visit_resolve_dependencies(
+    PACKAGE VTK
+    DEPENDENCIES ${VTK_REQUIRED_DEPENDENCIES}
+    OUT_VAR VTK_DEPENDS)
 
 set(VTK_ZIP_NAME "VTK-${VTK_VERSION}.tar.gz")
 

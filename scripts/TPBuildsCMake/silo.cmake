@@ -8,6 +8,7 @@ project(SILO VERSION 4.12.0)
 set(visit_silo_root       ${visit_install_root}/silo/${SILO_VERSION})
 set(visit_silo_include    ${visit_silo_root}/include)
 set(visit_silo_library    ${visit_silo_root}/lib/siloh5.lib)
+set(SILO_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_silo_include}/silo.h AND
@@ -37,24 +38,19 @@ set(SILO_CMAKE_OPTIONS
     -DSILO_ENABLE_HDF5:BOOL=ON
     -DSILO_HDF5_DIR:PATH=${visit_hdf5_root})
 
-set(SILO_DEPENDS)
-
-if(NOT ZLIB_PREBUILT)
-    list(APPEND SILO_DEPENDS ZLIB)
-endif()
-
-if(NOT HDF5_PREBUILT)
-    list(APPEND SILO_DEPENDS HDF5)
-endif()
+set(SILO_REQUIRED_DEPENDENCIES ZLIB HDF5)
 
 if(ENABLE_QT)
     list(APPEND SILO_CMAKE_OPTIONS
          -DSILO_ENABLE_SILEX:BOOL=ON
          -DSILO_QT6_DIR:FILEPATH=${visit_qt_root})
-    if(NOT QT_PREBUILT)
-        list(APPEND SILO_DEPENDS QT)
-    endif()
+    list(APPEND SILO_REQUIRED_DEPENDENCIES QT)
 endif()
+
+visit_resolve_dependencies(
+    PACKAGE SILO
+    DEPENDENCIES ${SILO_REQUIRED_DEPENDENCIES}
+    OUT_VAR SILO_DEPENDS)
 
 ExternalProject_Add(SILO
     PREFIX           SILO

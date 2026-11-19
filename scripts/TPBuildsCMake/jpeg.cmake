@@ -13,6 +13,7 @@ set(visit_jpeg_root        ${visit_install_root}/jpeg/${JPEG_VERSION})
 set(visit_jpeg_include     ${visit_jpeg_root}/include)
 set(visit_jpeg_library_dir ${visit_jpeg_root}/lib)
 set(visit_jpeg_library     ${visit_jpeg_library_dir}/jpeg.lib)
+set(JPEG_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_jpeg_include}/jpeglib.h AND

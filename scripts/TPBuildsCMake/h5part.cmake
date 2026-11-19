@@ -7,6 +7,7 @@ project(H5PART VERSION 1.6.6)
 set(visit_h5part_root    ${visit_install_root}/h5part/${H5PART_VERSION})
 set(visit_h5part_include ${visit_h5part_root}/include)
 set(visit_h5part_library ${visit_h5part_root}/lib/h5part.lib)
+set(H5PART_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_h5part_include}/h5part.h AND
@@ -35,13 +36,10 @@ set(H5PART_CMAKE_OPTIONS
     -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
     -DZLIB_LIBRARY:FILEPATH=${visit_zlib_library})
 
-if(NOT HDF5_PREBUILT)
-    list(APPEND H5PART_DEPENDS HDF5)
-endif()
-
-if(NOT ZLIB_PREBUILT)
-    list(APPEND H5PART_DEPENDS ZLIB)
-endif()
+visit_resolve_dependencies(
+    PACKAGE H5PART
+    DEPENDENCIES HDF5 ZLIB
+    OUT_VAR H5PART_DEPENDS)
 
 ExternalProject_Add(H5PART
     PREFIX           H5PART

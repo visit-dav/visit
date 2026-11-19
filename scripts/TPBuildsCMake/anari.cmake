@@ -9,6 +9,7 @@ set(visit_anari_root ${visit_install_root}/anari/${ANARI_VERSION})
 set(visit_anari_library_dir ${visit_anari_root}/lib)
 set(visit_anari_config_dir ${visit_anari_library_dir}/cmake/anari-${ANARI_VERSION})
 set(visit_anari_include_dir ${visit_anari_root}/include/anari)
+set(ANARI_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_anari_include_dir}/anari.h AND
@@ -36,16 +37,15 @@ set(ANARI_CMAKE_OPTIONS
     -DBUILD_EXAMPLES:STRING=OFF
     -DCMAKE_INSTALL_PREFIX:PATH=${visit_install_root}/anari/${ANARI_VERSION})
 
-set(ANARI_DEPENDS)
-
 list(APPEND ANARI_CMAKE_OPTIONS
     -DPython3_EXECUTABLE:FILEPATH=${visit_python_executable}
     -DPython3_INCLUDE_DIR:PATH=${visit_python_include}
     -DPython3_LIBRARY:FILEPATH=${visit_python_library})
 
-if(NOT PYTHON_PREBUILT)
-    list(APPEND ANARI_DEPENDS PYTHON)
-endif()
+visit_resolve_dependencies(
+    PACKAGE ANARI
+    DEPENDENCIES PYTHON
+    OUT_VAR ANARI_DEPENDS)
 
 
 set(ANARI_ZIP_NAME "ANARI-SDK-${ANARI_VERSION}_with_deps.zip")

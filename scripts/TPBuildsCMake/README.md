@@ -138,6 +138,27 @@ All libraries are installed to subdirectories of a common installation directory
 If any library is determined to already exist in the installation directory, it will not be re-built.
 This allows for updating specific libraries without necessarily needing to rebuild any libraries it depends upon.
 
+### Dependency validation
+
+Package dependencies are validated while CMake configures the build. A dependency
+is accepted only when its package-specific header and library checks find an
+installation below `visit_install_root`, or when its `ExternalProject` target was
+created earlier in the current build. System-installed libraries are not accepted.
+
+If an enabled package has an unavailable dependency, configuration stops with a
+message that distinguishes a disabled or missing dependency from an incorrect
+package include order. For example, Python requires JPEG, ZLIB, and TIFF for
+Pillow support. Each must either be enabled in the current build or already be
+installed below `visit_install_root`.
+
+The dependency resolver tests can be run without downloading or building any
+third-party package:
+
+```
+cmake -S /path/to/TPBuildsCMake/tests -B dependency-tests
+ctest --test-dir dependency-tests --output-on-failure
+```
+
 The build options for each library were chosen with the specific purpose of being used for VisIt on Windows.
 
 ##  Updating
