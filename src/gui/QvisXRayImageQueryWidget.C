@@ -60,6 +60,10 @@
 // 
 //    Justin Privitera, Fri Oct 17 16:39:39 PDT 2025
 //    Changed "hdf5", "yaml", and "json" to have "blueprint" in the name.
+// 
+//    Justin Privitera, Wed Nov 18 16:43:14 PST 2026
+//    Reordered arguments in the widget and made view angle hidden unless
+//    perspective is enabled.
 //
 // ****************************************************************************
 
@@ -113,60 +117,74 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     topLayout->addWidget(backgroundIntensities, 3, 1);
 
     //
-    // Normal
+    // Perspective
     //
-    topLayout->addWidget(new QLabel(tr("Normal")), 4, 0);
-    normal = new QLineEdit();
-    normal->setText("0 0 1");
-    topLayout->addWidget(normal, 4, 1);
-
-    //
-    // Focus
-    //
-    topLayout->addWidget(new QLabel(tr("Focus")), 5, 0);
-    focus = new QLineEdit();
-    focus->setText("0 0 0");
-    topLayout->addWidget(focus, 5, 1);
-
-    //
-    // View up
-    //
-    topLayout->addWidget(new QLabel(tr("View up")), 6, 0);
-    viewUp = new QLineEdit();
-    viewUp->setText("0 1 0");
-    topLayout->addWidget(viewUp, 6, 1);
+    perspective = new QCheckBox(tr("Perspective projection"));
+    perspective->setChecked(0);
+    topLayout->addWidget(perspective, 4, 0, 1, 2);
 
     //
     // View angle
     //
-    topLayout->addWidget(new QLabel(tr("View angle")), 7, 0);
+    viewAngleLabel = new QLabel(tr("View angle"));
+    topLayout->addWidget(viewAngleLabel, 5, 0);
     viewAngle = new QLineEdit();
     viewAngle->setText("30");
-    topLayout->addWidget(viewAngle, 7, 1);
+    topLayout->addWidget(viewAngle, 5, 1);
+
+    // only show these widgets if perspective projection is enabled
+    viewAngleLabel->hide();
+    viewAngle->hide();
+    connect(perspective, SIGNAL(toggled(bool)),
+            this, SLOT(perspectiveToggled(bool)));
+
+    //
+    // Normal
+    //
+    topLayout->addWidget(new QLabel(tr("Normal")), 6, 0);
+    normal = new QLineEdit();
+    normal->setText("0 0 1");
+    topLayout->addWidget(normal, 6, 1);
+
+    //
+    // Focus
+    //
+    topLayout->addWidget(new QLabel(tr("Focus")), 7, 0);
+    focus = new QLineEdit();
+    focus->setText("0 0 0");
+    topLayout->addWidget(focus, 7, 1);
+
+    //
+    // View up
+    //
+    topLayout->addWidget(new QLabel(tr("View up")), 8, 0);
+    viewUp = new QLineEdit();
+    viewUp->setText("0 1 0");
+    topLayout->addWidget(viewUp, 8, 1);
 
     //
     // Parallel scale
     //
-    topLayout->addWidget(new QLabel(tr("Parallel scale")), 8, 0);
+    topLayout->addWidget(new QLabel(tr("Parallel scale")), 9, 0);
     parallelScale = new QLineEdit();
     parallelScale->setText("10");
-    topLayout->addWidget(parallelScale, 8, 1);
+    topLayout->addWidget(parallelScale, 9, 1);
 
     //
     // Non-Square Pixels
     //
     nonSquarePixels = new QCheckBox(tr("Non-Square Pixels"));
     nonSquarePixels->setChecked(0);
-    topLayout->addWidget(nonSquarePixels, 9, 0, 1, 2);
+    topLayout->addWidget(nonSquarePixels, 10, 0, 1, 2);
 
     //
     // View Width Override
     //
     viewWidthOverrideLabel = new QLabel(tr("View width override"));
-    topLayout->addWidget(viewWidthOverrideLabel, 10, 0);
+    topLayout->addWidget(viewWidthOverrideLabel, 11, 0);
     viewWidthOverride = new QLineEdit();
     viewWidthOverride->setText("10");
-    topLayout->addWidget(viewWidthOverride, 10, 1);
+    topLayout->addWidget(viewWidthOverride, 11, 1);
 
     // only show these widgets if non-square pixels is enabled
     viewWidthOverrideLabel->hide();
@@ -177,41 +195,34 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     //
     // Near plane
     //
-    topLayout->addWidget(new QLabel(tr("Near plane")), 11, 0);
+    topLayout->addWidget(new QLabel(tr("Near plane")), 12, 0);
     nearPlane = new QLineEdit();
     nearPlane->setText("-20");
-    topLayout->addWidget(nearPlane, 11, 1);
+    topLayout->addWidget(nearPlane, 12, 1);
 
     //
     // Far plane
     //
-    topLayout->addWidget(new QLabel(tr("Far plane")), 12, 0);
+    topLayout->addWidget(new QLabel(tr("Far plane")), 13, 0);
     farPlane = new QLineEdit();
     farPlane->setText("20");
-    topLayout->addWidget(farPlane, 12, 1);
+    topLayout->addWidget(farPlane, 13, 1);
 
     //
     // Image pan
     //
-    topLayout->addWidget(new QLabel(tr("Image pan")), 13, 0);
+    topLayout->addWidget(new QLabel(tr("Image pan")), 14, 0);
     imagePan = new QLineEdit();
     imagePan->setText("0 0");
-    topLayout->addWidget(imagePan, 13, 1);
+    topLayout->addWidget(imagePan, 14, 1);
 
     //
     // Image zoom
     //
-    topLayout->addWidget(new QLabel(tr("Image zoom")), 14, 0);
+    topLayout->addWidget(new QLabel(tr("Image zoom")), 15, 0);
     imageZoom = new QLineEdit();
     imageZoom->setText("1");
-    topLayout->addWidget(imageZoom, 14, 1);
-
-    //
-    // Perspective
-    //
-    perspective = new QCheckBox(tr("Perspective"));
-    perspective->setChecked(0);
-    topLayout->addWidget(perspective, 15, 0, 1, 2);
+    topLayout->addWidget(imageZoom, 15, 1);
 
     //
     // Filename Scheme
@@ -596,5 +607,34 @@ QvisXRayImageQueryWidget::nonSquarePixelsToggled(bool val)
     {
         viewWidthOverrideLabel->hide();
         viewWidthOverride->hide();
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisXRayImageQueryWidget::perspectiveToggled
+//
+// Purpose: 
+//   Updates the controls displayed.
+//
+// Programmer: Justin Privitera
+// Creation:   November 18, 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisXRayImageQueryWidget::perspectiveToggled(bool val)
+{
+    if (val)
+    {
+        viewAngleLabel->show();
+        viewAngle->show();
+    }
+    else
+    {
+        viewAngleLabel->hide();
+        viewAngle->hide();
     }
 }

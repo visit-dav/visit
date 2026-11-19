@@ -48,6 +48,9 @@ class MapNode;
 // 
 //   Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
 //   Added view width override and non square pixels.
+// 
+//   Justin Privitera, Wed Nov 18 16:43:14 PST 2026
+//   Added viewAngleLabel and perspectiveToggled().
 //
 // ****************************************************************************
 
@@ -62,6 +65,7 @@ public:
 
 private slots:
     void             nonSquarePixelsToggled(bool);
+    void             perspectiveToggled(bool);
 
 private:
     bool             GetDoubleValues(int whichWidget, doubleVector &pt);
@@ -75,6 +79,7 @@ private:
     QLineEdit       *normal;
     QLineEdit       *focus;
     QLineEdit       *viewUp;
+    QLabel          *viewAngleLabel;
     QLineEdit       *viewAngle;
     QLineEdit       *parallelScale;
     QLineEdit       *viewWidthOverride;
