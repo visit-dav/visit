@@ -22,6 +22,7 @@ if(EXISTS ${visit_jpeg_include}/jpeglib.h AND
         message(STATUS "JPEG already installed.")
     endif()
     set(JPEG_PREBUILT TRUE)
+    write_config_site(JPEG)
     return()
 endif()
 
@@ -50,3 +51,5 @@ ExternalProject_Add(JPEG
     COMMAND           ${CMAKE_COMMAND} -E copy jconfig.h jerror.h jmorecfg.h jpeglib.h  ${visit_jpeg_include}
     COMMAND           ${CMAKE_COMMAND} -E copy Release/x64/jpeg.lib ${visit_jpeg_library_dir}
     ${LOGGING_OPTIONS})
+
+write_config_site(JPEG)

@@ -16,6 +16,7 @@ if(EXISTS ${visit_vtk_include_dir}/vtkActor.h AND
         message(STATUS "VTK already installed.")
     endif()
     set(VTK_PREBUILT TRUE)
+    write_config_site(VTK SETUPAPP)
     return()
 endif()
 
@@ -138,3 +139,5 @@ ExternalProject_Add(VTK
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/vtk-patch.cmake)
+
+write_config_site(VTK SETUPAPP)

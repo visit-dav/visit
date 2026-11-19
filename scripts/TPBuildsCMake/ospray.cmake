@@ -18,6 +18,7 @@ if(EXISTS ${visit_ospray_include}/ospray.h AND
         message(STATUS "OSPRAY already installed.")
     endif()
     set(OSPRAY_PREBUILT TRUE)
+    write_config_site(OSPRAY)
     return()
 endif()
 
@@ -55,3 +56,5 @@ ExternalProject_Add(OSPRAY
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/ospray-patch.cmake)
+
+write_config_site(OSPRAY)

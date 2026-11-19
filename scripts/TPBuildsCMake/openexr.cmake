@@ -14,6 +14,7 @@ if(EXISTS ${visit_openexr_dir}/include/openexr.h AND
        message(STATUS "OpenEXR already installed.")
     endif()
     set(OPENEXR_PREBUILT TRUE)
+    write_config_site(OPENEXR)
     return()
 endif()
 
@@ -56,3 +57,5 @@ ExternalProject_Add(OPENEXR
     INSTALL_DIR ${visit_install_root}/openexr/${OPENEXR_VERSION}
     CMAKE_CACHE_ARGS ${OPENEXR_CMAKE_OPTIONS}
     ${LOGGING_OPTIONS})
+
+write_config_site(OPENEXR)

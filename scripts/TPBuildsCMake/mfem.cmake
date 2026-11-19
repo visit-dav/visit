@@ -16,6 +16,7 @@ if(EXISTS ${visit_mfem_include}/mfem.hpp AND
         message(STATUS "MFEM already installed.")
     endif()
     set(MFEM_PREBUILT TRUE)
+    write_config_site(MFEM LIBDEP conduit ZLIB_LIB)
     return()
 endif()
 
@@ -69,3 +70,5 @@ ExternalProject_Add(MFEM
     CMAKE_CACHE_ARGS ${MFEM_CMAKE_OPTIONS}
     DEPENDS          ${MFEM_DEPENDS}
     ${LOGGING_OPTIONS})
+
+write_config_site(MFEM LIBDEP conduit ZLIB_LIB)

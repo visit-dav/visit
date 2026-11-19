@@ -18,6 +18,7 @@ if(EXISTS ${visit_python_include}/python.h AND
         message(STATUS "PYTHON already installed.")
     endif()
     set(PYTHON_PREBUILT TRUE )
+    write_config_site(PYTHON)
     return()
 endif()
 
@@ -58,3 +59,5 @@ ExternalProject_Add(PYTHON
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/python-patch.cmake)
+
+write_config_site(PYTHON)

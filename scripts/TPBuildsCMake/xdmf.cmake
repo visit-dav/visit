@@ -16,6 +16,7 @@ if(EXISTS ${visit_xdmf_include_dir}/Xdmf.h AND
         message(STATUS "XDMF already installed.")
     endif()
     set(XDMF_PREBUILT TRUE)
+    write_config_site(XDMF LIBDEP HDF5_LIB VTK::libxml2)
     return()
 endif()
 
@@ -68,3 +69,5 @@ ExternalProject_Add(XDMF
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/xdmf-patch.cmake)
+
+write_config_site(XDMF LIBDEP HDF5_LIB VTK::libxml2)

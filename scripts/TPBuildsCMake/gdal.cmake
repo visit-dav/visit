@@ -16,6 +16,7 @@ if(EXISTS ${visit_gdal_include}/gdal.h AND
        message(STATUS "GDAL already installed.")
     endif()
     set(GDAL_PREBUILT TRUE)
+    write_config_site(GDAL)
     return()
 endif()
 
@@ -42,3 +43,5 @@ ExternalProject_Add(GDAL
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/gdal-patch.cmake)
+
+write_config_site(GDAL)

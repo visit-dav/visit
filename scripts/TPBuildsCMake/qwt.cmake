@@ -17,6 +17,7 @@ if(EXISTS ${visit_qwt_include}/qwt.h AND
        message(STATUS "QWT already installed.")
     endif()
     set(QWT_PREBUILT TRUE)
+    write_config_site(QWT)
     return()
 endif()
 
@@ -60,4 +61,6 @@ ExternalProject_Add(QWT
                                        -DPATCH_DIR:PATH=${visit_tp_patches}
                                        -DPATCH_CMD:PATH=${visit_patch_command}
                                        -P ${visit_tp_patches}/qwt-patch.cmake)
+
+write_config_site(QWT)
 

@@ -16,6 +16,7 @@ if(EXISTS ${visit_h5part_include}/h5part.h AND
         message(STATUS "H5PART already installed.")
     endif()
     set(H5PART_PREBUILT TRUE)
+    write_config_site(H5PART LIBDEP HDF5_LIB)
     return()
 endif()
 
@@ -53,3 +54,5 @@ ExternalProject_Add(H5PART
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/h5part-patch.cmake)
+
+write_config_site(H5PART LIBDEP HDF5_LIB)

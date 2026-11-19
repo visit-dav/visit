@@ -16,6 +16,7 @@ if(EXISTS ${visit_netcdf_include}/netcdf.h AND
         message(STATUS "NETCDF already installed.")
     endif()
     set(NETCDF_PREBUILT TRUE)
+    write_config_site(NETCDF LIBDEP HDF5_LIB)
     return()
 endif()
 
@@ -90,3 +91,5 @@ ExternalProject_Add(NETCDF
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/netcdf-patch.cmake)
+
+write_config_site(NETCDF LIBDEP HDF5_LIB)
