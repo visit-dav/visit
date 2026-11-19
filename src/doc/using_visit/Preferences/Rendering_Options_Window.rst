@@ -43,13 +43,13 @@ When combined with depth peeling all geometry sorting is eliminated.
 
 **Depth Compositer Blocking** sets the block size used for streaming communication during depth compositing.
 Images are split into blocks of this size and streamed out.
-Incomning streams are processed in the background using compositing threads.
+Incoming streams are processed in the background using compositing threads.
 
 **Alpha Compositer Threads** sets the number of threads that process communication streams during alpha compositing.
 
 **Alpha Compositer Blocking** sets the block size used for streaming communication during alpha compositing.
 Images are split into blocks of this size and streamed out.
-Incomning streams are processed in the background using compositing threads.
+Incoming streams are processed in the background using compositing threads.
 
 
 Multi resolution for 2d AMR data
