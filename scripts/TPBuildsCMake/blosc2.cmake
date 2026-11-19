@@ -8,6 +8,7 @@ project(BLOSC2 VERSION 2.11.3)
 set(visit_blosc2_root     ${visit_install_root}/blosc2/${BLOSC2_VERSION})
 set(visit_blosc2_include  ${visit_blosc2_root}/include)
 set(visit_blosc2_library  ${visit_blosc2_root}/lib/libblosc2.lib)
+set(BLOSC2_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_blosc2_include}/blosc2.h AND

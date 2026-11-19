@@ -7,6 +7,7 @@ project(MFEM VERSION 4.8)
 set(visit_mfem_root ${visit_install_root}/mfem/${MFEM_VERSION})
 set(visit_mfem_include ${visit_mfem_root}/include)
 set(visit_mfem_library ${visit_mfem_root}/lib/mfem.lib)
+set(MFEM_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_mfem_include}/mfem.hpp AND
@@ -40,19 +41,10 @@ set(MFEM_CMAKE_OPTIONS
     -DMFEM_USE_CONDUIT:BOOL=ON
     -DCONDUIT_DIR:PATH=${visit_conduit_root})
 
-set(MFEM_DEPENDS)
-
-if(NOT ZLIB_PREBUILT)
-    list(APPEND MFEM_DEPENDS ZLIB)
-endif()
-
-if(NOT HDF5_PREBUILT)
-    list(APPEND MFEM_DEPENDS HDF5)
-endif()
-
-if(NOT CONDUIT_PREBUILT)
-    list(APPEND MFEM_DEPENDS CONDUIT)
-endif()
+visit_resolve_dependencies(
+    PACKAGE MFEM
+    DEPENDENCIES ZLIB HDF5 CONDUIT
+    OUT_VAR MFEM_DEPENDS)
 
 ExternalProject_Add(MFEM
     PREFIX           MFEM

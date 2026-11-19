@@ -5,6 +5,7 @@
 project(OPENEXR VERSION 3.3.4)
 
 set(visit_openexr_dir      ${visit_install_root}/openexr/${OPENEXR_VERSION})
+set(OPENEXR_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_openexr_dir}/include/openexr.h AND

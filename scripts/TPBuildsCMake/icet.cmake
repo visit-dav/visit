@@ -11,6 +11,7 @@ set(ICET_VERSION 77c708f9)
 set(visit_icet_root     ${visit_install_root}/icet/${ICET_VERSION})
 set(visit_icet_include  ${visit_icet_root}/include)
 set(visit_icet_library  ${visit_icet_root}/lib/IceTCore.lib)
+set(ICET_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_icet_include}/IceT.h AND

@@ -7,6 +7,7 @@ project(CONDUIT VERSION 0.9.10)
 set(visit_conduit_root ${visit_install_root}/conduit/${CONDUIT_VERSION})
 set(visit_conduit_include_dir ${visit_conduit_root}/include/conduit)
 set(visit_conduit_library_dir ${visit_conduit_root}/lib)
+set(CONDUIT_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_conduit_include_dir}/conduit.h AND
@@ -61,28 +62,19 @@ set(CONDUIT_CMAKE_OPTIONS
     -DHDF5_DIR:PATH=${visit_hdf5_root}
     -DSILO_DIR:PATH=${visit_silo_root})
 
-set(CONDUIT_DEPENDS)
-
-if(NOT ZLIB_PREBUILT)
-    list(APPEND CONDUIT_DEPENDS ZLIB)
-endif()
-
-if(NOT HDF5_PREBUILT)
-    list(APPEND CONDUIT_DEPENDS HDF5)
-endif()
-
-if(NOT SILO_PREBUILT)
-    list(APPEND CONDUIT_DEPENDS SILO)
-endif()
+set(CONDUIT_REQUIRED_DEPENDENCIES ZLIB HDF5 SILO)
 
 if(ENABLE_PYTHON)
     list(APPEND CONDUIT_CMAKE_OPTIONS
          -DENABLE_PYTHON:BOOL=ON
          -DPYTHON_EXECUTABLE:FILEPATH=${visit_python_executable})
-    if(NOT PYTHON_PREBUILT)
-        list(APPEND CONDUIT_DEPENDS PYTHON)
-    endif()
+    list(APPEND CONDUIT_REQUIRED_DEPENDENCIES PYTHON)
 endif()
+
+visit_resolve_dependencies(
+    PACKAGE CONDUIT
+    DEPENDENCIES ${CONDUIT_REQUIRED_DEPENDENCIES}
+    OUT_VAR CONDUIT_DEPENDS)
 
 ExternalProject_Add(CONDUIT
     PREFIX           CONDUIT

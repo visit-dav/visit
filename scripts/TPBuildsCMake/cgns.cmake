@@ -8,6 +8,7 @@ project(CGNS VERSION 4.1.0)
 set(visit_cgns_root     ${visit_install_root}/cgns/${CGNS_VERSION})
 set(visit_cgns_include  ${visit_cgns_root}/include)
 set(visit_cgns_library  ${visit_cgns_root}/lib/cgnsdll.lib)
+set(CGNS_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_cgns_include}/cgnslib.h AND
@@ -36,8 +37,6 @@ set(CGNS_CMAKE_OPTIONS
     -DENABLE_TESTS:BOOL=FALSE
     -DENABLE_PARALLEL:BOOL=FALSE)
 
-set(CGNS_DEPENDS)
-
 list(APPEND CGNS_CMAKE_OPTIONS
      -DCGNS_ENABLE_HDF5:BOOL=ON
      -DHDF5_DIR:PATH=${visit_hdf5_root}/cmake
@@ -47,13 +46,10 @@ list(APPEND CGNS_CMAKE_OPTIONS
      -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
      -DZLIB_LIBRARY:FILEPATH=${visit_zlib_library})
 
-if(NOT ZLIB_PREBUILT)
-    list(APPEND CGNS_DEPENDS ZLIB)
-endif()
-
-if(NOT HDF5_PREBUILT)
-    list(APPEND CGNS_DEPENDS HDF5)
-endif()
+visit_resolve_dependencies(
+    PACKAGE CGNS
+    DEPENDENCIES ZLIB HDF5
+    OUT_VAR CGNS_DEPENDS)
 
 ExternalProject_Add( CGNS
     PREFIX           CGNS

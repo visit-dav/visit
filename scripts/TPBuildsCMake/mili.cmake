@@ -5,6 +5,7 @@
 project(MILI VERSION 24.1.1)
 
 set(visit_mili_root ${visit_install_root}/mili/${MILI_VERSION})
+set(MILI_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_mili_root}/include/mili.h AND

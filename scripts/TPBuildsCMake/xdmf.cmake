@@ -7,6 +7,7 @@ project(XDMF VERSION 2.1.1)
 set(visit_xdmf_root ${visit_install_root}/xdmf/${XDMF_VERSION})
 set(visit_xdmf_include_dir ${visit_xdmf_root}/include)
 set(visit_xdmf_library_dir ${visit_xdmf_root}/lib)
+set(XDMF_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_xdmf_include_dir}/Xdmf.h AND
@@ -25,19 +26,10 @@ endif()
 
 message(STATUS "XDMF being added to the build")
 
-set(XDMF_DEPENDS)
-
-if(NOT HDF5_PREBUILT)
-    list(APPEND XDMF_DEPENDS HDF5)
-endif()
-
-if(NOT VTK_PREBUILT)
-    list(APPEND XDMF_DEPENDS VTK)
-endif()
-
-if(NOT ZLIB_PREBUILT)
-    list(APPEND XDMF_DEPENDS ZLIB)
-endif()
+visit_resolve_dependencies(
+    PACKAGE XDMF
+    DEPENDENCIES HDF5 VTK ZLIB
+    OUT_VAR XDMF_DEPENDS)
 
 set(XDMF_ZIP_NAME "Xdmf-${XDMF_VERSION}.tar.gz")
 

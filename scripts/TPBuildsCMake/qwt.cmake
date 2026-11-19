@@ -8,6 +8,7 @@ set(visit_qwt_root        ${visit_install_root}/qwt/${QWT_VERSION})
 set(visit_qwt_include     ${visit_qwt_root}/include)
 set(visit_qwt_library_dir ${visit_qwt_root}/lib)
 set(visit_qwt_library     ${visit_qwt_library_dir}/qwt.lib)
+set(QWT_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_qwt_include}/qwt.h AND
@@ -28,9 +29,20 @@ message(STATUS "QWT being added to the build")
 
 set(QWT_ZIP_NAME "qwt-git-d3706f6e7f0351d278be2d989a4caaf92b399bbd.tar.xz")
 
-set(QWT_DEPENDS)
-if(NOT QT_PREBUILT)
-    set(QWT_DEPENDS QT QTSVG)
+visit_resolve_dependencies(
+    PACKAGE QWT
+    DEPENDENCIES QT
+    OUT_VAR QWT_DEPENDS)
+
+# QTSVG is a companion ExternalProject created by qt.cmake rather than a
+# separately installable package.
+if(TARGET QT)
+    if(NOT TARGET QTSVG)
+        message(FATAL_ERROR
+            "Cannot configure QWT; QT is a current build target but its "
+            "required QTSVG companion target is not defined.")
+    endif()
+    list(APPEND QWT_DEPENDS QTSVG)
 endif()
 
 ExternalProject_Add(QWT
