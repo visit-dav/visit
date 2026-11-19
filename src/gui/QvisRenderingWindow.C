@@ -185,6 +185,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Biagas, Thu Oct 15, 2025
 //   Removed remnant of widgets associated with objectRepresentation.
 //
+//   Kathleen Biagas, Tue Nov 17, 2026
+//   Moved the antialiasing controls to their own page.
+//
 // ****************************************************************************
 
 QWidget *
@@ -193,191 +196,6 @@ QvisRenderingWindow::CreateBasicPage()
     QWidget *basicOptions = new QWidget(central);
     QVBoxLayout *basicLayout = new QVBoxLayout(basicOptions);
     basicLayout->setContentsMargins(10,10,10,10);
-
-    //
-    // Create the antialiasing widgets.
-    //
-    QGroupBox *aaGroup = new QGroupBox(tr("Antialiasing"));
-    aaGroup->setCheckable(false);
-    basicLayout->addWidget(aaGroup);
-
-    QGridLayout *aaLayout = new QGridLayout();
-    aaLayout->setContentsMargins(10,10,10,10);
-    aaGroup->setLayout(aaLayout);
-
-    int aaRow= 0;
-    antialiasingMode = new QButtonGroup(basicOptions);
-    connect(antialiasingMode, SIGNAL(idClicked(int)),
-            this, SLOT(antialiasingChanged(int)));
-
-    QRadioButton *aaNone = new QRadioButton(tr("None"), basicOptions);
-    antialiasingMode->addButton(aaNone, 0);
-    aaLayout->addWidget(aaNone, aaRow, 0);
-    QRadioButton *aaMSAA = new QRadioButton(tr("MSAA"), basicOptions);
-    antialiasingMode->addButton(aaMSAA, 1);
-    aaLayout->addWidget(aaMSAA, aaRow, 1);
-    QRadioButton *aaFXAA = new QRadioButton(tr("FXAA"), basicOptions);
-    antialiasingMode->addButton(aaFXAA, 2);
-    aaLayout->addWidget(aaFXAA, aaRow, 2);
-    aaRow++;
-
-    // MSAA options
-
-    msaaSamplesLabel = new QLabel(tr("Number of MSAA samples"));
-    msaaSamplesLabel->setEnabled(false);
-    aaLayout->addWidget(msaaSamplesLabel, aaRow, 0);
-
-    msaaSamples = new QSpinBox();
-    msaaSamples->setKeyboardTracking(false);
-    msaaSamples->setMinimum(2);
-    msaaSamples->setMaximum(8);
-    msaaSamples->setValue(4);
-    msaaSamples->setSingleStep(2);
-    msaaSamples->setEnabled(false);
-    aaLayout->addWidget(msaaSamples, aaRow, 1);
-    connect(msaaSamples, SIGNAL(valueChanged(int)),
-            this, SLOT(msaaSamplesChanged(int)));
-    aaRow++;
-
-    // FXAA options
-    QFormLayout *fxaaLeftLayout = new QFormLayout();
-    aaLayout->addLayout(fxaaLeftLayout, aaRow,0, 1, 2);
-    QFormLayout *fxaaRightLayout = new QFormLayout();
-    aaLayout->addLayout(fxaaRightLayout, aaRow, 2, 1, 2);
-
-    // RelativeConstrastThreshold default values and custom value widget
-    QDoubleValidator *dvfxaa = new QDoubleValidator(0.f,1.f, 5);
-
-    fxaaRCTLabel = new QLabel(tr("Relative contrast threshold"));
-    fxaaRCTLabel->setToolTip(
-        tr("Threshold for applying FXAA to a pixel, relative to the maximum luminosity of its 4 immediate neighbors\n"
-           "The luminosity of the current pixel and it's NSWE neighbors is computed. The maximum luminosity and luminosity range (contrast) of all 5 pixels is found. If the contrast is less than RelativeContrastThreshold * maxLum, the pixel is not considered aliased and will not be affected by FXAA.\n"));
-    fxaaRCT = new QComboBox();
-    fxaaRCT->addItem("Too little", 0.3333);
-    fxaaRCT->addItem("Low quality", 0.25);
-    fxaaRCT->addItem("High quality", 0.125);
-    fxaaRCT->addItem("Overkill", 0.0625);
-    fxaaRCT->addItem("Custom", 0.125);
-    fxaaRCT->setCurrentIndex(2);
-    connect(fxaaRCT, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(fxaaRCTChanged(int)));
-    fxaaLeftLayout->addRow(fxaaRCTLabel, fxaaRCT);
-
-    fxaaRCTCustomLabel = new QLabel(tr("Custom RCT value"));
-    fxaaRCTCustom = new QLineEdit("0.0625");
-    fxaaRCTCustom->setValidator(dvfxaa);
-    connect(fxaaRCTCustom, SIGNAL(editingFinished()),
-            this, SLOT(fxaaRCTCustomChanged()));
-    fxaaLeftLayout->addRow(fxaaRCTCustomLabel, fxaaRCTCustom);
-
-    // HardConstrastThreshold default values and custom value widgets
-    fxaaHCTLabel = new QLabel(tr("Hard contrast threshold"));
-    fxaaHCTLabel->setToolTip(
-        tr("Similar to RelativeContrastThreshold, but not scaled by the maximum luminosity.\n"
-           "If the contrast of the current pixel and it's 4 immediate NSWE neighbors is less than HardContrastThreshold, the pixel is not considered aliased and will not be affected by FXAA.\n"));
-    fxaaHCT = new QComboBox();
-    fxaaHCT->addItem("VisibleLimit", 0.03125);
-    fxaaHCT->addItem("HigherQuality", 0.0625);
-    fxaaHCT->addItem("UpperLimit", 0.08333);
-    fxaaHCT->addItem("Custom", 0.0625);
-    fxaaHCT->setCurrentIndex(1);
-    connect(fxaaHCT, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(fxaaHCTChanged(int)));
-    fxaaRightLayout->addRow(fxaaHCTLabel, fxaaHCT);
-
-    fxaaHCTCustomLabel = new QLabel(tr("Custom HCT value"));
-    fxaaHCTCustom = new QLineEdit("0.0625");
-    fxaaHCTCustom->setValidator(dvfxaa);
-    connect(fxaaHCTCustom, SIGNAL(editingFinished()),
-            this, SLOT(fxaaHCTCustomChanged()));
-    fxaaRightLayout->addRow(fxaaHCTCustomLabel, fxaaHCTCustom);
-
-    // SubpixelBlendLimit default values and custom value widgets
-    fxaaSBLLabel = new QLabel(tr("Subpixel blend limit"));
-    fxaaSBLLabel->setToolTip(
-        tr("Subpixel aliasing is corrected by applying a lowpass filter\n"
-           "to the current pixel. This is implemented by blending an\n"
-           "average of the 3x3 neighborhood around the pixel into the\n"
-           "final result. The amount of blending is determined by\n"
-           "comparing the detected amount of subpixel aliasing to the\n"
-           "total contrasting of the CNSWE pixels:\n"
-           "SubpixelBlending = abs(lumC - lumAveNSWE) / (lumMaxCNSWE - lumMinCNSWE)\n"
-           "This parameter sets an upper limit to the amount of subpixel\n"
-           "blending to prevent the image from simply getting blurred.\n"));
-    fxaaSBL = new QComboBox();
-    fxaaSBL->addItem("Low", 0.5);
-    fxaaSBL->addItem("Medium", 0.75);
-    fxaaSBL->addItem("High", 0.875);
-    fxaaSBL->addItem("Maximum", 1.0);
-    fxaaSBL->addItem("Custom", 0.75);
-    fxaaSBL->setCurrentIndex(1);
-    connect(fxaaSBL, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(fxaaSBLChanged(int)));
-    fxaaLeftLayout->addRow(fxaaSBLLabel, fxaaSBL);
-
-    fxaaSBLCustomLabel = new QLabel(tr("Custom SBL value"));
-    fxaaSBLCustom = new QLineEdit("0.75");
-    fxaaSBLCustom->setValidator(dvfxaa);
-    connect(fxaaSBLCustom, SIGNAL(editingFinished()),
-            this, SLOT(fxaaSBLCustomChanged()));
-    fxaaLeftLayout->addRow(fxaaSBLCustomLabel, fxaaSBLCustom);
-
-    // SubpixelContrastThreshold default values and custom value widgets
-    fxaaSCTLabel = new QLabel(tr("Subpixel contrast threshold"));
-    fxaaSCTLabel->setToolTip(
-        tr("Minimum amount of subpixel aliasing required for subpixel\n"
-           "antialiasing to be applied.\n"
-           "If SubpixelBlending is less than this threshold,\n"
-           "no lowpass blending will occur.\n"));
-    fxaaSCT = new QComboBox();
-    fxaaSCT->addItem("Low", 0.5);
-    fxaaSCT->addItem("Medium", 0.75);
-    fxaaSCT->addItem("High", 0.875);
-    fxaaSCT->addItem("Maximum", 1.0);
-    fxaaSCT->addItem("Custom", 0.75);
-    fxaaSCT->setCurrentIndex(1);
-    connect(fxaaSCT, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(fxaaSCTChanged(int)));
-    fxaaRightLayout->addRow(fxaaSCTLabel, fxaaSCT);
-
-    fxaaSCTCustomLabel = new QLabel(tr("Custom SCT value"));
-    fxaaSCTCustom = new QLineEdit("0.75");
-    fxaaSCTCustom->setValidator(dvfxaa);
-    connect(fxaaSCTCustom, SIGNAL(editingFinished()),
-            this, SLOT(fxaaSCTCustomChanged()));
-    fxaaRightLayout->addRow(fxaaSCTCustomLabel, fxaaSCTCustom);
-
-    // UseHighQualityEndpoint default values and custom value widgets
-    fxaaHQE = new QCheckBox(tr("Use high quality endpoints"));
-    fxaaHQE->setCheckState(Qt::Checked);
-    fxaaHQE->setToolTip(
-        tr("Use an improved edge endpoint detection algorithm.\n"
-            "If true, a modified edge endpoint detection algorithm is used\n"
-            "that requires more texture lookups, but will properly detect\n"
-            "aliased single-pixel lines.\n"
-            "If false, the edge endpoint algorithm proposed by NVIDIA will\n"
-            "be used. This algorithm is faster (fewer lookups), but will \n"
-            "fail to detect endpoints of single pixel edge steps.\n"));
-    connect(fxaaHQE, SIGNAL(toggled(bool)),
-            this, SLOT(fxaaHQEToggled(bool)));
-    fxaaLeftLayout->addRow(fxaaHQE);
-
-    // EndpointSearchIterations default values and custom value widgets
-    fxaaESILabel = new QLabel(tr("Endpoint search iterations"));
-    fxaaESILabel->setToolTip(
-        tr("Set the number of iterations for the endpoint search algorithm.\n"
-           "Increasing this value will increase runtime, but also properly\n"
-           "detect longer edges. The current implementation steps one pixel\n"
-           "in both the positive and negative directions per iteration.\n"
-           "The default value is 12, which will resolve endpoints of\n"
-           "edges < 25 pixels long (2 * 12 + 1).\n"));
-
-    QIntValidator *ivfxaa = new QIntValidator(0,10000);
-    fxaaESI = new QLineEdit("12");
-    fxaaESI->setValidator(ivfxaa);
-    connect(fxaaESI, SIGNAL(editingFinished()),
-            this, SLOT(fxaaESIChanged()));
-    fxaaRightLayout->addRow(fxaaESILabel, fxaaESI);
 
     //
     // Create the depthPeeling widgets.
@@ -589,6 +407,212 @@ QvisRenderingWindow::CreateBasicPage()
 }
 
 // ****************************************************************************
+// Method: QvisRenderingWindow::CreateAntialiasingPage
+//
+// Purpose:
+//   Creates the widgets on the antialiasing page.
+//
+// ****************************************************************************
+
+QWidget *
+QvisRenderingWindow::CreateAntialiasingPage()
+{
+    QWidget *antialiasingOptions = new QWidget(central);
+    QVBoxLayout *antialiasingLayout = new QVBoxLayout(antialiasingOptions);
+    antialiasingLayout->setContentsMargins(10,10,10,10);
+
+    //
+    // Create the antialiasing widgets.
+    //
+    QGroupBox *aaGroup = new QGroupBox(tr("Antialiasing"), antialiasingOptions);
+    aaGroup->setCheckable(false);
+    antialiasingLayout->addWidget(aaGroup);
+
+    QGridLayout *aaLayout = new QGridLayout();
+    aaLayout->setContentsMargins(10,10,10,10);
+    aaGroup->setLayout(aaLayout);
+
+    int aaRow= 0;
+    antialiasingMode = new QButtonGroup(antialiasingOptions);
+    connect(antialiasingMode, SIGNAL(idClicked(int)),
+            this, SLOT(antialiasingChanged(int)));
+
+    QRadioButton *aaNone = new QRadioButton(tr("None"), antialiasingOptions);
+    antialiasingMode->addButton(aaNone, 0);
+    aaLayout->addWidget(aaNone, aaRow, 0);
+    QRadioButton *aaMSAA = new QRadioButton(tr("MSAA"), antialiasingOptions);
+    antialiasingMode->addButton(aaMSAA, 1);
+    aaLayout->addWidget(aaMSAA, aaRow, 1);
+    QRadioButton *aaFXAA = new QRadioButton(tr("FXAA"), antialiasingOptions);
+    antialiasingMode->addButton(aaFXAA, 2);
+    aaLayout->addWidget(aaFXAA, aaRow, 2);
+    aaRow++;
+
+    // MSAA options
+
+    msaaSamplesLabel = new QLabel(tr("Number of MSAA samples"));
+    msaaSamplesLabel->setEnabled(false);
+    aaLayout->addWidget(msaaSamplesLabel, aaRow, 0);
+
+    msaaSamples = new QSpinBox();
+    msaaSamples->setKeyboardTracking(false);
+    msaaSamples->setMinimum(2);
+    msaaSamples->setMaximum(8);
+    msaaSamples->setValue(4);
+    msaaSamples->setSingleStep(2);
+    msaaSamples->setEnabled(false);
+    aaLayout->addWidget(msaaSamples, aaRow, 1);
+    connect(msaaSamples, SIGNAL(valueChanged(int)),
+            this, SLOT(msaaSamplesChanged(int)));
+    aaRow++;
+
+    // FXAA options
+    QFormLayout *fxaaLeftLayout = new QFormLayout();
+    aaLayout->addLayout(fxaaLeftLayout, aaRow,0, 1, 2);
+    QFormLayout *fxaaRightLayout = new QFormLayout();
+    aaLayout->addLayout(fxaaRightLayout, aaRow, 2, 1, 2);
+
+    // RelativeConstrastThreshold default values and custom value widget
+    QDoubleValidator *dvfxaa = new QDoubleValidator(0.f,1.f, 5);
+
+    fxaaRCTLabel = new QLabel(tr("Relative contrast threshold"));
+    fxaaRCTLabel->setToolTip(
+        tr("Threshold for applying FXAA to a pixel, relative to the maximum luminosity of its 4 immediate neighbors\n"
+           "The luminosity of the current pixel and it's NSWE neighbors is computed. The maximum luminosity and luminosity range (contrast) of all 5 pixels is found. If the contrast is less than RelativeContrastThreshold * maxLum, the pixel is not considered aliased and will not be affected by FXAA.\n"));
+    fxaaRCT = new QComboBox();
+    fxaaRCT->addItem("Too little", 0.3333);
+    fxaaRCT->addItem("Low quality", 0.25);
+    fxaaRCT->addItem("High quality", 0.125);
+    fxaaRCT->addItem("Overkill", 0.0625);
+    fxaaRCT->addItem("Custom", 0.125);
+    fxaaRCT->setCurrentIndex(2);
+    connect(fxaaRCT, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaRCTChanged(int)));
+    fxaaLeftLayout->addRow(fxaaRCTLabel, fxaaRCT);
+
+    fxaaRCTCustomLabel = new QLabel(tr("Custom RCT value"));
+    fxaaRCTCustom = new QLineEdit("0.0625");
+    fxaaRCTCustom->setValidator(dvfxaa);
+    connect(fxaaRCTCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaRCTCustomChanged()));
+    fxaaLeftLayout->addRow(fxaaRCTCustomLabel, fxaaRCTCustom);
+
+    // HardConstrastThreshold default values and custom value widgets
+    fxaaHCTLabel = new QLabel(tr("Hard contrast threshold"));
+    fxaaHCTLabel->setToolTip(
+        tr("Similar to RelativeContrastThreshold, but not scaled by the maximum luminosity.\n"
+           "If the contrast of the current pixel and it's 4 immediate NSWE neighbors is less than HardContrastThreshold, the pixel is not considered aliased and will not be affected by FXAA.\n"));
+    fxaaHCT = new QComboBox();
+    fxaaHCT->addItem("VisibleLimit", 0.03125);
+    fxaaHCT->addItem("HigherQuality", 0.0625);
+    fxaaHCT->addItem("UpperLimit", 0.08333);
+    fxaaHCT->addItem("Custom", 0.0625);
+    fxaaHCT->setCurrentIndex(1);
+    connect(fxaaHCT, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaHCTChanged(int)));
+    fxaaRightLayout->addRow(fxaaHCTLabel, fxaaHCT);
+
+    fxaaHCTCustomLabel = new QLabel(tr("Custom HCT value"));
+    fxaaHCTCustom = new QLineEdit("0.0625");
+    fxaaHCTCustom->setValidator(dvfxaa);
+    connect(fxaaHCTCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaHCTCustomChanged()));
+    fxaaRightLayout->addRow(fxaaHCTCustomLabel, fxaaHCTCustom);
+
+    // SubpixelBlendLimit default values and custom value widgets
+    fxaaSBLLabel = new QLabel(tr("Subpixel blend limit"));
+    fxaaSBLLabel->setToolTip(
+        tr("Subpixel aliasing is corrected by applying a lowpass filter\n"
+           "to the current pixel. This is implemented by blending an\n"
+           "average of the 3x3 neighborhood around the pixel into the\n"
+           "final result. The amount of blending is determined by\n"
+           "comparing the detected amount of subpixel aliasing to the\n"
+           "total contrasting of the CNSWE pixels:\n"
+           "SubpixelBlending = abs(lumC - lumAveNSWE) / (lumMaxCNSWE - lumMinCNSWE)\n"
+           "This parameter sets an upper limit to the amount of subpixel\n"
+           "blending to prevent the image from simply getting blurred.\n"));
+    fxaaSBL = new QComboBox();
+    fxaaSBL->addItem("Low", 0.5);
+    fxaaSBL->addItem("Medium", 0.75);
+    fxaaSBL->addItem("High", 0.875);
+    fxaaSBL->addItem("Maximum", 1.0);
+    fxaaSBL->addItem("Custom", 0.75);
+    fxaaSBL->setCurrentIndex(1);
+    connect(fxaaSBL, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaSBLChanged(int)));
+    fxaaLeftLayout->addRow(fxaaSBLLabel, fxaaSBL);
+
+    fxaaSBLCustomLabel = new QLabel(tr("Custom SBL value"));
+    fxaaSBLCustom = new QLineEdit("0.75");
+    fxaaSBLCustom->setValidator(dvfxaa);
+    connect(fxaaSBLCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaSBLCustomChanged()));
+    fxaaLeftLayout->addRow(fxaaSBLCustomLabel, fxaaSBLCustom);
+
+    // SubpixelContrastThreshold default values and custom value widgets
+    fxaaSCTLabel = new QLabel(tr("Subpixel contrast threshold"));
+    fxaaSCTLabel->setToolTip(
+        tr("Minimum amount of subpixel aliasing required for subpixel\n"
+           "antialiasing to be applied.\n"
+           "If SubpixelBlending is less than this threshold,\n"
+           "no lowpass blending will occur.\n"));
+    fxaaSCT = new QComboBox();
+    fxaaSCT->addItem("Low", 0.5);
+    fxaaSCT->addItem("Medium", 0.75);
+    fxaaSCT->addItem("High", 0.875);
+    fxaaSCT->addItem("Maximum", 1.0);
+    fxaaSCT->addItem("Custom", 0.75);
+    fxaaSCT->setCurrentIndex(1);
+    connect(fxaaSCT, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaSCTChanged(int)));
+    fxaaRightLayout->addRow(fxaaSCTLabel, fxaaSCT);
+
+    fxaaSCTCustomLabel = new QLabel(tr("Custom SCT value"));
+    fxaaSCTCustom = new QLineEdit("0.75");
+    fxaaSCTCustom->setValidator(dvfxaa);
+    connect(fxaaSCTCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaSCTCustomChanged()));
+    fxaaRightLayout->addRow(fxaaSCTCustomLabel, fxaaSCTCustom);
+
+    // UseHighQualityEndpoint default values and custom value widgets
+    fxaaHQE = new QCheckBox(tr("Use high quality endpoints"));
+    fxaaHQE->setCheckState(Qt::Checked);
+    fxaaHQE->setToolTip(
+        tr("Use an improved edge endpoint detection algorithm.\n"
+            "If true, a modified edge endpoint detection algorithm is used\n"
+            "that requires more texture lookups, but will properly detect\n"
+            "aliased single-pixel lines.\n"
+            "If false, the edge endpoint algorithm proposed by NVIDIA will\n"
+            "be used. This algorithm is faster (fewer lookups), but will \n"
+            "fail to detect endpoints of single pixel edge steps.\n"));
+    connect(fxaaHQE, SIGNAL(toggled(bool)),
+            this, SLOT(fxaaHQEToggled(bool)));
+    fxaaLeftLayout->addRow(fxaaHQE);
+
+    // EndpointSearchIterations default values and custom value widgets
+    fxaaESILabel = new QLabel(tr("Endpoint search iterations"));
+    fxaaESILabel->setToolTip(
+        tr("Set the number of iterations for the endpoint search algorithm.\n"
+           "Increasing this value will increase runtime, but also properly\n"
+           "detect longer edges. The current implementation steps one pixel\n"
+           "in both the positive and negative directions per iteration.\n"
+           "The default value is 12, which will resolve endpoints of\n"
+           "edges < 25 pixels long (2 * 12 + 1).\n"));
+
+    QIntValidator *ivfxaa = new QIntValidator(0,10000);
+    fxaaESI = new QLineEdit("12");
+    fxaaESI->setValidator(ivfxaa);
+    connect(fxaaESI, SIGNAL(editingFinished()),
+            this, SLOT(fxaaESIChanged()));
+    fxaaRightLayout->addRow(fxaaESILabel, fxaaESI);
+
+    antialiasingLayout->addStretch();
+    return antialiasingOptions;
+}
+
+
+
+// ****************************************************************************
 // Method: QvisRenderingWindow::CreateAdvancedPage
 //
 // Purpose:
@@ -626,6 +650,9 @@ QvisRenderingWindow::CreateBasicPage()
 //
 //   Eric Brugger, Wed Aug 26 14:29:54 PDT 2026
 //   Added ability to toggle tiled rendering on and off.
+//
+//   Kathleen Biagas, Tue Nov 17, 2026
+//   Moved the OSPRay and ANARI controls to their own pages.
 //
 // ****************************************************************************
 
@@ -807,49 +834,41 @@ QvisRenderingWindow::CreateAdvancedPage()
     advLayout->addWidget(tiledRenderingHeight, row, 3);
     row++;
 
-#ifdef HAVE_ANARI
-    // Divider
-    QFrame *separator = new QFrame(advancedOptions);
-    separator->setFrameShape(QFrame::HLine);
-    separator->setFrameShadow(QFrame::Sunken);
-    separator->setFixedHeight(2);
-    separator->setLineWidth(1);
-    advLayout->addWidget(separator, row, 0, 2, 4); // row, col, rowspan, colspan
-    row += 2;
-
-    anariRenderingWidget = new AnariRenderingWidget(this, renderAtts, advancedOptions);
-    int anariRowCount = anariRenderingWidget->GetRowCount();
-    advLayout->addWidget(anariRenderingWidget, row, 0, anariRowCount, 4);
-    row += anariRowCount;
-#endif
+    return advancedOptions;
+}
 
 #if defined(HAVE_OSPRAY)
-    QFrame *line = new QFrame(advancedOptions);
-    line->setFrameShape(QFrame::HLine);
-    line->setFrameShadow(QFrame::Sunken);
-    line->setFixedHeight(2);
-    line->setLineWidth(1);
-    advLayout->addWidget(line, row, 0, 2, 4);
-    row += 2;
+// ****************************************************************************
+// Method: QvisRenderingWindow::CreateOSPRayPage
+//
+// Purpose:
+//   Creates the widgets for the OSPRay rendering page.
+//
+// ****************************************************************************
 
-    // Create the OSPRay group box.
-    osprayGroup = new QGroupBox(tr("OSPRay Rendering"), advancedOptions);
+QWidget *
+QvisRenderingWindow::CreateOSPRayPage()
+{
+    QWidget *osprayOptions = new QWidget(central);
+    QVBoxLayout *pageLayout = new QVBoxLayout(osprayOptions);
+    pageLayout->setContentsMargins(10,10,10,10);
+
+    osprayGroup = new QGroupBox(tr("OSPRay Rendering"), osprayOptions);
     osprayGroup->setCheckable(true);
     osprayGroup->setChecked(false);
     connect(osprayGroup, SIGNAL(toggled(bool)),
             this, SLOT(osprayRenderingToggled(bool)));
-    advLayout->addWidget(osprayGroup, row, 0, 3, 4);
-    row++;
+    pageLayout->addWidget(osprayGroup);
 
     QGridLayout *osprayLayout = new QGridLayout(osprayGroup);
     osprayLayout->setContentsMargins(5,5,5,5);
     osprayLayout->setSpacing(10);
 
     int orow  = 0;
-    ospraySPPLabel = new QLabel(tr("Samples per pixel"), advancedOptions);
+    ospraySPPLabel = new QLabel(tr("Samples per pixel"), osprayOptions);
     ospraySPPLabel->setEnabled(false);
     osprayLayout->addWidget(ospraySPPLabel, orow, 0, 1, 2);
-    ospraySPP = new QSpinBox(advancedOptions);
+    ospraySPP = new QSpinBox(osprayOptions);
     ospraySPP->setMinimum(1);
     ospraySPP->setEnabled(false);
     connect(ospraySPP, SIGNAL(valueChanged(int)),
@@ -861,10 +880,10 @@ QvisRenderingWindow::CreateAdvancedPage()
     connect(osprayGroup, SIGNAL(toggled(bool)),
             ospraySPP, SLOT(setEnabled(bool)));
 
-    osprayAOLabel = new QLabel(tr("Ambient occlusion samples"), advancedOptions);
+    osprayAOLabel = new QLabel(tr("Ambient occlusion samples"), osprayOptions);
     osprayAOLabel->setEnabled(false);
     osprayLayout->addWidget(osprayAOLabel, orow, 0, 1, 2);
-    osprayAO = new QSpinBox(advancedOptions);
+    osprayAO = new QSpinBox(osprayOptions);
     osprayAO->setMinimum(0);
     osprayAO->setEnabled(false);
     connect(osprayAO, SIGNAL(valueChanged(int)),
@@ -876,7 +895,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     connect(osprayGroup, SIGNAL(toggled(bool)),
             osprayAO, SLOT(setEnabled(bool)));
 
-    osprayShadowsToggle = new QCheckBox(tr("Shadows"), advancedOptions);
+    osprayShadowsToggle = new QCheckBox(tr("Shadows"), osprayOptions);
     osprayShadowsToggle->setEnabled(false);
     connect(osprayShadowsToggle, SIGNAL(toggled(bool)),
             this, SLOT(osprayShadowsToggled(bool)));
@@ -884,10 +903,36 @@ QvisRenderingWindow::CreateAdvancedPage()
     orow++;
     connect(osprayGroup, SIGNAL(toggled(bool)),
             osprayShadowsToggle, SLOT(setEnabled(bool)));
+
+    pageLayout->addStretch();
+    return osprayOptions;
+}
 #endif
 
-    return advancedOptions;
+#ifdef HAVE_ANARI
+// ****************************************************************************
+// Method: QvisRenderingWindow::CreateAnariPage
+//
+// Purpose:
+//   Creates the widgets for the ANARI rendering page.
+//
+// ****************************************************************************
+
+QWidget *
+QvisRenderingWindow::CreateAnariPage()
+{
+    QWidget *anariOptions = new QWidget(central);
+    QVBoxLayout *pageLayout = new QVBoxLayout(anariOptions);
+    pageLayout->setContentsMargins(10,10,10,10);
+
+    anariRenderingWidget = new AnariRenderingWidget(this, renderAtts,
+                                                     anariOptions);
+    pageLayout->addWidget(anariRenderingWidget);
+    pageLayout->addStretch();
+
+    return anariOptions;
 }
+#endif
 
 
 // ****************************************************************************
@@ -991,6 +1036,9 @@ QvisRenderingWindow::CreateInformationPage()
 //   Kathleen Biagas, Tue Aug 26, 2025
 //   Added call to QueryMSAAAvailability.
 //
+//   Kathleen Biagas, Tue Nov 17, 2026
+//   Added separate tabs for antialiasing, OSPRay, and ANARI options.
+//
 // ****************************************************************************
 
 void
@@ -1005,9 +1053,28 @@ QvisRenderingWindow::CreateWindowContents()
     topTab->addTab(CreateBasicPage(), tr("Basic"));
 
     //
+    // Create the antialiasing options page.
+    //
+    topTab->addTab(CreateAntialiasingPage(), tr("Antialiasing"));
+
+    //
     // Create the advanced renderer options group.
     //
     topTab->addTab(CreateAdvancedPage(), tr("Advanced"));
+
+#if defined(HAVE_OSPRAY)
+    //
+    // Create the OSPRay renderer options page.
+    //
+    topTab->addTab(CreateOSPRayPage(), tr("OSPRay"));
+#endif
+
+#ifdef HAVE_ANARI
+    //
+    // Create the ANARI renderer options page.
+    //
+    topTab->addTab(CreateAnariPage(), tr("ANARI"));
+#endif
 
     //
     // Create the renderer information group.
