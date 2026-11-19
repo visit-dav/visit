@@ -67,7 +67,7 @@ pr:
     - 'src/test/tests/expressions/math_expr.py'
     - 'src/test/tests/expressions/tensor_expr.py'
     exclude:
-    - 'TPBuildsCMake/**'
+    - 'scripts/TPBuildsCMake/**'
 
 # fast fail consistency checks
 stages:
