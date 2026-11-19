@@ -47,7 +47,6 @@ visit_resolve_dependencies(
     DEPENDENCIES PYTHON
     OUT_VAR ANARI_DEPENDS)
 
-
 set(ANARI_ZIP_NAME "ANARI-SDK-${ANARI_VERSION}_with_deps.zip")
 
 ExternalProject_Add(ANARI

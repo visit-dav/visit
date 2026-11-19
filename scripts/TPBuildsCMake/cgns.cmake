@@ -37,18 +37,31 @@ set(CGNS_CMAKE_OPTIONS
     -DENABLE_TESTS:BOOL=FALSE
     -DENABLE_PARALLEL:BOOL=FALSE)
 
-list(APPEND CGNS_CMAKE_OPTIONS
-     -DCGNS_ENABLE_HDF5:BOOL=ON
-     -DHDF5_DIR:PATH=${visit_hdf5_root}/cmake
-     -DHDF5_INCLUDE_PATH:PATH=${visit_hdf5_include}
-     -DHDF5_LIBRARY:FILEPATH=${visit_hdf5_library}
-     -DHDF5_NEED_ZLIB:BOOL=ON
-     -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
-     -DZLIB_LIBRARY:FILEPATH=${visit_zlib_library})
+set(CGNS_REQUIRED_DEPENDENCIES)
+
+if(ENABLE_HDF5)
+    list(APPEND CGNS_CMAKE_OPTIONS
+         -DCGNS_ENABLE_HDF5:BOOL=ON
+         -DHDF5_DIR:PATH=${visit_hdf5_root}/cmake
+         -DHDF5_INCLUDE_PATH:PATH=${visit_hdf5_include}
+         -DHDF5_LIBRARY:FILEPATH=${visit_hdf5_library})
+    list(APPEND CGNS_REQUIRED_DEPENDENCIES HDF5)
+
+    if(ENABLE_ZLIB)
+        list(APPEND CGNS_CMAKE_OPTIONS
+             -DHDF5_NEED_ZLIB:BOOL=ON
+             -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
+             -DZLIB_LIBRARY:FILEPATH=${visit_zlib_library})
+        list(APPEND CGNS_REQUIRED_DEPENDENCIES ZLIB)
+    endif()
+else()
+    list(APPEND CGNS_CMAKE_OPTIONS
+         -DCGNS_ENABLE_HDF5:BOOL=OFF)
+endif()
 
 visit_resolve_dependencies(
     PACKAGE CGNS
-    DEPENDENCIES ZLIB HDF5
+    DEPENDENCIES ${CGNS_REQUIRED_DEPENDENCIES}
     OUT_VAR CGNS_DEPENDS)
 
 ExternalProject_Add( CGNS
