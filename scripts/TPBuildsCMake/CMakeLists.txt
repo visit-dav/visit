@@ -141,7 +141,7 @@ configure_file(configsite.cmake.in ${HOST}.cmake @ONLY)
 macro(write_config_site PKG)
     cmake_parse_arguments(arg "SETUPAPP" "" LIBDEP ${ARGN})
 
-    if(BUILD_ALL OR ENABLE_${PKG} OR ${PKG}_PREBUILT)
+    if(ENABLE_${PKG} OR ${PKG}_PREBUILT)
         string(TOLOWER ${PKG} lpkg)
         if(arg_SETUPAPP)
             file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${HOST}.cmake

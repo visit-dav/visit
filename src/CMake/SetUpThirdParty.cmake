@@ -405,6 +405,18 @@ function(visit_import_third_party pkg)
         foreach(lib ${tplibs})
             # lib is a cmake var, so need double-indirection to get at the value
             list(APPEND buildlibs $<BUILD_INTERFACE:${${lib}}>)
+            if(WIN32 AND NOT VISIT_INSTALL_THIRD_PARTY)
+                # Copying DLL's to build dir is handled by
+                # THIRD_PARTY_INSTALL_LIBRARY. If that won't be called
+                # need to handle it here.
+                visit_get_dll_from_library(${${lib}} _${lib}_DLL)
+                if(_${lib}_DLL)
+                    execute_process(COMMAND
+                               ${CMAKE_COMMAND} -E copy_if_different
+                               ${_${lib}_DLL}
+                               ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+                endif()
+            endif()
         endforeach()
 
         blt_import_library(
@@ -636,7 +648,7 @@ function(visit_install_thirdparty_targets)
     # copy available dlls to build directory
     if(WIN32 AND tfnames)
         add_custom_target(${vitt_NAME}_copy_dlls ALL
-                    COMMAND ${CMAKE_COMMAND} -E copy ${tfnames}
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${tfnames}
                     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty")
         visit_add_to_util_builds(${vitt_NAME}_copy_dlls)
         unset(tfnames)

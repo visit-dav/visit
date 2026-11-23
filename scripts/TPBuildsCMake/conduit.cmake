@@ -95,7 +95,7 @@ visit_resolve_dependencies(
 ExternalProject_Add(CONDUIT
     PREFIX           CONDUIT
     URL              ${visit_tp_url}/${CONDUIT_ZIP_NAME}
-    URL_HASH         SHA256=c9edfb2ff09890084313ad9c2d83bfb7c10e70b696980762d1ae1488f9f08e6c
+    URL_HASH         SHA256=d1cbbdf3c202d6c5a82397fa1d6604bc5a4883e6129004cc9fc62ac33812511a
     INSTALL_DIR      ${visit_conduit_root}
     CMAKE_CACHE_ARGS ${CONDUIT_CMAKE_OPTIONS}
     SOURCE_SUBDIR    src

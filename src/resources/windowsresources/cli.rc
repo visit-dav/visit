@@ -1,0 +1,8 @@
+IDI_ICON1               ICON    DISCARDABLE     "visit.ico"
+
+#define VER_FILEDESCRIPTION_STR  "VisIt Python Command Line Interface\0"
+#define VER_INTERNALNAME_STR     "VisIt CLI\0"
+#define VER_ORIGINALFILENAME_STR "cli.exe\0"
+
+#include <versionvars.rc>
+#include <versioninfo.rc>

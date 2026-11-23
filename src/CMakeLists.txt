@@ -244,7 +244,7 @@ set(VTK_MINIMUM_VERSION "9.5.0" CACHE INTERNAL "minimum version of vtk that VisI
 
 set(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
 
-# this needs to be included beofre the config-site file.
+# this needs to be included before the config-site file.
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/VisItFunctions.cmake)
 
 #-----------------------------------------------------------------------------

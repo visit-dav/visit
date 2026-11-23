@@ -128,7 +128,10 @@ cmake -S /path/to/TPBuildsCMake -B Build -U ENABLE_CONDUIT
 
 ### To use the generated libraries when building VisIt.
 
-If the chosen INSTALL location is not the standard location within visit-deps/windowsbuild/MSVC2022, then add `-DVISIT_THIRDPARTY_PATH:PATH=/path/to/INSTALL` when configuring VisIt with CMake.
+A config-site file is generated as part of the build process and it can be used when building VisIt.
+It is placed in the build directory, and has the name `<host>.cmake` where `<host>` is your system name.
+Just add `-DVISIT_CONFIG_SITE:FILEPATH=/path/to/build/<host>.cmake` to the command line when configuring VisIt with CMake.
+If the chosen INSTALL location is the standard location within `visit-deps/windowsbuild/MSVC2022`, then this command-line option can be skipped as the standard `windows.cmake` config-site file within VisIt should suffice.
 
 ## Caveats
 

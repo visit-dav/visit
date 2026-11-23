@@ -1,14 +1,31 @@
 # config-site file used when building VisIt
 #
-# Add 'VISIT_CONFIG_SITE:FILEPATH=/path/to/this/file.cmake' to VisIt's 
+# Add 'VISIT_CONFIG_SITE:FILEPATH=/path/to/this/file.cmake' to VisIt's
 # CMake-configure step.
 #
-# Add any desired visit cmake options here
+# Add any desired visit cmake options here. Useful options are set below.
 #
-VISIT_OPTION_DEFAULT(VISIT_CREATE_XMLTOOLS_GEN_TARGETS OFF TYPE BOOL)
+
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL @BUILD_PARALLEL@ TYPE BOOL)
 
+# this is needed if doing a 'make install', turn it off if not needed
+VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON TYPE BOOL)
+
+#
+# change this if you are doing plugin development and would like
+# targets created that perform the xmltool steps for you
+#
+VISIT_OPTION_DEFAULT(VISIT_CREATE_XMLTOOLS_GEN_TARGETS OFF TYPE BOOL)
+
+#
+# uncomment this if doing development when having VisIt run in a console
+# is helpful
+#
+#VISIT_OPTION_DEFAULT(VISIT_WINDOWS_APPLICATION OFF TYPE BOOL)
+
+#
 # third party library information generated from the TPL cmake build
+#
 
 set(VISIT_TPL_HOME @visit_install_root@)
 
