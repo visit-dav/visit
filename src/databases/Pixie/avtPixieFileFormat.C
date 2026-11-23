@@ -15,7 +15,6 @@
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
-#include <vtkExtentTranslator.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkDoubleArray.h>
@@ -26,6 +25,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtParallel.h>
 #include <DebugStream.h>
@@ -185,6 +185,10 @@ static void DetectTyphonIO(int fileId)
 //   Jean Favre, Thu Jun 21 16:28:40 PDT 2012
 //   Add read options.
 //
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes for node and cell centered variables. Fix
+//   bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 avtPixieFileFormat::avtPixieFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
@@ -193,7 +197,7 @@ avtPixieFileFormat::avtPixieFileFormat(const char *filename, const DBOptionsAttr
 {
     fileId = -1;
     nTimeStates = 0;
-    haveMeshCoords = false;
+    metadataIsTimeInvariant = true;
     partitioning = PixieDBOptions::ZSLAB;
     duplicateData = false;
 
@@ -211,7 +215,7 @@ avtPixieFileFormat::avtPixieFileFormat(const char *filename, const DBOptionsAttr
     }
 
     // Turn off error message printing.
-    H5Eset_auto(0,0);
+    H5Eset_auto(NULL,NULL);
 }
 
 // ****************************************************************************
@@ -429,6 +433,10 @@ avtPixieFileFormat::FreeUpResources(void)
 //   isCoord to TraversalInfo and VarInfo to track if a variable is a
 //   coordinate array so that the decomposition can be done correctly.
 //
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes for node and cell centered variables. Fix
+//   bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 void
@@ -439,7 +447,12 @@ avtPixieFileFormat::Initialize()
         // Initialize some variables.
         meshes.clear();
         variables.clear();
+        staticVariables.clear();
+        stateVariables.clear();
+        cycles.clear();
+        time_val.clear();
         nTimeStates = 0;
+        metadataIsTimeInvariant = true;
         hid_t fileAccessPropListID = H5Pcreate(H5P_FILE_ACCESS);
         if (fileAccessPropListID < 0)
         {
@@ -491,6 +504,7 @@ avtPixieFileFormat::Initialize()
         info.coordX = "";
         info.coordY = "";
         info.coordZ = "";
+        info.cycle = -1;
 
         // ARS - Note as of 1.8.0 H5Giterate has been deprecated and
         // H5Literate should be used. At the same time H5Literate will
@@ -502,33 +516,8 @@ avtPixieFileFormat::Initialize()
 //      H5Literate(fileId, H5_INDEX_NAME, H5_ITER_INC, 0, VisitLinks, (void*)&info);
         H5Gclose(gid);
 
-        // Tag any coordinates as isCoord.
-        for(VarInfoMap::const_iterator it = variables.begin();
-            it != variables.end(); ++it)
-        {
-            if (it->second.hasCoords)
-            {
-                if (variables.count(it->second.coordX) == 1)
-                    variables[it->second.coordX].isCoord = true;
-                if (variables.count(it->second.coordY) == 1)
-                    variables[it->second.coordY].isCoord = true;
-                if (variables.count(it->second.coordZ) == 1)
-                    variables[it->second.coordZ].isCoord = true;
-            }
-        }
-
-        // Determine the names of the meshes that we'll need.
-        for(VarInfoMap::const_iterator it = variables.begin();
-            it != variables.end(); ++it)
-        {
-            const char *mNames[] = {"mesh", "curvemesh"};
-            char tmp[100];
-            snprintf(tmp, 100, "%s_%dx%dx%d", mNames[it->second.hasCoords?1:0],
-                     int(it->second.dims[2]),
-                     int(it->second.dims[1]),
-                     int(it->second.dims[0]));
-            meshes[std::string(tmp)] = it->second;
-        }
+        // Per-timestep coordinate tagging and mesh construction are done
+        // after traversal, once all variable shapes are known.
 
         //
         // Look for expressions dataset
@@ -565,9 +554,32 @@ avtPixieFileFormat::Initialize()
             H5Dclose(expid);
         }
 
-        // Sort the cycles and the times
+        // Sort the cycles and the times.
         std::sort(cycles.begin(), cycles.end());
         std::sort(time_val.begin(), time_val.end());
+
+        // Build the first state's schema for compatibility with the existing
+        // read/partition code, and determine whether metadata can be reused
+        // across all states.
+        PrepareTimestepInfo(0);
+        if(cycles.size() > 1)
+        {
+            VarInfoMap firstVars = variables;
+            VarInfoMap firstMeshes = meshes;
+            for(size_t ts = 1; ts < cycles.size(); ++ts)
+            {
+                VarInfoMap stateVars = GetVariablesForTimestep((int)ts);
+                VarInfoMap stateMeshes;
+                BuildMeshesForTimestep(stateVars, stateMeshes);
+                if(!SameSchema(firstVars, stateVars) ||
+                   !SameSchema(firstMeshes, stateMeshes))
+                {
+                    metadataIsTimeInvariant = false;
+                    break;
+                }
+            }
+            PrepareTimestepInfo(0);
+        }
 
 #ifdef MDSERVER
         // We're on the mdserver so close the file now that we've determined
@@ -575,7 +587,473 @@ avtPixieFileFormat::Initialize()
         H5Fclose(fileId);
         fileId = -1;
 #endif
-        PartitionDims();
+    }
+}
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::GetVariablesForTimestep
+//
+// Purpose:
+//   Return a list of variables for the specified timestep.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtPixieFileFormat::VarInfoMap
+avtPixieFileFormat::GetVariablesForTimestep(int timestate) const
+{
+    VarInfoMap retval = staticVariables;
+
+    if(nTimeStates > 0 && timestate >= 0 && timestate < (int)cycles.size())
+    {
+        StateVarInfoMap::const_iterator sit = stateVariables.find(cycles[timestate]);
+        if(sit != stateVariables.end())
+        {
+            for(VarInfoMap::const_iterator it = sit->second.begin();
+                it != sit->second.end(); ++it)
+                retval[it->first] = it->second;
+        }
+    }
+
+    // Coordinate arrays named by a valid coords attribute are node-centered.
+    for(VarInfoMap::const_iterator it = retval.begin(); it != retval.end(); ++it)
+    {
+        if(!it->second.hasCoords)
+            continue;
+        if(retval.count(it->second.coordX)) retval[it->second.coordX].isCoord = true;
+        if(retval.count(it->second.coordY)) retval[it->second.coordY].isCoord = true;
+        if(retval.count(it->second.coordZ)) retval[it->second.coordZ].isCoord = true;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::IsNodal
+//
+// Purpose:
+//   Return a boolean indicating if the variable is a nodal variable.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtPixieFileFormat::IsNodal(const VarInfo &info, const VarInfoMap &vars) const
+{
+    if(info.hasCoords || info.isCoord)
+        return true;
+
+    int nSpatialDims = 0;
+    DetermineVarDimensions(info, 0, 0, nSpatialDims);
+    if(nSpatialDims < 2)
+        return false;
+
+    bool active[3] = {info.dims[0] > 1, info.dims[1] > 1, info.dims[2] > 1};
+    for(VarInfoMap::const_iterator it = vars.begin(); it != vars.end(); ++it)
+    {
+        if(&it->second == &info)
+            continue;
+
+        bool match = true;
+        bool anyActive = false;
+        for(int d = 0; d < 3; ++d)
+        {
+            bool otherActive = it->second.dims[d] > 1;
+            if(active[d] != otherActive)
+            {
+                match = false;
+                break;
+            }
+            if(active[d])
+            {
+                anyActive = true;
+                if(info.dims[d] != it->second.dims[d] + 1)
+                {
+                    match = false;
+                    break;
+                }
+            }
+        }
+        if(match && anyActive)
+            return true;
+    }
+
+    return false;
+}
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::GetMeshKey
+//
+// Purpose:
+//   Create a key that uniquely identifies a mesh. It is used internally
+//   by BuildMeshesForTimestep.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtPixieFileFormat::MeshKey
+avtPixieFileFormat::GetMeshKey(const VarInfo &info, const VarInfoMap &vars) const
+{
+    MeshKey key;
+    key.curvilinear = info.hasCoords;
+    key.coordX = info.hasCoords ? info.coordX : "";
+    key.coordY = info.hasCoords ? info.coordY : "";
+    key.coordZ = info.hasCoords ? info.coordZ : "";
+
+    bool nodal = IsNodal(info, vars);
+    int size1D = info.hasCoords ? 2 : 1;
+    for(int d = 0; d < 3; ++d)
+    {
+        key.dims[d] = info.dims[d];
+        if(!nodal && info.dims[d] > (size_t)size1D)
+            ++key.dims[d];
+    }
+    return key;
+}
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::BuildMeshesForTimestep
+//
+// Purpose:
+//   Identify the meshes and assign a mesh to all the variables. It
+//   creates meshes of the form "curvmesh_%dx%dx%d" and "mesh_%dx%dx%d".
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPixieFileFormat::BuildMeshesForTimestep(VarInfoMap &vars,
+                                            VarInfoMap &stateMeshes) const
+{
+    stateMeshes.clear();
+    typedef std::map<MeshKey, std::string> MeshNameMap;
+    MeshNameMap meshNames;
+    std::vector<MeshKey> curvilinearKeys;
+
+    // First create explicit curvilinear mesh families. The coords attribute is
+    // authoritative; raw coordinate datasets do not create meshes themselves.
+    for(VarInfoMap::iterator it = vars.begin(); it != vars.end(); ++it)
+    {
+        if(it->second.isCoord || !it->second.hasCoords)
+            continue;
+
+        VarInfoMap::const_iterator x = vars.find(it->second.coordX);
+        VarInfoMap::const_iterator y = vars.find(it->second.coordY);
+        VarInfoMap::const_iterator z = vars.find(it->second.coordZ);
+        if(x == vars.end() || y == vars.end() || z == vars.end())
+            continue;
+
+        bool same = true;
+        for(int d = 0; d < 3; ++d)
+            same &= x->second.dims[d] == it->second.dims[d] &&
+                    y->second.dims[d] == it->second.dims[d] &&
+                    z->second.dims[d] == it->second.dims[d];
+        if(!same)
+            continue;
+
+        MeshKey key = GetMeshKey(it->second, vars);
+        if(meshNames.find(key) == meshNames.end())
+        {
+            char tmp[128];
+            snprintf(tmp, sizeof(tmp), "curvemesh_%dx%dx%d",
+                     int(key.dims[2]), int(key.dims[1]), int(key.dims[0]));
+            std::string name(tmp);
+            if(stateMeshes.count(name))
+            {
+                int n = 2;
+                std::string candidate;
+                do
+                {
+                    char suffix[32];
+                    snprintf(suffix, sizeof(suffix), "_%d", n++);
+                    candidate = name + suffix;
+                } while(stateMeshes.count(candidate));
+                name = candidate;
+            }
+            meshNames[key] = name;
+            stateMeshes[name] = it->second;
+            curvilinearKeys.push_back(key);
+        }
+        it->second.meshName = meshNames[key];
+    }
+
+    // Assign every remaining spatial data variable to a mesh family. A
+    // KxMxN zonal array and a (K+1)x(M+1)x(N+1) nodal array canonicalize to
+    // the same node dimensions and therefore the same mesh.
+    for(VarInfoMap::iterator it = vars.begin(); it != vars.end(); ++it)
+    {
+        if(it->second.isCoord || !it->second.meshName.empty())
+            continue;
+
+        int nSpatialDims = 0;
+        DetermineVarDimensions(it->second, 0, 0, nSpatialDims);
+        if(nSpatialDims < 2)
+            continue;
+
+        MeshKey rkey = GetMeshKey(it->second, vars);
+
+        // If an explicit curvilinear mesh has these canonical node
+        // dimensions, variables without their own coords attribute still live
+        // on that mesh (e.g. 32^3 zonal data with 33^3 node coordinates).
+        std::string matchingCurve;
+        for(size_t k = 0; k < curvilinearKeys.size(); ++k)
+        {
+            bool sameDims = true;
+            for(int d = 0; d < 3; ++d)
+                sameDims &= curvilinearKeys[k].dims[d] == rkey.dims[d];
+            if(sameDims)
+            {
+                matchingCurve = meshNames[curvilinearKeys[k]];
+                break;
+            }
+        }
+        if(!matchingCurve.empty())
+        {
+            it->second.meshName = matchingCurve;
+            continue;
+        }
+
+        rkey.curvilinear = false;
+        rkey.coordX.clear(); rkey.coordY.clear(); rkey.coordZ.clear();
+        if(meshNames.find(rkey) == meshNames.end())
+        {
+            char tmp[128];
+            snprintf(tmp, sizeof(tmp), "mesh_%dx%dx%d",
+                     int(rkey.dims[2]), int(rkey.dims[1]), int(rkey.dims[0]));
+            std::string name(tmp);
+            meshNames[rkey] = name;
+            stateMeshes[name] = it->second;
+        }
+        else
+        {
+            VarInfo &old = stateMeshes[meshNames[rkey]];
+            if(!IsNodal(old, vars) && IsNodal(it->second, vars))
+                old = it->second;
+        }
+        it->second.meshName = meshNames[rkey];
+    }
+}
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::SameSchema
+//
+// Purpose:
+//   Return a boolean indicating if the two variables are defined on the
+//   same mesh.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtPixieFileFormat::SameSchema(const VarInfoMap &a, const VarInfoMap &b) const
+{
+    if(a.size() != b.size())
+        return false;
+
+    VarInfoMap::const_iterator ia = a.begin();
+    VarInfoMap::const_iterator ib = b.begin();
+    for(; ia != a.end(); ++ia, ++ib)
+    {
+        if(ia->first != ib->first)
+            return false;
+        for(int d = 0; d < 3; ++d)
+            if(ia->second.dims[d] != ib->second.dims[d])
+                return false;
+        if(ia->second.hasCoords != ib->second.hasCoords ||
+           ia->second.coordX != ib->second.coordX ||
+           ia->second.coordY != ib->second.coordY ||
+           ia->second.coordZ != ib->second.coordZ ||
+           ia->second.meshName != ib->second.meshName)
+            return false;
+    }
+    return true;
+}
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::PrepareTimestep
+//
+// Purpose:
+//   Prepare a new timestep. This includes getting the list of variables and
+//   meshes and calculating the parallel partitioning information.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPixieFileFormat::PrepareTimestepInfo(int timestate)
+{
+    variables = GetVariablesForTimestep(timestate);
+    BuildMeshesForTimestep(variables, meshes);
+    PartitionDims();
+}
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::SetFullExtents
+//
+// Purpose:
+//   Set the mesh information to use the entire mesh.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPixieFileFormat::SetFullExtents(VarInfo &info) const
+{
+    for(int d = 0; d < 3; ++d)
+    {
+        info.start[d] = 0;
+        info.count[d] = info.dims[d];
+        info.start_no_ghost[d] = 0;
+        info.count_no_ghost[d] = info.dims[d];
+    }
+}
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::IsNodal
+//
+// Purpose:
+//   Return a boolean indicating if the variable is a nodal variable.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtPixieFileFormat::IsNodal(const VarInfo &info) const
+{
+    return IsNodal(info, variables);
+}
+
+// ****************************************************************************
+// Method: avtPixieFileFormat::PartitionVarInfo
+//
+// Purpose:
+//   Determine the parallel partitioning information for the variable based
+//   on the user specified partitioning method.
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 11:45:00 PDT 2026
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPixieFileFormat::PartitionVarInfo(VarInfo &info) const
+{
+    SetFullExtents(info);
+
+    int nSpatialDims = 0;
+    DetermineVarDimensions(info, 0, 0, nSpatialDims);
+    if(nSpatialDims == 0)
+        return;
+
+    bool nodal = IsNodal(info);
+    int size1D = info.hasCoords ? 2 : 1;
+    int hdfZoneDims[3] = {1, 1, 1};
+    bool active[3] = {false, false, false};
+    for(int d = 0; d < 3; ++d)
+    {
+        active[d] = info.dims[d] > (size_t)size1D;
+        if(active[d])
+            hdfZoneDims[d] = int(info.dims[d]) - (nodal ? 1 : 0);
+    }
+
+    int domCount[3] = {1, 1, 1};
+    int domLogicalCoords[3] = {0, 0, 0};
+    switch(partitioning)
+    {
+    case PixieDBOptions::XSLAB:
+        domCount[2] = PAR_Size();
+        domLogicalCoords[2] = PAR_Rank();
+        break;
+    case PixieDBOptions::YSLAB:
+        domCount[1] = PAR_Size();
+        domLogicalCoords[1] = PAR_Rank();
+        break;
+    case PixieDBOptions::ZSLAB:
+        domCount[0] = PAR_Size();
+        domLogicalCoords[0] = PAR_Rank();
+        break;
+    case PixieDBOptions::KDTREE:
+    {
+        int xyzZoneDims[3] = {hdfZoneDims[2], hdfZoneDims[1], hdfZoneDims[0]};
+        int xyzDomCount[3] = {1, 1, 1};
+        int xyzDomLogicalCoords[3] = {0, 0, 0};
+        avtDatabase::ComputeRectilinearDecomposition(nSpatialDims, PAR_Size(),
+            xyzZoneDims[0], xyzZoneDims[1], xyzZoneDims[2],
+            &xyzDomCount[0], &xyzDomCount[1], &xyzDomCount[2]);
+        avtDatabase::ComputeDomainLogicalCoords(nSpatialDims, xyzDomCount,
+            PAR_Rank(), xyzDomLogicalCoords);
+        domCount[0] = xyzDomCount[2];
+        domCount[1] = xyzDomCount[1];
+        domCount[2] = xyzDomCount[0];
+        domLogicalCoords[0] = xyzDomLogicalCoords[2];
+        domLogicalCoords[1] = xyzDomLogicalCoords[1];
+        domLogicalCoords[2] = xyzDomLogicalCoords[0];
+        break;
+    }
+    }
+
+    for(int d = 0; d < 3; ++d)
+    {
+        if(!active[d])
+            continue;
+
+        int baseZoneCount = hdfZoneDims[d] / domCount[d];
+        int extraZones = hdfZoneDims[d] % domCount[d];
+        int realZoneCount = baseZoneCount +
+            (domLogicalCoords[d] < extraZones ? 1 : 0);
+        int realZoneStart = domLogicalCoords[d] * baseZoneCount +
+            std::min(domLogicalCoords[d], extraZones);
+        int ghostZoneStart = std::max(0, realZoneStart - 1);
+        int realZoneEnd = realZoneStart + realZoneCount - 1;
+        int ghostZoneEnd = std::min(hdfZoneDims[d] - 1, realZoneEnd + 1);
+        int ghostZoneCount = ghostZoneEnd - ghostZoneStart + 1;
+
+        info.start[d] = ghostZoneStart;
+        info.start_no_ghost[d] = realZoneStart;
+        if(nodal)
+        {
+            info.count[d] = ghostZoneCount + 1;
+            info.count_no_ghost[d] = realZoneCount + 1;
+        }
+        else
+        {
+            info.count[d] = ghostZoneCount;
+            info.count_no_ghost[d] = realZoneCount;
+        }
     }
 }
 
@@ -601,93 +1079,63 @@ avtPixieFileFormat::Initialize()
 //    Mark C. Miller, Fri Jun  5 15:38:06 PDT 2026
 //    Applied same fix as Eric, above, for other mesh case.
 //
+//    Mark C. Miller, Thu Aug  6 11:45:00 PDT 2026
+//    Use avtDatabase's rectilinear decomposition helpers for k-d tree
+//    partitioning and derive HDF5 hyperslabs from zone extents according
+//    to variable centering.
+//
 // ****************************************************************************
 
 void
 avtPixieFileFormat::PartitionDims()
 {
-    if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
+    VarInfoMap::iterator it;
+    for(it = variables.begin(); it != variables.end(); ++it)
     {
-      VarInfoMap::iterator it;
-      for(it = variables.begin(); it != variables.end(); ++it)
-      {
-        it->second.count[0] = it->second.dims[0];
-        it->second.count[1] = it->second.dims[1];
-        it->second.count[2] = it->second.dims[2];
-        it->second.start[0] = 0;
-        it->second.start[1] = 0;
-        it->second.start[2] = 0;
-      }
-      for(it = meshes.begin(); it != meshes.end(); ++it)
-      {
-        it->second.count[0] = it->second.dims[0];
-        it->second.count[1] = it->second.dims[1];
-        it->second.count[2] = it->second.dims[2];
-        it->second.start[0] = 0;
-        it->second.start[1] = 0;
-        it->second.start[2] = 0;
-      }
+        if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
+            SetFullExtents(it->second);
+        else
+            PartitionVarInfo(it->second);
+        if(!PAR_Rank())
+        {
+            debug4 << PAR_Rank() << " : " << it->second.fileVarName
+                   /*
+                                      << " e=["<< extents[0]
+                                      << ","<< extents[1]
+                                      << ","<< extents[2]
+                                      << " ,"<< extents[3]
+                                      << ","<< extents[4]
+                                      << ","<< extents[5] << "]"
+                   */
+                   << " d=["<< it->second.dims[0]
+                   << "x"<< it->second.dims[1]
+                   << "x"<< it->second.dims[2] <<"]"
+
+                   << " c=["<< it->second.count[0]
+                   << "x"<< it->second.count[1]
+                   << "x"<< it->second.count[2] <<"]"
+
+                   << " s=["<< it->second.start[0]
+                   << "x"<< it->second.start[1]
+                   << "x"<< it->second.start[2] << "]"
+
+                   << " c0=["<< it->second.count_no_ghost[0]
+                   << "x"<< it->second.count_no_ghost[1]
+                   << "x"<< it->second.count_no_ghost[2] <<"]"
+
+                   << " s0=["<< it->second.start_no_ghost[0]
+                   << "x"<< it->second.start_no_ghost[1]
+                   << "x"<< it->second.start_no_ghost[2] << "]"
+                   <<"\n";
+        }
     }
-    else
+
+    for(it = meshes.begin(); it != meshes.end(); ++it)
     {
-      int extents[6], globalExtents[6];
-      vtkExtentTranslator *extTran = vtkExtentTranslator::New();
-
-      switch(partitioning)
-        {
-        case PixieDBOptions::XSLAB:
-          extTran->SetSplitModeToXSlab();
-          break;
-        case PixieDBOptions::YSLAB:
-          extTran->SetSplitModeToYSlab();
-          break;
-        case PixieDBOptions::ZSLAB:
-          extTran->SetSplitModeToZSlab();
-          break;
-        case PixieDBOptions::KDTREE:
-          extTran->SetSplitModeToBlock();
-          break;
-        }
-      extTran->SetNumberOfPieces(PAR_Size());
-      extTran->SetPiece(PAR_Rank());
-
-      VarInfoMap::iterator it;
-      for(it = variables.begin(); it != variables.end(); ++it)
-      {
-        extTran->SetGhostLevel(1);
-        globalExtents[0] = 0;
-        globalExtents[1] = it->second.dims[0] - 1;
-        globalExtents[2] = 0;
-        globalExtents[3] = it->second.dims[1] - 1;
-        globalExtents[4] = 0;
-        globalExtents[5] = it->second.dims[2] - 1;
-        extTran->SetWholeExtent(globalExtents);
-        if (it->second.hasCoords || it->second.isCoord)
-            extTran->PieceToExtent();
+        if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
+            SetFullExtents(it->second);
         else
-            extTran->PieceToExtentByPoints();
-// get each proc's extents including one ghost zone
-        extTran->GetExtent(extents);
-        it->second.start[0] = extents[0];
-        it->second.start[1] = extents[2];
-        it->second.start[2] = extents[4];
-        it->second.count[0] = extents[1] - extents[0] + 1;
-        it->second.count[1] = extents[3] - extents[2] + 1;
-        it->second.count[2] = extents[5] - extents[4] + 1;
-// redo without ghost to get the strict bounds
-        extTran->SetGhostLevel(0);
-        if (it->second.hasCoords || it->second.isCoord)
-            extTran->PieceToExtent();
-        else
-            extTran->PieceToExtentByPoints();
-        extTran->GetExtent(extents);
-        it->second.start_no_ghost[0] = extents[0];
-        it->second.start_no_ghost[1] = extents[2];
-        it->second.start_no_ghost[2] = extents[4];
-        it->second.count_no_ghost[0] = extents[1] - extents[0] + 1;
-        it->second.count_no_ghost[1] = extents[3] - extents[2] + 1;
-        it->second.count_no_ghost[2] = extents[5] - extents[4] + 1;
-
+            PartitionVarInfo(it->second);
         if(!PAR_Rank())
         {
             debug4 << PAR_Rank() << " : " << it->second.fileVarName
@@ -720,77 +1168,6 @@ avtPixieFileFormat::PartitionDims()
                    << "x"<< it->second.start_no_ghost[2] << "]"
                    <<"\n";
         }
-      } // end of loop
-      for(it = meshes.begin(); it != meshes.end(); ++it)
-      {
-        extTran->SetGhostLevel(1);
-        globalExtents[0] = 0;
-        globalExtents[1] = it->second.dims[0] - 1;
-        globalExtents[2] = 0;
-        globalExtents[3] = it->second.dims[1] - 1;
-        globalExtents[4] = 0;
-        globalExtents[5] = it->second.dims[2] - 1;
-        extTran->SetWholeExtent(globalExtents);
-        if (it->second.hasCoords || it->second.isCoord)
-            extTran->PieceToExtent();
-        else
-            extTran->PieceToExtentByPoints();;
-// get each proc's extents including one ghost zone
-        extTran->GetExtent(extents);
-        it->second.start[0] = extents[0];
-        it->second.start[1] = extents[2];
-        it->second.start[2] = extents[4];
-        it->second.count[0] = extents[1] - extents[0] + 1;
-        it->second.count[1] = extents[3] - extents[2] + 1;
-        it->second.count[2] = extents[5] - extents[4] + 1;
-// redo without ghost to get the strict bounds
-        extTran->SetGhostLevel(0);
-        if (it->second.hasCoords || it->second.isCoord)
-            extTran->PieceToExtent();
-        else
-            extTran->PieceToExtentByPoints();
-        extTran->GetExtent(extents);
-        it->second.start_no_ghost[0] = extents[0];
-        it->second.start_no_ghost[1] = extents[2];
-        it->second.start_no_ghost[2] = extents[4];
-        it->second.count_no_ghost[0] = extents[1] - extents[0] + 1;
-        it->second.count_no_ghost[1] = extents[3] - extents[2] + 1;
-        it->second.count_no_ghost[2] = extents[5] - extents[4] + 1;
-
-        if(!PAR_Rank())
-        {
-            debug4 << PAR_Rank() << " : " << it->second.fileVarName
-                   /*
-                                      << " e=["<< extents[0]
-                                      << ","<< extents[1]
-                                      << ","<< extents[2]
-                                      << " ,"<< extents[3]
-                                      << ","<< extents[4]
-                                      << ","<< extents[5] << "]"
-                   */
-                   << " d=["<< it->second.dims[0]
-                   << "x"<< it->second.dims[1]
-                   << "x"<< it->second.dims[2] <<"]"
-
-                   << " c=["<< it->second.count[0]
-                   << "x"<< it->second.count[1]
-                   << "x"<< it->second.count[2] <<"]"
-
-                   << " s=["<< it->second.start[0]
-                   << "x"<< it->second.start[1]
-                   << "x"<< it->second.start[2] << "]"
-
-                   << " c0=["<< it->second.count_no_ghost[0]
-                   << "x"<< it->second.count_no_ghost[1]
-                   << "x"<< it->second.count_no_ghost[2] <<"]"
-
-                   << " s0=["<< it->second.start_no_ghost[0]
-                   << "x"<< it->second.start_no_ghost[1]
-                   << "x"<< it->second.start_no_ghost[2] << "]"
-                   <<"\n";
-        }
-      } // end of loop
-      extTran->Delete();
     }
 }
 
@@ -805,6 +1182,9 @@ avtPixieFileFormat::PartitionDims()
 // Creation:   Tue Sep 14 12:53:08 PDT 2004
 //
 // Modifications:
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes for node and cell centered variables. Fix
+//   bugs with mesh partitioning.
 //
 // ****************************************************************************
 
@@ -816,6 +1196,7 @@ avtPixieFileFormat::ActivateTimestep(int ts)
     //
     debug4 << "avtPixieFileFormat::ActivateTimestep: ts=" << ts << endl;
     Initialize();
+    PrepareTimestepInfo(ts);
 }
 
 // ****************************************************************************
@@ -841,6 +1222,11 @@ avtPixieFileFormat::ActivateTimestep(int ts)
 //
 //   Jean Favre, Fri Dec 23 16:17:18 CET 2011
 //   returned the new count for hyperslabDims
+//
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes for node and cell centered variables. Fix
+//   bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 void
@@ -920,56 +1306,34 @@ avtPixieFileFormat::DetermineVarDimensions(const VarInfo &info,
 //   the raw array sizes instead of the reduced sizes since those should
 //   also match.
 //
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes for node and cell centered variables. Fix
+//   bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 bool
 avtPixieFileFormat::MeshIsCurvilinear(const std::string &name) const
 {
-    bool retval = false;
+    VarInfoMap::const_iterator mesh = meshes.find(name);
+    if(mesh == meshes.end() || !mesh->second.hasCoords)
+        return false;
 
-    if (haveMeshCoords)
+    VarInfoMap::const_iterator xvar = variables.find(mesh->second.coordX);
+    VarInfoMap::const_iterator yvar = variables.find(mesh->second.coordY);
+    VarInfoMap::const_iterator zvar = variables.find(mesh->second.coordZ);
+    if(xvar == variables.end() || yvar == variables.end() ||
+       zvar == variables.end())
+        return false;
+
+    for(int d = 0; d < 3; ++d)
     {
-        VarInfoMap::const_iterator mesh = meshes.find(name);
-
-        if (mesh != meshes.end() && mesh->second.hasCoords)
-        {
-            VarInfoMap::const_iterator xvar = variables.find(
-                mesh->second.coordX);
-            VarInfoMap::const_iterator yvar = variables.find(
-                mesh->second.coordY);
-            VarInfoMap::const_iterator zvar = variables.find(
-                mesh->second.coordZ);
-
-            int dims[3], nSpatialDims = 3;
-            dims[0] = int(mesh->second.dims[0]);
-            dims[1] = int(mesh->second.dims[1]);
-            dims[2] = int(mesh->second.dims[2]);
-            int xDims[3];
-            xDims[0] = int(xvar->second.dims[0]);
-            xDims[1] = int(xvar->second.dims[1]);
-            xDims[2] = int(xvar->second.dims[2]);
-            int yDims[3];
-            yDims[0] = int(yvar->second.dims[0]);
-            yDims[1] = int(yvar->second.dims[1]);
-            yDims[2] = int(yvar->second.dims[2]);
-            int zDims[3];
-            zDims[0] = int(zvar->second.dims[0]);
-            zDims[1] = int(zvar->second.dims[1]);
-            zDims[2] = int(zvar->second.dims[2]);
-
-            bool same = true;
-            for(int i = 0; i < nSpatialDims && same; ++i)
-            {
-                same &= (xDims[i] == yDims[i]);
-                same &= (yDims[i] == zDims[i]);
-                same &= (zDims[i] == dims[i]);
-            }
-
-            retval = same;
-        }
+        if(xvar->second.dims[d] != mesh->second.dims[d] ||
+           yvar->second.dims[d] != mesh->second.dims[d] ||
+           zvar->second.dims[d] != mesh->second.dims[d])
+            return false;
     }
-
-    return retval;
+    return true;
 }
 
 // ****************************************************************************
@@ -1004,6 +1368,10 @@ avtPixieFileFormat::MeshIsCurvilinear(const std::string &name) const
 //
 //    Jean Favre, Fri Dec 23 16:17:18 CET 2011
 //    Added SetFormatCanDoDomainDecomposition(true) and mmd->numBlocks = 1
+//
+//    Mark C. Miller, Thu Aug  6 12:10:00 PDT 2026
+//    Mark arrays matching the larger-by-one mesh as node-centered.
+//
 // ****************************************************************************
 
 void
@@ -1019,7 +1387,11 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     if (! duplicateData)
         md->SetFormatCanDoDomainDecomposition(true);
-    
+
+    PrepareTimestepInfo(timeState);
+    if(!metadataIsTimeInvariant)
+        md->SetMustRepopulateOnStateChange(true);
+
     for(it = meshes.begin();
         it != meshes.end(); ++it)
     {
@@ -1077,23 +1449,21 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     if(meshes.size() > 5)
         md->SetUseCatchAllMesh(true);
 
-    // Iterate through the variables and add them to the metadata.
+    // Iterate through the variables and add them to the metadata. Coordinate
+    // arrays support curvilinear mesh construction but are not separate data
+    // variables.
     for(it = variables.begin();
         it != variables.end(); ++it)
     {
-        // Determine the mesh name based on the variable mesh size.
-        const char *mNames[] = {"mesh", "curvemesh"};
-        char tmp[100];
-        snprintf(tmp, 100, "%s_%dx%dx%d", mNames[it->second.hasCoords?1:0],
-                 int(it->second.dims[2]),
-                 int(it->second.dims[1]),
-                 int(it->second.dims[0]));
+        if(it->second.isCoord || it->second.meshName.empty())
+            continue;
 
-        // Add a zonal scalar to the metadata.
-        if (it->second.hasCoords)
-            AddScalarVarToMetaData(md, it->first, tmp, AVT_NODECENT);
+        if(IsNodal(it->second))
+            AddScalarVarToMetaData(md, it->first,
+                                   it->second.meshName.c_str(), AVT_NODECENT);
         else
-            AddScalarVarToMetaData(md, it->first, tmp, AVT_ZONECENT);
+            AddScalarVarToMetaData(md, it->first,
+                                   it->second.meshName.c_str(), AVT_ZONECENT);
     }
 
 #ifdef ADD_POINT_MESH
@@ -1176,6 +1546,14 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //
 //    Jean Favre, Fri Dec 23 16:17:18 CET 2011
 //    Added stuff to read in parallel
+//
+//    Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//    Fix bugs defining the sizes for node and cell centered variables. Fix
+//    bugs with mesh partitioning.
+//
+//    Eric Brugger, Mon Nov  9 11:37:57 PST 2026
+//    Always treat the hyperslab as 3D when defining a rectilinear mesh.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1189,6 +1567,8 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
     {
         EXCEPTION2(InvalidTimeStepException, 0, nTimeStates);
     }
+
+    PrepareTimestepInfo(timestate);
 
     // Check the mesh name.
     std::string meshNameString(meshname);
@@ -1244,30 +1624,25 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
     // rectilinear mesh.
     // here below, used hyperslabDims instead of the original (serial) varDims, JF
     // and used offset of coordinate's value due to hyperslab's new position
+    // hyperslab should always be treated as 3D regardless of nVarDims.
     if(retval == 0)
     {
         //
-        // Add 1 so we have the number of nodes instead of #cells.
+        // Zonal arrays need one more node than cell in each active dimension.
+        // Coordinate arrays and data with explicit coordinates are already
+        // nodal, so adding one here creates overlapping zones between pieces.
         //
-
-        ++hyperslabDims[0];
-        ++hyperslabDims[1];
-        if(nVarDims == 3)
+        if(!IsNodal(it->second))
+        {
+            ++hyperslabDims[0];
+            ++hyperslabDims[1];
             ++hyperslabDims[2];
+        }
 
         // Reverse X,Z dimensions so the mesh is drawn properly.
-        if(nVarDims == 3)
-        {
-            int tmp = hyperslabDims[0];
-            hyperslabDims[0] = hyperslabDims[2];
-            hyperslabDims[2] = tmp;
-        }
-        else if (nVarDims == 2)
-        {
-            int tmp = hyperslabDims[0];
-            hyperslabDims[0] = hyperslabDims[1];
-            hyperslabDims[1] = tmp;
-        }
+        int tmp = hyperslabDims[0];
+        hyperslabDims[0] = hyperslabDims[2];
+        hyperslabDims[2] = tmp;
 
         vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
         vtkFloatArray *coords[3];
@@ -1552,6 +1927,10 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
 //    I modified the routine to handle the fact that variables defined on a
 //    curvilinear mesh are now nodal.
 //
+//    Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//    Fix bugs defining the sizes for node and cell centered variables. Fix
+//    bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1566,6 +1945,8 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
     {
         EXCEPTION2(InvalidTimeStepException, 0, nTimeStates);
     }
+
+    PrepareTimestepInfo(timestate);
 
     // Check the variable name.
     VarInfoMap::iterator it = variables.find(varname);
@@ -2120,6 +2501,10 @@ avtPixieFileFormat::VisitLinks(hid_t locId, const char* name,
 //   isCoord to TraversalInfo and VarInfo to track if a variable is a
 //   coordinate array so that the decomposition can be done correctly.
 //
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes for node and cell centered variables. Fix
+//   bugs with mesh partitioning.
+//
 // ****************************************************************************
 
 herr_t
@@ -2166,6 +2551,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             varInfo.coordX = info->coordX;
             varInfo.coordY = info->coordY;
             varInfo.coordZ = info->coordZ;
+            varInfo.meshName = "";
 
             // Peel off the timestep prefix if there are multiple time states.
             if(info->This->nTimeStates > 0)
@@ -2220,8 +2606,23 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
 
             // Get the variable's size.
             hid_t sid = H5Dget_space(obj);
+
+            int rank = H5Sget_simple_extent_ndims(sid);
+
+            debug1 << "Pixie dataset " << varName
+                   << " has rank " << rank << endl;
+
+            bool rank_supported = true;
+            if (rank > 3)
+            {
+                debug1 << "Pixie cannot handle rank-" << rank
+                       << " dataset " << varName << endl;
+                rank_supported = false;
+            }
+
             for (int dd = 0; dd < 3; varInfo.dims[dd] = 1, dd++);
-            H5Sget_simple_extent_dims(sid, varInfo.dims, NULL);
+            if (rank_supported)
+                H5Sget_simple_extent_dims(sid, varInfo.dims, NULL);
 
             //
             // Determine the variable's type to see if we can support it.
@@ -2284,11 +2685,20 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
                 debug4 << ", which is not supported at this time." << endl;
             }
 
-            // Store information about the variable.
-            if(supported &&
-               info->This->variables.find(varName) == info->This->variables.end())
+            // Store information about every timestep incarnation. The old
+            // variables map retained only the first occurrence, which made
+            // dimension changes in later timesteps invisible.
+            if(rank_supported && supported)
             {
-                info->This->variables[varName] = varInfo;
+                if(info->cycle >= 0 && varInfo.timeVarying)
+                    info->This->stateVariables[info->cycle][varName] = varInfo;
+                else
+                    info->This->staticVariables[varName] = varInfo;
+
+                if(info->This->variables.find(varName) ==
+                   info->This->variables.end())
+                    info->This->variables[varName] = varInfo;
+
                 debug4 << "Adding variable \"" << varName.c_str()
                        << "\" for file variable: \""
                        << varInfo.fileVarName.c_str() << "\"" << endl;
@@ -2317,13 +2727,6 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             info->This->cycles.push_back(cycle);
         }
 
-        // Indicate that we have the mesh coordinates.
-        if(varName.find("nodes"))
-        {
-            debug4 << "Have mesh coordinates." << endl;
-            info->This->haveMeshCoords = true;
-        }
-
         if ((obj = H5Gopen(group, name)) >= 0)
         {
             TraversalInfo info2;
@@ -2335,6 +2738,16 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             info2.coordX = "";
             info2.coordY = "";
             info2.coordZ = "";
+            info2.cycle = info->cycle;
+
+            if(info->level == 0 &&
+               varName.find("Timestep") != std::string::npos)
+            {
+                if(varName[9] == '_')
+                    info2.cycle = atoi(varName.substr(10).c_str());
+                else
+                    info2.cycle = atoi(varName.substr(9).c_str());
+            }
 
 // ************************* Begin Pixie-specific coding **********************
             //
@@ -2398,7 +2811,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
                 if(attrType >= 0)
                 {
                     double time;
-                    if(H5Aread(timeAttribute, attrType, &time) >= 0)
+                    if(H5Aread(timeAttribute, H5T_NATIVE_DOUBLE, &time) >= 0)
                     {
                         info->This->time_val.push_back(time);
                         debug4 << "time value found="<< time << endl;
@@ -2470,6 +2883,9 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
 // Creation:   Thu Jun 21 14:53:29 PDT 2012
 //
 // Modifications:
+//   Mark Miller, Thu Aug  6 11:45:00 PDT 2026
+//   Fix bugs defining the sizes for node and cell centered variables. Fix
+//   bugs with mesh partitioning.
 //   
 // ****************************************************************************
 
@@ -2489,7 +2905,7 @@ avtPixieFileFormat::AddGhostCellInfo(const VarInfo &info, vtkDataSet *ds)
       avtGhostData::AddGhostZoneType(ghostVal, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
       vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
       ghostCells->SetName("avtGhostZones");
-      if (info.hasCoords)
+      if (IsNodal(info))
       {
         nx = info.count[2]-1;
         ny = info.count[1]-1;
@@ -2595,15 +3011,26 @@ debug4 << "Ymin: " << info.start[1] << " < " << info.start_no_ghost[1] << endl;
       vtkIntArray *realDims = vtkIntArray::New();
       realDims->SetName("avtRealDims");
       realDims->SetNumberOfValues(6);
+      bool nodal = IsNodal(info);
+      int size1D = info.hasCoords ? 2 : 1;
+      bool active[3] = {info.dims[0] > (size_t)size1D,
+                        info.dims[1] > (size_t)size1D,
+                        info.dims[2] > (size_t)size1D};
       
       realDims->SetValue(0, info.start_no_ghost[2]-info.start[2]);
-      realDims->SetValue(1, info.count[2]-1);
+      realDims->SetValue(1, active[2] ?
+                         info.start_no_ghost[2]-info.start[2] +
+                         info.count_no_ghost[2] - (nodal ? 1 : 0) : 0);
 
       realDims->SetValue(2, info.start_no_ghost[1]-info.start[1]);
-      realDims->SetValue(3, info.count[1]-1);
+      realDims->SetValue(3, active[1] ?
+                         info.start_no_ghost[1]-info.start[1] +
+                         info.count_no_ghost[1] - (nodal ? 1 : 0) : 0);
       
       realDims->SetValue(4, info.start_no_ghost[0]-info.start[0]);
-      realDims->SetValue(5, info.count[0]-1);
+      realDims->SetValue(5, active[0] ?
+                         info.start_no_ghost[0]-info.start[0] +
+                         info.count_no_ghost[0] - (nodal ? 1 : 0) : 0);
       
       debug5 << "adding avtRealDims (" <<
         realDims->GetValue(0) << ", " <<
