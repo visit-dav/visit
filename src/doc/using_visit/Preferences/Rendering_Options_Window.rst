@@ -166,8 +166,8 @@ Compress images or geometry that are sent from the engine to the viewer.
 Compact domains
 """""""""""""""
 
-Compress data sets that are sent from the engine to the viewer.
-This applies when rendering is done on the viewer and data sets are sent to the viewer.
+Compact multiple data sets into a single data set.
+This applies to each plot in the window and reduces the data sent from the engine to the viewer when not in scalable rendering mode.
 
 Apply color using textures
 """"""""""""""""""""""""""
