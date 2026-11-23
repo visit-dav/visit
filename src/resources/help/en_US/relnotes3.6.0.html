@@ -42,6 +42,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a quick recipe for getting all the available variable names using Python.</li>
   <li>When launching a Python script with VisIt on the command line, arguments ordered after script `-s scriptname.py` will be recognized only as script arguments, and never as VisIt arguments. Therefore, `visit -nowin -cli -s test.py -nn 1` means that `test.py` will receive the `-nn 1` argument, not `visit`.</li>
   <li>When launching VisIt from the command line, if `-nn` (number of nodes) is specified without `-np` (number of processes), the number of processes will default to 1.</li>
+  <li>Antialiasing MSAA option is now enabled when available.</li>
+  <li>Default banks were removed from host profiles, so, when launching, users should get a system default bank specific to them instead of relying on VisIt's default, which they may or may not have.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -61,7 +63,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The 'Help' window controls and content have been simplified. For easier reading of content, 'Manual', 'Getting Help' and 'VisIt home page' topics will now open in an external browser. Bookmarks, index, tabs and back/forward navigation have been removed due to this simplification.  The 'About' option from the Main Gui Menu 'Help' control was moved to the Help window. The main Gui window 'Help' control now directly opens the Help window. 'Contributors' topic was moved to the 'Acknowledgements' section of the online Manual. Command-line arguments are already a part of the online manual, so they were also removed from the Help window.</li>
   <li>The ANARI rendering options in the Rendering options window (Back-end, Back-end Subtype, Renderer, and their options) are now populated by querying the connected compute engine instead of the local machine, since ANARI rendering is now performed by the engine.</li>
   <li>The Volume plot's ANARI rendering options are now populated the same way, and its Back-end selector was changed from a free-text field to a drop-down list matching the Rendering options window's ANARI panel.</li>
-  <li>GUI Change 2</li>
+  <li>The Rendering window has been reorganized so it better fits the screen when running on small laptop monitors.</li>
 </ul>
 
 <a name="CLI_changes"></a>
@@ -116,7 +118,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 3.6</font></b></p>
 <ul>
   <li>The X Ray Image Query now normalizes input normal and view up vectors, as well as checking to ensure they are orthogonal, non parallel, and non-zero length.</li>
-  <li>Query Change 2</li>
+  <li>The list of arguments in the GUI widget for the X Ray Image Query has been reordered. The view angle argument is hidden unless perspective projection is checked.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>

@@ -292,8 +292,11 @@ FUNCTION(PYTHON_ADD_PIP_SETUP)
     # there isn't a reliable way to only delete it when visit_flow_vpe
     # calls this function. So, go ahead and add it to all the pip installs
     # the 'rm -rf' will not error out if the dir doesn't exist
+    #
+    # note: as of pip 26.3, `-V` will cause install command to fail
+    #       change to `-v` (intended argument)
     add_custom_command(OUTPUT ${stamp}
-            COMMAND ${PYTHON_EXECUTABLE} -m pip install . -V --upgrade
+            COMMAND ${PYTHON_EXECUTABLE} -m pip install . -v --upgrade
             --disable-pip-version-check --no-warn-script-location
             --target "${abs_dest_path}"
             COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/build

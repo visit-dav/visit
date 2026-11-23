@@ -45,12 +45,22 @@ The following options can be passed on the command line:
                         Default: C:/Program Files/Git/user/bin/patch.exe
                         -Dvisit_patch_command:FILEPATH=/path/to/patch.exe
 
-    BUILD_ALL           Build all supported libraries.
-                        Default: ON
-                        -DBUILD_ALL:BOOL=OFF
+    VISIT_VERSION       VisIt release version from which to download the
+                        third-party tarballs.
+                        Default: 3.6.0
+                        -DVISIT_VERSION:STRING=3.7.0
 
-    ENABLE_XXX          Enable a specific library when BUILD_ALL is OFF where XXX is the capitalized name of the library.
-                        See list of libraries below for all available options.
+    BUILD_OPTIONAL      Build all optional libraries. Required libraries are
+                        built by default regardless of this setting.
+                        Default: OFF
+                        -DBUILD_OPTIONAL:BOOL=ON
+
+    ENABLE_XXX          Control a specific library, where XXX is its
+                        capitalized name. Required library options are Boolean.
+                        Optional library options accept AUTO, ON, or OFF; AUTO
+                        follows BUILD_OPTIONAL on every CMake configure.
+                        -DENABLE_VTK:BOOL=OFF
+                        -DENABLE_CONDUIT:STRING=ON
 
      VISIT_LOGGING      If ON, enable logging of all steps (download, verify, patch, configure build, install) for each library being built.
                         The logs are library-specific and are written to that library's subdirectory in the build.
@@ -67,10 +77,38 @@ Paths to the following executables must be part of your PATH environment varaiab
 * nasm  (for openssl (needed by qt))
 * perl  (for openssl (needed by qt))
 
-### Supported Libraries
+### Required Libraries
+
+Required libraries are enabled by default. Each can be disabled with its
+individual `ENABLE_XXX` option.
+
+* JPEG
+* OPENSSL
+* PNG
+* PYTHON
+* QT
+* TIFF
+* VTK
+* ZLIB
+
+### Optional Libraries
+
+Optional libraries default to `AUTO` and therefore follow `BUILD_OPTIONAL`,
+including when an existing build directory is reconfigured. Enable all of them
+with `-DBUILD_OPTIONAL:BOOL=ON`, or use `ON` or `OFF` for an individual
+`ENABLE_XXX` option to override the group setting.
+
+Build directories configured by an older version of this build system may
+have cached Boolean `ENABLE_XXX` values. Those values remain explicit
+overrides. Remove a cached value to adopt the new `AUTO` behavior, for example:
+
+```
+cmake -S /path/to/TPBuildsCMake -B Build -U ENABLE_CONDUIT
+```
 
 * ADIOS2
 * ANARI
+* BLOSC2
 * CFITSIO
 * CGNS
 * CONDUIT
@@ -78,22 +116,15 @@ Paths to the following executables must be part of your PATH environment varaiab
 * HDF5
 * H5PART
 * ICET
-* JPEG
 * MFEM
 * MILI
 * NETCDF
-* OPENSSL
-* OPENXR
+* OPENEXR
 * OSPRAY
-* PNG
-* PYTHON
-* QT
 * QWT
-* TIFF
-* VTK
+* SILO
 * VTKM
 * XDMF
-* ZLIB
 
 ### To use the generated libraries when building VisIt.
 
@@ -115,4 +146,3 @@ These modules should be updated whenever build_visit modules are updated.
 The same version of libraries should be used whenever possible.
 Only generic patches are needed, not patches specific to Linux or Macos.
 When updating any library that has other libraries depend on (like hdf5-> silo), the other libraries' build should be tested along with the library being updated.
-

@@ -12,7 +12,7 @@ set(visit_hdf5_library ${visit_hdf5_root}/lib/hdf5.lib)
 # has this already been built 
 if(EXISTS ${visit_hdf5_include}/hdf5.h AND
    EXISTS ${visit_hdf5_library})
-    if(BUILD_ALL OR ENABLE_HDF5)
+    if(ENABLE_HDF5)
         message(STATUS "HDF5 already installed.")
     endif()
     set(HDF5_PREBUILT TRUE)
@@ -20,7 +20,7 @@ if(EXISTS ${visit_hdf5_include}/hdf5.h AND
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_HDF5))
+if(NOT ENABLE_HDF5)
     return()
 endif()
 
@@ -82,4 +82,3 @@ ExternalProject_Add(HDF5
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/hdf5-patch.cmake)
-

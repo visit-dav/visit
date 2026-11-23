@@ -9,7 +9,7 @@ set(visit_vtkm_dir ${visit_install_root}/vtkm/${VTKM_VERSION})
 # has this already been built
 if(EXISTS ${visit_vtkm_dir}/include/vtkm-${VTKM_VERSION_MAJOR}.${VTKM_VERSION_MINOR}/vtkm/Version.h AND
    EXISTS ${visit_vtkm_dir}/lib/vtkm_cont-${VTKM_VERSION_MAJOR}.${VTKM_VERSION_MINOR}.lib)
-    if(BUILD_ALL OR ENABLE_VTKM)
+    if(ENABLE_VTKM)
         message(STATUS "VTKM already installed.")
     endif()
     set(PREBUILT_VTKM TRUE)
@@ -17,7 +17,7 @@ if(EXISTS ${visit_vtkm_dir}/include/vtkm-${VTKM_VERSION_MAJOR}.${VTKM_VERSION_MI
 endif()
 
 # if not requested, return
-if(NOT (BUILD_ALL OR ENABLE_VTKM))
+if(NOT ENABLE_VTKM)
     return()
 endif()
 
@@ -47,4 +47,3 @@ ExternalProject_Add(
         -DPATCH_DIR:PATH=${visit_tp_patches}
         -DPATCH_CMD:FILEPATH=${visit_patch_command}
         -P ${visit_tp_patches}/vtkm-patch.cmake)
-

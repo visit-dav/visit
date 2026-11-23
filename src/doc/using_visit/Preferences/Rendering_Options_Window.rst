@@ -3,31 +3,57 @@
 Rendering Options Window
 ------------------------
 
-The **Rendering options** window (shown in
-:numref:`Figure %s<Preferences-RenderingOptionsBasic>`) contains controls
-that set global options that affect how the plots in the active visualization
-window are drawn, as well as, look at information related to the performance
-of the graphics hardware VisIt_ is running on. The **Rendering options**
-window can be brought up by selecting **Rendering** from the **Main** window's
-**Preferences** menu. The **Rendering options** window contains three tabs.
+The **Rendering options** window (shown in :numref:`Figure %s<Preferences-RenderingOptionsBasic>`) contains controls that set global options that affect how the plots in the active visualization window are drawn, as well as, look at information related to the performance of the graphics hardware VisIt_ is running on.
+The **Rendering options** window can be brought up by selecting **Rendering** from the **Main** window's **Preferences** menu.
+The **Rendering options** window contains six tabs.
 The **Basic** tab contains basic rendering options, the **Advanced** tab
 contains advanced rendering options, and the **Information** tab contains
 information about the rendering performance of the graphics hardware VisIt_
 is running on.
+The **Antialising**, **OSPRay** and **ANARI** tabs contains the options specific to those features.
 
 Basic Rendering Options
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The **Antialiasing**, and **Specular lighting** options are covered in the
-:ref:`Making It Pretty<Rendering Options>` chapter.
-
 .. _Preferences-RenderingOptionsBasic:
 
-.. figure:: images/RenderingOptionsBasic.png
+.. figure:: images/Rendering_basic.png
 
     The basic rendering options
 
 
+Depth peeling
+"""""""""""""
+
+A multipass order-independent method of determining visibility of primitives when transparent objects are in the scene.
+The **Occlusion ratio** defines the threshold under which the algorithm stops to iterate over peel layers.
+The **Max number of Peels** defines the maximum number of peeling layers.
+A special value of 0 means no maximum limit.
+
+When **Depth Peeling** is not enabled, standard camera-order sorting of primitives is used.
+
+Compositer Settings
+"""""""""""""""""""
+
+For block stuctured domain decomposition, **Ordered Compositing**  eliminates the need for a global parallel camera order geometry sort when rendering translucent geometry.
+When combined with depth peeling all geometry sorting is eliminated.
+
+**Depth Compositer Threads** sets the number of threads that process communication streams during depth compositing.
+
+
+**Depth Compositer Blocking** sets the block size used for streaming communication during depth compositing.
+Images are split into blocks of this size and streamed out.
+Incoming streams are processed in the background using compositing threads.
+
+**Alpha Compositer Threads** sets the number of threads that process communication streams during alpha compositing.
+
+**Alpha Compositer Blocking** sets the block size used for streaming communication during alpha compositing.
+Images are split into blocks of this size and streamed out.
+Incoming streams are processed in the background using compositing threads.
+
+
+Multi resolution for 2d AMR data
+""""""""""""""""""""""""""""""""
 
 Stereo images
 """""""""""""
@@ -60,6 +86,19 @@ under the **Stereo** check box.
 
     Some various stereo image types
 
+
+Specular lighting
+"""""""""""""""""
+
+The **Specular lighting** options are covered in the :ref:`Making It Pretty<Rendering Options>` chapter.
+
+
+Antialiasing
+~~~~~~~~~~~~
+
+The **Antialiasing** options are covered in the :ref:`Making It Pretty<Rendering Options>` chapter.
+
+
 Advanced Rendering Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -68,7 +107,7 @@ The **Shadows**, and **Depth Cueing** options are covered in the
 
 .. _Preferences-RenderingOptionsAdvanced:
 
-.. figure:: images/RenderingOptionsAdvanced.png
+.. figure:: images/Rendering_advanced.png
 
     The advanced rendering options
 
@@ -116,6 +155,13 @@ To change the scalable rendering mode, click on either the **Auto**,
 **Always** or **Never** radio boxes under the **Use scalable rendering**
 label.
 
+Apply color using textures
+""""""""""""""""""""""""""
+
+Color a surface by applying a one dimensional texture map for the colors.
+When turned off, vertex color is used and colors are interpolated after being mapped.
+
+
 Tiled rendering
 """""""""""""""
 
@@ -140,12 +186,21 @@ There are a few limitations of tiled rendering.
 * Points that are exactly on tile boundaries may not be visible.
 * Any rendering that involves OSPRay doesn't work properly with tiled rendering.
 
+OSPRay Rendering
+~~~~~~~~~~~~~~~~
+
+.. _Preferences-Rendering_ospray:
+
+.. figure:: images/Rendering_ospray.png
+
+    OSPRay rendering options
+
 ANARI Rendering
 ~~~~~~~~~~~~~~~
 
 .. _Preferences-AnariRenderingOptions:
 
-.. figure:: images/AnariRenderingOptions.png
+.. figure:: images/Rendering_anari.png
 
     ANARI rendering options
 
@@ -263,9 +318,9 @@ ANARI Rendering and Volume Plots
 Rendering Information
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. _Preferences-RenderingOptionsInformation:
+.. _Preferences-Rendering_info:
 
-.. figure:: images/RenderingOptionsInformation.png
+.. figure:: images/Rendering_info.png
 
     The rendering information
 
