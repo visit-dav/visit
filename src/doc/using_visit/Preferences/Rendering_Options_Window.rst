@@ -55,6 +55,9 @@ Incoming streams are processed in the background using compositing threads.
 Multi resolution for 2d AMR data
 """"""""""""""""""""""""""""""""
 
+When rendering data from a 2d AMR database, only patches with cells larger than the **smallest cell** size will be rendered within the viewing window.
+This improves both rendering and I/O performance since only patches that have cells larger than the **Smallest cell** that are visible will be read and rendered.
+
 Stereo images
 """""""""""""
 
@@ -154,6 +157,18 @@ It is also possible to have VisIt_ always or never use scalable rendering.
 To change the scalable rendering mode, click on either the **Auto**,
 **Always** or **Never** radio boxes under the **Use scalable rendering**
 label.
+
+Compress images
+"""""""""""""""
+
+Compress images that are sent from the engine to the viewer.
+This applies when images are rendered on the engine and images are sent to the viewer for display.
+
+Compact domains
+"""""""""""""""
+
+Compress data sets that are sent from the engine to the viewer.
+This applies when rendering is done on the viewer and data sets are sent to the viewer.
 
 Apply color using textures
 """"""""""""""""""""""""""
