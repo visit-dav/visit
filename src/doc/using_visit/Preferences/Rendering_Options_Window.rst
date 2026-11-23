@@ -55,7 +55,7 @@ Incoming streams are processed in the background using compositing threads.
 Multi resolution for 2d AMR data
 """"""""""""""""""""""""""""""""
 
-When rendering data from a 2d AMR database, only patches with cells larger than the **smallest cell** size will be rendered within the viewing window.
+When rendering data from a 2d AMR database, only patches with cells larger than the **Smallest cell** size will be rendered within the viewing window.
 This improves both rendering and I/O performance since only patches that have cells larger than the **Smallest cell** that are visible will be read and rendered.
 
 Stereo images
@@ -161,8 +161,7 @@ label.
 Compress images
 """""""""""""""
 
-Compress images that are sent from the engine to the viewer.
-This applies when images are rendered on the engine and images are sent to the viewer for display.
+Compress images or geometry that are sent from the engine to the viewer.
 
 Compact domains
 """""""""""""""
