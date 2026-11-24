@@ -2,6 +2,7 @@
 """Build, package, install, and smoke-test VisIt inside a container."""
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -58,6 +59,27 @@ def completed(state_dir, step):
     return (state_dir / step).is_file()
 
 
+def cmake_configure_command(cmake, config_site):
+    command = [
+        str(cmake),
+        "-DCMAKE_BUILD_TYPE:STRING=Release",
+        "-DVISIT_INSTALL_THIRD_PARTY:BOOL=ON",
+        "-DVISIT_ENABLE_XDB:BOOL=OFF",
+        "-DVISIT_PARADIS:BOOL=ON",
+        "-DVISIT_CREATE_XMLTOOLS_GEN_TARGETS:BOOL=OFF",
+        "-DVISIT_CONFIG_SITE={}".format(config_site),
+    ]
+    if os.environ.get("MANY_LINUX_DISTRO", "").lower() in (
+        "1",
+        "on",
+        "true",
+        "yes",
+    ):
+        command.append("-DMANY_LINUX_DISTRO:BOOL=ON")
+    command.append("../src")
+    return command
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--home", default="/home/visit")
@@ -95,16 +117,7 @@ def main(argv=None):
 
     if not completed(state_dir, "configured"):
         subprocess.check_call(
-            [
-                str(cmake),
-                "-DCMAKE_BUILD_TYPE:STRING=Release",
-                "-DVISIT_INSTALL_THIRD_PARTY:BOOL=ON",
-                "-DVISIT_ENABLE_XDB:BOOL=OFF",
-                "-DVISIT_PARADIS:BOOL=ON",
-                "-DVISIT_CREATE_XMLTOOLS_GEN_TARGETS:BOOL=OFF",
-                "-DVISIT_CONFIG_SITE={}".format(config_site),
-                "../src",
-            ],
+            cmake_configure_command(cmake, config_site),
             cwd=str(build_dir),
         )
         mark_completed(state_dir, "configured")

@@ -1,0 +1,77 @@
+ARG FEDORA_VERSION=44
+FROM fedora:${FEDORA_VERSION}
+
+ARG FEDORA_VERSION
+LABEL org.opencontainers.image.title="VisIt Fedora runtime test"
+LABEL org.opencontainers.image.description="GUI-capable Fedora test host for a packaged VisIt distribution"
+
+RUN dnf --setopt=install_weak_deps=False install -y \
+        binutils \
+        bzip2 \
+        cpio \
+        dejavu-sans-fonts \
+        file \
+        findutils \
+        fontconfig \
+        freetype \
+        glx-utils \
+        gzip \
+        libICE \
+        libSM \
+        libX11 \
+        libX11-xcb \
+        libXcursor \
+        libXext \
+        libXfixes \
+        libXi \
+        libXinerama \
+        libXrandr \
+        libXrender \
+        libglvnd-glx \
+        libglvnd-opengl \
+        libxcb \
+        libxkbcommon \
+        libxkbcommon-x11 \
+        mesa-dri-drivers \
+        mesa-libGL \
+        pcre2-utf16 \
+        procps-ng \
+        shadow-utils \
+        tar \
+        which \
+        xcb-util \
+        xcb-util-image \
+        xcb-util-keysyms \
+        xcb-util-renderutil \
+        xcb-util-wm \
+        /usr/bin/xdpyinfo \
+        xz \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf
+
+RUN useradd --create-home --uid 1000 --shell /bin/bash visit-test \
+    && mkdir -p /artifacts /opt/visit /results /work \
+    && chown -R visit-test:visit-test /opt/visit /results /work
+
+COPY --chown=visit-test:visit-test common/ /opt/visit-test/
+RUN chmod 0755 /opt/visit-test/bin/*.sh \
+    && chmod 0644 /opt/visit-test/lib/*.sh \
+        /opt/visit-test/tests/*.py \
+        /opt/visit-test/data/*
+
+ENV VISIT_TEST_IMAGE_REVISION=3 \
+    VISIT_TEST_PROFILE=fedora${FEDORA_VERSION} \
+    VISIT_ROOT=/opt/visit \
+    VISIT_ARTIFACT_DIR=/artifacts \
+    VISIT_RESULTS_DIR=/results \
+    VISIT_TEST_ROOT=/opt/visit-test \
+    VISIT_GLIBC_BASELINE=2.28 \
+    VISIT_TEST_TIMEOUT=120 \
+    HOME=/home/visit-test \
+    TMPDIR=/work/tmp
+
+USER visit-test
+WORKDIR /work
+
+ENTRYPOINT ["/opt/visit-test/bin/run-tests.sh"]
+CMD ["core"]

@@ -1,0 +1,96 @@
+ARG DEBIAN_VERSION=13
+FROM debian:${DEBIAN_VERSION}
+
+ARG DEBIAN_VERSION
+LABEL org.opencontainers.image.title="VisIt Debian runtime test"
+LABEL org.opencontainers.image.description="GUI-capable Debian test host for a packaged VisIt distribution"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && glib_package=libglib2.0-0 \
+    && if apt-cache show libglib2.0-0t64 >/dev/null 2>&1; then \
+           glib_package=libglib2.0-0t64; \
+       fi \
+    && apt-get install -y --no-install-recommends \
+        binutils \
+        bzip2 \
+        cpio \
+        file \
+        findutils \
+        fontconfig \
+        fonts-dejavu-core \
+        gzip \
+        libfontconfig1 \
+        libfreetype6 \
+        libgl1 \
+        libgl1-mesa-dri \
+        "${glib_package}" \
+        libglx-mesa0 \
+        libglx0 \
+        libice6 \
+        libopengl0 \
+        libpcre2-16-0 \
+        libsm6 \
+        libx11-6 \
+        libx11-xcb1 \
+        libxau6 \
+        libxcb-glx0 \
+        libxcb-icccm4 \
+        libxcb-image0 \
+        libxcb-keysyms1 \
+        libxcb-randr0 \
+        libxcb-render-util0 \
+        libxcb-render0 \
+        libxcb-shape0 \
+        libxcb-shm0 \
+        libxcb-sync1 \
+        libxcb-util1 \
+        libxcb-xfixes0 \
+        libxcb-xinerama0 \
+        libxcb-xinput0 \
+        libxcb-xkb1 \
+        libxcb1 \
+        libxcursor1 \
+        libxext6 \
+        libxfixes3 \
+        libxi6 \
+        libxinerama1 \
+        libxkbcommon-x11-0 \
+        libxkbcommon0 \
+        libxrandr2 \
+        libxrender1 \
+        mesa-utils \
+        passwd \
+        procps \
+        tar \
+        x11-utils \
+        xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --user-group --uid 1000 --shell /bin/bash visit-test \
+    && mkdir -p /artifacts /opt/visit /results /work \
+    && chown -R visit-test:visit-test /opt/visit /results /work
+
+COPY --chown=visit-test:visit-test common/ /opt/visit-test/
+RUN chmod 0755 /opt/visit-test/bin/*.sh \
+    && chmod 0644 /opt/visit-test/lib/*.sh \
+        /opt/visit-test/tests/*.py \
+        /opt/visit-test/data/*
+
+ENV VISIT_TEST_IMAGE_REVISION=3 \
+    VISIT_TEST_PROFILE=debian${DEBIAN_VERSION} \
+    VISIT_ROOT=/opt/visit \
+    VISIT_ARTIFACT_DIR=/artifacts \
+    VISIT_RESULTS_DIR=/results \
+    VISIT_TEST_ROOT=/opt/visit-test \
+    VISIT_GLIBC_BASELINE=2.28 \
+    VISIT_TEST_TIMEOUT=120 \
+    HOME=/home/visit-test \
+    TMPDIR=/work/tmp
+
+USER visit-test
+WORKDIR /work
+
+ENTRYPOINT ["/opt/visit-test/bin/run-tests.sh"]
+CMD ["core"]

@@ -43,7 +43,8 @@ The Ubuntu Dockerfile supports 22.04, 24.04, and 26.04 through
 `ROCKY_VERSION`. Debian and Fedora accept `DEBIAN_VERSION` and
 `FEDORA_VERSION`, respectively. The manylinux Dockerfile defaults to the
 `manylinux_2_28_x86_64` image and accepts `MANYLINUX_VERSION`. Fedora 44 is the
-default Fedora release:
+default Fedora release. Manylinux builds pass `MANY_LINUX_DISTRO=ON` to
+VisIt's CMake configuration:
 
 ```console
 python3 create_release.py --source "$src" --build-visit "$bv" --platform ubuntu --os-version 22.04
