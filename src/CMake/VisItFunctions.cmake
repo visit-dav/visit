@@ -189,6 +189,77 @@ function(visit_install_system_libs)
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
                             WORLD_READ             WORLD_EXECUTE)
     endif()
+
+    #-------------------------------------------------------------------------
+    # If creating a ManyLinux distribution there are extra system libraries
+    # that may be required.
+    if(MANY_LINUX_DISTRO)
+        # needed by adios2 (on simple Rocky9)
+        set(addl_libs)
+        if(EXISTS "/usr/lib64/libffi.so.6.0.2")
+            file(GLOB ffi_libs "/usr/lib64/libffi.so*")
+            list(APPEND addl_libs ${ffi_libs})
+        endif()
+        # needed by python
+        if(EXISTS "/usr/lib64/libssl.so.1.1")
+            file(GLOB ssl_libs "/usr/lib64/libssl.so*")
+            list(APPEND addl_libs ${ssl_libs})
+        endif()
+        if(EXISTS "/usr/lib64/libcrypto.so.1.1")
+            file(GLOB crypto_libs "/usr/lib64/libcrypto.so*")
+            list(APPEND addl_libs ${crypto_libs})
+        endif()
+        if(EXISTS "/usr/lib64/libk5crypto.so.3.1")
+            file(GLOB k5crypto_libs "/usr/lib64/libk5crypto.so*")
+            list(APPEND addl_libs ${k5crypto_libs})
+        endif()
+        if(EXISTS "/opt/_internal/sqlite3/lib/libsqlite3.so")
+            file(GLOB sql_libs "/opt/_internal/sqlite3/lib/libsqlite3.so*")
+            list(APPEND addl_libs ${sql_libs})
+        endif()
+        # needed by gdal
+        if(EXISTS "/usr/lib64/libpcre.so.1")
+            file(GLOB pcre_libs "/usr/lib64/libpcre.so*")
+            list(APPEND addl_libs ${pcre_libs})
+        endif()
+
+        # needed by ?
+        if(EXISTS "/usr/lib64/libxml2.so.2")
+            file(GLOB xml2_libs "/usr/lib64/libxml2.so*")
+            list(APPEND addl_libs ${xml2_libs})
+        endif()
+
+        if(EXISTS "/usr/lib64/libgssapi_krb5.so.2")
+            file(GLOB gssapi_libs "/usr/lib64/libgssapi_krb5.so*")
+            list(APPEND addl_libs ${gssapi_libs})
+        endif()
+
+        if(EXISTS "/usr/lib64/libkrb5.so.3.3")
+            file(GLOB krb_libs "/usr/lib64/libkrb5.so*")
+            list(APPEND addl_libs ${krb_libs})
+        endif()
+        if(EXISTS "/usr/lib64/libkrb5support.so.0.1")
+            file(GLOB krbsupport_libs "/usr/lib64/libkrb5support.so*")
+            list(APPEND addl_libs ${krbsupport_libs})
+        endif()
+        if(EXISTS "/usr/lib64/libkeyutils.so.1.6")
+            # /usr/lib64/libkeyutils.so is an absolute symlink, so
+            # don't include it here only the versioned .so.xxx
+            file(GLOB keyutils_libs "/usr/lib64/libkeyutils.so.*")
+            list(APPEND addl_libs ${keyutils_libs})
+        endif()
+        if(EXISTS "/usr/lib64/libcom_err.so.2.1")
+            file(GLOB comerr_libs "/usr/lib64/libcom_err.so*")
+            list(APPEND addl_libs ${comerr_libs})
+        endif()
+
+        # install all the miscellaneous libs needed for portability
+        install(FILES ${addl_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
 endfunction()
 
 
