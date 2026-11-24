@@ -1,0 +1,91 @@
+ARG ROCKY_VERSION=9.3
+FROM rockylinux:${ROCKY_VERSION} AS visit-build-environment
+
+ARG ROCKY_VERSION
+ENV TZ=America/Phoenix
+SHELL ["/bin/bash", "-lc"]
+
+RUN yum update -y && yum install -y yum-utils \
+ && yum-config-manager --enable devel
+
+RUN yum install -y \
+    libX11 \
+    libX11-devel \
+    libX11-xcb \
+    libXext \
+    libXext-devel \
+    fontconfig \
+    fontconfig-devel \
+    xorg-x11-utils \
+    libXt-devel \
+    libXrender-devel \
+    libXfixes \
+    libXfixes-devel \
+    libXcursor \
+    libXcursor-devel \
+    patch \
+    libtool \
+    autoconf \
+    automake \
+    git \
+    wget \
+    unzip \
+    zlib-devel \
+    python3 \
+    libSM-devel \
+    openssl-devel \
+    freetype-devel \
+    libxml2 \
+    libxml2-devel \
+    vim \
+    libffi-devel \
+    bison \
+    flex
+
+RUN if [[ "${ROCKY_VERSION}" == 8.* ]]; then \
+        yum install -y curl xorg-x11-xkb-utils gcc-toolset-10; \
+    else \
+        yum install -y --allowerasing curl && \
+        yum install -y \
+            libxcb libxcb-devel \
+            xcb-util xcb-util-devel \
+            xcb-util-image xcb-util-image-devel \
+            xcb-util-keysyms xcb-util-keysyms-devel \
+            xcb-util-renderutil xcb-util-renderutil-devel \
+            xcb-util-wm xcb-util-wm-devel \
+            xcb-proto \
+            libxkbcommon libxkbcommon-devel \
+            libxkbcommon-x11 libxkbcommon-x11-devel \
+            expat expat-devel \
+            libX11-common \
+            perl gcc gcc-c++ xz cpio; \
+    fi
+
+RUN cd /usr/include && ln -s freetype2 freetype
+
+RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
+USER visit
+WORKDIR /home/visit
+
+COPY --chown=visit:visit build_visit[0-9]* /home/visit/
+COPY --chown=visit:visit visit_version.py run_build_visit.py /home/visit/
+
+RUN chmod +x build_visit[0-9]*
+
+FROM visit-build-environment AS visit-release
+
+ARG ROCKY_VERSION
+RUN if [[ "${ROCKY_VERSION}" == 8.* ]]; then \
+        source /opt/rh/gcc-toolset-10/enable; \
+    fi && python3 run_build_visit.py
+RUN if [[ "${ROCKY_VERSION}" == 8.* ]]; then \
+        source /opt/rh/gcc-toolset-10/enable; \
+    fi && python3 run_build_visit.py --optional
+
+COPY --chown=visit:visit visit*.src.tar.gz /home/visit/
+COPY --chown=visit:visit build_test_visit.py build_visit_docker_cleanup.py \
+    test_visit.py /home/visit/
+RUN if [[ "${ROCKY_VERSION}" == 8.* ]]; then \
+        source /opt/rh/gcc-toolset-10/enable; \
+    fi && python3 build_test_visit.py
+RUN python3 build_visit_docker_cleanup.py
