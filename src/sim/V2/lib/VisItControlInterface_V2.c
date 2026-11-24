@@ -13,6 +13,7 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <direct.h>
 #include <sys/stat.h>
 #include <shlobj.h>
@@ -1409,7 +1410,8 @@ static int ConnectToViewer(void)
 static int GetLocalhostName(void)
 {
     char localhostStr[256];
-    struct hostent *localhostEnt = NULL;
+    struct addrinfo hints;
+    struct addrinfo *localhostInfo = NULL;
 
     LIBSIM_API_ENTER(GetLocalhostName);
 
@@ -1423,30 +1425,32 @@ static int GetLocalhostName(void)
     }
     LIBSIM_MESSAGE1("gethostname returned %s\n", localhostStr);
 
-    LIBSIM_MESSAGE("  Calling gethostbyname");
-    localhostEnt = gethostbyname(localhostStr);
-    if (localhostEnt == NULL)
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
+
+    LIBSIM_MESSAGE("  Calling getaddrinfo");
+    if (getaddrinfo(localhostStr, NULL, &hints, &localhostInfo) != 0)
     {
         /* Couldn't get the full host entry; it's probably invalid */
-        LIBSIM_MESSAGE("gethostbyname failed. call gethostbyname(localhost)");
+        LIBSIM_MESSAGE("getaddrinfo failed. call getaddrinfo(localhost)");
 
         strcpy(localhostStr, "localhost");
-        localhostEnt = gethostbyname(localhostStr);
-        if(localhostEnt != NULL)
-        {
-            sprintf(localhost, "%s", localhostEnt->h_name);
-            LIBSIM_MESSAGE1("Using return value of gethostbyname: %s", localhost);
-        }
-        else
+        if(getaddrinfo(localhostStr, NULL, &hints, &localhostInfo) != 0)
         {
             LIBSIM_MESSAGE("Use \"localhost\" as the host name.");
             strcpy(localhost, "localhost");
         }
     }
-    else
+
+    if(localhostInfo != NULL)
     {
-        sprintf(localhost, "%s", localhostEnt->h_name);
-        LIBSIM_MESSAGE1("Using return value of gethostbyname: %s", localhost);
+        snprintf(localhost, sizeof(localhost), "%s",
+                 localhostInfo->ai_canonname != NULL
+                 ? localhostInfo->ai_canonname : localhostStr);
+        LIBSIM_MESSAGE1("Using return value of getaddrinfo: %s", localhost);
+        freeaddrinfo(localhostInfo);
     }
     LIBSIM_API_LEAVE1(GetLocalhostName, "return %s", localhost);
 

@@ -62,6 +62,7 @@ Definition:
 // ****************************************************************************
 #if defined(_WIN32)
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <netdb.h>
 #endif
@@ -78,31 +79,28 @@ HostProfileList::GetMachineProfileForHost(const std::string &hostName) const
             return m;
     }
 
-    struct hostent *hostEnt = gethostbyname(hostName.c_str());
-    if (hostEnt)
+    struct addrinfo hints = {};
+    struct addrinfo *hostInfo = NULL;
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_flags = AI_CANONNAME;
+    if (getaddrinfo(hostName.c_str(), NULL, &hints, &hostInfo) == 0)
     {
         // Check for the official host name
-        std::string fqhostName(hostEnt->h_name);
-        for(size_t i = 0; i < machines.size(); i++)
+        if (hostInfo->ai_canonname != NULL)
         {
-            MachineProfile *m = (MachineProfile *)(machines[i]);
-
-            if (m->ProfileMatchesHost(fqhostName))
-                return m;
-        }
-
-        // Check all of the aliases
-        for(int j=0; hostEnt->h_aliases[j] != NULL; j++)
-        {
-            fqhostName = std::string(hostEnt->h_aliases[j]);
+            std::string fqhostName(hostInfo->ai_canonname);
             for(size_t i = 0; i < machines.size(); i++)
             {
                 MachineProfile *m = (MachineProfile *)(machines[i]);
 
                 if (m->ProfileMatchesHost(fqhostName))
+                {
+                    freeaddrinfo(hostInfo);
                     return m;
+                }
             }
         }
+        freeaddrinfo(hostInfo);
     }
 
     return NULL;

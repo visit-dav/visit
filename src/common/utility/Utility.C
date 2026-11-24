@@ -16,6 +16,8 @@
 using std::vector;
 
 #if defined(_WIN32)
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #else
 #include <unistd.h>
@@ -697,9 +699,19 @@ CheckHostValidity(const std::string &remoteHost)
     if(remoteHost != std::string("localhost") && 
        remoteHost != std::string("127.0.0.1"))
     {
-        if(gethostbyname(remoteHost.c_str()) == NULL)
+        struct addrinfo hints;
+        struct addrinfo *hostInfo = NULL;
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_UNSPEC;
+        hints.ai_socktype = SOCK_STREAM;
+
+        if(getaddrinfo(remoteHost.c_str(), NULL, &hints, &hostInfo) != 0)
         {
             retval = false;
+        }
+        else
+        {
+            freeaddrinfo(hostInfo);
         }
     }
 

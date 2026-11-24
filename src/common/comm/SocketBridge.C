@@ -574,27 +574,16 @@ Accept(int listenSock, struct sockaddr_in sin)
 static int
 Connect(const char *host, int port)
 {
-#if defined(_WIN32)
-    // Create a copy of the hostent struct in case other WinSock
-    // functions want to modify it.
-    void *hostInfo = (void *)CopyHostent(gethostbyname(host));
-#else
-    void *hostInfo = (void *)gethostbyname(host);
-#endif
-
-    int                connectedSock;
-    struct hostent     *hp;
-    struct sockaddr_in server;
-
-    //
-    // Set up the structures for opening the sockets.
-    //
-    hp = (struct hostent *)hostInfo;
-    if (hp == NULL)
+    int connectedSock;
+    struct addrinfo hints = {};
+    struct addrinfo *hostInfo = NULL;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if(getaddrinfo(host, NULL, &hints, &hostInfo) != 0)
         return -1;
-    memset(&server, 0, sizeof(server));
-    memcpy(&(server.sin_addr), hp->h_addr, hp->h_length);
-    server.sin_family = hp->h_addrtype;
+
+    struct sockaddr_in server =
+        *reinterpret_cast<struct sockaddr_in *>(hostInfo->ai_addr);
     server.sin_port = htons(port);
     
     // 
@@ -604,6 +593,7 @@ Connect(const char *host, int port)
     connectedSock = socket(AF_INET, SOCK_STREAM, 0);
     if (connectedSock == INVALID_SOCKET)
     {
+        freeaddrinfo(hostInfo);
         return -1;
     }
 
@@ -614,6 +604,7 @@ Connect(const char *host, int port)
 
     if (connect(connectedSock, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
+        freeaddrinfo(hostInfo);
         closesocket(connectedSock);
         return -1;
     }
@@ -621,6 +612,7 @@ Connect(const char *host, int port)
     connectedSock = socket(AF_INET, SOCK_STREAM, 0);
     if (connectedSock < 0)
     {
+        freeaddrinfo(hostInfo);
         return -1;
     }
 
@@ -629,11 +621,13 @@ Connect(const char *host, int port)
     setsockopt(connectedSock, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
     if (connect(connectedSock, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
+        freeaddrinfo(hostInfo);
         close(connectedSock);
         return -1;
     }
 #endif
 
+    freeaddrinfo(hostInfo);
     return connectedSock;
 }
 

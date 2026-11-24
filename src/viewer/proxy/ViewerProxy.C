@@ -33,8 +33,11 @@
 #include <cstring>
 #include <cstdlib>
 #ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <io.h>
 #else
+#include <netdb.h>
 #include <unistd.h>
 #endif
 
@@ -447,20 +450,30 @@ bool ViewerProxy::ConnectToExistingViewer(const std::string& host, const int& po
 {
 
     //Step 1: Check and see if connection can be made..
-    int testSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if( testSocket < 0 )
+    struct addrinfo hints = {};
+    struct addrinfo *server = NULL;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if(getaddrinfo(host.c_str(), NULL, &hints, &server) != 0)
     {
+        std::cerr << "Unable to resolve Viewer host" << std::endl;
+        return false;
+    }
+
+    int testSocket = socket(server->ai_family, server->ai_socktype,
+                            server->ai_protocol);
+    if(testSocket < 0)
+    {
+        freeaddrinfo(server);
         std::cerr << "Socket not created (ERROR)" << std::endl;
         return false;
     }
 
     std::cout << "connecting to host: " << host << " port " << port << std::endl;
-    struct sockaddr_in sin;
-    struct hostent *server = gethostbyname(host.c_str());
-    memset(&sin, 0, sizeof(sin));
-    memcpy(&(sin.sin_addr), server->h_addr, server->h_length);
-    sin.sin_family = AF_INET;
+    struct sockaddr_in sin =
+        *reinterpret_cast<struct sockaddr_in *>(server->ai_addr);
     sin.sin_port = htons(port);
+    freeaddrinfo(server);
 
     if (connect(testSocket,(struct sockaddr*) &sin,sizeof(sin)) < 0)
     {

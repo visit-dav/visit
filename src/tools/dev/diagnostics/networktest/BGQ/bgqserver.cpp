@@ -257,7 +257,8 @@ int
 main(int argc, char *argv[])
 {
     char            host[NAMELEN];
-    struct hostent *server;
+    struct addrinfo hints = {};
+    struct addrinfo *server = NULL;
     int             j;
 #if defined(SERVER_MPI)
     int             rank, size;
@@ -274,14 +275,16 @@ main(int argc, char *argv[])
 
         if (gethostname(host,NAMELEN) == 0)
         {
-            server = gethostbyname(host);
-
-            if (server != NULL)
+            hints.ai_family = AF_INET;
+            if (getaddrinfo(host, NULL, &hints, &server) == 0)
             {
-                if (inet_ntop(AF_INET,server->h_addr,host,NAMELEN) != NULL)
+                struct sockaddr_in *address =
+                    (struct sockaddr_in *)server->ai_addr;
+                if (inet_ntop(AF_INET, &address->sin_addr, host, NAMELEN) != NULL)
                 {
                     printf("server: Host: %s\n", host);
                 }
+                freeaddrinfo(server);
             }
         }
 

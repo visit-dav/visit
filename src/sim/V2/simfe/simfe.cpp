@@ -7,6 +7,7 @@
 #define _WIN32_WINNT 0x0502
 #endif
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <direct.h>
 #include <sys/stat.h>
 #include <shlobj.h>
@@ -91,8 +92,9 @@ VISIT_SOCKET AcceptConnection(VISIT_SOCKET &listenSocket,
 bool
 GetLocalhostName(std::string &lhost)
 {
-    char localhostStr[256], localhost[256];
-    struct hostent *localhostEnt = NULL;
+    char localhostStr[256];
+    struct addrinfo hints = {};
+    struct addrinfo *localhostInfo = NULL;
 
     if (gethostname(localhostStr, 256) == -1)
     {
@@ -100,28 +102,24 @@ GetLocalhostName(std::string &lhost)
         return false;
     }
 
-    localhostEnt = gethostbyname(localhostStr);
-    if (localhostEnt == NULL)
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
+    if (getaddrinfo(localhostStr, NULL, &hints, &localhostInfo) != 0)
     {
         /* Couldn't get the full host entry; it's probably invalid */
-        
+
         strcpy(localhostStr, "localhost");
-        localhostEnt = gethostbyname(localhostStr);
-        if(localhostEnt != NULL)
-        {
-            sprintf(localhost, "%s", localhostEnt->h_name);
-        }
-        else
-        {
-            strcpy(localhost, "localhost");
-        }
-    }
-    else
-    {
-        sprintf(localhost, "%s", localhostEnt->h_name);
+        if (getaddrinfo("localhost", NULL, &hints, &localhostInfo) != 0)
+            lhost = "localhost";
     }
 
-    lhost = localhost;
+    if(localhostInfo != NULL)
+    {
+        lhost = localhostInfo->ai_canonname != NULL
+              ? localhostInfo->ai_canonname : localhostStr;
+        freeaddrinfo(localhostInfo);
+    }
     return true;
 }
 
@@ -291,7 +289,6 @@ ConnectSimulation(const std::string &simHost, int simPort,
     const std::string &simSecurityKey, const std::vector<std::string> &launchArgs)
 {
     int                s;
-    struct hostent     *hp;
     struct sockaddr_in server;
     size_t             i;
 
@@ -300,22 +297,19 @@ ConnectSimulation(const std::string &simHost, int simPort,
     //
     // Get the simulation host information
     //
-    void *hostInfo = (void *)gethostbyname(simHost.c_str());
-
-    //
-    // Set up the structures for opening the sockets.
-    //
-    hp = (struct hostent *)hostInfo;
-    if (hp == NULL)
+    struct addrinfo hints = {};
+    struct addrinfo *hostInfo = NULL;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if (getaddrinfo(simHost.c_str(), NULL, &hints, &hostInfo) != 0)
     {
         std::cerr << "Error: Could not get host info for: " << simHost << std::endl;
         return -1;
     }
 
-    memset(&server, 0, sizeof(server));
-    memcpy(&(server.sin_addr), hp->h_addr, hp->h_length);
-    server.sin_family = hp->h_addrtype;
+    server = *reinterpret_cast<struct sockaddr_in *>(hostInfo->ai_addr);
     server.sin_port = htons(simPort);
+    freeaddrinfo(hostInfo);
     
     // 
     // Create a socket.

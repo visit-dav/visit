@@ -7,6 +7,7 @@
 #include <cstring>
 #if defined(_WIN32)
 #include <win32commhelpers.h>
+#include <ws2tcpip.h>
 #else
 #include <netdb.h>
 #include <netinet/in.h>
@@ -69,6 +70,7 @@ ParentProcess::ParentProcess() : version(VISIT_VERSION), localUserName()
     // Set some default values.
     hostName = std::string("localhost");
     apparentHostName = "";
+    hostInfo = NULL;
 
     // Zero out the SocketConnection pointers.
     readConnections = 0;
@@ -144,11 +146,8 @@ ParentProcess::~ParentProcess()
         nWriteConnections = 0;
     }
 
-#if defined(_WIN32)
-    // On Windows, we make a copy. Free it now.
     if(hostInfo != NULL)
-        FreeHostent((struct hostent *)hostInfo);
-#endif
+        freeaddrinfo(static_cast<struct addrinfo *>(hostInfo));
 }
 
 // ****************************************************************************
@@ -619,16 +618,31 @@ ParentProcess::GetApparentHostName()
             char localHostStr[256];
             if (gethostname(localHostStr, 256) != -1)
             {
-                struct hostent *localHostEnt = gethostbyname(localHostStr);
-                if (localHostEnt)
+                struct addrinfo hints = {};
+                struct addrinfo *localHostInfo = NULL;
+                hints.ai_family = AF_UNSPEC;
+                hints.ai_socktype = SOCK_STREAM;
+                hints.ai_flags = AI_CANONNAME;
+                if (getaddrinfo(localHostStr, NULL, &hints,
+                                &localHostInfo) == 0)
                 {
-                    apparentHostName = std::string(localHostEnt->h_name);
+                    if(localHostInfo->ai_canonname != NULL)
+                        apparentHostName = localHostInfo->ai_canonname;
+                    else
+                        apparentHostName = localHostStr;
+                    freeaddrinfo(localHostInfo);
                 }
                 else
                 {
-                    localHostEnt = gethostbyname("localhost");
-                    if(localHostEnt != NULL)
-                        apparentHostName = std::string(localHostEnt->h_name);
+                    if(getaddrinfo("localhost", NULL, &hints,
+                                   &localHostInfo) == 0)
+                    {
+                        if(localHostInfo->ai_canonname != NULL)
+                            apparentHostName = localHostInfo->ai_canonname;
+                        else
+                            apparentHostName = "localhost";
+                        freeaddrinfo(localHostInfo);
+                    }
                     else
                         apparentHostName = std::string(localHostStr);
                 }
@@ -780,60 +794,49 @@ ParentProcess::GetClientSocketDescriptor(int port)
     const char *mName = "ParentProcess::GetClientSocketDescriptor: ";
     int                s;
     bool               connected = false;
-    struct hostent     *hp;
-    struct sockaddr_in server;
+    struct addrinfo    *hostAddresses;
 
     //
     // Set up the structures for opening the sockets.
     //
     debug5 << mName << "Set up using port " << port << endl;
-    hp = (struct hostent *)hostInfo;
-    if (hp == NULL)
+    hostAddresses = static_cast<struct addrinfo *>(hostInfo);
+    if (hostAddresses == NULL)
         return -1;
-
-    // 
-    // Create a socket.
-    // 
-    debug5 << mName << "Creating a socket" << endl;
-#ifdef _WIN32
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    if (s == INVALID_SOCKET)
-    {
-        LogWindowsSocketError(mName, "socket");
-        return -1;
-    }
-
-    // Disable the Nagle algorithm 
-    debug5 << mName << "Setting socket options" << endl;
-    int opt = 1;
-    if(setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (const char FAR *)&opt, 
-                  sizeof(int)) == SOCKET_ERROR)
-    {
-        LogWindowsSocketError(mName, "setsockopt");
-    }
-#else
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    if (s < 0)
-    {
-        return -1;
-    }
-
-    // Disable the Nagle algorithm 
-    debug5 << mName << "Setting socket options" << endl;
-    int opt = 1;
-    setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
-#endif
 
     //
     // Try connection
     //
-    memset(&server, 0, sizeof(server));
-
-    for (int i = 0; hp->h_addr_list[i] != NULL && !connected; ++i)
+    for (struct addrinfo *ai = hostAddresses;
+         ai != NULL && !connected; ai = ai->ai_next)
     {
-        memcpy(&(server.sin_addr), hp->h_addr_list[i], hp->h_length);
-        server.sin_family = hp->h_addrtype;
+        struct sockaddr_in server =
+            *reinterpret_cast<struct sockaddr_in *>(ai->ai_addr);
         server.sin_port = htons(port);
+
+        debug5 << mName << "Creating a socket" << endl;
+        s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+#ifdef _WIN32
+        if (s == INVALID_SOCKET)
+        {
+            LogWindowsSocketError(mName, "socket");
+            continue;
+        }
+#else
+        if (s < 0)
+            continue;
+#endif
+
+        // Disable the Nagle algorithm
+        debug5 << mName << "Setting socket options" << endl;
+        int opt = 1;
+#ifdef _WIN32
+        if(setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (const char FAR *)&opt,
+                      sizeof(int)) == SOCKET_ERROR)
+            LogWindowsSocketError(mName, "setsockopt");
+#else
+        setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
+#endif
     
 
         debug5 << mName << "Calling connect" << endl;
@@ -892,18 +895,20 @@ void
 ParentProcess::GetHostInfo()
 {
     const char *mName = "ParentProcess::GetHostInfo: ";
-    debug5 << mName << "Calling gethostbyname(\""
+    debug5 << mName << "Calling getaddrinfo(\""
            << hostName.c_str() << "\")\n";
 
+    struct addrinfo hints = {};
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    struct addrinfo *result = NULL;
+    if(getaddrinfo(hostName.c_str(), NULL, &hints, &result) != 0)
+    {
 #if defined(_WIN32)
-    // Create a copy of the hostent struct in case other WinSock
-    // functions want to modify it.
-    hostInfo = (void *)CopyHostent(gethostbyname(hostName.c_str()));
-    if(hostInfo == NULL)
-        LogWindowsSocketError(mName, "gethostbyname");
-#else
-    hostInfo = (void *)gethostbyname(hostName.c_str());
+        LogWindowsSocketError(mName, "getaddrinfo");
 #endif
+    }
+    hostInfo = result;
 }
 
 // ****************************************************************************

@@ -29,6 +29,7 @@
 #if defined(_WIN32)
 /*#include <win32-hostid.h>*/
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <unistd.h>
 #endif
@@ -54,9 +55,11 @@ wgethostid()
     char            acHost  [   MAX_COMPUTERNAME_LENGTH];
     WORD            wVersionRequested;
     WSADATA         wsaData;
-    struct hostent* pHostent;
+    struct addrinfo hints = {0};
+    struct addrinfo *hostInfo = NULL;
+    long hostId;
    
-    wVersionRequested   =   MAKEWORD(   1,  1);
+    wVersionRequested   =   MAKEWORD(   2,  2);
 
     if (nErr = WSAStartup(wVersionRequested,  &wsaData))
     {    
@@ -67,12 +70,15 @@ wgethostid()
         return -1; 
     }
 
-    if  (!(pHostent = gethostbyname(acHost)))
+    hints.ai_family = AF_INET;
+    if (getaddrinfo(acHost, NULL, &hints, &hostInfo) != 0)
     {
         return -1; 
     }
 
-    return *((long*)pHostent->h_addr);
+    hostId = (long)((struct sockaddr_in *)hostInfo->ai_addr)->sin_addr.s_addr;
+    freeaddrinfo(hostInfo);
+    return hostId;
 #endif
 }
 

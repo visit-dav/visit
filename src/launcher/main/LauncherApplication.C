@@ -14,6 +14,7 @@
 #if defined(_WIN32)
 #include <process.h>
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #else
 #include <unistd.h> // alarm
@@ -720,7 +721,6 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
 {
     const char *mName = "LauncherApplication::ConnectSimulation: ";
     int                s;
-    struct hostent     *hp;
     struct sockaddr_in server;
     stringVector       launchArgs;
 
@@ -771,21 +771,18 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     //
     // Get the simulation host information
     //
-    void *hostInfo = (void *)gethostbyname(simHost.c_str());
-
-    //
-    // Set up the structures for opening the sockets.
-    //
-    hp = (struct hostent *)hostInfo;
-    if (hp == NULL)
+    struct addrinfo hints = {};
+    struct addrinfo *hostInfo = NULL;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if (getaddrinfo(simHost.c_str(), NULL, &hints, &hostInfo) != 0)
     {
         EXCEPTION0(CouldNotConnectException);
     }
 
-    memset(&server, 0, sizeof(server));
-    memcpy(&(server.sin_addr), hp->h_addr, hp->h_length);
-    server.sin_family = hp->h_addrtype;
+    server = *reinterpret_cast<struct sockaddr_in *>(hostInfo->ai_addr);
     server.sin_port = htons(simPort);
+    freeaddrinfo(hostInfo);
     
     // 
     // Create a socket.

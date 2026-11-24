@@ -1302,27 +1302,32 @@ RemoteProcess::StartMakingConnection(const std::string &remoteHost,
     if(DebugStream::Level5())
     {
         debug5 << localHostStr << endl;
-        debug5 << mName << "Looking up the host using gethostbyname(\""
+        debug5 << mName << "Looking up the host using getaddrinfo(\""
                << localHostStr << "\"): ";
     }
-    struct hostent *localHostEnt = gethostbyname(localHostStr);
-    if (localHostEnt == NULL)
+    struct addrinfo hints = {};
+    struct addrinfo *localHostInfo = NULL;
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
+    if (getaddrinfo(localHostStr, NULL, &hints, &localHostInfo) != 0)
     {
         // Ok, using the host's name returned from gethostname()
         // did not work. So, lets fall back to 'localhost'
         strcpy(localHostStr,"localhost");
-        localHostEnt = gethostbyname(localHostStr);
-        if (localHostEnt == NULL)
+        if (getaddrinfo(localHostStr, NULL, &hints, &localHostInfo) != 0)
         {
 #if defined(_WIN32)
-            LogWindowsSocketError(mName, "gethostbyname,2");
+            LogWindowsSocketError(mName, "getaddrinfo,2");
 #endif
             // Couldn't get the full host entry; it's probably invalid so
             // throw a BadHostException.
             EXCEPTION1(BadHostException, localHostStr);
         }
     }
-    localHost = std::string(localHostEnt->h_name);
+    localHost = localHostInfo->ai_canonname != NULL
+              ? std::string(localHostInfo->ai_canonname)
+              : std::string(localHostStr);
     debug5 << localHost.c_str() << endl;
 #if defined(_WIN32)
     // On some Windows systems, particularly those hooked up to dial up
@@ -1334,33 +1339,25 @@ RemoteProcess::StartMakingConnection(const std::string &remoteHost,
     {
         debug5 << mName << "We're on Win32 and the host is remote. "
                << "Make sure that we have the correct name for localhost by "
-               << "iterating through the localHostEnt and calling "
-               << "gethostbyaddr." << endl;
+               << "iterating through the resolved addresses and calling "
+               << "getnameinfo." << endl;
 
-        // Make a copy of the hostent since subsequent calls to gethostbyaddr
-        // will blow away its contents and that means we'd walk off the end
-        // of the h_addr_list array.
-        localHostEnt = CopyHostent(localHostEnt);
-
-        for(int i = 0; localHostEnt->h_addr_list[i] != 0; ++i)
+        for(struct addrinfo *ai = localHostInfo; ai != NULL; ai = ai->ai_next)
         {
-            struct hostent *h = NULL;
-            h = gethostbyaddr(localHostEnt->h_addr_list[i], 
-                              localHostEnt->h_length, 
-                              localHostEnt->h_addrtype);
-            if(h)
+            char name[NI_MAXHOST];
+            if(getnameinfo(ai->ai_addr, static_cast<int>(ai->ai_addrlen),
+                           name, sizeof(name), NULL, 0, NI_NAMEREQD) == 0)
             {
-                localHost = std::string(h->h_name);
-                debug5 << mName << "gethostbyaddr returned: " 
+                localHost = std::string(name);
+                debug5 << mName << "getnameinfo returned: "
                        << localHost.c_str() << endl;
             }
             else
-                LogWindowsSocketError(mName, "gethostbyaddr");
+                LogWindowsSocketError(mName, "getnameinfo");
         }
-
-        FreeHostent(localHostEnt);
     }
 #endif
+    freeaddrinfo(localHostInfo);
 
     //
     // Get the local user name.

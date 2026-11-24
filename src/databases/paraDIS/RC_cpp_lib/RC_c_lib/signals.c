@@ -36,7 +36,6 @@ void handler(int sig) {
 int GettingSignaled(void)
 {
   char localhost[256]; 
-  struct hostent *hep = NULL;
   int i=0;
   /* see if we're getting signaled, damnit!*/
   setsignal(SIGINT, handler);
@@ -51,8 +50,16 @@ int GettingSignaled(void)
   setsignal(SIGCHLD, handler);
 
   gethostname(localhost, 256);
-  hep = gethostbyname(localhost);
-  printf("test host is %s\n", hep->h_name);
+  {
+    struct addrinfo hints = {0};
+    struct addrinfo *hostInfo = NULL;
+    hints.ai_flags = AI_CANONNAME;
+    if (getaddrinfo(localhost, NULL, &hints, &hostInfo) == 0) {
+      printf("test host is %s\n", hostInfo->ai_canonname != NULL
+             ? hostInfo->ai_canonname : localhost);
+      freeaddrinfo(hostInfo);
+    }
+  }
   fflush(stdout);
 
   fprintf(stdout, "Child stdout.\n");

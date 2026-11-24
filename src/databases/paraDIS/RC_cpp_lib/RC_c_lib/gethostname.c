@@ -7,9 +7,10 @@
 
 int main(int argc, char *argv[]){
   char myHostName[1000]; 
-  char junk[INET_ADDRSTRLEN]; 
-  struct hostent *myHEP; 
-  char **haddrp = NULL; 
+  char junk[NI_MAXHOST];
+  struct addrinfo hints = {0};
+  struct addrinfo *hostInfo = NULL;
+  struct addrinfo *address = NULL;
   int addrno=0; 
   if (gethostname(myHostName, 1000) != 0) {
     printf("Cannot get host name\n"); 
@@ -18,18 +19,21 @@ int main(int argc, char *argv[]){
     printf("Hostname is %s\n", myHostName); 
   }
 
-  myHEP = gethostbyname(myHostName); 
-  if (!myHEP) {
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_flags = AI_CANONNAME;
+  if (getaddrinfo(myHostName, NULL, &hints, &hostInfo) != 0) {
     printf("Cannot get host entry from name %s (errno is %d)\n", myHostName, errno); 
     return 2; 
   }
 
-  printf("Result of gethostbyname:  canonical h_name is %s\n", myHEP->h_name); 
+  printf("Result of getaddrinfo: canonical name is %s\n",
+         hostInfo->ai_canonname != NULL ? hostInfo->ai_canonname : myHostName);
   printf("Host addresses associated to name: \n"); 
-  haddrp = myHEP->h_addr_list; 
-  while (*haddrp) {
-    printf("h_addr_list[%d] = %s\n", addrno++, 
-           inet_ntop(myHEP->h_addrtype, *(haddrp++), junk, sizeof(junk))); 
+  for (address = hostInfo; address != NULL; address = address->ai_next) {
+    if (getnameinfo(address->ai_addr, address->ai_addrlen, junk, sizeof(junk),
+                    NULL, 0, NI_NUMERICHOST) == 0)
+      printf("address[%d] = %s\n", addrno++, junk);
   }
+  freeaddrinfo(hostInfo);
   return 0; 
 }
