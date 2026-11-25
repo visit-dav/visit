@@ -1490,7 +1490,8 @@ Ray Mesh
 ********
 
 In addition to a mesh representing the camera setup used in the ray trace, we also provide a mesh representing all of the rays used in the ray trace, represented as Conduit Blueprint line elements.
-A note of caution: depending on how many rays are used in the ray trace, this mesh could be expensive to render, hence the inclusion of the ray corners mesh.
+A note of caution: depending on how many rays are used in the ray trace, this mesh could be expensive to render.
+See below for methods to overcome this issue.
 
 .. figure:: images/XRay_Query_camera_and_rays_400x300_low_front.png
 
@@ -1507,7 +1508,7 @@ This render is far less useful.
 The input mesh is completely hidden.
 There are a couple quick solutions to this problem.
 **The first solution** is to use the :ref:`Index Select operator` to reduce the number of rendered rays.
-The ray mesh is an unstructured mesh, so the Index Selecet Operator can only be applied in one dimension.
+The ray mesh is an unstructured mesh, so the Index Select Operator can only be applied in one dimension.
 
 .. figure:: images/XRay_Query_camera_and_rays_400x300_low_front.png
 

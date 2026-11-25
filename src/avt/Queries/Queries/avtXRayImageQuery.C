@@ -2281,64 +2281,35 @@ avtXRayImageQuery::WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
     // multiplying by nearPlane ensures that the vectors are the same length
     const avtVector up_point = view_center + std::abs(nearPlane) * viewUp;
 
-    // set up ray coords
+    // set up camera coords
     conduit::Node &camera_coords = data_out["coordsets"]["camera_coords"];
     camera_coords["type"] = "explicit";
     camera_coords["values/x"].set(conduit::DataType::float64(num_points));
     camera_coords["values/y"].set(conduit::DataType::float64(num_points));
     camera_coords["values/z"].set(conduit::DataType::float64(num_points));
-    conduit::float64_array xvals_ray = camera_coords["values/x"].value();
-    conduit::float64_array yvals_ray = camera_coords["values/y"].value();
-    conduit::float64_array zvals_ray = camera_coords["values/z"].value();
+    conduit::float64_array xvals_camera = camera_coords["values/x"].value();
+    conduit::float64_array yvals_camera = camera_coords["values/y"].value();
+    conduit::float64_array zvals_camera = camera_coords["values/z"].value();
 
-    enum Index : conduit::index_t
-    {
-        idx_of_llc_near = 0,
-        idx_of_llc_image,
-        idx_of_llc_far,
-        idx_of_lrc_near,
-        idx_of_lrc_image,
-        idx_of_lrc_far,
-        idx_of_urc_near,
-        idx_of_urc_image,
-        idx_of_urc_far,
-        idx_of_ulc_near,
-        idx_of_ulc_image,
-        idx_of_ulc_far,
-        idx_of_focus,
-        idx_of_view_center,
-        idx_of_up_point,
+    const avtVector camera_points[num_points] = {
+        // lower left corner
+        llc_near, llc_image, llc_far,
+        // lower right corner
+        lrc_near, lrc_image, lrc_far,
+        // upper right corner
+        urc_near, urc_image, urc_far,
+        // upper left corner
+        ulc_near, ulc_image, ulc_far,
+        // orientation helpers
+        focus, view_center, up_point
     };
 
-    auto set_point = [&](const conduit::index_t idx, const avtVector &vec)
+    for (conduit::index_t i = 0; i < num_points; i ++)
     {
-        xvals_ray[idx] = vec.x;
-        yvals_ray[idx] = vec.y;
-        zvals_ray[idx] = vec.z;
-    };
-
-    //
-    // save points in the correct places
-    //
-    // view plane (4)
-    set_point(idx_of_llc_near,    llc_near);
-    set_point(idx_of_llc_image,   llc_image);
-    set_point(idx_of_llc_far,     llc_far);
-    set_point(idx_of_lrc_near,    lrc_near);
-    // image plane (4)
-    set_point(idx_of_lrc_image,   lrc_image);
-    set_point(idx_of_lrc_far,     lrc_far);
-    set_point(idx_of_urc_near,    urc_near);
-    set_point(idx_of_urc_image,   urc_image);
-    // far plane (4)
-    set_point(idx_of_urc_far,     urc_far);
-    set_point(idx_of_ulc_near,    ulc_near);
-    set_point(idx_of_ulc_image,   ulc_image);
-    set_point(idx_of_ulc_far,     ulc_far);
-    // bonus points (3)
-    set_point(idx_of_focus,       focus);
-    set_point(idx_of_view_center, view_center);
-    set_point(idx_of_up_point,    up_point);
+        xvals_camera[i] = camera_points[i].x;
+        yvals_camera[i] = camera_points[i].y;
+        zvals_camera[i] = camera_points[i].z;
+    }
 
     // set up view frustum topo
     conduit::Node &camera_topo = data_out["topologies"]["camera_topo"];
@@ -2348,58 +2319,24 @@ avtXRayImageQuery::WriteBlueprintViewFrustumMesh(conduit::Node &data_out,
     // we need 2 points for every line
     camera_topo["elements/connectivity"].set(conduit::DataType::int32(num_lines * 2));
     conduit::int32_array conn_arr = camera_topo["elements/connectivity"].value();
-    conduit::index_t idx = 0;
 
-    auto set_up_plane_lines = [&](conduit::index_t llc,
-                                  conduit::index_t lrc,
-                                  conduit::index_t urc,
-                                  conduit::index_t ulc)
-    {
-        // line from lower-left-corner to lower-right-corner
-        conn_arr[idx++] = llc; conn_arr[idx++] = lrc;
-        // line from lower-right-corner to upper-right-corner
-        conn_arr[idx++] = lrc; conn_arr[idx++] = urc;
-        // line from upper-right-corner to upper-left-corner
-        conn_arr[idx++] = urc; conn_arr[idx++] = ulc;
-        // line from upper-left-corner to lower-left-corner
-        conn_arr[idx++] = ulc; conn_arr[idx++] = llc;
+    const conduit::index_t conn_vals[num_lines * 2] = {
+        // near plane
+        0, 3,  3, 6,  6, 9,  9, 0,
+        // image plane
+        1, 4,  4, 7,  7, 10, 10, 1,
+        // far plane
+        2, 5,  5, 8,  8, 11, 11, 2,
+        // near plane to image plane
+        0, 1,  3, 4,  6, 7,  9, 10,
+        // image plane to far plane
+        1, 2,  4, 5,  7, 8,  10, 11,
+        // view center to focus and up point
+        13, 12,  13, 14
     };
 
-    auto set_up_lines_between_planes = [&](conduit::index_t llc1, conduit::index_t lrc1,
-                                           conduit::index_t urc1, conduit::index_t ulc1,
-                                           conduit::index_t llc2, conduit::index_t lrc2,
-                                           conduit::index_t urc2, conduit::index_t ulc2)
-    {
-        // line between lower-left-corners
-        conn_arr[idx++] = llc1; conn_arr[idx++] = llc2;
-        // line between lower-right-corners
-        conn_arr[idx++] = lrc1; conn_arr[idx++] = lrc2;
-        // line between upper-right-corners
-        conn_arr[idx++] = urc1; conn_arr[idx++] = urc2;
-        // line between upper-left-corners
-        conn_arr[idx++] = ulc1; conn_arr[idx++] = ulc2;
-    };
-
-    // set up view plane lines (4)
-    set_up_plane_lines(idx_of_llc_near, idx_of_lrc_near, idx_of_urc_near, idx_of_ulc_near);
-    // set up image plane lines (4)
-    set_up_plane_lines(idx_of_llc_image, idx_of_lrc_image, idx_of_urc_image, idx_of_ulc_image);
-    // set up far plane lines (4)
-    set_up_plane_lines(idx_of_llc_far, idx_of_lrc_far, idx_of_urc_far, idx_of_ulc_far);
-    // set up view to image plane lines (4)
-    set_up_lines_between_planes(idx_of_llc_near,  idx_of_lrc_near,
-                                idx_of_urc_near,  idx_of_ulc_near,
-                                idx_of_llc_image, idx_of_lrc_image,
-                                idx_of_urc_image, idx_of_ulc_image);
-    // set up image to far plane lines (4)
-    set_up_lines_between_planes(idx_of_llc_image, idx_of_lrc_image,
-                                idx_of_urc_image, idx_of_ulc_image,
-                                idx_of_llc_far,   idx_of_lrc_far,
-                                idx_of_urc_far,   idx_of_ulc_far);
-    // set up view center to focus line (1)
-    conn_arr[idx++] = idx_of_view_center; conn_arr[idx++] = idx_of_focus;
-    // set up view center to up point line (1)
-    conn_arr[idx++] = idx_of_view_center; conn_arr[idx++] = idx_of_up_point;
+    for (conduit::index_t i = 0; i < num_lines * 2; i ++)
+        conn_arr[i] = conn_vals[i];
 
     // set up camera trivial field
     conduit::Node &camera_field = data_out["fields"]["camera_field"];
