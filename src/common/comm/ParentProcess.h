@@ -5,6 +5,7 @@
 #ifndef PARENT_PROCESS_H
 #define PARENT_PROCESS_H
 #include <comm_exports.h>
+#include <HostResolver.h>
 #include <string>
 #include <vector>
 
@@ -92,7 +93,7 @@ private:
 private:
     std::string      hostName;
     std::string      apparentHostName;
-    void             *hostInfo;
+    HostResolver      hostInfo;
     Connection     **readConnections, **writeConnections;
     int              nReadConnections,  nWriteConnections;
     std::string      version;

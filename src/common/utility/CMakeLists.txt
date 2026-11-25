@@ -23,6 +23,7 @@ visit_append_list(
     ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/AtomicProperties.C
           ${CMAKE_CURRENT_SOURCE_DIR}/CoordUtils.C
           ${CMAKE_CURRENT_SOURCE_DIR}/GeometricHelpers.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/HostResolver.C
           ${CMAKE_CURRENT_SOURCE_DIR}/Namescheme.C
           ${CMAKE_CURRENT_SOURCE_DIR}/StringHelpers.C
           ${CMAKE_CURRENT_SOURCE_DIR}/Utility.C
@@ -38,6 +39,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/EqualVal.h
           ${CMAKE_CURRENT_SOURCE_DIR}/FixedLengthBitField.h
           ${CMAKE_CURRENT_SOURCE_DIR}/GeometricHelpers.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/HostResolver.h
           ${CMAKE_CURRENT_SOURCE_DIR}/Interpolator.h
           ${CMAKE_CURRENT_SOURCE_DIR}/maptypes.h
           ${CMAKE_CURRENT_SOURCE_DIR}/MRUCache.h

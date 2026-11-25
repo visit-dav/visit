@@ -7,6 +7,7 @@
 // ************************************************************************* //
 
 #include <Utility.h>
+#include <HostResolver.h>
 
 #include <visit-config.h>
 #include <stdio.h>
@@ -699,20 +700,8 @@ CheckHostValidity(const std::string &remoteHost)
     if(remoteHost != std::string("localhost") && 
        remoteHost != std::string("127.0.0.1"))
     {
-        struct addrinfo hints;
-        struct addrinfo *hostInfo = NULL;
-        memset(&hints, 0, sizeof(hints));
-        hints.ai_family = AF_UNSPEC;
-        hints.ai_socktype = SOCK_STREAM;
-
-        if(getaddrinfo(remoteHost.c_str(), NULL, &hints, &hostInfo) != 0)
-        {
-            retval = false;
-        }
-        else
-        {
-            freeaddrinfo(hostInfo);
-        }
+        HostResolver hostInfo(remoteHost, AF_UNSPEC, SOCK_STREAM);
+        retval = hostInfo.IsValid();
     }
 
     return retval;

@@ -70,7 +70,6 @@ ParentProcess::ParentProcess() : version(VISIT_VERSION), localUserName()
     // Set some default values.
     hostName = std::string("localhost");
     apparentHostName = "";
-    hostInfo = NULL;
 
     // Zero out the SocketConnection pointers.
     readConnections = 0;
@@ -146,8 +145,6 @@ ParentProcess::~ParentProcess()
         nWriteConnections = 0;
     }
 
-    if(hostInfo != NULL)
-        freeaddrinfo(static_cast<struct addrinfo *>(hostInfo));
 }
 
 // ****************************************************************************
@@ -618,30 +615,24 @@ ParentProcess::GetApparentHostName()
             char localHostStr[256];
             if (gethostname(localHostStr, 256) != -1)
             {
-                struct addrinfo hints = {};
-                struct addrinfo *localHostInfo = NULL;
-                hints.ai_family = AF_UNSPEC;
-                hints.ai_socktype = SOCK_STREAM;
-                hints.ai_flags = AI_CANONNAME;
-                if (getaddrinfo(localHostStr, NULL, &hints,
-                                &localHostInfo) == 0)
+                HostResolver localHostInfo(localHostStr, AF_UNSPEC,
+                                           SOCK_STREAM, AI_CANONNAME);
+                if (localHostInfo.IsValid())
                 {
-                    if(localHostInfo->ai_canonname != NULL)
-                        apparentHostName = localHostInfo->ai_canonname;
+                    if(localHostInfo.GetCanonicalName() != NULL)
+                        apparentHostName = localHostInfo.GetCanonicalName();
                     else
                         apparentHostName = localHostStr;
-                    freeaddrinfo(localHostInfo);
                 }
                 else
                 {
-                    if(getaddrinfo("localhost", NULL, &hints,
-                                   &localHostInfo) == 0)
+                    if(localHostInfo.Resolve("localhost", AF_UNSPEC,
+                                             SOCK_STREAM, AI_CANONNAME))
                     {
-                        if(localHostInfo->ai_canonname != NULL)
-                            apparentHostName = localHostInfo->ai_canonname;
+                        if(localHostInfo.GetCanonicalName() != NULL)
+                            apparentHostName = localHostInfo.GetCanonicalName();
                         else
                             apparentHostName = "localhost";
-                        freeaddrinfo(localHostInfo);
                     }
                     else
                         apparentHostName = std::string(localHostStr);
@@ -794,20 +785,20 @@ ParentProcess::GetClientSocketDescriptor(int port)
     const char *mName = "ParentProcess::GetClientSocketDescriptor: ";
     int                s;
     bool               connected = false;
-    struct addrinfo    *hostAddresses;
+    const struct addrinfo *hostAddresses;
 
     //
     // Set up the structures for opening the sockets.
     //
     debug5 << mName << "Set up using port " << port << endl;
-    hostAddresses = static_cast<struct addrinfo *>(hostInfo);
+    hostAddresses = hostInfo.GetAddresses();
     if (hostAddresses == NULL)
         return -1;
 
     //
     // Try connection
     //
-    for (struct addrinfo *ai = hostAddresses;
+    for (const struct addrinfo *ai = hostAddresses;
          ai != NULL && !connected; ai = ai->ai_next)
     {
         struct sockaddr_in server =
@@ -898,17 +889,12 @@ ParentProcess::GetHostInfo()
     debug5 << mName << "Calling getaddrinfo(\""
            << hostName.c_str() << "\")\n";
 
-    struct addrinfo hints = {};
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    struct addrinfo *result = NULL;
-    if(getaddrinfo(hostName.c_str(), NULL, &hints, &result) != 0)
+    if(!hostInfo.Resolve(hostName, AF_INET, SOCK_STREAM))
     {
 #if defined(_WIN32)
         LogWindowsSocketError(mName, "getaddrinfo");
 #endif
     }
-    hostInfo = result;
 }
 
 // ****************************************************************************

@@ -29,6 +29,7 @@
 #include <VisItException.h>
 #include <Xfer.h>
 #include <JSONNode.h>
+#include <HostResolver.h>
 
 #include <cstring>
 #include <cstdlib>
@@ -450,30 +451,27 @@ bool ViewerProxy::ConnectToExistingViewer(const std::string& host, const int& po
 {
 
     //Step 1: Check and see if connection can be made..
-    struct addrinfo hints = {};
-    struct addrinfo *server = NULL;
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    if(getaddrinfo(host.c_str(), NULL, &hints, &server) != 0)
+    HostResolver server(host, AF_INET, SOCK_STREAM);
+    if(!server.IsValid())
     {
         std::cerr << "Unable to resolve Viewer host" << std::endl;
         return false;
     }
 
-    int testSocket = socket(server->ai_family, server->ai_socktype,
-                            server->ai_protocol);
+    const struct addrinfo *serverAddress = server.GetAddresses();
+    int testSocket = socket(serverAddress->ai_family,
+                            serverAddress->ai_socktype,
+                            serverAddress->ai_protocol);
     if(testSocket < 0)
     {
-        freeaddrinfo(server);
         std::cerr << "Socket not created (ERROR)" << std::endl;
         return false;
     }
 
     std::cout << "connecting to host: " << host << " port " << port << std::endl;
     struct sockaddr_in sin =
-        *reinterpret_cast<struct sockaddr_in *>(server->ai_addr);
+        *reinterpret_cast<struct sockaddr_in *>(serverAddress->ai_addr);
     sin.sin_port = htons(port);
-    freeaddrinfo(server);
 
     if (connect(testSocket,(struct sockaddr*) &sin,sizeof(sin)) < 0)
     {

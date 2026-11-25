@@ -28,6 +28,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <DebugStream.h>
+#include <HostResolver.h>
 
 #include <avtParallel.h>
 #ifdef PARALLEL
@@ -68,30 +69,25 @@ using std::string;
 int AllocateSocket(std::string hostname, int port) {
   struct sockaddr_in sn;
   int s, bindStatus = -1;
-  struct addrinfo hints = {};
-  struct addrinfo *hostInfo = NULL;
+  HostResolver hostInfo(hostname, AF_INET, SOCK_STREAM);
 
   bzero((char*)&sn, sizeof(sn));
   sn.sin_family = AF_INET;
   sn.sin_port = htons((short)port);
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = SOCK_STREAM;
-  if (getaddrinfo(hostname.c_str(), NULL, &hints, &hostInfo) != 0) return -1;
+  if (!hostInfo.IsValid()) return -1;
   if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    freeaddrinfo(hostInfo);
     return -1;
   }
   bindStatus = bind(s, (struct sockaddr*)&sn, sizeof(sn));
   if(bindStatus == -1) {
-    sn.sin_addr = ((struct sockaddr_in *)hostInfo->ai_addr)->sin_addr;
+    sn.sin_addr = ((struct sockaddr_in *)
+                   hostInfo.GetAddresses()->ai_addr)->sin_addr;
     bindStatus = bind(s, (struct sockaddr*)&sn, sizeof(sn));
     if (bindStatus == -1) {
-      freeaddrinfo(hostInfo);
       return -1;
     }
   }
 
-  freeaddrinfo(hostInfo);
   return s;
 }
 
@@ -109,23 +105,17 @@ int AcceptConnection(int s) {
 int RequestConnection(char *host, int port) {
   struct sockaddr_in sn;
   int s;
-  struct addrinfo hints = {};
-  struct addrinfo *hostInfo = NULL;
+  HostResolver hostInfo(host, AF_INET, SOCK_STREAM);
 
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = SOCK_STREAM;
-  if (getaddrinfo(host, NULL, &hints, &hostInfo) != 0) return -1;
-  sn = *(struct sockaddr_in *)hostInfo->ai_addr;
+  if (!hostInfo.IsValid()) return -1;
+  sn = *(struct sockaddr_in *)hostInfo.GetAddresses()->ai_addr;
   sn.sin_port  = htons((short)port);
   if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    freeaddrinfo(hostInfo);
     return -1;
   }
   if (connect(s, (struct sockaddr*)&sn, sizeof(sn)) == -1) {
-    freeaddrinfo(hostInfo);
     return -1;
   }
-  freeaddrinfo(hostInfo);
   return s;
 }
 
@@ -529,15 +519,11 @@ void avtVLIFileFormat::startServers(void) {
                  << "communication servers now." << endl;
         char hn[255];
         gethostname(hn, 255u);
-        struct addrinfo hints = {};
-        struct addrinfo *hostinfo = NULL;
-        hints.ai_family = AF_UNSPEC;
-        hints.ai_flags = AI_CANONNAME;
-        if (getaddrinfo(hn, NULL, &hints, &hostinfo) == 0) {
-                if (hostinfo->ai_canonname != NULL)
-                        strncpy(hn, hostinfo->ai_canonname, 254);
+        HostResolver hostinfo(hn, AF_UNSPEC, 0, AI_CANONNAME);
+        if (hostinfo.IsValid()) {
+                if (hostinfo.GetCanonicalName() != NULL)
+                        strncpy(hn, hostinfo.GetCanonicalName(), 254);
                 hn[254] = '\0';
-                freeaddrinfo(hostinfo);
         }
         ehostname[procNum] = std::string(hn);
         eport[procNum] = startCommServer(ehostname[procNum]);

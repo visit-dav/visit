@@ -33,6 +33,7 @@
 #include <FileFunctions.h>
 #include <SocketConnection.h>
 #include <Utility.h>
+#include <HostResolver.h>
 #include <vectortypes.h>
 
 #include <DebugStream.h>
@@ -771,18 +772,15 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     //
     // Get the simulation host information
     //
-    struct addrinfo hints = {};
-    struct addrinfo *hostInfo = NULL;
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo(simHost.c_str(), NULL, &hints, &hostInfo) != 0)
+    HostResolver hostInfo(simHost, AF_INET, SOCK_STREAM);
+    if (!hostInfo.IsValid())
     {
         EXCEPTION0(CouldNotConnectException);
     }
 
-    server = *reinterpret_cast<struct sockaddr_in *>(hostInfo->ai_addr);
+    server = *reinterpret_cast<struct sockaddr_in *>(
+        hostInfo.GetAddresses()->ai_addr);
     server.sin_port = htons(simPort);
-    freeaddrinfo(hostInfo);
     
     // 
     // Create a socket.

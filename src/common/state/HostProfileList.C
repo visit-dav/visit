@@ -904,6 +904,7 @@ HostProfileList::GetActiveLaunchProfileForHost(const std::string &hostName) cons
 //    David Camp, Fri Feb 26 13:53:28 PST 2010
 //    Try matching against all of the host's aliases.
 // ****************************************************************************
+#include <HostResolver.h>
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -923,28 +924,23 @@ HostProfileList::GetMachineProfileForHost(const std::string &hostName) const
             return m;
     }
 
-    struct addrinfo hints = {};
-    struct addrinfo *hostInfo = NULL;
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_flags = AI_CANONNAME;
-    if (getaddrinfo(hostName.c_str(), NULL, &hints, &hostInfo) == 0)
+    HostResolver hostInfo(hostName, AF_UNSPEC, 0, AI_CANONNAME);
+    if (hostInfo.IsValid())
     {
         // Check for the official host name
-        if (hostInfo->ai_canonname != NULL)
+        if (hostInfo.GetCanonicalName() != NULL)
         {
-            std::string fqhostName(hostInfo->ai_canonname);
+            std::string fqhostName(hostInfo.GetCanonicalName());
             for(size_t i = 0; i < machines.size(); i++)
             {
                 MachineProfile *m = (MachineProfile *)(machines[i]);
 
                 if (m->ProfileMatchesHost(fqhostName))
                 {
-                    freeaddrinfo(hostInfo);
                     return m;
                 }
             }
         }
-        freeaddrinfo(hostInfo);
     }
 
     return NULL;

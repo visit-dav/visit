@@ -42,6 +42,7 @@
 
 #include <DebugStream.h>
 #include <Utility.h>
+#include <HostResolver.h>
 
 
 #if !defined(_WIN32)
@@ -1305,17 +1306,15 @@ RemoteProcess::StartMakingConnection(const std::string &remoteHost,
         debug5 << mName << "Looking up the host using getaddrinfo(\""
                << localHostStr << "\"): ";
     }
-    struct addrinfo hints = {};
-    struct addrinfo *localHostInfo = NULL;
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_CANONNAME;
-    if (getaddrinfo(localHostStr, NULL, &hints, &localHostInfo) != 0)
+    HostResolver localHostInfo(localHostStr, AF_UNSPEC, SOCK_STREAM,
+                               AI_CANONNAME);
+    if (!localHostInfo.IsValid())
     {
         // Ok, using the host's name returned from gethostname()
         // did not work. So, lets fall back to 'localhost'
         strcpy(localHostStr,"localhost");
-        if (getaddrinfo(localHostStr, NULL, &hints, &localHostInfo) != 0)
+        if (!localHostInfo.Resolve(localHostStr, AF_UNSPEC, SOCK_STREAM,
+                                   AI_CANONNAME))
         {
 #if defined(_WIN32)
             LogWindowsSocketError(mName, "getaddrinfo,2");
@@ -1325,8 +1324,8 @@ RemoteProcess::StartMakingConnection(const std::string &remoteHost,
             EXCEPTION1(BadHostException, localHostStr);
         }
     }
-    localHost = localHostInfo->ai_canonname != NULL
-              ? std::string(localHostInfo->ai_canonname)
+    localHost = localHostInfo.GetCanonicalName() != NULL
+              ? std::string(localHostInfo.GetCanonicalName())
               : std::string(localHostStr);
     debug5 << localHost.c_str() << endl;
 #if defined(_WIN32)
@@ -1342,7 +1341,8 @@ RemoteProcess::StartMakingConnection(const std::string &remoteHost,
                << "iterating through the resolved addresses and calling "
                << "getnameinfo." << endl;
 
-        for(struct addrinfo *ai = localHostInfo; ai != NULL; ai = ai->ai_next)
+        for(const struct addrinfo *ai = localHostInfo.GetAddresses();
+            ai != NULL; ai = ai->ai_next)
         {
             char name[NI_MAXHOST];
             if(getnameinfo(ai->ai_addr, static_cast<int>(ai->ai_addrlen),
@@ -1357,8 +1357,6 @@ RemoteProcess::StartMakingConnection(const std::string &remoteHost,
         }
     }
 #endif
-    freeaddrinfo(localHostInfo);
-
     //
     // Get the local user name.
     //

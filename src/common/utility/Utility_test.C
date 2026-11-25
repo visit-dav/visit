@@ -5,7 +5,9 @@
 #include <cassert>
 #include <cstdio>
 #include <Utility.h>
+#include <HostResolver.h>
 #include <visitstream.h>
+#include <utility>
 #include <vector>
 
 using std::vector;
@@ -25,6 +27,23 @@ using std::string;
 int main(int argc, char **argv)
 {
     int wcsm_error_cnt = 0;
+
+    HostResolver resolver;
+    assert(!resolver.IsValid());
+    if(!resolver.Resolve("localhost"))
+        return 1;
+    assert(resolver.IsValid());
+    assert(resolver.GetAddresses() != nullptr);
+
+    HostResolver movedResolver(std::move(resolver));
+    assert(!resolver.IsValid());
+    assert(movedResolver.IsValid());
+    resolver = std::move(movedResolver);
+    assert(resolver.IsValid());
+    assert(!movedResolver.IsValid());
+
+    resolver.Reset();
+    assert(!resolver.IsValid());
 
     // Test WildcardStringMatch function
     CHECK_WCSM("*.exo.##.##",

@@ -23,6 +23,7 @@
 
 #include <DebugStream.h>
 #include <CouldNotConnectException.h>
+#include <HostResolver.h>
 
 #include <errno.h>
 #include <stdio.h>
@@ -575,15 +576,12 @@ static int
 Connect(const char *host, int port)
 {
     int connectedSock;
-    struct addrinfo hints = {};
-    struct addrinfo *hostInfo = NULL;
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    if(getaddrinfo(host, NULL, &hints, &hostInfo) != 0)
+    HostResolver hostInfo(host, AF_INET, SOCK_STREAM);
+    if(!hostInfo.IsValid())
         return -1;
 
     struct sockaddr_in server =
-        *reinterpret_cast<struct sockaddr_in *>(hostInfo->ai_addr);
+        *reinterpret_cast<struct sockaddr_in *>(hostInfo.GetAddresses()->ai_addr);
     server.sin_port = htons(port);
     
     // 
@@ -593,7 +591,6 @@ Connect(const char *host, int port)
     connectedSock = socket(AF_INET, SOCK_STREAM, 0);
     if (connectedSock == INVALID_SOCKET)
     {
-        freeaddrinfo(hostInfo);
         return -1;
     }
 
@@ -604,7 +601,6 @@ Connect(const char *host, int port)
 
     if (connect(connectedSock, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
-        freeaddrinfo(hostInfo);
         closesocket(connectedSock);
         return -1;
     }
@@ -612,7 +608,6 @@ Connect(const char *host, int port)
     connectedSock = socket(AF_INET, SOCK_STREAM, 0);
     if (connectedSock < 0)
     {
-        freeaddrinfo(hostInfo);
         return -1;
     }
 
@@ -621,13 +616,11 @@ Connect(const char *host, int port)
     setsockopt(connectedSock, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
     if (connect(connectedSock, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
-        freeaddrinfo(hostInfo);
         close(connectedSock);
         return -1;
     }
 #endif
 
-    freeaddrinfo(hostInfo);
     return connectedSock;
 }
 
