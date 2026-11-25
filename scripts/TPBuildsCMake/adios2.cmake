@@ -13,6 +13,7 @@ set(visit_adios2_root     ${visit_install_root}/adios2/${ADIOS2_VERSION})
 set(visit_adios2_include  ${visit_adios2_root}/include)
 set(visit_adios2_library  ${visit_adios2_root}/lib/adios2_core.lib)
 set(visit_adios2_library_par  ${visit_adios2_root}/lib/adios2_core_mpi.lib)
+set(ADIOS2_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_adios2_include}/adios2.h AND
@@ -22,6 +23,7 @@ if(EXISTS ${visit_adios2_include}/adios2.h AND
         message(STATUS "ADIOS2 already installed")
     endif()
     set(ADIOS2_PREBUILT TRUE)
+    write_config_site(ADIOS2)
     return()
 endif()
 
@@ -51,31 +53,35 @@ set(ADIOS2_CMAKE_OPTIONS
     -DADIOS2_USE_MPI:STRING=${BUILD_PARALLEL}
     -DCMAKE_INSTALL_PREFIX:STRING=${visit_adios2_root})
 
-set(ADIOS2_DEPENDS)
-
 list(APPEND ADIOS2_CMAKE_OPTIONS
      -DADIOS2_USE_Blosc2:STRING=ON
      -DBlosc2_DIR:PATH=${visit_blosc2_root}
      -DBLOSC2_INCLUDE_DIR:PATH=${visit_blosc2_include}
      -DBLOSC2_LIBRARY:FILEPATH=${visit_blosc2_library})
 
-if(NOT BLOSC2_PREBUILT)
-    list(APPEND ADIOS2_DEPENDS BLOSC2)
+set(ADIOS2_REQUIRED_DEPENDENCIES BLOSC2)
+
+if(ENABLE_ZLIB)
+    list(APPEND ADIOS2_CMAKE_OPTIONS
+         -DZLIB_LIBRARY_RELEASE:FILEPATH=${visit_zlib_library}
+         -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include})
+    list(APPEND ADIOS2_REQUIRED_DEPENDENCIES ZLIB)
 endif()
 
-list(APPEND ADIOS2_CMAKE_OPTIONS
-     -DZLIB_LIBRARY_RELEASE:FILEPATH=${visit_zlib_library}
-     -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include})
-if(NOT ZLIB_PREBUILT)
-    list(APPEND ADIOS2_DEPENDS ZLIB)
+if(ENABLE_HDF5)
+    list(APPEND ADIOS2_CMAKE_OPTIONS
+         -DADIOS2_USE_HDF5:STRING=ON
+         -DHDF5_DIR:PATH=${visit_install_root}/hdf5/${HDF5_VERSION}/cmake)
+    list(APPEND ADIOS2_REQUIRED_DEPENDENCIES HDF5)
+else()
+    list(APPEND ADIOS2_CMAKE_OPTIONS
+         -DADIOS2_USE_HDF5:STRING=OFF)
 endif()
 
-list(APPEND ADIOS2_CMAKE_OPTIONS
-      -DADIOS2_USE_HDF5:STRING=ON
-      -DHDF5_DIR:PATH=${visit_install_root}/hdf5/${HDF5_VERSION}/cmake)
-if(NOT HDF5_PREBUILT)
-    list(APPEND ADIOS2_DEPENDS HDF5)
-endif()
+visit_resolve_dependencies(
+    PACKAGE ADIOS2
+    DEPENDENCIES ${ADIOS2_REQUIRED_DEPENDENCIES}
+    OUT_VAR ADIOS2_DEPENDS)
 
 set(ADIOS2_URL ${visit_tp_url}/${ADIOS2_ZIP_NAME})
 set(ADIOS2_URL_HASH SHA256=8b72142bd5aabfb80c7963f524df11b8721c09ef20caea6df5fb00c31a7747c0)
@@ -92,4 +98,6 @@ ExternalProject_Add(ADIOS2
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/adios2-patch.cmake)
+
+write_config_site(ADIOS2)
 

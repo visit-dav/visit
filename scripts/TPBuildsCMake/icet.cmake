@@ -11,6 +11,7 @@ set(ICET_VERSION 77c708f9)
 set(visit_icet_root     ${visit_install_root}/icet/${ICET_VERSION})
 set(visit_icet_include  ${visit_icet_root}/include)
 set(visit_icet_library  ${visit_icet_root}/lib/IceTCore.lib)
+set(ICET_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_icet_include}/IceT.h AND
@@ -19,6 +20,7 @@ if(EXISTS ${visit_icet_include}/IceT.h AND
         message(STATUS "ICET already installed")
     endif()
     set(ICET_PREBUILT TRUE)
+    write_config_site(ICET)
     return()
 endif()
 
@@ -44,3 +46,5 @@ ExternalProject_Add( ICET
     INSTALL_DIR      ${visit_install_root}/icet/${ICET_VERSION}
     CMAKE_CACHE_ARGS ${ICET_CMAKE_OPTIONS}
     ${LOGGING_OPTIONS})
+
+write_config_site(ICET)

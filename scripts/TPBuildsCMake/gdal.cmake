@@ -7,6 +7,7 @@ project(GDAL VERSION 2.2.4)
 set(visit_gdal_root    ${visit_install_root}/gdal/${GDAL_VERSION})
 set(visit_gdal_include ${visit_gdal_root}/include)
 set(visit_gdal_library ${visit_gdal_root}/lib/gdal_i.lib)
+set(GDAL_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_gdal_include}/gdal.h AND
@@ -15,6 +16,7 @@ if(EXISTS ${visit_gdal_include}/gdal.h AND
        message(STATUS "GDAL already installed.")
     endif()
     set(GDAL_PREBUILT TRUE)
+    write_config_site(GDAL)
     return()
 endif()
 
@@ -41,3 +43,5 @@ ExternalProject_Add(GDAL
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/gdal-patch.cmake)
+
+write_config_site(GDAL)

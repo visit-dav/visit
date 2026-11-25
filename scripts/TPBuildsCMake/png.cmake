@@ -9,6 +9,7 @@ set(visit_png_root        ${visit_install_root}/png/${PNG_VERSION})
 set(visit_png_include     ${visit_png_root}/include)
 set(visit_png_library_dir ${visit_png_root}/lib)
 set(visit_png_library     ${visit_png_library_dir}/libpng16.lib)
+set(PNG_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_png_include}/png.h AND
@@ -37,11 +38,10 @@ set(PNG_CMAKE_OPTIONS
     -DZLIB_ROOT:PATH=${visit_zlib_root}
     -DCMAKE_INSTALL_PREFIX:PATH=${visit_png_root})
 
-set(PNG_DEPENDS)
-
-if(NOT ZLIB_PREBUILT)
-    list(APPEND PNG_DEPENDS ZLIB)
-endif()
+visit_resolve_dependencies(
+    PACKAGE PNG
+    DEPENDENCIES ZLIB
+    OUT_VAR PNG_DEPENDS)
 
 ExternalProject_Add(PNG
     PREFIX            PNG

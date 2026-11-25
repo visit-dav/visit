@@ -7,9 +7,19 @@
 #   Kathleen Biagas, Wed Sep 11, 2024
 #   Modified location of p7zip.
 #
+#   Kathleen Biagas, Mon Nov 23, 2026
+#   Removed requirement that VISIT_WINDOWS_DIR exists. Issue warning about
+#   installer scripts instead.
+#   Use new windowsresources dir (moved from visit-deps).
+#
 #****************************************************************************
 
 function(visit_create_windows_installer)
+    if(NOT DEFINED VISIT_WINDOWS_DIR)
+        message(STATUS "Installer support scripts not available for creating a windows distribution.")
+        return()
+    endif()
+
     if(VISIT_MAKE_NSIS_INSTALLER)
         include(${VISIT_SOURCE_DIR}/CMake/FindNSIS.cmake)
 
@@ -98,22 +108,16 @@ endfunction()
 # Set up resource files for Windows applications.
 #-----------------------------------------------------------------------------
 function(visit_setup_windows_resources)
-    if(EXISTS ${VISIT_WINDOWS_DIR}/distribution/resources/visit.rc)
-        set(RESOURCEDIR distribution/resources)
-    elseif(EXISTS ${VISIT_WINDOWS_DIR}/visitresources/visit.rc)
-        set(RESOURCEDIR visitresources)
-    else()
-        message(FATAL_ERROR "Cannot find visit.rc in either ${VISIT_WINDOWS_DIR}/distribution/resources or ${VISIT_WINDOWS_DIR}/visitresources")
-    endif()
+    set(RESOURCEDIR ${VISIT_SOURCE_DIR}/resources/windowsresources)
 
-    set(VISIT_VISIT_RESOURCE_FILE      ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/visit.rc CACHE INTERNAL "VisIt resource file" )
-    set(VISIT_GUI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/gui.rc CACHE INTERNAL "VisIt gui resource file")
-    set(VISIT_VIEWER_RESOURCE_FILE     ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/viewer.rc CACHE INTERNAL "VisIt viewer resource file")
-    set(VISIT_MDSERVER_RESOURCE_FILE   ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/mdserver.rc CACHE INTERNAL "VisIt mdserver resource file")
-    set(VISIT_ENGINE_SER_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_ser.rc CACHE INTERNAL "VisIt engine_ser resource file")
-    set(VISIT_ENGINE_PAR_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_par.rc CACHE INTERNAL "VisIt engine_par resource file")
-    set(VISIT_VCL_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/vcl.rc CACHE INTERNAL "VisIt vcl resource file")
-    set(VISIT_CLI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/cli.rc CACHE INTERNAL "VisIt cli resource file")
+    set(VISIT_VISIT_RESOURCE_FILE      ${RESOURCEDIR}/visit.rc CACHE INTERNAL "VisIt resource file" )
+    set(VISIT_GUI_RESOURCE_FILE        ${RESOURCEDIR}/gui.rc CACHE INTERNAL "VisIt gui resource file")
+    set(VISIT_VIEWER_RESOURCE_FILE     ${RESOURCEDIR}/viewer.rc CACHE INTERNAL "VisIt viewer resource file")
+    set(VISIT_MDSERVER_RESOURCE_FILE   ${RESOURCEDIR}/mdserver.rc CACHE INTERNAL "VisIt mdserver resource file")
+    set(VISIT_ENGINE_SER_RESOURCE_FILE ${RESOURCEDIR}/engine_ser.rc CACHE INTERNAL "VisIt engine_ser resource file")
+    set(VISIT_ENGINE_PAR_RESOURCE_FILE ${RESOURCEDIR}/engine_par.rc CACHE INTERNAL "VisIt engine_par resource file")
+    set(VISIT_VCL_RESOURCE_FILE        ${RESOURCEDIR}/vcl.rc CACHE INTERNAL "VisIt vcl resource file")
+    set(VISIT_CLI_RESOURCE_FILE        ${RESOURCEDIR}/cli.rc CACHE INTERNAL "VisIt cli resource file")
     message(STATUS "VISIT_VISIT_RESOURCE_FILE = ${VISIT_VISIT_RESOURCE_FILE}")
 
     #-------------------------------------------------------------------
@@ -123,7 +127,7 @@ function(visit_setup_windows_resources)
     string(REPLACE "." "," filteredver2 "${filteredver1}")
     set(VER_FILEVERSION "${filteredver2},0")
     set(VER_PRODUCTVERSION "${filteredver2},0")
-    configure_file(${VISIT_WINDOWS_DIR}/distribution/resources/versionvars.rc.in
+    configure_file(${RESOURCEDIR}/versionvars.rc.in
                    ${VISIT_BINARY_DIR}/include/versionvars.rc @ONLY IMMEDIATE)
 endfunction()
 
@@ -138,14 +142,6 @@ endfunction()
 function(visit_setup_windows)
 
    set(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
-
-    # VISIT_WINDOWS_DIR needed elsewhere, ensure it is defined and the location exists
-    if(NOT VISIT_WINDOWS_DIR)
-        message(FATAL_ERROR "VISIT_WINDOWS_DIR is not defined.")
-    endif()
-    if(NOT EXISTS ${VISIT_WINDOWS_DIR})
-        message(FATAL_ERROR "${VISIT_WINDOWS_DIR} does not exist.")
-    endif()
 
     if(VISIT_NO_ALLBUILD)
         # Create a custom target for things like copying files.

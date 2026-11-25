@@ -7,6 +7,7 @@ project(NETCDF VERSION 4.9.3)
 set(visit_netcdf_root    ${visit_install_root}/netcdf/${NETCDF_VERSION})
 set(visit_netcdf_include ${visit_netcdf_root}/include)
 set(visit_netcdf_library ${visit_netcdf_root}/lib/netcdf.lib)
+set(NETCDF_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_netcdf_include}/netcdf.h AND
@@ -15,6 +16,7 @@ if(EXISTS ${visit_netcdf_include}/netcdf.h AND
         message(STATUS "NETCDF already installed.")
     endif()
     set(NETCDF_PREBUILT TRUE)
+    write_config_site(NETCDF LIBDEP HDF5_LIB)
     return()
 endif()
 
@@ -42,8 +44,6 @@ set(NETCDF_CMAKE_OPTIONS
     -DNETCDF_ENABLE_FILTER_SZIP:BOOL=OFF
     -DNETCDF_ENABLE_FILTER_TESTING:BOOL=OFF
     -DNETCDF_ENABLE_FILTER_ZSTD:BOOL=OFF
-    -DNETCDF_ENABLE_HDF5:BOOL=ON
-    -DNETCDF_ENABLE_HDF5:BOOL=ON
     -DNETCDF_ENABLE_NCZARR:BOOL=OFF
     -DNETCDF_ENABLE_NCZARR_FILTERS:BOOL=OFF
     -DNETCDF_ENABLE_NCZARR_S3:BOOL=OFF
@@ -57,19 +57,27 @@ set(NETCDF_CMAKE_OPTIONS
     -DNETCDF_ENABLE_MMAP:BOOL=OFF
     -DNETCDF_ENABLE_BASH_SCRIPT_TESTING:BOOL=OFF
     -DUSE_DAP:BOOL=OFF
-    -DHDF5_DIR:PATH=${visit_hdf5_root}/cmake
     -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
     -DZLIB_LIBRARY:FILEPATH=${visit_zlib_library}
     -DCMAKE_BUILD_TYPE:STRING=Release
     -DCMAKE_INSTALL_PREFIX:PATH=${visit_netcdf_root})
 
-if(NOT HDF5_PREBUILT)
-    list(APPEND NETCDF_DEPENDS HDF5)
+set(NETCDF_REQUIRED_DEPENDENCIES ZLIB)
+
+if(ENABLE_HDF5)
+    list(APPEND NETCDF_CMAKE_OPTIONS
+         -DNETCDF_ENABLE_HDF5:BOOL=ON
+         -DHDF5_DIR:PATH=${visit_hdf5_root}/cmake)
+    list(APPEND NETCDF_REQUIRED_DEPENDENCIES HDF5)
+else()
+    list(APPEND NETCDF_CMAKE_OPTIONS
+         -DNETCDF_ENABLE_HDF5:BOOL=OFF)
 endif()
 
-if(NOT ZLIB_PREBUILT)
-    list(APPEND NETCDF_DEPENDS ZLIB)
-endif()
+visit_resolve_dependencies(
+    PACKAGE NETCDF
+    DEPENDENCIES ${NETCDF_REQUIRED_DEPENDENCIES}
+    OUT_VAR NETCDF_DEPENDS)
 
 ExternalProject_Add(NETCDF
     PREFIX           NETCDF
@@ -83,3 +91,5 @@ ExternalProject_Add(NETCDF
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/netcdf-patch.cmake)
+
+write_config_site(NETCDF LIBDEP HDF5_LIB)

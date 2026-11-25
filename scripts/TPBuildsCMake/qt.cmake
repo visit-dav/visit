@@ -11,6 +11,7 @@ project(QT VERSION 6.4.2)
 set(visit_qt_root       ${visit_install_root}/qt/${QT_VERSION})
 set(visit_qt_qmake      ${visit_install_root}/qt/${QT_VERSION}/bin/qmake.exe)
 set(visit_qt_config_dir ${visit_qt_root}/lib/cmake/Qt${QT_VERSION_MAJOR})
+set(QT_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_qt_root}/include/QtWidgets/qapplication.h AND
@@ -19,6 +20,7 @@ if(EXISTS ${visit_qt_root}/include/QtWidgets/qapplication.h AND
         message(STATUS "QT already installed.")
     endif()
     set(QT_PREBUILT TRUE)
+    write_config_site(QT)
     return()
 endif()
 
@@ -63,10 +65,10 @@ set(QTBASE_CMAKE_OPTIONS
     -DQT_BUILD_EXAMPLES_BY_DEFAULT:BOOL=OFF
     -DQT_BUILD_TESTS_BY_DEFAULT:BOOL=OFF)
 
-set(QT_DEPENDS)
-if(NOT OPENSSL_PREBUILT)
-    list(APPEND QT_DEPENDS OPENSSL)
-endif()
+visit_resolve_dependencies(
+    PACKAGE QT
+    DEPENDENCIES OPENSSL
+    OUT_VAR QT_DEPENDS)
 
 # Command to build qtbase
 ExternalProject_Add(QT
@@ -90,6 +92,8 @@ ExternalProject_Add(QTTOOLS
     INSTALL_COMMAND   ${CMAKE_COMMAND} --install .
     DEPENDS           QT
     ${LOGGING_OPTIONS})
+
+write_config_site(QT)
 
 # build qtsvg
 ExternalProject_Add(QTSVG

@@ -115,6 +115,7 @@ endif()
 
 # set up some necessary  variables, and include the .cmake file for each library.
 include(ExternalProject)
+include(${CMAKE_CURRENT_LIST_DIR}/VisitDependency.cmake)
 
 set(visit_tp_url
     "https://github.com/visit-dav/third-party/releases/download/v${visit_version}")
@@ -132,6 +133,30 @@ if(VISIT_LOGGING)
             LOG_INSTALL ON
             LOG_MERGED_STDOUTERR ON)
 endif()
+
+# host config-site file creation
+site_name(HOST)
+configure_file(configsite.cmake.in ${HOST}.cmake @ONLY)
+
+macro(write_config_site PKG)
+    cmake_parse_arguments(arg "SETUPAPP" "" LIBDEP ${ARGN})
+
+    if(ENABLE_${PKG} OR ${PKG}_PREBUILT)
+        string(TOLOWER ${PKG} lpkg)
+        if(arg_SETUPAPP)
+            file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${HOST}.cmake
+                 "SETUP_APP_VERSION(${PKG} ${${PKG}_VERSION})\n")
+        endif()
+        file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${HOST}.cmake
+             "VISIT_OPTION_DEFAULT(VISIT_${PKG}_DIR \${VISIT_TPL_HOME}/${lpkg}/${${PKG}_VERSION})\n")
+        if(arg_LIBDEP)
+            string(REPLACE ";" " " libdep "${arg_LIBDEP}")
+            file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${HOST}.cmake
+                "VISIT_OPTION_DEFAULT(VISIT_${PKG}_LIBDEP ${libdep} TYPE STRING)\n")
+        endif()
+        file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${HOST}.cmake "\n")
+    endif()
+endmacro()
 
 include(zlib.cmake)
 include(jpeg.cmake)

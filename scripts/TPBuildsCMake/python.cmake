@@ -9,6 +9,7 @@ set(visit_python_dir        ${visit_install_root}/python/${PYTHON_VERSION})
 set(visit_python_executable ${visit_python_dir}/python.exe)
 set(visit_python_include    ${visit_python_dir}/include)
 set(visit_python_library    ${visit_python_dir}/libs/python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.lib)
+set(PYTHON_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_python_include}/python.h AND
@@ -17,6 +18,7 @@ if(EXISTS ${visit_python_include}/python.h AND
         message(STATUS "PYTHON already installed.")
     endif()
     set(PYTHON_PREBUILT TRUE )
+    write_config_site(PYTHON)
     return()
 endif()
 
@@ -32,19 +34,11 @@ set(PYTHON_ZIP_NAME "Python-${PYTHON_VERSION}.tgz")
 set(PYTHON_CMAKE_OPTIONS
     -DCMAKE_INSTALL_PREFIX:PATH=${visit_python_dir})
 
-set(PYTHON_DEPENDS)
 # for pillow: jpeg, zlib and tiff
-if(NOT JPEG_PREBUILT)
-    list(APPEND PYTHON_DEPENDS JPEG)
-endif()
-
-if(NOT ZLIB_PREBUILT)
-    list(APPEND PYTHON_DEPENDS ZLIB)
-endif()
-
-if(NOT TIFF_PREBUILT)
-    list(APPEND PYTHON_DEPENDS TIFF)
-endif()
+visit_resolve_dependencies(
+    PACKAGE PYTHON
+    DEPENDENCIES JPEG ZLIB TIFF
+    OUT_VAR PYTHON_DEPENDS)
 
 ExternalProject_Add(PYTHON
     PREFIX           PYTHON
@@ -65,3 +59,5 @@ ExternalProject_Add(PYTHON
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/python-patch.cmake)
+
+write_config_site(PYTHON)

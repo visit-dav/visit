@@ -82,8 +82,16 @@ if(ospray_FOUND)
         if(NOT VISIT_HEADERS_SKIP_INSTALL)
             THIRD_PARTY_INSTALL_INCLUDE(ospray ${OSPRAY_INCLUDE_DIR})
         endif()
-    endif()
+    else()
+        if(WIN32)
+            file(GLOB ospray_lib_dlls
+                 LIST_DIRECTORIES FALSE
+                 ${VISIT_OSPRAY_DIR}/bin/*.dll)
+            file(COPY ${ospray_lib_dlls}
+                 DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        endif()
 
+    endif()
     # we use ospray binaries that we dont build, and they lack usual
     # rpath we rely on for dev builds
     #

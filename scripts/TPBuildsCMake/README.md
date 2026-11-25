@@ -128,7 +128,10 @@ cmake -S /path/to/TPBuildsCMake -B Build -U ENABLE_CONDUIT
 
 ### To use the generated libraries when building VisIt.
 
-If the chosen INSTALL location is not the standard location within visit-deps/windowsbuild/MSVC2022, then add `-DVISIT_THIRDPARTY_PATH:PATH=/path/to/INSTALL` when configuring VisIt with CMake.
+A config-site file is generated as part of the build process and it can be used when building VisIt.
+It is placed in the build directory, and has the name `<host>.cmake` where `<host>` is your system name.
+Just add `-DVISIT_CONFIG_SITE:FILEPATH=/path/to/build/<host>.cmake` to the command line when configuring VisIt with CMake.
+If the chosen INSTALL location is the standard location within `visit-deps/windowsbuild/MSVC2022`, then this command-line option can be skipped as the standard `windows.cmake` config-site file within VisIt should suffice.
 
 ## Caveats
 
@@ -137,6 +140,33 @@ This build system does not currently allow linking to system installed versions 
 All libraries are installed to subdirectories of a common installation directory.
 If any library is determined to already exist in the installation directory, it will not be re-built.
 This allows for updating specific libraries without necessarily needing to rebuild any libraries it depends upon.
+
+### Dependency validation
+
+Package dependencies are validated while CMake configures the build. A dependency
+is accepted only when its package-specific header and library checks find an
+installation below `visit_install_root`, or when its `ExternalProject` target was
+created earlier in the current build. System-installed libraries are not accepted.
+
+Dependency and feature conditions follow the corresponding `build_visit`
+modules. The Windows build adds explicit dependencies for libraries that
+`build_visit` can obtain from the Linux or macOS system, including JPEG, PNG,
+TIFF, ZLIB, and OpenSSL. It also requires the managed Python installation for
+ANARI instead of relying on a system Python.
+
+If an enabled package has an unavailable dependency, configuration stops with a
+message that distinguishes a disabled or missing dependency from an incorrect
+package include order. For example, Python requires JPEG, ZLIB, and TIFF for
+Pillow support. Each must either be enabled in the current build or already be
+installed below `visit_install_root`.
+
+The dependency resolver tests can be run without downloading or building any
+third-party package:
+
+```
+cmake -S /path/to/TPBuildsCMake/tests -B dependency-tests
+ctest --test-dir dependency-tests --output-on-failure
+```
 
 The build options for each library were chosen with the specific purpose of being used for VisIt on Windows.
 

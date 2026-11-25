@@ -9,6 +9,7 @@ set(visit_ospray_root     ${visit_install_root}/ospray/${OSPRAY_VERSION})
 set(visit_ospray_config_dir ${visit_ospray_root}/lib/cmake/ospray-${OSPRAY_VERSION})
 set(visit_ospray_include ${visit_ospray_root}/include/ospray)
 set(visit_ospray_library ${visit_ospray_root}/lib/ospray.lib)
+set(OSPRAY_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_ospray_include}/ospray.h AND
@@ -17,6 +18,7 @@ if(EXISTS ${visit_ospray_include}/ospray.h AND
         message(STATUS "OSPRAY already installed.")
     endif()
     set(OSPRAY_PREBUILT TRUE)
+    write_config_site(OSPRAY)
     return()
 endif()
 
@@ -54,3 +56,5 @@ ExternalProject_Add(OSPRAY
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/ospray-patch.cmake)
+
+write_config_site(OSPRAY)

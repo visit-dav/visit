@@ -8,6 +8,7 @@ project(ZLIB VERSION 1.3.1)
 set(visit_zlib_root    ${visit_install_root}/zlib/${ZLIB_VERSION})
 set(visit_zlib_include ${visit_zlib_root}/include)
 set(visit_zlib_library ${visit_zlib_root}/lib/zlib.lib)
+set(ZLIB_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_zlib_include}/zlib.h AND
@@ -16,6 +17,7 @@ if(EXISTS ${visit_zlib_include}/zlib.h AND
         message(STATUS "ZLIB already installed.")
     endif()
     set(ZLIB_PREBUILT TRUE)
+    write_config_site(ZLIB)
     return()
 endif()
 
@@ -44,3 +46,5 @@ ExternalProject_Add(ZLIB
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/zlib-patch.cmake )
+
+write_config_site(ZLIB)

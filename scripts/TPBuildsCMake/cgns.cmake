@@ -8,6 +8,7 @@ project(CGNS VERSION 4.1.0)
 set(visit_cgns_root     ${visit_install_root}/cgns/${CGNS_VERSION})
 set(visit_cgns_include  ${visit_cgns_root}/include)
 set(visit_cgns_library  ${visit_cgns_root}/lib/cgnsdll.lib)
+set(CGNS_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_cgns_include}/cgnslib.h AND
@@ -16,6 +17,7 @@ if(EXISTS ${visit_cgns_include}/cgnslib.h AND
         message(STATUS "CGNS already installed")
     endif()
     set(CGNS_PREBUILT TRUE)
+    write_config_site(CGNS LIBDEP HDF5_LIB)
     return()
 endif()
 
@@ -36,24 +38,32 @@ set(CGNS_CMAKE_OPTIONS
     -DENABLE_TESTS:BOOL=FALSE
     -DENABLE_PARALLEL:BOOL=FALSE)
 
-set(CGNS_DEPENDS)
+set(CGNS_REQUIRED_DEPENDENCIES)
 
-list(APPEND CGNS_CMAKE_OPTIONS
-     -DCGNS_ENABLE_HDF5:BOOL=ON
-     -DHDF5_DIR:PATH=${visit_hdf5_root}/cmake
-     -DHDF5_INCLUDE_PATH:PATH=${visit_hdf5_include}
-     -DHDF5_LIBRARY:FILEPATH=${visit_hdf5_library}
-     -DHDF5_NEED_ZLIB:BOOL=ON
-     -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
-     -DZLIB_LIBRARY:FILEPATH=${visit_zlib_library})
+if(ENABLE_HDF5)
+    list(APPEND CGNS_CMAKE_OPTIONS
+         -DCGNS_ENABLE_HDF5:BOOL=ON
+         -DHDF5_DIR:PATH=${visit_hdf5_root}/cmake
+         -DHDF5_INCLUDE_PATH:PATH=${visit_hdf5_include}
+         -DHDF5_LIBRARY:FILEPATH=${visit_hdf5_library})
+    list(APPEND CGNS_REQUIRED_DEPENDENCIES HDF5)
 
-if(NOT ZLIB_PREBUILT)
-    list(APPEND CGNS_DEPENDS ZLIB)
+    if(ENABLE_ZLIB)
+        list(APPEND CGNS_CMAKE_OPTIONS
+             -DHDF5_NEED_ZLIB:BOOL=ON
+             -DZLIB_INCLUDE_DIR:PATH=${visit_zlib_include}
+             -DZLIB_LIBRARY:FILEPATH=${visit_zlib_library})
+        list(APPEND CGNS_REQUIRED_DEPENDENCIES ZLIB)
+    endif()
+else()
+    list(APPEND CGNS_CMAKE_OPTIONS
+         -DCGNS_ENABLE_HDF5:BOOL=OFF)
 endif()
 
-if(NOT HDF5_PREBUILT)
-    list(APPEND CGNS_DEPENDS HDF5)
-endif()
+visit_resolve_dependencies(
+    PACKAGE CGNS
+    DEPENDENCIES ${CGNS_REQUIRED_DEPENDENCIES}
+    OUT_VAR CGNS_DEPENDS)
 
 ExternalProject_Add( CGNS
     PREFIX           CGNS
@@ -67,4 +77,6 @@ ExternalProject_Add( CGNS
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -P ${visit_tp_patches}/cgns-patch.cmake)
+
+write_config_site(CGNS LIBDEP HDF5_LIB)
 

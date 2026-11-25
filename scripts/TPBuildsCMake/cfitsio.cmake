@@ -8,6 +8,7 @@ project(CFITSIO VERSION 4.6.3)
 set(visit_cfitsio_root     ${visit_install_root}/cfitsio/${CFITSIO_VERSION})
 set(visit_cfitsio_include  ${visit_cfitsio_root}/include)
 set(visit_cfitsio_library  ${visit_cfitsio_root}/lib/cfitsio.lib)
+set(CFITSIO_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_cfitsio_include}/fitsio.h AND
@@ -16,6 +17,7 @@ if(EXISTS ${visit_cfitsio_include}/fitsio.h AND
         message(STATUS "CFITSIO already installed")
     endif()
     set(CFITSIO_PREBUILT TRUE)
+    write_config_site(CFITSIO)
     return()
 endif()
 
@@ -36,15 +38,14 @@ set(CFITSIO_CMAKE_OPTIONS
     -DUSE_CURL:BOOL=OFF
     -DUTILS:BOOL=OFF)
 
-set(CFITSIO_DEPENDS)
-
 list(APPEND CFITSIO_CMAKE_OPTIONS
     -DZLIB_INCLUDE_DIR:FILEPATH=${visit_zlib_include}
     -DZLIB_LIBRARY_RELEASE:FILEPATH=${visit_zlib_library})
 
-if(NOT ZLIB_PREBUILT)
-    list(APPEND CFITSIO_DEPENDS ZLIB)
-endif()
+visit_resolve_dependencies(
+    PACKAGE CFITSIO
+    DEPENDENCIES ZLIB
+    OUT_VAR CFITSIO_DEPENDS)
 
 
 ExternalProject_Add( CFITSIO
@@ -55,4 +56,6 @@ ExternalProject_Add( CFITSIO
     CMAKE_CACHE_ARGS ${CFITSIO_CMAKE_OPTIONS}
     DEPENDS          ${CFITSIO_DEPENDS}
     ${LOGGING_OPTIONS})
+
+write_config_site(CFITSIO)
 

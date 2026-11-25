@@ -8,6 +8,7 @@ project(HDF5 VERSION 2.0.0)
 set(visit_hdf5_root    ${visit_install_root}/hdf5/${HDF5_VERSION})
 set(visit_hdf5_include ${visit_hdf5_root}/include)
 set(visit_hdf5_library ${visit_hdf5_root}/lib/hdf5.lib)
+set(HDF5_PREBUILT FALSE)
 
 # has this already been built 
 if(EXISTS ${visit_hdf5_include}/hdf5.h AND
@@ -16,6 +17,7 @@ if(EXISTS ${visit_hdf5_include}/hdf5.h AND
         message(STATUS "HDF5 already installed.")
     endif()
     set(HDF5_PREBUILT TRUE)
+    write_config_site(HDF5)
     return()
 endif()
 
@@ -64,11 +66,10 @@ else()
 endif()
 
 
-set(HDF5_DEPENDS)
-
-if(NOT ZLIB_PREBUILT)
-    list(APPEND HDF5_DEPENDS ZLIB)
-endif()
+visit_resolve_dependencies(
+    PACKAGE HDF5
+    DEPENDENCIES ZLIB
+    OUT_VAR HDF5_DEPENDS)
 
 ExternalProject_Add(HDF5
     PREFIX           HDF5
@@ -82,3 +83,5 @@ ExternalProject_Add(HDF5
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/hdf5-patch.cmake)
+
+write_config_site(HDF5)

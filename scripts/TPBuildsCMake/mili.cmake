@@ -5,6 +5,7 @@
 project(MILI VERSION 24.1.1)
 
 set(visit_mili_root ${visit_install_root}/mili/${MILI_VERSION})
+set(MILI_PREBUILT FALSE)
 
 # has this already been built
 if(EXISTS ${visit_mili_root}/include/mili.h AND
@@ -13,6 +14,7 @@ if(EXISTS ${visit_mili_root}/include/mili.h AND
         message(STATUS "MILI already installed")
     endif()
     set(MILI_PREBUILT TRUE)
+    write_config_site(MILI)
     return()
 endif()
 
@@ -39,3 +41,5 @@ ExternalProject_Add(MILI
                                       -DPATCH_CMD:PATH=${visit_patch_command}
                                       -DPATCH_DIR:PATH=${visit_tp_patches}
                                       -P ${visit_tp_patches}/mili-patch.cmake)
+
+write_config_site(MILI)
