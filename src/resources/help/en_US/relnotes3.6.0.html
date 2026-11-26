@@ -90,6 +90,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with the Tecplot writer which allowed invalid Tecplot header characters (like `"`, `\n`, `\r`) to be written to the header.</li>
   <li>Ported paraDIS plugin to remove use of boost.</li>
   <li>Fixed several bugs with the Pixie reader including a bug defining the sizes of variables, a bug with the automatic partitioning of variables in parallel, and a bug with the defining of 2D rectilinear meshes.</li>
+  <li>The lata reader was updated to the latest version of the TRUST platform sources (contributed by CEA). It now reads lata files written with either 32-bit or 64-bit indices, and also opens FORT21 files (<code>*.21</code>, <code>*FORT21*</code>). Note that the localization suffix of some variable names is now upper case (e.g. <code>COURBURE_som_INTERFACES</code> is now <code>COURBURE_SOM_INTERFACES</code>).</li>
 </ul>
 
 <a name="Plot_changes"></a>
