@@ -3490,23 +3490,30 @@ class MainLauncher(object):
     # Date: Fri May 25 10:48:41 PDT 2012
     #
     # Modifications:
+    #   Teo Boutin, Thu Nov 26 13:12:46 CET 2026
+    #   Print a warning instead of failing when the directories can not be
+    #   created, e.g. when HOME is not accessible.
     #
     ############################################################################
 
     def MakeUserDirectories(self, pluginver, supportedarches):
+        # These directories only hold the private plugins of the user: VisIt
+        # runs without them, so failing to create them (e.g. HOME not
+        # accessible or read-only) is not fatal.
         home = GETENV("HOME")
         if home != "":
             for archdir in supportedarches:
-                root = home
-                for subdir in (".visit", pluginver, archdir, "plugins"):
-                    path = os.path.join(root, subdir)
-                    if not os.path.exists(path):
-                        os.mkdir(path)
-                    root = path
+                root = os.path.join(home, ".visit", pluginver, archdir, "plugins")
                 for p in self.plugincategories:
                     path = os.path.join(root, p)
-                    if not os.path.exists(path):
-                        os.mkdir(path)
+                    try:
+                        if not os.path.isdir(path):
+                            os.makedirs(path)
+                    except OSError as e:
+                        # Another VisIt process may have just created it.
+                        if not os.path.isdir(path):
+                            self.warning("Could not create %s: %s" % (path, e))
+                            return
 
     ############################################################################
     # Method: SetStartDir
