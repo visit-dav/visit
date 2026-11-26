@@ -121,6 +121,8 @@ lataGeneralPluginInfo::GetDefaultFilePatterns() const
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.lml");
     defaultPatterns.push_back("*.lata");
+    defaultPatterns.push_back("*.21");
+    defaultPatterns.push_back("*FORT21*");
 
     return defaultPatterns;
 }

@@ -1,34 +1,50 @@
 <?xml version="1.0"?>
   <Plugin name="lata" type="database" label="lata import file" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <DEFINES>
+      LATATOOLS=1
+      INT_is_64_=2
+    </DEFINES>
     <FilePatterns>
       *.lml
       *.lata
+      *.21
+      *FORT21*
     </FilePatterns>
     <Files components="M,E">
+      AbstractIO.C
+      Array_base.C
+      ArrOfBit.C
+      CGNSReader.C
+      Connectivite_som_elem.C
+      Device.C
+      DeviceMemory.C
+      EFichier.C
+      Entree.C
+      Entree_Fichier_base.C
       LataDB.C
       LataFilter.C
       LataStructures.C
+      LataTools.C
       LataV1_field_definitions.C
       LataWriter.C
-      Lata_tools.C
       LmlReader.C
-      OpenDXWriter.C
+      Motcle.C
+      Nom.C
+      Noms.C
+      Objet_U.C
+      Octree_Double.C
+      Octree_Int.C
       OperatorBoundary.C
       OperatorDualMesh.C
       OperatorFacesMesh.C
       OperatorReconnect.C
       OperatorRegularize.C
+      ReaderFORT21.C
       Rebuild_virtual_layer.C
-      UserFields.C
-      ArrOfBit.C
-      ArrOfDouble.C
-      ArrOfFloat.C
-      ArrOfInt.C
-      Connectivite_som_elem.C
-      Motcle.C
-      Octree_Double.C
-      Octree_Int.C
       Static_Int_Lists.C
+      TRUSTArray.C
+      TRUSTTab_tools.C
+      UserFields.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

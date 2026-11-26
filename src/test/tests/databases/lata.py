@@ -126,7 +126,7 @@ CloseDatabase(data_path("Lata_test_data/3D_VEF/PAR_3D_VEF.lata"))
 
 OpenDatabase(data_path("Lata_test_data/./FTD_remaillage_vdf/post.lata"))
 AddPlot("Mesh","INTERFACES")
-AddPlot("Pseudocolor","COURBURE_som_INTERFACES")
+AddPlot("Pseudocolor","COURBURE_SOM_INTERFACES")
 SetTimeSliderState(2)
 DrawPlots()
 Test("lata_14")

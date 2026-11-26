@@ -1,6 +1,7 @@
 // Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
+
 // ************************************************************************* //
 //                            avtlataFileFormat.h                           //
 // ************************************************************************* //
@@ -51,10 +52,11 @@ class avtlataFileFormat : public avtMTMDFileFormat
     virtual const char    *GetType(void)   { return "lata"; };
     virtual void           FreeUpResources(void); 
 
-    virtual vtkDataSet    *GetMesh(int, int, const char *);
-    virtual vtkDataArray  *GetVar(int, int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+    virtual vtkDataSet    *GetMesh(int timestate, int block, const char *meshname);
+    virtual vtkDataArray  *GetVar(int timestate, int block, const char *varname);
+    virtual vtkDataArray  *GetVectorVar(int timestate, int block, const char *varname);
     virtual void GetTimes(std::vector<double>& times);
+
   protected:
     // DATA MEMBERS
 
