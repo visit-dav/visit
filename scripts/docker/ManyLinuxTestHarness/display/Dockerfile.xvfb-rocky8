@@ -1,0 +1,15 @@
+ARG ROCKY_VERSION=8
+FROM rockylinux:${ROCKY_VERSION}
+
+RUN dnf --setopt=install_weak_deps=False install -y \
+        mesa-dri-drivers \
+        mesa-libGL \
+        xorg-x11-server-Xorg \
+        xorg-x11-server-Xvfb \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf
+
+COPY display/run-xvfb.sh /usr/local/bin/run-xvfb.sh
+RUN chmod 0755 /usr/local/bin/run-xvfb.sh
+
+ENTRYPOINT ["/usr/local/bin/run-xvfb.sh"]

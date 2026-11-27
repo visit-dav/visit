@@ -1,0 +1,18 @@
+ARG DEBIAN_VERSION=13
+FROM debian:${DEBIAN_VERSION}
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgl1 \
+        libgl1-mesa-dri \
+        libglx-mesa0 \
+        xserver-xorg-core \
+        xvfb \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY display/run-xvfb.sh /usr/local/bin/run-xvfb.sh
+RUN chmod 0755 /usr/local/bin/run-xvfb.sh
+
+ENTRYPOINT ["/usr/local/bin/run-xvfb.sh"]

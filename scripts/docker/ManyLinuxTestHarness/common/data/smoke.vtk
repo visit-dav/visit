@@ -1,0 +1,11 @@
+# vtk DataFile Version 3.0
+VisIt many-linux smoke-test data
+ASCII
+DATASET STRUCTURED_POINTS
+DIMENSIONS 3 3 1
+ORIGIN 0 0 0
+SPACING 1 1 1
+POINT_DATA 9
+SCALARS value float 1
+LOOKUP_TABLE default
+0 1 2 1 2 3 2 3 4

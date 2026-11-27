@@ -2,6 +2,7 @@ ARG MANYLINUX_VERSION=2_28
 FROM quay.io/pypa/manylinux_${MANYLINUX_VERSION}_x86_64 AS visit-build-environment
 
 ENV ACLOCAL_PATH=/usr/share/aclocal
+ENV MANY_LINUX_DISTRO=ON
 
 RUN dnf install -y \
       autoconf \
